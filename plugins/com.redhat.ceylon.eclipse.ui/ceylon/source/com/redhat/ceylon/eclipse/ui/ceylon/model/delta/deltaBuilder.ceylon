@@ -10,7 +10,8 @@ import com.redhat.ceylon.compiler.typechecker.analyzer {
 import com.redhat.ceylon.compiler.typechecker.tree {
     Ast = Tree,
     AstAbstractNode=Node,
-    Visitor
+    Visitor,
+    VisitorAdaptor
 }
 import ceylon.collection {
     HashSet,
@@ -24,7 +25,8 @@ import ceylon.collection {
 import com.redhat.ceylon.compiler.typechecker.model {
     ModelDeclaration = Declaration,
     ModelUnit = Unit,
-    ProducedType
+    ProducedType,
+    Method
 }
 import ceylon.interop.java {
     CeylonIterable,
@@ -44,26 +46,28 @@ shared CompilationUnitDelta buildDeltas(
     "Referenced phased unit, typically of central Ceylon model"
     PhasedUnit referencePhasedUnit,
     "Changed phased unit, typically a just-saved working copy"
-    PhasedUnit changedPhasedUnit) {
+    PhasedUnit changedPhasedUnit,
+    "Listener that registers the detail of every structural node comparisons"
+    NodeComparisonListener? nodeComparisonListener = null) {
     
     assert (exists unitFile = referencePhasedUnit.unitFile);
     if (unitFile.name == moduleDescriptorFileName) {
-        return buildModuleDescriptorDeltas(referencePhasedUnit, changedPhasedUnit);
+        return buildModuleDescriptorDeltas(referencePhasedUnit, changedPhasedUnit, nodeComparisonListener);
     }
     
     if (unitFile.name == packageDescriptorFileName) {
-        return buildPackageDescriptorDeltas(referencePhasedUnit, changedPhasedUnit);
+        return buildPackageDescriptorDeltas(referencePhasedUnit, changedPhasedUnit, nodeComparisonListener);
     }
     
-    return buildCompilationUnitDeltas(referencePhasedUnit, changedPhasedUnit);
+    return buildCompilationUnitDeltas(referencePhasedUnit, changedPhasedUnit, nodeComparisonListener);
 }
 
-ModuleDescriptorDelta buildModuleDescriptorDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit) => nothing;
+ModuleDescriptorDelta buildModuleDescriptorDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) => nothing;
 
-PackageDescriptorDelta buildPackageDescriptorDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit) => nothing;
+PackageDescriptorDelta buildPackageDescriptorDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) => nothing;
 
-RegularCompilationUnitDelta buildCompilationUnitDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit) {
-    value builder = RegularCompilationUnitDeltaBuilder(referencePhasedUnit.compilationUnit, changedPhasedUnit.compilationUnit);
+RegularCompilationUnitDelta buildCompilationUnitDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) {
+    value builder = RegularCompilationUnitDeltaBuilder(referencePhasedUnit.compilationUnit, changedPhasedUnit.compilationUnit, nodeComparisonListener);
     return builder.buildDelta();
 }
 
@@ -145,7 +149,7 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
     }
 }
 
-class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.CompilationUnit newNode)
+class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.CompilationUnit newNode, NodeComparisonListener? nodeComparisonListener)
         extends DeltaBuilder(oldNode, newNode) {
 
     variable value changes = ArrayList<RegularCompilationUnitDelta.PossibleChange>();
@@ -166,7 +170,7 @@ class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.Compil
         assert(is Ast.Declaration oldChild, 
                 is Ast.Declaration? newChild, 
                 oldChild.declarationModel.toplevel);
-        value builder = TopLevelDeclarationDeltaBuilder(oldChild, newChild);
+        value builder = TopLevelDeclarationDeltaBuilder(oldChild, newChild, nodeComparisonListener);
         value delta = builder.buildDelta();
         if (delta.changes.empty && childrenDeltas.empty) {
             return;
@@ -207,12 +211,14 @@ class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.Compil
     }
 }
     
-Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
+shared alias NodeComparisonListener => Anything(String?, String?, ModelDeclaration, String);
+    
+Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration newAstDeclaration, NodeComparisonListener? nodeComparisonListener) {
     function lookForChanges<NodeType>(Boolean changed(NodeType oldNode, NodeType newNode))
-            given NodeType satisfies AstAbstractNode {
-        if (is NodeType oldNode) {
-            if (is NodeType newNode) {
-                if (changed(oldNode, newNode)) {
+            given NodeType satisfies Ast.Declaration {
+        if (is NodeType oldAstDeclaration) {
+            if (is NodeType newAstDeclaration) {
+                if (changed(oldAstDeclaration, newAstDeclaration)) {
                     return true;
                 }
             } else {
@@ -222,33 +228,67 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
         return false;
     }
     
-    Boolean nodeChanged(AstAbstractNode? oldNode, AstAbstractNode? newNode) {
+    Boolean nodeChanged(AstAbstractNode? oldNode, AstAbstractNode? newNode, String declarationMemberName) {
         
-        class NodeSigner(AstAbstractNode node) extends Visitor() {
+        class NodeSigner(AstAbstractNode node) extends VisitorAdaptor() {
             variable value builder = StringBuilder();
             shared String signature() {
                 node.visit(this);
-                print(builder.string);
                 return builder.string;
             }
             
-            shared actual void visit(Ast.Type node) {
+            shared actual void visitType(Ast.Type node) {
+                builder.append("Type[");
                 if (exists type = node.typeModel) {
                     builder.append(type.producedTypeName);
                 }
+                builder.append("]");
             }
 
             shared actual void visitAny(AstAbstractNode node) {
-                builder.append("``node.nodeType``<<");
-                super.visitAny(node);
-                builder.append(">>");
+                builder.append("``node.nodeType``[");
+                if (node.children.size() > 0) {
+                    super.visitAny(node);
+                } else {
+                    builder.append(node.text);
+                }
+                builder.append("]");
+            }
+            
+            shared actual void visitIdentifier(Ast.Identifier node) {
+                if (is Method method = node.scope,
+                    method.parameter) {
+                    // parameters of a method functional parameter are not 
+                    // part of the externally visible structure of the outer method
+                    return;
+                }
+                
+                visitAny(node);
             }
         }
-        
+        Boolean changed;
         if(exists oldNode, exists newNode) {
-            return NodeSigner(oldNode).signature() != NodeSigner(newNode).signature();
-        } 
-        return !(oldNode is Null && newNode is Null);
+            String oldSignature = NodeSigner(oldNode).signature();
+            String newSignature = NodeSigner(newNode).signature();
+            if (exists nodeComparisonListener) {
+                nodeComparisonListener(oldSignature, newSignature, oldAstDeclaration.declarationModel, declarationMemberName);
+            }
+            changed = oldSignature != newSignature;
+        } else {
+            changed = !(oldNode is Null && newNode is Null);
+            if (exists nodeComparisonListener) {
+                variable String? oldSignature = null;
+                variable String? newSignature = null;
+                if (exists oldNode) {
+                    oldSignature = NodeSigner(oldNode).signature();
+                }
+                if (exists newNode) {
+                    newSignature = NodeSigner(newNode).signature();
+                }
+                nodeComparisonListener(oldSignature, newSignature, oldAstDeclaration.declarationModel, declarationMemberName);
+            }
+        }
+        return changed;
     }
     
     return lookForChanges {
@@ -265,17 +305,18 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
                 lookForChanges {
                     function changed(Ast.TypedDeclaration oldTyped, Ast.TypedDeclaration newTyped) {
                         return any {
-                            nodeChanged(oldTyped.type, newTyped.type),
+                            nodeChanged(oldTyped.type, newTyped.type, "type"),
                             lookForChanges {
                                 function changed(Ast.AnyMethod oldMethod, Ast.AnyMethod newMethod) {
                                     return any {
-                                        nodeChanged(oldMethod.typeConstraintList, newMethod.typeConstraintList),
-                                        nodeChanged(oldMethod.typeParameterList, newMethod.typeParameterList),
+                                        nodeChanged(oldMethod.typeConstraintList, newMethod.typeConstraintList, "typeConstraintList"),
+                                        nodeChanged(oldMethod.typeParameterList, newMethod.typeParameterList, "typeParameterList"),
+                                        oldMethod.parameterLists.size() != newMethod.parameterLists.size(),
                                         anyPair {
                                             firstIterable => CeylonIterable(oldMethod.parameterLists);
                                             secondIterable => CeylonIterable(newMethod.parameterLists);
                                             Boolean selecting(Ast.ParameterList oldParamList, Ast.ParameterList newParamlist) {
-                                                return nodeChanged(oldParamList, newParamlist);
+                                                return nodeChanged(oldParamList, newParamlist, "parameterLists");
                                             }
                                         }
                                     };
@@ -284,18 +325,21 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
                             lookForChanges {
                                 function changed(Ast.ObjectDefinition oldObject, Ast.ObjectDefinition newObject) {
                                     return any {
-                                        nodeChanged(oldObject.extendedType, newObject.extendedType),
-                                        nodeChanged(oldObject.satisfiedTypes, newObject.satisfiedTypes)
+                                        nodeChanged(oldObject.extendedType, newObject.extendedType, "extendedType"),
+                                        nodeChanged(oldObject.satisfiedTypes, newObject.satisfiedTypes, "satisfiedTypes")
                                     };
                                 }
                             },
                             lookForChanges {
                                 function changed(Ast.Variable oldVariable, Ast.Variable newVariable) {
-                                    return anyPair {
-                                        firstIterable => CeylonIterable(oldVariable.parameterLists);
-                                        secondIterable => CeylonIterable(newVariable.parameterLists);
-                                        Boolean selecting(Ast.ParameterList oldParamList, Ast.ParameterList newParamlist) {
-                                            return nodeChanged(oldParamList, newParamlist);
+                                    return any {
+                                        oldVariable.parameterLists.size() != oldVariable.parameterLists.size(),
+                                        anyPair {
+                                            firstIterable => CeylonIterable(oldVariable.parameterLists);
+                                            secondIterable => CeylonIterable(newVariable.parameterLists);
+                                            Boolean selecting(Ast.ParameterList oldParamList, Ast.ParameterList newParamlist) {
+                                                return nodeChanged(oldParamList, newParamlist,"parameterLists");
+                                            }
                                         }
                                     };
                                 }
@@ -306,14 +350,14 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
                 lookForChanges {
                     function changed(Ast.TypeDeclaration oldType, Ast.TypeDeclaration newType) {
                         return any {
-                            nodeChanged(oldType.caseTypes, newType.caseTypes),
-                            nodeChanged(oldType.satisfiedTypes, newType.satisfiedTypes),
-                            nodeChanged(oldType.typeParameterList, newType.typeParameterList),
+                            nodeChanged(oldType.caseTypes, newType.caseTypes, "caseTypes"),
+                            nodeChanged(oldType.satisfiedTypes, newType.satisfiedTypes, "satisfiedTypes"),
+                            nodeChanged(oldType.typeParameterList, newType.typeParameterList, "typeParameterList"),
                             lookForChanges {
                                 function changed(Ast.TypeParameterDeclaration oldTypeParameter, Ast.TypeParameterDeclaration newTypeParameter) {
                                     return any {
-                                        nodeChanged(oldTypeParameter.typeSpecifier, newTypeParameter.typeSpecifier),
-                                        nodeChanged(oldTypeParameter.typeVariance, newTypeParameter.typeVariance)
+                                        nodeChanged(oldTypeParameter.typeSpecifier, newTypeParameter.typeSpecifier, "typeSpecifier"),
+                                        nodeChanged(oldTypeParameter.typeVariance, newTypeParameter.typeVariance, "typeVariance")
                                     };
                                 }
                             }
@@ -325,7 +369,7 @@ Boolean hasStructuralChanges(Ast.Declaration oldNode, Ast.Declaration newNode) {
     };
 }
 
-abstract class DeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? newNode)
+abstract class DeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? newNode, NodeComparisonListener? nodeComparisonListener)
         of TopLevelDeclarationDeltaBuilder | NestedDeclarationDeltaBuilder
         extends DeltaBuilder(oldNode, newNode) {
 
@@ -336,7 +380,7 @@ abstract class DeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration?
         assert(is Ast.Declaration oldChild, 
             is Ast.Declaration? newChild, 
             ! oldChild.declarationModel.toplevel);
-        value builder = NestedDeclarationDeltaBuilder(oldChild, newChild);
+        value builder = NestedDeclarationDeltaBuilder(oldChild, newChild, nodeComparisonListener);
         value delta = builder.buildDelta();
         if (delta.changes.empty && childrenDeltas.empty) {
             return;
@@ -359,8 +403,8 @@ abstract class DeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration?
     }
 }
 
-class TopLevelDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? newNode)
-        extends DeclarationDeltaBuilder(oldNode, newNode) {
+class TopLevelDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? newNode, NodeComparisonListener? nodeComparisonListener)
+        extends DeclarationDeltaBuilder(oldNode, newNode, nodeComparisonListener) {
     
     variable value _changes = ArrayList<TopLevelDeclarationDelta.PossibleChange>();
     shared actual {TopLevelDeclarationDelta.PossibleChange*} changes => _changes;
@@ -397,15 +441,15 @@ class TopLevelDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? 
             _changes.add(madeVisibleOutsideScope);
         }
         
-        if (hasStructuralChanges(oldNode, newNode)) {
+        if (hasStructuralChanges(oldNode, newNode, nodeComparisonListener)) {
             _changes.add(structuralChange);
         }
     }
 }
     
     
-class NestedDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? newNode)
-        extends DeclarationDeltaBuilder(oldNode, newNode) {
+class NestedDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? newNode, NodeComparisonListener? nodeComparisonListener)
+        extends DeclarationDeltaBuilder(oldNode, newNode, nodeComparisonListener) {
     
     variable value _changes = ArrayList<NestedDeclarationDelta.PossibleChange>();
     shared actual {NestedDeclarationDelta.PossibleChange*} changes => _changes;
@@ -433,7 +477,7 @@ class NestedDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? ne
     
     shared actual void calculateStructuralChanges() {
         assert(exists newNode);
-        if (hasStructuralChanges(oldNode, newNode)) {
+        if (hasStructuralChanges(oldNode, newNode, nodeComparisonListener)) {
             _changes.add(structuralChange);
         }
     }
