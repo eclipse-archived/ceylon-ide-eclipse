@@ -78,14 +78,14 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
     shared formal [AstNode*] getChildren(AstNode astNode);
     shared formal AbstractDelta buildDelta();
         
-    shared formal void addRemovedChange();
+    shared formal void registerRemovedChange();
     shared formal void calculateStructuralChanges();
     shared formal void manageChildDelta(AstNode oldChild, AstNode? newChild);
-    shared formal void addMemberAddedChange(AstNode newChild);
+    shared formal void registerMemberAddedChange(AstNode newChild);
     
     shared default void recurse() {
         if (newNode is Null) {
-            addRemovedChange();
+            registerRemovedChange();
             return;
         }
         assert(exists newNode);
@@ -142,7 +142,7 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
                     manageChildDelta(oldChild, newChild);
                 } else {
                     assert(exists newChild);
-                    addMemberAddedChange(newChild);
+                    registerMemberAddedChange(newChild);
                 }
             }
         }
@@ -178,12 +178,12 @@ class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.Compil
         childrenDeltas.add(delta);
     }
     
-    shared actual void addMemberAddedChange(AstNode newChild) {
+    shared actual void registerMemberAddedChange(AstNode newChild) {
         assert(is Ast.Declaration newChild, newChild.declarationModel.toplevel);
         changes.add(TopLevelDeclarationAdded(newChild.declarationModel.nameAsString, newChild.declarationModel.shared));
     }
     
-    shared actual void addRemovedChange() {
+    shared actual void registerRemovedChange() {
         "A compilation unit cannot be removed from a PhasedUnit"
         assert(false);
     }
@@ -420,12 +420,12 @@ class TopLevelDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? 
         return delta;
     }
     
-    shared actual void addMemberAddedChange(AstNode newChild) {
+    shared actual void registerMemberAddedChange(AstNode newChild) {
         assert(is Ast.Declaration newChild);
         _changes.add(DeclarationMemberAdded(newChild.declarationModel.nameAsString));
     }
     
-    shared actual void addRemovedChange() {
+    shared actual void registerRemovedChange() {
         _changes.add(removed);
     }
     
@@ -466,12 +466,12 @@ class NestedDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? ne
         return delta;
     }
     
-    shared actual void addMemberAddedChange(AstNode newChild) {
+    shared actual void registerMemberAddedChange(AstNode newChild) {
         assert(is Ast.Declaration newChild);
         _changes.add(DeclarationMemberAdded(newChild.declarationModel.nameAsString));
     }
     
-    shared actual void addRemovedChange() {
+    shared actual void registerRemovedChange() {
         _changes.add(removed);
     }
     
