@@ -36,6 +36,9 @@ import com.redhat.ceylon.compiler.typechecker.tree {
         formatPath
     }
 }
+import ceylon.language.meta.declaration {
+    ValueDeclaration
+}
 
 "Builds a [[model delta|AbstractDelta]] that describes the model differences 
  between a [[reference PhasedUnit|buildDeltas.referencePhasedUnit]] 
@@ -228,25 +231,12 @@ shared alias NodeComparisonListener => Anything(String?, String?, ModelDeclarati
     
 Set<String> annotationsAsStringSet(Annotated annotated) {
     return HashSet {
-        for (annotation in CeylonIterable(annotated.annotations)) if (annotation.name != "shared") annotation.string
+        for (annotation in CeylonIterable(annotated.annotations))
+            if (! ["shared", "license", "by", "see", "doc"].contains(annotation.name)) annotation.string
     };
 }
 
 Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration newAstDeclaration, NodeComparisonListener? nodeComparisonListener) {
-    function lookForChanges<NodeType>(Boolean between(NodeType oldNode, NodeType newNode))
-            given NodeType satisfies Ast.Declaration {
-        if (is NodeType oldAstDeclaration) {
-            if (is NodeType newAstDeclaration) {
-                if (between(oldAstDeclaration, newAstDeclaration)) {
-                    return true;
-                }
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     Boolean nodesDiffer(AstAbstractNode? oldNode, AstAbstractNode? newNode, String declarationMemberName) {
         
         class NodeSigner(AstAbstractNode node) extends VisitorAdaptor() {
@@ -309,6 +299,20 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
         }
         return changed;
     }
+
+    function lookForChanges<NodeType>(Boolean between(NodeType oldNode, NodeType newNode))
+            given NodeType satisfies Ast.Declaration {
+        if (is NodeType oldAstDeclaration) {
+            if (is NodeType newAstDeclaration) {
+                if (between(oldAstDeclaration, newAstDeclaration)) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
     
     return lookForChanges {
         function between(Ast.Declaration oldNode, Ast.Declaration newNode) {
@@ -368,10 +372,38 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
                             nodesDiffer(oldType.satisfiedTypes, newType.satisfiedTypes, "satisfiedTypes"),
                             nodesDiffer(oldType.typeParameterList, newType.typeParameterList, "typeParameterList"),
                             lookForChanges {
+                                function between(Ast.ClassOrInterface oldClassOrInterface, Ast.ClassOrInterface newClassOrInterface) {
+                                    return any {
+                                        nodesDiffer(oldClassOrInterface.typeConstraintList, newClassOrInterface.typeConstraintList, "typeConstraintList"),
+                                        lookForChanges {
+                                            function between(Ast.AnyClass oldClass, Ast.AnyClass newClass) {
+                                                return any {
+                                                    nodesDiffer(oldClass.extendedType, newClass.extendedType, "extendedType"),
+                                                    nodesDiffer(oldClass.parameterList, newClass.parameterList, "parameterList")
+                                                };
+                                            }
+                                        },
+                                        lookForChanges {
+                                            function between(Ast.InterfaceDefinition oldInterface, Ast.InterfaceDefinition newInterface) {
+                                                return oldInterface.\idynamic == newInterface.\idynamic;
+                                            }
+                                        }
+                                    };
+                                }
+                            },
+                            lookForChanges {
                                 function between(Ast.TypeParameterDeclaration oldTypeParameter, Ast.TypeParameterDeclaration newTypeParameter) {
                                     return any {
                                         nodesDiffer(oldTypeParameter.typeSpecifier, newTypeParameter.typeSpecifier, "typeSpecifier"),
                                         nodesDiffer(oldTypeParameter.typeVariance, newTypeParameter.typeVariance, "typeVariance")
+                                    };
+                                }
+                            },
+                            lookForChanges {
+                                function between(Ast.TypeConstraint oldTypeConstraint, Ast.TypeConstraint newTypeConstraint) {
+                                    return any {
+                                        nodesDiffer(oldTypeConstraint.abstractedType, newTypeConstraint.abstractedType, "abstractedType"),
+                                        nodesDiffer(oldTypeConstraint.parameterList, newTypeConstraint.parameterList, "parameterList")
                                     };
                                 }
                             }
