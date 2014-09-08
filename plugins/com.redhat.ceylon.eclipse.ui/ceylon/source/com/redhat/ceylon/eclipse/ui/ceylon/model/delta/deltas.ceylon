@@ -63,7 +63,8 @@ shared interface ModuleDescriptorDelta satisfies CompilationUnitDelta {
 shared interface ModuleImportDelta satisfies AbstractDelta {
     shared formal actual ModuleImport changedElement;
     shared actual [] childrenDeltas => [];
-    shared alias PossibleChange => <Removed | MadeVisibleOutsideScope | MadeInvisibleOutsideScope>;
+    "StructuralChange when the optiobal annotation has been changed"
+    shared alias PossibleChange => <StructuralChange | Removed | MadeVisibleOutsideScope | MadeInvisibleOutsideScope>;
     shared formal actual [PossibleChange]|[] changes;
 }
 
