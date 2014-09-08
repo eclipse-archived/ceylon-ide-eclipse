@@ -20,12 +20,12 @@ test void addTopLevel() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
         oldContents = 
-                "shared void test() {};
+                "shared void test() {}
                  ";
         newContents =
-                "shared void test() {};
-                 shared void test2() {};
-                 void hidden();
+                "shared void test() {}
+                 shared void test2() {}
+                 void hidden()
                  ";
         expectedDelta = 
             RegularCompilationUnitDeltaMockup {
@@ -41,11 +41,11 @@ test void removeTopLevel() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
         oldContents =
-                "shared void test() {};
-                 void hidden() {};
+                "shared void test() {}
+                 void hidden() {}
                  ";
         newContents = 
-                "shared void test() {};
+                "
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
