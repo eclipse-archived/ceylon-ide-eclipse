@@ -8,7 +8,7 @@ shared abstract class ImpactingChange()
  - the name or version of a module in module descriptor,
  - etc ..."
 shared abstract class StructuralChange() of structuralChange extends ImpactingChange() {}
-object structuralChange extends StructuralChange() {
+shared object structuralChange extends StructuralChange() {
     string => "structuralChange";
 }
 
@@ -25,7 +25,7 @@ object structuralChange extends StructuralChange() {
  for the current module compilation units
  "
 shared abstract class MadeVisibleOutsideScope() of madeVisibleOutsideScope extends ImpactingChange() {}
-object madeVisibleOutsideScope extends MadeVisibleOutsideScope() {
+shared object madeVisibleOutsideScope extends MadeVisibleOutsideScope() {
     string => "madeVisibleOutsideScope";
 }
 
@@ -41,7 +41,7 @@ object madeVisibleOutsideScope extends MadeVisibleOutsideScope() {
  module dependencies may have greatly changed. However this doesn't change anything
  for the current module compilation units"
 shared abstract class MadeInvisibleOutsideScope() of madeInvisibleOutsideScope extends ImpactingChange() {}
-object madeInvisibleOutsideScope extends MadeInvisibleOutsideScope() {
+shared object madeInvisibleOutsideScope extends MadeInvisibleOutsideScope() {
     string => "madeInvisibleOutsideScope";
 }
 
