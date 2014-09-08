@@ -119,27 +119,31 @@ public class SpecifyTypeProposal implements ICompletionProposal,
             Node node, CeylonEditor editor) {
         final Tree.Type type = (Tree.Type) node;
         InferredType result = inferType(cu, type);
-        List<SpecifyTypeProposal> list = new ArrayList<SpecifyTypeProposal>(2);
-        if (!isTypeUnknown(result.generalizedType) &&
-                (isTypeUnknown(result.inferredType) || 
-                        !result.generalizedType.isSubtypeOf(result.inferredType)) &&
-                !result.generalizedType.isSubtypeOf(type.getTypeModel())) {
-            list.add(new SpecifyTypeProposal("Widen type to", 
-                    type, cu, result.generalizedType, editor));
-        }
-        if (!isTypeUnknown(result.inferredType)) {
-            if (!result.inferredType.isSubtypeOf(type.getTypeModel())) {
-                list.add(new SpecifyTypeProposal("Change type to", type, cu,
-                        result.inferredType, editor));
+        List<SpecifyTypeProposal> list = 
+                new ArrayList<SpecifyTypeProposal>(2);
+        ProducedType declaredType = type.getTypeModel();
+        if (!isTypeUnknown(declaredType)) {
+            if (!isTypeUnknown(result.generalizedType) &&
+                    (isTypeUnknown(result.inferredType) || 
+                            !result.generalizedType.isSubtypeOf(result.inferredType)) &&
+                            !result.generalizedType.isSubtypeOf(declaredType)) {
+                list.add(new SpecifyTypeProposal("Widen type to", 
+                        type, cu, result.generalizedType, editor));
             }
-            else if (!type.getTypeModel().isSubtypeOf(result.inferredType)) {
-                list.add(new SpecifyTypeProposal("Narrow type to", type, cu,
-                        result.inferredType, editor));
+            if (!isTypeUnknown(result.inferredType)) {
+                if (!result.inferredType.isSubtypeOf(declaredType)) {
+                    list.add(new SpecifyTypeProposal("Change type to", type, cu,
+                            result.inferredType, editor));
+                }
+                else if (!declaredType.isSubtypeOf(result.inferredType)) {
+                    list.add(new SpecifyTypeProposal("Narrow type to", type, cu,
+                            result.inferredType, editor));
+                }
             }
-        }
-        if (type instanceof Tree.LocalModifier) {
-            list.add(new SpecifyTypeProposal("Declare explicit type", 
-                    type, cu, type.getTypeModel(), editor));
+            if (type instanceof Tree.LocalModifier) {
+                list.add(new SpecifyTypeProposal("Declare explicit type", 
+                        type, cu, declaredType, editor));
+            }
         }
         return list;
     }
