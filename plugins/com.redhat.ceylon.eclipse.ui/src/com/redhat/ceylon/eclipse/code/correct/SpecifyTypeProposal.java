@@ -145,6 +145,18 @@ public class SpecifyTypeProposal implements ICompletionProposal,
                         type, cu, declaredType, editor));
             }
         }
+        else {
+            if (!isTypeUnknown(result.inferredType)) {
+                list.add(new SpecifyTypeProposal("Declare type", type, cu,
+                        result.inferredType, editor));
+            }
+            if (!isTypeUnknown(result.generalizedType) && 
+                    (isTypeUnknown(result.inferredType) ||
+                            !result.generalizedType.isSubtypeOf(result.inferredType))) {
+                list.add(new SpecifyTypeProposal("Declare type", type, cu,
+                        result.generalizedType, editor));
+            }
+        }
         return list;
     }
 
