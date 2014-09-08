@@ -1,37 +1,40 @@
-import com.redhat.ceylon.compiler.typechecker.context {
-    PhasedUnit
-}
-import com.redhat.ceylon.compiler.typechecker.analyzer {
-    ModuleManager {
-        moduleDescriptorFileName=\iMODULE_FILE,
-        packageDescriptorFileName=\iPACKAGE_FILE
-    }
-}
-import com.redhat.ceylon.compiler.typechecker.tree {
-    Ast = Tree,
-    AstAbstractNode=Node,
-    Visitor,
-    VisitorAdaptor
-}
 import ceylon.collection {
     HashSet,
     HashMap,
     MutableMap,
-    MutableSet,
     ArrayList,
     MutableList,
     StringBuilder
 }
-import com.redhat.ceylon.compiler.typechecker.model {
-    ModelDeclaration = Declaration,
-    ModelUnit = Unit,
-    ProducedType,
-    Method
-}
 import ceylon.interop.java {
     CeylonIterable,
-    javaClassFromInstance,
-    CeylonIterator
+    javaClassFromInstance
+}
+
+import com.redhat.ceylon.compiler.typechecker.analyzer {
+    ModuleManager {
+        moduleDescriptorFileName=MODULE_FILE,
+        packageDescriptorFileName=PACKAGE_FILE
+    }
+}
+import com.redhat.ceylon.compiler.typechecker.context {
+    PhasedUnit
+}
+import com.redhat.ceylon.compiler.typechecker.model {
+    ModelDeclaration=Declaration,
+    Method,
+    ModuleImport,
+    Module,
+    Annotated
+}
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Ast=Tree,
+    AstAbstractNode=Node,
+    Visitor,
+    VisitorAdaptor,
+    Util {
+        formatPath
+    }
 }
 
 "Builds a [[model delta|AbstractDelta]] that describes the model differences 
@@ -62,9 +65,19 @@ shared CompilationUnitDelta buildDeltas(
     return buildCompilationUnitDeltas(referencePhasedUnit, changedPhasedUnit, nodeComparisonListener);
 }
 
-ModuleDescriptorDelta buildModuleDescriptorDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) => nothing;
+ModuleDescriptorDelta buildModuleDescriptorDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) {
+    assert(exists oldDescriptor = referencePhasedUnit.compilationUnit?.moduleDescriptors?.get(0));
+    assert(exists newDescriptor = changedPhasedUnit.compilationUnit?.moduleDescriptors?.get(0));
+    value builder = ModuleDescriptorDeltaBuilder(oldDescriptor, newDescriptor, nodeComparisonListener);
+    return builder.buildDelta();
+}
 
-PackageDescriptorDelta buildPackageDescriptorDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) => nothing;
+PackageDescriptorDelta buildPackageDescriptorDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) {
+    assert(exists oldDescriptor = referencePhasedUnit.compilationUnit?.packageDescriptors?.get(0));
+    assert(exists newDescriptor = changedPhasedUnit.compilationUnit?.packageDescriptors?.get(0));
+    value builder = PackageDescriptorDeltaBuilder(oldDescriptor, newDescriptor, nodeComparisonListener);
+    return builder.buildDelta();
+}
 
 RegularCompilationUnitDelta buildCompilationUnitDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) {
     value builder = RegularCompilationUnitDeltaBuilder(referencePhasedUnit.compilationUnit, changedPhasedUnit.compilationUnit, nodeComparisonListener);
@@ -79,7 +92,7 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
     shared formal AbstractDelta buildDelta();
         
     shared formal void registerRemovedChange();
-    shared formal void calculateStructuralChanges();
+    shared formal void calculateLocalChanges();
     shared formal void manageChildDelta(AstNode oldChild, AstNode? newChild);
     shared formal void registerMemberAddedChange(AstNode newChild);
     
@@ -90,7 +103,7 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
         }
         assert(exists newNode);
         
-        calculateStructuralChanges();
+        calculateLocalChanges();
         
         [AstNode*] oldChildren = getChildren(oldNode);
         [AstNode*] newChildren = getChildren(newNode);
@@ -120,7 +133,7 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
                             childKey = child.unit.fullPath;
                         }
                         case(is Ast.ImportModule) {
-                            childKey = "/".join {child.quotedLiteral.string, child.version.string};
+                            childKey = "/".join {formatPath(child.importPath.identifiers), child.version.text.trim('"'.equals)};
                         }
                         
                         allChildrenSet.add(childKey);
@@ -188,7 +201,7 @@ class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.Compil
         assert(false);
     }
     
-    shared actual void calculateStructuralChanges() {
+    shared actual void calculateLocalChanges() {
         // No structural change can occur within a compilation unit
         // Well ... is it true ? What about the initialization order of toplevel declarations ?
         // TODO consider the declaration order of top-levels inside a compilation unit as a structural change ?
@@ -213,6 +226,12 @@ class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.Compil
     
 shared alias NodeComparisonListener => Anything(String?, String?, ModelDeclaration, String);
     
+Set<String> annotationsAsStringSet(Annotated annotated) {
+    return HashSet {
+        for (annotation in CeylonIterable(annotated.annotations)) if (annotation.name != "shared") annotation.string
+    };
+}
+
 Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration newAstDeclaration, NodeComparisonListener? nodeComparisonListener) {
     function lookForChanges<NodeType>(Boolean changed(NodeType oldNode, NodeType newNode))
             given NodeType satisfies Ast.Declaration {
@@ -295,13 +314,8 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
         function changed(Ast.Declaration oldNode, Ast.Declaration newNode) {
             assert(exists oldDeclaration = oldNode.declarationModel);
             assert(exists newDeclaration = newNode.declarationModel);
-            function annotations(ModelDeclaration declaration) {
-                return HashSet {
-                    for (annotation in CeylonIterable(declaration.annotations)) if (annotation.name != "shared") annotation.string
-                };
-            }
             return any {
-                annotations(oldDeclaration) != annotations(newDeclaration),
+                annotationsAsStringSet(oldDeclaration) != annotationsAsStringSet(newDeclaration),
                 lookForChanges {
                     function changed(Ast.TypedDeclaration oldTyped, Ast.TypedDeclaration newTyped) {
                         return any {
@@ -429,7 +443,7 @@ class TopLevelDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? 
         _changes.add(removed);
     }
     
-    shared actual void calculateStructuralChanges() {
+    shared actual void calculateLocalChanges() {
         assert(exists newNode);
 
         assert(exists oldDeclaration = oldNode.declarationModel);
@@ -475,10 +489,202 @@ class NestedDeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? ne
         _changes.add(removed);
     }
     
-    shared actual void calculateStructuralChanges() {
+    shared actual void calculateLocalChanges() {
         assert(exists newNode);
         if (hasStructuralChanges(oldNode, newNode, nodeComparisonListener)) {
             _changes.add(structuralChange);
         }
     }
 }
+
+class PackageDescriptorDeltaBuilder(Ast.PackageDescriptor oldNode, Ast.PackageDescriptor newNode, NodeComparisonListener? nodeComparisonListener)
+        extends DeltaBuilder(oldNode, newNode) {
+    variable PackageDescriptorDelta.PossibleChange? change = null;
+    
+    shared actual PackageDescriptorDelta buildDelta() {
+        recurse();
+        object delta satisfies PackageDescriptorDelta {
+            changedElement => oldNode.unit.\ipackage;
+            shared actual [PackageDescriptorDelta.PossibleChange]|[] changes {
+                if (exists existingChange = change) {
+                    return [existingChange];
+                } else {
+                    return empty;
+                }
+            }
+            shared actual Boolean equals(Object that) => (super of AbstractDelta).equals(that);
+        }
+        return delta;
+    }
+    
+    shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
+        assert(false);
+    }
+    
+    shared actual void registerMemberAddedChange(AstNode newChild) {
+        assert(false);
+    }
+    
+    shared actual void registerRemovedChange() {
+        assert(false);
+    }
+    
+    shared actual void calculateLocalChanges() {
+        if (formatPath(oldNode.importPath.identifiers) != formatPath(newNode.importPath.identifiers)) {
+            change = structuralChange;
+            return;
+        }
+        
+        function isShared(Ast.PackageDescriptor descriptor) 
+            => Util.hasAnnotation(descriptor.annotationList, "shared", null);
+        
+        value sharedBefore = isShared(oldNode);
+        value sharedNow = isShared(newNode);
+        
+        if (sharedBefore && !sharedNow) {
+            change = madeInvisibleOutsideScope;
+        }
+        if (!sharedBefore && sharedNow) {
+            change = madeVisibleOutsideScope;
+        }
+    }
+    
+    shared actual Ast.Declaration[] getChildren(AstNode astNode) {
+        return empty;
+    }
+}
+
+class ModuleDescriptorDeltaBuilder(Ast.ModuleDescriptor oldNode, Ast.ModuleDescriptor newNode, NodeComparisonListener? nodeComparisonListener)
+        extends DeltaBuilder(oldNode, newNode) {
+    variable value changes = ArrayList<ModuleDescriptorDelta.PossibleChange>();
+    variable value childrenDeltas = ArrayList<ModuleImportDelta>();
+    assert(is Module oldModule = oldNode.importPath.model);
+    
+    shared actual ModuleDescriptorDelta buildDelta() {
+        recurse();
+        object delta satisfies ModuleDescriptorDelta {
+            changedElement => oldModule;
+            shared actual {ModuleDescriptorDelta.PossibleChange*} changes => outer.changes;
+            shared actual Boolean equals(Object that) => (super of AbstractDelta).equals(that);
+            shared actual {ModuleImportDelta*} childrenDeltas => outer.childrenDeltas;
+            
+        }
+        return delta;
+    }
+    
+    shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
+        assert(is Ast.ImportModule oldChild, 
+            is Ast.ImportModule? newChild);
+        value builder = ModuleImportDeclarationDeltaBuilder(oldChild, newChild, oldModule, nodeComparisonListener);
+        value delta = builder.buildDelta();
+        if (delta.changes.empty && delta.childrenDeltas.empty) {
+            return;
+        }
+        childrenDeltas.add(delta);
+    }
+    
+    shared actual void registerMemberAddedChange(AstNode newChild) {
+        assert(is Ast.ImportModule newChild);
+        changes.add(ModuleImportAdded(Util.formatPath (
+            newChild.importPath.identifiers),
+            Util.hasAnnotation(newChild.annotationList, "shared", null), 
+            newChild.version.text.trim('"'.equals)));
+    }
+    
+    shared actual void registerRemovedChange() {
+        assert(false);
+    }
+    
+    shared actual void calculateLocalChanges() {
+
+        if (formatPath(oldNode.importPath.identifiers) != formatPath(newNode.importPath.identifiers)) {
+            changes.add(structuralChange);
+            return;
+        }
+        if (oldNode.version.text != newNode.version.text) {
+            changes.add(structuralChange);
+            return;
+        }
+    }
+    
+    shared actual Ast.ImportModule[] getChildren(AstNode astNode) {
+        assert(is Ast.ModuleDescriptor astNode);
+        return CeylonIterable(astNode.importModuleList.importModules).sequence();
+    }
+}
+
+class ModuleImportDeclarationDeltaBuilder(Ast.ImportModule oldNode, Ast.ImportModule? newNode, Module oldParentModule, NodeComparisonListener? nodeComparisonListener)
+            extends DeltaBuilder(oldNode, newNode) {
+    
+    variable ModuleImportDelta.PossibleChange? change = null;
+    
+    shared actual ModuleImportDelta buildDelta() {
+        recurse();
+        object delta satisfies ModuleImportDelta {
+            shared actual ModuleImport changedElement {
+                value moduleImport = CeylonIterable(oldParentModule.imports).find {
+                        Boolean selecting(ModuleImport element) {
+                            value modelName = element.\imodule.nameAsString;
+                            value modelVersion = element.\imodule.version;
+                            value astName = formatPath(oldNode.importPath.identifiers);
+                            value astVersion = oldNode.version.text.trim('"'.equals);
+                            
+                            return  modelName == astName &&
+                            modelVersion == astVersion;
+                        }
+                };
+                assert (exists moduleImport); 
+                return moduleImport;
+            }
+            shared actual [ModuleImportDelta.PossibleChange]|[] changes {
+                if (exists existingChange = change) {
+                    return [existingChange];
+                } else {
+                    return empty;
+                }
+            }
+            shared actual Boolean equals(Object that) => (super of AbstractDelta).equals(that);
+            shared actual String changedElementString => "ModuleImport[``changedElement.\imodule.nameAsString``, ``changedElement.\imodule.version``]";
+        }
+        return delta;
+    }
+    
+    shared actual void calculateLocalChanges() {
+        assert(exists newNode);
+        
+        function isOptional(Ast.ImportModule descriptor) 
+                => Util.hasAnnotation(descriptor.annotationList, "optional", null);
+        if (isOptional(oldNode) != isOptional(newNode)) {
+            change = structuralChange;
+            return;
+        }
+
+        function isShared(Ast.ImportModule descriptor) 
+        => Util.hasAnnotation(descriptor.annotationList, "shared", null);
+        
+        value sharedBefore = isShared(oldNode);
+        value sharedNow = isShared(newNode);
+        
+        if (sharedBefore && !sharedNow) {
+            change = madeInvisibleOutsideScope;
+        }
+        if (!sharedBefore && sharedNow) {
+            change = madeVisibleOutsideScope;
+        }
+    }
+    
+    shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
+        assert(false);
+    }
+    
+    shared actual void registerMemberAddedChange(AstNode newChild) {
+        assert(false);
+    }
+    
+    shared actual void registerRemovedChange() {
+        change = removed;
+    }
+
+    shared actual AstNode[] getChildren(AstNode astNode) => empty;
+}
+
