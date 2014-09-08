@@ -1,19 +1,20 @@
-import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
-    buildDeltas,
-    DeclarationMemberAdded,
-    removed,
-    NodeComparisonListener
+import ceylon.collection {
+    HashSet
 }
 import ceylon.test {
     test,
     assertEquals
 }
-import ceylon.collection {
-    HashSet
-}
+
 import com.redhat.ceylon.compiler.typechecker.model {
     Declaration
 }
+import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
+    buildDeltas,
+    DeclarationMemberAdded,
+    removed
+}
+
 import test.com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
     NestedDeclarationDeltaMockup,
     CompilationUnitDeltaMockup,

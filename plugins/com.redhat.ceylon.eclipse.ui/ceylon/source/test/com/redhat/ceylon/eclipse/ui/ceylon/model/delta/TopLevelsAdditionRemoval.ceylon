@@ -1,19 +1,16 @@
+import ceylon.test {
+    test
+}
+
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
-    buildDeltas,
-    DeclarationMemberAdded,
     removed,
-    NodeComparisonListener,
     TopLevelDeclarationAdded
 }
-import ceylon.test {
-    test,
-    assertEquals
-}
-import ceylon.collection {
-    HashSet
-}
-import com.redhat.ceylon.compiler.typechecker.model {
-    Declaration
+
+import test.com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
+    comparePhasedUnits,
+    RegularCompilationUnitDeltaMockup,
+    TopLevelDeclarationDeltaMockup
 }
 
 test void addTopLevel() {
