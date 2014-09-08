@@ -233,11 +233,11 @@ Set<String> annotationsAsStringSet(Annotated annotated) {
 }
 
 Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration newAstDeclaration, NodeComparisonListener? nodeComparisonListener) {
-    function lookForChanges<NodeType>(Boolean changed(NodeType oldNode, NodeType newNode))
+    function lookForChanges<NodeType>(Boolean between(NodeType oldNode, NodeType newNode))
             given NodeType satisfies Ast.Declaration {
         if (is NodeType oldAstDeclaration) {
             if (is NodeType newAstDeclaration) {
-                if (changed(oldAstDeclaration, newAstDeclaration)) {
+                if (between(oldAstDeclaration, newAstDeclaration)) {
                     return true;
                 }
             } else {
@@ -247,7 +247,7 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
         return false;
     }
     
-    Boolean nodeChanged(AstAbstractNode? oldNode, AstAbstractNode? newNode, String declarationMemberName) {
+    Boolean nodesDiffer(AstAbstractNode? oldNode, AstAbstractNode? newNode, String declarationMemberName) {
         
         class NodeSigner(AstAbstractNode node) extends VisitorAdaptor() {
             variable value builder = StringBuilder();
@@ -311,48 +311,48 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
     }
     
     return lookForChanges {
-        function changed(Ast.Declaration oldNode, Ast.Declaration newNode) {
+        function between(Ast.Declaration oldNode, Ast.Declaration newNode) {
             assert(exists oldDeclaration = oldNode.declarationModel);
             assert(exists newDeclaration = newNode.declarationModel);
             return any {
                 annotationsAsStringSet(oldDeclaration) != annotationsAsStringSet(newDeclaration),
                 lookForChanges {
-                    function changed(Ast.TypedDeclaration oldTyped, Ast.TypedDeclaration newTyped) {
+                    function between(Ast.TypedDeclaration oldTyped, Ast.TypedDeclaration newTyped) {
                         return any {
-                            nodeChanged(oldTyped.type, newTyped.type, "type"),
+                            nodesDiffer(oldTyped.type, newTyped.type, "type"),
                             lookForChanges {
-                                function changed(Ast.AnyMethod oldMethod, Ast.AnyMethod newMethod) {
+                                function between(Ast.AnyMethod oldMethod, Ast.AnyMethod newMethod) {
                                     return any {
-                                        nodeChanged(oldMethod.typeConstraintList, newMethod.typeConstraintList, "typeConstraintList"),
-                                        nodeChanged(oldMethod.typeParameterList, newMethod.typeParameterList, "typeParameterList"),
+                                        nodesDiffer(oldMethod.typeConstraintList, newMethod.typeConstraintList, "typeConstraintList"),
+                                        nodesDiffer(oldMethod.typeParameterList, newMethod.typeParameterList, "typeParameterList"),
                                         oldMethod.parameterLists.size() != newMethod.parameterLists.size(),
                                         anyPair {
                                             firstIterable => CeylonIterable(oldMethod.parameterLists);
                                             secondIterable => CeylonIterable(newMethod.parameterLists);
                                             Boolean selecting(Ast.ParameterList oldParamList, Ast.ParameterList newParamlist) {
-                                                return nodeChanged(oldParamList, newParamlist, "parameterLists");
+                                                return nodesDiffer(oldParamList, newParamlist, "parameterLists");
                                             }
                                         }
                                     };
                                 }
                             },
                             lookForChanges {
-                                function changed(Ast.ObjectDefinition oldObject, Ast.ObjectDefinition newObject) {
+                                function between(Ast.ObjectDefinition oldObject, Ast.ObjectDefinition newObject) {
                                     return any {
-                                        nodeChanged(oldObject.extendedType, newObject.extendedType, "extendedType"),
-                                        nodeChanged(oldObject.satisfiedTypes, newObject.satisfiedTypes, "satisfiedTypes")
+                                        nodesDiffer(oldObject.extendedType, newObject.extendedType, "extendedType"),
+                                        nodesDiffer(oldObject.satisfiedTypes, newObject.satisfiedTypes, "satisfiedTypes")
                                     };
                                 }
                             },
                             lookForChanges {
-                                function changed(Ast.Variable oldVariable, Ast.Variable newVariable) {
+                                function between(Ast.Variable oldVariable, Ast.Variable newVariable) {
                                     return any {
                                         oldVariable.parameterLists.size() != oldVariable.parameterLists.size(),
                                         anyPair {
                                             firstIterable => CeylonIterable(oldVariable.parameterLists);
                                             secondIterable => CeylonIterable(newVariable.parameterLists);
                                             Boolean selecting(Ast.ParameterList oldParamList, Ast.ParameterList newParamlist) {
-                                                return nodeChanged(oldParamList, newParamlist,"parameterLists");
+                                                return nodesDiffer(oldParamList, newParamlist,"parameterLists");
                                             }
                                         }
                                     };
@@ -362,16 +362,16 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
                     }
                 },
                 lookForChanges {
-                    function changed(Ast.TypeDeclaration oldType, Ast.TypeDeclaration newType) {
+                    function between(Ast.TypeDeclaration oldType, Ast.TypeDeclaration newType) {
                         return any {
-                            nodeChanged(oldType.caseTypes, newType.caseTypes, "caseTypes"),
-                            nodeChanged(oldType.satisfiedTypes, newType.satisfiedTypes, "satisfiedTypes"),
-                            nodeChanged(oldType.typeParameterList, newType.typeParameterList, "typeParameterList"),
+                            nodesDiffer(oldType.caseTypes, newType.caseTypes, "caseTypes"),
+                            nodesDiffer(oldType.satisfiedTypes, newType.satisfiedTypes, "satisfiedTypes"),
+                            nodesDiffer(oldType.typeParameterList, newType.typeParameterList, "typeParameterList"),
                             lookForChanges {
-                                function changed(Ast.TypeParameterDeclaration oldTypeParameter, Ast.TypeParameterDeclaration newTypeParameter) {
+                                function between(Ast.TypeParameterDeclaration oldTypeParameter, Ast.TypeParameterDeclaration newTypeParameter) {
                                     return any {
-                                        nodeChanged(oldTypeParameter.typeSpecifier, newTypeParameter.typeSpecifier, "typeSpecifier"),
-                                        nodeChanged(oldTypeParameter.typeVariance, newTypeParameter.typeVariance, "typeVariance")
+                                        nodesDiffer(oldTypeParameter.typeSpecifier, newTypeParameter.typeSpecifier, "typeSpecifier"),
+                                        nodesDiffer(oldTypeParameter.typeVariance, newTypeParameter.typeVariance, "typeVariance")
                                     };
                                 }
                             }
