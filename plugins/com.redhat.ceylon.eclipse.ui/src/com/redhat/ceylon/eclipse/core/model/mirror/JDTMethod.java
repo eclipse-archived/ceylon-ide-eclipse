@@ -202,8 +202,28 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         return isOverloading.booleanValue();
     }
 
+    private boolean ignoreMethodInAncestorSearch(MethodBinding methodBinding) {
+        String name = CharOperation.charToString(methodBinding.selector);
+        if(name.equals("finalize")
+                || name.equals("clone")){
+            if(methodBinding.declaringClass != null && CharOperation.toString(methodBinding.declaringClass.compoundName).equals("java.lang.Object")) {
+                return true;
+            }
+        }
+        // skip ignored methods too
+        if(JDTUtils.hasAnnotation(methodBinding, AbstractModelLoader.CEYLON_IGNORE_ANNOTATION)) {
+            return true;
+        }
+        return false;
+    }
+    
     private boolean isDefinedInType(ReferenceBinding superClass) {
         for (MethodBinding inheritedMethod : superClass.methods()) {
+            // skip ignored methods
+            if(ignoreMethodInAncestorSearch(inheritedMethod)) {
+                continue;
+            }
+
             if (methodVerifier.doesMethodOverride(method, inheritedMethod)) {
                 return true;
             }
@@ -220,9 +240,12 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                     || inheritedMethod.isSynthetic()
                     || !Arrays.equals(inheritedMethod.constantPoolName(), method.selector))
                 continue;
-            // skip ignored methods too
-            if(JDTUtils.hasAnnotation(inheritedMethod, AbstractModelLoader.CEYLON_IGNORE_ANNOTATION))
+
+            // skip ignored methods
+            if(ignoreMethodInAncestorSearch(inheritedMethod)) {
                 continue;
+            }
+
             // if it does not override it and has the same name, it's overloading
             if (!methodVerifier.doesMethodOverride(method, inheritedMethod)) {
                 return true;
