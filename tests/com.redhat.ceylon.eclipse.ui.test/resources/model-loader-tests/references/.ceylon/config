@@ -4,3 +4,6 @@ lookup=../declarations/modules
 
 [defaults]
 encoding=UTF-8
+
+[compiler]
+source=src
