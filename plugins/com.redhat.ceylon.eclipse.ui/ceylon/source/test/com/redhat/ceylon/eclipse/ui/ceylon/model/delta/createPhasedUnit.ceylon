@@ -45,7 +45,7 @@ import ceylon.collection {
     ArrayList
 }
 
-PhasedUnit createPhasedUnit(String contents, String path) {
+PhasedUnit? createPhasedUnit(String contents, String path) {
     value repositoryManager = repoManager()
                 .offline(true)
 //                .cwd(cwd)

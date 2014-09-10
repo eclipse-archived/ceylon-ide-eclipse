@@ -4,7 +4,8 @@ import ceylon.collection {
     MutableMap,
     ArrayList,
     MutableList,
-    StringBuilder
+    StringBuilder,
+    TreeSet
 }
 import ceylon.interop.java {
     CeylonIterable,
@@ -25,7 +26,8 @@ import com.redhat.ceylon.compiler.typechecker.model {
     Method,
     ModuleImport,
     Module,
-    Annotated
+    Annotated,
+    ModelAnnotation=Annotation
 }
 import com.redhat.ceylon.compiler.typechecker.tree {
     Ast=Tree,
@@ -38,6 +40,9 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 }
 import ceylon.language.meta.declaration {
     ValueDeclaration
+}
+import com.redhat.ceylon.compiler.typechecker.util {
+    ProducedTypeNamePrinter
 }
 
 "Builds a [[model delta|AbstractDelta]] that describes the model differences 
@@ -196,7 +201,10 @@ class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.Compil
     
     shared actual void registerMemberAddedChange(AstNode newChild) {
         assert(is Ast.Declaration newChild, newChild.declarationModel.toplevel);
-        changes.add(TopLevelDeclarationAdded(newChild.declarationModel.nameAsString, newChild.declarationModel.shared));
+        changes.add(TopLevelDeclarationAdded(
+            newChild.declarationModel.nameAsString, 
+            newChild.declarationModel.shared
+                then visibleOutside else invisibleOutside));
     }
     
     shared actual void registerRemovedChange() {
@@ -227,60 +235,112 @@ class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.Compil
     }
 }
     
-shared alias NodeComparisonListener => Anything(String?, String?, ModelDeclaration, String);
-    
-Set<String> annotationsAsStringSet(Annotated annotated) {
-    return HashSet {
-        for (annotation in CeylonIterable(annotated.annotations))
-            if (! ["shared", "license", "by", "see", "doc"].contains(annotation.name)) annotation.string
-    };
+shared alias NodeComparisonListener => Anything(String?, String?, Ast.Declaration, String);
+
+object producedTypeNamePrinter extends ProducedTypeNamePrinter(true, true, true, true) {
+    printQualifier() => true;
+    printFullyQualified() => true;
 }
 
 Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration newAstDeclaration, NodeComparisonListener? nodeComparisonListener) {
-    Boolean nodesDiffer(AstAbstractNode? oldNode, AstAbstractNode? newNode, String declarationMemberName) {
-        
-        class NodeSigner(AstAbstractNode node) extends VisitorAdaptor() {
-            variable value builder = StringBuilder();
-            shared String signature() {
-                node.visit(this);
-                return builder.string;
-            }
-            
-            shared actual void visitType(Ast.Type node) {
-                builder.append("Type[");
-                if (exists type = node.typeModel) {
-                    builder.append(type.producedTypeName);
-                }
-                builder.append("]");
-            }
 
-            shared actual void visitAny(AstAbstractNode node) {
-                builder.append("``node.nodeType``[");
-                if (node.children.size() > 0) {
-                    super.visitAny(node);
-                } else {
-                    builder.append(node.text);
-                }
-                builder.append("]");
-            }
-            
-            shared actual void visitIdentifier(Ast.Identifier node) {
-                if (is Method method = node.scope,
-                    method.parameter) {
-                    // parameters of a method functional parameter are not 
-                    // part of the externally visible structure of the outer method
-                    return;
-                }
-                
-                visitAny(node);
-            }
+    ModelDeclaration? identifierToDeclaration(Ast.Identifier id) 
+            => id.unit?.getImport(Util.name(id))?.declaration;
+    
+    class NodeSigner(AstAbstractNode node) extends VisitorAdaptor() {
+        variable value builder = StringBuilder();
+        variable Boolean mustSearchForIndentifierDeclaration = false;
+
+        shared String signature() {
+            node.visit(this);
+            return builder.string;
         }
+        
+        void enclose(String title, void action()) {
+            builder.append("``title``[");
+            action();
+            builder.append("]");
+        }
+
+        shared actual void visitType(Ast.Type node) {
+            enclose {
+                title => "Type";
+                void action() {
+                    if (exists type = node.typeModel) {
+                        builder.append(producedTypeNamePrinter.getProducedTypeName(type, node.unit));
+                    }
+                }
+            };
+        }
+        
+        shared actual void visitAny(AstAbstractNode node) {
+            Visitor v = this;
+            enclose {
+                title => node.nodeType;
+                void action() {
+                      node.visitChildren(v);
+                }
+            };
+        }
+        
+        shared actual void visitStaticMemberOrTypeExpression(Ast.StaticMemberOrTypeExpression node) {
+            mustSearchForIndentifierDeclaration = true;
+            super.visitStaticMemberOrTypeExpression(node);
+            mustSearchForIndentifierDeclaration = false;
+        }
+        
+        shared actual void visitIdentifier(Ast.Identifier node) {
+            if (is Method method = node.scope,
+                method.parameter) {
+                // parameters of a method functional parameter are not 
+                // part of the externally visible structure of the outer method
+                return;
+            }
+            enclose {
+                title = node.nodeType;
+                void action() {
+                    variable value identifier = node.text;
+                    if (mustSearchForIndentifierDeclaration) {
+                        mustSearchForIndentifierDeclaration = false;
+                        if (exists decl = identifierToDeclaration(node)) {
+                            identifier = decl.qualifiedNameString;
+                        } else {
+                            if (exists decl = node.unit?.\ipackage?.getMemberOrParameter(node.unit, identifier, null, false)) {
+                                identifier = decl.qualifiedNameString;
+                            }
+                        }
+                    }
+                    builder.append(identifier);
+                }
+            };
+        }
+    }
+
+    String annotationName(Ast.Annotation annot) {
+        assert (is Ast.BaseMemberExpression primary = annot.primary);
+        value identifier = primary.identifier;
+        value declaration = identifierToDeclaration(identifier);
+        if (exists declaration) {
+            return declaration.name;
+        }
+        return Util.name(identifier);
+    }
+    
+    Set<String> annotationsAsStringSet(Ast.AnnotationList annotationList) {
+        return TreeSet {
+            compare = (String x, String y) => x.compare(y);
+            for (annotation in CeylonIterable(annotationList.annotations))
+            if (! ["shared", "license", "by", "see", "doc"].contains(annotationName(annotation))) NodeSigner(annotation).signature()
+        };
+    }
+    
+    Boolean nodesDiffer(AstAbstractNode? oldNode, AstAbstractNode? newNode, String declarationMemberName) {
         Boolean changed;
         if(exists oldNode, exists newNode) {
             String oldSignature = NodeSigner(oldNode).signature();
             String newSignature = NodeSigner(newNode).signature();
             if (exists nodeComparisonListener) {
-                nodeComparisonListener(oldSignature, newSignature, oldAstDeclaration.declarationModel, declarationMemberName);
+                nodeComparisonListener(oldSignature, newSignature, oldAstDeclaration, declarationMemberName);
             }
             changed = oldSignature != newSignature;
         } else {
@@ -294,7 +354,7 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
                 if (exists newNode) {
                     newSignature = NodeSigner(newNode).signature();
                 }
-                nodeComparisonListener(oldSignature, newSignature, oldAstDeclaration.declarationModel, declarationMemberName);
+                nodeComparisonListener(oldSignature, newSignature, oldAstDeclaration, declarationMemberName);
             }
         }
         return changed;
@@ -304,13 +364,13 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
             given NodeType satisfies Ast.Declaration {
         if (is NodeType oldAstDeclaration) {
             if (is NodeType newAstDeclaration) {
-                if (between(oldAstDeclaration, newAstDeclaration)) {
-                    return true;
-                }
+                return between(oldAstDeclaration, newAstDeclaration);
             } else {
+                // There are changes since the declaration type is not the same
                 return true;
             }
         }
+        // Don't search For Changes
         return false;
     }
     
@@ -318,8 +378,13 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
         function between(Ast.Declaration oldNode, Ast.Declaration newNode) {
             assert(exists oldDeclaration = oldNode.declarationModel);
             assert(exists newDeclaration = newNode.declarationModel);
+            value oldAnnotations = annotationsAsStringSet(oldNode.annotationList);
+            value newAnnotations = annotationsAsStringSet(newNode.annotationList);
+            if (exists nodeComparisonListener) {
+                nodeComparisonListener(oldAnnotations.string, newAnnotations.string, oldNode, "annotationList");
+            }
             return any {
-                annotationsAsStringSet(oldDeclaration) != annotationsAsStringSet(newDeclaration),
+                oldAnnotations != newAnnotations,
                 lookForChanges {
                     function between(Ast.TypedDeclaration oldTyped, Ast.TypedDeclaration newTyped) {
                         return any {
@@ -379,23 +444,33 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
                                             function between(Ast.AnyClass oldClass, Ast.AnyClass newClass) {
                                                 return any {
                                                     nodesDiffer(oldClass.extendedType, newClass.extendedType, "extendedType"),
-                                                    nodesDiffer(oldClass.parameterList, newClass.parameterList, "parameterList")
+                                                    nodesDiffer(oldClass.parameterList, newClass.parameterList, "parameterList"),
+                                                    lookForChanges {
+                                                        function between(Ast.ClassDeclaration oldClassDecl, Ast.ClassDeclaration newClassDecl) {
+                                                            return any {
+                                                                nodesDiffer(oldClassDecl.classSpecifier, newClassDecl.classSpecifier, "classSpecifier")
+                                                            };
+                                                        }
+                                                    }
                                                 };
                                             }
                                         },
                                         lookForChanges {
                                             function between(Ast.InterfaceDefinition oldInterface, Ast.InterfaceDefinition newInterface) {
-                                                return oldInterface.\idynamic == newInterface.\idynamic;
+                                                if (exists nodeComparisonListener) {
+                                                    nodeComparisonListener(oldInterface.\idynamic.string, newInterface.\idynamic.string, oldNode, "dynamic");
+                                                }
+                                                return oldInterface.\idynamic != newInterface.\idynamic;
                                             }
                                         }
                                     };
                                 }
                             },
                             lookForChanges {
-                                function between(Ast.TypeParameterDeclaration oldTypeParameter, Ast.TypeParameterDeclaration newTypeParameter) {
+                                function between(Ast.TypeAliasDeclaration oldTypeAliasDeclaration, Ast.TypeAliasDeclaration newTypeAliasDeclaration) {
                                     return any {
-                                        nodesDiffer(oldTypeParameter.typeSpecifier, newTypeParameter.typeSpecifier, "typeSpecifier"),
-                                        nodesDiffer(oldTypeParameter.typeVariance, newTypeParameter.typeVariance, "typeVariance")
+                                        nodesDiffer(oldTypeAliasDeclaration.typeConstraintList, newTypeAliasDeclaration.typeConstraintList, "typeConstraintList"),
+                                        nodesDiffer(oldTypeAliasDeclaration.typeSpecifier, newTypeAliasDeclaration.typeConstraintList, "parameterList")
                                     };
                                 }
                             },
@@ -407,6 +482,14 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
                                     };
                                 }
                             }
+                        };
+                    }
+                },
+                lookForChanges {
+                    function between(Ast.TypeParameterDeclaration oldTypeParameter, Ast.TypeParameterDeclaration newTypeParameter) {
+                        return any {
+                            nodesDiffer(oldTypeParameter.typeSpecifier, newTypeParameter.typeSpecifier, "typeSpecifier"),
+                            nodesDiffer(oldTypeParameter.typeVariance, newTypeParameter.typeVariance, "typeVariance")
                         };
                     }
                 }
@@ -568,7 +651,7 @@ class PackageDescriptorDeltaBuilder(Ast.PackageDescriptor oldNode, Ast.PackageDe
         }
         
         function isShared(Ast.PackageDescriptor descriptor) 
-            => Util.hasAnnotation(descriptor.annotationList, "shared", null);
+            => Util.hasAnnotation(descriptor.annotationList, "shared", descriptor.unit);
         
         value sharedBefore = isShared(oldNode);
         value sharedNow = isShared(newNode);
@@ -617,10 +700,12 @@ class ModuleDescriptorDeltaBuilder(Ast.ModuleDescriptor oldNode, Ast.ModuleDescr
     
     shared actual void registerMemberAddedChange(AstNode newChild) {
         assert(is Ast.ImportModule newChild);
-        changes.add(ModuleImportAdded(Util.formatPath (
-            newChild.importPath.identifiers),
-            Util.hasAnnotation(newChild.annotationList, "shared", null), 
-            newChild.version.text.trim('"'.equals)));
+        changes.add(ModuleImportAdded(
+            Util.formatPath (newChild.importPath.identifiers),
+            newChild.version.text.trim('"'.equals),
+            Util.hasAnnotation(newChild.annotationList, "shared", newChild.unit) 
+                then visibleOutside else invisibleOutside
+            ));
     }
     
     shared actual void registerRemovedChange() {
@@ -685,14 +770,14 @@ class ModuleImportDeclarationDeltaBuilder(Ast.ImportModule oldNode, Ast.ImportMo
         assert(exists newNode);
         
         function isOptional(Ast.ImportModule descriptor) 
-                => Util.hasAnnotation(descriptor.annotationList, "optional", null);
+                => Util.hasAnnotation(descriptor.annotationList, "optional", descriptor.unit);
         if (isOptional(oldNode) != isOptional(newNode)) {
             change = structuralChange;
             return;
         }
 
         function isShared(Ast.ImportModule descriptor) 
-        => Util.hasAnnotation(descriptor.annotationList, "shared", null);
+        => Util.hasAnnotation(descriptor.annotationList, "shared", descriptor.unit);
         
         value sharedBefore = isShared(oldNode);
         value sharedNow = isShared(newNode);

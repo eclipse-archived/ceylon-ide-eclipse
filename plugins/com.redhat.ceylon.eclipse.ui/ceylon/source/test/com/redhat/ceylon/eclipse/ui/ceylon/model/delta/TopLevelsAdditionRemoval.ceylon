@@ -4,7 +4,9 @@ import ceylon.test {
 
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
     removed,
-    TopLevelDeclarationAdded
+    TopLevelDeclarationAdded,
+    visibleOutside,
+    invisibleOutside
 }
 
 import test.com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
@@ -27,8 +29,8 @@ test void addTopLevel() {
         expectedDelta = 
             RegularCompilationUnitDeltaMockup {
                 changedElementString = "Unit[test.ceylon]";
-                changes = { TopLevelDeclarationAdded("test2", true),
-                            TopLevelDeclarationAdded("hidden", false)};
+                changes = { TopLevelDeclarationAdded("test2", visibleOutside),
+                            TopLevelDeclarationAdded("hidden", invisibleOutside)};
                 childrenDeltas = {};
             };
     };
@@ -74,7 +76,7 @@ test void changeToplevelName() {
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
-            changes = { TopLevelDeclarationAdded("testChanged", true) };
+            changes = { TopLevelDeclarationAdded("testChanged", visibleOutside) };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
                     changedElementString = "Method[test]";
