@@ -92,9 +92,20 @@ public class Navigation {
     }
     
     public static void gotoNode(Node node, IProject project) {
+        Unit unit = node.getUnit();
+        int length = Nodes.getLength(node);
+        int startOffset = Nodes.getStartOffset(node);
+        if (unit instanceof IResourceAware) {
+            IFile file = ((IResourceAware) unit).getFileResource();
+            if (file != null) {
+                gotoFile(file, startOffset, length);
+                return;
+            }
+        }
+        
         gotoLocation(getNodePath(node, project), 
-                Nodes.getStartOffset(node), 
-                Nodes.getLength(node));
+                startOffset, 
+                length);
     }
 
     public static void gotoLocation(IPath path, int offset) {
