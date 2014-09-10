@@ -1,24 +1,8 @@
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
-    buildDeltas,
-    DeclarationMemberAdded,
-    removed,
-    NodeComparisonListener,
-    TopLevelDeclarationAdded,
-    MadeVisibleOutsideScope,
-    madeInvisibleOutsideScope,
-    madeVisibleOutsideScope,
-    structuralChange,
-    ModuleImportAdded
+    ...
 }
 import ceylon.test {
-    test,
-    assertEquals
-}
-import ceylon.collection {
-    HashSet
-}
-import com.redhat.ceylon.compiler.typechecker.model {
-    Declaration
+    test
 }
 
 test void addUnsharedModuleImport() {
@@ -33,7 +17,7 @@ test void addUnsharedModuleImport() {
         expectedDelta = 
                 ModuleDescriptorDeltaMockup {
             changedElementString = "Module[dir, 1.0.0]";
-            changes = [ ModuleImportAdded("imported", false, "2.0.0") ];
+            changes = [ ModuleImportAdded("imported", "2.0.0", invisibleOutside) ];
         };
     };
 }
@@ -50,7 +34,7 @@ test void addSharedModuleImport() {
         expectedDelta = 
                 ModuleDescriptorDeltaMockup {
             changedElementString = "Module[dir, 1.0.0]";
-            changes = [ ModuleImportAdded("imported", true, "2.0.0") ];
+            changes = [ ModuleImportAdded("imported", "2.0.0", visibleOutside) ];
         };
     };
 }

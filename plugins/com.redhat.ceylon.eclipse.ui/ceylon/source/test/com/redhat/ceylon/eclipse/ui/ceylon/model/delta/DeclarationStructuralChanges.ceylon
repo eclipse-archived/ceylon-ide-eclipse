@@ -1,7 +1,6 @@
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
-    DeclarationMemberAdded,
-    removed,
-    structuralChange
+    structuralChange,
+    madeInvisibleOutsideScope
 }
 import ceylon.test {
     test
@@ -28,6 +27,7 @@ test void addAnnotation() {
                 }
             };
         };
+        printNodeComparisons = true;
     };
 }
 
@@ -49,6 +49,7 @@ test void ignoredAnnotations() {
             changes = {};
             childrenDeltas = {};
         };
+        printNodeComparisons = true;
     };
 }
 
@@ -73,6 +74,7 @@ test void removeAnnotation() {
                 }
             };
         };
+        printNodeComparisons = true;
     };
 }
 
@@ -91,6 +93,7 @@ test void changeAnnotationOrder() {
             changes = {};
             childrenDeltas = {};
         };
+        printNodeComparisons = true;
     };
 }
 
@@ -115,26 +118,26 @@ test void changeAnnotationParameter() {
                 }
             };
         };
+        printNodeComparisons = true;
     };
 }
 
-
-/*
-test void change() {
+test void addRenamedAnnotation() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
         oldContents = 
-                "shared abstract class Test() {
-                 shared formal List<Set<Integer>> test0<Type>(Boolean functional(Integer arg), Type a);
-                 shared formal Iterable<Float, Null> test();
-                 shared formal void test2();
-                 }";
+                "
+                 native class Test() {
+                 }
+                 ";
         newContents =
-                "shared abstract class Test() {
-                 shared formal List<Set<Integer>> test0<Type>(Boolean functional(Integer arg1), Float|Integer a);
-                 shared formal {<Float> * } test();
-                 shared formal void test3();
-                 }";
+                "
+                 import ceylon.language {
+                     native=sealed
+                 }
+                 native class Test() {
+                 }
+                 ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
@@ -142,23 +145,12 @@ test void change() {
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
                     changedElementString = "Class[Test]";
-                    changes = { DeclarationMemberAdded("test3") };
-                    childrenDeltas = {
-                        NestedDeclarationDeltaMockup {
-                            changedElementString = "Method[test]";
-                            changes = { removed };
-                            childrenDeltas = {};
-                        },
-                        NestedDeclarationDeltaMockup {
-                            changedElementString = "Method[test2]";
-                            changes = { removed };
-                            childrenDeltas = {};
-                        }
-                    };
+                    changes = { structuralChange};
+                    childrenDeltas = {};
                 }
             };
         };
-        expectedNodeComparisons = emptySet;
+        printNodeComparisons = true;
     };
 }
-*/
+

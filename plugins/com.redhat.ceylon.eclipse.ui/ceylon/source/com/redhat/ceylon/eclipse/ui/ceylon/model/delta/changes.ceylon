@@ -77,7 +77,7 @@ shared abstract class MemberAdded(name) of ScopedMemberAdded | DeclarationMember
  or a nested shared declaration. So it's visible in every scope where 
  the parent declaration is visible."
 shared class DeclarationMemberAdded(String name) extends MemberAdded(name) {
-    string => "declarationMemberAdded (`` name ``)";
+    string => "DeclarationMemberAdded (\"`` name ``\")";
     shared actual Boolean equals(Object that) {
         if (is DeclarationMemberAdded that) {
             return name==that.name;
@@ -88,6 +88,14 @@ shared class DeclarationMemberAdded(String name) extends MemberAdded(name) {
     }
 }
 
+shared abstract class ScopeVisibility() of visibleOutside | invisibleOutside {}
+shared object invisibleOutside extends ScopeVisibility() {
+    string => "invisibleOutside";
+}
+shared object visibleOutside extends ScopeVisibility()  {
+    string => "visibleOutside";
+}
+
 "A member has been added to the [[changed element|AbstractDelta.changedElement]], and is visible
  from some other compilation units.
  More precisely :
@@ -96,22 +104,22 @@ shared class DeclarationMemberAdded(String name) extends MemberAdded(name) {
  - a module import (shared or not) that has been
  added to a module descriptor"
 see(`class ModuleImportAdded`, `class TopLevelDeclarationAdded`)
-shared abstract class ScopedMemberAdded(String name, visibleOutsideScope) of ModuleImportAdded | TopLevelDeclarationAdded extends MemberAdded(name) {
+shared abstract class ScopedMemberAdded(String name, visibility) of ModuleImportAdded | TopLevelDeclarationAdded extends MemberAdded(name) {
     "The visibility of the added member outside the [[changed element|AbstractDelta.changedElement]]
      scope, which means : 
      - in referencing modules for a module import,
      - in outide the current package for a top-level declaration"
-    shared Boolean visibleOutsideScope; 
+    shared ScopeVisibility visibility; 
 }
 
 "A top-level declaration (shared or not) has been added
  to the compilation unit"
-shared class TopLevelDeclarationAdded(String name, Boolean visibleOutsideScope)  extends ScopedMemberAdded(name, visibleOutsideScope) {
-    string => "topLevelDeclarationMemberAdded (`` name ``, `` visibleOutsideScope then "visibleOutside" else "invisibleOutside" ``)";
+shared class TopLevelDeclarationAdded(String name, ScopeVisibility visibility)  extends ScopedMemberAdded(name, visibility) {
+    string => "TopLevelDeclarationAdded (\"`` name ``\", `` visibility ``)";
     shared actual Boolean equals(Object that) {
         if (is TopLevelDeclarationAdded that) {
             return name==that.name && 
-                visibleOutsideScope==that.visibleOutsideScope;
+                visibility===that.visibility;
         }
         else {
             return false;
@@ -121,14 +129,14 @@ shared class TopLevelDeclarationAdded(String name, Boolean visibleOutsideScope) 
 
 "A module import (shared or unshared) that has been
  added to a module descriptor"
-shared class ModuleImportAdded(String name, Boolean visibleOutsideScope, version) extends ScopedMemberAdded(name, visibleOutsideScope) {
+shared class ModuleImportAdded(String name, version, ScopeVisibility visibility) extends ScopedMemberAdded(name, visibility) {
     "The version of the added module import"
     shared String version;
-    string => "moduleImportAdded (`` name ``/`` version ``, `` visibleOutsideScope then "visibleOutside" else "invisibleOutside" ``)";
+    string => "moduleImportAdded (\"`` name ``\", \"`` version ``\", `` visibility ``)";
     shared actual Boolean equals(Object that) {
         if (is ModuleImportAdded that) {
             return name==that.name && 
-                visibleOutsideScope==that.visibleOutsideScope && 
+                visibility === that.visibility && 
                 version==that.version;
         }
         else {
