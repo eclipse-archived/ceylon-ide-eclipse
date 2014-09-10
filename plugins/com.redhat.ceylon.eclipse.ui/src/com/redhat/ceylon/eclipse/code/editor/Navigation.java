@@ -39,6 +39,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.IProjectAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -108,6 +109,26 @@ public class Navigation {
                 length);
     }
 
+
+    public static void gotoLocation(Unit unit, int startOffset, int length) {
+        if (unit instanceof IResourceAware) {
+            IFile file = ((IResourceAware) unit).getFileResource();
+            if (file != null) {
+                gotoFile(file, startOffset, length);
+                return;
+            }
+        }
+
+        IPath path;
+        if (unit instanceof IProjectAware) {
+            path = getUnitPath(((IProjectAware) unit).getProject(), unit);
+        } else {
+            path = getUnitPath(null, unit);
+        }
+        gotoLocation(path, startOffset, length);
+    }
+    
+
     public static void gotoLocation(IPath path, int offset) {
         gotoLocation(path, offset, 0);
     }
@@ -162,6 +183,10 @@ public class Navigation {
     public static IPath getNodePath(Node node, IProject project) {
         Unit unit = node.getUnit();
         
+        return getUnitPath(project, unit);
+    }
+
+    public static IPath getUnitPath(IProject project, Unit unit) {
         if (unit instanceof IResourceAware) {
             IFile fileResource = ((IResourceAware) unit).getFileResource();
             if (fileResource!=null) {

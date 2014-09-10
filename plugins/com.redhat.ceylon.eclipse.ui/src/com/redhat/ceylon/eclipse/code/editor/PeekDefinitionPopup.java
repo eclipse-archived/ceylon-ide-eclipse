@@ -317,16 +317,20 @@ final class PeekDefinitionPopup extends PopupDialog
         //CeylonParseController treats files with full paths subtly
         //differently to files with relative paths, so make the
         //path relative
+        IPath pathToCompare = path;
         if (project!=null && 
                 project.getLocation().isPrefixOf(path)) {
-            path = path.makeRelativeTo(project.getLocation());
+            pathToCompare = path.makeRelativeTo(project.getLocation());
         }
         IDocument doc;
-        if (path.equals(epc.getPath())) {
+        if (pathToCompare.equals(epc.getPath())) {
             doc = epc.getDocument();
         }
         else {
-            ei = getEditorInput(path);
+            ei = getEditorInput(referencedNode.getUnit());
+            if (ei == null) {
+                ei = getEditorInput(path);
+            }
             try {
                 docProvider.connect(ei);
                 doc = docProvider.getDocument(ei);

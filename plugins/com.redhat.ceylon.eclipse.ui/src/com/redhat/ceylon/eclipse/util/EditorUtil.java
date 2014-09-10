@@ -74,12 +74,15 @@ import org.eclipse.ui.texteditor.DocumentProviderRegistry;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.editor.SourceArchiveEditorInput;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 
 public class EditorUtil {
     
@@ -395,6 +398,20 @@ public class EditorUtil {
         }
     }
 
+    public static IEditorInput getEditorInput(Unit unit) {
+        if (unit == null) {
+            return null;
+        }
+        if (unit instanceof IResourceAware) {
+            IFile file = ((IResourceAware) unit).getFileResource();
+            if (file != null) {
+                return getEditorInput(file);
+            }
+        }
+        
+        return getEditorInput(Navigation.getUnitPath(null, unit));
+    }
+    
     /**
      * Create the Editor Input appropriate for the given <code>IFileStore</code>.
      * The result is a normal file editor input if the file exists in the
