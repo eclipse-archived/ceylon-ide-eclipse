@@ -19,8 +19,9 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.ProducedTypedReference;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -36,13 +37,19 @@ public class ChangeRefiningTypeProposal {
             Node node) {
         Tree.Declaration decNode = findDeclaration(cu, node);
         if (decNode instanceof Tree.TypedDeclaration) {
-            TypedDeclaration dec = ((Tree.TypedDeclaration) decNode).getDeclarationModel();
+            TypedDeclaration dec =
+                    ((Tree.TypedDeclaration) decNode).getDeclarationModel();
             Declaration rd = dec.getRefinedDeclaration();
             if (rd instanceof TypedDeclaration) {
-                ProducedType supertype = ((TypeDeclaration) dec.getContainer()).getType()
-                        .getSupertype((TypeDeclaration) rd.getContainer());
-                ProducedTypedReference pr = ((TypedDeclaration) rd).getProducedTypedReference(supertype, 
-                        Collections.<ProducedType>emptyList());
+                TypeDeclaration decContainer =
+                        (TypeDeclaration) dec.getContainer();
+                TypeDeclaration rdContainer =
+                        (TypeDeclaration) rd.getContainer();
+                ProducedType supertype =
+                        decContainer.getType().getSupertype(rdContainer);
+                ProducedReference pr =
+                        rd.getProducedReference(supertype, 
+                                Collections.<ProducedType>emptyList());
                 ProducedType t = pr.getType();
                 String type = t.getProducedTypeName(decNode.getUnit());
                 TextFileChange change = new TextFileChange("Change Type", file);
@@ -58,7 +65,8 @@ public class ChangeRefiningTypeProposal {
     static void addChangeRefiningParametersProposal(IFile file,
             CompilationUnit cu, Collection<ICompletionProposal> proposals,
             Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) Nodes.findStatement(cu, node);
+        Tree.Declaration decNode = 
+                (Tree.Declaration) Nodes.findStatement(cu, node);
         Tree.ParameterList list;
         if (decNode instanceof Tree.AnyMethod) {
             list = ((Tree.AnyMethod) decNode).getParameterLists().get(0);
@@ -71,15 +79,30 @@ public class ChangeRefiningTypeProposal {
         }
         Declaration dec = decNode.getDeclarationModel();
         Declaration rd = dec.getRefinedDeclaration();
-        if (rd instanceof Functional) {
-            List<Parameter> rdpl = ((Functional) rd).getParameterLists().get(0).getParameters();
-            List<Parameter> dpl = ((Functional) dec).getParameterLists().get(0).getParameters();
-            ProducedType supertype = ((TypeDeclaration) dec.getContainer()).getType()
-                    .getSupertype((TypeDeclaration) rd.getContainer());
-            ProducedTypedReference pr = ((TypedDeclaration) rd).getProducedTypedReference(supertype, 
-                    Collections.<ProducedType>emptyList());
+        if (rd instanceof Functional && dec instanceof Functional) {
+            List<ParameterList> rdPls = 
+                    ((Functional) rd).getParameterLists();
+            List<ParameterList> decPls = 
+                    ((Functional) dec).getParameterLists();
+            if (rdPls.isEmpty() || decPls.isEmpty()) {
+                return;
+            }
+            List<Parameter> rdpl =
+                    rdPls.get(0).getParameters();
+            List<Parameter> dpl =
+                    decPls.get(0).getParameters();
+            TypeDeclaration decContainer =
+                    (TypeDeclaration) dec.getContainer();
+            TypeDeclaration rdContainer =
+                    (TypeDeclaration) rd.getContainer();
+            ProducedType supertype =
+                    decContainer.getType().getSupertype(rdContainer);
+            ProducedReference pr =
+                    rd.getProducedReference(supertype, 
+                            Collections.<ProducedType>emptyList());
             List<Tree.Parameter> params = list.getParameters();
-            TextFileChange change = new TextFileChange("Fix Refining Parameter List", file);
+            TextFileChange change =
+                    new TextFileChange("Fix Refining Parameter List", file);
             change.setEdit(new MultiTextEdit());
             Unit unit = decNode.getUnit();
             for (int i=0; i<params.size(); i++) {
