@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -13,7 +12,6 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -84,9 +82,7 @@ public class ModuleImportUtil {
             String moduleName, String moduleVersion) {
         int offset = addModuleImports(project, target, 
                 singletonMap(moduleName, moduleVersion));
-        IPath path = getNodePath(findPhasedUnit(project, target)
-                .getCompilationUnit(), project);
-        gotoLocation(path, 
+        gotoLocation(findPhasedUnit(project, target).getUnit(), 
                 offset + moduleName.length() + 
                         getDefaultIndent().length() + 10, 
                 moduleVersion.length());
