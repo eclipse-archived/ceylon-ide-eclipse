@@ -52,7 +52,8 @@ public class ChangeRefiningTypeProposal {
                                 Collections.<ProducedType>emptyList());
                 ProducedType t = pr.getType();
                 String type = t.getProducedTypeName(decNode.getUnit());
-                TextFileChange change = new TextFileChange("Change Type", file);
+                TextFileChange change = 
+                        new TextFileChange("Change Type", file);
                 int offset = node.getStartIndex();
                 int length = node.getStopIndex()-offset+1;
                 change.setEdit(new ReplaceEdit(offset, length, type));
@@ -117,8 +118,11 @@ public class ChangeRefiningTypeProposal {
                 }
                 else {
                     Parameter rdp = rdpl.get(i);
-                    ProducedType pt = pr.getTypedParameter(rdp).getFullType();
-                    ProducedType dt = dpl.get(i).getModel().getTypedReference().getFullType();
+                    ProducedType pt = 
+                            pr.getTypedParameter(rdp).getFullType();
+                    ProducedType dt = 
+                            dpl.get(i).getModel()
+                                .getTypedReference().getFullType();
                     if (!dt.isExactly(pt)) {
                         change.addEdit(new ReplaceEdit(p.getStartIndex(), 
                                 p.getStopIndex()-p.getStartIndex()+1, 
@@ -143,7 +147,7 @@ public class ChangeRefiningTypeProposal {
             }
             if (change.getEdit().hasChildren()) {
                 proposals.add(new CorrectionProposal("Fix refining parameter list", 
-                        change, null));
+                        change, new Region(list.getStartIndex()+1, 0)));
             }
         }
     }
