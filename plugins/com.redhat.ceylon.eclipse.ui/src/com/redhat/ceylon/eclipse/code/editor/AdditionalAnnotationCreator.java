@@ -145,7 +145,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             }
             //now look at the very top of the hierarchy, even if it is an interface
             Declaration refinedDeclaration = declaration.getRefinedDeclaration();
-            if (!declaration.equals(refinedDeclaration)) {
+            if (refinedDeclaration!=null &&
+                    !declaration.equals(refinedDeclaration)) {
                 List<Declaration> directlyInheritedMembers = 
                         getInterveningRefinements(declaration.getName(), signature,
                                 refinedDeclaration,
