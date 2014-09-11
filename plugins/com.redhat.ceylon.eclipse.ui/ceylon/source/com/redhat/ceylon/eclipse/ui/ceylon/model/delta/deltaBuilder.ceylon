@@ -25,9 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.model {
     ModelDeclaration=Declaration,
     Method,
     ModuleImport,
-    Module,
-    Annotated,
-    ModelAnnotation=Annotation
+    Module
 }
 import com.redhat.ceylon.compiler.typechecker.tree {
     Ast=Tree,
@@ -37,9 +35,6 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Util {
         formatPath
     }
-}
-import ceylon.language.meta.declaration {
-    ValueDeclaration
 }
 import com.redhat.ceylon.compiler.typechecker.util {
     ProducedTypeNamePrinter
