@@ -1,0 +1,74 @@
+<project name="Ceylon IDE ceylon module" default="compile">
+    <property name="dist.root.dir"
+        value="${basedir}/../../../../ceylon-dist" />
+    <property name="dist.bin.dir"
+        value="${dist.root.dir}/dist/bin" />
+    <property name="dist.repo.dir"
+        value="${dist.root.dir}/dist/repo" />
+    <property name="dist.libs.dir"
+        value="${dist.root.dir}/dist/lib" />
+    <property name="ceylon.ant.lib"
+        value="${dist.libs.dir}/ceylon-ant.jar" />
+    <property name="ceylon.verbosity"
+        value="false" />
+    <property name="ceylon.executable"
+        value="${dist.bin.dir}/ceylon" />
+
+    <property name="source.dir"
+        value="${basedir}/source" />
+
+    <property name="modules.dir"
+        value="${basedir}/modules" />
+
+    <path id="ant-tasks">
+        <pathelement location="${ceylon.ant.lib}" />
+    </path>
+
+    <typedef
+        resource="com/redhat/ceylon/ant/antlib.xml"
+        classpathref="ant-tasks" />
+
+    <target name="clean">
+        <delete dir="${modules.dir}"/>
+        <delete dir="${basedir}/./exploded"/>
+    </target>
+    
+    <target name="compile">
+        <ceylon-compile
+            src="${source.dir}"
+            out="${modules.dir}"
+            executable="${ceylon.executable}"
+            verbose="${ceylon.verbosity}"
+            encoding="UTF-8" pack200="true">
+            
+            <moduleset>
+                <module name="com.redhat.ceylon.eclipse.ui" />
+            </moduleset>
+        </ceylon-compile>
+    </target>
+    <target name="compile-tests" depends="clean">
+        <ceylon-compile
+            src="${source.dir}"
+            out="${modules.dir}"
+            executable="${ceylon.executable}"
+            verbose="${ceylon.verbosity}"
+            encoding="UTF-8" pack200="true">
+            
+            <moduleset>
+                <module name="com.redhat.ceylon.eclipse.ui" />
+                <module name="test.com.redhat.ceylon.eclipse.ui" />
+            </moduleset>
+        </ceylon-compile>
+    </target>
+    <target name="test" depends="compile-tests">
+        <ceylon-test
+            executable="${ceylon.executable}"
+            verbose="${ceylon.verbosity}">
+            
+            <moduleset>
+                <module name="com.redhat.ceylon.eclipse.ui" />
+                <module name="test.com.redhat.ceylon.eclipse.ui" />
+            </moduleset>
+        </ceylon-test>
+    </target>
+</project>
