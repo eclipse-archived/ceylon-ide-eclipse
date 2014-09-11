@@ -47,13 +47,15 @@ Require-Bundle: com.github.rjeschke.txtmark;bundle-version="0.11.0",
  org.eclipse.ui.navigator,
  org.eclipse.ui.navigator.resources,
  org.eclipse.ui.views.properties.tabbed,
- ceylon.formatter;bundle-version="1.1.0"
+ ceylon.formatter;bundle-version="1.1.0",
+ ceylon.collection;bundle-version="1.1.0",
+ ceylon.interop.java;bundle-version="1.1.0"
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlugin"
 Bundle-ClassPath: ./,
  lib/zip4j_1.3.2.jar,
  lib/jgrapht-jdk1.6.jar,
- ceylon/modules/com/redhat/ceylon/eclipse/ui/ceylon/1.0.0/com.redhat.ceylon.eclipse.ui.ceylon-1.0.0.car
+ ceylon/modules/com/redhat/ceylon/eclipse/ui/1.1.0/com.redhat.ceylon.eclipse.ui-1.1.0.car
 Import-Package: org.eclipse.help
 Export-Package: com.redhat.ceylon.eclipse.code.complete;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.code.correct;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
