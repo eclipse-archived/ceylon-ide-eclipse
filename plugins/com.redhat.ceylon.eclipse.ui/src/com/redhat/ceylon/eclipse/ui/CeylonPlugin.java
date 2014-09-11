@@ -36,6 +36,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.redhat.ceylon.common.Versions;
+import com.redhat.ceylon.dist.osgi.Activator;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 
 
@@ -109,6 +110,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         addResourceFilterPreference();
         registerProjectOpenCloseListener();
         CeylonEncodingSynchronizer.getInstance().install();
+        Activator.loadBundleAsModule(bundleContext.getBundle());
     }
     
     @Override
