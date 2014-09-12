@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManag
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchives;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
@@ -85,6 +86,11 @@ import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.PackageFragment;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.texteditor.DocumentProviderRegistry;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.redhat.ceylon.cmr.api.ArtifactCallback;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
@@ -133,6 +139,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
@@ -147,18 +154,24 @@ import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JavaUnit;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
+import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.CompilationUnitDelta;
+import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.buildDeltas_;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
+import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskEvent.Kind;
@@ -1167,13 +1180,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         Collection<IFile> filesToCompile = new HashSet<IFile>();
         if (!changedFiles.isEmpty()) {
             Collection<IFile> changeDependents= new HashSet<IFile>();
+            Map<IFile, CompilationUnitDelta> analyzedFiles= new HashMap<IFile, CompilationUnitDelta>();
             changeDependents.addAll(changedFiles);
        
             boolean changed = false;
             do {
                 Collection<IFile> additions= new HashSet<IFile>();
                 for (Iterator<IFile> iter=changeDependents.iterator(); iter.hasNext();) {
-                    IFile srcFile= iter.next();
+                    final IFile srcFile= iter.next();
+                    if (analyzedFiles.containsKey(srcFile)) {
+                        continue;
+                    }
                     IProject currentFileProject = srcFile.getProject();
                     TypeChecker currentFileTypeChecker = null;
                     if (currentFileProject == project) {
@@ -1185,7 +1202,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     
                     if (! CeylonBuilder.isInSourceFolder(srcFile)) {
                         // Don't search dependencies inside resource folders.
+                        analyzedFiles.put(srcFile, null);
                         continue;
+                    }
+                    
+                    IResourceAware unit = getUnit(srcFile);
+                    if (unit instanceof ProjectSourceFile) {
+                        ProjectSourceFile projectSourceFile = (ProjectSourceFile) unit;
+                        if (projectSourceFile.getDependentsOf().size() > 0) {
+                            CompilationUnitDelta delta = projectSourceFile.buildDeltaAgainstModel();
+                            if (delta.getChanges().getSize() == 0
+                                    && delta.getChildrenDeltas().getSize() == 0) {
+                                    continue;
+                                }
+                        }
                     }
                     
                     Set<String> filesDependingOn = getDependentsOf(srcFile,
@@ -1215,7 +1245,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         }
                     }
                 }
-                changed = changeDependents.addAll(additions);
+                changed = changeDependents.addAll(additions) && false;
             } while (changed);
    
             if (monitor.isCanceled()) {
