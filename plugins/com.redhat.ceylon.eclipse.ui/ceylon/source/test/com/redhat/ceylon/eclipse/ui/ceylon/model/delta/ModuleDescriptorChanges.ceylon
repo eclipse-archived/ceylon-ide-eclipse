@@ -9,11 +9,15 @@ test void addUnsharedModuleImport() {
     comparePhasedUnits {
         path = "dir/module.ceylon";
         oldContents = 
-                "module dir \"1.0.0\" {}";
+                "
+                 module dir \"1.0.0\" {}
+                 ";
         newContents =
-                "module dir \"1.0.0\" {
-                     import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     import imported \"2.0.0\";
+                 }
+                 ";
         expectedDelta = 
                 ModuleDescriptorDeltaMockup {
             changedElementString = "Module[dir, 1.0.0]";
@@ -26,11 +30,15 @@ test void addSharedModuleImport() {
     comparePhasedUnits {
         path = "dir/module.ceylon";
         oldContents = 
-                "module dir \"1.0.0\" {}";
+                "
+                 module dir \"1.0.0\" {}
+                 ";
         newContents =
-                "module dir \"1.0.0\" {
-                     shared import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     shared import imported \"2.0.0\";
+                 }
+                 ";
         expectedDelta = 
                 ModuleDescriptorDeltaMockup {
             changedElementString = "Module[dir, 1.0.0]";
@@ -43,13 +51,17 @@ test void makeModuleImportShared() {
     comparePhasedUnits {
         path = "dir/module.ceylon";
         oldContents = 
-                "module dir \"1.0.0\" {
-                     import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     import imported \"2.0.0\";
+                 }
+                 ";
         newContents =
-                "module dir \"1.0.0\" {
-                     shared import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     shared import imported \"2.0.0\";
+                 }
+                 ";
         expectedDelta = 
                 ModuleDescriptorDeltaMockup {
             changedElementString = "Module[dir, 1.0.0]";
@@ -68,13 +80,17 @@ test void makeModuleImportUnshared() {
     comparePhasedUnits {
         path = "dir/module.ceylon";
         oldContents = 
-                "module dir \"1.0.0\" {
-                     shared import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     shared import imported \"2.0.0\";
+                 }
+                 ";
         newContents =
-                "module dir \"1.0.0\" {
-                     import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     import imported \"2.0.0\";
+                 }
+                 ";
         expectedDelta = 
                 ModuleDescriptorDeltaMockup {
             changedElementString = "Module[dir, 1.0.0]";
@@ -93,13 +109,17 @@ test void makeModuleImportOptional() {
     comparePhasedUnits {
         path = "dir/module.ceylon";
         oldContents = 
-                "module dir \"1.0.0\" {
-                     import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     import imported \"2.0.0\";
+                 }
+                 ";
         newContents =
-                "module dir \"1.0.0\" {
-                     optional import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     optional import imported \"2.0.0\";
+                 }
+                 ";
         expectedDelta = 
                 ModuleDescriptorDeltaMockup {
             changedElementString = "Module[dir, 1.0.0]";
@@ -118,13 +138,17 @@ test void makeModuleImportMandatory() {
     comparePhasedUnits {
         path = "dir/module.ceylon";
         oldContents = 
-                "module dir \"1.0.0\" {
-                     optional import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     optional import imported \"2.0.0\";
+                 }
+                 ";
         newContents =
-                "module dir \"1.0.0\" {
-                     import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     import imported \"2.0.0\";
+                 }
+                 ";
         expectedDelta = 
                 ModuleDescriptorDeltaMockup {
             changedElementString = "Module[dir, 1.0.0]";
@@ -143,11 +167,15 @@ test void removeModuleImport() {
     comparePhasedUnits {
         path = "dir/module.ceylon";
         oldContents = 
-                "module dir \"1.0.0\" {
-                     import imported \"2.0.0\"
-                 }";
+                "
+                 module dir \"1.0.0\" {
+                     import imported \"2.0.0\";
+                 }
+                 ";
         newContents =
-                "module dir \"1.0.0\" {}";
+                "
+                 module dir \"1.0.0\" {}
+                 ";
         expectedDelta = 
                 ModuleDescriptorDeltaMockup {
             changedElementString = "Module[dir, 1.0.0]";
