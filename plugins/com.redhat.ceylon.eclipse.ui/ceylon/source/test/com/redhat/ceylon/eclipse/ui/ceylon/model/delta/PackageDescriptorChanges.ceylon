@@ -1,23 +1,10 @@
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
-    buildDeltas,
-    DeclarationMemberAdded,
-    removed,
-    NodeComparisonListener,
-    TopLevelDeclarationAdded,
-    MadeVisibleOutsideScope,
     madeInvisibleOutsideScope,
     madeVisibleOutsideScope,
     structuralChange
 }
 import ceylon.test {
-    test,
-    assertEquals
-}
-import ceylon.collection {
-    HashSet
-}
-import com.redhat.ceylon.compiler.typechecker.model {
-    Declaration
+    test
 }
 import test.com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
     comparePhasedUnits,

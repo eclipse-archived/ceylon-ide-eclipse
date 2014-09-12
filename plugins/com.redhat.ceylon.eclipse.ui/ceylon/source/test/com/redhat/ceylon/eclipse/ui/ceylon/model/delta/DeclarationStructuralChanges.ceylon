@@ -1,6 +1,5 @@
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
-    structuralChange,
-    madeInvisibleOutsideScope
+    structuralChange
 }
 import ceylon.test {
     test
