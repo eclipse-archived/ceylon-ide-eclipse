@@ -48,11 +48,11 @@ test void removeDeclarationMember() {
         oldContents = 
                 "shared abstract class Test() {
                     shared formal void test();
-                    shared formal void visible()
+                    shared formal void visible();
                  }";
         newContents =
                 "shared abstract class Test() {
-                     formal void visible()
+                     formal void visible();
                  }";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -89,7 +89,7 @@ test void changeDeclarationMemberName() {
                  }";
         newContents =
                 "shared abstract class Test() {
-                     shared formal void testChanged()
+                     shared formal void testChanged();
                  }";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
