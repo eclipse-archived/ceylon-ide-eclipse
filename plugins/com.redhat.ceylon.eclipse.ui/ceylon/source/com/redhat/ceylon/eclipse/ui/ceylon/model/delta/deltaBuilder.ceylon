@@ -230,14 +230,17 @@ class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.Compil
     }
 }
     
-shared alias NodeComparisonListener => Anything(String?, String?, Ast.Declaration, String);
+shared interface NodeComparisonListener {
+        shared formal void comparedNodes(String? oldNode, String? newNode, Ast.Declaration declaration, String attribute);
+        shared formal void comparedDeclaration(Ast.Declaration declaration, Boolean hasStructuralChanges);
+    }
 
 object producedTypeNamePrinter extends ProducedTypeNamePrinter(true, true, true, true) {
     printQualifier() => true;
     printFullyQualified() => true;
 }
 
-Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration newAstDeclaration, NodeComparisonListener? nodeComparisonListener) {
+Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration newAstDeclaration, NodeComparisonListener? listener) {
 
     ModelDeclaration? identifierToDeclaration(Ast.Identifier id) 
             => id.unit?.getImport(Util.name(id))?.declaration;
@@ -334,13 +337,11 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
         if(exists oldNode, exists newNode) {
             String oldSignature = NodeSigner(oldNode).signature();
             String newSignature = NodeSigner(newNode).signature();
-            if (exists nodeComparisonListener) {
-                nodeComparisonListener(oldSignature, newSignature, oldAstDeclaration, declarationMemberName);
-            }
+            listener?.comparedNodes(oldSignature, newSignature, oldAstDeclaration, declarationMemberName);
             changed = oldSignature != newSignature;
         } else {
             changed = !(oldNode is Null && newNode is Null);
-            if (exists nodeComparisonListener) {
+            if (exists listener) {
                 variable String? oldSignature = null;
                 variable String? newSignature = null;
                 if (exists oldNode) {
@@ -349,7 +350,7 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
                 if (exists newNode) {
                     newSignature = NodeSigner(newNode).signature();
                 }
-                nodeComparisonListener(oldSignature, newSignature, oldAstDeclaration, declarationMemberName);
+                listener.comparedNodes(oldSignature, newSignature, oldAstDeclaration, declarationMemberName);
             }
         }
         return changed;
@@ -369,15 +370,13 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
         return false;
     }
     
-    return lookForChanges {
+    Boolean hasChanges = lookForChanges {
         function between(Ast.Declaration oldNode, Ast.Declaration newNode) {
             assert(exists oldDeclaration = oldNode.declarationModel);
             assert(exists newDeclaration = newNode.declarationModel);
             value oldAnnotations = annotationsAsStringSet(oldNode.annotationList);
             value newAnnotations = annotationsAsStringSet(newNode.annotationList);
-            if (exists nodeComparisonListener) {
-                nodeComparisonListener(oldAnnotations.string, newAnnotations.string, oldNode, "annotationList");
-            }
+            listener?.comparedNodes(oldAnnotations.string, newAnnotations.string, oldNode, "annotationList");
             return any {
                 oldAnnotations != newAnnotations,
                 lookForChanges {
@@ -452,9 +451,7 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
                                         },
                                         lookForChanges {
                                             function between(Ast.InterfaceDefinition oldInterface, Ast.InterfaceDefinition newInterface) {
-                                                if (exists nodeComparisonListener) {
-                                                    nodeComparisonListener(oldInterface.\idynamic.string, newInterface.\idynamic.string, oldNode, "dynamic");
-                                                }
+                                                listener?.comparedNodes(oldInterface.\idynamic.string, newInterface.\idynamic.string, oldNode, "dynamic");
                                                 return oldInterface.\idynamic != newInterface.\idynamic;
                                             }
                                         }
@@ -491,6 +488,9 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
             };
         }
     };
+    
+    listener?.comparedDeclaration(oldAstDeclaration, hasChanges);
+    return hasChanges;
 }
 
 abstract class DeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration? newNode, NodeComparisonListener? nodeComparisonListener)
