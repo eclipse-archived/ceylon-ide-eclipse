@@ -325,29 +325,34 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         // special handling for doc links
         boolean inDoc = isAnnotationStringLiteral(adjustedToken) &&
                 offset>adjustedToken.getStartIndex() &&
-                offset<adjustedToken.getStopIndex();
-        if (inDoc && node instanceof Tree.DocLink) {
-            Tree.DocLink docLink = (Tree.DocLink) node;
-            int offsetInLink = offset-docLink.getStartIndex();
-            String text = docLink.getToken().getText();
-            int bar = text.indexOf('|')+1;
-            if (offsetInLink<bar) {
+                offset<=adjustedToken.getStopIndex();
+        if (inDoc) {
+            if (node instanceof Tree.DocLink) {
+                Tree.DocLink docLink = (Tree.DocLink) node;
+                int offsetInLink = offset-docLink.getStartIndex();
+                String text = docLink.getToken().getText();
+                int bar = text.indexOf('|')+1;
+                if (offsetInLink<bar) {
+                    return null;
+                }
+                qualified = text.substring(bar, offsetInLink);
+                int dcolon = qualified.indexOf("::");
+                String pkg = null;
+                if (dcolon>=0) {
+                    pkg = qualified.substring(0, dcolon+2);
+                    qualified = qualified.substring(dcolon+2);
+                }
+                int dot = qualified.indexOf('.')+1;
+                isMemberOp = dot>0;
+                prefix = qualified.substring(dot);
+                if (dcolon>=0) {
+                    qualified = pkg + qualified;
+                }
+                fullPrefix = prefix;
+            }
+            else {
                 return null;
             }
-            qualified = text.substring(bar, offsetInLink);
-            int dcolon = qualified.indexOf("::");
-            String pkg = null;
-            if (dcolon>=0) {
-                pkg = qualified.substring(0, dcolon+2);
-                qualified = qualified.substring(dcolon+2);
-            }
-            int dot = qualified.indexOf('.')+1;
-            isMemberOp = dot>0;
-            prefix = qualified.substring(dot);
-            if (dcolon>=0) {
-                qualified = pkg + qualified;
-            }
-            fullPrefix = prefix;
         }
         
         Scope scope = getRealScope(node, rn);
