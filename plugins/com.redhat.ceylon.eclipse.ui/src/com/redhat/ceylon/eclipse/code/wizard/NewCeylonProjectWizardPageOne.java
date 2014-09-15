@@ -1469,6 +1469,11 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         return compileJs;
     }
 
+    private boolean astAwareIncrementalBuildsEnabled = true;
+    public boolean areAstAwareIncrementalBuildsEnabled() {
+        return astAwareIncrementalBuildsEnabled;
+    }
+
     //TODO: fix copy/paste!
     void addCompilerSettings(Composite parent) {
         Group group = new Group(parent, SWT.NONE);
