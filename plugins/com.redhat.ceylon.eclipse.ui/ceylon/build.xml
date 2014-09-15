@@ -46,7 +46,8 @@
             </moduleset>
         </ceylon-compile>
     </target>
-    <target name="compile-tests" depends="clean">
+    <target name="compile-tests" unless="${skipTests}">
+        <antcall target="clean"/>
         <ceylon-compile
             src="${source.dir}"
             out="${modules.dir}"
@@ -60,7 +61,7 @@
             </moduleset>
         </ceylon-compile>
     </target>
-    <target name="test" depends="compile-tests">
+    <target name="test" depends="compile-tests" unless="${skipTests}">
         <ceylon-test
             executable="${ceylon.executable}"
             verbose="${ceylon.verbosity}">
