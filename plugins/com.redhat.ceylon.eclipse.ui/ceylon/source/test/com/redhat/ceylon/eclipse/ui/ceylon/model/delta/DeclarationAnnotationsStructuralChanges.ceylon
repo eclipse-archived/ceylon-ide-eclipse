@@ -26,7 +26,6 @@ test void addAnnotation() {
                 }
             };
         };
-        printNodeComparisons = true;
     };
 }
 
@@ -48,7 +47,6 @@ test void ignoredAnnotations() {
             changes = {};
             childrenDeltas = {};
         };
-        printNodeComparisons = true;
     };
 }
 
@@ -73,7 +71,6 @@ test void removeAnnotation() {
                 }
             };
         };
-        printNodeComparisons = true;
     };
 }
 
@@ -92,7 +89,6 @@ test void changeAnnotationOrder() {
             changes = {};
             childrenDeltas = {};
         };
-        printNodeComparisons = true;
     };
 }
 
@@ -117,7 +113,6 @@ test void changeAnnotationParameter() {
                 }
             };
         };
-        printNodeComparisons = true;
     };
 }
 
@@ -149,7 +144,6 @@ test void addAliasedAnnotation() {
                 }
             };
         };
-        printNodeComparisons = true;
     };
 }
 

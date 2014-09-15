@@ -291,3 +291,34 @@ test void intersectionOrderChanged() {
         }
     };
 }
+
+test void defaultedTypeAdded() {
+    comparePhasedUnits {
+        path = "dir/test.ceylon";
+        oldContents = 
+                "
+                 shared formal [Integer, Integer] test();
+                 ";
+        newContents =
+                "
+                 shared formal [Integer, Integer=] test();
+                 ";
+        expectedDelta = 
+                RegularCompilationUnitDeltaMockup {
+            changedElementString = "Unit[test.ceylon]";
+            changes = { };
+            childrenDeltas = {
+                TopLevelDeclarationDeltaMockup {
+                    changedElementString = "Method[test]";
+                    changes = { structuralChange };
+                    childrenDeltas = {};
+                }
+            };
+        };
+        void doWithNodeComparisons({NodeComparison*} comparisons) {
+            assert(comparisons.contains(["dir::test", "type", 
+                "Type[[ceylon.language::Integer, ceylon.language::Integer]]"
+                        -> "Type[[ceylon.language::Integer, ceylon.language::Integer=]]"]));
+        }
+    };
+}
