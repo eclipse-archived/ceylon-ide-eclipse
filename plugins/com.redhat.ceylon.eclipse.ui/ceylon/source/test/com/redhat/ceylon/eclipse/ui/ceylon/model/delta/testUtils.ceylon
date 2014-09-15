@@ -102,7 +102,7 @@ object declarationFieldFilter {
 void comparePhasedUnits(String path, String oldContents, String newContents, 
                         CompilationUnitDeltaMockup expectedDelta,
                         Boolean printNodeComparisons = false, 
-                        Set<[String,String, String->String]>? expectedNodeComparisons = null) {
+                        Anything({[String,String, String->String]*})? doWithNodeComparisons = null) {
     value oldPasedUnit = createPhasedUnit(oldContents, path);
     assert(exists oldPasedUnit);
     assertEquals(CeylonIterable(oldPasedUnit.compilationUnit.errors)
@@ -156,12 +156,13 @@ void comparePhasedUnits(String path, String oldContents, String newContents,
     }
     
     value delta = buildDeltas(oldPasedUnit, newPasedUnit, listener);
-    assertEquals(delta, expectedDelta);
-    
+
     if (printNodeComparisons) {
         print("Node signature comparisons for ``path`` :");
         print(nodeComparisons);
     }
+    assertEquals(delta, expectedDelta);
+    
     if (checkTestCompleteness) {
         for (name -> decl in checkedDeclarations) {
             value requiredChecks = HashSet {
@@ -175,8 +176,8 @@ void comparePhasedUnits(String path, String oldContents, String newContents,
         }
     }
 
-    if (exists expectedNodeComparisons) {
-        assertEquals(nodeComparisons, expectedNodeComparisons);
+    if (exists doWithNodeComparisons) {
+        doWithNodeComparisons(nodeComparisons);
     }
 }
 
