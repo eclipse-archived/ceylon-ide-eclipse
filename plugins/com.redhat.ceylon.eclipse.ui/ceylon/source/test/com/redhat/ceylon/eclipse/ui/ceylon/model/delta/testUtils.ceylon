@@ -116,6 +116,16 @@ void comparePhasedUnits(String path, String oldContents, String newContents,
     value memberCheckedByDeclaration = naturalOrderTreeMap<String, ArrayList<String>>{};
     value checkedDeclarations = naturalOrderTreeMap<String, Ast.Declaration>{};
     
+    Boolean checkTestCompleteness;
+    if (expectedDelta.changes.empty && expectedDelta.childrenDeltas.empty) {
+        // we are expecting structural equivalence between the 2 AST
+        // => check the completeness of the test (whether all the nodes of the various declarations have been correctly been compared
+        checkTestCompleteness = true;
+    } else {
+        // test completeness has no meaning since checks are stop at the first encountered node difference
+        checkTestCompleteness = false;
+    }
+    
     object listener satisfies NodeComparisonListener {
         shared actual void comparedDeclaration(Ast.Declaration declaration, Boolean hasStructuralChanges) {
             if (hasStructuralChanges) {
@@ -152,16 +162,17 @@ void comparePhasedUnits(String path, String oldContents, String newContents,
         print("Node signature comparisons for ``path`` :");
         print(nodeComparisons);
     }
-    
-    for (name -> decl in checkedDeclarations) {
-        value requiredChecks = HashSet {
-            for (attr in type(decl).declaration.memberDeclarations<ValueDeclaration>()) 
+    if (checkTestCompleteness) {
+        for (name -> decl in checkedDeclarations) {
+            value requiredChecks = HashSet {
+                for (attr in type(decl).declaration.memberDeclarations<ValueDeclaration>()) 
                 if (!declarationFieldFilter.isIgnored(attr)) attr.name
-        };
-        value performedChecks = memberCheckedByDeclaration.get(name);
-        assert(exists performedChecks);
-        value missingChecks = requiredChecks.complement(HashSet { *performedChecks });
-        assertEquals(missingChecks.sequence(), empty, "Some members of the declaration ' ``name`` ' were not compared.");
+            };
+            value performedChecks = memberCheckedByDeclaration.get(name);
+            assert(exists performedChecks);
+            value missingChecks = requiredChecks.complement(HashSet { *performedChecks });
+            assertEquals(missingChecks.sequence(), empty, "Some members of the declaration ' ``name`` ' were not compared.");
+        }
     }
 
     if (exists expectedNodeComparisons) {
