@@ -262,7 +262,7 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
 
         shared actual void visitType(Ast.Type node) {
             enclose {
-                title => "Type";
+                title => (node is Ast.StaticType) then "Type" else node.nodeType;
                 void action() {
                     if (exists type = node.typeModel) {
                         builder.append(producedTypeNamePrinter.getProducedTypeName(type, node.unit));
@@ -289,7 +289,8 @@ Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration 
         
         shared actual void visitIdentifier(Ast.Identifier node) {
             if (is Method method = node.scope,
-                method.parameter) {
+                method.parameter,
+                method.nameAsString != node.text) {
                 // parameters of a method functional parameter are not 
                 // part of the externally visible structure of the outer method
                 return;
