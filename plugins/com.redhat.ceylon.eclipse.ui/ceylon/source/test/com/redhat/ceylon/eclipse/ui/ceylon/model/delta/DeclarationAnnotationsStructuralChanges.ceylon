@@ -121,7 +121,7 @@ test void changeAnnotationParameter() {
     };
 }
 
-test void addRenamedAnnotation() {
+test void addAliasedAnnotation() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
         oldContents = 
