@@ -182,7 +182,6 @@ test void methodFunctionalParameterNameChanged() {
                 }
             };
         };
-        printNodeComparisons = true;
         void doWithNodeComparisons({NodeComparison*} comparisons) {
             assert(comparisons.contains(["dir::test", "parameterLists", 
                 "ParameterList[FunctionalParameterDeclaration[MethodDeclaration[AnnotationList[]Identifier[functionalParameter]VoidModifier[ceylon.language::Anything]" 
@@ -217,7 +216,6 @@ test void methodEquivalentFunctionalParameter() {
                 }
             };
         };
-        printNodeComparisons = true;
         void doWithNodeComparisons({NodeComparison*} comparisons) {
             assert(comparisons.contains(["dir::test", "parameterLists", 
                 "ParameterList[FunctionalParameterDeclaration[MethodDeclaration[AnnotationList[]Identifier[functionalParameter]Type[ceylon.language::Anything]" 
