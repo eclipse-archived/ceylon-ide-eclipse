@@ -1179,8 +1179,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             PhasedUnits phasedUnits, IProgressMonitor monitor) {
         Collection<IFile> filesToCompile = new HashSet<IFile>();
         if (!changedFiles.isEmpty()) {
+            boolean astAwareIncrementalBuild = areAstAwareIncrementalBuildsEnabled(project);
             Collection<IFile> changeDependents= new HashSet<IFile>();
-            Map<IFile, CompilationUnitDelta> analyzedFiles= new HashMap<IFile, CompilationUnitDelta>();
+            Set<IFile> analyzedFiles= new HashSet<IFile>();
             changeDependents.addAll(changedFiles);
        
             boolean changed = false;
@@ -1188,9 +1189,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 Collection<IFile> additions= new HashSet<IFile>();
                 for (Iterator<IFile> iter=changeDependents.iterator(); iter.hasNext();) {
                     final IFile srcFile= iter.next();
-                    if (analyzedFiles.containsKey(srcFile)) {
+                    if (analyzedFiles.contains(srcFile)) {
                         continue;
                     }
+                    analyzedFiles.add(srcFile);
                     IProject currentFileProject = srcFile.getProject();
                     TypeChecker currentFileTypeChecker = null;
                     if (currentFileProject == project) {
@@ -1202,19 +1204,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     
                     if (! CeylonBuilder.isInSourceFolder(srcFile)) {
                         // Don't search dependencies inside resource folders.
-                        analyzedFiles.put(srcFile, null);
                         continue;
                     }
                     
-                    IResourceAware unit = getUnit(srcFile);
-                    if (unit instanceof ProjectSourceFile) {
-                        ProjectSourceFile projectSourceFile = (ProjectSourceFile) unit;
-                        if (projectSourceFile.getDependentsOf().size() > 0) {
-                            CompilationUnitDelta delta = projectSourceFile.buildDeltaAgainstModel();
-                            if (delta.getChanges().getSize() == 0
-                                    && delta.getChildrenDeltas().getSize() == 0) {
-                                    continue;
-                                }
+                    if (astAwareIncrementalBuild) {
+                        IResourceAware unit = getUnit(srcFile);
+                        if (unit instanceof ProjectSourceFile) {
+                            ProjectSourceFile projectSourceFile = (ProjectSourceFile) unit;
+                            if (projectSourceFile.getDependentsOf().size() > 0) {
+                                CompilationUnitDelta delta = projectSourceFile.buildDeltaAgainstModel();
+                                if (delta.getChanges().getSize() == 0
+                                        && delta.getChildrenDeltas().getSize() == 0) {
+                                        continue;
+                                    }
+                            }
                         }
                     }
                     
@@ -1245,7 +1248,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         }
                     }
                 }
-                changed = changeDependents.addAll(additions) && false;
+                changed = changeDependents.addAll(additions) && !astAwareIncrementalBuild;
             } while (changed);
    
             if (monitor.isCanceled()) {
@@ -2537,6 +2540,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         Map<String,String> args = getBuilderArgs(project);
         return args.get("explodeModules")!=null ||
                 args.get("enableJdtClasses")!=null;
+    }
+
+    public static boolean areAstAwareIncrementalBuildsEnabled(IProject project) {
+        return CeylonNature.isEnabled(project) && getBuilderArgs(project).get("astAwareIncrementalBuilds")==null;
     }
 
     public static boolean compileWithJDTModel = true;

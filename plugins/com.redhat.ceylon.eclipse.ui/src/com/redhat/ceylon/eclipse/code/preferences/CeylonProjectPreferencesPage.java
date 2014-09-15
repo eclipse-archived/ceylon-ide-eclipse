@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.areAstAwareIncrementalBuildsEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
@@ -35,15 +36,17 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class CeylonProjectPreferencesPage extends PropertyPage {
 
-    private boolean explodeModules;
+    private boolean explodeModules = true;
     private boolean showCompilerWarnings = true;
     private boolean builderEnabled = false;
     private boolean backendJs = false;
     private boolean backendJava = false;
+    private boolean astAwareIncrementalBuids = true;
     private Boolean offlineOption = null;
 
     private Button showWarnings;
     private Button compileToJs;
+    private Button astAwareIncrementalBuidsButton;
     private Button compileToJava;
     private Button enableExplodeModules;
     private Button offlineButton;
@@ -56,14 +59,15 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     
     @Override
     protected void performDefaults() {
-        explodeModules=false;
-        enableExplodeModules.setSelection(false);
+        explodeModules=true;
+        enableExplodeModules.setSelection(true);
         showCompilerWarnings=true;
         showWarnings.setSelection(true);
         backendJs = false;
         backendJava = true;
         compileToJs.setSelection(false);
         compileToJava.setSelection(true);
+        astAwareIncrementalBuidsButton.setSelection(true);
         offlineOption = null;
         updateOfflineButton();
         super.performDefaults();
@@ -74,7 +78,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         if (CeylonNature.isEnabled(project)) {
             String systemRepo = getCeylonSystemRepo(project);
             new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, 
-                    backendJava, backendJs).addToProject(project);
+                    backendJava, backendJs, astAwareIncrementalBuids).addToProject(project);
 
             CeylonProjectConfig config = CeylonProjectConfig.get(project);
             if (offlineOption!=null) {
@@ -145,6 +149,11 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(builderEnabled);
 
+        astAwareIncrementalBuidsButton = new Button(composite, SWT.CHECK);
+        astAwareIncrementalBuidsButton.setText("Fast structure-aware incremental builder (Experimental)");
+        astAwareIncrementalBuidsButton.setSelection(astAwareIncrementalBuids);
+        astAwareIncrementalBuidsButton.setEnabled(builderEnabled);
+
         enableExplodeModules = new Button(composite, SWT.CHECK);
         enableExplodeModules.setText("Enable Java classes calling Ceylon");
         enableExplodeModules.setSelection(explodeModules);
@@ -172,6 +181,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 new CeylonNature().addToProject(getSelectedProject());
                 enableBuilder.setEnabled(false);
                 enableExplodeModules.setEnabled(true);
+                astAwareIncrementalBuidsButton.setEnabled(true);
                 showWarnings.setEnabled(true);
                 compileToJs.setEnabled(true);
                 compileToJava.setEnabled(true);
@@ -180,6 +190,13 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             }
         });
     
+        astAwareIncrementalBuidsButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                astAwareIncrementalBuids = !astAwareIncrementalBuids;
+            }
+        });
+        
         enableExplodeModules.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -279,6 +296,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         if (project.isOpen()) {
             builderEnabled = CeylonNature.isEnabled(project);
             if (builderEnabled) {
+                astAwareIncrementalBuids = areAstAwareIncrementalBuildsEnabled(project);
                 explodeModules = isExplodeModulesEnabled(project);
                 showCompilerWarnings = showWarnings(project);
                 backendJs = compileToJs(project);

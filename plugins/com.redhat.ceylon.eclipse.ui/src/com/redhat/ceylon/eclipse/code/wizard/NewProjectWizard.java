@@ -153,7 +153,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                     firstPage.isEnableJdtClassesDir(), 
                     !firstPage.isShowCompilerWarnings(),
                     firstPage.isCompileJava(),
-                    firstPage.isCompileJs())
+                    firstPage.isCompileJs(),
+                    firstPage.areAstAwareIncrementalBuildsEnabled())
                             .addToProject(getCreatedElement().getProject());
 
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
