@@ -534,7 +534,12 @@ public class DocumentationHover
                 Node node = findNode(rn, 
                         selection.getOffset(),
                         selection.getOffset()+selection.getLength()-1);
-                
+                if (node instanceof Tree.Type) {
+                    return getTypeHoverInfo(node, 
+                            selection.getText(), 
+                            editor.getCeylonSourceViewer().getDocument(),
+                            editor.getParseController().getProject());
+                }
                 if (node instanceof Tree.Expression) {
                     node = ((Tree.Expression) node).getTerm();
                 }
@@ -621,6 +626,36 @@ public class DocumentationHover
         //buffer.append(getDocumentationFor(editor.getParseController(), t.getDeclaration()));
         HTMLPrinter.addPageEpilog(buffer);
         return new CeylonBrowserInput(null, null, buffer.toString());
+    }
+    
+    private static CeylonBrowserInput getTypeHoverInfo(Node node, String selectedText, 
+            IDocument doc, IProject project) {
+        ProducedType t = ((Tree.Type) node).getTypeModel();
+        if (t==null) return null;
+//        String expr = "";
+//        try {
+//            expr = doc.get(node.getStartIndex(), node.getStopIndex()-node.getStartIndex()+1);
+//        } 
+//        catch (BadLocationException e) {
+//            e.printStackTrace();
+//        }
+        String abbreviated = PRINTER.getProducedTypeName(t, node.getUnit());
+        String unabbreviated = VERBOSE_PRINTER.getProducedTypeName(t, node.getUnit());
+        StringBuilder buffer = new StringBuilder();
+        HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("types.gif").toExternalForm(), 
+                16, 16, 
+                "<tt>" + producedTypeLink(t, node.getUnit()) + "</tt> ", 
+                20, 4);
+        if (!abbreviated.equals(unabbreviated)) {
+            buffer.append("<br/>")
+                  .append("Abbreviation&nbsp;of:&nbsp;&nbsp;")
+                  .append(unabbreviated);
+        }
+        HTMLPrinter.addPageEpilog(buffer);
+        return new CeylonBrowserInput(null, null, buffer.toString());
+
     }
     
     private static CeylonBrowserInput getTermTypeHoverInfo(Node node, String selectedText, 
@@ -1506,28 +1541,32 @@ public class DocumentationHover
             }
         }
     }
+
+    private static ProducedTypeNamePrinter printer(boolean abbreviate) { 
+        return new ProducedTypeNamePrinter(abbreviate, true, false, true) {
+            @Override
+            protected String getSimpleDeclarationName(Declaration declaration, Unit unit) {
+                return "<a " + HTML.link(declaration) + ">" + 
+                        super.getSimpleDeclarationName(declaration, unit) + 
+                        "</a>";
+            }
+            @Override
+            protected String amp() {
+                return "&amp;";
+            }
+            @Override
+            protected String lt() {
+                return "&lt;";
+            }
+            @Override
+            protected String gt() {
+                return "&gt;";
+            }
+        };
+    }
     
-    private static ProducedTypeNamePrinter PRINTER = 
-            new ProducedTypeNamePrinter(true, true, false, true) {
-        @Override
-        protected String getSimpleDeclarationName(Declaration declaration, Unit unit) {
-            return "<a " + HTML.link(declaration) + ">" + 
-                    super.getSimpleDeclarationName(declaration, unit) + 
-                    "</a>";
-        }
-        @Override
-        protected String amp() {
-            return "&amp;";
-        }
-        @Override
-        protected String lt() {
-            return "&lt;";
-        }
-        @Override
-        protected String gt() {
-            return "&gt;";
-        }
-    };
+    private static ProducedTypeNamePrinter PRINTER = printer(true);
+    private static ProducedTypeNamePrinter VERBOSE_PRINTER = printer(false);
     
     private static String producedTypeLink(ProducedType pt, Unit unit) {
         return PRINTER.getProducedTypeName(pt, unit);
