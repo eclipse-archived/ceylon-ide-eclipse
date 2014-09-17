@@ -238,8 +238,10 @@ public class Highlights  {
                     result.append(tok);
                 }
                 if (tokens.hasMoreTokens()) {
-                    styleProposal(result, tokens.nextToken(), 
-                            qualifiedNameIsPath);
+                    String token = tokens.nextToken();
+                    styleProposal(result, token, 
+                            qualifiedNameIsPath && 
+                            token.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$"));
                 }
                 if (tokens.hasMoreTokens()) {
                     String close = tokens.nextToken();
