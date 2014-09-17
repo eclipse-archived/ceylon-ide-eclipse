@@ -60,7 +60,9 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 _This method implies some **additional complexity**, and is only useful if you want to debug the Ceylon IDE plugin._ 
 
 **_Prelimiary remark_** : Now, parts of the Ceylon IDE project itself are written in Ceylon. Thus, in order to develop the Ceylon IDE plugin, you must have a previous version of the plugin installed in your
-main Eclipse (either downloaded from the update site, or built with Maven) 
+main Eclipse (either downloaded from the update site, or built with Maven).
+
+Then :
 
 1.  Start with a clean install of Eclipse Kepler or Luna.
     
@@ -68,10 +70,12 @@ main Eclipse (either downloaded from the update site, or built with Maven)
     
 2.  Install the following feature : _Graphical Editing Framework Zest Visualization Toolkit SDK_ available at the main Eclipse release update site (http://download.eclipse.org/releases/kepler for the Kepler version)
 	
-3.  Make sure you have the following feature : _Eclipse Plug-in Development Environment_.
+3.  Install a previous version of the Ceylon IDE (either downloaded from the update site, or built with Maven)
+
+4.  Make sure you have the following feature : _Eclipse Plug-in Development Environment_.
     This is normally included inside the Eclipse Standard Package.
 
-4.  Use `File > Import... > Existing Projects into Workspace` 
+5.  Use `File > Import... > Existing Projects into Workspace` 
     to import the Java projects that are in these directories : 
 
     ```
@@ -85,7 +89,7 @@ main Eclipse (either downloaded from the update site, or built with Maven)
     ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui/ceylon
     ```
 
-5.  The `com.redhat.ceylon.eclipse.ui` plugin depends on several OSGI bundles, which must be available inside Eclipse to be able to build it.	
+6.  The `com.redhat.ceylon.eclipse.ui` plugin depends on several OSGI bundles, which must be available inside Eclipse to be able to build it.	
     Quite recent versions of these dependencies should be available on the [IDE development update site](http://ceylon-lang.org/eclipse/development/)
 	in the _Ceylon IDE Runtime Bundles_ category. Though installing all the bundles of this category will provide the dependencies required to build and run the Ceylon IDE, _*this is not recommended*_.  Indeed this method is only useful if you don't have the Ceylon distribution projects installed locally, or if you don't want to take in account changes made locally to the required bundles.
 
@@ -128,16 +132,11 @@ main Eclipse (either downloaded from the update site, or built with Maven)
 		Since the Ceylon Distribution modules have circular dependencies on each others, it happens that those circular dependencies are reproduced by the _ceylon-dist-osgi_ and _bundle-proxys_ projects. In order to be able to build you projects, you will have to allow cycles in the Java build paths by setting the following Eclipse preference `Java -> Compiler -> Build -> Circular Dependencies`to `warning` 
 		
 	Each time you will rebuild one of the projects required by the Ceylon IDE plugin (distribution, SDK, formatter, ...), you only need to _Refresh_ the `ceylon-dist-osgi` project, as well as the bundle proxy projects related to the rebuilt required projects, in order to be able to see the changes in the Ceylon IDE projects.
-
-Notes:
-
-If you update the dependencies of libs in the Ceylon distrib repo, you must update your `Ceylon Distribution Binary Dependencies Feature`
-plugin from the `.../ceylon-dist/osgi/build/dist` update site.
-
-If you update the sdk, ceylon.formatter or Ceylon distrib, you need to redo the `ant clean publish ide` in each project and
-refresh them in Eclipse and possible clean their proxy bundle projects and the `ceylon-dist-osgi` project.
+	However :
+	- If you update the dependencies of libs in the Ceylon distrib repo, you must update your `Ceylon Distribution Binary Dependencies Feature` plugin from the `.../ceylon-dist/osgi/build/dist` update site.
+	- If you update the sdk, ceylon.formatter or Ceylon distrib, you need to redo the `ant clean publish ide` in each project and refresh them in Eclipse and possible clean their proxy bundle projects and the `ceylon-dist-osgi` project.
 	
-6. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
+7. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
     - Add the SWTBot Eclipse features, which are required to compile and run the Ceylon IDE 
       interactive tests.
       Install all the features available at the following update site :
@@ -149,11 +148,11 @@ refresh them in Eclipse and possible clean their proxy bundle projects and the `
     
             ceylon-ide-eclipse/tests/com.redhat.ceylon.eclipse.ui.test
 
-7.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
+8.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
     `Run > Run As > Eclipse Application`. Now go to the new instance of 
     Eclipse.
     
-8.  Go to `Help > Welcome to Ceylon` to get started.
+9.  Go to `Help > Welcome to Ceylon` to get started.
 
 ## Pushing a new release onto the development update site
 
