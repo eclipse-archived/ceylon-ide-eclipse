@@ -419,21 +419,19 @@ public class BrowserInformationControl extends AbstractInformationControl
 
     @Override
     public Point computeSizeHint() {
-        Point sizeConstraints= getSizeConstraints();
-        Rectangle trim= computeTrim();
-        int trimHeight= trim.height;
-        int trimWidth = trim.width;
-
+        Point sizeConstraints = getSizeConstraints();
+        Rectangle trim = computeTrim();
+        
         //FIXME: The HTML2TextReader does not render <p> like a browser.
         // Instead of inserting an empty line, it just adds a single line break.
         // Furthermore, the indentation of <dl><dd> elements is too small (e.g with a long @see line)
         TextPresentation presentation= new TextPresentation();
-        HTML2TextReader reader= new HTML2TextReader(new StringReader(fInput.getHtml().replace("div", "p").replace("<hr/>", "<br/>")), presentation);
+        HTML2TextReader reader= new HTML2TextReader(new StringReader(fInput.getHtml()), presentation);
         String text;
         try {
             text= reader.getString();
         } catch (IOException e) {
-            text= ""; //$NON-NLS-1$
+            text= "";
         }
         finally {
             try {
@@ -444,48 +442,48 @@ public class BrowserInformationControl extends AbstractInformationControl
         }
 
         fTextLayout.setText(text);
-        fTextLayout.setWidth(sizeConstraints==null ? SWT.DEFAULT : sizeConstraints.x-trimWidth);
+        fTextLayout.setWidth(sizeConstraints==null ? SWT.DEFAULT : sizeConstraints.x-trim.width);
         @SuppressWarnings("unchecked")
-        Iterator<StyleRange> iter= presentation.getAllStyleRangeIterator();
+        Iterator<StyleRange> iter = presentation.getAllStyleRangeIterator();
         while (iter.hasNext()) {
             StyleRange sr = iter.next();
             if (sr.fontStyle == SWT.BOLD)
                 fTextLayout.setStyle(fBoldStyle, sr.start, sr.start + sr.length);
         }
 
-        Rectangle bounds= fTextLayout.getBounds(); // does not return minimum width, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=217446
-        int lineCount= fTextLayout.getLineCount();
-        int textWidth= 0;
-        fTextLayout.getLineOffsets();
+        Rectangle bounds = fTextLayout.getBounds(); // does not return minimum width, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=217446
+        int lineCount = fTextLayout.getLineCount();
+        int textWidth = 0;
         for (int i=0; i<lineCount; i++) {
-            Rectangle rect= fTextLayout.getLineBounds(i);
-            int lineWidth= rect.x + rect.width;
+            Rectangle rect = fTextLayout.getLineBounds(i);
+            int lineWidth = rect.x + rect.width;
             if (i==0) {
-                lineWidth*=1.25; //to accommodate it is not only bold but also monospace
-                lineWidth+= 20;
+                lineWidth *= 1.25; //to accommodate it is not only bold but also monospace
+                lineWidth += 20;
             }
-            textWidth= Math.max(textWidth, lineWidth);
+            textWidth = Math.max(textWidth, lineWidth);
         }
-        bounds.width= textWidth;
+        bounds.width = textWidth;
+        fTextLayout.setText("");
 
-        int minWidth= textWidth;
-        int minHeight= trimHeight + bounds.height;
+        int minWidth = textWidth;
+        int minHeight = trim.height + bounds.height;
 
         // Add some air to accommodate for different browser renderings
-        minWidth+= 30;
-        minHeight+= 15;
+        minWidth += 30;
+        minHeight += 60;
 
         // Apply max size constraints
         if (sizeConstraints!=null) {
             if (sizeConstraints.x!=SWT.DEFAULT)
-                minWidth= Math.min(sizeConstraints.x, minWidth + trimWidth);
+                minWidth = Math.min(sizeConstraints.x, minWidth + trim.width);
             if (sizeConstraints.y!=SWT.DEFAULT)
-                minHeight= Math.min(sizeConstraints.y, minHeight);
+                minHeight = Math.min(sizeConstraints.y, minHeight);
         }
 
         // Ensure minimal size
-        int width= Math.max(MIN_WIDTH, minWidth);
-        int height= Math.max(MIN_HEIGHT, minHeight);
+        int width = Math.max(MIN_WIDTH, minWidth);
+        int height = Math.max(MIN_HEIGHT, minHeight);
 
         return new Point(width, height);
     }
