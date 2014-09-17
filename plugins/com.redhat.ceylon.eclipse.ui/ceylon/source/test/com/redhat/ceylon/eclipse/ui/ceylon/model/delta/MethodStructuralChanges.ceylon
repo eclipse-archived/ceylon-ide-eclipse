@@ -225,3 +225,40 @@ test void methodEquivalentFunctionalParameter() {
         }
     };
 }
+
+test void methodTypeConstraintChanged() {
+    comparePhasedUnits {
+        path = "dir/test.ceylon";
+        oldContents = 
+                "
+                 shared formal void test<Type1, Type2>()
+                        given Type1 satisfies Iterable<Integer>
+                        given Type2 satisfies Iterable<Float>;
+                 ";
+        newContents =
+                "
+                 shared formal void test<Type1, Type2>()
+                        given Type1 satisfies Iterable<Float>
+                        given Type2 satisfies Iterable<Integer>;
+                 ";
+        expectedDelta = 
+                RegularCompilationUnitDeltaMockup {
+            changedElementString = "Unit[test.ceylon]";
+            changes = { };
+            childrenDeltas = {
+                TopLevelDeclarationDeltaMockup {
+                    changedElementString = "Method[test]";
+                    changes = { structuralChange };
+                    childrenDeltas = {};
+                }
+            };
+        };
+        void doWithNodeComparisons({NodeComparison*} comparisons) {
+            assert(comparisons.contains(["dir::test", "typeConstraintList", 
+                "TypeConstraintList[TypeConstraint[Identifier[Type1]SatisfiedTypes[Type[{ceylon.language::Integer*}]]]"
+                    + "TypeConstraint[Identifier[Type2]SatisfiedTypes[Type[{ceylon.language::Float*}]]]]"
+             -> "TypeConstraintList[TypeConstraint[Identifier[Type1]SatisfiedTypes[Type[{ceylon.language::Float*}]]]"
+                    + "TypeConstraint[Identifier[Type2]SatisfiedTypes[Type[{ceylon.language::Integer*}]]]]"]));
+        }
+    };
+}
