@@ -69,36 +69,46 @@ class InferTypeVisitor extends Visitor {
     
     @Override public void visit(Tree.AttributeDeclaration that) {
         super.visit(that);
-        Term term = that.getSpecifierOrInitializerExpression()==null ? 
-                null : that.getSpecifierOrInitializerExpression().getExpression().getTerm();
-        if (term instanceof Tree.BaseMemberExpression) {
-            Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
-            if (d!=null && d.equals(dec)) {
-                result.intersect(that.getType().getTypeModel());
+        //TODO: an assignment to something with an inferred
+        //      type doesn't _directly_ constrain the type
+        //      ... but _indirectly_ it can!
+//        if (!(that.getType() instanceof Tree.LocalModifier)) {
+            Term term = that.getSpecifierOrInitializerExpression()==null ? 
+                    null : that.getSpecifierOrInitializerExpression().getExpression().getTerm();
+            if (term instanceof Tree.BaseMemberExpression) {
+                Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
+                if (d!=null && d.equals(dec)) {
+                    result.intersect(that.getType().getTypeModel());
+                }
             }
-        }
-        else if (term!=null) {
-            if (that.getDeclarationModel().equals(dec)) {
-                result.union(term.getTypeModel());
+            else if (term!=null) {
+                if (that.getDeclarationModel().equals(dec)) {
+                    result.union(term.getTypeModel());
+                }
             }
-        }
+//        }
     }
     
     @Override public void visit(Tree.MethodDeclaration that) {
         super.visit(that);
-        Term term = that.getSpecifierExpression()==null ? 
-                null : that.getSpecifierExpression().getExpression().getTerm();
-        if (term instanceof Tree.BaseMemberExpression) {
-            Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
-            if (d!=null && d.equals(dec)) {
-                result.intersect(that.getType().getTypeModel());
+        //TODO: an assignment to something with an inferred
+        //      type doesn't _directly_ constrain the type
+        //      ... but _indirectly_ it can!
+//        if (!(that.getType() instanceof Tree.LocalModifier)) {
+            Term term = that.getSpecifierExpression()==null ? 
+                    null : that.getSpecifierExpression().getExpression().getTerm();
+            if (term instanceof Tree.BaseMemberExpression) {
+                Declaration d = ((Tree.BaseMemberExpression) term).getDeclaration();
+                if (d!=null && d.equals(dec)) {
+                    result.intersect(that.getType().getTypeModel());
+                }
             }
-        }
-        else if (term!=null) {
-            if (that.getDeclarationModel().equals(dec)) {
-                result.union(term.getTypeModel());
+            else if (term!=null) {
+                if (that.getDeclarationModel().equals(dec)) {
+                    result.union(term.getTypeModel());
+                }
             }
-        }
+//        }
     }
     
     @Override public void visit(Tree.SpecifierStatement that) {
