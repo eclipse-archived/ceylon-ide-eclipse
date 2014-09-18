@@ -11,7 +11,6 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.CompilationUnitDelta;
@@ -104,7 +103,10 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
                     }
                 }
             }
-        } catch(Exception e) {}
+        } catch(Exception e) {
+        } catch(ceylon.language.AssertionError e) {
+            e.printStackTrace();
+        }
         
         return null;
     }
