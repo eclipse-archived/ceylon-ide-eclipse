@@ -125,6 +125,12 @@ public abstract class LocalProposal extends AbstractLinkedMode
                     expanse = expression;
                     resultType = type.getTypeModel();
                 }
+                else if (type instanceof Tree.FunctionType) {
+                    expression = type;
+                    expanse = expression;
+                    resultType = node.getUnit()
+                            .getCallableReturnType(type.getTypeModel());
+                }
                 else {
                     return;
                 }
@@ -283,13 +289,22 @@ public abstract class LocalProposal extends AbstractLinkedMode
                 //when they appear right in front of an annotation
                 //or function invocations
                 Tree.Type type = ((Tree.TypedDeclaration) st).getType();
-                if (type instanceof Tree.SimpleType && 
-                        currentOffset<=type.getStopIndex()+1 &&
-                        currentOffset>=type.getStartIndex()) {
-                    if (type.getEndToken().getLine()==line) {
+                if (currentOffset<=type.getStopIndex()+1 &&
+                    currentOffset>=type.getStartIndex() &&
+                    type.getEndToken().getLine()!=line) {
+                    resultType = type.getTypeModel();
+                    if (type instanceof Tree.SimpleType) {
+                        //just use that type
+                    }
+                    else if (type instanceof Tree.FunctionType) {
+                        //instantiation expressions look like a
+                        //function type declaration
+                        resultType = node.getUnit()
+                                .getCallableReturnType(resultType);
+                    }
+                    else {
                         return false;
                     }
-                    resultType = type.getTypeModel();
                 }
                 else {
                     return false;
