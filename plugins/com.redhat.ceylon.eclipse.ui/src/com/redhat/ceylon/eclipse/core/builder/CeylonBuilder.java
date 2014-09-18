@@ -1605,6 +1605,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (monitor.isCanceled()) {
             throw new OperationCanceledException();
         }
+        
+        for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
+            phasedUnit.visitSrcModulePhase();
+        }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
+        
+        for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
+            phasedUnit.visitRemainingModulePhase();
+        }
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
+        
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isDeclarationsScanned()) {
                 monitor.subTask("- scanning declarations " + phasedUnit.getUnit().getFilename());
