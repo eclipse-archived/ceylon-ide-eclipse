@@ -6,6 +6,7 @@ import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
 
+import java.util.List;
 import java.util.Locale;
 
 import javax.tools.Diagnostic;
@@ -13,10 +14,12 @@ import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
 import com.redhat.ceylon.compiler.java.launcher.Main;
@@ -27,9 +30,11 @@ final class CompileErrorReporter implements
     
     private IProject project;
     private boolean errorReported;
+    private List<IFolder> sourceDirectories;
 
     public CompileErrorReporter(IProject project) {
         this.project = project;
+        sourceDirectories = CeylonBuilder.getSourceFolders(project);
     }
     
     public void failed() {
@@ -101,8 +106,21 @@ final class CompileErrorReporter implements
             }
         } 
         else {
-            IFile file = getWorkspace().getRoot()
-                    .getFileForLocation(new Path(source.getName()));
+            IPath absolutePath = new Path(source.getName());
+            IFile file = null;
+            for (IFolder sourceDirectory : sourceDirectories) {
+                IPath sourceDirPath = sourceDirectory.getLocation();
+                if (sourceDirPath.isPrefixOf(absolutePath)) {
+                    IResource r = sourceDirectory.findMember(absolutePath.makeRelativeTo(sourceDirPath));
+                    if (r instanceof IFile) {
+                        file = (IFile) r;
+                    }
+                }
+            }
+            if (file == null) {
+                file = getWorkspace().getRoot()
+                        .getFileForLocation(new Path(source.getName()));
+            }
             if(file != null) {
                 if (CeylonBuilder.isCeylon(file)){
                     try {

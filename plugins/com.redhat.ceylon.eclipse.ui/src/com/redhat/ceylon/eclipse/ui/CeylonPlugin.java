@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
@@ -36,6 +37,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.redhat.ceylon.common.Versions;
+import com.redhat.ceylon.dist.osgi.Activator;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 
 
@@ -109,6 +111,15 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         addResourceFilterPreference();
         registerProjectOpenCloseListener();
         CeylonEncodingSynchronizer.getInstance().install();
+
+        Job registerCeylonModules = new Job("Load the Ceylon Metamodel for plugin dependencies") {
+            protected IStatus run(IProgressMonitor monitor) {
+                Activator.loadBundleAsModule(bundleContext.getBundle());
+                return Status.OK_STATUS;
+            };
+        };
+        registerCeylonModules.setRule(ResourcesPlugin.getWorkspace().getRoot());
+        registerCeylonModules.schedule();
     }
     
     @Override

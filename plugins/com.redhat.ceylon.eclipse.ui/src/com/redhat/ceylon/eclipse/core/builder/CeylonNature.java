@@ -28,6 +28,7 @@ public class CeylonNature extends ProjectNatureBase {
     
     private String systemRepo;
     boolean enableJdtClasses;
+    boolean astAwareIncrementalBuilds;
     boolean hideWarnings;
     boolean keepSettings;
     boolean compileJs;
@@ -41,12 +42,14 @@ public class CeylonNature extends ProjectNatureBase {
             boolean enableJdtClasses, 
             boolean hideWarnings, 
             boolean java,
-            boolean js) {
+            boolean js,
+            boolean astAwareIncrementalBuilds) {
         this.systemRepo = systemRepo;
         this.enableJdtClasses = enableJdtClasses;
         this.hideWarnings = hideWarnings;
         compileJs = js;
         compileJava = java;
+        this.astAwareIncrementalBuilds = astAwareIncrementalBuilds;
     }
     
     public String getNatureID() {
@@ -101,6 +104,11 @@ public class CeylonNature extends ProjectNatureBase {
             }
             else {
                 args.remove("explodeModules");
+            }
+            if (astAwareIncrementalBuilds) {
+                args.remove("astAwareIncrementalBuilds");
+            } else {
+                args.put("astAwareIncrementalBuilds", "false");
             }
             if (compileJava) {
                 args.remove("compileJava");
