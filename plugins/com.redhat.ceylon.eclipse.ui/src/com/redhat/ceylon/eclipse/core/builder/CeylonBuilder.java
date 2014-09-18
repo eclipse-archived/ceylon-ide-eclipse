@@ -1213,7 +1213,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             ProjectSourceFile projectSourceFile = (ProjectSourceFile) unit;
                             if (projectSourceFile.getDependentsOf().size() > 0) {
                                 CompilationUnitDelta delta = projectSourceFile.buildDeltaAgainstModel();
-                                if (delta.getChanges().getSize() == 0
+                                if (delta != null 
+                                        && delta.getChanges().getSize() == 0
                                         && delta.getChildrenDeltas().getSize() == 0) {
                                         continue;
                                     }
