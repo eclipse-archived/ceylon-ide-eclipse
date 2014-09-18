@@ -13,10 +13,10 @@ shared alias DifferencedModelElement => Module | ModuleImport | Package | Unit |
 
 shared interface AbstractDelta of CompilationUnitDelta | ModuleImportDelta | DeclarationDelta {
     "Element for which the delta has been calculated"
-    shared formal DifferencedModelElement changedElement;
+    shared formal DifferencedModelElement? changedElement;
     
     "String representation of the changedElement"
-    shared default String changedElementString => changedElement.string;
+    shared default String changedElementString => changedElement?.string else "<unknown>";
 
         "Deltas related to the members of the  [[model element|AbstractDelta.changedElement]] that might impact some other compilation units"
     shared formal {AbstractDelta*} childrenDeltas;
@@ -54,14 +54,21 @@ shared interface AbstractDelta of CompilationUnitDelta | ModuleImportDelta | Dec
 shared interface CompilationUnitDelta of RegularCompilationUnitDelta | ModuleDescriptorDelta | PackageDescriptorDelta satisfies AbstractDelta {}
 
 shared interface ModuleDescriptorDelta satisfies CompilationUnitDelta {
-    shared formal actual Module changedElement;
+    shared formal actual Module? changedElement;
     shared formal actual {ModuleImportDelta*} childrenDeltas;
     shared alias PossibleChange => StructuralChange|ModuleImportAdded;
     shared formal actual {PossibleChange *} changes;
 }
 
+shared class InvalidModuleDescriptorDelta() satisfies ModuleDescriptorDelta {
+    shared actual Module? changedElement => null;
+    shared actual [StructuralChange] changes => [structuralChange];
+    shared actual {ModuleImportDelta*} childrenDeltas => {};
+    shared actual Boolean equals(Object that) => (super of AbstractDelta).equals(that);
+}
+
 shared interface ModuleImportDelta satisfies AbstractDelta {
-    shared formal actual ModuleImport changedElement;
+    shared formal actual ModuleImport? changedElement;
     shared actual [] childrenDeltas => [];
     "StructuralChange when the optiobal annotation has been changed"
     shared alias PossibleChange => <StructuralChange | Removed | MadeVisibleOutsideScope | MadeInvisibleOutsideScope>;
@@ -69,15 +76,26 @@ shared interface ModuleImportDelta satisfies AbstractDelta {
 }
 
 shared interface PackageDescriptorDelta satisfies CompilationUnitDelta {
-    shared formal actual Package changedElement;
+    shared formal actual Package? changedElement;
     shared actual [] childrenDeltas => [];
     shared alias PossibleChange => <StructuralChange|MadeVisibleOutsideScope|MadeInvisibleOutsideScope>;
     shared formal actual [<PossibleChange>]|[] changes;
 }
 
+shared class InvalidPackageDescriptorDelta() satisfies PackageDescriptorDelta {
+    shared actual Package? changedElement => null;
+    shared actual [StructuralChange] changes => [structuralChange];
+    shared actual Boolean equals(Object that) => (super of AbstractDelta).equals(that);
+}
+
 shared interface DeclarationDelta of TopLevelDeclarationDelta | NestedDeclarationDelta satisfies AbstractDelta {
-    shared formal actual Declaration changedElement;
-    shared default actual String changedElementString => "``javaClassFromInstance(changedElement).simpleName``[``changedElement.nameAsString ``]";
+    shared formal actual Declaration? changedElement;
+    shared default actual String changedElementString {
+        if (exists declaration=changedElement) {
+            return "``javaClassFromInstance(declaration).simpleName``[``declaration.nameAsString ``]";
+        }
+        return "<unknown>";
+    }
     shared formal actual {NestedDeclarationDelta*} childrenDeltas;
 }
 
