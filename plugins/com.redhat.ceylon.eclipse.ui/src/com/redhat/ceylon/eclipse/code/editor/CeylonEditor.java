@@ -146,6 +146,9 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonSavePreferencesPage;
 import com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems;
 import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -1618,6 +1621,28 @@ public class CeylonEditor extends TextEditor {
                     } else {
                         // Problem => close the editor
                         input = null;
+                    }
+                }
+                if (! CeylonNature.isEnabled(file.getProject()) ||
+                        CeylonBuilder.getRootFolderType(file) != RootFolderType.SOURCE) {
+                    // search if those files are also in the source directory of
+                    // a Ceylon project existing in this project
+                    IPath location = file.getLocation();
+                    if (location != null) {
+                        for (IProject project : file.getWorkspace().getRoot().getProjects()) {
+                            IPath projectLocation = project.getLocation();
+                            if (project.isAccessible()
+                                    && projectLocation != null
+                                    && CeylonNature.isEnabled(project) 
+                                    && projectLocation.isPrefixOf(location)) {
+                                IFile newFile = project.getFile(location.makeRelativeTo(projectLocation));
+                                if (newFile.exists() 
+                                        && CeylonBuilder.getRootFolderType(newFile) == RootFolderType.SOURCE) {
+                                    input = EditorUtil.getEditorInput(newFile);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             }
