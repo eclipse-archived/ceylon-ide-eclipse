@@ -44,6 +44,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -217,7 +218,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             if (leftTerm instanceof Tree.StaticMemberOrTypeExpression) {
                 Declaration dec = 
                         ((Tree.StaticMemberOrTypeExpression) leftTerm).getDeclaration();
-                if (hasOuterRefs(dec, scope, statements)) {
+                if (hasOuterRefs(dec, scope, statements) && 
+                        isDefinedLocally(dec)) {
                     result = that;
                     resultDeclaration = (TypedDeclaration) dec;
                 }
@@ -230,11 +232,16 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             if (term instanceof Tree.StaticMemberOrTypeExpression) {
                 Declaration dec = 
                         ((Tree.StaticMemberOrTypeExpression) term).getDeclaration();
-                if (hasOuterRefs(dec, scope, statements)) {
+                if (hasOuterRefs(dec, scope, statements) && 
+                        isDefinedLocally(dec)) {
                     result = that;
                     resultDeclaration = (TypedDeclaration) dec;
                 }
             }
+        }
+        private boolean isDefinedLocally(Declaration dec) {
+            return !Util.contains(dec.getScope(), 
+                    scope.getScope().getContainer());
         }
     }
 
@@ -269,24 +276,29 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.BaseMemberExpression that) {
             super.visit(that);
-            //TODO: things nested inside control structures
-            Declaration currentDec = that.getDeclaration();
-            for (Tree.BaseMemberExpression bme: localReferences) {
-                Declaration dec = bme.getDeclaration();
-                if (dec.equals(currentDec)) {
-                    return;
+            //TODO: don't treat assignments as references, but
+            //      then we have to declare a new local in the
+            //      extracted function!
+//            if (!that.getAssigned()) {
+                //TODO: things nested inside control structures
+                Declaration currentDec = that.getDeclaration();
+                for (Tree.BaseMemberExpression bme: localReferences) {
+                    Declaration dec = bme.getDeclaration();
+                    if (dec.equals(currentDec)) {
+                        return;
+                    }
+                    if (currentDec instanceof TypedDeclaration) {
+                        TypedDeclaration od = 
+                                ((TypedDeclaration)currentDec).getOriginalDeclaration();
+                        if (od!=null && od.equals(dec)) return;
+                    }
                 }
-                if (currentDec instanceof TypedDeclaration) {
-                    TypedDeclaration od = 
-                            ((TypedDeclaration)currentDec).getOriginalDeclaration();
-                    if (od!=null && od.equals(dec)) return;
+                if (currentDec.isDefinedInScope(scope) && 
+                        !currentDec.isDefinedInScope(targetScope)) {
+                    localReferences.add(that);
                 }
             }
-            if (currentDec.isDefinedInScope(scope) && 
-                !currentDec.isDefinedInScope(targetScope)) {
-                localReferences.add(that);
-            }
-        }
+//        }
     }
 
     private String newName;
