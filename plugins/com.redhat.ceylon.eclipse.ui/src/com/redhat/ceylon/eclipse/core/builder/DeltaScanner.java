@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInSourceFol
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isResourceFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isSourceFile;
 
-
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +14,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
@@ -25,6 +25,9 @@ import org.eclipse.core.runtime.IPath;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
+import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.CompilationUnitDelta;
 
 final class DeltaScanner implements IResourceDeltaVisitor {
     private final BooleanHolder mustDoFullBuild;
@@ -33,7 +36,8 @@ final class DeltaScanner implements IResourceDeltaVisitor {
     private final BooleanHolder mustResolveClasspathContainer;
 	private IPath explodedDirPath;
 	private Map<IProject, IPath> modulesDirPathByProject = new HashMap<>();
-
+	private boolean astAwareIncrementalBuild = true;
+	
     DeltaScanner(BooleanHolder mustDoFullBuild, IProject project,
             BooleanHolder somethingToBuild,
             BooleanHolder mustResolveClasspathContainer) {
@@ -54,6 +58,7 @@ final class DeltaScanner implements IResourceDeltaVisitor {
 			}
 		} catch (CoreException e) {
 		}
+        astAwareIncrementalBuild = CeylonBuilder.areAstAwareIncrementalBuildsEnabled(project);
     }
 
     @Override
@@ -123,14 +128,27 @@ final class DeltaScanner implements IResourceDeltaVisitor {
             IFile file = (IFile) resource;
             String fileName = file.getName();
             if (isInSourceFolder(file)) {
-                if (fileName.equals(ModuleManager.PACKAGE_FILE)) {
-                    //a package descriptor has been added, removed, or changed
-                    mustDoFullBuild.value = true;
-                }
-                if (fileName.equals(ModuleManager.MODULE_FILE)) {
-                    //a module descriptor has been added, removed, or changed
-                    mustResolveClasspathContainer.value = true;
-                    mustDoFullBuild.value = true;
+                if (fileName.equals(ModuleManager.PACKAGE_FILE) || fileName.equals(ModuleManager.MODULE_FILE)) {
+                    //a package or module descriptor has been added, removed, or changed
+                    boolean descriptorContentChanged = true;
+                    if (astAwareIncrementalBuild && file.findMaxProblemSeverity(IMarker.PROBLEM, true, IResource.DEPTH_ZERO) < IMarker.SEVERITY_WARNING) {
+                        IResourceAware unit = CeylonBuilder.getUnit(file);
+                        if (unit instanceof ProjectSourceFile) {
+                            ProjectSourceFile projectSourceFile = (ProjectSourceFile) unit;
+                            CompilationUnitDelta delta = projectSourceFile.buildDeltaAgainstModel();
+                            if (delta != null
+                                    && delta.getChanges().getSize() == 0
+                                    && delta.getChildrenDeltas().getSize() == 0) {
+                                descriptorContentChanged = false;
+                            }
+                        }
+                    }
+                    if (descriptorContentChanged) {
+                        mustDoFullBuild.value = true;
+                        if (fileName.equals(ModuleManager.MODULE_FILE)) {
+                            mustResolveClasspathContainer.value = true;
+                        }
+                    }
                 }
             }
             if (fileName.equals(".classpath") ||
