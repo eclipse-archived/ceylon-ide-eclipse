@@ -117,8 +117,11 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                                     term instanceof Tree.SequenceEnumeration) {
                                 Tree.SequenceEnumeration se = 
                                         (Tree.SequenceEnumeration) term;
-                                result.append(Nodes.toString(se.getSequencedArgument(), tokens))
-                                    .append(" ");
+                                Tree.SequencedArgument sa = se.getSequencedArgument();
+                                if (sa!=null) {
+                                    result.append(Nodes.toString(sa, tokens))
+                                          .append(" ");
+                                }
                                 continue;
                             }
                         }

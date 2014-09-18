@@ -92,7 +92,8 @@ class PrintProposal implements ICompletionProposal {
                 //when they appear right in front of an annotation
                 //or function invocations
                 Tree.Type type = ((Tree.TypedDeclaration) st).getType();
-                if (type instanceof Tree.SimpleType) {
+                if (type instanceof Tree.SimpleType || 
+                    type instanceof Tree.FunctionType) {
                     expression = type;
                     expanse = expression;
                 }
@@ -204,7 +205,8 @@ class PrintProposal implements ICompletionProposal {
                 //or function invocations
                 Tree.Type type = ((Tree.TypedDeclaration) st).getType();
                 if (currentOffset<=type.getStopIndex()+1) {
-                	return type instanceof Tree.SimpleType && 
+                	return (type instanceof Tree.SimpleType || 
+                	        type instanceof Tree.FunctionType) && 
                             currentOffset<=type.getStopIndex()+1 &&
                             currentOffset>=type.getStartIndex() &&
                 	        type.getEndToken().getLine()!=line;

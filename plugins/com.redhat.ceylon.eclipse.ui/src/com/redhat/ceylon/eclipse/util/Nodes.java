@@ -574,6 +574,13 @@ public class Nodes {
                 //TODO: propose a compound name like personName for person.name
             }
         }
+        if (identifyingNode instanceof Tree.FunctionType) {
+            Tree.StaticType type = ((Tree.FunctionType) identifyingNode).getReturnType();
+            if (type instanceof Tree.SimpleType) {
+                String name = ((Tree.SimpleType) type).getDeclarationModel().getName();
+                addNameProposals(names, false, name);
+            }
+        }
         if (identifyingNode instanceof Tree.BaseMemberOrTypeExpression) {
             BaseMemberOrTypeExpression bmte = 
                     (Tree.BaseMemberOrTypeExpression) identifyingNode;
