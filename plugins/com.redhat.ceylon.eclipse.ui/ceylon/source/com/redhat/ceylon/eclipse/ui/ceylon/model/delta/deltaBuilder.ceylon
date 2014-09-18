@@ -74,17 +74,21 @@ shared CompilationUnitDelta buildDeltas(
 }
 
 ModuleDescriptorDelta buildModuleDescriptorDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) {
-    assert(exists oldDescriptor = referencePhasedUnit.compilationUnit?.moduleDescriptors?.get(0));
-    assert(exists newDescriptor = changedPhasedUnit.compilationUnit?.moduleDescriptors?.get(0));
-    value builder = ModuleDescriptorDeltaBuilder(oldDescriptor, newDescriptor, nodeComparisonListener);
-    return builder.buildDelta();
+    if(exists oldDescriptor = referencePhasedUnit.compilationUnit?.moduleDescriptors?.get(0)) {
+        value builder = ModuleDescriptorDeltaBuilder(oldDescriptor, changedPhasedUnit.compilationUnit?.moduleDescriptors?.get(0), nodeComparisonListener);
+        return builder.buildDelta();
+    } else {
+        return InvalidModuleDescriptorDelta();
+    }
 }
 
 PackageDescriptorDelta buildPackageDescriptorDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) {
-    assert(exists oldDescriptor = referencePhasedUnit.compilationUnit?.packageDescriptors?.get(0));
-    assert(exists newDescriptor = changedPhasedUnit.compilationUnit?.packageDescriptors?.get(0));
-    value builder = PackageDescriptorDeltaBuilder(oldDescriptor, newDescriptor, nodeComparisonListener);
-    return builder.buildDelta();
+    if (exists oldDescriptor = referencePhasedUnit.compilationUnit?.packageDescriptors?.get(0)) {
+        value builder = PackageDescriptorDeltaBuilder(oldDescriptor, changedPhasedUnit.compilationUnit?.packageDescriptors?.get(0), nodeComparisonListener);
+        return builder.buildDelta();
+    } else {
+        return InvalidPackageDescriptorDelta();
+    }
 }
 
 RegularCompilationUnitDelta buildCompilationUnitDeltas(PhasedUnit referencePhasedUnit, PhasedUnit changedPhasedUnit, NodeComparisonListener? nodeComparisonListener) {
@@ -146,7 +150,19 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
                             childKey = child.unit.fullPath;
                         }
                         case(is Ast.ImportModule) {
-                            childKey = "/".join {formatPath(child.importPath.identifiers), child.version.text.trim('"'.equals)};
+                            Ast.ImportPath? importPath = child.importPath;
+                            Ast.QuotedLiteral? quotedLitteral = child.quotedLiteral;
+                            String moduleName;
+                            if (exists quotedLitteral) {
+                                moduleName = quotedLitteral.text;
+                            } else {
+                                if (exists importPath) {
+                                    moduleName = formatPath(importPath.identifiers);
+                                } else {
+                                    moduleName = "<unknown>";
+                                }
+                            }
+                            childKey = moduleName + "/" + (child.version?.text?.trim('"'.equals) else "<unknown>");
                         }
                         
                         allChildrenSet.add(childKey);
@@ -175,7 +191,7 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
     }
 }
 
-class PackageDescriptorDeltaBuilder(Ast.PackageDescriptor oldNode, Ast.PackageDescriptor newNode, NodeComparisonListener? nodeComparisonListener)
+class PackageDescriptorDeltaBuilder(Ast.PackageDescriptor oldNode, Ast.PackageDescriptor? newNode, NodeComparisonListener? nodeComparisonListener)
         extends DeltaBuilder(oldNode, newNode) {
     variable PackageDescriptorDelta.PossibleChange? change = null;
     
@@ -208,6 +224,7 @@ class PackageDescriptorDeltaBuilder(Ast.PackageDescriptor oldNode, Ast.PackageDe
     }
     
     shared actual void calculateLocalChanges() {
+        assert(exists newNode);
         if (formatPath(oldNode.importPath.identifiers) != formatPath(newNode.importPath.identifiers)) {
             change = structuralChange;
             return;
@@ -232,11 +249,16 @@ class PackageDescriptorDeltaBuilder(Ast.PackageDescriptor oldNode, Ast.PackageDe
     }
 }
 
-class ModuleDescriptorDeltaBuilder(Ast.ModuleDescriptor oldNode, Ast.ModuleDescriptor newNode, NodeComparisonListener? nodeComparisonListener)
+class ModuleDescriptorDeltaBuilder(Ast.ModuleDescriptor oldNode, Ast.ModuleDescriptor? newNode, NodeComparisonListener? nodeComparisonListener)
         extends DeltaBuilder(oldNode, newNode) {
     variable value changes = ArrayList<ModuleDescriptorDelta.PossibleChange>();
     variable value childrenDeltas = ArrayList<ModuleImportDelta>();
-    assert(is Module oldModule = oldNode.importPath.model);
+    Module? oldModule;
+    if (is Module model = oldNode.importPath?.model) {
+        oldModule = model;
+    } else {
+        oldModule = null;
+    }
     
     shared actual ModuleDescriptorDelta buildDelta() {
         recurse();
@@ -252,7 +274,8 @@ class ModuleDescriptorDeltaBuilder(Ast.ModuleDescriptor oldNode, Ast.ModuleDescr
     
     shared actual void manageChildDelta(AstNode oldChild, AstNode? newChild) {
         assert(is Ast.ImportModule oldChild, 
-            is Ast.ImportModule? newChild);
+            is Ast.ImportModule? newChild,
+            exists oldModule);
         value builder = ModuleImportDeclarationDeltaBuilder(oldChild, newChild, oldModule, nodeComparisonListener);
         value delta = builder.buildDelta();
         if (delta.changes.empty && delta.childrenDeltas.empty) {
@@ -276,7 +299,7 @@ class ModuleDescriptorDeltaBuilder(Ast.ModuleDescriptor oldNode, Ast.ModuleDescr
     }
     
     shared actual void calculateLocalChanges() {
-        
+        assert(exists newNode);
         if (formatPath(oldNode.importPath.identifiers) != formatPath(newNode.importPath.identifiers)) {
             changes.add(structuralChange);
             return;
@@ -288,6 +311,9 @@ class ModuleDescriptorDeltaBuilder(Ast.ModuleDescriptor oldNode, Ast.ModuleDescr
     }
     
     shared actual Ast.ImportModule[] getChildren(AstNode astNode) {
+        if (changes.contains(structuralChange)) {
+            return [];
+        }
         assert(is Ast.ModuleDescriptor astNode);
         return CeylonIterable(astNode.importModuleList.importModules).sequence();
     }
@@ -313,7 +339,7 @@ class ModuleImportDeclarationDeltaBuilder(Ast.ImportModule oldNode, Ast.ImportMo
                                 modelVersion == astVersion;
                     }
                 };
-                assert (exists moduleImport); 
+                assert (exists moduleImport);
                 return moduleImport;
             }
             shared actual [ModuleImportDelta.PossibleChange]|[] changes {
