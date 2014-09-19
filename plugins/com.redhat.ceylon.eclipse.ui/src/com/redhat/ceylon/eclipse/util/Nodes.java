@@ -38,6 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Util;
+import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
@@ -248,8 +249,7 @@ public class Nodes {
         }
         else if (node instanceof Tree.ExtendedTypeExpression) {
             //TODO: whoah! this is really ugly!
-            return ((Tree.SimpleType) 
-                    ((Tree.ExtendedTypeExpression) node).getChildren().get(0))
+            return ((CustomTree.ExtendedTypeExpression) node).getType()
                             .getIdentifier();
         }
         else if (node instanceof Tree.SimpleType) {

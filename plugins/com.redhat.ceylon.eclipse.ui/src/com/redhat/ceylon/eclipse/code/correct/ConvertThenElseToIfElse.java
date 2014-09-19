@@ -56,13 +56,13 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
                     return;
                 }
                 Tree.Expression expression = expressionStmt.getExpression();
-                if (expression.getChildren().isEmpty()) {
+                if (expression.getTerm()==null) {
                     return;
                 }
-                if (! (expression.getChildren().get(0) instanceof Tree.AssignOp)) {
+                if (! (expression.getTerm() instanceof Tree.AssignOp)) {
                     return;
                 }
-                Tree.AssignOp assignOp = (Tree.AssignOp) expression.getChildren().get(0);
+                Tree.AssignOp assignOp = (Tree.AssignOp) expression.getTerm();
                 action = getTerm(doc, assignOp.getLeftTerm()) + " = ";
                 operation = assignOp.getRightTerm();
             } else if (statement instanceof Tree.SpecifierStatement) {
