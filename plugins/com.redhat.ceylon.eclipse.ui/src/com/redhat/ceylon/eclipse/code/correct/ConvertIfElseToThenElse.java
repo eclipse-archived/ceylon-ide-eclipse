@@ -59,16 +59,16 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
         }
         
         Block ifBlock = ifStmt.getIfClause().getBlock();
-        if (ifBlock.getChildren().size() != 1) {
+        if (ifBlock.getStatements().size() != 1) {
             return null;
         }
         Block elseBlock = ifStmt.getElseClause().getBlock();
-        if (elseBlock.getChildren().size() != 1) {
+        if (elseBlock.getStatements().size() != 1) {
             return null;
         }
 
-        Node ifBlockNode = ifBlock.getChildren().get(0);
-        Node elseBlockNode = elseBlock.getChildren().get(0);
+        Node ifBlockNode = ifBlock.getStatements().get(0);
+        Node elseBlockNode = elseBlock.getStatements().get(0);
         List<Condition> conditions = ifStmt.getIfClause()
                 .getConditionList().getConditions();
         if (conditions.size()!=1) {
