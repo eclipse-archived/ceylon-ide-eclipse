@@ -4,7 +4,6 @@ import ceylon.collection {
     MutableMap,
     ArrayList,
     MutableList,
-    StringBuilder,
     TreeSet
 }
 import ceylon.interop.java {
