@@ -144,7 +144,8 @@ class RefineFormalMembersProposal implements ICompletionProposal,
         boolean isInterface = body instanceof Tree.InterfaceBody;
         List<Statement> statements = body.getStatements();
         String indent;
-        String bodyIndent = getIndent(body, document);
+//        String bodyIndent = getIndent(body, document);
+        String bodyIndent = getIndent(node, document);
         String delim = getDefaultLineDelimiter(document);
         if (statements.isEmpty()) {
             indent = delim + bodyIndent + getDefaultIndent();
