@@ -355,12 +355,14 @@ public class CodeCompletions {
                         EditorsUI.getPreferenceStore().getBoolean(DISPLAY_PARAMETER_TYPES);
                 result.append("(");
                 for (Parameter p: params) {
+                    ProducedTypedReference typedParameter = 
+                            pr.getTypedParameter(p);
                     if (p.getModel() instanceof Functional) {
                         if (p.isDeclaredVoid()) {
                             result.append("void ");
                         }
                         appendParameters(p.getModel(), 
-                                pr.getTypedParameter(p), 
+                                typedParameter, 
                                 unit, result, 
                                 descriptionOnly);
                         if (p.isDeclaredVoid()) {
@@ -372,9 +374,11 @@ public class CodeCompletions {
                         }
                     }
                     else {
-                        ProducedType pt = p.getType();
+                        ProducedType pt = typedParameter.getType();
                         if (descriptionOnly && paramTypes && !isTypeUnknown(pt)) {
-                            if (p.isSequenced()) pt = unit.getSequentialElementType(pt);
+                            if (p.isSequenced()) {
+                                pt = unit.getSequentialElementType(pt);
+                            }
                             result.append(pt.getProducedTypeName(unit));
                             if (p.isSequenced()) {
                                 result.append(p.isAtLeastOne()?'+':'*');
