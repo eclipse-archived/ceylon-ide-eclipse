@@ -741,7 +741,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         v.visit(cu);
         Tree.FunctionArgument fun = v.result;
         if (fun!=null && fun.getExpression()!=null) {
-            addConvertToBlockProposal(doc, proposals, file, null, fun);
+            addConvertToBlockProposal(doc, proposals, file, fun);
         }
     }
 
@@ -773,8 +773,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.SpecifierOrInitializerExpression se = 
                     attDecNode.getSpecifierOrInitializerExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
-                addConvertToBlockProposal(doc, proposals, file, 
-                        (Tree.LazySpecifierExpression) se, decNode);
+                addConvertToBlockProposal(doc, proposals, file, decNode);
             }
             else {
                 addConvertToGetterProposal(doc, proposals, file, attDecNode);
@@ -784,16 +783,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.SpecifierOrInitializerExpression se = 
                     ((Tree.MethodDeclaration) decNode).getSpecifierExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
-                addConvertToBlockProposal(doc, proposals, file, 
-                        (Tree.LazySpecifierExpression) se, decNode);
+                addConvertToBlockProposal(doc, proposals, file, decNode);
             }
         }
         if (decNode instanceof Tree.AttributeSetterDefinition) {
             Tree.SpecifierOrInitializerExpression se = 
                     ((Tree.AttributeSetterDefinition) decNode).getSpecifierExpression();
             if (se instanceof Tree.LazySpecifierExpression) {
-                addConvertToBlockProposal(doc, proposals, file, 
-                        (Tree.LazySpecifierExpression) se, decNode);
+                addConvertToBlockProposal(doc, proposals, file, decNode);
             }
             Tree.Block b = ((Tree.AttributeSetterDefinition) decNode).getBlock(); 
             if (b!=null) {
@@ -822,8 +819,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.SpecifierOrInitializerExpression se = 
                     ma.getSpecifierExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
-                addConvertToBlockProposal(doc, proposals, file, 
-                        (Tree.LazySpecifierExpression) se, node);
+                addConvertToBlockProposal(doc, proposals, file, node);
             }
             Tree.Block b = ma.getBlock(); 
             if (b!=null) {
@@ -835,8 +831,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.SpecifierOrInitializerExpression se = 
                     aa.getSpecifierExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
-                addConvertToBlockProposal(doc, proposals, file, 
-                        (Tree.LazySpecifierExpression) se, node);
+                addConvertToBlockProposal(doc, proposals, file, node);
             }
             Tree.Block b = aa.getBlock(); 
             if (b!=null) {
