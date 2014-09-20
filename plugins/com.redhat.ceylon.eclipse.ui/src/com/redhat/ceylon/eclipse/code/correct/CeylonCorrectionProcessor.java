@@ -630,6 +630,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     doc, currentOffset);
             addTypingProposals(proposals, file, rootNode, node, declaration, editor);
             
+            addAnonymousFunctionProposals(editor, proposals, doc, file, rootNode, 
+                    currentOffset);
+            
             addDeclarationProposals(editor, proposals, doc, file, rootNode, 
                     declaration, currentOffset);
             
@@ -717,6 +720,28 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     }
                 }
             }
+        }
+    }
+    
+    private static void addAnonymousFunctionProposals(CeylonEditor editor,
+            Collection<ICompletionProposal> proposals, IDocument doc,
+            IFile file, Tree.CompilationUnit cu,
+            final int currentOffset) {
+        class FindAnonFunctionVisitor extends Visitor {
+            Tree.FunctionArgument result;
+            public void visit(Tree.FunctionArgument that) {
+                if (currentOffset>=that.getStartIndex() &&
+                    currentOffset<=that.getStopIndex()+1) {
+                    result = that;
+                }
+                super.visit(that);
+            }
+        }
+        FindAnonFunctionVisitor v = new FindAnonFunctionVisitor();
+        v.visit(cu);
+        Tree.FunctionArgument fun = v.result;
+        if (fun!=null && fun.getExpression()!=null) {
+            addConvertToBlockProposal(doc, proposals, file, null, fun);
         }
     }
 
