@@ -268,27 +268,29 @@ class CreateProposal extends InitializerProposal {
                     Nodes.findStatement(cu, smte));
         }
         else {
-            addCreateLocalProposals(proposals, project, dg);
-            ClassOrInterface container = findClassContainer(cu, smte);
-            if (container!=null && 
-                    container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
-                do {
-                    addCreateMemberProposals(proposals, project, 
-                            dg, container,
-                            //TODO: this is a little lame because
-                            //      it doesn't handle some cases
-                            //      of nesting
-                            Nodes.findStatement(cu, smte));
-                    if (container.getContainer() instanceof Declaration) {
-                        Declaration outerContainer = 
-                                (Declaration) container.getContainer();
-                        container = findClassContainer(outerContainer);
+            if (!(dg.getNode() instanceof Tree.ExtendedTypeExpression)) {
+                addCreateLocalProposals(proposals, project, dg);
+                ClassOrInterface container = findClassContainer(cu, smte);
+                if (container!=null && 
+                        container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
+                    do {
+                        addCreateMemberProposals(proposals, project, 
+                                dg, container,
+                                //TODO: this is a little lame because
+                                //      it doesn't handle some cases
+                                //      of nesting
+                                Nodes.findStatement(cu, smte));
+                        if (container.getContainer() instanceof Declaration) {
+                            Declaration outerContainer = 
+                                    (Declaration) container.getContainer();
+                            container = findClassContainer(outerContainer);
+                        }
+                        else { 
+                            break;
+                        }
                     }
-                    else { 
-                        break;
-                    }
+                    while (container!=null);
                 }
-                while (container!=null);
             }
             addCreateToplevelProposals(proposals, project, dg);
             addCreateInNewUnitProposal(proposals, dg, file);

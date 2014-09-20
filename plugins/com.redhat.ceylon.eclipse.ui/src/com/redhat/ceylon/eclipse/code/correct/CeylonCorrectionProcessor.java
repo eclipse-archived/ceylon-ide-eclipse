@@ -130,6 +130,7 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
@@ -823,11 +824,29 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    private void addCreationProposals(Tree.CompilationUnit cu, Node node, 
+    private void addCreationProposals(Tree.CompilationUnit cu, final Node node, 
             ProblemLocation problem, Collection<ICompletionProposal> proposals, 
             IProject project, TypeChecker tc, IFile file) {
         if (node instanceof Tree.MemberOrTypeExpression) {
             addCreateProposals(cu, node, proposals, project, file);
+        }
+        else if (node instanceof Tree.SimpleType) {
+            class FindExtendedTypeExpressionVisitor extends Visitor {
+                Tree.InvocationExpression invocationExpression;
+                @Override
+                public void visit(Tree.ExtendedType that) {
+                    super.visit(that);
+                    if (that.getType()==node) {
+                        invocationExpression = that.getInvocationExpression();
+                    }
+                }
+            }
+            FindExtendedTypeExpressionVisitor v = new FindExtendedTypeExpressionVisitor();
+            v.visit(cu);
+            if (v.invocationExpression!=null) {
+                addCreateProposals(cu, v.invocationExpression.getPrimary(), 
+                        proposals, project, file);
+            }
         }
         //TODO: should we add this stuff back in??
         /*else if (node instanceof Tree.BaseType) {
