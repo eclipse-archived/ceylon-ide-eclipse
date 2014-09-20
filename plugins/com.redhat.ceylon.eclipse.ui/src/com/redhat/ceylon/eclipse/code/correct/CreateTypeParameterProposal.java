@@ -99,6 +99,42 @@ class CreateTypeParameterProposal extends CorrectionProposal {
     static void addCreateTypeParameterProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Tree.CompilationUnit cu, final Tree.BaseType node, 
             String brokenName) {
+        
+        class FilterExtendsSatisfiesVisitor extends Visitor {
+            boolean filter = false;
+            @Override
+            public void visit(Tree.ExtendedType that) {
+                super.visit(that);
+                if (that.getType()==node) {
+                    filter = true;
+                }
+            }
+            @Override
+            public void visit(Tree.SatisfiedTypes that) {
+                super.visit(that);
+                for (Tree.Type t: that.getTypes()) {
+                    if (t==node) {
+                        filter = true;
+                    }
+                }
+            }
+            @Override
+            public void visit(Tree.CaseTypes that) {
+                super.visit(that);
+                for (Tree.Type t: that.getTypes()) {
+                    if (t==node) {
+                        filter = true;
+                    }
+                }
+            }
+        }
+        
+        FilterExtendsSatisfiesVisitor v = new FilterExtendsSatisfiesVisitor();
+        v.visit(cu);
+        if (v.filter) {
+            return;
+        }
+        
         Tree.Declaration decl = findDeclarationWithBody(cu, node);
         Declaration d = decl==null ? null : decl.getDeclarationModel();
         if (d == null || d.isActual() ||
