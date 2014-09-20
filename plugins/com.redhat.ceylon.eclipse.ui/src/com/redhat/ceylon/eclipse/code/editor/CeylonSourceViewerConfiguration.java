@@ -112,7 +112,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         preferenceStore.setDefault(LINKED_MODE_EXTRACT, true);
         preferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
         preferenceStore.setDefault(DISPLAY_RETURN_TYPES, false);
-        preferenceStore.setDefault(DISPLAY_PARAMETER_TYPES, false);
+        preferenceStore.setDefault(DISPLAY_PARAMETER_TYPES, true);
         preferenceStore.setDefault(NORMALIZE_WS, false);
         preferenceStore.setDefault(NORMALIZE_NL, false);
         preferenceStore.setDefault(STRIP_TRAILING_WS, false);
