@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
@@ -30,16 +31,34 @@ class ConvertToBlockProposal extends CorrectionProposal {
             Tree.LazySpecifierExpression spec, Node decNode) {
         TextChange change = new TextFileChange("Convert to Block", file);
         change.setEdit(new MultiTextEdit());
-        Integer offset = spec.getStartIndex();
+        int offset;
+        int len;
         String space;
         String spaceAfter;
-        try {
-            space = doc.getChar(offset-1)==' ' ? "" : " ";
-            spaceAfter = doc.getChar(offset+2)==' ' ? "" : " ";
+        String semi;
+        if (decNode instanceof Tree.FunctionArgument) {
+            //TODO: use this same strategy for declarations/arguments
+            Tree.FunctionArgument fun = (Tree.FunctionArgument) decNode;
+            List<Tree.ParameterList> pls = fun.getParameterLists();
+            if (pls.isEmpty()) return;
+            offset = pls.get(pls.size()-1).getStopIndex()+1;
+            len = fun.getExpression().getStartIndex() - offset;
+            space = " ";
+            spaceAfter = " ";
+            semi = ";";
         }
-        catch (BadLocationException e) {
-            e.printStackTrace();
-            return;
+        else {
+            offset = spec.getStartIndex();
+            len = 2;
+            try {
+                space = doc.getChar(offset-1)==' ' ? "" : " ";
+                spaceAfter = doc.getChar(offset+2)==' ' ? "" : " ";
+                semi = "";
+            }
+            catch (BadLocationException e) {
+                e.printStackTrace();
+                return;
+            }
         }
         boolean isVoid;
         String addedKeyword = null;
@@ -66,7 +85,8 @@ class ConvertToBlockProposal extends CorrectionProposal {
             }
         }
         else if (decNode instanceof Tree.FunctionArgument) {
-            Method dm = ((Tree.FunctionArgument) decNode).getDeclarationModel();
+            Tree.FunctionArgument fun = (Tree.FunctionArgument) decNode;
+            Method dm = fun.getDeclarationModel();
             if (dm==null) return;
             isVoid = dm.isDeclaredVoid();
         }
@@ -76,8 +96,8 @@ class ConvertToBlockProposal extends CorrectionProposal {
         if (addedKeyword!=null) {
             change.addEdit(new InsertEdit(decNode.getStartIndex(), addedKeyword));
         }
-        change.addEdit(new ReplaceEdit(offset, 2, space + (isVoid?"{":"{ return") + spaceAfter));
-        change.addEdit(new InsertEdit(decNode.getStopIndex()+1, " }"));
+        change.addEdit(new ReplaceEdit(offset, len, space + (isVoid?"{":"{ return") + spaceAfter));
+        change.addEdit(new InsertEdit(decNode.getStopIndex()+1, semi + " }"));
         proposals.add(new ConvertToBlockProposal(offset + space.length() + 2 , change));
     }
 
