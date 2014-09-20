@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshte
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
+import static java.lang.Character.isUpperCase;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -112,12 +113,14 @@ class ChangeReferenceProposal extends CorrectionProposal
         if (brokenName.isEmpty()) return;
         for (DeclarationWithProximity dwp: 
             getProposals(node, node.getScope(), cu).values()) {
-            int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
-            //TODO: would it be better to just sort by dist, and
-            //      then select the 3 closest possibilities?
-            if (dist<=brokenName.length()/3+1) {
-                addChangeReferenceProposal(problem, proposals, file, 
-                        brokenName, dwp, dist, cu);
+            if (isUpperCase(dwp.getName().charAt(0))==isUpperCase(brokenName.charAt(0))) {
+                int dist = getLevenshteinDistance(brokenName, dwp.getName()); //+dwp.getProximity()/3;
+                //TODO: would it be better to just sort by dist, and
+                //      then select the 3 closest possibilities?
+                if (dist<=brokenName.length()/3+1) {
+                    addChangeReferenceProposal(problem, proposals, file, 
+                            brokenName, dwp, dist, cu);
+                }
             }
         }
     }
