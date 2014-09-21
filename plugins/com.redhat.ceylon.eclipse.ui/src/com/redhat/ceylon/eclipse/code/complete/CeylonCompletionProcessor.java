@@ -721,6 +721,15 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             for (DeclarationWithProximity dwp: sortedProposals) {
                 Declaration dec = dwp.getDeclaration();
                 
+                if (!dec.isToplevel() && 
+                    !dec.isClassOrInterfaceMember() &&
+                    dec.getUnit().equals(node.getUnit())) {
+                    Node decNode = Nodes.getReferencedNode(dec, cpc.getRootNode());
+                    if (decNode!=null && offset<Nodes.getIdentifyingNode(decNode).getStartIndex()) {
+                        continue;
+                    }
+                }
+                
                 if (isPackageOrModuleDescriptor && !inDoc && 
                         ol!=META && (ol==null || !ol.reference) &&
                     (!dec.isAnnotation() || !(dec instanceof Method))) {
