@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 public enum OccurrenceLocation {
+    EXISTS(false), 
+    NONEMPTY(false), 
+    IS(false),
     EXTENDS(false), 
     SATISFIES(false),
     CLASS_ALIAS(false), 

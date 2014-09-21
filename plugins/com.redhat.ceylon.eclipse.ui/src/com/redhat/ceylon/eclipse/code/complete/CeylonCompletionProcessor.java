@@ -64,11 +64,14 @@ import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CASE;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.DOCLINK;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXISTS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.FUNCTION_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.NONEMPTY;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.OF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PARAMETER_LIST;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.SATISFIES;
@@ -641,7 +644,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             ProducedType requiredType, int previousTokenType) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-        OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node);
+        OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node, offset);
         
         if (node instanceof Tree.TypeConstraint) {
             for (DeclarationWithProximity dwp: sortedProposals) {
@@ -652,7 +655,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 }
             }
         }
-        else if (prefix.isEmpty() &&
+        else if (prefix.isEmpty() && ol!=IS &&
                 isMemberNameProposable(offset, node, memberOp) &&
                 (node instanceof Tree.Type || 
                 node instanceof Tree.BaseTypeExpression ||
@@ -727,7 +730,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     (!dec.isAnnotation() || !(dec instanceof Method))) {
                     continue;
                 }
-
+                
                 if (!secondLevel && 
                         isParameterOfNamedArgInvocation(scope, dwp) &&
                         isDirectlyInsideNamedArgumentList(cpc, node, token)) {
@@ -752,6 +755,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 
                 if (isProposable(dwp, ol, scope, node.getUnit(), 
                             requiredType, previousTokenType) && 
+                            isProposable(node, ol, dec) &&
                         (definitelyRequiresType(ol) || noParamsFollow || 
                                 dec instanceof Functional)) {
                     if (ol==DOCLINK) {
@@ -818,6 +822,36 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+    private static boolean isProposable(Node node, OccurrenceLocation ol,
+            Declaration dec) {
+        if (ol!=EXISTS && ol!=NONEMPTY && ol!=IS) {
+            return true;
+        }
+        else if (dec instanceof Value) {
+            Value val = (Value) dec;
+            if (val.isVariable() || val.isTransient() || 
+                val.isDefault() || val.isFormal() ||
+                isTypeUnknown(val.getType())) {
+                return false;
+            }
+            else {
+                switch (ol) {
+                case EXISTS:
+                    return node.getUnit().isOptionalType(val.getType());
+                case NONEMPTY:
+                    return node.getUnit().isPossiblyEmptyType(val.getType());
+                case IS:
+                    return true;
+                default:
+                    return false;
+                }
+            }
+        }
+        else {
+            return false;
+        }
     }
 
     private static void addAnonFunctionProposal(int offset, 
