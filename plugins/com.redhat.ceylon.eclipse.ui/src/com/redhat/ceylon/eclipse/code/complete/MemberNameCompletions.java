@@ -10,8 +10,10 @@ import java.util.Set;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -55,25 +57,16 @@ public class MemberNameCompletions {
         else if (node instanceof Tree.TypedDeclaration) {
             Tree.TypedDeclaration td = (Tree.TypedDeclaration) node;
             Tree.Type type = td.getType();
-            if (type instanceof Tree.OptionalType) {
-                type = ((Tree.OptionalType) type).getDefiniteType();
-            }
-            if (type instanceof Tree.SimpleType) {
-                Tree.Identifier id = td.getIdentifier();
-                if (id==null || offset>=id.getStartIndex() && offset<=id.getStopIndex()+1) {
-                    Tree.SimpleType simpleType = (Tree.SimpleType) type;
-                    addProposals(proposals, simpleType.getIdentifier(), 
-                            simpleType.getTypeModel());
-                }
+            Tree.Identifier id = td.getIdentifier();
+            if (id==null || offset>=id.getStartIndex() && offset<=id.getStopIndex()+1) {
+                node = type;
             }
             else {
-                if (type instanceof Tree.TupleType) {
-                    proposals.add("sequence");
-                    proposals.add("tuple");
-                }
+                node = null;
             }
         }
-        else if (node instanceof Tree.SimpleType) {
+        
+        if (node instanceof Tree.SimpleType) {
             Tree.SimpleType simpleType = (Tree.SimpleType) node;
             addProposals(proposals, simpleType.getIdentifier(), 
                     simpleType.getTypeModel());
@@ -81,16 +74,52 @@ public class MemberNameCompletions {
         else if (node instanceof Tree.BaseTypeExpression) {
             Tree.BaseTypeExpression typeExpression = (Tree.BaseTypeExpression) node;
             addProposals(proposals, typeExpression.getIdentifier(), 
-                    node.getUnit().getCallableReturnType(typeExpression.getTypeModel()));
+                    getLiteralType(node, typeExpression));
         }
         else if (node instanceof Tree.QualifiedTypeExpression) {
             Tree.QualifiedTypeExpression typeExpression = (Tree.QualifiedTypeExpression) node;
             addProposals(proposals, typeExpression.getIdentifier(), 
-                    node.getUnit().getCallableReturnType(typeExpression.getTypeModel()));
+                    getLiteralType(node, typeExpression));
         }
-        else if (node instanceof Tree.Tuple) {
+        else if (node instanceof Tree.OptionalType) {
+            Tree.StaticType et = ((Tree.OptionalType) node).getDefiniteType();
+            if (et instanceof Tree.SimpleType) {
+                addProposals(proposals, ((Tree.SimpleType) et).getIdentifier(), 
+                        ((Tree.OptionalType) node).getTypeModel());
+            }
+        }
+        else if (node instanceof Tree.SequenceType) {
+            Tree.StaticType et = ((Tree.SequenceType) node).getElementType();
+            if (et instanceof Tree.SimpleType) {
+                addPluralProposals(proposals, ((Tree.SimpleType) et).getIdentifier(), 
+                        ((Tree.SequenceType) node).getTypeModel());
+            }
             proposals.add("sequence");
-            proposals.add("tuple");
+        }
+        else if (node instanceof Tree.IterableType) {
+            Tree.Type et = ((Tree.IterableType) node).getElementType();
+            if (et instanceof Tree.SequencedType) {
+                et = ((Tree.SequencedType) et).getType();
+            }
+            if (et instanceof Tree.SimpleType) {
+                addPluralProposals(proposals, ((Tree.SimpleType) et).getIdentifier(), 
+                        ((Tree.IterableType) node).getTypeModel());
+            }
+            proposals.add("iterable");
+        }
+        else if (node instanceof Tree.TupleType) {
+            List<Type> ets = ((Tree.TupleType) node).getElementTypes();
+            if (ets.size()==1) {
+                Tree.Type et = ets.get(0);
+                if (et instanceof Tree.SequencedType) {
+                    et = ((Tree.SequencedType) et).getType();
+                }
+                if (et instanceof Tree.SimpleType) {
+                    addPluralProposals(proposals, ((Tree.SimpleType) et).getIdentifier(), 
+                            ((Tree.TupleType) node).getTypeModel());
+                }
+                proposals.add("sequence");
+            }
         }
         /*if (suggestedName!=null) {
             suggestedName = lower(suggestedName);
@@ -117,15 +146,28 @@ public class MemberNameCompletions {
         }
     }
 
+    private static ProducedType getLiteralType(Node node,
+            Tree.StaticMemberOrTypeExpression typeExpression) {
+        Unit unit = node.getUnit();
+        ProducedType pt = typeExpression.getTypeModel();
+        return unit.isCallableType(pt) ?
+                unit.getCallableReturnType(pt) : pt;
+    }
+
     private static void addProposals(Set<String> proposals,
             Tree.Identifier identifier, ProducedType type) {
         Nodes.addNameProposals(proposals, false, identifier.getText());
         if (!isTypeUnknown(type) &&
                 identifier.getUnit().isIterableType(type)) {
-            Nodes.addNameProposals(proposals, true, 
-                    identifier.getUnit().getIteratedType(type)
-                            .getDeclaration().getName());
+            addPluralProposals(proposals, identifier, type);
         }
+    }
+
+    private static void addPluralProposals(Set<String> proposals,
+            Tree.Identifier identifier, ProducedType type) {
+        Nodes.addNameProposals(proposals, true, 
+                identifier.getUnit().getIteratedType(type)
+                        .getDeclaration().getName());
     }
 
     /*private static String lower(String suggestedName) {
