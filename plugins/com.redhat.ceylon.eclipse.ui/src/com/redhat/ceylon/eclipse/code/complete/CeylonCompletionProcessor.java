@@ -661,10 +661,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 node instanceof Tree.BaseTypeExpression ||
                 node instanceof Tree.QualifiedTypeExpression)) {
             
-            //TODO: we get to here after "if (is Type", which is 
-            //     not quite right - we should also propose 
-            //     narrowable value references in that case 
-                  
             //member names we can refine
             ProducedType t=null;
             if (node instanceof Tree.Type) {
@@ -985,10 +981,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 type==SAFE_MEMBER_OP;
     }
 
-    /*private static boolean isKeywordProposable(OccurrenceLocation ol) {
-        return ol==null || ol==EXPRESSION;
-    }*/
-    
     private static boolean isRefinementProposable(Declaration dec, 
             OccurrenceLocation ol, Scope scope) {
         return ol==null && 
@@ -1068,23 +1060,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         ((TypeParameter) d).getContainer()==((Tree.TypeConstraint) node)
                                 .getDeclarationModel().getContainer());
     }
-    
-    /*private static boolean isParameterOfNamedArgInvocation(Node node, Declaration d) {
-        if (node instanceof Tree.NamedArgumentList) {
-            ParameterList pl = ((Tree.NamedArgumentList) node).getNamedArgumentList()
-                    .getParameterList();
-            return d instanceof Parameter && pl!=null &&
-                    pl.getParameters().contains(d);
-        }
-        else if (node.getScope() instanceof NamedArgumentList) {
-            ParameterList pl = ((NamedArgumentList) node.getScope()).getParameterList();
-            return d instanceof Parameter && pl!=null &&
-                    pl.getParameters().contains(d);
-        }
-        else {
-            return false;
-        }
-    }*/
     
     private static boolean isParameterOfNamedArgInvocation(Scope scope, 
             DeclarationWithProximity d) {
