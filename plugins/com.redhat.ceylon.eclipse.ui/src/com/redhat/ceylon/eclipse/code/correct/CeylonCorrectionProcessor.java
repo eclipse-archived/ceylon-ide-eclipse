@@ -740,8 +740,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         FindAnonFunctionVisitor v = new FindAnonFunctionVisitor();
         v.visit(cu);
         Tree.FunctionArgument fun = v.result;
-        if (fun!=null && fun.getExpression()!=null) {
-            addConvertToBlockProposal(doc, proposals, file, fun);
+        if (fun!=null) {
+            if (fun.getExpression()!=null) {
+                addConvertToBlockProposal(doc, proposals, file, fun);
+            }
+            if (fun.getBlock()!=null) {
+                addConvertToSpecifierProposal(doc, proposals, file, 
+                        fun.getBlock(), true);
+            }
         }
     }
 
