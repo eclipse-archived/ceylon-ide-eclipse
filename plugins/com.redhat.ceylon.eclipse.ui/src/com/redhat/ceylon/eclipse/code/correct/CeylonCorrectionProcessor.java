@@ -71,6 +71,7 @@ import static com.redhat.ceylon.eclipse.code.correct.FixAliasProposal.addFixAlia
 import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.addImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addReverseIfElseProposal;
+import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.addJoinDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
@@ -639,6 +640,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addConvertToClassProposal(proposals, declaration, editor);
             addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
             addSplitDeclarationProposals(proposals, doc, file, rootNode, declaration);
+            addJoinDeclarationProposal(proposals, rootNode, statement, file);
             addParameterProposals(proposals, file, rootNode, declaration, editor);
             
             addArgumentProposals(proposals, doc, file, argument);
