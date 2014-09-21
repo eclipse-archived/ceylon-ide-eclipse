@@ -100,9 +100,10 @@ public class CompletionUtil {
                 cpc.getRootNode().getPackageDescriptors().isEmpty();
     }
 
-    public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, Node node) {
-        if (node.getToken()==null) return null;
-        FindOccurrenceLocationVisitor visitor = new FindOccurrenceLocationVisitor(node);
+    public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, 
+            Node node, int offset) {
+        FindOccurrenceLocationVisitor visitor = 
+                new FindOccurrenceLocationVisitor(offset, node);
         cu.visit(visitor);
         return visitor.getOccurrenceLocation();
     }

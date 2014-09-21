@@ -6,13 +6,16 @@ import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.DOCLINK;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXISTS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.FUNCTION_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.INTERFACE_REF;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IS;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.MODULE_REF;
+import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.NONEMPTY;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.OF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PACKAGE_REF;
 import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PARAMETER_LIST;
@@ -35,11 +38,13 @@ class FindOccurrenceLocationVisitor extends Visitor
         implements NaturalVisitor {
     
     private Node node;
+    private int offset;
     
     private OccurrenceLocation occurrence;
     private boolean inTypeConstraint = false;
     
-    FindOccurrenceLocationVisitor(Node node) {
+    FindOccurrenceLocationVisitor(int offset, Node node) {
+        this.offset = offset;
         this.node = node;
     }
     
@@ -62,6 +67,36 @@ class FindOccurrenceLocationVisitor extends Visitor
             occurrence = EXPRESSION;
         }
         super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.ExistsCondition that) {
+        super.visit(that);
+        if (that.getVariable()==null ? 
+                inBounds(that) :
+                inBounds(that.getVariable().getIdentifier())) {
+            occurrence = EXISTS;
+        }
+    }
+    
+    @Override
+    public void visit(Tree.NonemptyCondition that) {
+        super.visit(that);
+        if (that.getVariable()==null ? 
+                inBounds(that) :
+                inBounds(that.getVariable().getIdentifier())) {
+            occurrence = NONEMPTY;
+        }
+    }
+    
+    @Override
+    public void visit(Tree.IsCondition that) {
+        super.visit(that);
+        if (that.getVariable()==null ? 
+                inBounds(that) && offset>that.getType().getStopIndex()+1 :
+                inBounds(that.getVariable().getIdentifier())) {
+            occurrence = IS;
+        }
     }
     
     public void visit(Tree.TypeConstraint that) {

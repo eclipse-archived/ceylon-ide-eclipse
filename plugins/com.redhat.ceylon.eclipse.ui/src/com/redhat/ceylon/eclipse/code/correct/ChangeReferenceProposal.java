@@ -8,9 +8,9 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
 import static java.lang.Character.isUpperCase;
+import static java.util.Collections.singleton;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -63,10 +63,11 @@ class ChangeReferenceProposal extends CorrectionProposal
                     !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
                 OccurrenceLocation ol = 
                         getOccurrenceLocation(cu, 
-                                Nodes.findNode(cu, problem.getOffset()));
+                                Nodes.findNode(cu, problem.getOffset()),
+                                problem.getOffset());
                 if (ol!=IMPORT) {
                     List<InsertEdit> ies = 
-                            importEdits(cu, Collections.singleton(dec), 
+                            importEdits(cu, singleton(dec), 
                                     null, null, doc);
                     for (InsertEdit ie: ies) {
                         change.addEdit(ie);
