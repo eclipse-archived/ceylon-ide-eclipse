@@ -17,13 +17,18 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class ConvertToSpecifierProposal extends CorrectionProposal {
     
-    ConvertToSpecifierProposal(int offset, TextChange change) {
-        super("Convert block to =>", change, new Region(offset, 0));
+    ConvertToSpecifierProposal(String desc, int offset, TextChange change) {
+        super(desc, change, new Region(offset, 0));
     }
     
     static void addConvertToSpecifierProposal(IDocument doc,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.Block block) {
+        addConvertToSpecifierProposal(doc, proposals, file, block, false);
+    }
+    static void addConvertToSpecifierProposal(IDocument doc,
+            Collection<ICompletionProposal> proposals, IFile file,
+            Tree.Block block, boolean anonymousFunction) {
         if (block.getStatements().size()==1) {
             Tree.Statement s = block.getStatements().get(0);
             Node end = null;
@@ -53,8 +58,9 @@ class ConvertToSpecifierProposal extends CorrectionProposal {
                     return;
                 }
                 change.addEdit(new ReplaceEdit(offset, block.getStopIndex()-offset+1, 
-                        "=> " + es + ";"));
-                proposals.add(new ConvertToSpecifierProposal(offset+2 , change));
+                        "=> " + es + (anonymousFunction?"":";")));
+                String desc = anonymousFunction ? "Convert anonymous function body to =>" : "Convert block to =>";
+                proposals.add(new ConvertToSpecifierProposal(desc, offset+2 , change));
             }
         }
     }
