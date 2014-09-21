@@ -488,7 +488,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 !((Tree.StringLiteral) node).getDocLinks().isEmpty()) {
             node = Nodes.findNode(node, offset, offset);
         }
-        if (tokenType==RBRACE || tokenType==SEMICOLON) {
+        if (tokenType==RBRACE && 
+                !(node instanceof Tree.IterableType) || 
+            tokenType==SEMICOLON) {
             //We are to the right of a } or ;
             //so the returned node is the previous
             //statement/declaration. Look for the
@@ -650,12 +652,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 }
             }
         }
-        else if ((node instanceof Tree.SimpleType || 
+        else if (prefix.isEmpty() &&
+                isMemberNameProposable(offset, node, memberOp) &&
+                (node instanceof Tree.Type || 
                 node instanceof Tree.BaseTypeExpression ||
-                node instanceof Tree.QualifiedTypeExpression ||
-                node instanceof Tree.Tuple) 
-                && prefix.isEmpty() && 
-                isMemberNameProposable(offset, node, memberOp)) {
+                node instanceof Tree.QualifiedTypeExpression)) {
             
             //TODO: we get to here after "if (is Type", which is 
             //     not quite right - we should also propose 
