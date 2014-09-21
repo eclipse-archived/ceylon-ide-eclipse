@@ -46,12 +46,14 @@ class ConvertToSpecifierProposal extends CorrectionProposal {
                 end = ((Tree.SpecifierStatement) s).getSpecifierExpression();
             }
             if (end!=null) {
-                TextChange change = new TextFileChange("Convert to Specifier", file);
+                TextChange change = 
+                        new TextFileChange("Convert to Specifier", file);
                 change.setEdit(new MultiTextEdit());
                 Integer offset = block.getStartIndex();
                 String es;
                 try {
-                    es = doc.get(start.getStartIndex(), end.getStopIndex()-start.getStartIndex()+1);
+                    es = doc.get(start.getStartIndex(), 
+                            end.getStopIndex()-start.getStartIndex()+1);
                 } 
                 catch (BadLocationException ex) {
                     ex.printStackTrace();
@@ -59,7 +61,9 @@ class ConvertToSpecifierProposal extends CorrectionProposal {
                 }
                 change.addEdit(new ReplaceEdit(offset, block.getStopIndex()-offset+1, 
                         "=> " + es + (anonymousFunction?"":";")));
-                String desc = anonymousFunction ? "Convert anonymous function body to =>" : "Convert block to =>";
+                String desc = anonymousFunction ? 
+                        "Convert anonymous function body to =>" : 
+                        "Convert block to =>";
                 proposals.add(new ConvertToSpecifierProposal(desc, offset+2 , change));
             }
         }
