@@ -83,7 +83,18 @@ public class ModuleCompletions {
             this.version = version;
             this.name = name;
         }
-
+        
+        @Override
+        public String getDisplayString() {
+            String str = super.getDisplayString();
+            /*if (withBody && 
+                    EditorsUI.getPreferenceStore()
+                             .getBoolean(LINKED_MODE)) {
+                str = str.replaceAll("\".*\"", "\"<...>\"");
+            }*/
+            return str;
+        }
+        
         @Override
         public Point getSelection(IDocument document) {
             final int off = offset+versioned.length()-prefix.length()-len;
@@ -231,11 +242,20 @@ public class ModuleCompletions {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
-                        for (final ModuleVersionDetails version: 
-                            module.getVersions().descendingSet()) {
+                        if (EditorsUI.getPreferenceStore()
+                             .getBoolean(LINKED_MODE)) {
                             result.add(new ModuleProposal(offset, prefix, len, 
-                                    getModuleString(withBody, name, version.getVersion()), 
-                                    module, withBody, version, name));
+                                    getModuleString(withBody, name, 
+                                            module.getLastVersion().getVersion()), 
+                                    module, withBody, module.getLastVersion(), name));
+                        }
+                        else {
+                            for (final ModuleVersionDetails version: 
+                                module.getVersions().descendingSet()) {
+                                result.add(new ModuleProposal(offset, prefix, len, 
+                                        getModuleString(withBody, name, version.getVersion()), 
+                                        module, withBody, version, name));
+                            }
                         }
                     }
                 }
