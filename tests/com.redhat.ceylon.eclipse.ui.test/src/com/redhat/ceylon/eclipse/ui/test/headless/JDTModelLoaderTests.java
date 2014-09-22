@@ -131,7 +131,7 @@ public class JDTModelLoaderTests extends ModelLoaderTest {
                     entry.getValue() instanceof Value ? DeclarationType.VALUE : DeclarationType.TYPE);
             Assert.assertNotNull(modelDeclaration);
             // make sure we loaded them exactly the same
-            modelCompare.compareDeclarations(entry.getValue(), modelDeclaration);
+            modelCompare.compareDeclarations(entry.getValue().getQualifiedNameString(), entry.getValue(), modelDeclaration);
         }
     }
 
@@ -139,14 +139,14 @@ public class JDTModelLoaderTests extends ModelLoaderTest {
     protected void verifyCompilerClassLoading(String ceylon) {
         verifyCompilerClassLoading(ceylon, new ModelComparison() {
             @Override
-            public void compareDeclarations(Declaration validDeclaration,
+            public void compareDeclarations(String name, Declaration validDeclaration,
                     Declaration modelDeclaration) {
                 if (modelDeclaration.getUnit() != null && 
                         modelDeclaration.getUnit().getFilename() != null && 
                         modelDeclaration.getUnit().getFilename().endsWith(".ceylon")) {
                     return;
                 }
-                super.compareDeclarations(validDeclaration, modelDeclaration);
+                super.compareDeclarations(name, validDeclaration, modelDeclaration);
             }
         });
     }
