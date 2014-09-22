@@ -2,6 +2,9 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.antlr.runtime.BufferedTokenStream;
@@ -34,6 +37,9 @@ import ceylon.language.AssertionError;
 import ceylon.language.Singleton;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.util.Indents;
@@ -130,6 +136,17 @@ final class FormatAction extends Action {
                 cpc.getRootNode()!=null;
     }
     
+    private static class FormattingUnit {
+        public final Node node;
+        public final CommonToken startToken;
+        public final CommonToken endToken;
+        public FormattingUnit(final Node node, final CommonToken startToken, final CommonToken endToken) {
+            this.node = node;
+            this.startToken = startToken;
+            this.endToken= endToken;
+        }
+    }
+    
     @Override
     public void run() {
         IDocument document = editor.getCeylonSourceViewer().getDocument();
@@ -144,61 +161,113 @@ final class FormatAction extends Action {
             final boolean selected, ISelectionProvider selectionProvider) {
         if (!isEnabled(pc)) return;
         final List<CommonToken> tokenList = pc.getTokens();
-        final Node node;
-        final CommonToken startToken, endToken;
+        final List<FormattingUnit> formattingUnits;
         if (selected) {
             // a node was selected, format only that
-            node = Nodes.findNode(pc.getRootNode(), ts);
-            if (node == null)
+            Node selectedRootNode = Nodes.findNode(pc.getRootNode(), ts);
+            if (selectedRootNode == null)
                 return;
-            startToken = (CommonToken)node.getToken();
-            endToken = (CommonToken)node.getEndToken();
+            if (selectedRootNode instanceof Body || selectedRootNode instanceof CompilationUnit) {
+                // format only selected statements, not entire body / CU (from now on: body)
+                
+                Iterator<Statement> it;
+                if (selectedRootNode instanceof Body) {
+                    it = ((Body)selectedRootNode).getStatements().iterator();
+                } else {
+                    it = (Iterator<Statement>)(Iterator)((CompilationUnit)selectedRootNode).getDeclarations().iterator();
+                }
+                Statement stat = null;
+                formattingUnits = new ArrayList<FormattingUnit>();
+                
+                int tokenIndex = -1;
+                // find first selected statement
+                while (it.hasNext()) {
+                    stat = it.next();
+                    CommonToken start = (CommonToken)stat.getToken();
+                    CommonToken end = (CommonToken)stat.getEndToken();
+                    if (end.getStopIndex() >= ts.getOffset()) {
+                        formattingUnits.add(new FormattingUnit(stat, start, end));
+                        tokenIndex = end.getTokenIndex() + 1;
+                        break;
+                    }
+                }
+                // find last selected statement
+                while (it.hasNext()) {
+                    stat = it.next();
+                    CommonToken start = (CommonToken)stat.getToken();
+                    CommonToken end = (CommonToken)stat.getEndToken();
+                    if (start.getStartIndex() >= ts.getOffset() + ts.getLength()) {
+                        break;
+                    }
+                    formattingUnits.add(new FormattingUnit(stat, tokenList.get(tokenIndex), end));
+                    tokenIndex = end.getTokenIndex() + 1;
+                }
+                
+                if (formattingUnits.isEmpty()) {
+                    // possible if the selection spanned the entire content of the body,
+                    // or if the body is empty, etc.
+                    formattingUnits.add(new FormattingUnit(
+                            selectedRootNode,
+                            (CommonToken)selectedRootNode.getToken(),
+                            (CommonToken)selectedRootNode.getEndToken()));
+                }
+            } else {
+                formattingUnits = Collections.singletonList(new FormattingUnit(
+                        selectedRootNode,
+                        (CommonToken)selectedRootNode.getToken(),
+                        (CommonToken)selectedRootNode.getEndToken()));
+            }
         } else {
             // format everything
-            node = pc.getRootNode();
-            startToken = tokenList.get(0);
-            endToken = tokenList.get(tokenList.size() - 1);
+            formattingUnits = Collections.singletonList(new FormattingUnit(
+                    pc.getRootNode(),
+                    tokenList.get(0),
+                    tokenList.get(tokenList.size() - 1)));
         }
-        if (node == null || startToken == null || endToken == null) {
-            return;
-        }
-        final int startTokenIndex = startToken.getTokenIndex();
-        final int endTokenIndex = endToken.getTokenIndex();
-        final int startIndex = startToken.getStartIndex();
-        final int stopIndex = endToken.getStopIndex();
-        final TokenSource tokens = new TokenSource() {
-            int i = startTokenIndex;
-            @Override
-            public Token nextToken() {
-                if (i <= endTokenIndex)
-                    return tokenList.get(i++);
-                else if (i == endTokenIndex + 1)
-                    return tokenList.get(tokenList.size() - 1); // EOF token
-                else
-                    return null;
-            }
-            @Override
-            public String getSourceName() {
-                throw new IllegalStateException("No one should need this");
-            }
-        };
         
         final StringBuilder builder = new StringBuilder(document.getLength());
         final SparseFormattingOptions wsOptions = getWsOptions(document);
         try {
-            format_.format(
-                    node,
-                    new CombinedOptions(
-                            loadProfile_.loadProfile(
-                                    "default", // TODO profile management
-                                    /* inherit = */ false,
-                                    /* baseDir = */ pc.getProject().getLocation().toOSString()),
-                            new Singleton<SparseFormattingOptions>
-                                (SparseFormattingOptions.$TypeDescriptor$, wsOptions)),
-                    new StringBuilderWriter(builder),
-                    new BufferedTokenStream(tokens),
-                    Indents.getIndent(node, document).length() / Indents.getIndentSpaces()
-                    );
+            for (FormattingUnit unit : formattingUnits) {
+                final int startTokenIndex = unit.startToken.getTokenIndex();
+                final int endTokenIndex = unit.endToken.getTokenIndex();
+                final int startIndex = unit.startToken.getStartIndex();
+                final int stopIndex = unit.endToken.getStopIndex();
+                final TokenSource tokens = new TokenSource() {
+                    int i = startTokenIndex;
+                    @Override
+                    public Token nextToken() {
+                        if (i <= endTokenIndex)
+                            return tokenList.get(i++);
+                        else if (i == endTokenIndex + 1)
+                            return tokenList.get(tokenList.size() - 1); // EOF token
+                        else
+                            return null;
+                    }
+                    @Override
+                    public String getSourceName() {
+                        throw new IllegalStateException("No one should need this");
+                    }
+                };
+                final int indentLevel = Indents.getIndent(unit.node, document).length() / Indents.getIndentSpaces();
+                if (unit != formattingUnits.get(0)) {
+                    // add indentation
+                    builder.append(wsOptions.getIndentMode().indent(indentLevel));
+                }
+                format_.format(
+                        unit.node,
+                        new CombinedOptions(
+                                loadProfile_.loadProfile(
+                                        "default", // TODO profile management
+                                        /* inherit = */ false,
+                                        /* baseDir = */ pc.getProject().getLocation().toOSString()),
+                                new Singleton<SparseFormattingOptions>
+                                    (SparseFormattingOptions.$TypeDescriptor$, wsOptions)),
+                        new StringBuilderWriter(builder),
+                        new BufferedTokenStream(tokens),
+                        indentLevel
+                        );
+            }
         } catch (Exception e) {
             return;
         } catch (AssertionError e) {
@@ -214,6 +283,8 @@ final class FormatAction extends Action {
             text = builder.toString();
         }
         try {
+            final int startIndex = formattingUnits.get(0).startToken.getStartIndex();
+            final int stopIndex = formattingUnits.get(formattingUnits.size() - 1).endToken.getStopIndex();
             if (!document.get().equals(text)) {
                 DocumentChange change = 
                         new DocumentChange("Format", document);
