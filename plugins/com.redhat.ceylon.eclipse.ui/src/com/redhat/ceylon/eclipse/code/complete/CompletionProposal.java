@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION;
 
 import org.eclipse.core.runtime.Assert;
@@ -159,8 +160,15 @@ public class CompletionProposal implements ICompletionProposal,
             return false;
         }
         try {
-            return text.substring(prefix.length())
-                    .startsWith(document.get(this.offset, offset-this.offset));
+            //TODO: really this strategy is only applicable
+            //      for completion of declaration names, so
+            //      move this implementation to subclasses
+            int start = this.offset-prefix.length();
+            String typedText = document.get(start, offset-start);
+            return isNameMatching(typedText, text);
+//            String typedText = document.get(this.offset, offset-this.offset);
+//            return text.substring(prefix.length())
+//                       .startsWith(typedText);
         }
         catch (BadLocationException e) {
             return false;

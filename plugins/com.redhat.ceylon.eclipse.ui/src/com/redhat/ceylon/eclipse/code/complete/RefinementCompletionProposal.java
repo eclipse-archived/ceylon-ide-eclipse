@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
@@ -308,6 +309,20 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     @Override
     public IContextInformation getContextInformation() {
         return new ReturnValueContextInfo();
+    }
+    @Override
+    public boolean validate(IDocument document, int offset, DocumentEvent event) {
+        if (offset<this.offset) {
+            return false;
+        }
+        try {
+            int start = this.offset-prefix.length();
+            String typedText = document.get(start, offset-start);
+            return isNameMatching(typedText, declaration.getName());
+        }
+        catch (BadLocationException e) {
+            return false;
+        }
     }
     
     private void addProposals(final int loc, 
