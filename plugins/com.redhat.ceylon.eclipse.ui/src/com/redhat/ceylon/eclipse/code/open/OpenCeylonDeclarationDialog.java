@@ -117,18 +117,31 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public String decorateText(String text, Object element) {
-            DeclarationWithProject dwp = 
-                    (DeclarationWithProject) element;
-            if (nameOccursMultipleTimes(dwp.getDeclaration())) {
-                return text;
+            if (element instanceof DeclarationWithProject) {
+                DeclarationWithProject dwp = 
+                        (DeclarationWithProject) element;
+                Declaration d = dwp.getDeclaration();
+                try {
+                    if (nameOccursMultipleTimes(d)) {
+                        return text;
+                    }
+                    else {
+                        String string = text + " - " + 
+                                getPackageLabel(d);
+                        if (dwp.getVersion()!=null) {
+                            string += " \"" + dwp.getVersion() + "\"";
+                        }
+                        return string;
+                    }
+                }
+                catch (Exception e) {
+                    System.err.println(d.getName());
+                    e.printStackTrace();
+                    return null;
+                }
             }
             else {
-                String string = text + " - " + 
-                        getPackageLabel(dwp.getDeclaration());
-                if (dwp.getVersion()!=null) {
-                    string += " \"" + dwp.getVersion() + "\"";
-                }
-                return string;
+                return text;
             }
         }
         
@@ -155,10 +168,22 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public String getText(Object element) {
-            DeclarationWithProject dwp = 
-                    (DeclarationWithProject) element;
-            return getPackageLabel(dwp.getDeclaration()) + 
-                    " - " + getLocation(dwp);
+            if (element instanceof DeclarationWithProject) {
+                DeclarationWithProject dwp = 
+                        (DeclarationWithProject) element;
+                Declaration d = dwp.getDeclaration();
+                try {
+                    return getPackageLabel(d) + " - " + getLocation(dwp);
+                }
+                catch (Exception e) {
+                    System.err.println(d.getName());
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+            else {
+                return "";
+            }
         }
 
         @Override
@@ -190,8 +215,15 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             if (element instanceof DeclarationWithProject) {
                 DeclarationWithProject dwp = 
                         (DeclarationWithProject) element;
-                return dwp==null ? null : 
-                    getImageForDeclaration(dwp.getDeclaration());
+                Declaration d = dwp.getDeclaration();
+                try {
+                    return getImageForDeclaration(d);
+                }
+                catch (Exception e) {
+                    System.err.println(d.getName());
+                    e.printStackTrace();
+                    return null;
+                }
             }
             else {
                 return null;
@@ -203,8 +235,15 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             if (element instanceof DeclarationWithProject) {
                 DeclarationWithProject dwp = 
                         (DeclarationWithProject) element;
-                return dwp==null ? null : 
-                    getLabelDescriptionFor(dwp.getDeclaration());
+                Declaration d = dwp.getDeclaration();
+                try {
+                    return getLabelDescriptionFor(d);
+                }
+                catch (Exception e) {
+                    System.err.println(d.getName());
+                    e.printStackTrace();
+                    return d.getName();
+                }
             }
             else {
                 return "";
@@ -217,19 +256,26 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 DeclarationWithProject dwp = 
                         (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
-                StyledString label = getStyledDescriptionFor(d);
-                if (d.isClassOrInterfaceMember()) {
-                    Declaration ci = (Declaration) d.getContainer();
-                    label.append(" of ")
-                         .append(ci.getName(), Highlights.TYPE_ID_STYLER);
+                try {
+                    StyledString label = getStyledDescriptionFor(d);
+                    if (d.isClassOrInterfaceMember()) {
+                        Declaration ci = (Declaration) d.getContainer();
+                        label.append(" of ")
+                        .append(ci.getName(), Highlights.TYPE_ID_STYLER);
+                    }
+                    if (nameOccursMultipleTimes(d)) {
+                        label.append(" - ", Highlights.PACKAGE_STYLER)
+                        .append(getPackageLabel(d), Highlights.PACKAGE_STYLER)
+                        .append(" - ", COUNTER_STYLER)
+                        .append(getLocation(dwp), COUNTER_STYLER);
+                    }
+                    return label;
                 }
-                if (nameOccursMultipleTimes(d)) {
-                    label.append(" - ", Highlights.PACKAGE_STYLER)
-                         .append(getPackageLabel(d), Highlights.PACKAGE_STYLER)
-                         .append(" - ", COUNTER_STYLER)
-                         .append(getLocation(dwp), COUNTER_STYLER);
+                catch (Exception e) {
+                    System.err.println(d.getName());
+                    e.printStackTrace();
+                    return new StyledString(d.getName());
                 }
-                return label;
             }
             else {
                 return new StyledString();
