@@ -110,7 +110,7 @@ public class ModuleCompletions {
         @Override
         public void apply(IDocument document) {
             super.apply(document);
-            if (withBody && 
+            if (withBody && //module.getVersions().size()>1 && //TODO: put this back in when sure it works
                     EditorsUI.getPreferenceStore()
                              .getBoolean(LINKED_MODE)) {
                 final LinkedModeModel linkedModeModel = new LinkedModeModel();
