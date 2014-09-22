@@ -116,6 +116,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
@@ -145,6 +146,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -884,6 +886,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             public Point getSelection(IDocument document) {
                 return new Point(offset + text.indexOf("nothing"), 7);
             }
+            @Override
+            public Image getImage() {
+                return CeylonResources.MINOR_CHANGE;
+            }
         });
         if (unit.getCallableReturnType(requiredType).getDeclaration()
                 .equals(unit.getAnythingDeclaration())) {
@@ -892,6 +898,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 @Override
                 public Point getSelection(IDocument document) {
                     return new Point(offset + text.length()-1, 0);
+                }
+                @Override
+                public Image getImage() {
+                    return CeylonResources.MINOR_CHANGE;
                 }
             });
         }
