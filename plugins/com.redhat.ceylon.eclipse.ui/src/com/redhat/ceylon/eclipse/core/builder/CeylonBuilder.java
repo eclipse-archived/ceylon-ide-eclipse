@@ -44,6 +44,7 @@ import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaFileManager.Location;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -183,6 +184,7 @@ import com.sun.source.util.TaskEvent.Kind;
 import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.file.RegularFileObject;
 import com.sun.tools.javac.file.RelativePath.RelativeFile;
+import com.sun.tools.javac.util.ListBuffer;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has
@@ -297,6 +299,43 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         
         @Override
+        public JavaFileObject getJavaFileForInput(Location location,
+                String className,
+                JavaFileObject.Kind kind) throws IOException {
+            JavaFileObject fileObject = super.getJavaFileForInput(location, className, kind);
+            RegularFileObject sourceFile = getSourceFile(fileObject);
+            if (sourceFile != null) {
+                remainingInputFiles.add(sourceFile);
+            }
+            return fileObject;
+        }
+        
+        @Override
+        public Iterable<? extends JavaFileObject> getJavaFileObjectsFromFiles(Iterable<? extends File> files) {
+
+            Iterable<? extends JavaFileObject> theCollection = super.getJavaFileObjectsFromFiles(files);
+            for (JavaFileObject file : theCollection) {
+                RegularFileObject sourceFile = getSourceFile(file);
+                if (sourceFile != null) {
+                    remainingInputFiles.add(sourceFile);
+                }
+            }
+            return theCollection;
+        }
+
+        @Override
+        public Iterable<JavaFileObject> list(Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
+            Iterable<JavaFileObject> result = super.list(location, packageName, kinds, recurse);
+            for (JavaFileObject file : result) {
+                RegularFileObject sourceFile = getSourceFile(file);
+                if (sourceFile != null) {
+                    remainingInputFiles.add(sourceFile);
+                }
+            }
+            return result;
+        }
+        
+        @Override
         protected JavaFileObject getFileForOutput(Location location,
                 final RelativeFile fileName, FileObject sibling)
                 throws IOException {
@@ -341,16 +380,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     file = getWorkspace().getRoot()
                             .getFileForLocation(new Path(sourceFileNotGenerated.getName()));
                 }
-                try {
-                    String markerId = PROBLEM_MARKER_ID + ".backend";
-    
-                    IMarker marker = file.createMarker(markerId);
-                    marker.setAttribute(IMarker.MESSAGE, "No class generated for this source file by the backend");
-                    marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                }
-                catch (CoreException ce) {
-                    ce.printStackTrace();
+                if (file != null) {
+                    try {
+                        String markerId = PROBLEM_MARKER_ID + ".backend";
+        
+                        IMarker marker = file.createMarker(markerId);
+                        marker.setAttribute(IMarker.MESSAGE, "No class generated for this source file by the backend");
+                        marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+                        marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                    }
+                    catch (CoreException ce) {
+                        ce.printStackTrace();
+                    }
                 }
             }
         }
