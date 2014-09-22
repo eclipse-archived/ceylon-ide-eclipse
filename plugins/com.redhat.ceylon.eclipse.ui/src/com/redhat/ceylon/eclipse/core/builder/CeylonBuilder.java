@@ -5,18 +5,15 @@ import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
 import static com.redhat.ceylon.compiler.typechecker.model.Module.LANGUAGE_MODULE_NAME;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchives;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
-import static org.eclipse.jdt.core.IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,18 +30,15 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
-import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
-import javax.tools.JavaFileManager.Location;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -92,11 +86,6 @@ import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.PackageFragment;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.ui.editors.text.FileDocumentProvider;
-import org.eclipse.ui.editors.text.TextFileDocumentProvider;
-import org.eclipse.ui.texteditor.DocumentProviderRegistry;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.redhat.ceylon.cmr.api.ArtifactCallback;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
@@ -145,7 +134,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
@@ -164,27 +152,25 @@ import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
-import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
-import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.CompilationUnitDelta;
-import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.buildDeltas_;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
-import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskEvent.Kind;
 import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.file.RegularFileObject;
 import com.sun.tools.javac.file.RelativePath.RelativeFile;
-import com.sun.tools.javac.util.ListBuffer;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has
@@ -253,25 +239,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
     
-    private final class BuildFileManager extends CeyloncFileManager {
+    private static final class BuildFileManager extends CeyloncFileManager {
         private final IProject project;
         final boolean explodeModules;
-        private Set<RegularFileObject> remainingInputFiles = new HashSet<RegularFileObject>();
+        private Map<RegularFileObject, Set<String>> inputFilesToGenerate = null;
         
         private BuildFileManager(com.sun.tools.javac.util.Context context,
-                boolean register, Charset charset, IProject project) {
+                boolean register, Charset charset, IProject project, Map<RegularFileObject, Set<String>> inputFilesToGenerate) {
             super(context, register, charset);
             this.project = project;
             explodeModules = isExplodeModulesEnabled(project);
+            this.inputFilesToGenerate = inputFilesToGenerate;
         }
 
-        @Override
-        public void flush() throws IOException {
-            // TODO Auto-generated method stub
-            super.flush();
-        }
-
-        private RegularFileObject getSourceFile(FileObject fileObject) {
+        public static RegularFileObject getSourceFile(FileObject fileObject) {
             JavaFileObject sourceJavaFileObject;
             if (fileObject instanceof JavaFileObject
                     && ((JavaFileObject) fileObject).getKind() == javax.tools.JavaFileObject.Kind.SOURCE){
@@ -288,60 +269,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         
         @Override
-        protected JavaFileObject getFileForInput(Location location,
-                RelativeFile name) throws IOException {
-            JavaFileObject fileObject = super.getFileForInput(location, name);
-            RegularFileObject sourceFile = getSourceFile(fileObject);
-            if (sourceFile != null) {
-                remainingInputFiles.add(sourceFile);
-            }
-            return fileObject;
-        }
-        
-        @Override
-        public JavaFileObject getJavaFileForInput(Location location,
-                String className,
-                JavaFileObject.Kind kind) throws IOException {
-            JavaFileObject fileObject = super.getJavaFileForInput(location, className, kind);
-            RegularFileObject sourceFile = getSourceFile(fileObject);
-            if (sourceFile != null) {
-                remainingInputFiles.add(sourceFile);
-            }
-            return fileObject;
-        }
-        
-        @Override
-        public Iterable<? extends JavaFileObject> getJavaFileObjectsFromFiles(Iterable<? extends File> files) {
-
-            Iterable<? extends JavaFileObject> theCollection = super.getJavaFileObjectsFromFiles(files);
-            for (JavaFileObject file : theCollection) {
-                RegularFileObject sourceFile = getSourceFile(file);
-                if (sourceFile != null) {
-                    remainingInputFiles.add(sourceFile);
-                }
-            }
-            return theCollection;
-        }
-
-        @Override
-        public Iterable<JavaFileObject> list(Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
-            Iterable<JavaFileObject> result = super.list(location, packageName, kinds, recurse);
-            for (JavaFileObject file : result) {
-                RegularFileObject sourceFile = getSourceFile(file);
-                if (sourceFile != null) {
-                    remainingInputFiles.add(sourceFile);
-                }
-            }
-            return result;
-        }
-        
-        @Override
         protected JavaFileObject getFileForOutput(Location location,
                 final RelativeFile fileName, FileObject sibling)
                 throws IOException {
             RegularFileObject sourceFile = getSourceFile(sibling);
             if (sourceFile != null) {
-                remainingInputFiles.remove(sourceFile);
+                Set<String> expectedClasses = inputFilesToGenerate.get(sourceFile);
+                String shortname = fileName.basename();
+                if (shortname.endsWith(".class")) {
+                    shortname = shortname.substring(0, shortname.length() - 6);
+                }
+                expectedClasses.remove(shortname);
+                if (expectedClasses.isEmpty()) {
+                    inputFilesToGenerate.remove(sourceFile);
+                }
             }
             JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
             if (explodeModules && 
@@ -361,10 +302,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             return project.getLocation().toFile().getAbsolutePath();
         }
         
-        @Override
-        public void close() {
-            super.close();
-            for (RegularFileObject sourceFileNotGenerated : remainingInputFiles) {
+        public void addUngeneratedErrors() {
+            for (RegularFileObject sourceFileNotGenerated : inputFilesToGenerate.keySet()) {
                 IPath absolutePath = new Path(sourceFileNotGenerated.getName());
                 IFile file = null;
                 for (IFolder sourceDirectory : CeylonBuilder.getSourceFolders(project)) {
@@ -383,9 +322,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (file != null) {
                     try {
                         String markerId = PROBLEM_MARKER_ID + ".backend";
-        
+                        String message = "The following classes were not generated by the backend :";
+                        Iterator<String> classes = inputFilesToGenerate.get(sourceFileNotGenerated).iterator();
+                        while (classes.hasNext()) {
+                            message += "\n    " + classes.next();
+                        }
                         IMarker marker = file.createMarker(markerId);
-                        marker.setAttribute(IMarker.MESSAGE, "No class generated for this source file by the backend");
+                        marker.setAttribute(IMarker.MESSAGE, message);
                         marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                         marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
                     }
@@ -2518,7 +2461,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         context.put(DiagnosticListener.class, errorReporter);
         CeylonLog.preRegister(context);
         
-        BuildFileManager fileManager = new BuildFileManager(context, true, null, project);
+        final Map<RegularFileObject, Set<String>> inputFilesToGenerate = new HashMap<RegularFileObject, Set<String>>();
+        BuildFileManager fileManager = new BuildFileManager(context, true, null, project, inputFilesToGenerate);
         
         computeCompilerClasspath(project, javaProject, options);
         
@@ -2560,6 +2504,23 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (! ta.getKind().equals(Kind.PARSE) && ! ta.getKind().equals(Kind.ANALYZE)) {
                     return;
                 }
+                if (ta.getKind().equals(Kind.PARSE)) {
+                    RegularFileObject sourceFile = BuildFileManager.getSourceFile(ta.getSourceFile());
+                    Set<String> expectedClasses = inputFilesToGenerate.get(sourceFile);
+                    if (expectedClasses == null) {
+                        expectedClasses = new HashSet<String>();
+                        inputFilesToGenerate.put(sourceFile, expectedClasses);
+                    }
+                    
+                    if (ta.getCompilationUnit() instanceof JCCompilationUnit) {
+                        JCCompilationUnit cu = (JCCompilationUnit) ta.getCompilationUnit();
+                        for (JCTree def : cu.defs) {
+                            if (def instanceof JCClassDecl) {
+                                expectedClasses.add(((JCClassDecl) def).name.toString());
+                            }
+                        }
+                    }
+                }
                 monitor.worked(1);
             }
         });
@@ -2573,6 +2534,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (!success) {
             errorReporter.failed(task.getExitState());
         }
+        fileManager.addUngeneratedErrors();
         monitor.done();
         return success;
     }
