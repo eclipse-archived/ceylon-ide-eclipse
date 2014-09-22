@@ -2,7 +2,8 @@ import ceylon.collection {
     HashSet,
     TreeSet,
     ArrayList,
-    naturalOrderTreeMap
+    naturalOrderTreeMap,
+    StringBuilder
 }
 import ceylon.test {
     test,
