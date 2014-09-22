@@ -5,6 +5,7 @@ import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
 import static com.redhat.ceylon.compiler.typechecker.model.Module.LANGUAGE_MODULE_NAME;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchives;
@@ -13,7 +14,9 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK;
+import static org.eclipse.jdt.core.IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,12 +33,14 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
+import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
@@ -176,6 +181,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskEvent.Kind;
 import com.sun.source.util.TaskListener;
+import com.sun.tools.javac.file.RegularFileObject;
 import com.sun.tools.javac.file.RelativePath.RelativeFile;
 
 /**
@@ -248,7 +254,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private final class BuildFileManager extends CeyloncFileManager {
         private final IProject project;
         final boolean explodeModules;
-
+        private Set<RegularFileObject> remainingInputFiles = new HashSet<RegularFileObject>();
+        
         private BuildFileManager(com.sun.tools.javac.util.Context context,
                 boolean register, Charset charset, IProject project) {
             super(context, register, charset);
@@ -257,9 +264,46 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
 
         @Override
+        public void flush() throws IOException {
+            // TODO Auto-generated method stub
+            super.flush();
+        }
+
+        private RegularFileObject getSourceFile(FileObject fileObject) {
+            JavaFileObject sourceJavaFileObject;
+            if (fileObject instanceof JavaFileObject
+                    && ((JavaFileObject) fileObject).getKind() == javax.tools.JavaFileObject.Kind.SOURCE){
+                if (fileObject instanceof CeylonFileObject) {
+                    sourceJavaFileObject = ((CeylonFileObject) fileObject).getFile();
+                } else {
+                    sourceJavaFileObject = (JavaFileObject) fileObject;
+                }
+                if (sourceJavaFileObject instanceof RegularFileObject) {
+                    return ((RegularFileObject) sourceJavaFileObject);
+                }
+            }
+            return null;
+        }
+        
+        @Override
+        protected JavaFileObject getFileForInput(Location location,
+                RelativeFile name) throws IOException {
+            JavaFileObject fileObject = super.getFileForInput(location, name);
+            RegularFileObject sourceFile = getSourceFile(fileObject);
+            if (sourceFile != null) {
+                remainingInputFiles.add(sourceFile);
+            }
+            return fileObject;
+        }
+        
+        @Override
         protected JavaFileObject getFileForOutput(Location location,
                 final RelativeFile fileName, FileObject sibling)
                 throws IOException {
+            RegularFileObject sourceFile = getSourceFile(sibling);
+            if (sourceFile != null) {
+                remainingInputFiles.remove(sourceFile);
+            }
             JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
             if (explodeModules && 
                     javaFileObject instanceof JarEntryFileObject && 
@@ -276,6 +320,39 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         @Override
         protected String getCurrentWorkingDir() {
             return project.getLocation().toFile().getAbsolutePath();
+        }
+        
+        @Override
+        public void close() {
+            super.close();
+            for (RegularFileObject sourceFileNotGenerated : remainingInputFiles) {
+                IPath absolutePath = new Path(sourceFileNotGenerated.getName());
+                IFile file = null;
+                for (IFolder sourceDirectory : CeylonBuilder.getSourceFolders(project)) {
+                    IPath sourceDirPath = sourceDirectory.getLocation();
+                    if (sourceDirPath.isPrefixOf(absolutePath)) {
+                        IResource r = sourceDirectory.findMember(absolutePath.makeRelativeTo(sourceDirPath));
+                        if (r instanceof IFile) {
+                            file = (IFile) r;
+                        }
+                    }
+                }
+                if (file == null) {
+                    file = getWorkspace().getRoot()
+                            .getFileForLocation(new Path(sourceFileNotGenerated.getName()));
+                }
+                try {
+                    String markerId = PROBLEM_MARKER_ID + ".backend";
+    
+                    IMarker marker = file.createMarker(markerId);
+                    marker.setAttribute(IMarker.MESSAGE, "No class generated for this source file by the backend");
+                    marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                }
+                catch (CoreException ce) {
+                    ce.printStackTrace();
+                }
+            }
         }
     }
 
@@ -1249,13 +1326,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         }
                     }
                 }
-                changed = changeDependents.addAll(additions) && !astAwareIncrementalBuild;
+                changed = changeDependents.addAll(additions);
             } while (changed);
    
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
-            
+            for (IFile file : getProjectFiles(project)) {
+                try {
+                    if (file.findMarkers(PROBLEM_MARKER_ID + ".backend", false, IResource.DEPTH_ZERO).length > 0) {
+                        filesToCompile.add(file);
+                    }
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                    filesToCompile.add(file);
+                }
+            }
             for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
                 Unit unit = phasedUnit.getUnit();
                 if (!unit.getUnresolvedReferences().isEmpty()) {
