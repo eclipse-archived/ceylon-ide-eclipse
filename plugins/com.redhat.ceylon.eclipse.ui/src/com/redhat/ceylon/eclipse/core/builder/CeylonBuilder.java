@@ -970,11 +970,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             monitor.subTask("Generating binaries for project " + project.getName());
             
             final Collection<IFile> filesToProcess = filesForBinaryGeneration;
+            final Collection<PhasedUnit> unitsTypecheckedIncrementally = mustDoFullBuild.value ? Collections.<PhasedUnit>emptyList() : builtPhasedUnits;
             cleanChangedFilesFromExplodedDirectory(filesToProcess, project);
             doWithCeylonModelCaching(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws CoreException {
-                    return generateBinaries(project, javaProject,
+                    return generateBinaries(project, javaProject, unitsTypecheckedIncrementally,
                             filesToProcess, typeChecker, 
                             monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
                 }
@@ -2237,6 +2238,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     private boolean generateBinaries(IProject project, IJavaProject javaProject,
+            Collection<PhasedUnit> unitsTypecheckedIncrementally,
             Collection<IFile> filesToCompile, TypeChecker typeChecker, 
             IProgressMonitor monitor) throws CoreException {
         List<String> options = new ArrayList<String>();
@@ -2342,7 +2344,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             options.add("-continue");
             // always add the java files, otherwise ceylon code won't see them 
             // and they won't end up in the archives (src/car)
-            success = success & compile(project, javaProject, options, 
+            success = success & compile(project, javaProject, options,
+            		unitsTypecheckedIncrementally,
                     forJavaBackend, resources, typeChecker, printWriter, monitor);
         }
         
@@ -2467,7 +2470,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     @SuppressWarnings("deprecation")
     private boolean compile(final IProject project, IJavaProject javaProject, 
-            List<String> options, List<File> sources, List<File> resources,
+            List<String> options, Collection<PhasedUnit> unitsTypecheckedIncrementally,
+            List<File> sources, List<File> resources,
             final TypeChecker typeChecker, PrintWriter printWriter,
             IProgressMonitor mon) 
                     throws VerifyError {
@@ -2517,7 +2521,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 fileManager.getJavaFileObjectsFromFiles(allFiles);
         
         if (reuseEclipseModelInCompilation(project)) {
-            setupJDTModelLoader(project, typeChecker, context);
+            setupJDTModelLoader(project, typeChecker, context, unitsTypecheckedIncrementally);
         }
         
         CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
@@ -2641,14 +2645,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private void setupJDTModelLoader(final IProject project,
             final TypeChecker typeChecker,
-            final com.sun.tools.javac.util.Context context) {
+            final com.sun.tools.javac.util.Context context,
+            final Collection<PhasedUnit> unitsTypecheckedIncrementally) {
 
         final JDTModelLoader modelLoader = getModelLoader(typeChecker);
         
         context.put(LanguageCompiler.ceylonContextKey, typeChecker.getContext());
         context.put(TypeFactory.class, modelLoader.getTypeFactory());
         context.put(LanguageCompiler.compilerDelegateKey, 
-                new JdtCompilerDelegate(modelLoader, project, typeChecker, context));
+                new JdtCompilerDelegate(modelLoader, project, typeChecker, context, unitsTypecheckedIncrementally));
         
         context.put(TypeFactory.class, modelLoader.getTypeFactory());
         context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {

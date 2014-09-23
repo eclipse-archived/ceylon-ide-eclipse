@@ -5,6 +5,8 @@ import static com.redhat.ceylon.compiler.typechecker.io.impl.Helper.computeRelat
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -55,14 +57,17 @@ final class JdtCompilerDelegate implements CompilerDelegate {
     private final IProject project;
     private final TypeChecker typeChecker;
     private final WeakReference<com.sun.tools.javac.util.Context> contextRef;
+    private final Collection<PhasedUnit> unitsTypecheckedIncrementally;
 
     JdtCompilerDelegate(JDTModelLoader modelLoader,
             IProject project, TypeChecker typeChecker,
-            com.sun.tools.javac.util.Context context) {
+            com.sun.tools.javac.util.Context context,
+            Collection<PhasedUnit> unitsTypechecked) {
         this.modelLoader = modelLoader;
         this.project = project;
         this.typeChecker = typeChecker;
         contextRef = new WeakReference<Context>(context);
+        this.unitsTypecheckedIncrementally = unitsTypechecked;
     }
 
     @Override
@@ -81,8 +86,14 @@ final class JdtCompilerDelegate implements CompilerDelegate {
     public void typeCheck(java.util.List<PhasedUnit> listOfUnits) {
         Context context = contextRef.get();
         assert(context != null);
+        Collection<PhasedUnit> needingAdditionalCompilerPhases = Collections.emptyList();
         if (CeylonBuilder.getModelState(project).ordinal() < ModelState.Compiled.ordinal()) {
-            for (PhasedUnit phasedUnit : CeylonBuilder.getUnits(project)) {
+            needingAdditionalCompilerPhases = CeylonBuilder.getUnits(project);
+        } else if (! unitsTypecheckedIncrementally.isEmpty()) {
+            needingAdditionalCompilerPhases = unitsTypecheckedIncrementally;
+        }
+        if (! needingAdditionalCompilerPhases.isEmpty()) {
+            for (PhasedUnit phasedUnit : needingAdditionalCompilerPhases) {
                 assert(phasedUnit  instanceof ProjectPhasedUnit);
                 ProjectPhasedUnit projectPhasedUnit = (ProjectPhasedUnit) phasedUnit;
                 IFile resource = projectPhasedUnit.getSourceFileResource();
