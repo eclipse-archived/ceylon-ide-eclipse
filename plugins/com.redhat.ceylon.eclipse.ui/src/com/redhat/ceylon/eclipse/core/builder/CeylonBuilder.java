@@ -820,8 +820,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                 monitor.subTask("Typechecking all source  files of project " + project.getName());
                 modelStates.put(project, ModelState.TypeChecking);
-                builtPhasedUnits = fullTypeCheck(project, typeChecker, 
+                builtPhasedUnits = doWithCeylonModelCaching(new Callable<List<PhasedUnit>>() {
+                    @Override
+                    public List<PhasedUnit> call() throws Exception {
+                        return fullTypeCheck(project, typeChecker, 
                                 monitor.newChild(30, PREPEND_MAIN_LABEL_TO_SUBTASK ));
+                    }
+                });
                 modelStates.put(project, ModelState.TypeChecked);
                 
                 filesForBinaryGeneration = getProjectFiles(project);
@@ -869,8 +874,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                     monitor.subTask("Initial typechecking all source files of project " + project.getName());
                     modelStates.put(project, ModelState.TypeChecking);
-                    builtPhasedUnits = fullTypeCheck(project, typeChecker, 
+                    builtPhasedUnits = doWithCeylonModelCaching(new Callable<List<PhasedUnit>>() {
+                        @Override
+                        public List<PhasedUnit> call() throws Exception {
+                            return fullTypeCheck(project, typeChecker, 
                                     monitor.newChild(22, PREPEND_MAIN_LABEL_TO_SUBTASK ));
+                        }
+                    });
                     modelStates.put(project, ModelState.TypeChecked);
 
                     if (monitor.isCanceled()) {
@@ -894,27 +904,30 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 monitor.subTask("Incremental Ceylon build of project " + project.getName());
 
                 monitor.subTask("Scanning dependencies of deltas of project " + project.getName()); 
-                final Collection<IFile> filesToCompile = calculateDependencies(project, currentDelta, 
-                        changedFiles, typeChecker, phasedUnits, monitor);
+                final Set<IFile> filesToCompile = new HashSet<>();
+                final Set<IFile> filesToTypecheck = new HashSet<>();
+                       
+                calculateDependencies(project, currentDelta, 
+                        changedFiles, typeChecker, phasedUnits, filesToTypecheck, filesToCompile, monitor);
                 monitor.worked(1);
                 
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
 
-                buildHook.incrementalBuildSources(changedFiles, filesToRemove, filesToCompile);
+                buildHook.incrementalBuildSources(changedFiles, filesToRemove, filesToTypecheck);
 
-                monitor.subTask("Compiling " + filesToCompile.size() + " source files in project " + 
+                monitor.subTask("Compiling " + filesToTypecheck.size() + " source files in project " + 
                         project.getName());
                 builtPhasedUnits = doWithCeylonModelCaching(new Callable<List<PhasedUnit>>() {
                     @Override
                     public List<PhasedUnit> call() throws Exception {
-                        return incrementalBuild(project, filesToCompile, 
+                        return incrementalBuild(project, filesToTypecheck, 
                                 monitor.newChild(19, PREPEND_MAIN_LABEL_TO_SUBTASK));
                     }
                 });
                 
-                if (builtPhasedUnits.isEmpty() && filesToCompile.isEmpty()) {
+                if (builtPhasedUnits.isEmpty() && filesToTypecheck.isEmpty() && filesToCompile.isEmpty()) {
                     
                     if (mustWarmupCompletionProcessor) {
                         warmupCompletionProcessor(project, typeChecker);
@@ -1234,96 +1247,38 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private Collection<IFile> calculateDependencies(IProject project,
+    private void calculateDependencies(IProject project,
             IResourceDelta currentDelta,
             Collection<IFile> changedFiles, TypeChecker typeChecker, 
-            PhasedUnits phasedUnits, IProgressMonitor monitor) {
-        Collection<IFile> filesToCompile = new HashSet<IFile>();
+            PhasedUnits phasedUnits, Set<IFile> filesToTypeCheck, Set<IFile> filesToCompile, IProgressMonitor monitor) {
         if (!changedFiles.isEmpty()) {
+            Set<IFile> allTransitivelyDependingFiles = searchForDependantFiles(
+                    project, changedFiles, typeChecker, monitor,
+                    false);
+            Set<IFile> dependingFilesAccordingToStructureDelta;
             boolean astAwareIncrementalBuild = areAstAwareIncrementalBuildsEnabled(project);
-            Collection<IFile> changeDependents= new HashSet<IFile>();
-            Set<IFile> analyzedFiles= new HashSet<IFile>();
-            changeDependents.addAll(changedFiles);
-       
-            boolean changed = false;
-            do {
-                Collection<IFile> additions= new HashSet<IFile>();
-                for (Iterator<IFile> iter=changeDependents.iterator(); iter.hasNext();) {
-                    final IFile srcFile= iter.next();
-                    if (analyzedFiles.contains(srcFile)) {
-                        continue;
-                    }
-                    analyzedFiles.add(srcFile);
-                    IProject currentFileProject = srcFile.getProject();
-                    TypeChecker currentFileTypeChecker = null;
-                    if (currentFileProject == project) {
-                        currentFileTypeChecker = typeChecker;
-                    } 
-                    else {
-                        currentFileTypeChecker = getProjectTypeChecker(currentFileProject);
-                    }
-                    
-                    if (! CeylonBuilder.isInSourceFolder(srcFile)) {
-                        // Don't search dependencies inside resource folders.
-                        continue;
-                    }
-                    
-                    if (astAwareIncrementalBuild) {
-                        IResourceAware unit = getUnit(srcFile);
-                        if (unit instanceof ProjectSourceFile) {
-                            ProjectSourceFile projectSourceFile = (ProjectSourceFile) unit;
-                            if (projectSourceFile.getDependentsOf().size() > 0) {
-                                CompilationUnitDelta delta = projectSourceFile.buildDeltaAgainstModel();
-                                if (delta != null 
-                                        && delta.getChanges().getSize() == 0
-                                        && delta.getChildrenDeltas().getSize() == 0) {
-                                        continue;
-                                    }
-                            }
-                        }
-                    }
-                    
-                    Set<String> filesDependingOn = getDependentsOf(srcFile,
-                            currentFileTypeChecker, currentFileProject);
-   
-                    for (String dependingFile: filesDependingOn) {
-                        if (monitor.isCanceled()) {
-                            throw new OperationCanceledException();
-                        }
-                        
-                        //TODO: note that the following is slightly
-                        //      fragile - it depends on the format 
-                        //      of the path that we use to track
-                        //      dependents!
-                        IPath pathRelativeToProject = new Path(dependingFile);
-                                //.makeRelativeTo(project.getLocation());
-                        IFile depFile= (IFile) project.findMember(pathRelativeToProject);
-                        if (depFile == null) {
-                            depFile= (IFile) currentFileProject.findMember(dependingFile);
-                        }
-                        if (depFile != null) {
-                            additions.add(depFile);
-                        }
-                        else {
-                            System.err.println("could not resolve dependent unit: " + 
-                                        dependingFile);
-                        }
-                    }
-                }
-                changed = changeDependents.addAll(additions);
-            } while (changed);
-   
+            if (astAwareIncrementalBuild) {
+                dependingFilesAccordingToStructureDelta = searchForDependantFiles(
+                        project, changedFiles, typeChecker, monitor,
+                        true);
+            } else {
+                dependingFilesAccordingToStructureDelta = allTransitivelyDependingFiles;
+            }
+            
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
+            Set<IFile> filesToAddInTypecheck = new HashSet<IFile>();
+            Set<IFile> filesToAddInCompile = new HashSet<IFile>();
+            
             for (IFile file : getProjectFiles(project)) {
                 try {
                     if (file.findMarkers(PROBLEM_MARKER_ID + ".backend", false, IResource.DEPTH_ZERO).length > 0) {
-                        filesToCompile.add(file);
+                        filesToAddInCompile.add(file);
                     }
                 } catch (CoreException e) {
                     e.printStackTrace();
-                    filesToCompile.add(file);
+                    filesToAddInCompile.add(file);
                 }
             }
             for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
@@ -1331,14 +1286,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (!unit.getUnresolvedReferences().isEmpty()) {
                     IFile fileToAdd = ((IFileVirtualFile)(phasedUnit.getUnitFile())).getFile();
                     if (fileToAdd.exists()) {
-                        filesToCompile.add(fileToAdd);
+                        filesToAddInTypecheck.add(fileToAdd);
+                        filesToAddInCompile.add(fileToAdd);
                     }
                 }
                 Set<Declaration> duplicateDeclarations = unit.getDuplicateDeclarations();
                 if (!duplicateDeclarations.isEmpty()) {
                     IFile fileToAdd = ((IFileVirtualFile)(phasedUnit.getUnitFile())).getFile();
                     if (fileToAdd.exists()) {
-                        filesToCompile.add(fileToAdd);
+                        filesToAddInTypecheck.add(fileToAdd);
+                        filesToAddInCompile.add(fileToAdd);
                     }
                     for (Declaration duplicateDeclaration : duplicateDeclarations) {
                         Unit duplicateUnit = duplicateDeclaration.getUnit();
@@ -1346,7 +1303,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             (duplicateUnit instanceof IResourceAware)) {
                             IFile duplicateDeclFile = ((IResourceAware) duplicateUnit).getFileResource();
                             if (duplicateDeclFile != null && duplicateDeclFile.exists()) {
-                                filesToCompile.add(duplicateDeclFile);
+                                filesToAddInTypecheck.add(duplicateDeclFile);
+                                filesToAddInCompile.add(duplicateDeclFile);
                             }
                         }
                     }
@@ -1356,12 +1314,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
-            
-            for (IFile f: changeDependents) {
+
+            for (IFile f: allTransitivelyDependingFiles) {
                 if (f.getProject() == project) {
                     if (isSourceFile(f) || isResourceFile(f)) {
                         if (f.exists()) {
-                            filesToCompile.add(f);
+                            filesToTypeCheck.add(f);
+                            if (!astAwareIncrementalBuild || dependingFilesAccordingToStructureDelta.contains(f)) {
+                                filesToCompile.add(f);
+                            }
                         }
                         else {
                             // If the file is moved : add a dependency on the new file
@@ -1370,16 +1331,99 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                 if (removedFile != null && 
                                         (removedFile.getFlags() & IResourceDelta.MOVED_TO) != 0 &&
                                         removedFile.getMovedToPath() != null) {
-                                    filesToCompile.add(project.getFile(removedFile.getMovedToPath().removeFirstSegments(1)));
+                                    IFile movedFile = project.getFile(removedFile.getMovedToPath().removeFirstSegments(1));
+                                    filesToTypeCheck.add(movedFile);
+                                    if (!astAwareIncrementalBuild || dependingFilesAccordingToStructureDelta.contains(movedFile)) {
+                                        filesToCompile.add(movedFile);
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+            
+            filesToTypeCheck.addAll(filesToAddInTypecheck);
+            filesToCompile.addAll(filesToAddInCompile);
         }
         
-        return filesToCompile;
+    }
+
+    private Set<IFile> searchForDependantFiles(IProject project,
+            Collection<IFile> changedFiles, TypeChecker typeChecker,
+            IProgressMonitor monitor, boolean filterAccordingToStructureDelta) {
+        Set<IFile> changeDependents= new HashSet<IFile>();
+        Set<IFile> analyzedFiles= new HashSet<IFile>();
+        changeDependents.addAll(changedFiles);
+      
+        boolean changed = false;
+        do {
+            Collection<IFile> additions= new HashSet<IFile>();
+            for (Iterator<IFile> iter=changeDependents.iterator(); iter.hasNext();) {
+                final IFile srcFile= iter.next();
+                if (analyzedFiles.contains(srcFile)) {
+                    continue;
+                }
+                analyzedFiles.add(srcFile);
+                IProject currentFileProject = srcFile.getProject();
+                TypeChecker currentFileTypeChecker = null;
+                if (currentFileProject == project) {
+                    currentFileTypeChecker = typeChecker;
+                } 
+                else {
+                    currentFileTypeChecker = getProjectTypeChecker(currentFileProject);
+                }
+                
+                if (! CeylonBuilder.isInSourceFolder(srcFile)) {
+                    // Don't search dependencies inside resource folders.
+                    continue;
+                }
+                
+                if (filterAccordingToStructureDelta) {
+                    IResourceAware unit = getUnit(srcFile);
+                    if (unit instanceof ProjectSourceFile) {
+                        ProjectSourceFile projectSourceFile = (ProjectSourceFile) unit;
+                        if (projectSourceFile.getDependentsOf().size() > 0) {
+                            CompilationUnitDelta delta = projectSourceFile.buildDeltaAgainstModel();
+                            if (delta != null 
+                                    && delta.getChanges().getSize() == 0
+                                    && delta.getChildrenDeltas().getSize() == 0) {
+                                    continue;
+                                }
+                        }
+                    }
+                }
+                
+                Set<String> filesDependingOn = getDependentsOf(srcFile,
+                        currentFileTypeChecker, currentFileProject);
+   
+                for (String dependingFile: filesDependingOn) {
+                    if (monitor.isCanceled()) {
+                        throw new OperationCanceledException();
+                    }
+                    
+                    //TODO: note that the following is slightly
+                    //      fragile - it depends on the format 
+                    //      of the path that we use to track
+                    //      dependents!
+                    IPath pathRelativeToProject = new Path(dependingFile);
+                            //.makeRelativeTo(project.getLocation());
+                    IFile depFile= (IFile) project.findMember(pathRelativeToProject);
+                    if (depFile == null) {
+                        depFile= (IFile) currentFileProject.findMember(dependingFile);
+                    }
+                    if (depFile != null) {
+                        additions.add(depFile);
+                    }
+                    else {
+                        System.err.println("could not resolve dependent unit: " + 
+                                    dependingFile);
+                    }
+                }
+            }
+            changed = changeDependents.addAll(additions);
+        } while (changed && !filterAccordingToStructureDelta);
+        return changeDependents;
     }
 
     private void scanChanges(final IResourceDelta currentDelta, 
