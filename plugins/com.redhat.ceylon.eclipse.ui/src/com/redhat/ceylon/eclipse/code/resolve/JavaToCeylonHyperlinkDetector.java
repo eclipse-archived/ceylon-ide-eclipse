@@ -22,6 +22,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -46,20 +47,23 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
 
         @Override
         public void open() {
-            for (PhasedUnit pu: getProjectTypeChecker(p).getPhasedUnits().getPhasedUnits()) {
-                for (Declaration d: pu.getDeclarations()) {
-                    //TODO: the following is not quite right because
-                    //      there can be multiple declarations with
-                    //      the same (unqualified) name in a unit
-                    if (d.getName().equals(je.getElementName())) {
-                        IEditorInput editorInput = getEditorInput(p.findMember(pu.getUnitFile().getPath()));
-                        try {
-                            CeylonEditor editor = (CeylonEditor) getActivePage().openEditor(editorInput, EDITOR_ID);
-                            int offset = Nodes.getIdentifyingNode(Nodes.getReferencedNode(d, pu.getCompilationUnit())).getStartIndex();
-                            editor.selectAndReveal(offset, 0);
-                        } 
-                        catch (PartInitException e) {
-                            e.printStackTrace();
+            TypeChecker typeChecker = getProjectTypeChecker(p);
+            if (typeChecker!=null) {
+                for (PhasedUnit pu: typeChecker.getPhasedUnits().getPhasedUnits()) {
+                    for (Declaration d: pu.getDeclarations()) {
+                        //TODO: the following is not quite right because
+                        //      there can be multiple declarations with
+                        //      the same (unqualified) name in a unit
+                        if (d.getName().equals(je.getElementName())) {
+                            IEditorInput editorInput = getEditorInput(p.findMember(pu.getUnitFile().getPath()));
+                            try {
+                                CeylonEditor editor = (CeylonEditor) getActivePage().openEditor(editorInput, EDITOR_ID);
+                                int offset = Nodes.getIdentifyingNode(Nodes.getReferencedNode(d, pu.getCompilationUnit())).getStartIndex();
+                                editor.selectAndReveal(offset, 0);
+                            } 
+                            catch (PartInitException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
