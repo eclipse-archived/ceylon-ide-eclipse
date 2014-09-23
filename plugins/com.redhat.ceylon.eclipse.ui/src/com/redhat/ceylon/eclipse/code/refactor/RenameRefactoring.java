@@ -5,12 +5,23 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclarat
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.core.search.IJavaSearchConstants;
+import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.SearchMatch;
+import org.eclipse.jdt.core.search.SearchPattern;
+import org.eclipse.jdt.core.search.SearchRequestor;
+import org.eclipse.jdt.internal.corext.util.SearchUtils;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -24,7 +35,9 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
@@ -180,8 +193,76 @@ public class RenameRefactoring extends AbstractRefactoring {
                 cc.add(new RenameResourceChange(oldPath, newFileName));
             }
         }
+        
+        refactorJavaReferences(pm, cc);
+
         pm.done();
         return cc;
+    }
+
+    private void refactorJavaReferences(IProgressMonitor pm,
+            final CompositeChange cc) {
+        final Map<IResource,TextChange> changes = new HashMap<>();
+        SearchEngine searchEngine = new SearchEngine();
+        String pattern;
+        int sort;
+        final int len;
+        String container = 
+                declaration.getContainer()
+                           .getQualifiedNameString()
+                           .replace("::", ".");
+        final String name = declaration.getName();
+        final String newName;
+        if (declaration instanceof Method) {
+            pattern = container + '.' + name;
+            len = name.length();
+            newName = this.newName;
+            sort = IJavaSearchConstants.METHOD;
+        }
+        else if (declaration instanceof Value) {
+            //TODO: setters!
+            pattern = container + '.' + "get" + 
+                    Character.toUpperCase(name.charAt(0)) +
+                    name.substring(1);
+            len = name.length()+3;
+            newName = "get" + 
+                    Character.toUpperCase(this.newName.charAt(0)) +
+                    this.newName.substring(1);
+            sort = IJavaSearchConstants.METHOD;
+        }
+        else {
+            pattern = container + '.' + name;
+            len = name.length();
+            newName = this.newName;
+            sort = IJavaSearchConstants.CLASS_AND_INTERFACE;
+        }
+        IProject[] referencingProjects = project.getReferencingProjects();
+        IProject[] projects = new IProject[referencingProjects.length+1];
+        projects[0] = project;
+        System.arraycopy(referencingProjects, 0, projects, 1, referencingProjects.length);
+        try {
+            searchEngine.search(SearchPattern.createPattern(pattern, sort, 
+                    IJavaSearchConstants.REFERENCES, SearchPattern.R_EXACT_MATCH), 
+                    SearchUtils.getDefaultSearchParticipants(),
+                    SearchEngine.createJavaSearchScope(projects), 
+                    new SearchRequestor() {
+                @Override
+                public void acceptSearchMatch(SearchMatch match) {
+                    IResource resource = match.getResource();
+                    TextChange change = changes.get(resource);
+                    if (change==null) {
+                        change = new TextFileChange("Rename", (IFile) resource);
+                        change.setEdit(new MultiTextEdit());
+                        changes.put(resource, change);
+                        cc.add(change);
+                    }
+                    change.addEdit(new ReplaceEdit(match.getOffset(), len, newName));
+                }
+            }, pm);
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
     }
 
     private void renameInFile(TextChange tfc, CompositeChange cc, 
