@@ -2568,6 +2568,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             }
                         }
                     }
+                    
+                    if (expectedClasses.isEmpty()) {
+                        inputFilesToGenerate.remove(sourceFile);
+                    }
                 }
                 monitor.worked(1);
             }
