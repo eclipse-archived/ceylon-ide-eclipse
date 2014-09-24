@@ -37,7 +37,8 @@ public class FindAssignmentsAction extends AbstractFindAction {
         
         @Override
         int limitTo() {
-            //TODO: this is simply not correct
+            //this is understood by the impl of 
+            //JavaSearch.createSearchPattern()
             return IJavaSearchConstants.WRITE_ACCESSES;
         }
 
