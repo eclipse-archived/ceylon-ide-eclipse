@@ -8,9 +8,12 @@ import java.util.Set;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -211,14 +214,26 @@ class CeylonSearchResultTreeContentProvider implements
                 return sourceFolder==null ? 
                         ArchiveMatches.INSTANCE : sourceFolder;
             }
+            if (element instanceof IPackageFragment) {
+                if (level==LEVEL_PACKAGE|| level==LEVEL_MODULE) {
+                    return null;
+                }
+                return sourceFolder==null ? 
+                        ArchiveMatches.INSTANCE : sourceFolder;
+            }
             if (element instanceof IFile) {
+                if (level==LEVEL_FILE) {
+                    return null;
+                }
                 IJavaElement packageFragment = 
                         JavaCore.create(((IFile) element).getParent());
                 return new WithSourceFolder(packageFragment, sourceFolder);
             }
             return sourceFolder;
         }
-        if (child instanceof IJavaElement) {
+        if (child instanceof IType ||
+            child instanceof IMethod ||
+            child instanceof IField) {
             IJavaElement javaElement = (IJavaElement) child;
             
             IFile file = (IFile) javaElement.getResource();
