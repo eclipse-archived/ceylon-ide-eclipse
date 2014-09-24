@@ -780,7 +780,7 @@ public final class ReferencesPopup extends PopupDialog
                     if (includeImports || 
                             !(c instanceof Tree.Import) && 
                             !(c instanceof Tree.ImportModule)) {
-                        CeylonSearchMatch match = new CeylonSearchMatch(c, pu.getUnitFile(), node);
+                        CeylonSearchMatch match = new CeylonSearchMatch(node, c, pu.getUnitFile());
                         TreeNode matchNode = new TreeNode(match);
                         matchNode.setParent(unitNode);
                         allMatchesList.add(matchNode);

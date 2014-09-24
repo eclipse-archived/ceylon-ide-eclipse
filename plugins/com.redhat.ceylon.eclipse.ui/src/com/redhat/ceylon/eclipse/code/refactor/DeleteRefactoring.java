@@ -528,8 +528,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
             Tree.CompilationUnit cu, PhasedUnit pu) {
         FindContainerVisitor fcv = new FindContainerVisitor(node);
         cu.visit(fcv);
-        return new CeylonSearchMatch(fcv.getStatementOrArgument(), 
-                pu.getUnitFile(), node);
+        return new CeylonSearchMatch(node, 
+                fcv.getStatementOrArgument(), pu.getUnitFile());
     }
 
     public void setDeleteRefinements() {

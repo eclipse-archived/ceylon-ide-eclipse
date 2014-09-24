@@ -25,10 +25,21 @@ public class CeylonElement {
     
     public CeylonElement(Tree.StatementOrArgument node, 
             VirtualFile file, int line) {
+        //the file and line number, which get 
+        //displayed in the search results page
         this.file = file;
         this.line = line;
+        
+        //store enough information to be able to
+        //locate the model again if we run a search
+        //for usages of the container from the search
+        //results view
         startOffset = node.getStartIndex();
         endOffset = node.getStopIndex()+1;
+        
+        //compute and cache everything we need to 
+        //display the search result, without holding 
+        //onto a hard ref to the container node
         imageKey = getImageKeyForNode(node);
         packageLabel = CeylonLabelProvider.getPackageLabel(node);
         label = getStyledLabelForNode(node);

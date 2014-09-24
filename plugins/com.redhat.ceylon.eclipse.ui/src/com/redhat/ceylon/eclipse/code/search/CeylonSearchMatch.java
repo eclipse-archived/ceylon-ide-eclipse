@@ -9,11 +9,15 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonSearchMatch extends Match {
     
-    public CeylonSearchMatch(Tree.StatementOrArgument container, 
-            VirtualFile file, Node node) {
-        super(new CeylonElement(container, file, node.getToken().getLine()), 
-                Nodes.getStartOffset(node), 
-                Nodes.getLength(node));
+    public CeylonSearchMatch(Node match, 
+            //the containing declaration or named arg
+            Tree.StatementOrArgument container,
+            //the file in which the match occurs
+            VirtualFile file) {
+        super(new CeylonElement(container, file, match.getToken().getLine()),
+                //the exact location of the match:
+                Nodes.getStartOffset(match), 
+                Nodes.getLength(match));
     }
     
     @Override

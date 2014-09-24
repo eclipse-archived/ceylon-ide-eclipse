@@ -115,7 +115,7 @@ public class JavaQueryParticipant implements IQueryParticipant {
                                     FindContainerVisitor fcv = new FindContainerVisitor(node);
                                     cu.visit(fcv);
                                     Tree.StatementOrArgument c = fcv.getStatementOrArgument();
-                                    requestor.reportMatch(new CeylonSearchMatch(c, pu.getUnitFile(), node));
+                                    requestor.reportMatch(new CeylonSearchMatch(node, c, pu.getUnitFile()));
                                 }
                             }
                         }
