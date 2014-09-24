@@ -1,7 +1,14 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.compiler.java.codegen.CodegenUtil.getJavaNameOfDeclaration;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjects;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
+import static org.eclipse.jdt.core.search.IJavaSearchConstants.CLASS_AND_INTERFACE;
+import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
+import static org.eclipse.jdt.core.search.SearchPattern.R_EXACT_MATCH;
 import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -17,12 +24,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
-import org.eclipse.jdt.internal.corext.util.SearchUtils;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -36,7 +41,7 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -206,68 +211,68 @@ public class RenameRefactoring extends AbstractRefactoring {
         final Map<IResource,TextChange> changes = 
                 new HashMap<IResource, TextChange>();
         SearchEngine searchEngine = new SearchEngine();
-        String pattern;
-        int sort;
-        final int len;
-        String container = 
-                declaration.getContainer()
-                           .getQualifiedNameString()
-                           .replace("::", ".");
-        final String name = declaration.getName();
-        final String newName;
-        if (declaration instanceof Method) {
-            pattern = container + '.' + name;
-            len = name.length();
-            newName = this.newName;
-            sort = IJavaSearchConstants.METHOD;
-        }
-        else if (declaration instanceof Value) {
-            //TODO: setters!
-            pattern = container + '.' + "get" + 
-                    Character.toUpperCase(name.charAt(0)) +
-                    name.substring(1);
-            len = name.length()+3;
-            newName = "get" + 
-                    Character.toUpperCase(this.newName.charAt(0)) +
-                    this.newName.substring(1);
-            sort = IJavaSearchConstants.METHOD;
-        }
-        else {
-            pattern = container + '.' + name;
-            len = name.length();
-            newName = this.newName;
-            sort = IJavaSearchConstants.CLASS_AND_INTERFACE;
-        }
-        IProject[] referencingProjects = project.getReferencingProjects();
-        IProject[] projects = new IProject[referencingProjects.length+1];
-        projects[0] = project;
-        System.arraycopy(referencingProjects, 0, projects, 1, referencingProjects.length);
-        SearchRequestor requestor = new SearchRequestor() {
-            @Override
-            public void acceptSearchMatch(SearchMatch match) {
-                IResource resource = match.getResource();
-                TextChange change = changes.get(resource);
-                if (change==null) {
-                    change = new TextFileChange("Rename", (IFile) resource);
-                    change.setEdit(new MultiTextEdit());
-                    changes.put(resource, change);
-                    cc.add(change);
+        IProject[] projects = getProjects(project);
+        final String pattern = getJavaNameOfDeclaration(declaration);
+        boolean anonymous = pattern.endsWith(".get_");
+        if (!anonymous) {
+            SearchPattern searchPattern = 
+                    createSearchPattern(declaration, REFERENCES);
+            SearchRequestor requestor = new SearchRequestor() {
+                @Override
+                public void acceptSearchMatch(SearchMatch match) {
+                    TextChange change = canonicalChange(cc, changes, match);
+                    int loc = pattern.lastIndexOf('.')+1;
+                    String oldName = pattern.substring(loc);
+                    if (declaration instanceof Value) {
+                        String uppercased = 
+                                Character.toUpperCase(newName.charAt(0)) + 
+                                newName.substring(1);
+                        change.addEdit(new ReplaceEdit(match.getOffset()+3, 
+                                oldName.length()-3, 
+                                uppercased));
+                    }
+                    else {
+                        change.addEdit(new ReplaceEdit(match.getOffset(), 
+                                oldName.length(), newName));
+                    }
                 }
-                change.addEdit(new ReplaceEdit(match.getOffset(), len, newName));
-            }
-        };
-        try {
-            searchEngine.search(createPattern(pattern, sort, 
-                    IJavaSearchConstants.REFERENCES, SearchPattern.R_EXACT_MATCH), 
-                    SearchUtils.getDefaultSearchParticipants(),
-                    SearchEngine.createJavaSearchScope(projects), 
-                    requestor, pm);
+            };
+            runSearch(pm, searchEngine, searchPattern, projects, requestor);
         }
-        catch (CoreException e) {
-            e.printStackTrace();
+        if (anonymous ||
+                declaration instanceof MethodOrValue && 
+                declaration.isToplevel()) {
+            int loc = pattern.lastIndexOf('.');
+            SearchPattern searchPattern = createPattern(pattern.substring(0, loc), 
+                    CLASS_AND_INTERFACE, REFERENCES, R_EXACT_MATCH);
+            SearchRequestor requestor = new SearchRequestor() {
+                @Override
+                public void acceptSearchMatch(SearchMatch match) {
+                    TextChange change = canonicalChange(cc, changes, match);
+                    int end = pattern.lastIndexOf("_.");
+                    int start = pattern.substring(0, end).lastIndexOf('.')+1;
+                    String oldName = pattern.substring(start, end);                    
+                    change.addEdit(new ReplaceEdit(match.getOffset(), 
+                            oldName.length(), newName));
+                }
+            };
+            runSearch(pm, searchEngine, searchPattern, projects, requestor);
         }
     }
 
+    private TextChange canonicalChange(final CompositeChange cc,
+            final Map<IResource, TextChange> changes, SearchMatch match) {
+        IResource resource = match.getResource();
+        TextChange change = changes.get(resource);
+        if (change==null) {
+            change = new TextFileChange("Rename", (IFile) resource);
+            change.setEdit(new MultiTextEdit());
+            changes.put(resource, change);
+            cc.add(change);
+        }
+        return change;
+    }
+    
     private void renameInFile(TextChange tfc, CompositeChange cc, 
             Tree.CompilationUnit root) {
         tfc.setEdit(new MultiTextEdit());
