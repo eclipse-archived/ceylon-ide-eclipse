@@ -25,7 +25,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
@@ -34,7 +33,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
@@ -57,28 +55,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 
     private void configureViewer(StructuredViewer viewer) {
         viewer.setContentProvider(contentProvider);
-        viewer.setLabelProvider(new CeylonLabelProvider(true) {
-            @Override
-            protected String getImageKey(Object element) {
-                if (element instanceof ArchiveMatches) {
-                    return RUNTIME_OBJ;
-                }
-                if (element instanceof WithSourceFolder) {
-                    element = ((WithSourceFolder) element).element;
-                }
-                return super.getImageKey(element);
-            }
-            @Override
-            public StyledString getStyledText(Object element) {
-                if (element instanceof ArchiveMatches) {
-                    return new StyledString("Source Archive Matches");
-                }
-                if (element instanceof WithSourceFolder) {
-                    element = ((WithSourceFolder) element).element;
-                }
-                return super.getStyledText(element);
-            }
-        });
+        viewer.setLabelProvider(new SearchResultsLabelProvider());
         viewer.setComparator(new CeylonViewerComparator());
     }
 

@@ -81,7 +81,7 @@ public class ExtractInterfaceWizardPage extends UserInputWizardPage {
 
         tableViewer = CheckboxTableViewer.newCheckList(composite, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         tableViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-        tableViewer.setLabelProvider(new CeylonLabelProvider(false));
+        tableViewer.setLabelProvider(new CeylonLabelProvider());
         tableViewer.setContentProvider(new ArrayContentProvider());
         tableViewer.setInput(extractableMembers);
         tableViewer.getControl().setEnabled(extractableMembers.length > 0);

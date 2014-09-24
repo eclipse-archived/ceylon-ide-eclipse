@@ -22,10 +22,10 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.search.CeylonElement;
 import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.code.search.CeylonViewerComparator;
+import com.redhat.ceylon.eclipse.code.search.SearchResultsLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class DeleteInputPage extends UserInputWizardPage {
@@ -68,7 +68,7 @@ public class DeleteInputPage extends UserInputWizardPage {
         
         final TableViewer table = new TableViewer(composite, 
                 SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-        table.setLabelProvider(new CeylonLabelProvider(true) {
+        table.setLabelProvider(new SearchResultsLabelProvider() {
             @Override
             public StyledString getStyledText(Object element) {
                 return super.getStyledText(((CeylonSearchMatch) element).getElement());
