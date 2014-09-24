@@ -1,21 +1,18 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjects;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.SearchEngine;
-import org.eclipse.jdt.core.search.SearchPattern;
-import org.eclipse.jdt.core.search.SearchRequestor;
-import org.eclipse.jdt.internal.corext.util.SearchUtils;
 import org.eclipse.jdt.internal.ui.search.NewSearchResultCollector;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
@@ -27,10 +24,9 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
-import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -60,9 +56,39 @@ abstract class FindSearchQuery implements ISearchQuery {
     
     @Override
     public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
-        //List<PhasedUnit> units = Ceylon Builder.getUnits(project);
-        //if (units==null) units = CeylonBuilder.getUnits();
-        //List<PhasedUnit> units = getUnits();
+        int work = estimateWork(monitor);
+        monitor.beginTask("Searching for " + labelString() + " '" + name + "'", work);
+        findCeylonReferences(monitor);
+        if (referencedDeclaration instanceof Declaration && project!=null) {
+            findJavaReferences(monitor);
+        }
+        monitor.done();
+        referencedDeclaration = null;
+        return Status.OK_STATUS;
+    }
+
+    private void findCeylonReferences(IProgressMonitor monitor) {
+        Set<String> searchedArchives = new HashSet<String>();
+        for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
+            findInUnits(tc.getPhasedUnits());
+            monitor.worked(1);
+            Modules modules = tc.getContext().getModules();
+            for (Module m: modules.getListOfModules()) {
+                if (m instanceof JDTModule) {
+                    JDTModule module = (JDTModule) m;
+                    if (module.isCeylonArchive() && module.getArtifact()!=null) { 
+                        String archivePath = module.getArtifact().getAbsolutePath();
+                        if (!searchedArchives.add(archivePath)) {
+                            findInUnits(module.getPhasedUnits());
+                            monitor.worked(1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private int estimateWork(IProgressMonitor monitor) {
         int work = 0;
         Set<String> searchedArchives = new HashSet<String>();
         for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
@@ -72,84 +98,22 @@ abstract class FindSearchQuery implements ISearchQuery {
                     JDTModule module = (JDTModule) m;
                     if (module.isCeylonArchive() && module.getArtifact() != null) { 
                         String archivePath = module.getArtifact().getAbsolutePath();
-                        if (!searchedArchives.contains(archivePath)) {
+                        if (!searchedArchives.add(archivePath)) {
                             work++;
                         }
                     }
                 }
             }
         }
-        monitor.beginTask("Searching for " + labelString() + " '" + name + "'", work);
-        searchedArchives = new HashSet<String>();
-        for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
-            findInUnits(tc.getPhasedUnits());
-            monitor.worked(1);
-            for (Module m : tc.getContext().getModules().getListOfModules()) {
-                if (m instanceof JDTModule) {
-                    JDTModule module = (JDTModule) m;
-                    if (module.isCeylonArchive() && module.getArtifact() != null) { 
-                        String archivePath = module.getArtifact().getAbsolutePath();
-                        if (!searchedArchives.contains(archivePath)) {
-                            findInUnits(module.getPhasedUnits());
-                            searchedArchives.add(archivePath);
-                            monitor.worked(1);
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (referencedDeclaration instanceof Declaration) {
-            findJavaReferences(monitor);
-        }
-        
-        monitor.done();
-        referencedDeclaration = null;
-        return Status.OK_STATUS;
+        return work;
     }
     
     private void findJavaReferences(IProgressMonitor pm) {
-        if (project==null) return;
-        SearchEngine searchEngine = new SearchEngine();
-        String pattern;
-        int sort;
         Declaration declaration = (Declaration) referencedDeclaration;
-        String container = 
-                declaration.getContainer()
-                           .getQualifiedNameString()
-                           .replace("::", ".");
-        final String name = declaration.getName();
-        if (declaration instanceof Method) {
-            pattern = container + '.' + name;
-            sort = IJavaSearchConstants.METHOD;
-        }
-        else if (declaration instanceof Value) {
-            //TODO: setters!
-            pattern = container + '.' + "get" + 
-                    Character.toUpperCase(name.charAt(0)) +
-                    name.substring(1);
-            sort = IJavaSearchConstants.METHOD;
-        }
-        else {
-            pattern = container + '.' + name;
-            sort = IJavaSearchConstants.CLASS_AND_INTERFACE;
-        }
-        IProject[] referencingProjects = project.getReferencingProjects();
-        IProject[] projects = new IProject[referencingProjects.length+1];
-        projects[0] = project;
-        System.arraycopy(referencingProjects, 0, projects, 1, referencingProjects.length);
-        SearchRequestor requestor = new NewSearchResultCollector(result, true);
-        try {
-            SearchPattern searchPattern = createPattern(pattern, sort, limitTo(), 
-                    SearchPattern.R_EXACT_MATCH);
-            searchEngine.search(searchPattern, 
-                    SearchUtils.getDefaultSearchParticipants(),
-                    SearchEngine.createJavaSearchScope(projects), 
-                    requestor, pm);
-        }
-        catch (CoreException e) {
-            e.printStackTrace();
-        }
+        runSearch(pm, new SearchEngine(), 
+                createSearchPattern(declaration, limitTo()), 
+                getProjects(project), 
+                new NewSearchResultCollector(result, true));
     }
     
     abstract int limitTo();
