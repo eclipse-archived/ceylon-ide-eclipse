@@ -167,8 +167,8 @@ public class Highlights  {
         StringTokenizer tokens = 
                 new StringTokenizer(string, 
                         qualifiedNameIsPath ? 
-                                " ()<>*+?,{}[]\"" : 
-                                " ()<>*+?,{}[]\".", 
+                                " |&()<>*+?,{}[]\"" : 
+                                " |&()<>*+?,{}[]\".", 
                         true);
         boolean version = false;
         boolean qualified = false;
