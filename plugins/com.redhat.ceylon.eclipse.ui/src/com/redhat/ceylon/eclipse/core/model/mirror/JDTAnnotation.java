@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.internal.compiler.impl.Constant;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
+import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ElementValuePair;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
@@ -52,19 +53,27 @@ public class JDTAnnotation implements AnnotationMirror {
             ElementValuePair[] annotationVaues = annotation.getElementValuePairs();
             for (ElementValuePair annotationValue : annotationVaues) {
                 String name = new String(annotationValue.getName());
-                Object value = convertValue(annotationValue.getValue());
+                Object value = convertValue(annotationValue.getMethodBinding().returnType, annotationValue.getValue());
                 values.put(name, value);
             }
         }
         return values.get(fieldName);
     }
 
-    private Object convertValue(Object value) {
+    private Object convertValue(TypeBinding returnType, Object value) {
         if(value.getClass().isArray()){
             Object[] array = (Object[])value;
             List<Object> values = new ArrayList<Object>(array.length);
+            TypeBinding elementType = ((ArrayBinding)returnType).elementsType();
             for(Object val : array)
-                values.add(convertValue(val));
+                values.add(convertValue(elementType, val));
+            return values;
+        }
+        if(returnType.isArrayType()){
+            // got a single value but expecting array
+            List<Object> values = new ArrayList<Object>(1);
+            TypeBinding elementType = ((ArrayBinding)returnType).elementsType();
+            values.add(convertValue(elementType, value));
             return values;
         }
         if(value instanceof AnnotationBinding){
