@@ -18,6 +18,7 @@ import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -104,20 +105,41 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     @Override
     protected void showMatch(Match match, int offset, int length, boolean activate)
             throws PartInitException {
-        CeylonElement element = (CeylonElement) match.getElement();
-        IFile file = element.getFile();
-        if (file==null) {
-            Path path = new Path(element.getVirtualFile().getPath());
-            gotoLocation(path, offset, length);
-        }
-        else {
-            IWorkbenchPage page = getSite().getPage();
-            if (offset >= 0 && length != 0) {
-                openAndSelect(page, file, offset, length, activate);
-            } 
-            else {
-                open(page, file, activate);
+        Object elem = match.getElement();
+        if (elem instanceof CeylonElement) {
+            CeylonElement element = (CeylonElement) elem;
+            IFile file = element.getFile();
+            if (file==null) {
+                Path path = new Path(element.getVirtualFile().getPath());
+                gotoLocation(path, offset, length);
             }
+            else {
+                IWorkbenchPage page = getSite().getPage();
+                if (offset >= 0 && length != 0) {
+                    openAndSelect(page, file, offset, length, activate);
+                } 
+                else {
+                    open(page, file, activate);
+                }
+            }
+        }
+        else if (elem instanceof IJavaElement) {
+            IJavaElement element = (IJavaElement) elem;
+            
+            IFile file = (IFile) element.getResource();
+            if (file==null) {
+                //TODO!!!
+            }
+            else {
+                IWorkbenchPage page = getSite().getPage();
+                if (offset >= 0 && length != 0) {
+                    openAndSelect(page, file, offset, length, activate);
+                } 
+                else {
+                    open(page, file, activate);
+                }
+            }
+            
         }
     }
     

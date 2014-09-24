@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
+import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -202,7 +203,8 @@ public class RenameRefactoring extends AbstractRefactoring {
 
     private void refactorJavaReferences(IProgressMonitor pm,
             final CompositeChange cc) {
-        final Map<IResource,TextChange> changes = new HashMap<>();
+        final Map<IResource,TextChange> changes = 
+                new HashMap<IResource, TextChange>();
         SearchEngine searchEngine = new SearchEngine();
         String pattern;
         int sort;
@@ -240,25 +242,26 @@ public class RenameRefactoring extends AbstractRefactoring {
         IProject[] projects = new IProject[referencingProjects.length+1];
         projects[0] = project;
         System.arraycopy(referencingProjects, 0, projects, 1, referencingProjects.length);
+        SearchRequestor requestor = new SearchRequestor() {
+            @Override
+            public void acceptSearchMatch(SearchMatch match) {
+                IResource resource = match.getResource();
+                TextChange change = changes.get(resource);
+                if (change==null) {
+                    change = new TextFileChange("Rename", (IFile) resource);
+                    change.setEdit(new MultiTextEdit());
+                    changes.put(resource, change);
+                    cc.add(change);
+                }
+                change.addEdit(new ReplaceEdit(match.getOffset(), len, newName));
+            }
+        };
         try {
-            searchEngine.search(SearchPattern.createPattern(pattern, sort, 
+            searchEngine.search(createPattern(pattern, sort, 
                     IJavaSearchConstants.REFERENCES, SearchPattern.R_EXACT_MATCH), 
                     SearchUtils.getDefaultSearchParticipants(),
                     SearchEngine.createJavaSearchScope(projects), 
-                    new SearchRequestor() {
-                @Override
-                public void acceptSearchMatch(SearchMatch match) {
-                    IResource resource = match.getResource();
-                    TextChange change = changes.get(resource);
-                    if (change==null) {
-                        change = new TextFileChange("Rename", (IFile) resource);
-                        change.setEdit(new MultiTextEdit());
-                        changes.put(resource, change);
-                        cc.add(change);
-                    }
-                    change.addEdit(new ReplaceEdit(match.getOffset(), len, newName));
-                }
-            }, pm);
+                    requestor, pm);
         }
         catch (CoreException e) {
             e.printStackTrace();
