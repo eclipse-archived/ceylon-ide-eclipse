@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
@@ -34,6 +35,12 @@ public class FindRefinementsAction extends AbstractFindAction {
             cu.visit(frv);
             Set<Tree.StatementOrArgument> nodes = frv.getDeclarationNodes();
             return Collections.<Node>unmodifiableSet(nodes);
+        }
+
+        @Override
+        int limitTo() {
+            //TODO: is this really correct?
+            return IJavaSearchConstants.IGNORE_DECLARING_TYPE|IJavaSearchConstants.DECLARATIONS;
         }
 
         @Override

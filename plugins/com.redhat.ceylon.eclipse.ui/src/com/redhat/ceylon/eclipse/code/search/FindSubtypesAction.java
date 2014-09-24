@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
@@ -33,6 +34,11 @@ public class FindSubtypesAction extends AbstractFindAction {
             cu.visit(frv);
             Set<Tree.Declaration> nodes = frv.getDeclarationNodes();
             return Collections.<Node>unmodifiableSet(nodes);
+        }
+
+        @Override
+        int limitTo() {
+            return IJavaSearchConstants.IMPLEMENTORS;
         }
 
         @Override

@@ -5,6 +5,11 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
+import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.MEMBER_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_RIGHT;
 import static org.eclipse.jface.viewers.IDecoration.TOP_LEFT;
@@ -24,11 +29,16 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMember;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.IDecoration;
@@ -130,12 +140,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         this.smallSize = smallSize;
     }
     
-    protected static Image getDecoratedImage(Object element, String key, boolean smallSize) {
+    protected static Image getDecoratedImage(Object element, 
+            String key, boolean smallSize) {
         if (key==null) return null;
-        return getDecoratedImage(key, getDecorationAttributes(element), smallSize);
+        return getDecoratedImage(key, 
+                getDecorationAttributes(element), 
+                smallSize);
     }
 
-    public static Image getDecoratedImage(String key, int decorationAttributes, boolean smallSize) {
+    public static Image getDecoratedImage(String key, 
+            int decorationAttributes, boolean smallSize) {
         ImageDescriptor descriptor = imageRegistry.getDescriptor(key);
         if (descriptor==null) {
             return null;
@@ -145,7 +159,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         Image image = imageRegistry.get(decoratedKey);
         if (image==null) {
             imageRegistry.put(decoratedKey, 
-                    new DecoratedImageDescriptor(descriptor, decorationAttributes, 
+                    new DecoratedImageDescriptor(descriptor, 
+                            decorationAttributes, 
                             smallSize ? SMALL_SIZE : BIG_SIZE));
             image = imageRegistry.get(decoratedKey);
         }
@@ -216,6 +231,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (element instanceof Node) {
             return getImageKeyForNode((Node) element);
         }
+        if (element instanceof IJavaElement) {
+            return getImageKeyForDeclaration((IJavaElement) element);
+        }
         return CEYLON_FILE;
     }
 
@@ -227,7 +245,15 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (name.equals("package.ceylon")) {
             return CEYLON_PACKAGE_DESC;
         }
-        return CEYLON_FILE;
+        else if (element.getFileExtension().equalsIgnoreCase("ceylon")) {
+            return CEYLON_FILE;
+        }
+        else if (element.getFileExtension().equalsIgnoreCase("java")) {
+            return JAVA_FILE;
+        }
+        else {
+            return GENERIC_FILE;
+        }
     }
     
     public static String getImageKeyForNode(Node n) {
@@ -254,7 +280,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return getImageKeyForDeclarationNode((Tree.Declaration) n);
         }
         else if (n instanceof Tree.SpecifierStatement) {
-            Tree.Term bme = ((Tree.SpecifierStatement) n).getBaseMemberExpression();
+            Tree.Term bme = 
+                    ((Tree.SpecifierStatement) n).getBaseMemberExpression();
             if (bme instanceof Tree.BaseMemberExpression) { 
                 return CEYLON_LOCAL_ATTRIBUTE;
             }
@@ -311,11 +338,50 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     public static Image getImageForDeclaration(Declaration element) {
-        return getDecoratedImage(element, getImageKeyForDeclaration(element), false);
+        return getDecoratedImage(element, 
+                getImageKeyForDeclaration(element), false);
     }
-
+    
     public static Image getImageForFile(IFile file) {
         return getDecoratedImage(file, getImageKeyForFile(file), false);
+    }
+    
+    private static String getImageKeyForDeclaration(IJavaElement e) {
+        if (e==null) return null;
+        boolean shared = false;
+        if (e instanceof IMember) {
+            try {
+                shared = Flags.isPublic(((IMember) e).getFlags());
+            }
+            catch (JavaModelException jme) {
+                jme.printStackTrace();
+            }
+        }
+        switch(e.getElementType()) {
+        case IJavaElement.METHOD:
+            if (shared) {
+                return CEYLON_METHOD;
+            }
+            else {
+                return CEYLON_LOCAL_METHOD;
+            }
+        case IJavaElement.FIELD:
+            if (shared) {
+                return CEYLON_ATTRIBUTE;
+            }
+            else {
+                return CEYLON_LOCAL_ATTRIBUTE;
+            }
+        case IJavaElement.TYPE:
+            if (shared) {
+                return CEYLON_CLASS;
+            }
+            else {
+                return CEYLON_LOCAL_CLASS;
+            }
+        default:
+            return null;
+        }
     }
 
     private static String getImageKeyForDeclaration(Declaration d) {
@@ -393,7 +459,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return new StyledString(((IPackageFragment) element).getElementName(), 
                     Highlights.PACKAGE_STYLER);
         }
-        else if (element instanceof IJavaElement) {
+        /*else if (element instanceof IJavaElement) {
+            return new StyledString(((IJavaElement) element).getElementName());
+        }*/
+        else if (element instanceof IPackageFragment || 
+                 element instanceof IPackageFragmentRoot) {
             return new StyledString(((IJavaElement) element).getElementName());
         }
         else if (element instanceof CeylonElement) {
@@ -413,27 +483,91 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (element instanceof Node) {
             return getStyledLabelForNode((Node) element);
         }
+        else if (element instanceof IJavaElement) {
+            return getStyledLabelForSearchResult((IJavaElement) element);
+        }
         else {
             return new StyledString("<something>");
         }
     }
 
     private StyledString getStyledLabelForSearchResult(CeylonElement ce) {
-        String pkg;
-        if (includePackage()) {
-            pkg = " - " + ce.getPackageLabel();
-        }
-        else {
-            pkg = "";
-        }
+        StyledString styledString = new StyledString();
         IFile file = ce.getFile();
         String path = file==null ? 
                 ce.getVirtualFile().getPath() : 
                 file.getFullPath().toString();
-        return new StyledString().append(ce.getLabel())
-                .append(pkg, Highlights.PACKAGE_STYLER)
-                .append(" - " + path, COUNTER_STYLER)
-                .append(":" + ce.getLocation(), COUNTER_STYLER);
+        styledString.append(ce.getLabel());
+        if (includePackage()) {
+            styledString.append(" - " + ce.getPackageLabel(), PACKAGE_STYLER);
+        }
+        styledString.append(" - " + path, COUNTER_STYLER)
+                    .append(":" + ce.getLocation(), COUNTER_STYLER);
+        return styledString;
+    }
+    
+    private StyledString getStyledLabelForSearchResult(IJavaElement je) {
+        StyledString styledString = new StyledString();
+        String name = je.getElementName();
+        if (je instanceof IMethod) {
+            try {
+                String returnType = ((IMethod) je).getReturnType();
+                if (returnType.equals("V")) {
+                    styledString.append("void ", Highlights.KW_STYLER);
+                }
+                else {
+                    styledString.append(Signature.toString(returnType), TYPE_STYLER)
+                                .append(' ');
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            styledString.append(name, ID_STYLER);
+            try {
+                styledString.append('(');
+                String[] parameterTypes = ((IMethod) je).getParameterTypes();
+                String[] parameterNames = ((IMethod) je).getParameterNames();
+                boolean first = true;
+                for (int i=0; i<parameterTypes.length; i++) {
+                    if (first) {
+                        first = false;
+                    }
+                    else {
+                        styledString.append(", ");
+                    }
+                    styledString.append(Signature.toString(parameterTypes[i]), TYPE_STYLER)
+                                .append(' ').append(parameterNames[i], MEMBER_STYLER);
+                }
+                styledString.append(')');
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else if (je instanceof IField) {
+            try {
+                String type = Signature.toString(((IField) je).getTypeSignature());
+                styledString.append(type, TYPE_STYLER);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            styledString.append(name, ID_STYLER);
+        }
+        else {
+            styledString.append(name, TYPE_ID_STYLER);
+        }
+        if (includePackage()) {
+            IJavaElement pkg = ((IJavaElement) je.getOpenable()).getParent();
+            styledString.append(" - ", PACKAGE_STYLER)
+                        .append(pkg.getElementName(), PACKAGE_STYLER);
+        }
+        IFile file = (IFile) je.getResource();
+        if (file!=null) {
+            styledString.append(" - " + file.getFullPath().toString(), COUNTER_STYLER);
+        }
+        return styledString;
     }
     
     @Override
@@ -722,7 +856,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                         }
                     }
                     else if (p instanceof Tree.InitializerParameter) {
-                        label.append(name(((Tree.InitializerParameter) p).getIdentifier()), Highlights.ID_STYLER);
+                        Tree.Identifier id = ((Tree.InitializerParameter) p).getIdentifier();
+                        label.append(name(id), Highlights.ID_STYLER);
                     }
                 }
                 if (++i<len) label.append(", ");
@@ -866,7 +1001,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                         public boolean select(IMarker marker) {
                             if (marker.getResource() instanceof IFile) {
                                 Package currentPackage = CeylonBuilder.getPackage((IFile) marker.getResource());
-                                if (moduleOfRootPackage != null) {
+                                if (moduleOfRootPackage != null && currentPackage != null) {
                                     return moduleOfRootPackage.equals(currentPackage.getModule());
                                 }
                             }

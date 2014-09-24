@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
@@ -32,6 +33,12 @@ public class FindAssignmentsAction extends AbstractFindAction {
                     new FindAssignmentsVisitor((Declaration) referencedDeclaration);
             cu.visit(frv);
             return frv.getNodes();
+        }
+        
+        @Override
+        int limitTo() {
+            //TODO: this is simply not correct
+            return IJavaSearchConstants.WRITE_ACCESSES;
         }
 
         @Override
