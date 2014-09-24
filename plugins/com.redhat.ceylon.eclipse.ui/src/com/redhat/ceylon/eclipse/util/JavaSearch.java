@@ -10,11 +10,10 @@ import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.IClassFile;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.SearchEngine;
@@ -95,39 +94,43 @@ public class JavaSearch {
     }
 
     public static String getQualifiedName(IMember dec) {
-        IJavaElement parent = dec.getParent();
+        IPackageFragment packageFragment = (IPackageFragment) 
+                dec.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
+        IType type = (IType) dec.getAncestor(IJavaElement.TYPE);
+        
+        String qualifier = packageFragment.getElementName();
         String name = dec.getElementName();
-        boolean mightBeGetter = true;
+        
         if (dec instanceof IMethod && name.equals("get_")) {
-            return getQualifiedName(dec.getDeclaringType());
+            return getQualifiedName(type);
         }
         else if (dec instanceof IType && name.endsWith("_")) {
-            name = name.substring(0, name.length()-1);
-            mightBeGetter = false;
+            return qualifier + '.' + name.substring(0, name.length()-1);
         }
+        
         if (dec instanceof IMethod) {
             if (name.startsWith("$")) {
                 name = name.substring(1);
             }
             else if (name.startsWith("get") ||
                      name.startsWith("set")) {
-                if (mightBeGetter) {
-                    name = Character.toLowerCase(name.charAt(3)) + 
-                            name.substring(4);
-                }
+                name = Character.toLowerCase(name.charAt(3)) + 
+                        name.substring(4);
             }
         }
-        if (parent instanceof ICompilationUnit || 
-                parent instanceof IClassFile) {
-            return parent.getParent().getElementName() + "." + 
-                    name;
-        }
-        else if (dec.getDeclaringType()!=null) {
-            return getQualifiedName(dec.getDeclaringType()) + "." + 
-                    name;
+        
+        if (dec!=type) {
+            String typeName = dec.getDeclaringType().getElementName();
+            if (typeName.endsWith(name + "_")) {
+                return qualifier + '.' + name;
+            }
+            else {
+                return qualifier + '.' + 
+                        type.getElementName() + '.' + name;
+            }
         }
         else {
-            return "@";
+            return qualifier + '.' + name;
         }
     }
 
