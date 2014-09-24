@@ -232,8 +232,12 @@ public class RenameRefactoring extends AbstractRefactoring {
                                 uppercased));
                     }
                     else {
+                        String replacedName = newName;
+                        if (oldName.startsWith("$")) {
+                            replacedName = '$' + replacedName;
+                        }
                         change.addEdit(new ReplaceEdit(match.getOffset(), 
-                                oldName.length(), newName));
+                                oldName.length(), replacedName));
                     }
                 }
             };
