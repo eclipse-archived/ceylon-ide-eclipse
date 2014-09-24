@@ -100,6 +100,22 @@ object producedTypeNamePrinter extends ProducedTypeNamePrinter(true, true, true,
     printFullyQualified() => true;
 }
 
+String importedModuleName(Ast.ImportModule child) {
+    Ast.ImportPath? importPath = child.importPath;
+    Ast.QuotedLiteral? quotedLitteral = child.quotedLiteral;
+    String moduleName;
+    if (exists quotedLitteral) {
+        moduleName = quotedLitteral.text;
+    } else {
+        if (exists importPath) {
+            moduleName = formatPath(importPath.identifiers);
+        } else {
+            moduleName = "<unknown>";
+        }
+    }
+    return moduleName;
+}
+
 alias AstNode => <Ast.Declaration | Ast.CompilationUnit | Ast.ModuleDescriptor | Ast.ImportModule | Ast.PackageDescriptor> & AstAbstractNode;
 
 abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
@@ -149,19 +165,7 @@ abstract class DeltaBuilder(AstNode oldNode, AstNode? newNode) {
                             childKey = child.unit.fullPath;
                         }
                         case(is Ast.ImportModule) {
-                            Ast.ImportPath? importPath = child.importPath;
-                            Ast.QuotedLiteral? quotedLitteral = child.quotedLiteral;
-                            String moduleName;
-                            if (exists quotedLitteral) {
-                                moduleName = quotedLitteral.text;
-                            } else {
-                                if (exists importPath) {
-                                    moduleName = formatPath(importPath.identifiers);
-                                } else {
-                                    moduleName = "<unknown>";
-                                }
-                            }
-                            childKey = moduleName + "/" + (child.version?.text?.trim('"'.equals) else "<unknown>");
+                            childKey = importedModuleName(child) + "/" + (child.version?.text?.trim('"'.equals) else "<unknown>");
                         }
                         
                         allChildrenSet.add(childKey);
@@ -286,7 +290,7 @@ class ModuleDescriptorDeltaBuilder(Ast.ModuleDescriptor oldNode, Ast.ModuleDescr
     shared actual void registerMemberAddedChange(AstNode newChild) {
         assert(is Ast.ImportModule newChild);
         changes.add(ModuleImportAdded(
-            Util.formatPath (newChild.importPath.identifiers),
+            importedModuleName(newChild),
             newChild.version.text.trim('"'.equals),
             Util.hasAnnotation(newChild.annotationList, "shared", newChild.unit) 
             then visibleOutside else invisibleOutside
@@ -331,7 +335,7 @@ class ModuleImportDeclarationDeltaBuilder(Ast.ImportModule oldNode, Ast.ImportMo
                     Boolean selecting(ModuleImport element) {
                         value modelName = element.\imodule.nameAsString;
                         value modelVersion = element.\imodule.version;
-                        value astName = formatPath(oldNode.importPath.identifiers);
+                        value astName = importedModuleName(oldNode);
                         value astVersion = oldNode.version.text.trim('"'.equals);
                         
                         return  modelName == astName &&
