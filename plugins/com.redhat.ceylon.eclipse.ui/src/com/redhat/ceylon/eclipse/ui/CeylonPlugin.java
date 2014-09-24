@@ -45,6 +45,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
     public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
     public static final String DIST_PLUGIN_ID = "com.redhat.ceylon.dist";
+    public static final String EMBEDDED_REPO_PLUGIN_ID = "com.redhat.ceylon.dist.repo";
     public static final String LANGUAGE_ID = "ceylon";
     public static final String EDITOR_ID = PLUGIN_ID + ".editor";
     private static final String[] RUNTIME_LIBRARIES = new String[]{
@@ -72,7 +73,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     /**
      * - If the 'ceylon.repo' property exist, returns the corresponding file
      * <br>
-     * - Else return the internal defaultRepository folder
+     * - Else return the internal repo folder
      * 
      * @return
      */
@@ -161,7 +162,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     /**
      * - If the property is not empty, return the corresponding file
      * <br>
-     * - Else return the internal defaultRepository folder
+     * - Else return the internal repo folder
      * 
      * @param ceylonRepositoryProperty
      * @return
@@ -177,8 +178,12 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         }
         if (ceylonRepository == null) {
             try {
-                Bundle bundle = Platform.getBundle(DIST_PLUGIN_ID);
-                Path path = new Path("defaultRepository");
+                Bundle bundle = Platform.getBundle(EMBEDDED_REPO_PLUGIN_ID);
+                IPath path = new Path("repo");
+                if (bundle == null) {
+                    bundle = Platform.getBundle(DIST_PLUGIN_ID);
+                    path = new Path("embeddedRepository").append(path);
+                }
                 URL eclipseUrl = FileLocator.find(bundle, path, null);
                 URL fileURL = FileLocator.resolve(eclipseUrl);
                 String urlPath = fileURL.getPath();
