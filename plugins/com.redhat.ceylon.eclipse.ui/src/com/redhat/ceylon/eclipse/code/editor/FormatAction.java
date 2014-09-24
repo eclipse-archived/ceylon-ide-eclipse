@@ -24,11 +24,11 @@ import org.eclipse.text.edits.ReplaceEdit;
 import ceylon.file.Writer;
 import ceylon.file.Writer$impl;
 import ceylon.formatter.format_;
-import ceylon.formatter.options.CombinedOptions;
 import ceylon.formatter.options.LineBreak;
 import ceylon.formatter.options.Spaces;
 import ceylon.formatter.options.SparseFormattingOptions;
 import ceylon.formatter.options.Tabs;
+import ceylon.formatter.options.combinedOptions_;
 import ceylon.formatter.options.crlf_;
 import ceylon.formatter.options.lf_;
 import ceylon.formatter.options.os_;
@@ -256,7 +256,7 @@ final class FormatAction extends Action {
                 }
                 format_.format(
                         unit.node,
-                        new CombinedOptions(
+                        combinedOptions_.combinedOptions(
                                 loadProfile_.loadProfile(
                                         "default", // TODO profile management
                                         /* inherit = */ false,
