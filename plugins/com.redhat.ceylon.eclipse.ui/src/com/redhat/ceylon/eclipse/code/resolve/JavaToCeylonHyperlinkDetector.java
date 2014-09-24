@@ -59,7 +59,7 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
                             try {
                                 CeylonEditor editor = (CeylonEditor) getActivePage().openEditor(editorInput, EDITOR_ID);
                                 int offset = Nodes.getIdentifyingNode(Nodes.getReferencedNode(d, pu.getCompilationUnit())).getStartIndex();
-                                editor.selectAndReveal(offset, 0);
+                                editor.selectAndReveal(offset, d.getName().length());
                             } 
                             catch (PartInitException e) {
                                 e.printStackTrace();
