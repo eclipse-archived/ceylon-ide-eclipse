@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.TypeProposal.getTypeProposals;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REVEAL;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
@@ -193,7 +194,8 @@ public class SpecifyTypeProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        return desc + " '" + infType.getProducedTypeName(rootNode.getUnit()) + "'";
+        String type = infType.getProducedTypeName(rootNode.getUnit());
+        return desc + " '" + convertToHTMLContent(type) + "'";
     }
 
     @Override

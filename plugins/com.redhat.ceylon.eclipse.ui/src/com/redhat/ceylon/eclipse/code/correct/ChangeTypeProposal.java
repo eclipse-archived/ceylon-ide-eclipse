@@ -34,6 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
@@ -42,7 +43,8 @@ class ChangeTypeProposal extends CorrectionProposal {
     ChangeTypeProposal(ProblemLocation problem, 
             String name, String type, int offset,
             TextFileChange change) {
-        super("Change type of "+ name + " to '" + type + "'", 
+        super("Change type of "+ name + " to '" + 
+                HTMLPrinter.convertToHTMLContent(type) + "'", 
                 change, new Region(offset, type.length()));
     }
         
