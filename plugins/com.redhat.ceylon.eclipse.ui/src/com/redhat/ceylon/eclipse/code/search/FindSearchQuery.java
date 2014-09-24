@@ -109,6 +109,7 @@ abstract class FindSearchQuery implements ISearchQuery {
     }
     
     private void findJavaReferences(IProgressMonitor pm) {
+        if (project==null) return;
         SearchEngine searchEngine = new SearchEngine();
         String pattern;
         int sort;
