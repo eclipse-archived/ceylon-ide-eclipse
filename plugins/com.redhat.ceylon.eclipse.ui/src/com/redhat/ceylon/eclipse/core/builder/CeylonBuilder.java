@@ -3427,7 +3427,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static IResourceAware getUnit(IFile file) {
         Package p = getPackage(file);
         if (p != null) {
-            for (Unit u : p.getUnits()) {
+            for (Unit u: p.getUnits()) {
                 if (u instanceof IResourceAware) {
                     if (u.getFilename().equals(file.getName())) {
                         return (IResourceAware) u;
