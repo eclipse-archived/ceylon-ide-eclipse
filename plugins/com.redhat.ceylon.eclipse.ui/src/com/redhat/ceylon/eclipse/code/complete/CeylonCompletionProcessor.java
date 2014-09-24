@@ -722,7 +722,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     isModuleDescriptor(cpc) || isPackageDescriptor(cpc);
             for (DeclarationWithProximity dwp: sortedProposals) {
                 Declaration dec = dwp.getDeclaration();
-                
+            try {
                 if (!dec.isToplevel() && 
                     !dec.isClassOrInterfaceMember() &&
                     dec.getUnit().equals(node.getUnit())) {
@@ -816,6 +816,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         }
                     }
                 }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
             }
             
             if (node instanceof Tree.QualifiedMemberExpression ||
