@@ -40,7 +40,8 @@ public class FindRefinementsAction extends AbstractFindAction {
         @Override
         int limitTo() {
             //TODO: is this really correct?
-            return IJavaSearchConstants.IGNORE_DECLARING_TYPE|IJavaSearchConstants.DECLARATIONS;
+            return IJavaSearchConstants.IGNORE_DECLARING_TYPE |
+                   IJavaSearchConstants.DECLARATIONS;
         }
 
         @Override

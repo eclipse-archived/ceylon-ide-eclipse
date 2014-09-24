@@ -10,6 +10,7 @@ import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
@@ -24,26 +25,31 @@ public class JavaSearch {
     public static SearchPattern createSearchPattern(
             Declaration declaration, int limitTo) {
         String pattern = getJavaNameOfDeclaration(declaration);
-        SearchPattern searchPattern;
         if (declaration instanceof Method) {
-            searchPattern = createPattern(pattern, METHOD, 
+            return createPattern(pattern, METHOD, 
                     limitTo, R_EXACT_MATCH);
         }
         else if (declaration instanceof Value) {
             int loc = pattern.lastIndexOf('.')+1;
             String setter = pattern.substring(0,loc) + 
                     "set" + pattern.substring(loc+3);
-            searchPattern = createOrPattern(
-                    createPattern(pattern, METHOD, 
-                            limitTo, R_EXACT_MATCH),
-                    createPattern(setter, METHOD, 
-                            limitTo, R_EXACT_MATCH));
+            SearchPattern getterPattern = createPattern(pattern, METHOD, 
+                    limitTo, R_EXACT_MATCH);
+            SearchPattern setterPattern = createPattern(setter, METHOD, 
+                    limitTo, R_EXACT_MATCH);
+            switch (limitTo) {
+            case IJavaSearchConstants.WRITE_ACCESSES:
+                return setterPattern;
+            case IJavaSearchConstants.READ_ACCESSES:
+                return getterPattern;
+            default:
+                return createOrPattern(getterPattern,setterPattern);
+            }
         }
         else {
-            searchPattern = createPattern(pattern, CLASS_AND_INTERFACE, 
+            return createPattern(pattern, CLASS_AND_INTERFACE, 
                     limitTo, R_EXACT_MATCH);
         }
-        return searchPattern;
     }
 
     public static IProject[] getProjects(IProject project) {
