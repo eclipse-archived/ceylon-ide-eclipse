@@ -32,24 +32,23 @@ public class JavaSearch {
             Declaration declaration, int limitTo) {
         String pattern = getJavaNameOfDeclaration(declaration);
         if (declaration instanceof Method) {
-            return createPattern(pattern, METHOD, 
-                    limitTo, R_EXACT_MATCH);
+            return createPattern(pattern, METHOD, limitTo, R_EXACT_MATCH);
         }
         else if (declaration instanceof Value) {
-            int loc = pattern.lastIndexOf('.')+1;
+            int loc = pattern.lastIndexOf('.') + 1;
             String setter = pattern.substring(0,loc) + 
                     "set" + pattern.substring(loc+3);
-            SearchPattern getterPattern = createPattern(pattern, METHOD, 
-                    limitTo, R_EXACT_MATCH);
-            SearchPattern setterPattern = createPattern(setter, METHOD, 
-                    limitTo, R_EXACT_MATCH);
+            SearchPattern getterPattern = 
+                    createPattern(pattern, METHOD, limitTo, R_EXACT_MATCH);
+            SearchPattern setterPattern = 
+                    createPattern(setter, METHOD, limitTo, R_EXACT_MATCH);
             switch (limitTo) {
             case IJavaSearchConstants.WRITE_ACCESSES:
                 return setterPattern;
             case IJavaSearchConstants.READ_ACCESSES:
                 return getterPattern;
             default:
-                return createOrPattern(getterPattern,setterPattern);
+                return createOrPattern(getterPattern, setterPattern);
             }
         }
         else {
