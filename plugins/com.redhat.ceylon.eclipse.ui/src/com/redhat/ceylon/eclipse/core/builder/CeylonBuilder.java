@@ -818,7 +818,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 cleanupJdtClasses(monitor, project);
                 
                 monitor.subTask("Clearing existing markers of project " + project.getName());
-                clearProjectMarkers(project);
+                clearProjectMarkers(project, true, false);
                 clearMarkersOn(project, true);
                 monitor.worked(1);
                 
@@ -894,7 +894,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     }
 
                     monitor.subTask("Clearing existing markers of project (except backend errors)" + project.getName());
-                    clearProjectMarkers(project);
+                    clearProjectMarkers(project, true, false);
                     clearMarkersOn(project, false);
                     monitor.worked(1);
 
@@ -943,7 +943,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                 buildHook.incrementalBuildSources(changedFiles, filesToRemove, filesToTypecheck);
                 
-                clearProjectMarkers(project);
+                clearProjectMarkers(project, true, false);
                 clearMarkersOn(filesToTypecheck, true);
                 clearMarkersOn(filesToCompile, true, true);
 
@@ -976,6 +976,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             }
             
+            clearProjectMarkers(project, false, true);
+
             monitor.setWorkRemaining(50);
             
             monitor.subTask("Collecting problems for project " 
@@ -2856,14 +2858,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private static void clearProjectMarkers(IProject project) {
-        try {
+    private static void clearProjectMarkers(IProject project, boolean nonBackendMarkers, boolean backendMarkers) {
             //project.deleteMarkers(IJavaModelMarker.BUILDPATH_PROBLEM_MARKER, true, DEPTH_ZERO);
-            project.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_ZERO);
-            project.deleteMarkers(PROBLEM_MARKER_ID + ".backend", true, DEPTH_ZERO);
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
+            if (nonBackendMarkers) {
+                try {
+                    project.deleteMarkers(PROBLEM_MARKER_ID, true, DEPTH_ZERO);
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (backendMarkers) {
+                try {
+                    project.deleteMarkers(PROBLEM_MARKER_ID + ".backend", true, DEPTH_ZERO);
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
     }
 
     private static void clearMarkersOn(Collection<IFile> files, boolean alsoDeleteBackendErrors, boolean onlyBackendErrors) {
@@ -2961,7 +2971,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         cleanupJdtClasses(monitor, project);
         
         monitor.subTask("Clearing project and source markers for project " + project.getName());
-        clearProjectMarkers(project);
+        clearProjectMarkers(project, true, true);
         clearMarkersOn(project, true);
 
 //        getConsoleStream().println("-----------------------------------");
