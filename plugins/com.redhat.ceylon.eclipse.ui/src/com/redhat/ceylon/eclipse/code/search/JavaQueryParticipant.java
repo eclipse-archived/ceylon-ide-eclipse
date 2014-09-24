@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -82,17 +81,16 @@ public class JavaQueryParticipant implements IQueryParticipant {
                 limitTo!=WRITE_ACCESSES) {
                 return;
             }
-            final String qualifiedName = 
-                    JavaSearch.getQualifiedName((IMember) element);
             IProject elementProject = element.getJavaProject().getProject();
-            IPackageFragment pf = (IPackageFragment) 
+            IPackageFragment packageFragment = (IPackageFragment) 
                     element.getAncestor(PACKAGE_FRAGMENT);
             DeclarationType declarationType = 
                     element instanceof IType ? 
                         ModelLoader.DeclarationType.TYPE : 
                         ModelLoader.DeclarationType.VALUE;
             
-            Package pack = getPackage((IFolder) pf.getResource());
+            IFolder folder = (IFolder) packageFragment.getResource();
+            Package pack = folder==null ? null : getPackage(folder);
             Declaration declaration;
             if (pack==null) {
                 //this is the case for Ceylon decs, since 
@@ -101,10 +99,16 @@ public class JavaQueryParticipant implements IQueryParticipant {
             }
             else {
                 //this is the case for Java decs
+                IType type = (IType) element.getAncestor(IJavaElement.TYPE);
+                String qualifiedName = JavaSearch.getQualifiedName(type);
                 declaration = 
                         getProjectModelLoader(elementProject)
-                        .convertToDeclaration(pack.getModule(), 
-                                qualifiedName, declarationType);
+                                .convertToDeclaration(pack.getModule(), 
+                                        qualifiedName, declarationType);
+                if (type!=element && declaration!=null) {
+                    declaration = declaration.getMember(element.getElementName(), null, false);
+                }
+                
             }
             if (declaration==null) return;
 
