@@ -136,6 +136,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     private ProblemReporter problemReporter;
     private LookupEnvironment lookupEnvironment;
     private boolean mustResetLookupEnvironment = false;
+    private Set<Module> modulesInClassPath = new HashSet<Module>();
     
     public JDTModelLoader(final JDTModuleManager moduleManager, final Modules modules){
         this.moduleManager = moduleManager;
@@ -781,6 +782,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 }
             }
         }
+        modulesInClassPath.add(module);
     }
     
     @Override
@@ -1132,12 +1134,15 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     @Override
     public boolean isModuleInClassPath(Module module) {
-        // TODO Check that returning true in any case is the right way to do.
-        return super.isModuleInClassPath(module);
+        return modulesInClassPath.contains(module);
     }
     
     @Override
     protected boolean needsLocalDeclarations() {
         return false;
+    }
+
+    void addJDKModuleToClassPath(Module module) {
+        modulesInClassPath.add(module);
     }
 }

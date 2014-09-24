@@ -48,6 +48,7 @@ import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.java.util.Util;
+import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModuleManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleHelper;
@@ -80,7 +81,6 @@ public class JDTModuleManager extends LazyModuleManager {
     private Set<String> sourceModules;
     private TypeChecker typeChecker;
     private boolean loadDependenciesFromModelLoaderFirst;
-    
 
     public Set<String> getSourceModules() {
         return sourceModules;
@@ -485,5 +485,11 @@ public class JDTModuleManager extends LazyModuleManager {
         if (module instanceof JDTModule) {
             ((JDTModule) module).setSourcePhasedUnits((ExternalModulePhasedUnits) modulePhasedUnits);
         }
+    }
+    
+    @Override
+    public void visitedModule(Module module, boolean forCompiledModule) {
+        if(forCompiledModule && AbstractModelLoader.isJDKModule(module.getNameAsString()))
+            modelLoader.addJDKModuleToClassPath(module);
     }
 }
