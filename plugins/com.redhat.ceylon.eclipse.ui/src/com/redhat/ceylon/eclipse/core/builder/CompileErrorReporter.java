@@ -81,7 +81,7 @@ final class CompileErrorReporter implements
                 }
                 @Override
                 public String getMessage(Locale locale) {
-                    return "The Ceylon Java backend compiler failed abormally" + 
+                    return "The Ceylon Java backend compiler failed abnormally" + 
                             (exitState.ceylonCodegenExceptionCount > 0 ? "\n  with " + exitState.ceylonCodegenExceptionCount + " code generation exceptions" : "") +
                             (exitState.ceylonCodegenErroneousCount > 0 ? "\n  with " + exitState.ceylonCodegenErroneousCount + " erroneous code generations" : "") +
                             (exitState.ceylonCodegenGarbageCount > 0 ? "\n  with " + exitState.ceylonCodegenGarbageCount + " malformed Javac tree cases" : "") +
