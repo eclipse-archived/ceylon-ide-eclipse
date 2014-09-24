@@ -36,7 +36,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
@@ -158,7 +157,7 @@ public class JavaQueryParticipant implements IQueryParticipant {
             }
             @Override
             public ILabelProvider createLabelProvider() {
-                return new CeylonLabelProvider(true);
+                return new SearchResultsLabelProvider();
             }
         };
     }

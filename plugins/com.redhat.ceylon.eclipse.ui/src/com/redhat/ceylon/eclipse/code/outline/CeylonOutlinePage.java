@@ -160,7 +160,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
     }
 
     private DecoratingStyledCellLabelProvider createLabelProvider() {
-        return new DecoratingStyledCellLabelProvider(new CeylonLabelProvider(true), 
+        return new DecoratingStyledCellLabelProvider(new CeylonLabelProvider(), 
                 PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator(), 
                 DecorationContext.DEFAULT_CONTEXT);
     }

@@ -250,8 +250,9 @@ public class ModuleSearchViewPart extends ViewPart {
             } else if (moduleMap.size() == 1) {
                 targets.addAll(moduleMap.keySet());
             } else {
-                ElementListSelectionDialog dlg = new ElementListSelectionDialog(parent.getShell(), 
-                        new CeylonLabelProvider(true));
+                ElementListSelectionDialog dlg = 
+                        new ElementListSelectionDialog(parent.getShell(), 
+                                new CeylonLabelProvider());
                 dlg.setTitle("Select Module");
                 dlg.setMessage("Select module, where to add module import.");
                 dlg.setMultipleSelection(true);

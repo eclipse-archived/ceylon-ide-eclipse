@@ -89,7 +89,7 @@ public class SourceFileSelectionDialog extends ElementTreeSelectionDialog {
 	}
 
 	private SourceFileSelectionDialog(Shell shell) {
-		super(shell,new CeylonLabelProvider(false),new StandardJavaElementContentProvider());
+		super(shell,new CeylonLabelProvider(),new StandardJavaElementContentProvider());
 		setValidator(new PackageAndProjectSelectionValidator());
 		setComparator(new JavaElementComparator());
 		setTitle("Source File Selection");

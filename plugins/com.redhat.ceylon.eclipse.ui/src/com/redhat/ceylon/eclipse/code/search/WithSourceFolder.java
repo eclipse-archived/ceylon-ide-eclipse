@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.search;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 
 class WithSourceFolder {
+    
     Object element;
     IPackageFragmentRoot sourceFolder;
     WithSourceFolder(Object element, IPackageFragmentRoot sourceFolder) {
@@ -10,6 +11,7 @@ class WithSourceFolder {
         this.element = element;
         this.sourceFolder = sourceFolder;
     }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof WithSourceFolder) {
@@ -31,8 +33,10 @@ class WithSourceFolder {
             return false;
         }
     }
+    
     @Override
     public int hashCode() {
         return element.hashCode();
     }
+    
 }

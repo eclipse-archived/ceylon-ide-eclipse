@@ -45,7 +45,7 @@ public class CeylonNavigatorLabelProvider extends
     ICommonContentExtensionSite extensionSite;
     
     public CeylonNavigatorLabelProvider() {
-        super(false, true); // small images
+        super(true); // small images
     }
 
     @Override
