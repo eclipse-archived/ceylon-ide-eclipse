@@ -3449,7 +3449,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
 
         IPackageFragmentRoot root = pkg.getPackageFragmentRoot();
-        Modules projectModules = CeylonBuilder.getProjectModules(packageFragment.getJavaProject().getProject());
+        Modules projectModules = getProjectModules(packageFragment.getJavaProject().getProject());
         if (projectModules == null) {
             return null;
         }

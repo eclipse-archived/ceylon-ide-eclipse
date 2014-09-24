@@ -10,6 +10,12 @@ import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IMember;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchPattern;
@@ -52,12 +58,27 @@ public class JavaSearch {
         }
     }
 
-    public static IProject[] getProjects(IProject project) {
+    public static IProject[] getProjectAndReferencingProjects(IProject project) {
         IProject[] referencingProjects = project.getReferencingProjects();
         IProject[] projects = new IProject[referencingProjects.length+1];
         projects[0] = project;
         System.arraycopy(referencingProjects, 0, projects, 1, referencingProjects.length);
         return projects;
+    }
+
+    public static IProject[] getProjectAndReferencedProjects(IProject project) {
+        IProject[] referencedProjects;
+        try {
+            referencedProjects = project.getReferencedProjects();
+            IProject[] projects = new IProject[referencedProjects.length+1];
+            projects[0] = project;
+            System.arraycopy(referencedProjects, 0, projects, 1, referencedProjects.length);
+            return projects;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new IProject[] { project };
+        }
     }
 
     public static void runSearch(IProgressMonitor pm, SearchEngine searchEngine,
@@ -72,6 +93,49 @@ public class JavaSearch {
         catch (CoreException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getQualifiedName(IMember dec) {
+        IJavaElement parent = dec.getParent();
+        String name = dec.getElementName();
+        boolean mightBeGetter = true;
+        if (dec instanceof IMethod && name.equals("get_")) {
+            return getQualifiedName(dec.getDeclaringType());
+        }
+        else if (dec instanceof IType && name.endsWith("_")) {
+            name = name.substring(0, name.length()-1);
+            mightBeGetter = false;
+        }
+        if (dec instanceof IMethod) {
+            if (name.startsWith("$")) {
+                name = name.substring(1);
+            }
+            else if (name.startsWith("get") ||
+                     name.startsWith("set")) {
+                if (mightBeGetter) {
+                    name = Character.toLowerCase(name.charAt(3)) + 
+                            name.substring(4);
+                }
+            }
+        }
+        if (parent instanceof ICompilationUnit || 
+                parent instanceof IClassFile) {
+            return parent.getParent().getElementName() + "." + 
+                    name;
+        }
+        else if (dec.getDeclaringType()!=null) {
+            return getQualifiedName(dec.getDeclaringType()) + "." + 
+                    name;
+        }
+        else {
+            return "@";
+        }
+    }
+
+    public static boolean isDeclarationOfLinkedElement(Declaration d, 
+            IJavaElement javaElement) {
+        return d.getQualifiedNameString().replace("::", ".")
+                .equals(getQualifiedName((IMember) javaElement));
     }
 
 }
