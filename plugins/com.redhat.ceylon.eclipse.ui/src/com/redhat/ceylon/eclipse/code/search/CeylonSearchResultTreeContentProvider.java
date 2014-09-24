@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.asSourceModule;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnit;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -7,6 +11,7 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
@@ -20,15 +25,11 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 
 class CeylonSearchResultTreeContentProvider implements
     CeylonStructuredContentProvider, ITreeContentProvider {
@@ -215,7 +216,16 @@ class CeylonSearchResultTreeContentProvider implements
                         ArchiveMatches.INSTANCE : sourceFolder;
             }
             if (element instanceof IPackageFragment) {
-                if (level==LEVEL_PACKAGE|| level==LEVEL_MODULE) {
+                if (level==LEVEL_PACKAGE) {
+                    return null;
+                }
+                //let's see if it belongs to a Ceylon module
+                Module mod = asSourceModule((IPackageFragment) element);
+                if (mod!=null) {
+                    return new WithSourceFolder(mod, sourceFolder);
+                }
+                //otherwise, it doesn't belong to a module
+                if (level==LEVEL_MODULE) {
                     return null;
                 }
                 return sourceFolder==null ? 
@@ -225,9 +235,17 @@ class CeylonSearchResultTreeContentProvider implements
                 if (level==LEVEL_FILE) {
                     return null;
                 }
-                IJavaElement packageFragment = 
-                        JavaCore.create(((IFile) element).getParent());
-                return new WithSourceFolder(packageFragment, sourceFolder);
+                IContainer parent = ((IFile) element).getParent();
+                if (parent instanceof IFolder) {
+                    //let's see if the .java files it belongs to
+                    //a Ceylon package
+                    Package pack = getPackage((IFolder) parent);
+                    if (pack!=null) {
+                        return new WithSourceFolder(pack, sourceFolder);
+                    }
+                }
+                return new WithSourceFolder(JavaCore.create(parent), 
+                        sourceFolder);
             }
             return sourceFolder;
         }
@@ -238,37 +256,37 @@ class CeylonSearchResultTreeContentProvider implements
             
             IFile file = (IFile) javaElement.getResource();
             if (file!=null) {
-                IContainer parent = file.getParent();
-                javaElement = JavaCore.create(parent);
-                return new WithSourceFolder(file, 
+                return new WithSourceFolder(file, //there is never a Unit for a .java file
                         getSourceFolder(javaElement));
             }
         }
         if (child instanceof CeylonElement) {
             CeylonElement ceylonElement = (CeylonElement) child;
             
-            IPackageFragmentRoot sourceFolder = null;
             IFile file = ceylonElement.getFile();
             if (file!=null) {
-                IContainer parent = file.getParent();
-                IJavaElement javaElement = JavaCore.create(parent);
-                sourceFolder = getSourceFolder(javaElement);
-            }
-            
-            VirtualFile virtualFile = ceylonElement.getVirtualFile();
-            Unit unit = getUnit(virtualFile);
-            if (unit!=null) {
-                return new WithSourceFolder(unit, sourceFolder);
+                //workspace .ceylon file
+                IJavaElement javaElement = JavaCore.create(file.getParent());
+                IResourceAware unit = getUnit(file);
+                if (unit instanceof Unit) {
+                    return new WithSourceFolder(unit, 
+                            getSourceFolder(javaElement));
+                }
             }
             else {
-                return null;
+                //archive
+                VirtualFile virtualFile = ceylonElement.getVirtualFile();
+                Unit unit = getUnit(virtualFile);
+                if (unit!=null) {
+                    return new WithSourceFolder(unit, null);
+                }
             }
         }
         
         return null;
     }
 
-    private static Unit getUnit(VirtualFile virtualFile) {
+    /*private static Unit getUnit(VirtualFile virtualFile) {
         for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
             PhasedUnit phasedUnit = 
                     tc.getPhasedUnits().getPhasedUnit(virtualFile);
@@ -290,18 +308,19 @@ class CeylonSearchResultTreeContentProvider implements
             }
         }
         return null;
-    }
+    }*/
 
     private IPackageFragmentRoot getSourceFolder(IJavaElement javaElement) {
-        if (javaElement instanceof IPackageFragment) {
-            while (javaElement instanceof IPackageFragment) {
-                javaElement = javaElement.getParent();
-            }
+        while (javaElement!=null && 
+                !(javaElement instanceof IPackageFragmentRoot)) {
+            javaElement = javaElement.getParent();
         }
         if (javaElement instanceof IPackageFragmentRoot) {
             return (IPackageFragmentRoot) javaElement;
         }
-        return null;
+        else {
+            return null;
+        }
     }
     
     @Override
