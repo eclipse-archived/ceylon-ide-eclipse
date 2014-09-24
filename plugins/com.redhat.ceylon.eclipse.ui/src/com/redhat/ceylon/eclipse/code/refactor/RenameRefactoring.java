@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.compiler.java.codegen.CodegenUtil.getJavaNameOfDeclaration;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjects;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencingProjects;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.CLASS_AND_INTERFACE;
@@ -211,7 +211,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         final Map<IResource,TextChange> changes = 
                 new HashMap<IResource, TextChange>();
         SearchEngine searchEngine = new SearchEngine();
-        IProject[] projects = getProjects(project);
+        IProject[] projects = getProjectAndReferencingProjects(project);
         final String pattern = getJavaNameOfDeclaration(declaration);
         boolean anonymous = pattern.endsWith(".get_");
         if (!anonymous) {

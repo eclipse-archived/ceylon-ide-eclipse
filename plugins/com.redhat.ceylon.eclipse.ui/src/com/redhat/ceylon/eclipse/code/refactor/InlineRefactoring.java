@@ -186,7 +186,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
             }
             if (declarationUnit==null) {
-                for (final PhasedUnit pu: getAllUnits()) {
+                for (PhasedUnit pu: getAllUnits()) {
                     if (pu.getUnit().equals(declaration.getUnit())) {
                         declarationUnit = pu.getCompilationUnit();
                         declarationTokens = pu.getTokens();

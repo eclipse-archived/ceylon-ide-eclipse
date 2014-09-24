@@ -1,26 +1,35 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencedProjects;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencingProjects;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.isDeclarationOfLinkedElement;
+import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.IMPLEMENTORS;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.READ_ACCESSES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.WRITE_ACCESSES;
 
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.IClassFile;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
@@ -33,123 +42,23 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.PartInitException;
 
+import com.redhat.ceylon.compiler.loader.ModelLoader;
+import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.DeclarationKind;
-import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
-import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
-import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
+import com.redhat.ceylon.eclipse.util.JavaSearch;
 
 public class JavaQueryParticipant implements IQueryParticipant {
-
-    //NOTE: this implementation is horrible, using a fake model
-    //      object because we currently have no good way of
-    //      obtaining the Declaration object from an IJavaElement
-    
-    private final class FakeTypeDeclaration extends ClassOrInterface {
-        private final String qualifiedName;
-
-        private FakeTypeDeclaration(String qualifiedName) {
-            this.qualifiedName = qualifiedName;
-        }
-
-        @Override
-        public boolean equals(Object object) {
-            if (object instanceof Declaration) {
-                return ((Declaration) object).getQualifiedNameString()
-                        .equals(qualifiedName);
-            }
-            return false;
-        }
-
-        @Override
-        public ProducedReference getProducedReference(ProducedType pt,
-                List<ProducedType> typeArguments) {
-            return null;
-        }
-
-        @Override
-        public ProducedType getReference() {
-            return null;
-        }
-
-        @Override
-        public DeclarationKind getDeclarationKind() {
-            return null;
-        }
-
-        @Override
-        protected boolean equalsForCache(Object arg0) {
-            return false;
-        }
-
-        @Override
-        protected int hashCodeForCache() {
-            return qualifiedName.hashCode();
-        }
-
-        @Override
-        public void addMember(Declaration arg0) {}
-
-        @Override
-        public boolean isAbstract() {
-            return false;
-        }
-    }
-
-    private final class FakeTypedDeclaration extends MethodOrValue {
-        private final String qualifiedName;
-
-        private FakeTypedDeclaration(String qualifiedName) {
-            this.qualifiedName = qualifiedName;
-        }
-
-        @Override
-        public boolean equals(Object object) {
-            if (object instanceof Declaration) {
-                return ((Declaration) object).getQualifiedNameString()
-                        .equals(qualifiedName);
-            }
-            return false;
-        }
-
-        @Override
-        public ProducedReference getProducedReference(ProducedType pt,
-                List<ProducedType> typeArguments) {
-            return null;
-        }
-
-        @Override
-        public ProducedType getReference() {
-            return null;
-        }
-
-        @Override
-        public DeclarationKind getDeclarationKind() {
-            return null;
-        }
-
-        @Override
-        protected boolean equalsForCache(Object arg0) {
-            return false;
-        }
-
-        @Override
-        protected int hashCodeForCache() {
-            return qualifiedName.hashCode();
-        }
-
-    }
     
     @Override
     public void search(ISearchRequestor requestor, 
@@ -161,7 +70,8 @@ public class JavaQueryParticipant implements IQueryParticipant {
                     ((ElementQuerySpecification) querySpecification).getElement();
             if (!(element instanceof IType || 
                   element instanceof IMethod || 
-                  element instanceof IField)) {
+                  element instanceof IField) ||
+                  element.getJavaProject()==null) {
                 return;
             }
             int limitTo = querySpecification.getLimitTo();
@@ -172,99 +82,126 @@ public class JavaQueryParticipant implements IQueryParticipant {
                 limitTo!=WRITE_ACCESSES) {
                 return;
             }
-            final String qualifiedName = getQualifiedName((IMember) element);
-            Declaration d = element instanceof IType ? 
-                    new FakeTypeDeclaration(qualifiedName) : 
-                        new FakeTypedDeclaration(qualifiedName);
-            for (IProject project: CeylonBuilder.getProjects()) {
-                IJavaProject jp = JavaCore.create(project);
-                for (IPackageFragmentRoot pfr: jp.getAllPackageFragmentRoots()) {
-                    if (querySpecification.getScope().encloses(pfr)) {
-                        for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-                            CompilationUnit cu = pu.getCompilationUnit();
-                            Set<? extends Node> nodes;
-                            if (limitTo==WRITE_ACCESSES) {
-                                FindAssignmentsVisitor fav = new FindAssignmentsVisitor(d);
-                                fav.visit(cu);
-                                nodes = fav.getNodes();
-                            }
-                            else if (limitTo==IMPLEMENTORS) {
-                                FindSubtypesVisitor fsv = new FindSubtypesVisitor((TypeDeclaration) d);
-                                fsv.visit(cu);
-                                nodes = fsv.getDeclarationNodes();
-                            }
-                            else if (limitTo==REFERENCES || 
-                                    limitTo==READ_ACCESSES) {  //TODO: support this properly!!
-                                FindReferencesVisitor frv = new FindReferencesVisitor(d);
-                                frv.visit(cu);
-                                nodes = frv.getNodes();
-                            }
-                            else {
-                                //ALL_OCCURRENCES
-                                FindReferencesVisitor frv = new FindReferencesVisitor(d);
-                                frv.visit(cu);
-                                nodes = frv.getNodes();
-                                if (d instanceof TypeDeclaration) {
-                                    FindSubtypesVisitor fsv = new FindSubtypesVisitor((TypeDeclaration) d);
-                                    fsv.visit(cu);
-                                    HashSet<Node> result = new HashSet<Node>();
-                                    result.addAll(nodes);
-                                    result.addAll(fsv.getDeclarationNodes());
-                                    nodes = result;
+            final String qualifiedName = 
+                    JavaSearch.getQualifiedName((IMember) element);
+            IProject elementProject = element.getJavaProject().getProject();
+            IPackageFragment pf = (IPackageFragment) 
+                    element.getAncestor(PACKAGE_FRAGMENT);
+            DeclarationType declarationType = 
+                    element instanceof IType ? 
+                        ModelLoader.DeclarationType.TYPE : 
+                        ModelLoader.DeclarationType.VALUE;
+            
+            Package pack = getPackage((IFolder) pf.getResource());
+            Declaration declaration;
+            if (pack==null) {
+                //this is the case for Ceylon decs, since 
+                //they sit in the .exploded directory
+                declaration = getCeylonDeclaration(elementProject, element);
+            }
+            else {
+                //this is the case for Java decs
+                declaration = 
+                        getProjectModelLoader(elementProject)
+                        .convertToDeclaration(pack.getModule(), 
+                                qualifiedName, declarationType);
+            }
+            if (declaration==null) return;
+
+            Collection<IProject> ceylonProjects = getProjects();
+            for (IProject project: getProjectAndReferencingProjects(elementProject)) {
+                if (ceylonProjects.contains(project)) {
+                    IJavaProject javaProject = JavaCore.create(project);
+                    for (IPackageFragmentRoot sourceFolder: 
+                            javaProject.getAllPackageFragmentRoots()) {
+                        if (querySpecification.getScope().encloses(sourceFolder)) {
+                            for (PhasedUnit pu: getUnits(project)) {
+                                CompilationUnit cu = pu.getCompilationUnit();
+                                Set<? extends Node> nodes;
+                                if (limitTo==WRITE_ACCESSES) {
+                                    FindAssignmentsVisitor fav = 
+                                            new FindAssignmentsVisitor(declaration);
+                                    fav.visit(cu);
+                                    nodes = fav.getNodes();
                                 }
-                            }
-                            for (Node node: nodes) {
-                                if (node.getToken()==null) {
-                                    //a synthetic node inserted in the tree
+                                else if (limitTo==IMPLEMENTORS) {
+                                    FindSubtypesVisitor fsv = 
+                                            new FindSubtypesVisitor((TypeDeclaration) declaration);
+                                    fsv.visit(cu);
+                                    nodes = fsv.getDeclarationNodes();
+                                }
+                                else if (limitTo==REFERENCES || 
+                                         limitTo==READ_ACCESSES) {  //TODO: support this properly!!
+                                    FindReferencesVisitor frv = 
+                                            new FindReferencesVisitor(declaration);
+                                    frv.visit(cu);
+                                    nodes = frv.getNodes();
                                 }
                                 else {
-                                    Tree.StatementOrArgument c;
-                                    if (node instanceof Tree.Declaration) {
-                                        c = (Tree.StatementOrArgument) node;
+                                    //ALL_OCCURRENCES
+                                    FindReferencesVisitor frv = 
+                                            new FindReferencesVisitor(declaration);
+                                    frv.visit(cu);
+                                    nodes = frv.getNodes();
+                                    if (declaration instanceof TypeDeclaration) {
+                                        FindSubtypesVisitor fsv = 
+                                                new FindSubtypesVisitor((TypeDeclaration) declaration);
+                                        fsv.visit(cu);
+                                        HashSet<Node> result = new HashSet<Node>();
+                                        result.addAll(nodes);
+                                        result.addAll(fsv.getDeclarationNodes());
+                                        nodes = result;
+                                    }
+                                }
+                                for (Node node: nodes) {
+                                    if (node.getToken()==null) {
+                                        //a synthetic node inserted in the tree
                                     }
                                     else {
-                                        FindContainerVisitor fcv = new FindContainerVisitor(node);
-                                        cu.visit(fcv);
-                                        c = fcv.getStatementOrArgument();
+                                        Tree.StatementOrArgument container;
+                                        if (node instanceof Tree.Declaration) {
+                                            container = (Tree.StatementOrArgument) node;
+                                        }
+                                        else {
+                                            FindContainerVisitor fcv = 
+                                                    new FindContainerVisitor(node);
+                                            cu.visit(fcv);
+                                            container = fcv.getStatementOrArgument();
+                                        }
+                                        CeylonSearchMatch match = 
+                                                new CeylonSearchMatch(node, container, 
+                                                        pu.getUnitFile());
+                                        requestor.reportMatch(match);
                                     }
-                                    requestor.reportMatch(new CeylonSearchMatch(node, c, pu.getUnitFile()));
                                 }
                             }
+                            break;
                         }
-                        break;
                     }
                 }
             }
         }
     }
 
-    protected String getQualifiedName(IMember dec) {
-        IJavaElement parent = dec.getParent();
-        String name = dec.getElementName();
-        if (dec instanceof IMethod) {
-            if (name.startsWith("$")) {
-                name = name.substring(1);
+    private static Declaration getCeylonDeclaration(IProject project, IJavaElement javaElement) {
+        Collection<IProject> projects = getProjects();
+        for (IProject referencedProject: getProjectAndReferencedProjects(project)) {
+            if (projects.contains(referencedProject)) {
+                TypeChecker typeChecker = getProjectTypeChecker(referencedProject);
+                if (typeChecker!=null) {
+                    for (PhasedUnit pu: typeChecker.getPhasedUnits().getPhasedUnits()) {
+                        for (Declaration declaration: pu.getDeclarations()) {
+                            if (isDeclarationOfLinkedElement(declaration, javaElement)) {
+                                return declaration;
+                            }
+                        }
+                    }
+                }
             }
-            else if (name.startsWith("get") ||
-                     name.startsWith("set")) {
-                name = Character.toLowerCase(name.charAt(3)) + 
-                        name.substring(4);
-            }
         }
-        if (parent instanceof ICompilationUnit || 
-                parent instanceof IClassFile) {
-            return parent.getParent().getElementName() + "::" + 
-                    name;
-        }
-        else if (dec.getDeclaringType()!=null) {
-            return getQualifiedName(dec.getDeclaringType()) + "." + 
-                    name;
-        }
-        else {
-            return "@";
-        }
+        return null;
     }
-    
+
     @Override
     public int estimateTicks(QuerySpecification specification) {
         return 1;
