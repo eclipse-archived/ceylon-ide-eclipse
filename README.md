@@ -123,6 +123,11 @@ Then :
 	    .../ceyon-dist/osgi
 	    ```
 
+	- Import inside your Eclipse workspace the `ceylon-dist-osgi-embedded-repository` project found at the following location :
+	    ```
+	    .../ceyon-dist/osgi/embeddedRepository
+	    ```
+
 	- Import inside your Eclipse workspace all the required _bundle-proxys_ projects found under the following location :
 	    ```
 	    .../ceyon-ide-eclipse/required-bundle-proxies
