@@ -105,7 +105,8 @@ public class JavaSearch {
             return getQualifiedName(type);
         }
         else if (dec instanceof IType && name.endsWith("_")) {
-            return qualifier + '.' + name.substring(0, name.length()-1);
+            return qualifier + '.' + 
+                    name.substring(0, name.length()-1);
         }
         
         if (dec instanceof IMethod) {
@@ -120,7 +121,7 @@ public class JavaSearch {
         }
         
         if (dec!=type) {
-            String typeName = dec.getDeclaringType().getElementName();
+            String typeName = type.getElementName();
             if (typeName.endsWith(name + "_")) {
                 return qualifier + '.' + name;
             }
