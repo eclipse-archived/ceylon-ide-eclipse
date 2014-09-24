@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
-import static com.redhat.ceylon.compiler.java.util.Util.quoteIfJavaKeyword;
 import static com.redhat.ceylon.compiler.typechecker.io.impl.Helper.computeRelativePath;
 
 import java.io.File;
@@ -19,14 +18,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.util.Util;
 
-import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
 import com.redhat.ceylon.compiler.java.loader.CeylonClassReader;
 import com.redhat.ceylon.compiler.java.loader.CeylonEnter;
-import com.redhat.ceylon.compiler.java.tools.CeylonLog;
+import com.redhat.ceylon.compiler.java.loader.CeylonModelLoader;
 import com.redhat.ceylon.compiler.java.tools.CeylonPhasedUnit;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler.CompilerDelegate;
-import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
-import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
@@ -38,8 +34,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.ModelState;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
@@ -186,38 +180,8 @@ final class JdtCompilerDelegate implements CompilerDelegate {
     public void prepareForTypeChecking(com.sun.tools.javac.util.List<JCCompilationUnit> trees) {
         final Context context = contextRef.get();
         if (context == null) return;
-        
-        for(JCCompilationUnit treeHolder: trees){
-            if (treeHolder instanceof CeylonCompilationUnit) {
-                final CeylonCompilationUnit tree = (CeylonCompilationUnit) treeHolder;
-                CompilationUnit ceylonTree = tree.ceylonTree;
-                final String pkgName = tree.getPackageName() != null ? 
-                        tree.getPackageName().toString() : "";
-                ceylonTree.visit(new SourceDeclarationVisitor() {
-                    @Override
-                    public void loadFromSource(Tree.Declaration decl) {
-                        String name = quoteIfJavaKeyword(decl.getIdentifier().getText());
-                        String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
-                        try{
-                            CeylonClassReader.instance(context)
-                                    .enterClass(Names.instance(context).fromString(fqn), 
-                                            tree.getSourceFile());
-                        }
-                        catch (AssertionError error){
-                            // this happens when we have already registered a source 
-                            // file for this decl, so let's print out a helpful message
-                            // see https://github.com/ceylon/ceylon-compiler/issues/250
-                            // we can pass null here because the module is not currently used
-                            ClassMirror previousClass = modelLoader.lookupClassMirror(null, fqn);
-                            CeylonLog.instance(context).error("ceylon", "Duplicate declaration error: " + 
-                                    fqn + " is declared twice: once in " + tree.getSourceFile() + 
-                                    " and again in: " + CeylonBuilder.fileName(previousClass));
-                        }
-                    }
-                });
-            }
-        }
 
+        CeylonModelLoader.setupSourceFileObjects(trees, CeylonClassReader.instance(context), Names.instance(context));
         /*
         Context context = contextRef.get();
         if (context == null) return;

@@ -115,6 +115,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
@@ -1031,6 +1033,13 @@ public class JDTModelLoader extends AbstractModelLoader {
                                 sourceDeclarations.put(fqn, new SourceDeclarationHolder(unit, decl, isSourceToCompile));
                             }
                         }
+                    }
+                    @Override
+                    public void loadFromSource(ModuleDescriptor that) {
+                    }
+
+                    @Override
+                    public void loadFromSource(PackageDescriptor that) {
                     }
                 });
             }
