@@ -174,7 +174,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                     Tree.StatementOrArgument c = 
                             fcv.getStatementOrArgument();
                     if (c!=null) {
-                        result.addMatch(new CeylonSearchMatch(c, pu.getUnitFile(), node));
+                        result.addMatch(new CeylonSearchMatch(node, c, pu.getUnitFile()));
                     }
                 }
             }
