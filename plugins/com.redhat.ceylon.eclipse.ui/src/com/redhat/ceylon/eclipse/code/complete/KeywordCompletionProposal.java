@@ -20,7 +20,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -34,36 +33,35 @@ public class KeywordCompletionProposal extends CompletionProposal {
                     "of", "in", "else", "for", "if", "is", 
                     "exists", "nonempty", "then", "let"));
     
+    public static final Set<String> postfixKeywords = 
+            new LinkedHashSet<String>(Arrays.asList(
+                    "of", "in", "else", "exists", "nonempty", "then"));
+    
     public static final Set<String> conditionKeywords = 
             new LinkedHashSet<String>(Arrays.asList("assert", "let",
                     "while", "for", "if", "switch", "case", "catch"));
     
     static void addKeywordProposals(CeylonParseController cpc, int offset, 
             String prefix, List<ICompletionProposal> result, Node node,
-            OccurrenceLocation ol) {
+            OccurrenceLocation ol, boolean postfix) {
         if (isModuleDescriptor(cpc) && 
                 ol!=META && (ol==null||!ol.reference)) {
+            //outside of backtick quotes, the only keyword allowed
+            //in a module descriptor is "import"
             if (prefix.isEmpty() || "import".startsWith(prefix)) {
-                if (node instanceof Tree.CompilationUnit) {
-                    List<Tree.ModuleDescriptor> moduleDescriptors = 
-                            cpc.getRootNode().getModuleDescriptors();
-                    if (!moduleDescriptors.isEmpty()) {
-                        Tree.ModuleDescriptor moduleDescriptor = moduleDescriptors.get(0);
-                        if (moduleDescriptor.getImportModuleList() != null && 
-                            moduleDescriptor.getImportModuleList().getStartIndex() < offset ) {
-                            addKeywordProposal(offset, prefix, result, "import");
-                        }
-                    }
-                }
-                else if (node instanceof Tree.ImportModuleList || 
-                        node instanceof Tree.BaseMemberExpression) {
-                    addKeywordProposal(offset, prefix, result, "import");
-                }
+                addKeywordProposal(offset, prefix, result, "import");
             }
         }
         else if (!prefix.isEmpty() && ol!=CATCH && ol!=CASE) {
             //TODO: this filters out satisfies/extends in an object named arg
-            for (String keyword: ol==EXPRESSION ? expressionKeywords : Escaping.KEYWORDS) {
+            Set<String> keywords;
+            if (ol==EXPRESSION) {
+                keywords = postfix ? postfixKeywords : expressionKeywords;
+            }
+            else {
+                keywords = Escaping.KEYWORDS;
+            }
+            for (String keyword: keywords) {
                 if (keyword.startsWith(prefix)) {
                     addKeywordProposal(offset, prefix, result, keyword);
                 }

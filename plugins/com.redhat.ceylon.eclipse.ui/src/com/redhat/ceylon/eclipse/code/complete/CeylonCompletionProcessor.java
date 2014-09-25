@@ -575,11 +575,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else if (isEmptyModuleDescriptor(cpc)) {
             addModuleDescriptorCompletion(cpc, offset, prefix, result);
-            addKeywordProposals(cpc, offset, prefix, result, node, null);
+            addKeywordProposals(cpc, offset, prefix, result, node, null, false);
         }
         else if (isEmptyPackageDescriptor(cpc)) {
             addPackageDescriptorCompletion(cpc, offset, prefix, result);
-            addKeywordProposals(cpc, offset, prefix, result, node, null);
+            addKeywordProposals(cpc, offset, prefix, result, node, null, false);
         }
         else if (node instanceof Tree.TypeArgumentList && 
                 token.getType()==LARGER_OP) {
@@ -709,9 +709,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     node instanceof Tree.MemberLiteral && 
                             ((Tree.MemberLiteral) node).getType()!=null;
             
-            if (!secondLevel && !inDoc && !isMember) {
-                addKeywordProposals(cpc, offset, prefix, result, node, ol);
+            if (!secondLevel && !inDoc && !memberOp) {
+                addKeywordProposals(cpc, offset, prefix, result, node, ol, isMember);
                 //addTemplateProposal(offset, prefix, result);
+            }
+            if (!secondLevel && !inDoc && !isMember) {
                 if (prefix.isEmpty() && !isTypeUnknown(requiredType) &&
                         node.getUnit().isCallableType(requiredType)) {
                     addAnonFunctionProposal(offset, requiredType, result);
