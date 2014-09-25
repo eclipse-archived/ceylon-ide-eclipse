@@ -23,7 +23,6 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.ICompletionListener;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
-import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.information.IInformationProvider;
@@ -33,7 +32,6 @@ import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -52,8 +50,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.ReferencesPopup;
-import com.redhat.ceylon.eclipse.code.style.CeylonContentFormatter;
-import com.redhat.ceylon.eclipse.code.style.CeylonPreview;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
@@ -497,20 +493,4 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return null;
     }
     
-    public boolean affectsTextPresentation(PropertyChangeEvent event) {
-        if (event.getSource() instanceof CeylonPreview) {
-            return true;
-        }
-        return false;
-    }
-
-    public void handlePropertyChangeEvent(PropertyChangeEvent event) {
-        // TODO Auto-generated method stub
-        
-    }
-    
-    @Override
-    public IContentFormatter getContentFormatter(ISourceViewer sourceViewer) {
-        return new CeylonContentFormatter(sourceViewer);        
-    }
 }
