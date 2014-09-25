@@ -1,11 +1,18 @@
 package com.redhat.ceylon.eclipse.code.style;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.MarginPainter;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.WhitespaceCharacterPainter;
+import org.eclipse.jface.text.formatter.FormattingContextProperties;
+import org.eclipse.jface.text.formatter.IContentFormatter;
+import org.eclipse.jface.text.formatter.IContentFormatterExtension;
+import org.eclipse.jface.text.formatter.IFormattingContext;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -24,8 +31,9 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public abstract class CeylonPreview {
+public class CeylonPreview {
 
     private final class CeylonSourcePreviewerUpdater {
 
@@ -45,10 +53,19 @@ public abstract class CeylonPreview {
 
         final IPropertyChangeListener propertyListener = new IPropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
-                if (viewerConfiguration.affectsTextPresentation(event)) {
-                    viewerConfiguration.handlePropertyChangeEvent(event);
+                if (affectsTextPresentation(event)) {
+                    handlePropertyChangeEvent(event);
                     fSourceViewer.invalidateTextPresentation();
                 }
+            }
+
+            private void handlePropertyChangeEvent(PropertyChangeEvent event) {
+                // TODO do something more
+
+            }
+
+            private boolean affectsTextPresentation(PropertyChangeEvent event) {
+                return true; // TODO analyze
             }
         };
 
@@ -81,6 +98,8 @@ public abstract class CeylonPreview {
 
     private int fTabSize = 0;
     private WhitespaceCharacterPainter fWhitespaceCharacterPainter;
+
+    private String fPreviewText;
 
     public CeylonPreview(FormatterPreferences workingValues, Composite parent) {
 
@@ -171,7 +190,46 @@ public abstract class CeylonPreview {
         return height;
     }
 
-    protected abstract void doFormatPreview();
+    protected void doFormatPreview() {
+        if (fPreviewText == null) {
+            fPreviewDocument.set("");
+            return;
+        }
+        fPreviewDocument.set(fPreviewText);
+
+        fSourceViewer.setRedraw(false);
+        final IFormattingContext context = new CeylonFormattingContext();
+        try {
+            final IContentFormatter formatter = new CeylonContentFormatter(fSourceViewer);
+            if (formatter instanceof IContentFormatterExtension) {
+                final IContentFormatterExtension extension = (IContentFormatterExtension) formatter;
+                context.setProperty(
+                        FormattingContextProperties.CONTEXT_PREFERENCES,
+                        this.workingValues);
+                context.setProperty(
+                        FormattingContextProperties.CONTEXT_DOCUMENT,
+                        Boolean.valueOf(true));
+                extension.format(fPreviewDocument, context);
+            } else
+                formatter.format(fPreviewDocument, new Region(0,
+                        fPreviewDocument.getLength()));
+        } catch (Exception e) {
+            final IStatus status = new Status(IStatus.ERROR,
+                    CeylonPlugin.PLUGIN_ID, 10001,
+                    "Internal Formatter Preview Exception", e);
+            CeylonPlugin.getInstance().getLog().log(status);
+        } finally {
+            context.dispose();
+            fSourceViewer.setRedraw(true);
+        }
+    }
+
+    public void setPreviewText(String previewText) {
+        if (previewText == null)
+            throw new IllegalArgumentException();
+        fPreviewText = previewText;
+        update();
+    }
 
     private static int getPositiveIntValue(String string, int defaultValue) {
         try {

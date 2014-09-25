@@ -1,6 +1,12 @@
 package com.redhat.ceylon.eclipse.code.style;
 
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode_Mixed;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode_Spaces;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode_Spaces_Size;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode_Tabs;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode_Tabs_Size;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indent_Blank_Lines;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -14,7 +20,7 @@ public class FormatterTabPage1 extends FormatterTabPage {
     private final String PREVIEW = createPreviewHeader("Preview")
             + "shared class Example() {" + "}";
 
-    private CompilationUnitPreview fPreview;
+    private CeylonPreview ceylonPreview;
 
     private String oldTabChar;
 
@@ -67,19 +73,19 @@ public class FormatterTabPage1 extends FormatterTabPage {
 
     @Override
     public void initializePage() {
-        fPreview.setPreviewText(PREVIEW);
+        ceylonPreview.setPreviewText(PREVIEW);
     }
 
     @Override
     protected CeylonPreview doCreateCeylonPreview(Composite parent) {
-        fPreview = new CompilationUnitPreview(this.workingValues, parent);
-        return fPreview;
+        ceylonPreview = new CeylonPreview(this.workingValues, parent);
+        return ceylonPreview;
     }
 
     @Override
     protected void doUpdatePreview() {
         super.doUpdatePreview();
-        fPreview.update();
+        ceylonPreview.update();
     }
 
     private void updateTabPreferences(String tabPolicy,

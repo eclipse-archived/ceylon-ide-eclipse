@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.style;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -13,8 +15,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.dialogs.StatusDialog;
 
 import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
 

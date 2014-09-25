@@ -159,9 +159,8 @@ public class FormatterConfigurationBlock extends StyleBlock {
     protected void configurePreview(Composite composite, int numColumns,
             FormatterProfileManager FormatterProfileManager) {
         createLabel(composite, "Preview", numColumns);
-        CompilationUnitPreview result = new CompilationUnitPreview(
-                new FormatterPreferences(FormatterProfileManager.getSelected()
-                        .getSettings()), composite);
+        CeylonPreview result = new CeylonPreview(new FormatterPreferences(
+                FormatterProfileManager.getSelected().getSettings()), composite);
         result.setPreviewText(PREVIEW);
         ceylonPreview = result;
 
