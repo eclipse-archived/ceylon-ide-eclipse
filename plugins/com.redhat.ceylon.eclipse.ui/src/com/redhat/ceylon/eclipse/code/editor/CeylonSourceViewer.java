@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
@@ -46,19 +48,27 @@ import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWTError;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.RTFTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 
 import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -72,7 +82,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
-public class CeylonSourceViewer extends ProjectionViewer {
+public class CeylonSourceViewer extends ProjectionViewer implements IPropertyChangeListener {
     /**
      * Text operation code for requesting the outline for the current input.
      */
@@ -131,10 +141,20 @@ public class CeylonSourceViewer extends ProjectionViewer {
     private IAutoEditStrategy autoEditStrategy;
     private CeylonEditor editor;
 
+    private Color foregroundColor;
+    private Color backgroundColor;
+    private Color selectionForegroundColor;
+    private Color selectionBackgroundColor;
+    
     public CeylonSourceViewer(CeylonEditor ceylonEditor, Composite parent, IVerticalRuler verticalRuler, 
             IOverviewRuler overviewRuler, boolean showAnnotationsOverview, int styles) {
         super(parent, verticalRuler, overviewRuler, showAnnotationsOverview, styles);
         this.editor = ceylonEditor;
+    }
+
+    public CeylonSourceViewer(Composite parent, IVerticalRuler verticalRuler, 
+            IOverviewRuler overviewRuler, boolean showAnnotationsOverview, int styles) {
+        this(null, parent, verticalRuler, overviewRuler, showAnnotationsOverview, styles);
     }
 
     public boolean canDoOperation(int operation) {
@@ -877,5 +897,88 @@ public class CeylonSourceViewer extends ProjectionViewer {
     public ContentAssistant getContentAssistant() {
         return (ContentAssistant) fContentAssistant;
     }
+ 
+    public void propertyChange(PropertyChangeEvent event) {
+        String property = event.getProperty();
+        if (AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND.equals(property)
+                || AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT.equals(property)
+                || AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND.equals(property)
+                || AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT.equals(property)
+                || AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SELECTION_FOREGROUND_COLOR.equals(property)
+                || AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SELECTION_FOREGROUND_DEFAULT_COLOR.equals(property)
+                || AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SELECTION_BACKGROUND_COLOR.equals(property)
+                || AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SELECTION_BACKGROUND_DEFAULT_COLOR.equals(property))
+        {
+            initializeViewerColors();
+        }
+    }
     
+    protected void initializeViewerColors() {
+        if (EditorsUI.getPreferenceStore() != null) {
+
+            StyledText styledText= getTextWidget();
+
+            // ----------- foreground color --------------------
+            Color color= EditorsUI.getPreferenceStore().getBoolean(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)
+            ? null
+            : createColor(EditorsUI.getPreferenceStore(), AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND, styledText.getDisplay());
+            styledText.setForeground(color);
+
+            if (foregroundColor != null)
+                foregroundColor.dispose();
+
+            foregroundColor= color;
+
+            // ---------- background color ----------------------
+            color= EditorsUI.getPreferenceStore().getBoolean(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)
+            ? null
+            : createColor(EditorsUI.getPreferenceStore(), AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND, styledText.getDisplay());
+            styledText.setBackground(color);
+
+            if (backgroundColor != null)
+                backgroundColor.dispose();
+
+            backgroundColor= color;
+
+            // ----------- selection foreground color --------------------
+            color= EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SELECTION_FOREGROUND_DEFAULT_COLOR)
+                ? null
+                : createColor(EditorsUI.getPreferenceStore(), AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SELECTION_FOREGROUND_COLOR, styledText.getDisplay());
+            styledText.setSelectionForeground(color);
+
+            if (selectionForegroundColor != null)
+                selectionForegroundColor.dispose();
+
+            selectionForegroundColor= color;
+
+            // ---------- selection background color ----------------------
+            color= EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SELECTION_BACKGROUND_DEFAULT_COLOR)
+                ? null
+                : createColor(EditorsUI.getPreferenceStore(), AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SELECTION_BACKGROUND_COLOR, styledText.getDisplay());
+            styledText.setSelectionBackground(color);
+
+            if (selectionBackgroundColor != null)
+                selectionBackgroundColor.dispose();
+
+            selectionBackgroundColor= color;
+        }
+    }
+    
+    private Color createColor(IPreferenceStore store, String key, Display display) {
+
+        RGB rgb= null;
+
+        if (store.contains(key)) {
+
+            if (store.isDefault(key))
+                rgb= PreferenceConverter.getDefaultColor(store, key);
+            else
+                rgb= PreferenceConverter.getColor(store, key);
+
+            if (rgb != null)
+                return new Color(display, rgb);
+        }
+
+        return null;
+    }    
 }
