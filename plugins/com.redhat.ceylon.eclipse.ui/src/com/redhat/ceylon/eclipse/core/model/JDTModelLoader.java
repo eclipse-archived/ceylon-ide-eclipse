@@ -385,7 +385,8 @@ public class JDTModelLoader extends AbstractModelLoader {
                 }
                 
                 // we have a few virtual types in java.lang that we need to load but they are not listed from class files
-                if(packageName.equals("java.lang")){
+                if(module.getNameAsString().equals(JAVA_BASE_MODULE_NAME)
+                        && packageName.equals("java.lang")) {
                     loadJavaBaseArrays();
                 }
                 
