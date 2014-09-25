@@ -48,7 +48,7 @@ public class KeywordCompletionProposal extends CompletionProposal {
                 ol!=META && (ol==null||!ol.reference)) {
             //outside of backtick quotes, the only keyword allowed
             //in a module descriptor is "import"
-            if (prefix.isEmpty() || "import".startsWith(prefix)) {
+            if ("import".startsWith(prefix)) {
                 addKeywordProposal(offset, prefix, result, "import");
             }
         }
