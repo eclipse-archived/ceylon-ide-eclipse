@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
@@ -94,7 +95,8 @@ public class PackageCompletions {
                 final Point selection = getSelection(document);
                 List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
                 for (final Declaration d: p.getMembers()) {
-                    if (Util.isResolvable(d) && d.isShared()) {
+                    if (Util.isResolvable(d) && d.isShared() && 
+                            !isOverloadedVersion(d)) {
                         proposals.add(new ICompletionProposal() {
                             @Override
                             public Point getSelection(IDocument document) {
