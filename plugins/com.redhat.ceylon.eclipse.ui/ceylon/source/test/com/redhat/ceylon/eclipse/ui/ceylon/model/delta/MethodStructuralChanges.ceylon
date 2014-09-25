@@ -12,11 +12,11 @@ test void methodParametersChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal void test(Integer a);
+                 shared void test(Integer a) {}
                  ";
         newContents =
                 "
-                 shared formal void test(Integer a, Float b);
+                 shared void test(Integer a, Float b) {}
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -44,11 +44,11 @@ test void methodParameterNameChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal void test(Integer a);
+                 shared void test(Integer a) {}
                  ";
         newContents =
                 "
-                 shared formal void test(Integer aChanged);
+                 shared void test(Integer aChanged) {}
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -75,11 +75,11 @@ test void methodParameterDefaultValueAdded() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal void test(Integer a);
+                 shared void test(Integer a) {}
                  ";
         newContents =
                 "
-                 shared formal void test(Integer a=0);
+                 shared void test(Integer a=0) {}
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -106,11 +106,11 @@ test void methodParameterDefaultValueTypeChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal void test(Object a=0);
+                 shared void test(Object a=0) {}
                  ";
         newContents =
                 "
-                 shared formal void test(Object a=1.0);
+                 shared void test(Object a=1.0) {}
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -137,11 +137,11 @@ test void methodFunctionalParameterArgumentNameChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal void test(void functionalParameter(Integer a));
+                 shared void test(void functionalParameter(Integer a)) {}
                  ";
         newContents =
                 "
-                 shared formal void test(void functionalParameter(Integer a2));
+                 shared void test(void functionalParameter(Integer a2)) {}
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -164,11 +164,11 @@ test void methodFunctionalParameterNameChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal void test(void functionalParameter(Integer a));
+                 shared void test(void functionalParameter(Integer a)) {}
                  ";
         newContents =
                 "
-                 shared formal void test(void functionalParameterChanged(Integer a));
+                 shared void test(void functionalParameterChanged(Integer a)) {}
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -198,11 +198,11 @@ test void methodEquivalentFunctionalParameter() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal void test(Anything functionalParameter(Integer a));
+                 shared void test(Anything functionalParameter(Integer a)) {}
                  ";
         newContents =
                 "
-                 shared formal void test(Anything(Integer) functionalParameter);
+                 shared void test(Anything(Integer) functionalParameter) {}
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -231,15 +231,15 @@ test void methodTypeConstraintChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal void test<Type1, Type2>()
+                 shared void test<Type1, Type2>()
                         given Type1 satisfies Iterable<Integer>
-                        given Type2 satisfies Iterable<Float>;
+                        given Type2 satisfies Iterable<Float> {}
                  ";
         newContents =
                 "
-                 shared formal void test<Type1, Type2>()
+                 shared void test<Type1, Type2>()
                         given Type1 satisfies Iterable<Float>
-                        given Type2 satisfies Iterable<Integer>;
+                        given Type2 satisfies Iterable<Integer> {}
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {

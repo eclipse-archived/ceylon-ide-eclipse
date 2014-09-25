@@ -15,7 +15,8 @@ import com.redhat.ceylon.compiler.typechecker.analyzer {
     ModuleManager {
         moduleDescriptorFileName=MODULE_FILE,
         packageDescriptorFileName=PACKAGE_FILE
-    }
+    },
+    AnalysisError
 }
 import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit
@@ -33,10 +34,14 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     VisitorAdaptor,
     Util {
         formatPath
-    }
+    },
+    Message
 }
 import com.redhat.ceylon.compiler.typechecker.util {
     ProducedTypeNamePrinter
+}
+import java.util {
+    JList=List
 }
 
 shared interface NodeComparisonListener {
@@ -114,6 +119,19 @@ String importedModuleName(Ast.ImportModule child) {
         }
     }
     return moduleName;
+}
+
+"Compares two message lists to see if they have the same errors.
+ 
+ Because error messages contain identifiers which might have been aliased,
+ it's difficult to tell if two errors are really the same error.
+ At the moment, to avoid false positives, we consider any two message lists
+ containing at least one error to be different.
+ 
+ (This method isn't useless, though: It ignores other kinds of messages.)"
+Boolean errorListsEquals(JList<Message> these, JList<Message> those) {
+    return CeylonIterable(these).filter((element) => element is AnalysisError).size == 0
+            && CeylonIterable(those).filter((element) => element is AnalysisError).size == 0;
 }
 
 alias AstNode => <Ast.Declaration | Ast.CompilationUnit | Ast.ModuleDescriptor | Ast.ImportModule | Ast.PackageDescriptor> & AstAbstractNode;
@@ -596,7 +614,7 @@ abstract class DeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration?
                 String oldSignature = nodeSigner.sign(oldNode);
                 String newSignature = nodeSigner.sign(newNode);
                 listener?.comparedNodes(oldSignature, newSignature, oldAstDeclaration, declarationMemberName);
-                changed = oldSignature != newSignature;
+                changed = oldSignature != newSignature || !errorListsEquals(oldNode.errors, newNode.errors);
             } else {
                 changed = !(oldNode is Null && newNode is Null);
                 if (exists listener) {
@@ -637,6 +655,7 @@ abstract class DeclarationDeltaBuilder(Ast.Declaration oldNode, Ast.Declaration?
                 listener?.comparedNodes(oldAnnotations.string, newAnnotations.string, oldNode, "annotationList");
                 return any {
                     oldAnnotations != newAnnotations,
+                    !errorListsEquals(oldNode.errors, newNode.errors),
                     lookForChanges {
                         function between(Ast.TypedDeclaration oldTyped, Ast.TypedDeclaration newTyped) {
                             return any {
