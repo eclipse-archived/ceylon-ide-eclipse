@@ -23,6 +23,7 @@ import com.redhat.ceylon.compiler.java.loader.CeylonEnter;
 import com.redhat.ceylon.compiler.java.loader.CeylonModelLoader;
 import com.redhat.ceylon.compiler.java.tools.CeylonPhasedUnit;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler.CompilerDelegate;
+import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
@@ -47,7 +48,6 @@ import com.sun.tools.javac.util.Position;
 import com.sun.tools.javac.util.Position.LineMap;
 
 final class JdtCompilerDelegate implements CompilerDelegate {
-    private final JDTModelLoader modelLoader;
     private final IProject project;
     private final TypeChecker typeChecker;
     private final WeakReference<com.sun.tools.javac.util.Context> contextRef;
@@ -57,7 +57,6 @@ final class JdtCompilerDelegate implements CompilerDelegate {
             IProject project, TypeChecker typeChecker,
             com.sun.tools.javac.util.Context context,
             Collection<PhasedUnit> unitsTypechecked) {
-        this.modelLoader = modelLoader;
         this.project = project;
         this.typeChecker = typeChecker;
         contextRef = new WeakReference<Context>(context);
@@ -177,56 +176,16 @@ final class JdtCompilerDelegate implements CompilerDelegate {
     }
 
     @Override
-    public void prepareForTypeChecking(com.sun.tools.javac.util.List<JCCompilationUnit> trees) {
+    public void loadStandardModules(AbstractModelLoader modelLoader) {}
+    @Override
+    public void setupSourceFileObjects(com.sun.tools.javac.util.List<JCCompilationUnit> trees,
+            AbstractModelLoader modelLoader) {
         final Context context = contextRef.get();
         if (context == null) return;
-
         CeylonModelLoader.setupSourceFileObjects(trees, CeylonClassReader.instance(context), Names.instance(context));
-        /*
-        Context context = contextRef.get();
-        if (context == null) return;
-
-        CeyloncFileManager fileManager = (CeyloncFileManager) context.get(JavaFileManager.class);
-
-        for (String declarationName : modelLoader.getSourceDeclarations()) {
-            SourceDeclarationHolder declarationHolder = modelLoader.getSourceDeclaration(declarationName);
-            VirtualFile file = declarationHolder.getPhasedUnit().getUnitFile();
-            
-            if (! (file instanceof IFileVirtualFile)) {
-                continue;
-            }
-            
-            File sourceFile = ((IFileVirtualFile) file).getResource().getLocation().toFile();
-            JavaFileObject javacFile = fileManager.getJavaFileObjects(sourceFile).iterator().next();
-
-            Tree.Declaration decl = declarationHolder.getAstDeclaration();
-            
-            String name = quoteIfJavaKeyword(decl.getIdentifier().getText());
-            String pkgName = "";
-            Scope container = decl.getDeclarationModel().getContainer(); 
-            if (container instanceof com.redhat.ceylon.compiler.typechecker.model.Package) {
-                pkgName = container.getQualifiedNameString();
-            }
-            String fqn = pkgName.isEmpty() ? name : pkgName+"."+name;
-            
-            try{
-                CeylonClassReader.instance(context)
-                        .enterClass(Names.instance(context).fromString(fqn), 
-                                javacFile);
-            }
-            catch (AssertionError error){
-                // this happens when we have already registered a source 
-                // file for this decl, so let's print out a helpful message
-                // see https://github.com/ceylon/ceylon-compiler/issues/250
-                // we can pass null here because the module is not currently used
-                ClassMirror previousClass = modelLoader.lookupClassMirror(null, fqn);
-                CeylonLog.instance(context).error("ceylon", "Duplicate declaration error: " + 
-                        fqn + " is declared twice: once in " + javacFile + 
-                        " and again in: " + CeylonBuilder.fileName(previousClass));
-            }
-        }
-        */
-        // Do nothing : 
-        //   alreadyDone by the IncrementalBuilder before calling the Compiler for binary generation
     }
+    @Override
+    public void resolveModuleDependencies(PhasedUnits phasedUnits) {}
+    @Override
+    public void loadPackageDescriptors(AbstractModelLoader modelLoader) {}
 }
