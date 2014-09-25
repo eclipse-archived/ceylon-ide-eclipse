@@ -322,3 +322,65 @@ test void defaultedTypeAdded() {
         }
     };
 }
+
+test void useSiteVarianceAdded() {
+    comparePhasedUnits {
+        path = "dir/test.ceylon";
+        oldContents = 
+                "
+                 shared formal Array<Character[]> test();
+                 ";
+        newContents =
+                "
+                 shared formal Array<out Character[]> test();
+                 ";
+        expectedDelta = 
+                RegularCompilationUnitDeltaMockup {
+            changedElementString = "Unit[test.ceylon]";
+            changes = { };
+            childrenDeltas = {
+                TopLevelDeclarationDeltaMockup {
+                    changedElementString = "Method[test]";
+                    changes = { structuralChange };
+                    childrenDeltas = {};
+                }
+            };
+        };
+        void doWithNodeComparisons({NodeComparison*} comparisons) {
+            assert(comparisons.contains(["dir::test", "type", 
+                "Type[ceylon.language::Array<ceylon.language::Character[]>]"
+                        -> "Type[ceylon.language::Array<out ceylon.language::Character[]>]"]));
+        }
+    };
+}
+
+test void useSiteVarianceFlipped() {
+    comparePhasedUnits {
+        path = "dir/test.ceylon";
+        oldContents = 
+                "
+                 shared formal Array<in Character[]> test();
+                 ";
+        newContents =
+                "
+                 shared formal Array<out Character[]> test();
+                 ";
+        expectedDelta = 
+                RegularCompilationUnitDeltaMockup {
+            changedElementString = "Unit[test.ceylon]";
+            changes = { };
+            childrenDeltas = {
+                TopLevelDeclarationDeltaMockup {
+                    changedElementString = "Method[test]";
+                    changes = { structuralChange };
+                    childrenDeltas = {};
+                }
+            };
+        };
+        void doWithNodeComparisons({NodeComparison*} comparisons) {
+            assert(comparisons.contains(["dir::test", "type", 
+                "Type[ceylon.language::Array<in ceylon.language::Character[]>]"
+                        -> "Type[ceylon.language::Array<out ceylon.language::Character[]>]"]));
+        }
+    };
+}
