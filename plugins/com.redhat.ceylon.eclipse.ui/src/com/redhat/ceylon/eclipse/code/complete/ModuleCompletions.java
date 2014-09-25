@@ -162,7 +162,7 @@ public class ModuleCompletions {
                     LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
                     LinkedMode.installLinkedMode((CeylonEditor) EditorUtil.getCurrentEditor(), 
                             document, linkedModeModel, this, new LinkedMode.NullExitPolicy(),
-                            -1, 0);
+                            1, selection.x+selection.y+2);
                 }
                 catch (BadLocationException ble) {
                     ble.printStackTrace();
