@@ -1888,6 +1888,27 @@
             </or>
          </enabledWhen>
        </page>
+       <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.style"
+           name="Ceylon Code Style"
+           class="com.redhat.ceylon.eclipse.code.style.StyleMainPage">
+         <enabledWhen>
+             <adapt type="org.eclipse.core.resources.IProject">
+                 <test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+             </adapt>
+         </enabledWhen>
+       </page>
+       <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.style.formatter"
+           name="Formatter"
+           category="com.redhat.ceylon.eclipse.ui.preferences.style"
+           class="com.redhat.ceylon.eclipse.code.style.FormatterPreferencePage">
+         <enabledWhen>
+             <adapt type="org.eclipse.core.resources.IProject">
+                 <test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+             </adapt>
+         </enabledWhen>
+       </page>              
    </extension>
    <extension point="org.eclipse.ui.preferencePages">
        <page
