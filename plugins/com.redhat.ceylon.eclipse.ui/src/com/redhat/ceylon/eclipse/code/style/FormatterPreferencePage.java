@@ -38,20 +38,20 @@ public class FormatterPreferencePage extends StylePage {
         Dialog.applyDialogFont(composite);
         return composite;
     }
-    
+
     @Override
     public void performApply() {
         if (styleBlock != null) {
             styleBlock.performApply();
         }
     }
-    
+
     @Override
     public boolean performOk() {
         performApply();
         return true;
     }
-    
+
     private Control createPreferenceContent(Composite composite) {
         if (styleBlock == null) {
             styleBlock = new FormatterConfigurationBlock(project);

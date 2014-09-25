@@ -69,8 +69,9 @@ public class FormatterProfileAlreadyExistsDialog extends StatusDialog {
         fNameText = createTextField();
 
         fOverwriteRadio = createRadioButton("Overwrite");
-        
-        if (this.profile.getName().equalsIgnoreCase("default")) {
+
+        if (this.profile.getName().equalsIgnoreCase("default")
+                || this.profile.getName().equalsIgnoreCase("unnamed")) {
             fOverwriteRadio.setEnabled(false);
         }
 
