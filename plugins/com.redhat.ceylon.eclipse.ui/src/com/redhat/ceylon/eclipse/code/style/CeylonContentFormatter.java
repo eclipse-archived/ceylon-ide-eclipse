@@ -36,7 +36,7 @@ public class CeylonContentFormatter implements IContentFormatter,
     public IFormattingStrategy getFormattingStrategy(String s) {
         return new CeylonFormattingStrategy(s);
     }
-  
+
     @Override
     public void format(IDocument document, IFormattingContext formattingContext) {
         CeylonParseController cpc = new CeylonParseController();
@@ -44,19 +44,19 @@ public class CeylonContentFormatter implements IContentFormatter,
         final StringBuilder builder = new StringBuilder(document.getLength());
         format_.format(
                 cpc.getRootNode(),
-                ((FormatterPreferences)formattingContext.getProperty(FormattingContextProperties.CONTEXT_PREFERENCES))
-                .getOptions(),
-                new StringBuilderWriter(builder)
-                );
+                ((FormatterPreferences) formattingContext
+                        .getProperty(FormattingContextProperties.CONTEXT_PREFERENCES))
+                        .getOptions(), new StringBuilderWriter(builder));
         document.set(builder.toString());
     }
-    
+
     private static class StringBuilderWriter implements Writer {
         private final StringBuilder builder;
+
         public StringBuilderWriter(StringBuilder builder) {
             this.builder = builder;
         }
-        
+
         @Override
         public Object write(String string) {
             builder.append(string);
@@ -69,34 +69,42 @@ public class CeylonContentFormatter implements IContentFormatter,
         public Writer$impl $ceylon$file$Writer$impl() {
             return new Writer$impl(this);
         }
+
         @Override
         public Object close() {
             return null; // void
         }
+
         @Override
         public Object destroy(Throwable arg0) {
             return null; // void
         }
+
         @Override
         public Object flush() {
             return null; // void
         }
+
         @Override
         public Object writeLine() {
             // unused; ceylon.formatter has its own newline handling
             throw new UnsupportedOperationException();
         }
+
         @Override
         public Object writeLine(String line) {
             // unused; ceylon.formatter has its own newline handling
             throw new UnsupportedOperationException();
         }
+
         @Override
         public String writeLine$line() {
             return ""; // default value for "line" parameter
         }
+
         @Override
-        public Object writeBytes(ceylon.language.Iterable<? extends ceylon.language.Byte,? extends Object> bytes) {
+        public Object writeBytes(
+                ceylon.language.Iterable<? extends ceylon.language.Byte, ? extends Object> bytes) {
             // unused; ceylon.formatter never writes bytes
             throw new UnsupportedOperationException();
         }

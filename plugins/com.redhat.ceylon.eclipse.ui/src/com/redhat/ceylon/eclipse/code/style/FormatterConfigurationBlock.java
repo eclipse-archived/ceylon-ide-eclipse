@@ -40,7 +40,7 @@ import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
 
 public class FormatterConfigurationBlock extends StyleBlock {
 
-    public static final String FORMATTER_PROFILE_PREFIX = "format.";
+    public static final String FORMATTER_PROFILE_SUFFIX = ".format";
 
     private Combo fProfileCombo;
     private Button fEditButton;
@@ -93,47 +93,60 @@ public class FormatterConfigurationBlock extends StyleBlock {
             super.project = project;
             enableProjectSettings();
         }
-        
+
         initialize();
-        
-        String activeProfile = CeylonStyle.getFormatterProfile(project);
 
         List<Profile> profiles = new ArrayList<Profile>();
         File[] profileFiles = null;
         if (project.getLocation().toFile().isDirectory()) {
-                File ceylonConfigDir = new File(project.getLocation().toFile(), Constants.CEYLON_CONFIG_DIR);
-                if (ceylonConfigDir.isDirectory()) {
-                    profileFiles = ceylonConfigDir.listFiles(new FileFilter() {
-                        
-                        @Override
-                        public boolean accept(File f) {
-                            if (f.isFile() && f.getName().length() > FORMATTER_PROFILE_PREFIX.length()
-                                    && f.getName().startsWith(FORMATTER_PROFILE_PREFIX)) {
-                                return true;
-                            } else {
-                                return false;
-                            }
+            File ceylonConfigDir = new File(project.getLocation().toFile(),
+                    Constants.CEYLON_CONFIG_DIR);
+            if (ceylonConfigDir.isDirectory()) {
+                profileFiles = ceylonConfigDir.listFiles(new FileFilter() {
+
+                    @Override
+                    public boolean accept(File f) {
+                        if (f.isFile()
+                                && f.getName().endsWith(
+                                        FORMATTER_PROFILE_SUFFIX)) {
+                            return true;
+                        } else {
+                            return false;
                         }
-                    });
-                }
+                    }
+                });
+            }
         }
-        
+
         if (profileFiles != null) {
             for (File pf : profileFiles) {
-                String profileName = pf.getName().substring(FORMATTER_PROFILE_PREFIX.length());
+                String profileName = pf.getName().substring(
+                        0,
+                        pf.getName().length()
+                                - FORMATTER_PROFILE_SUFFIX.length());
                 if ("default".equals(profileName)) {
-                    continue; // 'format.default' can be copied manually in the OS FS
+                    continue; // 'default.format' can be copied manually in the
+                              // OS FS
                 }
                 Profile projectProfile = new FormatterProfileManager.Profile(
-                        profileName, loadProfile_.loadProfile(
-                                profileName,
+                        profileName, loadProfile_.loadProfile(profileName,
                                 false, project.getLocation().toFile()
                                         .getAbsolutePath()), 1, 0,
                         FormatterProfileManager.CEYLON_FORMATTER_VERSION);
-                profiles.add(projectProfile);               
+                profiles.add(projectProfile);
             }
         }
-        
+
+        // profiles may have been deleted, cannot rely on selected profile in
+        // .style
+        String candidateProfile = CeylonStyle.getFormatterProfile(project);
+        String activeProfile = "default";
+        for (Profile cpf : profiles) {
+            if (cpf.getName().equals(candidateProfile)) {
+                activeProfile = candidateProfile;
+            }
+        }
+
         fFormatterProfileManager = createFormatterProfileManager(profiles,
                 activeProfile);
     }
@@ -192,7 +205,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
     @Override
     protected Control createContents(Composite parent) {
         setShell(parent.getShell());
-        
+
         final int numColumns = 5;
         fPixConv = new PixelConverter(parent);
         block = createComposite(parent, numColumns);
@@ -335,7 +348,8 @@ public class FormatterConfigurationBlock extends StyleBlock {
         private void exportButtonPressed() {
             final FileDialog dialog = new FileDialog(block.getShell(), SWT.SAVE);
             dialog.setText("Export Ceylon Formatter profile");
-            dialog.setFilterExtensions(new String[] { FORMATTER_PROFILE_PREFIX + "*" });
+            dialog.setFilterExtensions(new String[] { "*"
+                    + FORMATTER_PROFILE_SUFFIX });
             // TODO find last path
             String lastPath = project.getLocation().toFile().getAbsolutePath();
             if (lastPath != null) {
@@ -384,8 +398,36 @@ public class FormatterConfigurationBlock extends StyleBlock {
                     "Are you sure you want to remove profile "
                             + fFormatterProfileManager.getSelected().getName()
                             + "?")) {
-                fFormatterProfileManager.deleteSelected();
+                if (deleteProfile(project, fFormatterProfileManager
+                        .getSelected().getName())) {
+                    fFormatterProfileManager.deleteSelected();
+                }
             }
+        }
+
+        private boolean deleteProfile(IProject project, String profileName) {
+            if (project.getLocation().toFile().isDirectory()) {
+                File ceylonConfigDir = new File(project.getLocation().toFile(),
+                        Constants.CEYLON_CONFIG_DIR);
+                if (ceylonConfigDir.isDirectory()) {
+                    try {
+                        File toBeDeleted = new File(ceylonConfigDir,
+                                profileName + FORMATTER_PROFILE_SUFFIX);
+                        toBeDeleted.delete();
+                        return true;
+                    } catch (Exception e) {
+                        final String title = "Error deleting profile";
+                        final String message = "There was an error deleting profile "
+                                + profileName + " : " + e.getMessage();
+                        CoreException coreException = new CoreException(
+                                new StatusInfo(IStatus.ERROR, message));
+                        ExceptionHandler.handle(coreException,
+                                block.getShell(), title, message);
+                        return false;
+                    }
+                }
+            }
+            return false;
         }
 
         private void newButtonPressed() {
@@ -404,7 +446,8 @@ public class FormatterConfigurationBlock extends StyleBlock {
         private void loadButtonPressed() {
             final FileDialog dialog = new FileDialog(block.getShell(), SWT.OPEN);
             dialog.setText("Load Ceylon Formatter profile");
-            dialog.setFilterExtensions(new String[] { FORMATTER_PROFILE_PREFIX + "*" });
+            dialog.setFilterExtensions(new String[] { "*"
+                    + FORMATTER_PROFILE_SUFFIX });
             // TODO find last path
             String lastPath = project.getLocation().toFile().getAbsolutePath();
             if (lastPath != null) {
@@ -418,15 +461,16 @@ public class FormatterConfigurationBlock extends StyleBlock {
             Profile profile = null;
             String profileName = "unnamed";
             String fileName = file.getName();
-            if (fileName.length() > FORMATTER_PROFILE_PREFIX.length() 
-                    && fileName.startsWith(FORMATTER_PROFILE_PREFIX)) {
-                profileName = fileName.substring(FORMATTER_PROFILE_PREFIX.length());
+            if (fileName.length() > FORMATTER_PROFILE_SUFFIX.length()
+                    && fileName.endsWith(FORMATTER_PROFILE_SUFFIX)) {
+                profileName = fileName.substring(0, fileName.length()
+                        - FORMATTER_PROFILE_SUFFIX.length());
             }
-            
+
             try {
                 profile = new Profile(profileName, loadProfile_.loadProfile(
-                        profileName, false, file.getParent()),
-                        1, 0, FormatterProfileManager.CEYLON_FORMATTER_VERSION);
+                        profileName, false, file.getParent()), 1, 0,
+                        FormatterProfileManager.CEYLON_FORMATTER_VERSION);
             } catch (Exception e) {
                 final String title = "Error importing profile";
                 final String message = "There was an error importing the profile from file "
@@ -440,18 +484,22 @@ public class FormatterConfigurationBlock extends StyleBlock {
                 return;
             }
 
-            if (fFormatterProfileManager.containsName(profile.getName())) {
+            if (fFormatterProfileManager.containsName(profile.getName())
+                    || "unnamed".equals(profile.getName())) {
                 final FormatterProfileAlreadyExistsDialog aeDialog = new FormatterProfileAlreadyExistsDialog(
                         block.getShell(), profile, fFormatterProfileManager);
                 if (aeDialog.open() != Window.OK)
                     return;
             }
             try {
-                CeylonStyle.writeProfileToFile(profile, project.getLocation().toFile());
+                CeylonStyle.writeProfileToFile(profile, project.getLocation()
+                        .toFile());
                 fFormatterProfileManager.addProfile(profile);
             } catch (CoreException ce) {
-                ExceptionHandler.handle(ce, block.getShell(),"Error importing into prject",
-                        "There was an error importing profile to project : " + project.getName());
+                ExceptionHandler.handle(ce, block.getShell(),
+                        "Error importing into prject",
+                        "There was an error importing profile to project : "
+                                + project.getName());
             }
         }
     }
@@ -459,13 +507,19 @@ public class FormatterConfigurationBlock extends StyleBlock {
     @Override
     public boolean performApply() {
         try {
-            if (fFormatterProfileManager.getSelected() != null) {
-                CeylonStyle.writeProfileToFile(fFormatterProfileManager.getSelected(), project.getLocation().toFile());
-                CeylonStyle.setFormatterProfile(project, fFormatterProfileManager.getSelected().getName());
+            if (fFormatterProfileManager.getSelected() != null
+                    && fFormatterProfileManager.getSelected().getName() != "default"
+                    && fFormatterProfileManager.getSelected().getName() != "unnamed") {
+                CeylonStyle.writeProfileToFile(fFormatterProfileManager
+                        .getSelected(), project.getLocation().toFile());
+                CeylonStyle.setFormatterProfile(project,
+                        fFormatterProfileManager.getSelected().getName());
             }
         } catch (CoreException ce) {
-            ExceptionHandler.handle(ce, block.getShell(),"Error applying changes",
-                    "There was an error applying changes to project : " + project.getName());
+            ExceptionHandler.handle(ce, block.getShell(),
+                    "Error applying changes",
+                    "There was an error applying changes to project : "
+                            + project.getName());
             return false;
         }
         return true;
@@ -482,5 +536,5 @@ public class FormatterConfigurationBlock extends StyleBlock {
     @Override
     protected void performDefaults() {
         // TODO ?
-    }   
+    }
 }

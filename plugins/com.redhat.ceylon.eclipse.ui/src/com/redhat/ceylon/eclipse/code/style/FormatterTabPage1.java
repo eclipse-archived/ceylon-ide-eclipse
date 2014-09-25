@@ -34,8 +34,7 @@ public class FormatterTabPage1 extends FormatterTabPage {
                 FORMATTER_indentMode_Tabs.toLowerCase(),
                 FORMATTER_indentMode_Mixed.toLowerCase() };
         final String[] indentModeLabels = new String[] {
-                FORMATTER_indentMode_Spaces, 
-                FORMATTER_indentMode_Tabs,
+                FORMATTER_indentMode_Spaces, FORMATTER_indentMode_Tabs,
                 FORMATTER_indentMode_Mixed };
         final ComboPreference indentMode = createComboPref(generalGroup,
                 numColumns, "Indent Mode", FORMATTER_indentMode,
@@ -49,20 +48,21 @@ public class FormatterTabPage1 extends FormatterTabPage {
                 numColumns, "Indent Mode Tabs Size",
                 FORMATTER_indentMode_Tabs_Size, 0, 32);
 
-        updateTabPreferences(
-                this.workingValues.get(FORMATTER_indentMode), 
+        updateTabPreferences(this.workingValues.get(FORMATTER_indentMode),
                 indentSpacesSize, indentTabsSize);
-        
+
         indentMode.addObserver(new Observer() {
             public void update(Observable o, Object arg) {
-                updateTabPreferences((String) arg, indentSpacesSize, indentTabsSize);
+                updateTabPreferences((String) arg, indentSpacesSize,
+                        indentTabsSize);
             }
         });
-        
+
         // group ended
         final Group otherGroup = createGroup(numColumns, composite,
                 "Other Indent Options");
-        createCheckboxPref(otherGroup, numColumns, "Indent Blank Lines", FORMATTER_indent_Blank_Lines, FALSE_TRUE);
+        createCheckboxPref(otherGroup, numColumns, "Indent Blank Lines",
+                FORMATTER_indent_Blank_Lines, FALSE_TRUE);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class FormatterTabPage1 extends FormatterTabPage {
         } else if (FORMATTER_indentMode_Mixed.equalsIgnoreCase(tabPolicy)) {
             indentSpacesSize.setEnabled(true);
             indentTabsSize.setEnabled(true);
-        }else {
+        } else {
             Assert.isTrue(false);
         }
         oldTabChar = tabPolicy;

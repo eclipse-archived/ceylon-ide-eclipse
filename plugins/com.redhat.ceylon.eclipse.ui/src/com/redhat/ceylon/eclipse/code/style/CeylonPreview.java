@@ -134,8 +134,7 @@ public abstract class CeylonPreview {
 
         // update the tab size
         final int tabSize = getPositiveIntValue(
-                workingValues
-                        .get(CeylonFormatterConstants.FORMATTER_TAB_SIZE),
+                workingValues.get(CeylonFormatterConstants.FORMATTER_TAB_SIZE),
                 0);
         if (tabSize != fTabSize)
             fSourceViewer.getTextWidget().setTabs(tabSize);

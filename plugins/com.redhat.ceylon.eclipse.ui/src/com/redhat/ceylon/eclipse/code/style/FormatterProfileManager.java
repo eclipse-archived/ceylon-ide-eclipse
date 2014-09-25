@@ -171,7 +171,6 @@ public class FormatterProfileManager extends Observable {
         notifyObservers(new Integer(message));
     }
 
-
     /**
      * Get an immutable list as view on all profiles, sorted alphabetically.
      * Unless the set of profiles has been modified between the two calls, the
