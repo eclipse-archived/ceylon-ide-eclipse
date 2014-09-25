@@ -18,11 +18,11 @@ test void simpleTypeChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal Float test();
+                 shared Float test() => nothing;
                  ";
         newContents =
                 "
-                 shared formal Integer test();
+                 shared Integer test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -48,11 +48,11 @@ test void parametrizedTypeChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal Comparable<Float> test();
+                 shared Comparable<Float> test() => nothing;
                  ";
         newContents =
                 "
-                 shared formal Comparable<Integer> test();
+                 shared Comparable<Integer> test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -79,12 +79,12 @@ test void aliasedTypeRecognized() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal Integer test();
+                 shared Integer test() => nothing;
                  ";
         newContents =
                 "
                  class Integer() {}
-                 shared formal Integer test();
+                 shared Integer test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -111,11 +111,11 @@ test void equivalentTypeNamesChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal Iterable<Float  > test();
+                 shared Iterable<Float  > test() => nothing;
                  ";
         newContents =
                 "
-                 shared formal {Float*} test();
+                 shared {Float*} test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -136,11 +136,11 @@ test void genericTypeChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal Comparable<Type> test<Type>();
+                 shared Comparable<Type> test<Type>() => nothing;
                  ";
         newContents =
                 "
-                 shared formal Comparable<Type2> test<Type2>();
+                 shared Comparable<Type2> test<Type2>() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -167,11 +167,11 @@ test void voidTypeChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal void test();
+                 shared void test() {}
                  ";
         newContents =
                 "
-                 shared formal Anything test();
+                 shared Anything test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -198,11 +198,11 @@ test void typeMadeOptional() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal Integer test();
+                 shared Integer test() => nothing;
                  ";
         newContents =
                 "
-                 shared formal Integer? test();
+                 shared Integer? test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -232,11 +232,11 @@ test void unionOrderChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal Integer|Float test();
+                 shared Integer|Float test() => nothing;
                  ";
         newContents =
                 "
-                 shared formal Float|Integer test();
+                 shared Float|Integer test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -266,11 +266,11 @@ test void intersectionOrderChanged() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal Integer&Object test();
+                 shared Integer&Object test() => nothing;
                  ";
         newContents =
                 "
-                 shared formal Object&Integer test();
+                 shared Object&Integer test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -297,11 +297,11 @@ test void defaultedTypeAdded() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal [Integer, Integer] test();
+                 shared [Integer, Integer] test() => nothing;
                  ";
         newContents =
                 "
-                 shared formal [Integer, Integer=] test();
+                 shared [Integer, Integer=] test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -328,11 +328,11 @@ test void useSiteVarianceAdded() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal Array<Character[]> test();
+                 shared Array<Character[]> test() => nothing;
                  ";
         newContents =
                 "
-                 shared formal Array<out Character[]> test();
+                 shared Array<out Character[]> test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {
@@ -359,11 +359,11 @@ test void useSiteVarianceFlipped() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 shared formal Array<in Character[]> test();
+                 shared Array<in Character[]> test() => nothing;
                  ";
         newContents =
                 "
-                 shared formal Array<out Character[]> test();
+                 shared Array<out Character[]> test() => nothing;
                  ";
         expectedDelta = 
                 RegularCompilationUnitDeltaMockup {

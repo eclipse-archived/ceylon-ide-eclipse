@@ -121,15 +121,15 @@ test void addAliasedAnnotation() {
         path = "dir/test.ceylon";
         oldContents = 
                 "
-                 native class Test() {
+                 doc class Test() {
                  }
                  ";
         newContents =
                 "
                  import ceylon.language {
-                     native=sealed
+                     doc=sealed
                  }
-                 native class Test() {
+                 doc class Test() {
                  }
                  ";
         expectedDelta = 
