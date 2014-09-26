@@ -3,14 +3,12 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencedProjects;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.isDeclarationOfLinkedElement;
 import static java.lang.Character.isJavaIdentifierPart;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,6 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -86,10 +85,9 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
     }
 
     private static void openCeylonDeclaration(IProject project, IJavaElement javaElement) {
-        Collection<IProject> projects = getProjects();
         Set<String> searchedArchives = new HashSet<String>();
         for (IProject referencedProject: getProjectAndReferencedProjects(project)) {
-            if (projects.contains(referencedProject)) {
+            if (CeylonNature.isEnabled(referencedProject)) {
                 TypeChecker typeChecker = getProjectTypeChecker(referencedProject);
                 if (typeChecker!=null) {
                     for (PhasedUnit pu: typeChecker.getPhasedUnits().getPhasedUnits()) {
