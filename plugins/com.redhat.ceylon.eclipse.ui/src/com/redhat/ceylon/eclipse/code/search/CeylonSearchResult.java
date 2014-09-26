@@ -9,7 +9,9 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.internal.ui.javaeditor.IClassFileEditorInput;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
@@ -83,6 +85,18 @@ public class CeylonSearchResult extends AbstractTextSearchResult
         return matches.toArray(new Match[matches.size()]);
     }
 
+    private Match[] getMatchesForPath(IClassFile classFile) {
+        List<Match> matches = new ArrayList<Match>();
+        for (Object element: this.getElements()) {
+            if (element instanceof IJavaElement) {
+                if (((IJavaElement) element).getAncestor(IJavaElement.CLASS_FILE)==classFile) {
+                    matches.addAll(Arrays.asList(getMatches(element)));
+                }
+            }
+        }
+        return matches.toArray(new Match[matches.size()]);
+    }
+
     public Match[] getMatchesForURI(URI uri) {
         List<Match> matches = new ArrayList<Match>();
         for (Object element: this.getElements()) {
@@ -131,6 +145,9 @@ public class CeylonSearchResult extends AbstractTextSearchResult
         else if (ei instanceof FileStoreEditorInput) {
             return getMatchesForURI(((FileStoreEditorInput)ei).getURI());
         }
+        else if (ei instanceof IClassFileEditorInput) {
+            return getMatchesForPath(((IClassFileEditorInput) ei).getClassFile());
+        }
         else {
             return new Match[0];
         }
@@ -153,6 +170,15 @@ public class CeylonSearchResult extends AbstractTextSearchResult
             else if (element instanceof IJavaElement) {
                 String path = ((IJavaElement) element).getResource().getLocationURI().toString();
                 return uri.endsWith(path);
+            }
+            else {
+                return false;
+            }
+        }
+        else if (ei instanceof IClassFileEditorInput) {
+            if (element instanceof IJavaElement) {
+                IClassFile classFile = ((IClassFileEditorInput) ei).getClassFile();
+                return ((IJavaElement) element).getAncestor(IJavaElement.CLASS_FILE)==classFile;
             }
             else {
                 return false;
