@@ -502,7 +502,7 @@ public class CeylonNavigatorContentProvider implements
         }
         if (parentElement instanceof ExternalModuleNode) {
             ExternalModuleNode moduleNode = (ExternalModuleNode) parentElement;
-            ArrayList<Object> result = new ArrayList<>(moduleNode.getBinaryArchives().size() + (moduleNode.getSourceArchive() != null ? 1 : 0));
+            ArrayList<Object> result = new ArrayList<Object>(moduleNode.getBinaryArchives().size() + (moduleNode.getSourceArchive() != null ? 1 : 0));
             if (moduleNode.getSourceArchive() != null) {
                 result.add(moduleNode.getSourceArchive());
             }
@@ -516,7 +516,7 @@ public class CeylonNavigatorContentProvider implements
         
         if (parentElement instanceof CeylonArchiveFileStore) {
             CeylonArchiveFileStore archiveFileStore = (CeylonArchiveFileStore)parentElement;
-            List<Object> children = new ArrayList<>();
+            List<Object> children = new ArrayList<Object>();
             try {
                 for (IFileStore child : archiveFileStore.childStores(EFS.NONE, null)) {
                     CeylonArchiveFileStore childFileStore = (CeylonArchiveFileStore)child;

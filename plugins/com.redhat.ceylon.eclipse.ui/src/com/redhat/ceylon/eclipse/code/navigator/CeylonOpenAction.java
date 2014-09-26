@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
+import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 
 import java.util.Arrays;
@@ -104,7 +105,7 @@ public class CeylonOpenAction extends OpenAction {
                     if (elementToOpen instanceof CeylonArchiveFileStore) {                        
                         CeylonArchiveFileStore fileStore = (CeylonArchiveFileStore) elementToOpen;
 
-                        IFolder sourceArchiveFolder = ExternalSourceArchiveManager.getExternalSourceArchiveManager().getSourceArchive(fileStore.getArchivePath());
+                        IFolder sourceArchiveFolder = getExternalSourceArchiveManager().getSourceArchive(fileStore.getArchivePath());
                         if (sourceArchiveFolder != null && sourceArchiveFolder.exists()) {
                             IResource file = sourceArchiveFolder.findMember(fileStore.getEntryPath());                            
                             if (file instanceof IFile) {
@@ -114,8 +115,9 @@ public class CeylonOpenAction extends OpenAction {
                                 if (CeylonBuilder.isJava((IFile)file)){
                                     //Open with the Class file object if available to have the full-featured ClassFileEditor.
                                     if (fileStore instanceof CeylonArchiveFileStore) {
-                                        IPath entryPath = ((CeylonArchiveFileStore) fileStore).getEntryPath();
-                                        String archivePath = ((CeylonArchiveFileStore) fileStore).getArchivePath().toOSString();
+                                        CeylonArchiveFileStore archiveFileStore = (CeylonArchiveFileStore) fileStore;
+                                        IPath entryPath = archiveFileStore.getEntryPath();
+                                        String archivePath = archiveFileStore.getArchivePath().toOSString();
                                         searchTheClassToDisplay:
                                         for (IProject project : CeylonBuilder.getProjects()) {
                                             for (JDTModule module : CeylonBuilder.getProjectExternalModules(project)) {
