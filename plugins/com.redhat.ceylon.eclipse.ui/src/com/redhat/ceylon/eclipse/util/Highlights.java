@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static java.lang.Character.isJavaIdentifierStart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
@@ -207,6 +208,32 @@ public class Highlights  {
                 result.append(token);
             }
             qualified = false;
+        }
+    }
+
+    public static void styleJavaType(StyledString result, 
+            String string) {
+        StringTokenizer tokens = 
+                new StringTokenizer(string,
+                        " <>,[].", true);
+        while (tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            if (token.equals("int") || 
+                token.equals("short") || 
+                token.equals("byte") || 
+                token.equals("long") || 
+                token.equals("double") || 
+                token.equals("float") || 
+                token.equals("boolean") || 
+                token.equals("char")) {
+                result.append(token, KW_STYLER);
+            }
+            else if (isJavaIdentifierStart(token.charAt(0))) {
+                result.append(token, TYPE_ID_STYLER);
+            }
+            else {
+                result.append(token);
+            }
         }
     }
 

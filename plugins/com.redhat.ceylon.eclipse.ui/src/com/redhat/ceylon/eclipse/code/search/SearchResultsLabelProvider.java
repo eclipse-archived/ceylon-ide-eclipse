@@ -1,10 +1,10 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
-import static com.redhat.ceylon.eclipse.util.Highlights.MEMBER_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
-import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.styleJavaType;
+import static org.eclipse.jdt.core.Signature.getSignatureSimpleName;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
 import org.eclipse.core.resources.IFile;
@@ -15,7 +15,6 @@ import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.Signature;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 
@@ -95,8 +94,9 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     styledString.append("void ", Highlights.KW_STYLER);
                 }
                 else {
-                    styledString.append(Signature.toString(returnType), TYPE_STYLER)
-                    .append(' ');
+                    styleJavaType(styledString, 
+                            getSignatureSimpleName(returnType));
+                    styledString.append(' ');
                 }
             }
             catch (Exception e) {
@@ -115,8 +115,10 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     else {
                         styledString.append(", ");
                     }
-                    styledString.append(Signature.toString(parameterTypes[i]), TYPE_STYLER)
-                                .append(' ').append(parameterNames[i], MEMBER_STYLER);
+                    styleJavaType(styledString, 
+                            getSignatureSimpleName(parameterTypes[i]));
+                    styledString.append(' ')
+                                .append(parameterNames[i], ID_STYLER);
                 }
                 styledString.append(')');
             }
@@ -126,8 +128,9 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         }
         else if (je instanceof IField) {
             try {
-                String type = Signature.toString(((IField) je).getTypeSignature());
-                styledString.append(type, TYPE_STYLER);
+                String type = ((IField) je).getTypeSignature();
+                styleJavaType(styledString, 
+                        getSignatureSimpleName(type));
             }
             catch (Exception e) {
                 e.printStackTrace();
