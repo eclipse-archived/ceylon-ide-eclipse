@@ -15,8 +15,10 @@ import static org.eclipse.jdt.core.search.IJavaSearchConstants.READ_ACCESSES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.WRITE_ACCESSES;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
@@ -38,6 +40,9 @@ import org.eclipse.jdt.ui.search.IQueryParticipant;
 import org.eclipse.jdt.ui.search.ISearchRequestor;
 import org.eclipse.jdt.ui.search.QuerySpecification;
 import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.search.ui.NewSearchUI;
+import org.eclipse.search.ui.text.AbstractTextSearchResult;
+import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.PartInitException;
 
@@ -57,7 +62,39 @@ import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 
-public class JavaQueryParticipant implements IQueryParticipant {
+public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentation {
+    
+    @Override
+    public void showMatch(Match match, int offset, int length,
+            boolean activate) throws PartInitException {
+        CeylonElement element = (CeylonElement) match.getElement();
+        IFile file = element.getFile();
+        Navigation.gotoLocation(file, offset, length);
+    }
+
+    @Override
+    public ILabelProvider createLabelProvider() {
+        AbstractTextSearchViewPage activePage = (AbstractTextSearchViewPage) 
+                NewSearchUI.getSearchResultView().getActivePage();
+        return new MatchCountingLabelProvider(activePage);
+    }
+
+    private static Field searchResultField;
+    private static Field participantsField;
+    
+    static {
+        try {
+            Class<?> clazz = Class.forName("org.eclipse.jdt.internal.ui.search.JavaSearchQuery$SearchRequestor");
+            searchResultField = clazz.getDeclaredField("fSearchResult");
+            searchResultField.setAccessible(true);
+            clazz = Class.forName("org.eclipse.jdt.internal.ui.search.JavaSearchResult");
+            participantsField = clazz.getDeclaredField("fElementsToParticipants");
+            participantsField.setAccessible(true);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
     @Override
     public void search(ISearchRequestor requestor, 
@@ -175,6 +212,22 @@ public class JavaQueryParticipant implements IQueryParticipant {
                                         CeylonSearchMatch match = 
                                                 new CeylonSearchMatch(node, container, 
                                                         pu.getUnitFile());
+                                        if (searchResultField!=null && participantsField!=null) {
+                                            //nasty nasty workaround for stupid 
+                                            //behavior of reportMatch()
+                                            try {
+                                                AbstractTextSearchResult searchResult = 
+                                                        (AbstractTextSearchResult) searchResultField.get(requestor);
+                                                searchResult.addMatch(match);
+                                                Map<Object, IMatchPresentation> participants = 
+                                                        (Map<Object, IMatchPresentation>) participantsField.get(searchResult);
+                                                participants.put(match.getElement(), this);
+                                                continue;
+                                            }
+                                            catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
                                         requestor.reportMatch(match);
                                     }
                                 }
@@ -213,19 +266,7 @@ public class JavaQueryParticipant implements IQueryParticipant {
 
     @Override
     public IMatchPresentation getUIParticipant() {
-        return new IMatchPresentation() {
-            @Override
-            public void showMatch(Match match, int offset, int length,
-                    boolean activate) throws PartInitException {
-                CeylonElement element = (CeylonElement) match.getElement();
-                IFile file = element.getFile();
-                Navigation.gotoLocation(file, offset, length);
-            }
-            @Override
-            public ILabelProvider createLabelProvider() {
-                return new SearchResultsLabelProvider();
-            }
-        };
+        return this;
     }
 
 }

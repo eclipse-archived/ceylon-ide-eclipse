@@ -10,11 +10,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.internal.ui.search.NewSearchResultCollector;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
@@ -123,7 +126,18 @@ abstract class FindSearchQuery implements ISearchQuery {
         runSearch(pm, new SearchEngine(), 
                 createSearchPattern(declaration, limitTo()), 
                 getProjectAndReferencingProjects(project), 
-                new NewSearchResultCollector(result, true));
+                new NewSearchResultCollector(result, true) {
+            @Override
+            public void acceptSearchMatch(SearchMatch match)
+                    throws CoreException {
+                super.acceptSearchMatch(match);
+                IJavaElement enclosingElement= (IJavaElement) match.getElement();
+                if (enclosingElement != null && 
+                        match.getAccuracy() != SearchMatch.A_INACCURATE) {
+                    count++;
+                }
+            }
+            });
     }
     
     abstract int limitTo();
@@ -149,10 +163,10 @@ abstract class FindSearchQuery implements ISearchQuery {
                             fcv.getStatementOrArgument();
                     if (c!=null) {
                         result.addMatch(new CeylonSearchMatch(node, c, pu.getUnitFile()));
+                        count++;
                     }
                 }
             }
-            count+=nodes.size();
         }
     }
 
