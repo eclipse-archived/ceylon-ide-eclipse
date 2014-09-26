@@ -3424,9 +3424,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 JDTModuleManager moduleManager = getProjectModuleManager(p);
                 if (moduleManager != null) {
                     JDTModule archiveModule = moduleManager.getArchiveModuleFromSourcePath(virtualPath);
-                    ExternalPhasedUnit pu = archiveModule.getPhasedUnit(virtualFile);
-                    if (pu != null) {
-                        return pu.getUnit();
+                    if (archiveModule != null) {
+                        ExternalPhasedUnit pu = archiveModule.getPhasedUnit(virtualFile);
+                        if (pu != null) {
+                            return pu.getUnit();
+                        }
                     }
                 }
             }

@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.search;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.asSourceModule;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnit;
+import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 
 import java.util.HashMap;
@@ -255,10 +256,15 @@ class CeylonSearchResultTreeContentProvider implements
             child instanceof IField) {
             IJavaElement javaElement = (IJavaElement) child;
             IFile file = (IFile) javaElement.getResource();
-            if (file!=null) {
-                IPackageFragmentRoot sourceFolder = (IPackageFragmentRoot) 
-                        javaElement.getAncestor(PACKAGE_FRAGMENT_ROOT);
-                //there is never a Unit for a .java file
+            IPackageFragmentRoot sourceFolder = (IPackageFragmentRoot) 
+                    javaElement.getAncestor(PACKAGE_FRAGMENT_ROOT);
+            //there is never a Unit for a .java file
+            if (file == null) {
+                IPackageFragment pack = (IPackageFragment) 
+                        javaElement.getAncestor(PACKAGE_FRAGMENT);
+                return new WithSourceFolder(pack, sourceFolder);
+            }
+            else {
                 return new WithSourceFolder(file, sourceFolder);
             }
         }
