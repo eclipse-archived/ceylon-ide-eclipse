@@ -217,6 +217,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         if (!anonymous) {
             SearchPattern searchPattern = 
                     createSearchPattern(declaration, REFERENCES);
+            if (searchPattern==null) return;
             SearchRequestor requestor = new SearchRequestor() {
                 @Override
                 public void acceptSearchMatch(SearchMatch match) {

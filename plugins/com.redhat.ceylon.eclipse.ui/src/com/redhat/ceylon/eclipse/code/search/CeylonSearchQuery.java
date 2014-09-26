@@ -84,6 +84,8 @@ class CeylonSearchQuery implements ISearchQuery {
     @Override
     public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
         List<PhasedUnit> units = projects==null ? getUnits() : getUnits(projects);
+        //TODO: consider source files in source archives, like in 
+        //      com.redhat.ceylon.eclipse.code.search.FindSearchQuery.findCeylonReferences
         monitor.beginTask("Ceylon Search", units.size());
         if (monitor.isCanceled()) return Status.CANCEL_STATUS;
 

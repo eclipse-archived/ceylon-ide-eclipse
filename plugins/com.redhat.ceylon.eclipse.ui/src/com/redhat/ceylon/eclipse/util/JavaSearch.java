@@ -29,7 +29,13 @@ public class JavaSearch {
 
     public static SearchPattern createSearchPattern(
             Declaration declaration, int limitTo) {
-        String pattern = getJavaNameOfDeclaration(declaration);
+        String pattern;
+        try {
+            pattern = getJavaNameOfDeclaration(declaration);
+        }
+        catch (IllegalArgumentException iae) {
+            return null;
+        }
         if (declaration instanceof Method) {
             return createPattern(pattern, METHOD, limitTo, R_EXACT_MATCH);
         }
