@@ -108,7 +108,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                 String[] parameterTypes = ((IMethod) je).getParameterTypes();
                 String[] parameterNames = ((IMethod) je).getParameterNames();
                 boolean first = true;
-                for (int i=0; i<parameterTypes.length; i++) {
+                for (int i=0; i<parameterTypes.length && i<parameterNames.length; i++) {
                     if (first) {
                         first = false;
                     }
