@@ -10,9 +10,10 @@ package com.redhat.ceylon.eclipse.code.correct;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
+import static com.redhat.ceylon.eclipse.util.Highlights.styleProposal;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -30,8 +31,6 @@ import org.eclipse.ltk.core.refactoring.NullChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
-
-import com.redhat.ceylon.eclipse.util.Highlights;
 
 
 /**
@@ -133,7 +132,7 @@ class CorrectionProposal
 
     @Override
     public StyledString getStyledDisplayString() {
-        return Highlights.styleProposal(getDisplayString(), false);
+        return styleProposal(getDisplayString(), false);
     }
     
     /**
