@@ -3,8 +3,10 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 import static com.redhat.ceylon.eclipse.util.Nodes.getCompilationUnit;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static org.eclipse.jdt.core.JavaCore.isJavaLikeFileName;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
@@ -30,6 +32,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -50,10 +53,11 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 public class Navigation {
         
     public static void gotoDeclaration(Declaration d, IProject project) {
-        gotoDeclaration(d, project, EditorUtil.getCurrentEditor());
+        gotoDeclaration(d, project, getCurrentEditor());
     }
     
-    public static void gotoDeclaration(Declaration d, IProject project, IEditorPart editor) {
+    public static void gotoDeclaration(Declaration d, IProject project, 
+            IEditorPart editor) {
 //        if (project!=null) {
             if (project!=null && editor instanceof CeylonEditor) {
                 CeylonEditor ce = (CeylonEditor) editor;
@@ -90,6 +94,22 @@ public class Navigation {
 //            //the first available project
 //            gotoJavaNode(d);
 //        }
+    }
+    
+    public static void gotoDeclaration(IProject project, PhasedUnit pu,
+            Declaration declaration) {
+        IEditorInput editorInput = getEditorInput(pu.getUnit());
+        Node node = getReferencedNode(declaration, 
+                pu.getCompilationUnit());
+        try {
+            CeylonEditor editor = (CeylonEditor) 
+                    getActivePage().openEditor(editorInput, EDITOR_ID);
+            editor.selectAndReveal(getIdentifyingNode(node).getStartIndex(), 
+                    declaration.getName().length());
+        } 
+        catch (PartInitException e) {
+            e.printStackTrace();
+        }
     }
     
     public static void gotoNode(Node node, IProject project) {
