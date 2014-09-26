@@ -5,6 +5,13 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
+import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
+import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
+import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_RIGHT;
 import static org.eclipse.jface.viewers.IDecoration.TOP_LEFT;
@@ -181,8 +188,13 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             return CEYLON_FOLDER;
         }
-        else if (element instanceof IPackageFragmentRoot) { //should be the source folder icon
-            return CEYLON_SOURCE_FOLDER;
+        else if (element instanceof IPackageFragmentRoot) {
+            if (((IPackageFragmentRoot) element).getPath().getFileExtension()!=null) {
+                return CEYLON_MODULE;
+            }
+            else {
+                return CEYLON_SOURCE_FOLDER;
+            }
         }
         if (element instanceof IProject ||
             element instanceof IJavaProject) {
@@ -400,18 +412,29 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (element instanceof IPackageFragment) {
             return new StyledString(((IPackageFragment) element).getElementName(), 
-                    Highlights.PACKAGE_STYLER);
+                    PACKAGE_STYLER);
         }
         else if (element instanceof IPackageFragmentRoot) {
-            return new StyledString(((IJavaElement) element).getElementName());
+            boolean isCar = ((IPackageFragmentRoot) element).getPath().getFileExtension()!=null;
+            String name = ((IJavaElement) element).getElementName();
+            int loc = name.lastIndexOf('.');
+            if (loc>=0) name = name.substring(0, loc);
+            loc = name.indexOf('-');
+            if (loc>=0) name = name.substring(0, loc);
+            if (isCar) {
+                return new StyledString(name, PACKAGE_STYLER);
+            }
+            else {
+                return new StyledString(name);
+            }
         }
         else if (element instanceof Package) {
             return new StyledString(getLabel((Package) element), 
-            		Highlights.PACKAGE_STYLER);
+            		PACKAGE_STYLER);
         }
         else if (element instanceof Module) {
             return new StyledString(getLabel((Module) element), 
-            		Highlights.PACKAGE_STYLER);
+            		PACKAGE_STYLER);
         }
         else if (element instanceof Unit) {
             return new StyledString(((Unit) element).getFilename());
@@ -445,49 +468,49 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
     }
 
-    public static StyledString getStyledLabelForNode(Node n) {
+    public static StyledString getStyledLabelForNode(Node node) {
         //TODO: it would be much better to render types
         //      from the tree nodes instead of from the
         //      model nodes
         
-        if (n instanceof Tree.TypeParameterDeclaration) {
-            Tree.TypeParameterDeclaration ac = (Tree.TypeParameterDeclaration) n;
+        if (node instanceof Tree.TypeParameterDeclaration) {
+            Tree.TypeParameterDeclaration ac = (Tree.TypeParameterDeclaration) node;
             return new StyledString(name(ac.getIdentifier()));
         }
-        if (n instanceof Tree.AnyClass) {
-            Tree.AnyClass ac = (Tree.AnyClass) n;
-            StyledString label = new StyledString("class ", Highlights.KW_STYLER);
-            label.append(name(ac.getIdentifier()), Highlights.TYPE_ID_STYLER);
+        if (node instanceof Tree.AnyClass) {
+            Tree.AnyClass ac = (Tree.AnyClass) node;
+            StyledString label = new StyledString("class ", KW_STYLER);
+            label.append(name(ac.getIdentifier()), TYPE_ID_STYLER);
             parameters(ac.getTypeParameterList(), label);
             parameters(ac.getParameterList(), label);
             return label;
         }
-        else if (n instanceof Tree.AnyInterface) {
-            Tree.AnyInterface ai = (Tree.AnyInterface) n;
-            StyledString label = new StyledString("interface ", Highlights.KW_STYLER);
-            label.append(name(ai.getIdentifier()), Highlights.TYPE_ID_STYLER);
+        else if (node instanceof Tree.AnyInterface) {
+            Tree.AnyInterface ai = (Tree.AnyInterface) node;
+            StyledString label = new StyledString("interface ", KW_STYLER);
+            label.append(name(ai.getIdentifier()), TYPE_ID_STYLER);
             parameters(ai.getTypeParameterList(), label);
             return label;
         }
-        if (n instanceof Tree.TypeAliasDeclaration) {
-            Tree.TypeAliasDeclaration ac = (Tree.TypeAliasDeclaration) n;
-            StyledString label = new StyledString("alias ", Highlights.KW_STYLER);
-            label.append(name(ac.getIdentifier()), Highlights.TYPE_ID_STYLER);
+        if (node instanceof Tree.TypeAliasDeclaration) {
+            Tree.TypeAliasDeclaration ac = (Tree.TypeAliasDeclaration) node;
+            StyledString label = new StyledString("alias ", KW_STYLER);
+            label.append(name(ac.getIdentifier()), TYPE_ID_STYLER);
             parameters(ac.getTypeParameterList(), label);
             return label;
         }
-        else if (n instanceof Tree.ObjectDefinition) {
-            Tree.ObjectDefinition ai = (Tree.ObjectDefinition) n;
-            return new StyledString("object ", Highlights.KW_STYLER)
-                    .append(name(ai.getIdentifier()), Highlights.ID_STYLER);
+        else if (node instanceof Tree.ObjectDefinition) {
+            Tree.ObjectDefinition ai = (Tree.ObjectDefinition) node;
+            return new StyledString("object ", KW_STYLER)
+                    .append(name(ai.getIdentifier()), ID_STYLER);
         }
-        else if (n instanceof Tree.AttributeSetterDefinition) {
-            Tree.AttributeSetterDefinition ai = (Tree.AttributeSetterDefinition) n;
-            return new StyledString("assign ", Highlights.KW_STYLER)
-                    .append(name(ai.getIdentifier()), Highlights.ID_STYLER);
+        else if (node instanceof Tree.AttributeSetterDefinition) {
+            Tree.AttributeSetterDefinition ai = (Tree.AttributeSetterDefinition) node;
+            return new StyledString("assign ", KW_STYLER)
+                    .append(name(ai.getIdentifier()), ID_STYLER);
         }
-        else if (n instanceof Tree.AnyMethod) {
-            Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
+        else if (node instanceof Tree.AnyMethod) {
+            Tree.TypedDeclaration td = (Tree.TypedDeclaration) node;
             String kind;
             if (td.getType() instanceof Tree.DynamicModifier) {
                 kind = "dynamic";
@@ -498,10 +521,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             else {
                 kind = "function";
             }
-            StyledString label = new StyledString(kind, Highlights.KW_STYLER)
+            StyledString label = new StyledString(kind, KW_STYLER)
                     .append(" ")
-                    .append(name(td.getIdentifier()), Highlights.ID_STYLER);
-            Tree.AnyMethod am = (Tree.AnyMethod) n;
+                    .append(name(td.getIdentifier()), ID_STYLER);
+            Tree.AnyMethod am = (Tree.AnyMethod) node;
             parameters(am.getTypeParameterList(), label);
             for (Tree.ParameterList pl: am.getParameterLists()) { 
                 parameters(pl, label);
@@ -509,8 +532,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             appendPostfixType(td, label);
             return label;
         }
-        else if (n instanceof Tree.TypedDeclaration) {
-            Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
+        else if (node instanceof Tree.TypedDeclaration) {
+            Tree.TypedDeclaration td = (Tree.TypedDeclaration) node;
             String kind;
             if (td.getType() instanceof Tree.DynamicModifier) {
                 kind = "dynamic";
@@ -518,9 +541,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             else {
                 kind = "value";
             }
-            StyledString label = new StyledString(kind, Highlights.KW_STYLER)
+            StyledString label = new StyledString(kind, KW_STYLER)
                     .append(" ")
-                    .append(name(td.getIdentifier()), Highlights.ID_STYLER);
+                    .append(name(td.getIdentifier()), ID_STYLER);
             appendPostfixType(td, label);
 			return label;
         }
@@ -540,52 +563,52 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
 //            }
 //            return label;
 //        }
-        else if (n instanceof Tree.CompilationUnit) {
-            Tree.CompilationUnit ai = (Tree.CompilationUnit) n;
+        else if (node instanceof Tree.CompilationUnit) {
+            Tree.CompilationUnit ai = (Tree.CompilationUnit) node;
             if (ai.getUnit()==null) {
                 return new StyledString("unknown");
             }
             return new StyledString(ai.getUnit().getFilename());
         }
-        else if (n instanceof Tree.ModuleDescriptor) {
-            Tree.ModuleDescriptor i = (Tree.ModuleDescriptor) n;
+        else if (node instanceof Tree.ModuleDescriptor) {
+            Tree.ModuleDescriptor i = (Tree.ModuleDescriptor) node;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString("module ", Highlights.KW_STYLER)
-                        .append(toPath(p), Highlights.PACKAGE_STYLER);
+                return new StyledString("module ", KW_STYLER)
+                        .append(toPath(p), PACKAGE_STYLER);
             }
         }
-        else if (n instanceof Tree.PackageDescriptor) {
-            Tree.PackageDescriptor i = (Tree.PackageDescriptor) n;
+        else if (node instanceof Tree.PackageDescriptor) {
+            Tree.PackageDescriptor i = (Tree.PackageDescriptor) node;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString("package ", Highlights.KW_STYLER)
-                        .append(toPath(p), Highlights.PACKAGE_STYLER);
+                return new StyledString("package ", KW_STYLER)
+                        .append(toPath(p), PACKAGE_STYLER);
             }
         }
-        else if (n instanceof Tree.ImportList) {
+        else if (node instanceof Tree.ImportList) {
             return new StyledString("imports");
         }
-        else if (n instanceof Tree.ImportPath) {
-            Tree.ImportPath p = (Tree.ImportPath) n;
+        else if (node instanceof Tree.ImportPath) {
+            Tree.ImportPath p = (Tree.ImportPath) node;
             if (isNonempty(p)) {
-                return new StyledString(toPath(p), Highlights.PACKAGE_STYLER);
+                return new StyledString(toPath(p), PACKAGE_STYLER);
             }
         }
-        else if (n instanceof Tree.Import) {
-            Tree.Import i = (Tree.Import) n;
+        else if (node instanceof Tree.Import) {
+            Tree.Import i = (Tree.Import) node;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString("import ", Highlights.KW_STYLER)
-                        .append(toPath(p), Highlights.PACKAGE_STYLER);
+                return new StyledString("import ", KW_STYLER)
+                        .append(toPath(p), PACKAGE_STYLER);
             }
         }
-        else if (n instanceof Tree.ImportModule) {
-            Tree.ImportModule i = (Tree.ImportModule) n;
+        else if (node instanceof Tree.ImportModule) {
+            Tree.ImportModule i = (Tree.ImportModule) node;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString("import ", Highlights.KW_STYLER)
-                        .append(toPath(p), Highlights.PACKAGE_STYLER);
+                return new StyledString("import ", KW_STYLER)
+                        .append(toPath(p), PACKAGE_STYLER);
             }
             Tree.QuotedLiteral ql = i.getQuotedLiteral();
             if (ql!=null) {
@@ -593,18 +616,18 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                         QUALIFIER_STYLER);
             }
         }
-        else if (n instanceof PackageNode) {
-            PackageNode pn = (PackageNode) n;
+        else if (node instanceof PackageNode) {
+            PackageNode pn = (PackageNode) node;
             if (pn.getPackageName().isEmpty()) {
                 return new StyledString("default package");
             }
             else {
                 return new StyledString(pn.getPackageName(), 
-                		Highlights.PACKAGE_STYLER);
+                		PACKAGE_STYLER);
             }
         }
-        else if (n instanceof Tree.SpecifierStatement) {
-            Tree.Term bme = ((Tree.SpecifierStatement) n).getBaseMemberExpression();
+        else if (node instanceof Tree.SpecifierStatement) {
+            Tree.Term bme = ((Tree.SpecifierStatement) node).getBaseMemberExpression();
             Tree.Identifier id;
             String kw;
             List<Tree.ParameterList> pls;
@@ -649,10 +672,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         StyledString result = new StyledString();
         if (type!=null) {
             if (type instanceof Tree.VoidModifier) {
-                return result.append("void", Highlights.KW_STYLER);
+                return result.append("void", KW_STYLER);
             }
             if (type instanceof Tree.DynamicModifier) {
-                return result.append("dynamic", Highlights.KW_STYLER);
+                return result.append("dynamic", KW_STYLER);
             }
             ProducedType tm = type.getTypeModel();
             if (tm!=null && !isTypeUnknown(tm)) {
@@ -670,7 +693,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
         }
         return result.append(node instanceof Tree.AnyMethod ? "function" : "value", 
-                Highlights.KW_STYLER);
+                KW_STYLER);
     }
     
     private static String name(Tree.Identifier id) {
@@ -697,7 +720,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                                 ((Tree.ParameterDeclaration) p).getTypedDeclaration();
                         label.append(type(td.getType(), td))
                             .append(" ")
-                            .append(name(td.getIdentifier()), Highlights.ID_STYLER);
+                            .append(name(td.getIdentifier()), ID_STYLER);
                         if (p instanceof Tree.FunctionalParameterDeclaration) {
                             for (Tree.ParameterList ipl: 
                                 ((Tree.MethodDeclaration) td).getParameterLists()) {
@@ -707,7 +730,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                     }
                     else if (p instanceof Tree.InitializerParameter) {
                         Tree.Identifier id = ((Tree.InitializerParameter) p).getIdentifier();
-                        label.append(name(id), Highlights.ID_STYLER);
+                        label.append(name(id), ID_STYLER);
                     }
                 }
                 if (++i<len) label.append(", ");
@@ -723,9 +746,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             int len = tpl.getTypeParameterDeclarations().size(), i=0;
             for (Tree.TypeParameterDeclaration p: tpl.getTypeParameterDeclarations()) {
                 if (p.getTypeVariance()!=null) {
-                    label.append(p.getTypeVariance().getText(), Highlights.KW_STYLER).append(" "); 
+                    label.append(p.getTypeVariance().getText(), KW_STYLER).append(" "); 
                 }
-                label.append(name(p.getIdentifier()), Highlights.TYPE_STYLER);
+                label.append(name(p.getIdentifier()), TYPE_STYLER);
                 if (++i<len) label.append(", ");
             }
             label.append(">");
@@ -797,7 +820,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
 
     public static void appendTypeName(StyledString result, ProducedType type) {
-        appendTypeName(result, type, Highlights.TYPE_STYLER);
+        appendTypeName(result, type, TYPE_STYLER);
     }
     
     public static void appendTypeName(StyledString result, ProducedType type, 
@@ -859,9 +882,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                         }
                     });
                     switch (sev) {
-                    case IMarker.SEVERITY_ERROR:
+                    case SEVERITY_ERROR:
                         return ERROR;
-                    case IMarker.SEVERITY_WARNING:
+                    case SEVERITY_WARNING:
                         return WARNING;
                     default: 
                         return 0;
@@ -871,9 +894,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             if (entity instanceof IResource) {
                 int sev = getMaxProblemMarkerSeverity((IResource) entity, IResource.DEPTH_ONE);
                 switch (sev) {
-                case IMarker.SEVERITY_ERROR:
+                case SEVERITY_ERROR:
                     return ERROR;
-                case IMarker.SEVERITY_WARNING:
+                case SEVERITY_WARNING:
                     return WARNING;
                 default: 
                     return 0;
