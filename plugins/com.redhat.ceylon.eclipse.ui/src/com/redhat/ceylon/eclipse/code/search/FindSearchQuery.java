@@ -37,7 +37,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.JavaSearch;
 
 abstract class FindSearchQuery implements ISearchQuery {
     
@@ -73,7 +72,7 @@ abstract class FindSearchQuery implements ISearchQuery {
     private void findCeylonReferences(IProgressMonitor monitor) {
         Set<String> searchedArchives = new HashSet<String>();
         Collection<IProject> projects = CeylonBuilder.getProjects();
-        for (IProject project: JavaSearch.getProjectAndReferencingProjects(this.project)) {
+        for (IProject project: getProjectAndReferencingProjects(this.project)) {
             if (projects.contains(project)) {
                 TypeChecker tc = getProjectTypeChecker(project);
                 findInUnits(tc.getPhasedUnits());
@@ -99,7 +98,7 @@ abstract class FindSearchQuery implements ISearchQuery {
         int work = 0;
         Set<String> searchedArchives = new HashSet<String>();
         Collection<IProject> projects = CeylonBuilder.getProjects();
-        for (IProject project: JavaSearch.getProjectAndReferencingProjects(this.project)) {
+        for (IProject project: getProjectAndReferencingProjects(this.project)) {
             if (projects.contains(project)) {
                 work+=1;
                 Modules modules = getProjectTypeChecker(project).getContext().getModules();
