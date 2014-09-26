@@ -165,7 +165,8 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                     IJavaProject javaProject = JavaCore.create(project);
                     for (IPackageFragmentRoot sourceFolder: 
                             javaProject.getAllPackageFragmentRoots()) {
-                        if (querySpecification.getScope().encloses(sourceFolder)) {
+                        if (sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
+                                querySpecification.getScope().encloses(sourceFolder)) {
                             TypeChecker typeChecker = getProjectTypeChecker(project);
                             searchInUnits(requestor, limitTo, declaration, 
                                     typeChecker.getPhasedUnits().getPhasedUnits());
@@ -183,6 +184,7 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                                     }
                                 }
                             }
+                            break;
                         }
                     }
                 }
