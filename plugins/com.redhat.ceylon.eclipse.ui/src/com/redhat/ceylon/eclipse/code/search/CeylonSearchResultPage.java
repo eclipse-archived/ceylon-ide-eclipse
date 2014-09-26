@@ -87,45 +87,53 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             throws PartInitException {
         Object elem = match.getElement();
         if (elem instanceof CeylonElement) {
-            CeylonElement element = (CeylonElement) elem;
-            IFile file = element.getFile();
-            if (file==null) {
-                Path path = new Path(element.getVirtualFile().getPath());
-                gotoLocation(path, offset, length);
-            }
-            else {
-                IWorkbenchPage page = getSite().getPage();
-                if (offset>=0 && length!=0) {
-                    openAndSelect(page, file, offset, length, activate);
-                } 
-                else {
-                    open(page, file, activate);
-                }
-            }
+            open((CeylonElement) elem, offset, length, activate);
         }
         else if (elem instanceof IJavaElement) {
-            IJavaElement element = (IJavaElement) elem;
-            IFile file = (IFile) element.getResource();
-            if (file==null) {
-                //a binary archive
-                //TODO: is there some way to detect that the source
-                //      here is actually written in Ceylon and open
-                //      in the Ceylon editor? Relevant for ceylon.language
-                JavaSearchEditorOpener editorOpener = new JavaSearchEditorOpener();
-                IEditorPart javaEditor = editorOpener.openMatch(match);
-                if (javaEditor instanceof ITextEditor) {
-                    ((ITextEditor) javaEditor).selectAndReveal(offset, length);
-                }
+            open((IJavaElement) elem, match, offset, length, activate);
+        }
+    }
+
+    private void open(IJavaElement element, Match match, int offset,
+            int length, boolean activate) throws PartInitException {
+        IFile file = (IFile) element.getResource();
+        if (file==null) {
+            //a binary archive
+            //TODO: is there some way to detect that the source
+            //      here is actually written in Ceylon and open
+            //      in the Ceylon editor? Relevant for ceylon.language
+            JavaSearchEditorOpener editorOpener = new JavaSearchEditorOpener();
+            IEditorPart javaEditor = editorOpener.openMatch(match);
+            if (javaEditor instanceof ITextEditor) {
+                ((ITextEditor) javaEditor).selectAndReveal(offset, length);
             }
+        }
+        else {
+            //a source file in the workspace
+            IWorkbenchPage page = getSite().getPage();
+            if (offset >= 0 && length != 0) {
+                openAndSelect(page, file, offset, length, activate);
+            } 
             else {
-                //a source file in the workspace
-                IWorkbenchPage page = getSite().getPage();
-                if (offset >= 0 && length != 0) {
-                    openAndSelect(page, file, offset, length, activate);
-                } 
-                else {
-                    open(page, file, activate);
-                }
+                open(page, file, activate);
+            }
+        }
+    }
+
+    private void open(CeylonElement element, int offset, int length,
+            boolean activate) throws PartInitException {
+        IFile file = element.getFile();
+        if (file==null) {
+            Path path = new Path(element.getVirtualFile().getPath());
+            gotoLocation(path, offset, length);
+        }
+        else {
+            IWorkbenchPage page = getSite().getPage();
+            if (offset>=0 && length!=0) {
+                openAndSelect(page, file, offset, length, activate);
+            } 
+            else {
+                open(page, file, activate);
             }
         }
     }
