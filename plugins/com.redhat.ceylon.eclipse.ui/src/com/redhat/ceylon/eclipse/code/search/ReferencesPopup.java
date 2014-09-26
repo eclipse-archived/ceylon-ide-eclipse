@@ -773,19 +773,13 @@ public final class ReferencesPopup extends PopupDialog
                 nodes = frv.getNodes();
             }
             for (Node node: nodes) {
-                FindContainerVisitor fcv = new FindContainerVisitor(node);
-                cu.visit(fcv);
-                Tree.StatementOrArgument c = fcv.getStatementOrArgument();
-                if (c!=null) {
-                    if (includeImports || 
-                            !(c instanceof Tree.Import) && 
-                            !(c instanceof Tree.ImportModule)) {
-                        CeylonSearchMatch match = new CeylonSearchMatch(node, c, pu.getUnitFile());
-                        TreeNode matchNode = new TreeNode(match);
-                        matchNode.setParent(unitNode);
-                        allMatchesList.add(matchNode);
-                        unitList.add(matchNode);
-                    }
+                CeylonSearchMatch match = 
+                        CeylonSearchMatch.create(node, cu, pu.getUnitFile());
+                if (includeImports || !match.isInImport()) {
+                    TreeNode matchNode = new TreeNode(match);
+                    matchNode.setParent(unitNode);
+                    allMatchesList.add(matchNode);
+                    unitList.add(matchNode);
                 }
             }
             if (!unitList.isEmpty()) {

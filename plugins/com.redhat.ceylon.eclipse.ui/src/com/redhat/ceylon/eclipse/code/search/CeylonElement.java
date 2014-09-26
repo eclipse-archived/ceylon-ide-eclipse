@@ -9,6 +9,7 @@ import org.eclipse.jface.viewers.StyledString;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
@@ -25,7 +26,7 @@ public class CeylonElement {
     private int startOffset;
     private int endOffset;
     
-    public CeylonElement(Tree.StatementOrArgument node, 
+    public CeylonElement(Node node, 
             VirtualFile file, int line) {
         //the file and line number, which get 
         //displayed in the search results page
@@ -58,6 +59,20 @@ public class CeylonElement {
         }
         else if (node instanceof Tree.ModuleDescriptor) {
             qualifiedName = node.getUnit().getPackage().getModule().getNameAsString();
+        }
+        else if (node instanceof Tree.CompilationUnit) {
+            qualifiedName = node.getUnit().getPackage().getNameAsString() + 
+                    '/' + node.getUnit().getFilename();
+        }
+        else if (node instanceof Tree.Import) {
+            qualifiedName = node.getUnit().getPackage().getNameAsString() + 
+                    '/' + node.getUnit().getFilename() + 
+                    '#' + ((Tree.Import) node).getImportPath().getModel().getNameAsString();
+        }
+        else if (node instanceof Tree.ImportModule) {
+            qualifiedName = node.getUnit().getPackage().getNameAsString() + 
+                    '/' + node.getUnit().getFilename() + 
+                    '@' + ((Tree.ImportModule) node).getImportPath().getModel().getNameAsString();
         }
     }
     

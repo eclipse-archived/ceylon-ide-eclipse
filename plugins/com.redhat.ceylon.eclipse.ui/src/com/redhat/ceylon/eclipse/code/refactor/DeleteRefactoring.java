@@ -26,7 +26,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
-import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
@@ -526,10 +525,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
 
     private CeylonSearchMatch findContainer(Node node,
             Tree.CompilationUnit cu, PhasedUnit pu) {
-        FindContainerVisitor fcv = new FindContainerVisitor(node);
-        cu.visit(fcv);
-        return new CeylonSearchMatch(node, 
-                fcv.getStatementOrArgument(), pu.getUnitFile());
+        return CeylonSearchMatch.create(node, cu, pu.getUnitFile());
     }
 
     public void setDeleteRefinements() {

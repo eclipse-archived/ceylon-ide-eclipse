@@ -1,10 +1,12 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencedProjects;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.isDeclarationOfLinkedElement;
 import static java.lang.Character.isJavaIdentifierPart;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 
@@ -30,10 +32,8 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
-import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.JavaSearch;
 
 public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
 
@@ -94,8 +94,8 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
                 if (typeChecker!=null) {
                     for (PhasedUnit pu: typeChecker.getPhasedUnits().getPhasedUnits()) {
                         for (Declaration declaration: pu.getDeclarations()) {
-                            if (JavaSearch.isDeclarationOfLinkedElement(declaration, javaElement)) {
-                                Navigation.gotoDeclaration(project, pu, declaration);
+                            if (isDeclarationOfLinkedElement(declaration, javaElement)) {
+                                gotoDeclaration(project, pu, declaration);
                             }
                         }
                     }
@@ -109,8 +109,8 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
                                         belongsToModule(javaElement, module)) {
                                     for (PhasedUnit pu: module.getPhasedUnits()) {
                                         for (Declaration declaration: pu.getDeclarations()) {
-                                            if (JavaSearch.isDeclarationOfLinkedElement(declaration, javaElement)) {
-                                                Navigation.gotoDeclaration(project, pu, declaration);
+                                            if (isDeclarationOfLinkedElement(declaration, javaElement)) {
+                                                gotoDeclaration(project, pu, declaration);
                                             }
                                         }
                                     }
@@ -147,7 +147,7 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
                     if (javaElement.getPath().getFileExtension().equals("car") ||
                             getCeylonClassesOutputFolder(project).getFullPath()
                                 .isPrefixOf(javaElement.getPath())) {
-                        return new IHyperlink[] { 
+                        return new IHyperlink[] {
                                 new JavaToCeylonLink(region, doc, project, javaElement)
                             };
                     }

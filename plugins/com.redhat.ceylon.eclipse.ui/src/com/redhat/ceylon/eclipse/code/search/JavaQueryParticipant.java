@@ -54,7 +54,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
@@ -199,19 +198,8 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                                         //a synthetic node inserted in the tree
                                     }
                                     else {
-                                        Tree.StatementOrArgument container;
-                                        if (node instanceof Tree.Declaration) {
-                                            container = (Tree.StatementOrArgument) node;
-                                        }
-                                        else {
-                                            FindContainerVisitor fcv = 
-                                                    new FindContainerVisitor(node);
-                                            cu.visit(fcv);
-                                            container = fcv.getStatementOrArgument();
-                                        }
                                         CeylonSearchMatch match = 
-                                                new CeylonSearchMatch(node, container, 
-                                                        pu.getUnitFile());
+                                                CeylonSearchMatch.create(node, cu, pu.getUnitFile());
                                         if (searchResultField!=null && participantsField!=null) {
                                             //nasty nasty workaround for stupid 
                                             //behavior of reportMatch()
