@@ -215,7 +215,7 @@ public class Highlights  {
             String string) {
         StringTokenizer tokens = 
                 new StringTokenizer(string,
-                        " <>,[].", true);
+                        " <>,[]?.", true);
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
             if (token.equals("int") || 
@@ -225,7 +225,9 @@ public class Highlights  {
                 token.equals("double") || 
                 token.equals("float") || 
                 token.equals("boolean") || 
-                token.equals("char")) {
+                token.equals("char") ||
+                token.equals("extends") ||
+                token.equals("super")) {
                 result.append(token, KW_STYLER);
             }
             else if (isJavaIdentifierStart(token.charAt(0))) {
