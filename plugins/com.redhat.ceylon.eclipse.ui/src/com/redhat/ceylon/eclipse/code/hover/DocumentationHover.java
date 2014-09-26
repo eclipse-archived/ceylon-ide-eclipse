@@ -1385,7 +1385,7 @@ public class DocumentationHover
             documentInheritance((TypeDeclaration) dec, node, pr, buffer);    
         }
         buffer.append("</div></p>");
-        documentTypeParameters(dec, node, buffer);
+        documentTypeParameters(dec, node, pr, buffer);
         buffer.append("</p>");
         return obj;
     }
@@ -1832,7 +1832,10 @@ public class DocumentationHover
     }
     
     private static void documentTypeParameters(Declaration dec, 
-            Node node, StringBuilder buffer) {
+            Node node, ProducedReference pr, StringBuilder buffer) {
+        if (pr==null) {
+            pr = getProducedReference(dec, node);
+        }
         List<TypeParameter> typeParameters;
         if (dec instanceof Functional) {
             typeParameters = ((Functional) dec).getTypeParameters();
@@ -1854,11 +1857,19 @@ public class DocumentationHover
                 }
                 bounds.append(producedTypeLink(st, dec.getUnit()));
             }
+            String arg;
+            ProducedType typeArg = pr==null ? null : pr.getTypeArguments().get(tp);
+            if (typeArg!=null && !tp.getType().isExactly(typeArg)) {
+                arg = "&nbsp;=&nbsp;" + producedTypeLink(typeArg, node.getUnit());
+            }
+            else {
+                arg = "";
+            }
             HTML.addImageAndLabel(buffer, tp, 
                     HTML.fileUrl(getIcon(tp)).toExternalForm(), 
                     16, 16, 
                     "<tt style='font-size:96%'>given&nbsp;<a " + HTML.link(tp) + ">" + 
-                            tp.getName() + "</a>" + bounds + "</tt>", 
+                            tp.getName() + "</a>" + bounds + arg + "</tt>", 
                             20, 4);
         }
     }
