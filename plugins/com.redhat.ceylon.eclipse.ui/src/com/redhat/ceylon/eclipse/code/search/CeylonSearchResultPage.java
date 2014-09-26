@@ -19,6 +19,7 @@ import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.internal.ui.search.JavaSearchEditorOpener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -29,8 +30,10 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 import org.eclipse.search.ui.text.Match;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -102,12 +105,20 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         }
         else if (elem instanceof IJavaElement) {
             IJavaElement element = (IJavaElement) elem;
-            
             IFile file = (IFile) element.getResource();
             if (file==null) {
-                //TODO!!!
+                //a binary archive
+                //TODO: is there some way to detect that the source
+                //      here is actually written in Ceylon and open
+                //      in the Ceylon editor? Relevant for ceylon.language
+                JavaSearchEditorOpener editorOpener = new JavaSearchEditorOpener();
+                IEditorPart javaEditor = editorOpener.openMatch(match);
+                if (javaEditor instanceof ITextEditor) {
+                    ((ITextEditor) javaEditor).selectAndReveal(offset, length);
+                }
             }
             else {
+                //a source file in the workspace
                 IWorkbenchPage page = getSite().getPage();
                 if (offset >= 0 && length != 0) {
                     openAndSelect(page, file, offset, length, activate);
@@ -116,7 +127,6 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                     open(page, file, activate);
                 }
             }
-            
         }
     }
     

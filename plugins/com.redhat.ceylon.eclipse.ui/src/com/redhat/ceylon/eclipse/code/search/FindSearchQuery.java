@@ -169,15 +169,8 @@ abstract class FindSearchQuery implements ISearchQuery {
                     //a synthetic node inserted in the tree
                 }
                 else {
-                    FindContainerVisitor fcv = 
-                            new FindContainerVisitor(node);
-                    cu.visit(fcv);
-                    Tree.StatementOrArgument c = 
-                            fcv.getStatementOrArgument();
-                    if (c!=null) {
-                        result.addMatch(new CeylonSearchMatch(node, c, pu.getUnitFile()));
-                        count++;
-                    }
+                    result.addMatch(CeylonSearchMatch.create(node, cu, pu.getUnitFile()));
+                    count++;
                 }
             }
         }

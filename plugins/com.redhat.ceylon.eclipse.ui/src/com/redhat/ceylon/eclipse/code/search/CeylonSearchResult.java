@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.search.ui.ISearchQuery;
@@ -92,9 +93,12 @@ public class CeylonSearchResult extends AbstractTextSearchResult
                 }
             }
             else if (element instanceof IJavaElement) {
-                String path = ((IJavaElement) element).getResource().getLocationURI().toString();
-                if (uri.toString().endsWith(path)) {
-                    matches.addAll(Arrays.asList(getMatches(element)));
+                IResource resource = ((IJavaElement) element).getResource();
+                if (resource!=null) {
+                    String path = resource.getLocationURI().toString();
+                    if (uri.toString().endsWith(path)) {
+                        matches.addAll(Arrays.asList(getMatches(element)));
+                    }
                 }
             }
         }
