@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleJavaType;
@@ -91,18 +92,18 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             try {
                 String returnType = ((IMethod) je).getReturnType();
                 if (returnType.equals("V")) {
-                    styledString.append("void ", Highlights.KW_STYLER);
+                    styledString.append("void", Highlights.KW_STYLER);
                 }
                 else {
-                    styleJavaType(styledString, 
-                            getSignatureSimpleName(returnType));
-                    styledString.append(' ');
+                    styledString.append("method", KW_STYLER);
+                    /*styleJavaType(styledString, 
+                            getSignatureSimpleName(returnType));*/
                 }
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
-            styledString.append(name, ID_STYLER);
+            styledString.append(' ').append(name, ID_STYLER);
             try {
                 styledString.append('(');
                 String[] parameterTypes = ((IMethod) je).getParameterTypes();
@@ -127,17 +128,36 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             }
         }
         else if (je instanceof IField) {
-            try {
+            styledString.append("field", KW_STYLER);
+            /*try {
                 String type = ((IField) je).getTypeSignature();
                 styleJavaType(styledString, 
                         getSignatureSimpleName(type));
             }
             catch (Exception e) {
                 e.printStackTrace();
-            }
-            styledString.append(name, ID_STYLER);
+            }*/
+            styledString.append(' ').append(name, ID_STYLER);
         }
-        else {
+        else if (je instanceof IType) {
+            IType type = (IType) je;
+            try {
+                if (type.isAnnotation()) {
+                    styledString.append('@').append("interface ", KW_STYLER);
+                }
+                else if (type.isInterface()) {
+                    styledString.append("interface ", KW_STYLER);
+                }
+                else if (type.isClass()) {
+                    styledString.append("class ", KW_STYLER);
+                }
+                else if (type.isEnum()) {
+                    styledString.append("enum ", KW_STYLER);
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
             styledString.append(name, TYPE_ID_STYLER);
         }
         IJavaElement pkg = ((IJavaElement) je.getOpenable()).getParent();
