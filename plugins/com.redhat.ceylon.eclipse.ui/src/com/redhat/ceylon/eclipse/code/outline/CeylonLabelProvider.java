@@ -189,8 +189,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return CEYLON_PROJECT;
         }
         if (element instanceof IPackageFragment) {
-            if (((IFolder)((IPackageFragment)element).getResource())
-                    .getFile("module.ceylon").exists()) {
+            IFolder folder = (IFolder)
+                    ((IPackageFragment)element).getResource();
+            if (folder!=null &&
+                    folder.getFile("module.ceylon").exists()) {
                 return CEYLON_MODULE;
             }
             else {
