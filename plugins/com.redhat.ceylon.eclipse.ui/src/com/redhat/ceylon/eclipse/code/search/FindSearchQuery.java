@@ -75,7 +75,7 @@ abstract class FindSearchQuery implements ISearchQuery {
     private void findCeylonReferences(IProgressMonitor monitor) {
         Set<String> searchedArchives = new HashSet<String>();
         Collection<IProject> projects = CeylonBuilder.getProjects();
-        for (IProject project: getProjectAndReferencingProjects(this.project)) {
+        for (IProject project: getProjectAndReferencingProjects(project)) {
             if (projects.contains(project)) {
                 TypeChecker tc = getProjectTypeChecker(project);
                 findInUnits(tc.getPhasedUnits());
@@ -101,7 +101,7 @@ abstract class FindSearchQuery implements ISearchQuery {
         int work = 0;
         Set<String> searchedArchives = new HashSet<String>();
         Collection<IProject> projects = CeylonBuilder.getProjects();
-        for (IProject project: getProjectAndReferencingProjects(this.project)) {
+        for (IProject project: getProjectAndReferencingProjects(project)) {
             if (projects.contains(project)) {
                 work+=1;
                 Modules modules = getProjectTypeChecker(project).getContext().getModules();
