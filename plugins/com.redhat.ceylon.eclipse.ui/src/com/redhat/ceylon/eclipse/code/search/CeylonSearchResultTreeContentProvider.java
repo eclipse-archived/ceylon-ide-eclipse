@@ -226,7 +226,20 @@ class CeylonSearchResultTreeContentProvider implements
                 if (mod!=null) {
                     return new WithSourceFolder(mod, sourceFolder);
                 }
+                IPackageFragmentRoot pfr = (IPackageFragmentRoot) 
+                                ((IPackageFragment) element).getAncestor(PACKAGE_FRAGMENT_ROOT);
+                if (pfr!=null && pfr.getPath().getFileExtension()!=null) {
+                    return new WithSourceFolder(pfr, sourceFolder);
+                }
+                
                 //otherwise, it doesn't belong to a module
+                if (level==LEVEL_MODULE) {
+                    return null;
+                }
+                return sourceFolder==null ? 
+                        ArchiveMatches.INSTANCE : sourceFolder;
+            }
+            if (element instanceof IPackageFragmentRoot) {
                 if (level==LEVEL_MODULE) {
                     return null;
                 }
@@ -256,15 +269,15 @@ class CeylonSearchResultTreeContentProvider implements
             child instanceof IField) {
             IJavaElement javaElement = (IJavaElement) child;
             IFile file = (IFile) javaElement.getResource();
-            IPackageFragmentRoot sourceFolder = (IPackageFragmentRoot) 
-                    javaElement.getAncestor(PACKAGE_FRAGMENT_ROOT);
             //there is never a Unit for a .java file
             if (file == null) {
                 IPackageFragment pack = (IPackageFragment) 
                         javaElement.getAncestor(PACKAGE_FRAGMENT);
-                return new WithSourceFolder(pack, sourceFolder);
+                return new WithSourceFolder(pack, null);
             }
             else {
+                IPackageFragmentRoot sourceFolder = (IPackageFragmentRoot) 
+                        javaElement.getAncestor(PACKAGE_FRAGMENT_ROOT);
                 return new WithSourceFolder(file, sourceFolder);
             }
         }
