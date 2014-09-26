@@ -4,18 +4,15 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClas
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencedProjects;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static java.lang.Character.isJavaIdentifierPart;
+import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
@@ -27,13 +24,14 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 
@@ -89,6 +87,7 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
 
     private static void openCeylonDeclaration(IProject project, IJavaElement javaElement) {
         Collection<IProject> projects = getProjects();
+        Set<String> searchedArchives = new HashSet<String>();
         for (IProject referencedProject: getProjectAndReferencedProjects(project)) {
             if (projects.contains(referencedProject)) {
                 TypeChecker typeChecker = getProjectTypeChecker(referencedProject);
@@ -96,7 +95,26 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
                     for (PhasedUnit pu: typeChecker.getPhasedUnits().getPhasedUnits()) {
                         for (Declaration declaration: pu.getDeclarations()) {
                             if (JavaSearch.isDeclarationOfLinkedElement(declaration, javaElement)) {
-                                openCeylonDeclaration(project, pu, declaration);
+                                Navigation.gotoDeclaration(project, pu, declaration);
+                            }
+                        }
+                    }
+                    Modules modules = typeChecker.getContext().getModules();
+                    for (Module m: modules.getListOfModules()) {
+                        if (m instanceof JDTModule) {
+                            JDTModule module = (JDTModule) m;
+                            if (module.isCeylonArchive() && module.getArtifact()!=null) { 
+                                String archivePath = module.getArtifact().getAbsolutePath();
+                                if (searchedArchives.add(archivePath) && 
+                                        belongsToModule(javaElement, module)) {
+                                    for (PhasedUnit pu: module.getPhasedUnits()) {
+                                        for (Declaration declaration: pu.getDeclarations()) {
+                                            if (JavaSearch.isDeclarationOfLinkedElement(declaration, javaElement)) {
+                                                Navigation.gotoDeclaration(project, pu, declaration);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -105,20 +123,10 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
         }
     }
 
-    public static void openCeylonDeclaration(IProject project, PhasedUnit pu,
-            Declaration declaration) {
-        IResource file = project.findMember(pu.getUnitFile().getPath());
-        IEditorInput editorInput = getEditorInput(file);
-        try {
-            CeylonEditor editor = (CeylonEditor) 
-                    getActivePage().openEditor(editorInput, EDITOR_ID);
-            Node node = getReferencedNode(declaration, pu.getCompilationUnit());
-            editor.selectAndReveal(getIdentifyingNode(node).getStartIndex(), 
-                    declaration.getName().length());
-        } 
-        catch (PartInitException e) {
-            e.printStackTrace();
-        }
+    private static boolean belongsToModule(IJavaElement javaElement,
+            JDTModule module) {
+        return javaElement.getAncestor(PACKAGE_FRAGMENT).getElementName()
+                .startsWith(module.getNameAsString());
     }
 
     @Override
@@ -133,13 +141,14 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
             if (cu==null) return null;
             IJavaElement[] selection = 
                     cu.codeSelect(region.getOffset(), region.getLength());
-            for (final IJavaElement je: selection) {
-                final IProject p = je.getJavaProject().getProject();
-                if (isExplodeModulesEnabled(p)) {
-                    if (getCeylonClassesOutputFolder(p).getFullPath()
-                            .isPrefixOf(je.getPath())) {
+            for (final IJavaElement javaElement: selection) {
+                final IProject project = javaElement.getJavaProject().getProject();
+                if (isExplodeModulesEnabled(project)) {
+                    if (javaElement.getPath().getFileExtension().equals("car") ||
+                            getCeylonClassesOutputFolder(project).getFullPath()
+                                .isPrefixOf(javaElement.getPath())) {
                         return new IHyperlink[] { 
-                                new JavaToCeylonLink(region, doc, p, je)
+                                new JavaToCeylonLink(region, doc, project, javaElement)
                             };
                     }
                 }        
