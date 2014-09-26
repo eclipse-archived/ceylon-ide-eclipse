@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.StyledString;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
@@ -15,6 +16,7 @@ import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 public class CeylonElement {
     
     private VirtualFile file;
+    private String qualifiedName;
     private int line;
     private String imageKey;
     private String packageLabel;
@@ -46,6 +48,17 @@ public class CeylonElement {
         //TODO: this winds up caching error decorations,
         //      so it's not really very good
         decorations = getNodeDecorationAttributes(node);
+        
+        if (node instanceof Tree.Declaration) {
+            Declaration dec = ((Tree.Declaration) node).getDeclarationModel();
+            qualifiedName = dec.getQualifiedNameString();
+        }
+        else if (node instanceof Tree.PackageDescriptor) {
+            qualifiedName = node.getUnit().getPackage().getNameAsString();
+        }
+        else if (node instanceof Tree.ModuleDescriptor) {
+            qualifiedName = node.getUnit().getPackage().getModule().getNameAsString();
+        }
     }
     
     public String getImageKey() {
@@ -93,8 +106,18 @@ public class CeylonElement {
     public boolean equals(Object obj) {
         if (obj instanceof CeylonElement) {
             CeylonElement that = (CeylonElement) obj;
-            return getLocation()==that.getLocation() && 
-                    file.equals(that.file);
+            if (!file.equals(that.file)) {
+                return false;
+            }
+            if (qualifiedName!=null && that.qualifiedName!=null) {
+                return qualifiedName.equals(that.qualifiedName);
+            }
+            else if (qualifiedName==null && that.qualifiedName==null) {
+                return line==that.line;
+            }
+            else {
+                return false;
+            }
         }
         else {
             return false;
@@ -103,7 +126,8 @@ public class CeylonElement {
     
     @Override
     public int hashCode() {
-        return getLocation() ^ file.getName().hashCode();
+        return file.getName().hashCode() ^
+                (qualifiedName==null ? 0 : qualifiedName.hashCode());
     }
     
 }

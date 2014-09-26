@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
@@ -13,10 +15,38 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 
 public class FindReferencesAction extends AbstractFindAction {
 
+    //TODO: copy/pasted from RenameRefactoring!
+    private static class FindDocLinkReferencesVisitor extends Visitor {
+        private Referenceable declaration;
+        private List<Tree.DocLink> links = 
+                new ArrayList<Tree.DocLink>();
+        List<Tree.DocLink> getLinks() {
+            return links;
+        }
+        FindDocLinkReferencesVisitor(Referenceable declaration) {
+            this.declaration = declaration;
+        }
+        @Override
+        public void visit(Tree.DocLink that) {
+            //TODO: what about package/module doc links!!
+            if (that.getBase()!=null) {
+                if (that.getBase().equals(declaration)) {
+                    links.add(that);
+                }
+                else if (that.getQualified()!=null) {
+                    if (that.getQualified().contains(declaration)) {
+                        links.add(that);
+                    }
+                }
+            }
+        }
+    }
+    
     private static final class Query extends FindSearchQuery {
         private Query(Referenceable referencedDeclaration, IProject project) {
             super(referencedDeclaration, project);
@@ -25,9 +55,15 @@ public class FindReferencesAction extends AbstractFindAction {
         @Override
         protected Set<Node> getNodes(Tree.CompilationUnit cu,
                 Referenceable referencedDeclaration) {
-            FindReferencesVisitor frv = new FindReferencesVisitor(referencedDeclaration);
+            FindReferencesVisitor frv = 
+                    new FindReferencesVisitor(referencedDeclaration);
             cu.visit(frv);
-            return frv.getNodes();
+            FindDocLinkReferencesVisitor fdlrv =
+                    new FindDocLinkReferencesVisitor(referencedDeclaration);
+            cu.visit(fdlrv);
+            Set<Node> result = frv.getNodes();
+            result.addAll(fdlrv.getLinks());
+            return result;
         }
         
         @Override

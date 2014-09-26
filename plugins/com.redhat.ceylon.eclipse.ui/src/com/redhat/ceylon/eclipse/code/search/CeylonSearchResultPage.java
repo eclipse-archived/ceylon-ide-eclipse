@@ -55,7 +55,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 
     private void configureViewer(StructuredViewer viewer) {
         viewer.setContentProvider(contentProvider);
-        viewer.setLabelProvider(new SearchResultsLabelProvider());
+        viewer.setLabelProvider(new MatchCountingLabelProvider(this));
         viewer.setComparator(new CeylonViewerComparator());
     }
 
@@ -92,7 +92,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             }
             else {
                 IWorkbenchPage page = getSite().getPage();
-                if (offset >= 0 && length != 0) {
+                if (offset>=0 && length!=0) {
                     openAndSelect(page, file, offset, length, activate);
                 } 
                 else {

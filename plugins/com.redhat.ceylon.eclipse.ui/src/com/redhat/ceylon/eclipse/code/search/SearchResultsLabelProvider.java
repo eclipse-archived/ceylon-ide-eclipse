@@ -79,13 +79,10 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         String path = file==null ? 
                 ce.getVirtualFile().getPath() : 
                     file.getFullPath().toString();
-                styledString.append(ce.getLabel());
-                //if (includePackage()) {
-                styledString.append(" - " + ce.getPackageLabel(), PACKAGE_STYLER);
-                //}
-                styledString.append(" - " + path, COUNTER_STYLER)
-                .append(":" + ce.getLocation(), COUNTER_STYLER);
-                return styledString;
+        styledString.append(ce.getLabel())
+                    .append(" - " + ce.getPackageLabel(), PACKAGE_STYLER)
+                    .append(" - " + path, COUNTER_STYLER);
+        return styledString;
     }
 
     private StyledString getStyledLabelForSearchResult(IJavaElement je) {
@@ -140,11 +137,9 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         else {
             styledString.append(name, TYPE_ID_STYLER);
         }
-        //if (includePackage()) {
         IJavaElement pkg = ((IJavaElement) je.getOpenable()).getParent();
         styledString.append(" - ", PACKAGE_STYLER)
                     .append(pkg.getElementName(), PACKAGE_STYLER);
-        //}
         IFile file = (IFile) je.getResource();
         if (file!=null) {
             styledString.append(" - " + file.getFullPath().toString(), COUNTER_STYLER);
