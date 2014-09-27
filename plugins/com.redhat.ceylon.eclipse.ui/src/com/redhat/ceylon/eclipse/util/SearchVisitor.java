@@ -1,7 +1,10 @@
 package com.redhat.ceylon.eclipse.util;
 
+import org.eclipse.jface.text.IRegion;
+
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class SearchVisitor extends Visitor {
@@ -19,7 +22,11 @@ public class SearchVisitor extends Visitor {
     }
     
     public void matchingNode(Node node) {}
+    public void matchingRegion(Node node, IRegion region) {}
     
+    @Override
+    public void visit(Tree.ExtendedTypeExpression that) {}
+            
     @Override
     public void visit(Tree.StaticMemberOrTypeExpression that) {
         if (matcher.includeReferences() &&
@@ -50,4 +57,47 @@ public class SearchVisitor extends Visitor {
         super.visit(that);
     }
         
+    @Override
+    public void visit(Tree.ImportMemberOrType that) {
+        if (matcher.includeReferences() &&
+                that.getIdentifier()!=null && 
+                matcher.matches(that.getIdentifier().getText())) {
+            matchingNode(that);
+        }
+        super.visit(that);
+    }
+        
+    @Override
+    public void visit(Tree.TypedArgument that) {
+        if (matcher.includeReferences() &&
+                that.getIdentifier()!=null && 
+                matcher.matches(that.getIdentifier().getText())) {
+            matchingNode(that);
+        }
+        super.visit(that);
+    }
+        
+    @Override
+    public void visit(Tree.SpecifiedArgument that) {
+        if (matcher.includeReferences() &&
+                that.getIdentifier()!=null && 
+                matcher.matches(that.getIdentifier().getText())) {
+            matchingNode(that);
+        }
+        super.visit(that);
+    }
+            
+    @Override
+    public void visit(DocLink that) {
+        if (matcher.includeReferences()) {
+            int i=0;
+            String name;
+            while ((name = DocLinks.name(that, i))!=null) {
+                if (matcher.matches(name)) {
+                    matchingRegion(that, DocLinks.nameRegion(that, i));
+                }
+                i++;
+            }
+        }
+    }
 }

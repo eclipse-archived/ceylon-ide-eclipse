@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
@@ -136,9 +137,12 @@ class CeylonSearchQuery implements ISearchQuery {
                     for (Module m: modules.getListOfModules()) {
                         if (m instanceof JDTModule) {
                             JDTModule module = (JDTModule) m;
-                            if (module.isCeylonArchive() && module.getArtifact()!=null) { 
+                            if (module.isCeylonArchive() && 
+                                    !module.isProjectModule() && 
+                                    module.getArtifact()!=null) { 
                                 String archivePath = module.getArtifact().getAbsolutePath();
-                                if (searchedArchives.add(archivePath)) {
+                                if (searchedArchives.add(archivePath) &&
+                                        searchedArchives.add(module.getSourceArchivePath())) {
                                     findInUnits(monitor, module.getPhasedUnits());
                                     monitor.worked(1);
                                     if (monitor.isCanceled()) {
@@ -161,8 +165,18 @@ class CeylonSearchQuery implements ISearchQuery {
                 SearchVisitor sv = new SearchVisitor(new PatternMatcher()) {
                     @Override
                     public void matchingNode(Node node) {
-                        result.addMatch(CeylonSearchMatch.create(node, cu, pu.getUnitFile()));
+                        CeylonSearchMatch match = 
+                                CeylonSearchMatch.create(node, cu, pu.getUnitFile());
+                        result.addMatch(match);
                         count++;
+                    }
+                    @Override
+                    public void matchingRegion(Node node, IRegion region) {
+                        CeylonSearchMatch match = 
+                                CeylonSearchMatch.create(node, cu, pu.getUnitFile());
+                        match.setOffset(region.getOffset());
+                        match.setLength(region.getLength());
+                        result.addMatch(match);
                     }
                 };
                 cu.visit(sv);
@@ -184,9 +198,12 @@ class CeylonSearchQuery implements ISearchQuery {
                     for (Module m: modules.getListOfModules()) {
                         if (m instanceof JDTModule) {
                             JDTModule module = (JDTModule) m;
-                            if (module.isCeylonArchive() && module.getArtifact()!=null) { 
+                            if (module.isCeylonArchive() && 
+                                    !module.isProjectModule() && 
+                                    module.getArtifact()!=null) { 
                                 String archivePath = module.getArtifact().getAbsolutePath();
-                                if (searchedArchives.add(archivePath)) {
+                                if (searchedArchives.add(archivePath) &&
+                                        searchedArchives.add(module.getSourceArchivePath())) {
                                     work++;
                                 }
                             }
