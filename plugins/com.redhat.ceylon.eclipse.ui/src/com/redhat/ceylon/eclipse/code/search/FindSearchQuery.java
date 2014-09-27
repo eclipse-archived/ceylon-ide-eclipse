@@ -81,6 +81,9 @@ abstract class FindSearchQuery implements ISearchQuery {
                 TypeChecker typeChecker = getProjectTypeChecker(project);
                 findInUnits(typeChecker.getPhasedUnits());
                 monitor.worked(1);
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
                 Modules modules = typeChecker.getContext().getModules();
                 for (Module m: modules.getListOfModules()) {
                     if (m instanceof JDTModule) {
@@ -91,6 +94,9 @@ abstract class FindSearchQuery implements ISearchQuery {
                                     m.getAllPackages().contains(pack)) {
                                 findInUnits(module.getPhasedUnits());
                                 monitor.worked(1);
+                                if (monitor.isCanceled()) {
+                                    throw new OperationCanceledException();
+                                }
                             }
                         }
                     }
@@ -124,11 +130,11 @@ abstract class FindSearchQuery implements ISearchQuery {
         return work;
     }
     
-    private void findJavaReferences(IProgressMonitor pm) {
+    private void findJavaReferences(IProgressMonitor monitor) {
         Declaration declaration = (Declaration) referencedDeclaration;
         SearchPattern searchPattern = createSearchPattern(declaration, limitTo());
         if (searchPattern==null) return;
-        runSearch(pm, new SearchEngine(), searchPattern, getProjectsToSearch(project), 
+        runSearch(monitor, new SearchEngine(), searchPattern, getProjectsToSearch(project), 
                 new NewSearchResultCollector(result, true) {
             @Override
             public void acceptSearchMatch(SearchMatch match)

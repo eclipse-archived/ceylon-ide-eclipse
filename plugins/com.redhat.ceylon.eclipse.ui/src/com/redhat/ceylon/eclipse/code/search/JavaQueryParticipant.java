@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
@@ -159,6 +160,10 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             }
             if (declaration==null) return;
             
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+            
             Set<String> searchedArchives = new HashSet<String>();
             for (IProject project: getProjectsToSearch(elementProject)) {
                 if (CeylonNature.isEnabled(project)) {
@@ -170,6 +175,9 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                             TypeChecker typeChecker = getProjectTypeChecker(project);
                             searchInUnits(requestor, limitTo, declaration, 
                                     typeChecker.getPhasedUnits().getPhasedUnits());
+                            if (monitor.isCanceled()) {
+                                throw new OperationCanceledException();
+                            }
                             Modules modules = typeChecker.getContext().getModules();
                             for (Module m: modules.getListOfModules()) {
                                 if (m instanceof JDTModule) {
@@ -180,6 +188,9 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                                                 m.getAllPackages().contains(pack)) {
                                             searchInUnits(requestor, limitTo, declaration, 
                                                     module.getPhasedUnits());
+                                            if (monitor.isCanceled()) {
+                                                throw new OperationCanceledException();
+                                            }
                                         }
                                     }
                                 }
