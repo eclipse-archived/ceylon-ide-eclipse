@@ -30,6 +30,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IImportDeclaration;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -214,6 +215,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (element instanceof Package ||
             element instanceof IPackageFragment) {
             return CEYLON_PACKAGE;
+        }
+        if (element instanceof IImportDeclaration) {
+            return CEYLON_IMPORT;
         }
         if (element instanceof Module) {
             return CEYLON_MODULE;
@@ -427,6 +431,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             else {
                 return new StyledString(name);
             }
+        }
+        else if (element instanceof IImportDeclaration) {
+            return new StyledString("import ", KW_STYLER)
+                .append(((IImportDeclaration) element).getElementName(), PACKAGE_STYLER);
         }
         else if (element instanceof Package) {
             return new StyledString(getLabel((Package) element), 
