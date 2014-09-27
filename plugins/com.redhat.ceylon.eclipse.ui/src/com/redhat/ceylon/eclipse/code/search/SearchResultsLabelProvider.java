@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
+import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
@@ -18,6 +20,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -126,6 +129,18 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             catch (Exception e) {
                 e.printStackTrace();
             }
+            if (EditorsUI.getPreferenceStore().getBoolean(DISPLAY_RETURN_TYPES)) {
+                try {
+                    String returnType = ((IMethod) je).getReturnType();
+                    styledString.append(" ∊ ");
+                    styleJavaType(styledString,
+                            getSignatureSimpleName(returnType), 
+                            ARROW_STYLER);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
         else if (je instanceof IField) {
             styledString.append("field", KW_STYLER);
@@ -138,6 +153,18 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                 e.printStackTrace();
             }*/
             styledString.append(' ').append(name, ID_STYLER);
+            if (EditorsUI.getPreferenceStore().getBoolean(DISPLAY_RETURN_TYPES)) {
+                try {
+                    String type = ((IField) je).getTypeSignature();
+                    styledString.append(" ∊ ");
+                    styleJavaType(styledString,
+                            getSignatureSimpleName(type), 
+                            ARROW_STYLER);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
         else if (je instanceof IType) {
             IType type = (IType) je;
