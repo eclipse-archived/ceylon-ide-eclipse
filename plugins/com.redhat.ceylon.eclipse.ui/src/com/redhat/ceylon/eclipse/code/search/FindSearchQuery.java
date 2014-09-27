@@ -27,7 +27,6 @@ import org.eclipse.ui.IWorkbenchPage;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -62,8 +61,11 @@ abstract class FindSearchQuery implements ISearchQuery {
     
     @Override
     public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
-        int work = estimateWork(monitor);
-        monitor.beginTask("Searching for " + labelString() + " '" + name + "'", work);
+        monitor.beginTask("Searching for " + labelString() + " '" + name + "'", 
+                estimateWork(monitor));
+        if (monitor.isCanceled()) {
+            return Status.CANCEL_STATUS;
+        }
         findCeylonReferences(monitor);
         if (referencedDeclaration instanceof Declaration && project!=null) {
             findJavaReferences(monitor);
@@ -79,7 +81,7 @@ abstract class FindSearchQuery implements ISearchQuery {
         for (IProject project: getProjectsToSearch(this.project)) {
             if (CeylonNature.isEnabled(project)) {
                 TypeChecker typeChecker = getProjectTypeChecker(project);
-                findInUnits(typeChecker.getPhasedUnits());
+                findInUnits(typeChecker.getPhasedUnits().getPhasedUnits(), monitor);
                 monitor.worked(1);
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
@@ -92,7 +94,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                             String archivePath = module.getArtifact().getAbsolutePath();
                             if (searchedArchives.add(archivePath) && 
                                     m.getAllPackages().contains(pack)) {
-                                findInUnits(module.getPhasedUnits());
+                                findInUnits(module.getPhasedUnits(), monitor);
                                 monitor.worked(1);
                                 if (monitor.isCanceled()) {
                                     throw new OperationCanceledException();
@@ -151,12 +153,10 @@ abstract class FindSearchQuery implements ISearchQuery {
     
     abstract int limitTo();
     
-    public void findInUnits(PhasedUnits units) {
-        findInUnits(units.getPhasedUnits());
-    }
-    
-    public void findInUnits(Iterable<? extends PhasedUnit> units) {
+    private void findInUnits(Iterable<? extends PhasedUnit> units, 
+            IProgressMonitor monitor) {
         for (PhasedUnit pu: units) {
+            monitor.subTask("Searching source file " + pu.getUnitFile().getPath());
             CompilationUnit cu = getRootNode(pu);
             Set<Node> nodes = getNodes(cu, referencedDeclaration);
             //TODO: should really add these as we find them:
@@ -168,6 +168,9 @@ abstract class FindSearchQuery implements ISearchQuery {
                     result.addMatch(CeylonSearchMatch.create(node, cu, pu.getUnitFile()));
                     count++;
                 }
+            }
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
             }
         }
     }
