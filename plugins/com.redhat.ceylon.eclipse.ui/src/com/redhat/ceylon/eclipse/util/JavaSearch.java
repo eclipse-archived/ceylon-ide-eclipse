@@ -9,6 +9,7 @@ import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
@@ -94,12 +95,16 @@ public class JavaSearch {
 
     public static void runSearch(IProgressMonitor pm, SearchEngine searchEngine,
             SearchPattern searchPattern, IProject[] projects,
-            SearchRequestor requestor) {
+            SearchRequestor requestor) 
+                    throws OperationCanceledException {
         try {
             searchEngine.search(searchPattern, 
                     SearchUtils.getDefaultSearchParticipants(),
                     SearchEngine.createJavaSearchScope(projects), 
                     requestor, pm);
+        }
+        catch (OperationCanceledException oce) {
+            throw oce;
         }
         catch (Exception e) {
             e.printStackTrace();
