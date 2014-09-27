@@ -8,7 +8,6 @@ import static org.eclipse.jdt.core.search.SearchPattern.createOrPattern;
 import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
@@ -60,11 +59,11 @@ public class JavaSearch {
             SearchPattern searchPattern = createPattern(pattern, CLASS_AND_INTERFACE, 
                     limitTo, R_EXACT_MATCH);
             //weirdly, ALL_OCCURRENCES doesn't return all occurrences
-            if (limitTo==IJavaSearchConstants.ALL_OCCURRENCES) {
+            /*if (limitTo==IJavaSearchConstants.ALL_OCCURRENCES) {
                 searchPattern = createOrPattern(createPattern(pattern, CLASS_AND_INTERFACE, 
                     IJavaSearchConstants.IMPLEMENTORS, R_EXACT_MATCH),
                     searchPattern);
-            }
+            }*/
             return searchPattern;
         }
     }
@@ -101,7 +100,7 @@ public class JavaSearch {
                     SearchEngine.createJavaSearchScope(projects), 
                     requestor, pm);
         }
-        catch (CoreException e) {
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
