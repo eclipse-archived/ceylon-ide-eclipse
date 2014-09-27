@@ -78,11 +78,12 @@ class CeylonSearchQuery implements ISearchQuery {
     private final boolean regex;
     private final boolean includeReferences;
     private final boolean includeDeclarations;
+    private final boolean archives;
     private IWorkbenchPage page;
 
     CeylonSearchQuery(String string, String[] projects, IResource[] resources,
             boolean includeReferences, boolean includeDeclarations,
-            boolean caseSensitive, boolean regex) {
+            boolean caseSensitive, boolean regex, boolean archives) {
         this.string = string;
         this.projects = projects;
         this.caseSensitive = caseSensitive;
@@ -90,6 +91,7 @@ class CeylonSearchQuery implements ISearchQuery {
         this.includeReferences = includeReferences;
         this.regex = regex;
         this.resources = resources;
+        this.archives = archives;
         this.page = EditorUtil.getActivePage();
     }
     
@@ -129,17 +131,19 @@ class CeylonSearchQuery implements ISearchQuery {
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
-                Modules modules = getProjectTypeChecker(project).getContext().getModules();
-                for (Module m: modules.getListOfModules()) {
-                    if (m instanceof JDTModule) {
-                        JDTModule module = (JDTModule) m;
-                        if (module.isCeylonArchive() && module.getArtifact()!=null) { 
-                            String archivePath = module.getArtifact().getAbsolutePath();
-                            if (searchedArchives.add(archivePath)) {
-                                findInUnits(monitor, module.getPhasedUnits());
-                                monitor.worked(1);
-                                if (monitor.isCanceled()) {
-                                    throw new OperationCanceledException();
+                if (archives) {
+                    Modules modules = getProjectTypeChecker(project).getContext().getModules();
+                    for (Module m: modules.getListOfModules()) {
+                        if (m instanceof JDTModule) {
+                            JDTModule module = (JDTModule) m;
+                            if (module.isCeylonArchive() && module.getArtifact()!=null) { 
+                                String archivePath = module.getArtifact().getAbsolutePath();
+                                if (searchedArchives.add(archivePath)) {
+                                    findInUnits(monitor, module.getPhasedUnits());
+                                    monitor.worked(1);
+                                    if (monitor.isCanceled()) {
+                                        throw new OperationCanceledException();
+                                    }
                                 }
                             }
                         }
@@ -175,14 +179,16 @@ class CeylonSearchQuery implements ISearchQuery {
         for (IProject project: getProjectsToSearch()) {
             if (CeylonNature.isEnabled(project)) {
                 work++;
-                Modules modules = getProjectTypeChecker(project).getContext().getModules();
-                for (Module m: modules.getListOfModules()) {
-                    if (m instanceof JDTModule) {
-                        JDTModule module = (JDTModule) m;
-                        if (module.isCeylonArchive() && module.getArtifact()!=null) { 
-                            String archivePath = module.getArtifact().getAbsolutePath();
-                            if (searchedArchives.add(archivePath)) {
-                                work++;
+                if (archives) {
+                    Modules modules = getProjectTypeChecker(project).getContext().getModules();
+                    for (Module m: modules.getListOfModules()) {
+                        if (m instanceof JDTModule) {
+                            JDTModule module = (JDTModule) m;
+                            if (module.isCeylonArchive() && module.getArtifact()!=null) { 
+                                String archivePath = module.getArtifact().getAbsolutePath();
+                                if (searchedArchives.add(archivePath)) {
+                                    work++;
+                                }
                             }
                         }
                     }
