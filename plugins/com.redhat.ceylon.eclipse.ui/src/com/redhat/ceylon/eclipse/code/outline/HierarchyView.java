@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isAbstraction;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
@@ -78,7 +79,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class HierarchyView extends ViewPart {
 
@@ -222,8 +222,11 @@ public class HierarchyView extends ViewPart {
         @Override
         public StyledString getStyledText(Object element) {
             Declaration dec = (Declaration) element;
-            StyledString desc = 
-                    getStyledDescriptionFor((Declaration) element);
+            return showInherited ? 
+                    getQualifiedDescriptionFor(dec) :
+                    getStyledDescriptionFor(dec);
+            /*StyledString desc = 
+                    getStyledDescriptionFor(dec);
             Scope container = dec.getContainer();
             if (showInherited && 
                     container instanceof Declaration) {
@@ -231,7 +234,7 @@ public class HierarchyView extends ViewPart {
                     .append(((Declaration) container).getName(), 
                             Highlights.TYPE_STYLER);
             }
-            return desc;
+            return desc;*/
         }
 
         @Override

@@ -284,14 +284,20 @@ public class CodeCompletions {
     public static String getLabelDescriptionFor(Declaration d) {
         StringBuilder result = new StringBuilder();
         if (d!=null) {
-            if (d.isFormal()) result.append("formal ");
-            if (d.isDefault()) result.append("default ");
-            if (isVariable(d)) result.append("variable ");
+            appendDeclarationAnnotations(d, result);
             appendDeclarationHeaderDescription(d, d.getUnit(), result);
             appendTypeParameters(d, result, true);
             appendParametersDescription(d, result, null);
         }
         return result.toString();
+    }
+
+    private static void appendDeclarationAnnotations(Declaration d,
+            StringBuilder result) {
+        if (d.isActual()) result.append("actual ");
+        if (d.isFormal()) result.append("formal ");
+        if (d.isDefault()) result.append("default ");
+        if (isVariable(d)) result.append("variable ");
     }
     
     public static String getDocDescriptionFor(Declaration d, 
@@ -303,14 +309,18 @@ public class CodeCompletions {
         return result.toString();
     }
     
-    public static StyledString getStyledDescriptionFor(Declaration d) {
+    public static StyledString getQualifiedDescriptionFor(Declaration d) {
         StyledString result = new StyledString();
         if (d!=null) {
-            if (d.isActual()) result.append("actual ", Highlights.ANN_STYLER);
-            if (d.isFormal()) result.append("formal ", Highlights.ANN_STYLER);
-            if (d.isDefault()) result.append("default ", Highlights.ANN_STYLER);
-            if (isVariable(d)) result.append("variable ", Highlights.ANN_STYLER);
             appendDeclarationDescription(d, result);
+            if (d.isClassOrInterfaceMember()) {
+                Declaration ci = (Declaration) d.getContainer();
+                result.append(ci.getName(), Highlights.TYPE_ID_STYLER).append('.');
+                appendMemberName(d, result);
+            }
+            else {
+                appendDeclarationName(d, result);
+            }
             appendTypeParameters(d, result, true);
             appendParametersDescription(d, result);
             if (d instanceof TypedDeclaration) {
@@ -331,6 +341,42 @@ public class CodeCompletions {
                 .append(((Declaration) d.getContainer()).getName());*/
         }
         return result;
+    }
+    
+    public static StyledString getStyledDescriptionFor(Declaration d) {
+        StyledString result = new StyledString();
+        if (d!=null) {
+            appendDeclarationAnnotations(d, result);
+            appendDeclarationDescription(d, result);
+            appendDeclarationName(d, result);
+            appendTypeParameters(d, result, true);
+            appendParametersDescription(d, result);
+            if (d instanceof TypedDeclaration) {
+                if (EditorsUI.getPreferenceStore().getBoolean(DISPLAY_RETURN_TYPES)) {
+                    TypedDeclaration td = (TypedDeclaration) d;
+                    if (!td.isParameter() && 
+                            !td.isDynamicallyTyped() &&
+                            !(td instanceof Method && ((Method) td).isDeclaredVoid())) {
+                        ProducedType t = td.getType();
+                        if (t!=null) {
+                            result.append(" ∊ ");
+                            appendTypeName(result, t, Highlights.ARROW_STYLER);
+                        }
+                    }
+                }
+            }
+            /*result.append(" - refines declaration in ") 
+                .append(((Declaration) d.getContainer()).getName());*/
+        }
+        return result;
+    }
+
+    private static void appendDeclarationAnnotations(Declaration d,
+            StyledString result) {
+        if (d.isActual()) result.append("actual ", Highlights.ANN_STYLER);
+        if (d.isFormal()) result.append("formal ", Highlights.ANN_STYLER);
+        if (d.isDefault()) result.append("default ", Highlights.ANN_STYLER);
+        if (isVariable(d)) result.append("variable ", Highlights.ANN_STYLER);
     }
     
     public static void appendPositionalArgs(Declaration dec,
@@ -784,9 +830,24 @@ public class CodeCompletions {
         else if (d instanceof Setter) {
             result.append("assign", Highlights.KW_STYLER);
         }
+        result.append(" ");
+    }
+
+    private static void appendMemberName(Declaration d, StyledString result) {
         String name = d.getName();
         if (name != null) {
-            result.append(" ");
+            if (d instanceof TypeDeclaration) {
+                result.append(name, Highlights.TYPE_STYLER);
+            }
+            else {
+                result.append(name, Highlights.MEMBER_STYLER);
+            }
+        }
+    }
+    
+    private static void appendDeclarationName(Declaration d, StyledString result) {
+        String name = d.getName();
+        if (name != null) {
             if (d instanceof TypeDeclaration) {
                 result.append(name, Highlights.TYPE_STYLER);
             }
@@ -1102,6 +1163,7 @@ public class CodeCompletions {
                             }
                             else {
                                 appendDeclarationDescription(p.getModel(), result);
+                                appendDeclarationName(p.getModel(), result);
                                 appendParametersDescription(p.getModel(), result);
                                 /*result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
                                     .append(" ").append(p.getName(), ID_STYLER);

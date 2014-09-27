@@ -44,10 +44,12 @@ class HierarchyNamePatternFilter extends ViewerFilter {
     }
 
     private boolean hasUnfilteredChild(TreeViewer viewer, Object element) {
-        Object[] children=  ((ITreeContentProvider) viewer.getContentProvider()).getChildren(element);
-        for (int i= 0; i < children.length; i++)
-            if (select(viewer, element, children[i]))
+        Object[] children = ((ITreeContentProvider) viewer.getContentProvider()).getChildren(element);
+        for (int i=0; i<children.length; i++) {
+            if (select(viewer, element, children[i])) {
                 return true;
+            }
+        }
         return false;
     }
 }
