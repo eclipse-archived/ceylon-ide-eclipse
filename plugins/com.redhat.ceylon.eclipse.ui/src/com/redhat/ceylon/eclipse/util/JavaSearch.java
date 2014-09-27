@@ -57,8 +57,15 @@ public class JavaSearch {
             }
         }
         else {
-            return createPattern(pattern, CLASS_AND_INTERFACE, 
+            SearchPattern searchPattern = createPattern(pattern, CLASS_AND_INTERFACE, 
                     limitTo, R_EXACT_MATCH);
+            //weirdly, ALL_OCCURRENCES doesn't return all occurrences
+            if (limitTo==IJavaSearchConstants.ALL_OCCURRENCES) {
+                searchPattern = createOrPattern(createPattern(pattern, CLASS_AND_INTERFACE, 
+                    IJavaSearchConstants.IMPLEMENTORS, R_EXACT_MATCH),
+                    searchPattern);
+            }
+            return searchPattern;
         }
     }
 
