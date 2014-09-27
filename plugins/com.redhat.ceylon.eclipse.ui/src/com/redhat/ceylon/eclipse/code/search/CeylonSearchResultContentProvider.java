@@ -34,7 +34,7 @@ class CeylonSearchResultContentProvider implements
         if (input instanceof AbstractTextSearchResult) {
             Set<Object> filteredElements = new HashSet<Object>();
             Object[] rawElements = ((AbstractTextSearchResult) input).getElements();
-            int limit= page.getElementLimit().intValue();
+            int limit = page.getElementLimit().intValue();
             for (int i=0; i<rawElements.length; i++) {
                 if (page.getDisplayedMatchCount(rawElements[i])>0) {
                     filteredElements.add(rawElements[i]);

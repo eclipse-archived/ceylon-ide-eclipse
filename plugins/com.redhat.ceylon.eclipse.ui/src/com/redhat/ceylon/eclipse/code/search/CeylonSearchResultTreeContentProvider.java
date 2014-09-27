@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IField;
+import org.eclipse.jdt.core.IImportDeclaration;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -266,7 +267,8 @@ class CeylonSearchResultTreeContentProvider implements
         }
         if (child instanceof IType ||
             child instanceof IMethod ||
-            child instanceof IField) {
+            child instanceof IField ||
+            child instanceof IImportDeclaration) {
             IJavaElement javaElement = (IJavaElement) child;
             IFile file = (IFile) javaElement.getResource();
             //there is never a Unit for a .java file
