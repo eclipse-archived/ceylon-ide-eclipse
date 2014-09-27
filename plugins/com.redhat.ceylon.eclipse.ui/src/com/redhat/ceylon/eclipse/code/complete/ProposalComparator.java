@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
-import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
 import java.util.Comparator;
@@ -36,8 +35,8 @@ final class ProposalComparator
             }
             ProducedType xtype = getResultType(x.getDeclaration());
             ProducedType ytype = getResultType(y.getDeclaration());
-            boolean xbottom = xtype!=null && xtype.getDeclaration() instanceof NothingType;
-            boolean ybottom = ytype!=null && ytype.getDeclaration() instanceof NothingType;
+            boolean xbottom = xtype!=null && xtype.isNothing();
+            boolean ybottom = ytype!=null && ytype.isNothing();
             if (xbottom && !ybottom) {
                 return 1;
             }
@@ -46,14 +45,15 @@ final class ProposalComparator
             }
             String xName = x.getName();
             String yName = y.getName();
-            if (!prefix.isEmpty() && isUpperCase(prefix.charAt(0))) {
-                if (isLowerCase(xName.charAt(0)) && 
-                    isUpperCase(yName.charAt(0))) {
-                    return 1;
+            boolean yUpperCase = isUpperCase(yName.charAt(0));
+            boolean xUpperCase = isUpperCase(xName.charAt(0));
+            if (!prefix.isEmpty()) {
+                boolean upperCasePrefix = isUpperCase(prefix.charAt(0));
+                if (!xUpperCase && yUpperCase) {
+                    return upperCasePrefix ? 1 : -1;
                 }
-                else if (isUpperCase(xName.charAt(0)) && 
-                         isLowerCase(yName.charAt(0))) {
-                    return -1;
+                else if (xUpperCase && !yUpperCase) {
+                    return upperCasePrefix ? -1 : 1;
                 }
             }
             if (type!=null) {
@@ -80,12 +80,10 @@ final class ProposalComparator
                 return new Integer(x.getProximity()).compareTo(y.getProximity());
             }
             //if (!prefix.isEmpty() && isLowerCase(prefix.charAt(0))) {
-            if (isLowerCase(xName.charAt(0)) && 
-                    isUpperCase(yName.charAt(0))) {
+            if (!xUpperCase && yUpperCase) {
                 return -1;
             }
-            else if (isUpperCase(xName.charAt(0)) && 
-                    isLowerCase(yName.charAt(0))) {
+            else if (xUpperCase && !yUpperCase) {
                 return 1;
             }
             int nc = xName.compareTo(yName);
