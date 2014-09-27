@@ -101,9 +101,12 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
                     for (Module m: modules.getListOfModules()) {
                         if (m instanceof JDTModule) {
                             JDTModule module = (JDTModule) m;
-                            if (module.isCeylonArchive() && module.getArtifact()!=null) { 
+                            if (module.isCeylonArchive() && 
+                                    !module.isProjectModule() && 
+                                    module.getArtifact()!=null) { 
                                 String archivePath = module.getArtifact().getAbsolutePath();
-                                if (searchedArchives.add(archivePath) && 
+                                if (searchedArchives.add(archivePath) &&
+                                        searchedArchives.add(module.getSourceArchivePath()) && 
                                         belongsToModule(javaElement, module)) {
                                     for (PhasedUnit pu: module.getPhasedUnits()) {
                                         for (Declaration declaration: pu.getDeclarations()) {

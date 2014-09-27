@@ -68,7 +68,7 @@ public class FindReferencesAction extends AbstractFindAction {
         
         @Override
         int limitTo() {
-            return IJavaSearchConstants.ALL_OCCURRENCES;
+            return IJavaSearchConstants.REFERENCES;
         }
 
         @Override

@@ -47,6 +47,9 @@ public class DocLinks {
             int startIndex = 0;
             for (int j=0; j<i; j++) {
                 startIndex = path.indexOf('.', startIndex)+1;
+                if (startIndex==0) {
+                    return null;
+                }
             }
             int stopIndex = path.indexOf('.', startIndex);
             if (stopIndex<0) stopIndex = path.length();
@@ -65,6 +68,9 @@ public class DocLinks {
             int startIndex = 0;
             for (int j=0; j<i; j++) {
                 startIndex = path.indexOf('.', startIndex)+1;
+                if (startIndex==0) {
+                    return null;
+                }
             }
             int stopIndex = path.indexOf('.', startIndex);
             if (stopIndex<0) stopIndex = path.length();

@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.internal.ui.search.NewSearchResultCollector;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
@@ -39,6 +40,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.util.DocLinks;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 abstract class FindSearchQuery implements ISearchQuery {
@@ -90,9 +92,12 @@ abstract class FindSearchQuery implements ISearchQuery {
                 for (Module m: modules.getListOfModules()) {
                     if (m instanceof JDTModule) {
                         JDTModule module = (JDTModule) m;
-                        if (module.isCeylonArchive() && module.getArtifact()!=null) {
+                        if (module.isCeylonArchive() && 
+                                !module.isProjectModule() && 
+                                module.getArtifact()!=null) {
                             String archivePath = module.getArtifact().getAbsolutePath();
-                            if (searchedArchives.add(archivePath) && 
+                            if (searchedArchives.add(archivePath) &&
+                                    searchedArchives.add(module.getSourceArchivePath()) && 
                                     m.getAllPackages().contains(pack)) {
                                 findInUnits(module.getPhasedUnits(), monitor);
                                 monitor.worked(1);
@@ -118,9 +123,12 @@ abstract class FindSearchQuery implements ISearchQuery {
                 for (Module m: modules.getListOfModules()) {
                     if (m instanceof JDTModule) {
                         JDTModule module = (JDTModule) m;
-                        if (module.isCeylonArchive() && module.getArtifact()!=null) { 
+                        if (module.isCeylonArchive() && 
+                                !module.isProjectModule() && 
+                                module.getArtifact()!=null) { 
                             String archivePath = module.getArtifact().getAbsolutePath();
-                            if (searchedArchives.add(archivePath) && 
+                            if (searchedArchives.add(archivePath) &&
+                                    searchedArchives.add(module.getSourceArchivePath()) && 
                                     m.getAllPackages().contains(pack)) {
                                 work++;
                             }
@@ -165,7 +173,26 @@ abstract class FindSearchQuery implements ISearchQuery {
                     //a synthetic node inserted in the tree
                 }
                 else {
-                    result.addMatch(CeylonSearchMatch.create(node, cu, pu.getUnitFile()));
+                    CeylonSearchMatch match = 
+                            CeylonSearchMatch.create(node, cu, pu.getUnitFile());
+                    if (node instanceof Tree.DocLink) {
+                        Tree.DocLink link = (Tree.DocLink) node;
+                        if (link.getBase().equals(referencedDeclaration)) {
+                            IRegion r = DocLinks.nameRegion(link, 0);
+                            match.setOffset(r.getOffset());
+                            match.setLength(r.getLength());
+                        }
+                        else {
+                            for (Declaration d: link.getQualified()) {
+                                if (d.equals(referencedDeclaration)) {
+                                    IRegion r = DocLinks.nameRegion(link, 0);
+                                    match.setOffset(r.getOffset());
+                                    match.setLength(r.getLength());
+                                }
+                            }
+                        }
+                    }
+                    result.addMatch(match);
                     count++;
                 }
             }
