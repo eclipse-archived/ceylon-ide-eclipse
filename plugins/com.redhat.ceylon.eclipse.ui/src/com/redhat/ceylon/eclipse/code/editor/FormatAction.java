@@ -21,8 +21,6 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import ceylon.file.Writer;
-import ceylon.file.Writer$impl;
 import ceylon.formatter.format_;
 import ceylon.formatter.options.LineBreak;
 import ceylon.formatter.options.Spaces;
@@ -44,6 +42,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
 
 final class FormatAction extends Action {
     private final CeylonEditor editor;
@@ -300,57 +299,6 @@ final class FormatAction extends Action {
         }
         catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-    
-    private static class StringBuilderWriter implements Writer {
-        private final StringBuilder builder;
-        public StringBuilderWriter(StringBuilder builder) {
-            this.builder = builder;
-        }
-        
-        @Override
-        public Object write(String string) {
-            builder.append(string);
-            return null; // void
-        }
-
-        // the rest is boring
-
-        @Override
-        public Writer$impl $ceylon$file$Writer$impl() {
-            return new Writer$impl(this);
-        }
-        @Override
-        public Object close() {
-            return null; // void
-        }
-        @Override
-        public Object destroy(Throwable arg0) {
-            return null; // void
-        }
-        @Override
-        public Object flush() {
-            return null; // void
-        }
-        @Override
-        public Object writeLine() {
-            // unused; ceylon.formatter has its own newline handling
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public Object writeLine(String line) {
-            // unused; ceylon.formatter has its own newline handling
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public String writeLine$line() {
-            return ""; // default value for "line" parameter
-        }
-        @Override
-        public Object writeBytes(ceylon.language.Iterable<? extends ceylon.language.Byte,? extends Object> bytes) {
-            // unused; ceylon.formatter never writes bytes
-            throw new UnsupportedOperationException();
         }
     }
 }
