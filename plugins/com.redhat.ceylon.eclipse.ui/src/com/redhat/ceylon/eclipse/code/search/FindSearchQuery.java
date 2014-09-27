@@ -105,7 +105,7 @@ abstract class FindSearchQuery implements ISearchQuery {
         Package pack = referencedDeclaration.getUnit().getPackage();
         for (IProject project: JavaSearch.getProjectsToSearch(this.project)) {
             if (CeylonNature.isEnabled(project)) {
-                work+=1;
+                work++;
                 Modules modules = getProjectTypeChecker(project).getContext().getModules();
                 for (Module m : modules.getListOfModules()) {
                     if (m instanceof JDTModule) {
