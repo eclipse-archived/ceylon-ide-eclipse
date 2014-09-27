@@ -213,6 +213,11 @@ public class Highlights  {
 
     public static void styleJavaType(StyledString result, 
             String string) {
+        styleJavaType(result, string, TYPE_ID_STYLER);
+    }
+
+    public static void styleJavaType(StyledString result, String string,
+            Styler styler) {
         StringTokenizer tokens = 
                 new StringTokenizer(string,
                         " <>,[]?.", true);
@@ -231,7 +236,7 @@ public class Highlights  {
                 result.append(token, KW_STYLER);
             }
             else if (isJavaIdentifierStart(token.charAt(0))) {
-                result.append(token, TYPE_ID_STYLER);
+                result.append(token, styler);
             }
             else {
                 result.append(token);

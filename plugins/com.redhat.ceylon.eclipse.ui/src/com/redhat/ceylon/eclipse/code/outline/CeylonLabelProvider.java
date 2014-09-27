@@ -5,6 +5,7 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
+import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
@@ -72,7 +73,6 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
-import com.redhat.ceylon.eclipse.util.Highlights;
 
 /**
  * Styled Label Provider which can be used to provide labels for Ceylon elements.
@@ -470,7 +470,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 ProducedType tm = type.getTypeModel();
                 if (!isTypeUnknown(tm)) {
                     label.append(" ∊ ");
-                    appendTypeName(label, tm, Highlights.ARROW_STYLER);
+                    appendTypeName(label, tm, ARROW_STYLER);
                 }
             }
         }
@@ -654,9 +654,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                  throw new RuntimeException("unexpected node type");
             }
             StyledString label = new StyledString();
-            label.append(kw, Highlights.KW_STYLER)
+            label.append(kw, KW_STYLER)
                 .append(" ")
-                .append(name(id), Highlights.ID_STYLER);
+                .append(name(id), ID_STYLER);
             if (pls!=null) {
                 for (Tree.ParameterList pl: pls) { 
                     parameters(pl, label);
