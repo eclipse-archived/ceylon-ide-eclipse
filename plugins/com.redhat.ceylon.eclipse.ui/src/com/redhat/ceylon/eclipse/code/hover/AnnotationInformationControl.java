@@ -428,7 +428,7 @@ class AnnotationInformationControl extends AbstractInformationControl
 
         Link proposalLink = new Link(parent, SWT.WRAP);
         proposalLink.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-        proposalLink.setText("<a>" + proposal.getDisplayString() + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
+        proposalLink.setText("<a>" + proposal.getDisplayString().replace("&", "&&") + "</a>");
         proposalLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

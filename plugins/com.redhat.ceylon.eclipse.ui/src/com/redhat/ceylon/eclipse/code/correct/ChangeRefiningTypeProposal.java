@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterText;
-import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 
 import java.util.Collection;
@@ -58,8 +57,7 @@ public class ChangeRefiningTypeProposal {
                 int offset = node.getStartIndex();
                 int length = node.getStopIndex()-offset+1;
                 change.setEdit(new ReplaceEdit(offset, length, type));
-                proposals.add(new CorrectionProposal("Change type to '" + 
-                        convertToHTMLContent(type) + "'", 
+                proposals.add(new CorrectionProposal("Change type to '" + type + "'", 
                         change, new Region(offset, length)));
             }
         }
