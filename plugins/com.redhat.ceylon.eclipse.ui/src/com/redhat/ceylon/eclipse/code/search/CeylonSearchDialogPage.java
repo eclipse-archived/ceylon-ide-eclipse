@@ -43,6 +43,7 @@ public class CeylonSearchDialogPage extends DialogPage
     private String searchPattern;
     private boolean caseSensitive = false;
     private boolean references = true;
+    private boolean archives = true;
     private boolean declarations = true;
     private ISearchPageContainer container;
     private static List<String> previousPatterns = new ArrayList<String>();
@@ -88,11 +89,13 @@ public class CeylonSearchDialogPage extends DialogPage
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
-        Group sub = new Group(result, SWT.SHADOW_ETCHED_IN);
+        Composite grp = new Composite(result, SWT.NONE);
+        Group sub = new Group(grp, SWT.SHADOW_ETCHED_IN);
         sub.setText("Search For");
         GridLayout sgl = new GridLayout();
         sgl.numColumns = 2;
         sub.setLayout(sgl);
+        grp.setLayout(sgl);
         final Button refs = new Button(sub, SWT.CHECK);
         refs.setText("References");
         refs.setSelection(references);
@@ -103,7 +106,7 @@ public class CeylonSearchDialogPage extends DialogPage
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
-        });        
+        });
         final Button decs = new Button(sub, SWT.CHECK);
         decs.setText("Declarations");
         decs.setSelection(declarations);
@@ -111,6 +114,20 @@ public class CeylonSearchDialogPage extends DialogPage
             @Override
             public void widgetSelected(SelectionEvent event) {
                 declarations = !declarations;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        sub = new Group(grp, SWT.SHADOW_ETCHED_IN);
+        sub.setText("Options");
+        sub.setLayout(new GridLayout());
+        final Button inArchives = new Button(sub, SWT.CHECK);
+        inArchives.setText("Search in source archives");
+        inArchives.setSelection(archives);
+        inArchives.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                archives = !archives;
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
@@ -165,7 +182,7 @@ public class CeylonSearchDialogPage extends DialogPage
         
         NewSearchUI.runQueryInBackground(new CeylonSearchQuery(searchPattern, 
                 projectNames, resources==null ? null : resources.toArray(new IResource[0]), 
-                references, declarations, caseSensitive, false));
+                references, declarations, caseSensitive, false, archives));
         return true;
     }
 
