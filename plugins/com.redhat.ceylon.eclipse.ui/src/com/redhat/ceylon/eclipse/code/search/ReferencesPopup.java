@@ -117,6 +117,10 @@ public final class ReferencesPopup extends PopupDialog
     }
 
     public static final class LabelProvider extends TreeNodeLabelProvider {
+        public LabelProvider() {
+            super(new SearchResultsLabelProvider());
+        }
+        
         @Override
         public Object unwrap(Object element) {
             Object unwrapped = super.unwrap(element);
