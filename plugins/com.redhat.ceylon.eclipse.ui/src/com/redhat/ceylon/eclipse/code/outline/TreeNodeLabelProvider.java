@@ -13,7 +13,15 @@ public class TreeNodeLabelProvider extends StyledCellLabelProvider
         implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, 
                    ILabelProvider {
     
-    private CeylonLabelProvider ceylonLabelProvider = new CeylonLabelProvider();
+    private CeylonLabelProvider ceylonLabelProvider;
+    
+    public TreeNodeLabelProvider(CeylonLabelProvider ceylonLabelProvider) {
+        this.ceylonLabelProvider = ceylonLabelProvider;
+    }
+    
+    public TreeNodeLabelProvider() {
+        this(new CeylonLabelProvider());
+    }
 
     protected Object unwrap(Object element) {
         return ((TreeNode) element).getValue();
