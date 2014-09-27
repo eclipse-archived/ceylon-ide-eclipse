@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencingProjects;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
 
 import java.util.HashSet;
@@ -38,10 +37,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.JavaSearch;
 
 abstract class FindSearchQuery implements ISearchQuery {
     
@@ -77,7 +76,7 @@ abstract class FindSearchQuery implements ISearchQuery {
     private void findCeylonReferences(IProgressMonitor monitor) {
         Set<String> searchedArchives = new HashSet<String>();
         Package pack = referencedDeclaration.getUnit().getPackage();
-        for (IProject project: getProjectsToSearch()) {
+        for (IProject project: JavaSearch.getProjectsToSearch(project)) {
             if (CeylonNature.isEnabled(project)) {
                 TypeChecker typeChecker = getProjectTypeChecker(project);
                 findInUnits(typeChecker.getPhasedUnits());
@@ -104,7 +103,7 @@ abstract class FindSearchQuery implements ISearchQuery {
         int work = 0;
         Set<String> searchedArchives = new HashSet<String>();
         Package pack = referencedDeclaration.getUnit().getPackage();
-        for (IProject project: getProjectsToSearch()) {
+        for (IProject project: JavaSearch.getProjectsToSearch(project)) {
             if (CeylonNature.isEnabled(project)) {
                 work+=1;
                 Modules modules = getProjectTypeChecker(project).getContext().getModules();
@@ -125,20 +124,11 @@ abstract class FindSearchQuery implements ISearchQuery {
         return work;
     }
     
-    private IProject[] getProjectsToSearch() {
-        if (project.getName().equals("Ceylon Source Archives")) {
-            return CeylonBuilder.getProjects().toArray(new IProject[0]);
-        }
-        else {
-            return getProjectAndReferencingProjects(project);
-        }
-    }
-
     private void findJavaReferences(IProgressMonitor pm) {
         Declaration declaration = (Declaration) referencedDeclaration;
         SearchPattern searchPattern = createSearchPattern(declaration, limitTo());
         if (searchPattern==null) return;
-        runSearch(pm, new SearchEngine(), searchPattern, getProjectsToSearch(), 
+        runSearch(pm, new SearchEngine(), searchPattern, JavaSearch.getProjectsToSearch(project), 
                 new NewSearchResultCollector(result, true) {
             @Override
             public void acceptSearchMatch(SearchMatch match)

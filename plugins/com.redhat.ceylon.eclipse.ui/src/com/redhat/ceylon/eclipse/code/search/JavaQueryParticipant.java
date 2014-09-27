@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencedProjects;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencingProjects;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.isDeclarationOfLinkedElement;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
@@ -160,7 +160,7 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             if (declaration==null) return;
             
             Set<String> searchedArchives = new HashSet<String>();
-            for (IProject project: getProjectAndReferencingProjects(elementProject)) {
+            for (IProject project: getProjectsToSearch(elementProject)) {
                 if (CeylonNature.isEnabled(project)) {
                     IJavaProject javaProject = JavaCore.create(project);
                     for (IPackageFragmentRoot sourceFolder: 

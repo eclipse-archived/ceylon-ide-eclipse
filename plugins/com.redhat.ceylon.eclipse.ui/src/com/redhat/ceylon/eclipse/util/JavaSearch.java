@@ -23,6 +23,7 @@ import org.eclipse.jdt.internal.corext.util.SearchUtils;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 public class JavaSearch {
 
@@ -151,6 +152,15 @@ public class JavaSearch {
             IJavaElement javaElement) {
         return d.getQualifiedNameString().replace("::", ".")
                 .equals(getQualifiedName((IMember) javaElement));
+    }
+
+    public static IProject[] getProjectsToSearch(IProject project) {
+        if (project.getName().equals("Ceylon Source Archives")) {
+            return CeylonBuilder.getProjects().toArray(new IProject[0]);
+        }
+        else {
+            return getProjectAndReferencingProjects(project);
+        }
     }
 
 }
