@@ -98,7 +98,7 @@ abstract class FindSearchQuery implements ISearchQuery {
             }
         }
     }
-
+    
     private int estimateWork(IProgressMonitor monitor) {
         int work = 0;
         Set<String> searchedArchives = new HashSet<String>();

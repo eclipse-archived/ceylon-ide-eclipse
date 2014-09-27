@@ -1,22 +1,21 @@
 package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectSourceModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,14 +46,14 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
@@ -67,8 +66,25 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public boolean matchItem(Object item) {
-            return isNameMatching(getPattern(), 
-                    ((DeclarationWithProject) item).getDeclaration());
+            Declaration declaration = 
+                    ((DeclarationWithProject) item).getDeclaration();
+            String pattern = getPattern();
+            int loc = pattern.indexOf('.');
+            if (loc<0) {
+                return isNameMatching(pattern, declaration);
+            }
+            else {
+                if (declaration.isClassOrInterfaceMember()) {
+                    String typePattern = pattern.substring(0,loc);
+                    String memberPattern = pattern.substring(loc+1);
+                    return isNameMatching(memberPattern, declaration) &&
+                            isNameMatching(typePattern, 
+                                    (Declaration) declaration.getContainer());
+                }
+                else {
+                    return false;
+                }
+            }
 //            return matches(getElementName(item));
         }
 
@@ -80,22 +96,36 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public boolean equalsFilter(ItemsFilter filter) {
             if (!(filter instanceof Filter) ||
-                    members!=((Filter)filter).members) {
+                    members!=((Filter) filter).members) {
                 return false;
             }
             else {
-                return super.equalsFilter(filter);
+                return filter.getPattern().equals(getPattern());
             }
         }
         
         @Override
         public boolean isSubFilter(ItemsFilter filter) {
             if (!(filter instanceof Filter) ||
-                    members!=((Filter)filter).members) {
+                    members!=((Filter) filter).members) {
                 return false;
             }
             else {
-                return super.isSubFilter(filter);
+                String pattern = getPattern();
+                String filterPattern = filter.getPattern();
+                int loc = pattern.indexOf('.');
+                int filterLoc = filterPattern.indexOf('.');
+                if (loc<0) {
+                    return filterLoc<0 &&
+                            filterPattern.startsWith(pattern);
+                }
+                else {
+                    return filterLoc>=0 &&
+                            filterPattern.substring(filterLoc+1)
+                            .startsWith(pattern.substring(loc+1)) &&
+                            filterPattern.substring(0,filterLoc)
+                            .startsWith(pattern.substring(0,loc));
+                }
             }
         }
     }
@@ -307,34 +337,33 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             String projectName = element.getString("projectName");
             String version = element.getString("version");
             String path = element.getString("path");
-            //search for a source file in the project
-            //TODO: we can probably remove this loop
-            if (projectName!=null) {
-                for (PhasedUnit unit: getUnits( new String[] {projectName} )) {
-                    if (unit.getUnit().getFilename().equals(unitFileName)
-                            && unit.getPackage().getQualifiedNameString().equals(packageName)) {
-                        for (Declaration dec: unit.getDeclarations()) {
-                            if (dec.getQualifiedNameString().equals(qualifiedName)) {
-                                return new DeclarationWithProject(dec, 
-                                        getFile(unit).getProject(), 
-                                        version, path);
+            
+            for (IProject project: getProjects()) {
+                if (projectName==null || project.getName().equals(projectName)) {
+                    //search for a source file in the project
+                    for (PhasedUnit unit: getUnits(project)) {
+                        if (unit.getUnit().getFilename().equals(unitFileName) && 
+                                unit.getPackage().getQualifiedNameString().equals(packageName)) {
+                            for (Declaration dec: unit.getDeclarations()) {
+                                if (isPresentable(dec) && 
+                                        dec.getQualifiedNameString().equals(qualifiedName)) {
+                                    return new DeclarationWithProject(dec, project, version, path);
+                                }
                             }
                         }
                     }
-                }
-            }
-            //if we don't find it, search all dependent modules
-            //this will find declarations in src archives
-            for (IProject p: getProjects()) {
-                if (p.getName().equals(projectName)) {
-                    Modules modules = getProjectTypeChecker(p).getContext().getModules();
+                    //if we don't find it, search all dependent modules
+                    //this will find declarations in src archives
+                    Modules modules = getProjectTypeChecker(project).getContext().getModules();
                     for (Module module: modules.getListOfModules()) {
                         for (Package pkg: module.getAllPackages()) { 
                             if (pkg.getQualifiedNameString().equals(packageName)) {
                                 for (Declaration dec: pkg.getMembers()) {
-                                    if (dec.getQualifiedNameString().equals(qualifiedName)) {
-                                        return new DeclarationWithProject(dec, p, version, path);
+                                    if (isPresentable(dec) && 
+                                            dec.getQualifiedNameString().equals(qualifiedName)) {
+                                        return new DeclarationWithProject(dec, project, version, path);
                                     }
+                                    //TODO: members!
                                 }
                             }
                         }
@@ -451,77 +480,117 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     
     @Override
     protected void fillContentProvider(AbstractContentProvider contentProvider,
-            ItemsFilter itemsFilter, IProgressMonitor progressMonitor) 
+            ItemsFilter itemsFilter, IProgressMonitor monitor) 
                     throws CoreException {
         usedNames.clear();
-        progressMonitor.beginTask("filtering", 10000);
-        Set<DeclarationWithProject> set = 
-                new HashSet<DeclarationWithProject>();
-        List<PhasedUnit> units = getUnits();
-        for (PhasedUnit unit: units) {
-            for (Declaration dec: unit.getDeclarations()) {
-                if (includeMembers ? dec.isShared() : dec.isToplevel() && 
-                        isPresentable(dec)) {
-                    String version = unit.getPackage().getModule().getVersion();
-                    DeclarationWithProject dwp = 
-                            new DeclarationWithProject(dec, 
-                                    getFile(unit).getProject(),
-                                    version,
-                                    unit.getUnitFile().getPath());
-                    contentProvider.add(dwp, itemsFilter);
-                    set.add(dwp);
-                    nameOccurs(dec);
-                }
-            }
-            progressMonitor.worked(1000/units.size());
-        }
+        monitor.beginTask("filtering", estimateWork(monitor));
+        Set<String> searchedArchives = new HashSet<String>();
         Collection<IProject> projects = getProjects();
         for (IProject project: projects) {
-            List<Package> packages = new LinkedList<Package>();
-            
-            for (Module compiledModule: 
-                    getProjectSourceModules(project)) {
-                for (Package p: compiledModule.getAllPackages()) {
-                    Module m = p.getModule();
-                    if (!m.isJava() || includeJava()) {
-                        packages.add(p);
+            TypeChecker typeChecker = 
+                    getProjectTypeChecker(project);
+            List<PhasedUnit> units = 
+                    typeChecker.getPhasedUnits().getPhasedUnits();
+            fill(contentProvider, itemsFilter, project, units);
+            monitor.worked(1);
+            Modules modules = typeChecker.getContext().getModules();
+            for (Module m: modules.getListOfModules()) {
+                if (!m.isJava() || includeJava()) {
+                    if (m instanceof JDTModule) {
+                        JDTModule module = (JDTModule) m;
+                        if (searchedArchives.add(uniqueIdentifier(module))) {
+                            fill(contentProvider, itemsFilter, project, module);
+                            monitor.worked(1);
+                        }
                     }
                 }
             }
-            for (Package p: packages) {
-                for (Declaration dec: p.getMembers()) {
-                    if (isPresentable(dec)) {
-                        String version = p.getModule().getVersion();
-                        DeclarationWithProject dwp =
-                                new DeclarationWithProject(dec,
-                                        project, version, null); //TODO: figure out the full path
-                        //TODO: eliminate duplicates based on the
-                        //      location of the module archive
-                        if (set.add(dwp)) {
-                            contentProvider.add(dwp, itemsFilter);
-                            nameOccurs(dec);
-                        }
-                        if (includeMembers &&
-                                dec instanceof ClassOrInterface) {
-                            for (Declaration mem: dec.getMembers()) {
-                                if (mem.isShared() && isPresentable(mem)) {
-                                    DeclarationWithProject mwp =
-                                            new DeclarationWithProject(mem,
-                                                    project, version, null); //TODO: figure out the full path
-                                    if (set.add(mwp)) {
-                                        contentProvider.add(mwp, itemsFilter);
-                                        nameOccurs(mem);
-                                    }
-                                }
-                            }
-                        }
-                    }
+        }
+    }
+
+    private void fill(AbstractContentProvider contentProvider,
+            ItemsFilter itemsFilter, IProject project, 
+            JDTModule module) {
+        for (Package pack: new ArrayList<Package>(module.getPackages())) {
+            for (Declaration dec: pack.getMembers()) {
+                fillDeclarationAndMembers(contentProvider, 
+                        itemsFilter, project, module, dec);
+            }
+        }
+    }
+
+    private void fillDeclarationAndMembers(
+            AbstractContentProvider contentProvider, 
+            ItemsFilter itemsFilter, IProject project, 
+            JDTModule module, Declaration dec) {
+        if (includeDeclaration(dec) &&
+                //watch out for dupes!
+                (!module.isProjectModule() || 
+                 !dec.getUnit().getFilename().endsWith("ceylon"))) {
+            //TODO: figure out the path!
+            DeclarationWithProject dwp = 
+                    new DeclarationWithProject(dec, project, 
+                            module.getVersion(), null);
+            contentProvider.add(dwp, itemsFilter);
+            nameOccurs(dec);
+            if (includeMembers) {
+                for (Declaration member: new ArrayList<Declaration>(dec.getMembers())) {
+                    fillDeclarationAndMembers(contentProvider, 
+                            itemsFilter, project, module, member);
                 }
-                progressMonitor.worked(9000/projects.size()/packages.size());
             }
         }
     }
     
+    private void fill(AbstractContentProvider contentProvider,
+            ItemsFilter itemsFilter, IProject project, 
+            List<? extends PhasedUnit> units) {
+        for (PhasedUnit unit: units) {
+            for (Declaration dec: unit.getDeclarations()) {
+                if (includeDeclaration(dec)) {
+                    String version = unit.getPackage().getModule().getVersion();
+                    String path = unit.getUnitFile().getPath();
+                    DeclarationWithProject dwp = 
+                            new DeclarationWithProject(dec, 
+                                    project, version, path);
+                    contentProvider.add(dwp, itemsFilter);
+                    nameOccurs(dec);
+                }
+            }
+            
+        }
+    }
+
+    private boolean includeDeclaration(Declaration dec) {
+        return (dec.isToplevel() || includeMembers && dec.isShared()) 
+                && isPresentable(dec);
+    }
+    
+    private int estimateWork(IProgressMonitor monitor) {
+        int work = 0;
+        Set<String> searchedArchives = new HashSet<String>();
+        for (IProject project: getProjects()) {
+            work++;
+            Modules modules = getProjectTypeChecker(project)
+                    .getContext().getModules();
+            for (Module m: modules.getListOfModules()) {
+                if (m instanceof JDTModule) {
+                    JDTModule module = (JDTModule) m;
+                    if (searchedArchives.add(uniqueIdentifier(module))) {
+                        work++;
+                    }
+                }
+            }
+        }
+        return work;
+    }
+    
+    private String uniqueIdentifier(JDTModule module) {
+        return module.getArtifact()==null ?
+                module.getNameAsString() + '#' + module.getVersion() :
+                module.getArtifact().getAbsolutePath();
+    }
+
     boolean includeJava() {
         return true;
     }
@@ -560,7 +629,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     private String toName(Declaration dec) {
         String name = dec.getName();
         if (dec.isClassOrInterfaceMember()) {
-            name = ((Declaration)dec.getContainer()).getName() + 
+            name = ((Declaration) dec.getContainer()).getName() + 
                     "." + name; 
         }
         return name;
@@ -581,7 +650,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     boolean isPresentable(Declaration d) {
         String name = d.getName();
         return name!=null && !d.isAnonymous() && 
-                !Util.isOverloadedVersion(d);
+                !isOverloadedVersion(d);
     }
     
     @Override
