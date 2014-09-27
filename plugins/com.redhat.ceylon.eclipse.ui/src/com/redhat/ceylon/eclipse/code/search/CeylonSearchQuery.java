@@ -1,12 +1,18 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -18,11 +24,17 @@ import org.eclipse.search.ui.text.AbstractTextSearchResult;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
@@ -80,15 +92,64 @@ class CeylonSearchQuery implements ISearchQuery {
         this.resources = resources;
         this.page = EditorUtil.getActivePage();
     }
-
+    
+    private Collection<IProject> getProjectsToSearch() {
+        if (projects==null) {
+            return CeylonBuilder.getProjects();
+        }
+        List<IProject> result = new ArrayList<IProject>();
+        for (String name: projects) {
+            IProject project = getWorkspace().getRoot().getProject(name);
+//            if (CeylonNature.isEnabled(project)) {
+                result.add(project);
+//            }
+        }
+        return result;
+    }
+    
     @Override
     public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
-        List<PhasedUnit> units = projects==null ? getUnits() : getUnits(projects);
-        //TODO: consider source files in source archives, like in 
-        //      com.redhat.ceylon.eclipse.code.search.FindSearchQuery.findCeylonReferences
-        monitor.beginTask("Ceylon Search", units.size());
-        if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+        monitor.beginTask("Searching in Ceylon source", 
+                estimateWork(monitor));
+        if (monitor.isCanceled()) {
+            return Status.CANCEL_STATUS;
+        }
+        search(monitor);
+        monitor.done();
+        return Status.OK_STATUS;
+    }
 
+    private void search(IProgressMonitor monitor) {
+        Set<String> searchedArchives = new HashSet<String>();
+        for (IProject project: getProjectsToSearch()) {
+            if (CeylonNature.isEnabled(project)) {
+                TypeChecker typeChecker = getProjectTypeChecker(project);
+                findInUnits(monitor, typeChecker.getPhasedUnits().getPhasedUnits());
+                monitor.worked(1);
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                Modules modules = getProjectTypeChecker(project).getContext().getModules();
+                for (Module m: modules.getListOfModules()) {
+                    if (m instanceof JDTModule) {
+                        JDTModule module = (JDTModule) m;
+                        if (module.isCeylonArchive() && module.getArtifact()!=null) { 
+                            String archivePath = module.getArtifact().getAbsolutePath();
+                            if (searchedArchives.add(archivePath)) {
+                                findInUnits(monitor, module.getPhasedUnits());
+                                monitor.worked(1);
+                                if (monitor.isCanceled()) {
+                                    throw new OperationCanceledException();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private void findInUnits(IProgressMonitor monitor, List<? extends PhasedUnit> units) {
         for (final PhasedUnit pu: units) {
             if (isWithinSelection(pu)) {
                 final Tree.CompilationUnit cu = getRootNode(pu);
@@ -101,14 +162,36 @@ class CeylonSearchQuery implements ISearchQuery {
                     }
                 };
                 cu.visit(sv);
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
             }
-            monitor.worked(1);
-            if (monitor.isCanceled()) return Status.CANCEL_STATUS;
         }
-        monitor.done();
-        return Status.OK_STATUS;
     }
 
+    private int estimateWork(IProgressMonitor monitor) {
+        int work = 0;
+        Set<String> searchedArchives = new HashSet<String>();
+        for (IProject project: getProjectsToSearch()) {
+            if (CeylonNature.isEnabled(project)) {
+                work++;
+                Modules modules = getProjectTypeChecker(project).getContext().getModules();
+                for (Module m: modules.getListOfModules()) {
+                    if (m instanceof JDTModule) {
+                        JDTModule module = (JDTModule) m;
+                        if (module.isCeylonArchive() && module.getArtifact()!=null) { 
+                            String archivePath = module.getArtifact().getAbsolutePath();
+                            if (searchedArchives.add(archivePath)) {
+                                work++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return work;
+    }
+    
     //TODO: copy/pasted from FindSearchQuery!
     Tree.CompilationUnit getRootNode(PhasedUnit pu) {
         for (IEditorPart editor: page.getDirtyEditors()) {
