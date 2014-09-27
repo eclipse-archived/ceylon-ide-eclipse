@@ -1110,8 +1110,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         return d.getProducedReference(pt, Collections.<ProducedType>emptyList());
     }
 
-    private static Set<DeclarationWithProximity> sortProposals(final String prefix, 
-            final ProducedType type, Map<String, DeclarationWithProximity> proposals) {
+    private static Set<DeclarationWithProximity> sortProposals(String prefix, 
+            ProducedType type, Map<String, DeclarationWithProximity> proposals) {
         Set<DeclarationWithProximity> set = new TreeSet<DeclarationWithProximity>(
                 new ProposalComparator(prefix, type));
         set.addAll(proposals.values());
