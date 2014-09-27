@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.open;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -287,12 +287,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
                 try {
-                    StyledString label = getStyledDescriptionFor(d);
-                    if (d.isClassOrInterfaceMember()) {
-                        Declaration ci = (Declaration) d.getContainer();
-                        label.append(" of ")
-                        .append(ci.getName(), Highlights.TYPE_ID_STYLER);
-                    }
+                    StyledString label = getQualifiedDescriptionFor(d);
                     if (nameOccursMultipleTimes(d)) {
                         label.append(" - ", Highlights.PACKAGE_STYLER)
                         .append(getPackageLabel(d), Highlights.PACKAGE_STYLER)
