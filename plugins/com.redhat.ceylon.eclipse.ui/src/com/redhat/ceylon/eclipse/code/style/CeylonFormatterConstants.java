@@ -35,8 +35,23 @@ public class CeylonFormatterConstants {
     public static final String FORMATTER_space_AfterValueIteratorOpeningParenthesis="spaceAfterValueIteratorOpeningParenthesis";
     public static final String FORMATTER_space_AfterParamListOpeningParen="spaceAfterParamListOpeningParen";            
       
-    public static final String FORMATTER_maxLineLength = "maxLineLength"; // unlimited,
-    public static final String FORMATTER_lineBreakStrategy = "lineBreakStrategy"; // ceylon.formatter.options.DefaultLineBreaks(),
+    public static final String FORMATTER_maxLineLength = "maxLineLength";
+    public static final String FORMATTER_maxLineLength_Number = "maxLineLengthNumber";
+    public static final String FORMATTER_lineBreakStrategy = "lineBreakStrategy";
+    public static final String FORMATTER_lineBreaksAfterLineComment_First = "lineBreaksAfterLineCommentFirst";
+    public static final String FORMATTER_lineBreaksAfterLineComment_Last = "lineBreaksAfterLineCommentLast";
+    public static final String FORMATTER_lineBreaksAfterSingleComment_First = "lineBreaksAfterSingleCommentFirst";
+    public static final String FORMATTER_lineBreaksAfterSingleComment_Last = "lineBreaksAfterSingleCommentLast";
+    public static final String FORMATTER_lineBreaksBeforeMultiComment_First = "lineBreaksBeforeMultiCommentFirst";
+    public static final String FORMATTER_lineBreaksBeforeMultiComment_Last = "lineBreaksBeforeMultiCommentLast";
+    public static final String FORMATTER_lineBreaksAfterMultiComment_First = "lineBreaksAfterMultiCommentFirst";
+    public static final String FORMATTER_lineBreaksAfterMultiComment_Last = "lineBreaksAfterMultiCommentLast";
+    public static final String FORMATTER_lineBreaksBeforeSingleComment_First = "lineBreaksBeforeSingleCommentFirst";
+    public static final String FORMATTER_lineBreaksBeforeSingleComment_Last = "lineBreaksBeforeSingleCommentLast";
+    public static final String FORMATTER_lineBreaksInTypeParameterList_First = "lineBreaksInTypeParameterListFirst";
+    public static final String FORMATTER_lineBreaksInTypeParameterList_Last = "lineBreaksInTypeParameterListLast";
+    public static final String FORMATTER_lineBreaksBeforeLineComment_First = "lineBreaksBeforeLineCommentFirst";
+    public static final String FORMATTER_lineBreaksBeforeLineComment_Last = "lineBreaksBeforeLineCommentLast";                    
 
     // required for preview setup
     public static final String FORMATTER_LINE_SPLIT = "lineSplit";
