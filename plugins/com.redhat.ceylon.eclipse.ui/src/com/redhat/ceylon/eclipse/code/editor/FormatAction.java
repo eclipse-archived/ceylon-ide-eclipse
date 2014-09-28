@@ -266,6 +266,14 @@ final class FormatAction extends Action {
                         new BufferedTokenStream(tokens),
                         indentLevel
                         );
+                if (unit == formattingUnits.get(0)) {
+                    // trim leading indentation (from formatter's indentBefore)
+                    int firstNonWsIndex = 0;
+                    while (Character.isWhitespace(builder.charAt(firstNonWsIndex)))
+                        firstNonWsIndex++;
+                    if (firstNonWsIndex != 0)
+                        builder.delete(0, firstNonWsIndex);
+                }
             }
         } catch (Exception e) {
             return;
