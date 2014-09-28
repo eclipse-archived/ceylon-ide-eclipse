@@ -51,11 +51,12 @@ public class FormatterTabSpace extends FormatterTabPage {
         createLabel(2, generalGroup, "Parameter List Closing");
         createCheckboxPref(generalGroup, 1, "Before )",
                 FORMATTER_space_BeforeParamListClosingParen, FALSE_TRUE);  
-        CheckboxPreference saplcp = createCheckboxPref(generalGroup, 1, "After )",
+        final CheckboxPreference saplcp = createCheckboxPref(generalGroup, 1, "After )",
                 FORMATTER_space_AfterParamListClosingParen, FALSE_TRUE);
 
         final NumberPreference saplcpn = createNumberPref(generalGroup, numColumns, "Optionally, -80 to 80, 0 resets",
                 FORMATTER_space_AfterParamListClosingParen_Number, -80, 80); //TODO magic numbers
+        
         updatePreferences(this.workingValues.get(FORMATTER_space_AfterParamListClosingParen), saplcpn, saplcp);
 
         saplcp.addObserver(new Observer() {
