@@ -11,7 +11,10 @@ import ceylon.formatter.options.VariableOptions;
 import ceylon.formatter.options.addIndentBefore_;
 import ceylon.formatter.options.combinedOptions_;
 import ceylon.formatter.options.stack_;
+import ceylon.formatter.options.unlimited_;
+import ceylon.language.Range;
 import ceylon.language.Singleton;
+import ceylon.language.span_;
 
 /**
  * Wrapper around VariableOptions
@@ -22,6 +25,7 @@ public class FormatterPreferences {
     private static final String TRUE = "true";
     private VariableOptions options;
     private String space_AfterParamListClosingParen_Number;
+    private String maxLineLength_Number;
 
     public FormatterPreferences(FormattingOptions options) {
         this.options = new VariableOptions(options);
@@ -119,7 +123,69 @@ public class FormatterPreferences {
         case FORMATTER_space_AfterParamListOpeningParen:
             ret = booleanString(options.getSpaceAfterParamListOpeningParen());
             break;
-            
+        case FORMATTER_maxLineLength:
+            if ((options.getMaxLineLength() instanceof ceylon.formatter.options.Unlimited)) {
+                ret = TRUE; // unlimited
+            }
+            break;
+        case FORMATTER_maxLineLength_Number:
+            if (options.getMaxLineLength() instanceof ceylon.language.Integer) {
+                ret = ((ceylon.language.Integer)options.getMaxLineLength()).toString();
+                this.maxLineLength_Number = ret; // save the value in case user enables again
+            }
+            if (this.maxLineLength_Number != null) {
+                ret = this.maxLineLength_Number;
+            } else {
+                ret = "0";
+            }
+            break;
+        case FORMATTER_lineBreakStrategy:
+            ret = options.getLineBreakStrategy().toString();
+            break;
+        case FORMATTER_lineBreaksAfterLineComment_First:
+            ret = options.getLineBreaksAfterLineComment().getFirst().toString();
+            break;
+        case FORMATTER_lineBreaksAfterLineComment_Last:
+            ret = options.getLineBreaksAfterLineComment().getLast().toString();
+            break;
+        case FORMATTER_lineBreaksAfterSingleComment_First:
+            ret = options.getLineBreaksAfterSingleComment().getFirst().toString();
+            break;
+        case FORMATTER_lineBreaksAfterSingleComment_Last:
+            ret =  options.getLineBreaksAfterSingleComment().getLast().toString();
+            break;
+        case FORMATTER_lineBreaksBeforeMultiComment_First:
+            ret = options.getLineBreaksBeforeMultiComment().getFirst().toString();
+            break;
+        case FORMATTER_lineBreaksBeforeMultiComment_Last:
+            ret = options.getLineBreaksBeforeMultiComment().getLast().toString();
+            break;
+        case FORMATTER_lineBreaksAfterMultiComment_First:
+            ret = options.getLineBreaksAfterMultiComment().getFirst().toString();
+            break;
+        case FORMATTER_lineBreaksAfterMultiComment_Last:
+            ret = options.getLineBreaksAfterMultiComment().getLast().toString();
+            break;
+        case FORMATTER_lineBreaksBeforeSingleComment_First:
+            ret = options.getLineBreaksBeforeSingleComment().getFirst().toString();
+            break;
+        case FORMATTER_lineBreaksBeforeSingleComment_Last:
+            ret = options.getLineBreaksBeforeSingleComment().getLast().toString();
+            break;
+        case FORMATTER_lineBreaksInTypeParameterList_First:
+            ret = options.getLineBreaksInTypeParameterList().getFirst().toString();
+            break;
+        case FORMATTER_lineBreaksInTypeParameterList_Last:
+            ret = options.getLineBreaksInTypeParameterList().getLast().toString();
+            break;
+        case FORMATTER_lineBreaksBeforeLineComment_First:
+            ret = options.getLineBreaksBeforeLineComment().getFirst().toString();
+            break;
+        case FORMATTER_lineBreaksBeforeLineComment_Last:
+            ret = options.getLineBreaksBeforeLineComment().getLast().toString();
+            break;
+
+
         // to set up previewer only
         case FORMATTER_LINE_SPLIT:
             ret = "80";
@@ -224,12 +290,117 @@ public class FormatterPreferences {
             break;
         case FORMATTER_space_AfterParamListOpeningParen:
             options.setSpaceAfterParamListOpeningParen(ceylonBoolean(value));
-            break;            
+            break;
+            
+        case FORMATTER_maxLineLength:
+            if (TRUE.equals(value)) {
+                options.setMaxLineLength(unlimited_.get_());
+            } else {
+                if (this.maxLineLength_Number == null) {
+                    options.setMaxLineLength(0); // TODO magic number
+                } else {
+                    options.setMaxLineLength(this.maxLineLength_Number);
+                }
+            }
+            break;
+        case FORMATTER_maxLineLength_Number:
+            num = Integer.parseInt(value);
+            if (num != 0 && num >=20 && num <=1256) { // TODO magic numbers
+                options.setMaxLineLength(num);
+            }
+            break;
+        case FORMATTER_lineBreakStrategy:
+            options.setLineBreakStrategy(options.getLineBreakStrategy());  // default only
+            break;
+        case FORMATTER_lineBreaksAfterLineComment_First:
+            num = Integer.parseInt(value);
+            options.setLineBreaksAfterLineComment(
+                    setFirst(options.getLineBreaksAfterLineComment(), num));
+            break;
+        case FORMATTER_lineBreaksAfterLineComment_Last:
+            num = Integer.parseInt(value);
+            options.setLineBreaksAfterLineComment(
+                    setLast(options.getLineBreaksAfterLineComment(), num));
+            break;
+        case FORMATTER_lineBreaksAfterSingleComment_First:
+            num = Integer.parseInt(value);
+            options.setLineBreaksAfterSingleComment(
+                    setFirst(options.getLineBreaksAfterSingleComment(), num));
+            break;
+        case FORMATTER_lineBreaksAfterSingleComment_Last:
+            num = Integer.parseInt(value);
+            options.setLineBreaksAfterSingleComment(
+                    setLast(options.getLineBreaksAfterSingleComment(), num));
+            break;
+        case FORMATTER_lineBreaksBeforeMultiComment_First:
+            num = Integer.parseInt(value);
+            options.setLineBreaksBeforeMultiComment(
+                    setFirst(options.getLineBreaksBeforeMultiComment(), num));
+            break;
+        case FORMATTER_lineBreaksBeforeMultiComment_Last:
+            num = Integer.parseInt(value);
+            options.setLineBreaksBeforeMultiComment(
+                    setLast(options.getLineBreaksBeforeMultiComment(), num));
+            break;
+        case FORMATTER_lineBreaksAfterMultiComment_First:
+            num = Integer.parseInt(value);
+            options.setLineBreaksAfterMultiComment(
+                    setFirst(options.getLineBreaksAfterMultiComment(), num));
+            break;
+        case FORMATTER_lineBreaksAfterMultiComment_Last:
+            num = Integer.parseInt(value);
+            options.setLineBreaksAfterMultiComment(
+                    setLast(options.getLineBreaksAfterMultiComment(), num));
+            break;
+        case FORMATTER_lineBreaksBeforeSingleComment_First:
+            num = Integer.parseInt(value);
+            options.setLineBreaksBeforeSingleComment(
+                    setFirst(options.getLineBreaksBeforeSingleComment(), num));
+            break;
+        case FORMATTER_lineBreaksBeforeSingleComment_Last:
+            num = Integer.parseInt(value);
+            options.setLineBreaksBeforeSingleComment(
+                    setLast(options.getLineBreaksBeforeSingleComment(), num));
+            break;
+        case FORMATTER_lineBreaksInTypeParameterList_First:
+            num = Integer.parseInt(value);
+            options.setLineBreaksBeforeSingleComment(
+                    setFirst(options.getLineBreaksBeforeSingleComment(), num));
+            break;
+        case FORMATTER_lineBreaksInTypeParameterList_Last:
+            num = Integer.parseInt(value);
+            options.setLineBreaksBeforeSingleComment(
+                    setLast(options.getLineBreaksBeforeSingleComment(), num));
+            break;
+        case FORMATTER_lineBreaksBeforeLineComment_First:
+            num = Integer.parseInt(value);
+            options.setLineBreaksBeforeLineComment(
+                    setFirst(options.getLineBreaksBeforeLineComment(), num));
+            break;
+        case FORMATTER_lineBreaksBeforeLineComment_Last:
+            num = Integer.parseInt(value);
+            options.setLineBreaksBeforeLineComment(
+                    setLast(options.getLineBreaksBeforeLineComment(), num));
+            break;
+
+            
         default:
             break;
         }
     }
 
+    private Range<ceylon.language.Integer> setFirst(
+            Range<ceylon.language.Integer> range, int num) {
+        return span_.span(range.getFirst().$getType$(), 
+                new ceylon.language.Integer(num), range.getLast());
+    }
+
+    private Range<ceylon.language.Integer> setLast(
+            Range<ceylon.language.Integer> range, int num) {
+        return span_.span(range.getFirst().$getType$(), 
+                range.getFirst(), new ceylon.language.Integer(num));
+    }
+    
     private ceylon.language.Boolean ceylonBoolean(String value) {
         return Boolean.parseBoolean(value)? 
                 new ceylon.language.true_() : new ceylon.language.false_();
