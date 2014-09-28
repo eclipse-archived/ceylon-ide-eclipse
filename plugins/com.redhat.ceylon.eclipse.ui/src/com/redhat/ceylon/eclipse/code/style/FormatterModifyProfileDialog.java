@@ -75,8 +75,8 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
     }
 
     protected void addPages(FormatterPreferences workingValues) {
-        addTabPage("Indentation", new FormatterTabPage1(this, workingValues));
-        // TODO other pages
+        addTabPage("Indentation", new FormatterTabIndent(this, workingValues));
+        addTabPage("Spacing", new FormatterTabSpace(this, workingValues));
     }
 
     @Override
