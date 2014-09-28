@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.style;
 
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AroundImportAliasEqualsSign;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
@@ -55,8 +57,15 @@ public class FormatterConfigurationBlock extends StyleBlock {
     /**
      * Some Ceylon source code used for preview.
      */
-    protected final String PREVIEW = "/**\n* " + "Preview" + "\n*/\n\n"
-            + "void test() {class Test() { } value t = Test();}";
+    protected final String PREVIEW = "\"" + "Preview" + "\"\n\n"
+            + "import ceylon.collection { MutableList, freq=frequencies}\n\n\n"
+            + "shared abstract class LineBreak(text, string) of os {"
+            + "shared String text;"
+            + "\"The name of the object, i. e., one of"
+            + "`os`, `lf`, `crlf`.\""
+            + "shared actual String string; }"
+            + "shared object os extends LineBreak(operatingSystem.newline, \"os\") {"
+            + "void test() {class Test() { } value t => Test();}}";
 
     private class PreviewController implements Observer {
 

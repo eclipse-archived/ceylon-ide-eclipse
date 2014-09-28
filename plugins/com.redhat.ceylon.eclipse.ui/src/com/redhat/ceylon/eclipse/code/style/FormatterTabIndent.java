@@ -1,30 +1,28 @@
 package com.redhat.ceylon.eclipse.code.style;
 
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode_Mixed;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode_Spaces;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode_Spaces_Size;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode_Tabs;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indentMode_Tabs_Size;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_indent_Blank_Lines;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
 
 import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 
-public class FormatterTabPage1 extends FormatterTabPage {
+public class FormatterTabIndent extends FormatterTabPage {
 
     private final String PREVIEW = createPreviewHeader("Preview")
-            + "shared class Example() {" + "}";
+            + "import ceylon.collection { MutableList }\n\n\n"
+            + "shared class Example() {"
+            + "value test => 0;"
+            + "}";
 
     private CeylonPreview ceylonPreview;
 
     private String oldTabChar;
 
-    public FormatterTabPage1(FormatterModifyProfileDialog modifyDialog,
+    public FormatterTabIndent(FormatterModifyProfileDialog modifyDialog,
             FormatterPreferences workingValues) {
         super(modifyDialog, workingValues);
     }
@@ -69,6 +67,12 @@ public class FormatterTabPage1 extends FormatterTabPage {
                 "Other Indent Options");
         createCheckboxPref(otherGroup, numColumns, "Indent Blank Lines",
                 FORMATTER_indent_Blank_Lines, FALSE_TRUE);
+        createNumberPref(otherGroup, 3, "Indent before type info",
+                FORMATTER_indent_Before_Type_Info, 0, 32);
+        createComboPref(otherGroup, 3, "Indent after specifier expression start", 
+                FORMATTER_indent_After_Specifier_Expression_Start,
+                new String[] {"stack", "addindentbefore"}, // not camel case
+                new String[] {"Stack", "Add Indent Before"});
     }
 
     @Override

@@ -9,7 +9,6 @@ import java.util.Observer;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.util.SWTUtil;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -472,7 +471,7 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
         }
 
         private IStatus createErrorStatus() {
-            return new Status(IStatus.ERROR, JavaPlugin.getPluginId(), 0,
+            return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 0,
                     "Inavlid number value. Should be between - "
                             + new String[] { Integer.toString(fMinValue),
                                     Integer.toString(fMaxValue) }, null);
@@ -547,8 +546,8 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
                     fSelected = Integer.parseInt(s);
                 } catch (NumberFormatException e) {
                     final String message = "Invalid key - " + getKey();
-                    JavaPlugin.log(new Status(IStatus.ERROR, JavaPlugin
-                            .getPluginId(), IStatus.OK, message, e));
+                    CeylonPlugin.getInstance().getLog().log(new Status(IStatus.ERROR, 
+                    CeylonPlugin.PLUGIN_ID, IStatus.OK, message, e));
                     s = "";
                 }
                 fNumberText.setText(s);
@@ -654,7 +653,7 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
         }
 
         private IStatus createErrorStatus(String errorText) {
-            return new Status(IStatus.ERROR, JavaPlugin.getPluginId(), 0,
+            return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 0,
                     errorText, null);
 
         }
@@ -742,7 +741,7 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
         private int fIndex;
 
         public DefaultFocusManager() {
-            fDialogSettings = JavaPlugin.getDefault().getDialogSettings();
+            fDialogSettings = CeylonPlugin.getInstance().getDialogSettings();
             fItemMap = new HashMap<Control, Integer>();
             fItemList = new ArrayList<Control>();
             fIndex = 0;
@@ -896,7 +895,7 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
 
     public FormatterTabPage() {
         fDefaultFocusManager = new DefaultFocusManager();
-        fDialogSettings = JavaPlugin.getDefault().getDialogSettings();
+        fDialogSettings = CeylonPlugin.getInstance().getDialogSettings();
     }
 
     /**
@@ -1211,7 +1210,7 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
     }
 
     protected static String createPreviewHeader(String title) {
-        return "/**\n* " + title + "\n*/\n";
+        return "\"\"\" " + title + "\n\"\"\"\n";
     }
 
     protected abstract CeylonPreview doCreateCeylonPreview(Composite parent);
