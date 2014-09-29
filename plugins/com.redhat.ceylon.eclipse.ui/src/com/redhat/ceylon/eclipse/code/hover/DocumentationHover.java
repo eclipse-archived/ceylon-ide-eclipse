@@ -1269,15 +1269,16 @@ public class DocumentationHover
                 dec = val;
             }
         }
+        Unit unit = cpc.getRootNode().getUnit();
         StringBuilder buffer = new StringBuilder();
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
-        addMainDescription(buffer, dec, node, pr, cpc);
-        boolean obj = addInheritanceInfo(dec, node, pr, buffer);
+        addMainDescription(buffer, dec, node, pr, cpc, unit);
+        boolean obj = addInheritanceInfo(dec, node, pr, buffer, unit);
         addContainerInfo(dec, node, buffer); //TODO: use the pr to get the qualifying type??
         boolean hasDoc = addDoc(cpc, dec, node, buffer);
-        addRefinementInfo(cpc, dec, node, buffer, hasDoc); //TODO: use the pr to get the qualifying type??
-        addReturnType(dec, buffer, node, pr, obj);
-        addParameters(cpc, dec, node, pr, buffer);
+        addRefinementInfo(cpc, dec, node, buffer, hasDoc, unit); //TODO: use the pr to get the qualifying type??
+        addReturnType(dec, buffer, node, pr, obj, unit);
+        addParameters(cpc, dec, node, pr, buffer, unit);
         addClassMembersInfo(dec, buffer);
         addUnitInfo(dec, buffer);
         addPackageInfo(dec, buffer);
@@ -1294,7 +1295,7 @@ public class DocumentationHover
 
     private static void addMainDescription(StringBuilder buffer,
             Declaration dec, Node node, ProducedReference pr, 
-            CeylonParseController cpc) {
+            CeylonParseController cpc, Unit unit) {
         StringBuilder buf = new StringBuilder();
         if (dec.isShared()) buf.append("shared&nbsp;");
         if (dec.isActual()) buf.append("actual&nbsp;");
@@ -1325,7 +1326,7 @@ public class DocumentationHover
                 16, 16, 
                 "<tt style='font-size:105%'>" + 
                 (dec.isDeprecated() ? "<s>":"") + 
-                description(dec, node, pr, cpc) + 
+                description(dec, node, pr, cpc, unit) + 
                 (dec.isDeprecated() ? "</s>":"") + 
                 "</tt>", 
                 20, 4);
@@ -1370,7 +1371,8 @@ public class DocumentationHover
     }
 
     private static boolean addInheritanceInfo(Declaration dec,
-            Node node, ProducedReference pr, StringBuilder buffer) {
+            Node node, ProducedReference pr, StringBuilder buffer,
+            Unit unit) {
         buffer.append("<p><div style='padding-left:20px'>");
         boolean obj=false;
         if (dec instanceof TypedDeclaration) {
@@ -1378,28 +1380,27 @@ public class DocumentationHover
                     ((TypedDeclaration) dec).getTypeDeclaration();
             if (td!=null && td.isAnonymous()) {
                 obj=true;
-                documentInheritance(td, node, pr, buffer);    
+                documentInheritance(td, node, pr, buffer, unit);    
             }
         }
         else if (dec instanceof TypeDeclaration) {
-            documentInheritance((TypeDeclaration) dec, node, pr, buffer);    
+            documentInheritance((TypeDeclaration) dec, node, pr, buffer, unit);    
         }
         buffer.append("</div></p>");
-        documentTypeParameters(dec, node, pr, buffer);
+        documentTypeParameters(dec, node, pr, buffer, unit);
         buffer.append("</p>");
         return obj;
     }
 
     private static void addRefinementInfo(CeylonParseController cpc,
             Declaration dec, Node node, StringBuilder buffer, 
-            boolean hasDoc) {
+            boolean hasDoc, Unit unit) {
         Declaration rd = dec.getRefinedDeclaration();
         if (dec!=rd && rd!=null) {
             buffer.append("<p>");
             TypeDeclaration superclass = (TypeDeclaration) rd.getContainer();
             ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
             ProducedType sup = getQualifyingType(node, outer).getSupertype(superclass);
-            Unit unit = node==null ? null : node.getUnit();
             HTML.addImageAndLabel(buffer, rd, 
                     HTML.fileUrl(rd.isFormal() ? "implm_co.gif" : "over_co.gif").toExternalForm(),
                     16, 16, 
@@ -1483,9 +1484,8 @@ public class DocumentationHover
     
     private static void addParameters(CeylonParseController cpc,
             Declaration dec, Node node, ProducedReference pr, 
-            StringBuilder buffer) {
+            StringBuilder buffer, Unit unit) {
         if (dec instanceof Functional) {
-            Unit unit = node==null ? null : node.getUnit();
             if (pr==null) {
                 pr = getProducedReference(dec, node);
             }
@@ -1520,7 +1520,7 @@ public class DocumentationHover
     }
 
     private static void addReturnType(Declaration dec, StringBuilder buffer,
-            Node node, ProducedReference pr, boolean obj) {
+            Node node, ProducedReference pr, boolean obj, Unit unit) {
         if (dec instanceof TypedDeclaration && !obj) {
             if (pr==null) {
                 pr = getProducedReference(dec, node);
@@ -1530,7 +1530,6 @@ public class DocumentationHover
             if (ret!=null) {
                 buffer.append("<p>");
                 StringBuilder buf = new StringBuilder("returns&nbsp;&nbsp;<tt>");
-                Unit unit = node==null ? null : node.getUnit();
                 buf.append(producedTypeLink(ret, unit)).append("|");
                 buf.setLength(buf.length()-1);
                 buf.append("</tt>");
@@ -1773,7 +1772,8 @@ public class DocumentationHover
     }
 
     private static void documentInheritance(TypeDeclaration dec, 
-            Node node, ProducedReference pr, StringBuilder buffer) {
+            Node node, ProducedReference pr, StringBuilder buffer,
+            Unit unit) {
         if (pr==null) {
             pr = getProducedReference(dec, node);
         }
@@ -1784,7 +1784,6 @@ public class DocumentationHover
         else {
             type = dec.getType();
         }
-        Unit unit = node==null ? null : node.getUnit();
         List<ProducedType> cts = type.getCaseTypes();
         if (cts!=null) {
             StringBuilder cases = new StringBuilder();
@@ -1832,7 +1831,8 @@ public class DocumentationHover
     }
     
     private static void documentTypeParameters(Declaration dec, 
-            Node node, ProducedReference pr, StringBuilder buffer) {
+            Node node, ProducedReference pr, StringBuilder buffer,
+            Unit unit) {
         if (pr==null) {
             pr = getProducedReference(dec, node);
         }
@@ -1860,7 +1860,7 @@ public class DocumentationHover
             String arg;
             ProducedType typeArg = pr==null ? null : pr.getTypeArguments().get(tp);
             if (typeArg!=null && !tp.getType().isExactly(typeArg)) {
-                arg = "&nbsp;=&nbsp;" + producedTypeLink(typeArg, node.getUnit());
+                arg = "&nbsp;=&nbsp;" + producedTypeLink(typeArg, unit);
             }
             else {
                 arg = "";
@@ -1875,11 +1875,10 @@ public class DocumentationHover
     }
 
     private static String description(Declaration dec, Node node, 
-            ProducedReference pr, CeylonParseController cpc) {
+            ProducedReference pr, CeylonParseController cpc, Unit unit) {
         if (pr==null) {
             pr = getProducedReference(dec, node);
         }
-        Unit unit = node==null ? dec.getUnit() : node.getUnit();
         String description = getDocDescriptionFor(dec, pr, unit);
         if (dec instanceof TypeDeclaration) {
             TypeDeclaration td = (TypeDeclaration) dec;
