@@ -1144,7 +1144,9 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     @Override
     public boolean isModuleInClassPath(Module module) {
-        return modulesInClassPath.contains(module);
+        return modulesInClassPath.contains(module) || 
+                ( (module instanceof JDTModule) && 
+                        ((JDTModule) module).isProjectModule());
     }
     
     @Override
