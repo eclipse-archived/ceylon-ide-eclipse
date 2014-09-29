@@ -92,9 +92,17 @@ class FindOccurrenceLocationVisitor extends Visitor
     @Override
     public void visit(Tree.IsCondition that) {
         super.visit(that);
-        if (that.getVariable()==null ? 
-                inBounds(that) && offset>that.getType().getStopIndex()+1 :
-                inBounds(that.getVariable().getIdentifier())) {
+        boolean inBounds;
+        if (that.getVariable()!=null) {
+            inBounds = inBounds(that.getVariable().getIdentifier());
+        }
+        else if (that.getType()!=null) {
+            inBounds = inBounds(that) && offset>that.getType().getStopIndex()+1;
+        }
+        else {
+            inBounds = false;
+        }
+        if (inBounds) {
             occurrence = IS;
         }
     }
