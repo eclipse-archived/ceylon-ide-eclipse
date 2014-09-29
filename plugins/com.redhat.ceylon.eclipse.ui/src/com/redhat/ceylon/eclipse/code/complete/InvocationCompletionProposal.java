@@ -311,7 +311,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 
         private String getText(boolean description) {
             StringBuilder sb = new StringBuilder()
-                    .append(op).append(dec.getName());
+                    .append(op).append(dec.getName(getUnit()));
             if (dec instanceof Functional && !basic) {
                 appendPositionalArgs(dec, getUnit(), sb, 
                         false, description);
@@ -371,8 +371,9 @@ class InvocationCompletionProposal extends CompletionProposal {
                         content = content.substring(eq+1);
                     }
                     String filter = content.trim().toLowerCase();
-                    if ((op+dec.getName()).toLowerCase().startsWith(filter) ||
-                            dec.getName().toLowerCase().startsWith(filter)) {
+                    String decName = dec.getName(getUnit());
+                    if ((op+decName).toLowerCase().startsWith(filter) ||
+                            decName.toLowerCase().startsWith(filter)) {
                         return true;
                     }
                 }
