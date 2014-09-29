@@ -46,8 +46,7 @@
             </moduleset>
         </ceylon-compile>
     </target>
-    <target name="compile-tests" unless="${skipTests}">
-        <antcall target="clean"/>
+    <target name="compile-tests" depends="compile" unless="${skipTests}">
         <ceylon-compile
             src="${source.dir}"
             out="${modules.dir}"
@@ -56,7 +55,6 @@
             encoding="UTF-8" pack200="true">
             
             <moduleset>
-                <module name="com.redhat.ceylon.eclipse.ui" />
                 <module name="test.com.redhat.ceylon.eclipse.ui" />
             </moduleset>
         </ceylon-compile>
