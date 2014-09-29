@@ -212,7 +212,13 @@ public class RenameRefactoring extends AbstractRefactoring {
                 new HashMap<IResource, TextChange>();
         SearchEngine searchEngine = new SearchEngine();
         IProject[] projects = getProjectAndReferencingProjects(project);
-        final String pattern = getJavaNameOfDeclaration(declaration);
+        final String pattern;
+        try {
+            pattern = getJavaNameOfDeclaration(declaration);
+        }
+        catch (IllegalArgumentException e) {
+            return;
+        }
         boolean anonymous = pattern.endsWith(".get_");
         if (!anonymous) {
             SearchPattern searchPattern = 
