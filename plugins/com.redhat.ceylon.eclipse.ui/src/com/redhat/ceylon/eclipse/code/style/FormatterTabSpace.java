@@ -54,7 +54,7 @@ public class FormatterTabSpace extends FormatterTabPage {
         CheckboxPreference saplcp = createCheckboxPref(generalGroup, 1, "After )",
                 FORMATTER_space_AfterParamListClosingParen, FALSE_TRUE);
 
-        NumberPreference saplcpn = createNumberPref(generalGroup, numColumns, "Optionally, -80 to 80, 0 resets",
+        final NumberPreference saplcpn = createNumberPref(generalGroup, numColumns, "Optionally, -80 to 80, 0 resets",
                 FORMATTER_space_AfterParamListClosingParen_Number, -80, 80); //TODO magic numbers
         updatePreferences(this.workingValues.get(FORMATTER_space_AfterParamListClosingParen), saplcpn, saplcp);
 
