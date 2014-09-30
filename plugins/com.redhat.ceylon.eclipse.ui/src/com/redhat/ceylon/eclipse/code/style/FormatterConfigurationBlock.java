@@ -61,7 +61,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
             + "import ceylon.collection { MutableList, freq=frequencies}\n\n\n"
             + "shared abstract class LineBreak(text, string) of os {"
             + "shared String text;"
-            + "\"The name of the object, i. e., one of"
+            + "\"The name of the object, i. e., one of "
             + "`os`, `lf`, `crlf`.\""
             + "shared actual String string; }"
             + "shared object os extends LineBreak(operatingSystem.newline, \"os\") {"
