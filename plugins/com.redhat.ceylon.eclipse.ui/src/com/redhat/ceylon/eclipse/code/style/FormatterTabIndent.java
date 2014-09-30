@@ -12,8 +12,8 @@ import org.eclipse.swt.widgets.Group;
 
 public class FormatterTabIndent extends FormatterTabPage {
 
-    private final String PREVIEW = createPreviewHeader("Preview")
-            + "import ceylon.collection { MutableList }\n\n\n"
+    private final String PREVIEW = 
+            "import ceylon.collection { MutableList }\n\n\n"
             + "shared class Example() {"
             + "value test => 0;"
             + "}";
