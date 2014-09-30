@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.code.style;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.BufferedTokenStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.ui.PreferenceConstants;
@@ -29,9 +33,16 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 
+import ceylon.formatter.format_;
+
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
 
 public class CeylonPreview {
 
@@ -100,6 +111,8 @@ public class CeylonPreview {
     private WhitespaceCharacterPainter fWhitespaceCharacterPainter;
 
     private String fPreviewText;
+    private CeylonLexer fPreviewLexer;
+    private CompilationUnit fPreviewCu;
 
     public CeylonPreview(FormatterPreferences workingValues, Composite parent) {
 
@@ -196,23 +209,31 @@ public class CeylonPreview {
             return;
         }
         fPreviewDocument.set(fPreviewText);
+        if (fPreviewCu == null) {
+            // an error will already have been logged in setPreviewText(),
+            // so we simply abort, keeping the unformatted text
+            return;
+        }
 
         fSourceViewer.setRedraw(false);
         final IFormattingContext context = new CeylonFormattingContext();
         try {
-            final IContentFormatter formatter = new CeylonContentFormatter(fSourceViewer);
-            if (formatter instanceof IContentFormatterExtension) {
-                final IContentFormatterExtension extension = (IContentFormatterExtension) formatter;
-                context.setProperty(
-                        FormattingContextProperties.CONTEXT_PREFERENCES,
-                        this.workingValues);
-                context.setProperty(
-                        FormattingContextProperties.CONTEXT_DOCUMENT,
-                        Boolean.valueOf(true));
-                extension.format(fPreviewDocument, context);
-            } else
-                formatter.format(fPreviewDocument, new Region(0,
-                        fPreviewDocument.getLength()));
+            final StringBuilder builder = new StringBuilder(
+                    fPreviewDocument.getLength());
+            context.setProperty(
+                    FormattingContextProperties.CONTEXT_PREFERENCES,
+                    this.workingValues);
+            context.setProperty(
+                    FormattingContextProperties.CONTEXT_DOCUMENT,
+                    Boolean.valueOf(true));
+            fPreviewLexer.reset();
+            format_.format(
+                fPreviewCu,
+                ((FormatterPreferences) context
+                        .getProperty(FormattingContextProperties.CONTEXT_PREFERENCES))
+                        .getOptions(), new StringBuilderWriter(builder),
+                new BufferedTokenStream(fPreviewLexer));
+            fPreviewDocument.set(builder.toString());
         } catch (Exception e) {
             final IStatus status = new Status(IStatus.ERROR,
                     CeylonPlugin.PLUGIN_ID, 10001,
@@ -228,6 +249,18 @@ public class CeylonPreview {
         if (previewText == null)
             throw new IllegalArgumentException();
         fPreviewText = previewText;
+        fPreviewLexer = new CeylonLexer(new ANTLRStringStream(previewText));
+        try {
+            fPreviewCu = new CeylonParser(new CommonTokenStream(
+                    fPreviewLexer)).compilationUnit();
+        } catch (RecognitionException re) {
+            CeylonPlugin
+                    .getInstance()
+                    .getLog()
+                    .log(new StatusInfo(IStatus.WARNING,
+                            "Error parsing preview code, should not have happened"));
+            fPreviewCu = null;
+        }
         update();
     }
 
