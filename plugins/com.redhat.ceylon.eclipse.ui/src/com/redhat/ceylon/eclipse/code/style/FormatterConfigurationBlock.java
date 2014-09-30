@@ -57,8 +57,8 @@ public class FormatterConfigurationBlock extends StyleBlock {
     /**
      * Some Ceylon source code used for preview.
      */
-    protected final String PREVIEW = "\"" + "Preview" + "\"\n\n"
-            + "import ceylon.collection { MutableList, freq=frequencies}\n\n\n"
+    protected final String PREVIEW =
+            "import ceylon.collection { MutableList, freq=frequencies}\n\n\n"
             + "shared abstract class LineBreak(text, string) of os {"
             + "shared String text;"
             + "\"The name of the object, i. e., one of "

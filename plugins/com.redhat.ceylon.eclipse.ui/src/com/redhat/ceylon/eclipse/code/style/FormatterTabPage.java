@@ -1209,9 +1209,5 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
         return pref;
     }
 
-    protected static String createPreviewHeader(String title) {
-        return "\"\"\" " + title + "\n\"\"\"\n";
-    }
-
     protected abstract CeylonPreview doCreateCeylonPreview(Composite parent);
 }
