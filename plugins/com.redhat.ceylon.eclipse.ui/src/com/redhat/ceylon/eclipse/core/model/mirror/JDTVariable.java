@@ -20,17 +20,9 @@
 
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
-import static java.lang.Character.toLowerCase;
-
 import java.util.Map;
-import java.util.StringTokenizer;
 
-import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
-import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
-
-import com.redhat.ceylon.compiler.java.metadata.Name;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
-import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.VariableMirror;
 
@@ -38,7 +30,6 @@ public class JDTVariable implements VariableMirror {
 
     private Map<String, AnnotationMirror> annotations;
     private TypeMirror type;
-    private MethodMirror methodMirror;
     private String name;
 
     public JDTVariable(String name, JDTType type, Map<String, AnnotationMirror> annotations) {
