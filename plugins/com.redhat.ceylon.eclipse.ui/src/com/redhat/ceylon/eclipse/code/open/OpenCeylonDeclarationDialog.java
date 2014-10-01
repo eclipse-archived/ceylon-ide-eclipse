@@ -195,13 +195,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
                 try {
-                    return getPackageLabel(d) + " - " + 
-                            getLocation(dwp, true);
+                    return getPackageLabel(d) + " - " + getLocation(dwp);
                 }
                 catch (Exception e) {
                     System.err.println(d.getName());
                     e.printStackTrace();
-                    return null;
+                    return "";
                 }
             }
             else {
@@ -285,7 +284,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         label.append(" - ", Highlights.PACKAGE_STYLER)
                         .append(getPackageLabel(d), Highlights.PACKAGE_STYLER)
                         .append(" - ", COUNTER_STYLER)
-                        .append(getLocation(dwp, false), COUNTER_STYLER);
+                        .append(getModule(dwp), COUNTER_STYLER);
                     }
                     return label;
                 }
@@ -582,36 +581,53 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     boolean includeJava() {
         return true;
     }
+    
+    private static String getModule(DeclarationWithProject dwp) {
+        Module module = dwp.getDeclaration().getUnit()
+                .getPackage().getModule();
+        StringBuilder sb = new StringBuilder();
+        sb.append("in module ")
+        .append(module.getNameAsString());
+        if (module.getVersion()!=null) {
+            sb.append(" \"")
+            .append(module.getVersion())
+            .append("\"");
+        }
+        return sb.toString();
+    }
 
-    private static String getLocation(DeclarationWithProject dwp,
-            boolean importInformation) {
-        IProject project = dwp.getProject();
-        if (project!=null && dwp.getPath()!=null) {
-            IResource r = project.isOpen() ? 
-                    project.findMember(dwp.getPath()) : null;
-            //if the project is closed or for some other reason
-            //findMember() returns null, just abbreviate to the 
-            //project path
-            if (r==null) r=project;
-            return r.getFullPath().toPortableString();
-                    
+    private static String getLocation(DeclarationWithProject dwp) {
+        Module module = dwp.getDeclaration().getUnit()
+                .getPackage().getModule();
+        if (module instanceof JDTModule) {
+            JDTModule m = (JDTModule) module;
+            if (m.isProjectModule()) {
+                IProject project = dwp.getProject();
+                IResource r = project.isOpen() ?
+                        project.findMember(dwp.getPath()) : null;
+                        //if the project is closed or for some other reason
+                        //findMember() returns null, just abbreviate to the 
+                        //project path
+                        if (r==null) r=project;
+                        return r.getFullPath().toPortableString();
+
+            }
+            else if (m.isJDKModule()) {
+                return "Java SDK";
+            }
+            else {
+                String path = m.getSourceArchivePath();
+                if (path==null) {
+                    path = m.getArtifact().getPath();
+                }
+                if (path.indexOf(CeylonPlugin.getInstance().getCeylonRepository().getPath())>=0) {
+                    return "Ceylon IDE system repository";
+                }
+                return path;
+            }
         }
         else {
-            Module module = dwp.getDeclaration().getUnit()
-                    .getPackage().getModule();
-            StringBuilder sb = new StringBuilder();
-            sb.append("in module ")
-              .append(module.getNameAsString());
-            if (module.getVersion()!=null) {
-                sb.append(" \"")
-                  .append(module.getVersion())
-                  .append("\"");
-            }
-            if (project!=null && importInformation) {
-                sb.append(" imported by project ")
-                  .append(project.getName());
-            }
-            return sb.toString();
+            return null;
         }
     }
     
