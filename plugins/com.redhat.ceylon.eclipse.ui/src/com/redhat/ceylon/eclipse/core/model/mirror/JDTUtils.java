@@ -37,14 +37,13 @@ import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
 
 public class JDTUtils {
 
-    public static Map<String, AnnotationMirror> getAnnotations(AnnotationBinding[] annotations, LookupEnvironment lookupEnvironment) {
+    public static Map<String, AnnotationMirror> getAnnotations(AnnotationBinding[] annotations) {
         HashMap<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
         for(AnnotationBinding annotation : annotations){
-            result.put(getFullyQualifiedName(annotation.getAnnotationType()), new JDTAnnotation(annotation, lookupEnvironment));
+            result.put(getFullyQualifiedName(annotation.getAnnotationType()), new JDTAnnotation(annotation));
         }
         return result;
     }
-
 
     public static String getFullyQualifiedName(TypeBinding type) {
         StringBuilder builder = new StringBuilder();
@@ -80,8 +79,9 @@ public class JDTUtils {
     }
     
     public static ReferenceBinding inferTypeParametersFromSuperClass(
-            ReferenceBinding declaringClass, ReferenceBinding superClass, LookupEnvironment lookupEnvironment) {
+            ReferenceBinding declaringClass, ReferenceBinding superClass) {
         if (superClass instanceof RawTypeBinding && declaringClass instanceof ParameterizedTypeBinding) {
+            LookupEnvironment lookupEnvironment = superClass.getPackage().environment;
             ParameterizedTypeBinding rawSuperType = (ParameterizedTypeBinding) superClass;
             ParameterizedTypeBinding declaringType = (ParameterizedTypeBinding) declaringClass;
             superClass = lookupEnvironment.createParameterizedType(

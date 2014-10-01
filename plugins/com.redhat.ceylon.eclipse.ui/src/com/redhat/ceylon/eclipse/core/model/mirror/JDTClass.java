@@ -32,13 +32,13 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.env.IDependent;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LocalTypeBinding;
-import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
+import com.redhat.ceylon.compiler.loader.ModelResolutionException;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.FieldMirror;
@@ -47,12 +47,10 @@ import com.redhat.ceylon.compiler.loader.mirror.PackageMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 
 public class JDTClass implements ClassMirror, IBindingProvider {
 
-    private ReferenceBinding klass;
-    private LookupEnvironment lookupEnvironment;
-    
     private PackageMirror pkg;
     private TypeMirror superclass;
     private List<MethodMirror> methods;
@@ -69,44 +67,104 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     private boolean enclosingMethodSet;
     private JDTClass enclosingClass;
     private boolean enclosingClassSet;
-
-    private IType type = null; 
+  
+    private boolean isPublic;
     
-
-    public JDTClass(ReferenceBinding klass, LookupEnvironment lookupEnvironment) {
-        this.klass = klass;
-        this.lookupEnvironment = lookupEnvironment;
-    }
-
+    private IType type = null;
+    private boolean isInterface;
+    private boolean isAbstract;
+    private boolean isProtected;
+    private boolean isDefaultAccess;
+    private boolean isInnerType; 
+    private boolean isLocalType;
+    private boolean isStatic;
+    private boolean isFinal;
+    private boolean isEnum;
+    private String fileName;
+    private boolean isBinary;
+    private boolean isAnonymous;
+    private boolean isJavaSource;
+    private String javaModelPath;
+    private String fullPath;
+    private boolean isAnnotationType;
+    private char[] bindingKey;
+    
     /*
      *  This constructor is only used by the model loader for optimization and should not used by clients
      */
-    public JDTClass(ReferenceBinding klass, LookupEnvironment lookupEnvironment, IType type) {
-        this(klass, lookupEnvironment);
+    public JDTClass(ReferenceBinding klass, IType type) {
         this.type = type;
+        pkg = new JDTPackage(klass.getPackage());
+        simpleName = new String(klass.sourceName());
+        qualifiedName = JDTUtils.getFullyQualifiedName(klass);
+        isPublic = klass.isPublic();
+        isInterface = klass.isInterface();
+        isAbstract = klass.isAbstract();
+        isProtected = klass.isProtected();
+        isDefaultAccess = klass.isDefault();
+        isLocalType = klass.isLocalType();
+        isStatic = (klass.modifiers & ClassFileConstants.AccStatic) != 0;
+        isFinal = klass.isFinal();
+        isEnum = klass.isEnum();
+        isBinary = klass.isBinaryBinding();
+        isAnonymous = klass.isAnonymousType();
+        isJavaSource = (klass instanceof SourceTypeBinding) && new String(((SourceTypeBinding) klass).getFileName()).endsWith(".java");
+        isAnnotationType = klass.isAnnotationType();;
+        bindingKey = klass.computeUniqueKey();
+
+        char[] bindingFileName = klass.getFileName();
+        int start = CharOperation.lastIndexOf('/', bindingFileName) + 1;
+        if (start == 0 || start < CharOperation.lastIndexOf('\\', bindingFileName))
+            start = CharOperation.lastIndexOf('\\', bindingFileName) + 1;
+        fileName = new String(CharOperation.subarray(bindingFileName, start, -1));
+        
+        int jarFileEntrySeparatorIndex = CharOperation.indexOf(IDependent.JAR_FILE_ENTRY_SEPARATOR, bindingFileName);
+        if (jarFileEntrySeparatorIndex > 0) {
+            char[] jarPart = CharOperation.subarray(bindingFileName, 0, jarFileEntrySeparatorIndex);
+            IJavaElement jarPackageFragmentRoot = JavaCore.create(new String(jarPart));
+            String jarPath = jarPackageFragmentRoot.getPath().toOSString();
+            char[] entryPart = CharOperation.subarray(bindingFileName, jarFileEntrySeparatorIndex + 1, bindingFileName.length);
+            fullPath = new StringBuilder(jarPath).append("!/").append(entryPart).toString();
+        } else {
+            fullPath = new String(bindingFileName);
+        }
+
+        ReferenceBinding sourceOrClass = klass;
+        if (! klass.isBinaryBinding()) {
+            sourceOrClass = klass.outermostEnclosingType();
+        }
+        char[] classFullName = new char[0];
+        for (char[] part : sourceOrClass.compoundName) {
+            classFullName = CharOperation.concat(classFullName, part, '/');
+        }
+        char[][] temp = CharOperation.splitOn('.', sourceOrClass.getFileName());
+        String extension = temp.length > 1 ? "." + new String(temp[temp.length-1]) : "";
+        javaModelPath = new String(classFullName) + extension;
+        
     }
 
     @Override
-    public AnnotationMirror getAnnotation(String type) {
+    public AnnotationMirror getAnnotation(String annotationType) {
         if (annotations == null) {
-            annotations = JDTUtils.getAnnotations(klass.getAnnotations(), lookupEnvironment);
+            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+                @Override
+                public void doWithBinding(ReferenceBinding klass) {
+                    annotations = JDTUtils.getAnnotations(klass.getAnnotations());
+                    isInnerType = getAnnotation(AbstractModelLoader.CEYLON_CONTAINER_ANNOTATION) != null || klass.isMemberType();
+                }
+            });
+            
         }
-        return annotations.get(type);
+        return annotations.get(annotationType);
     }
 
     @Override
     public boolean isPublic() {
-        if (klass != null) {
-            return klass.isPublic();
-        }
-        return true;
+        return isPublic;
     }
 
     @Override
     public String getQualifiedName() {
-        if (qualifiedName == null) {
-            qualifiedName = JDTUtils.getFullyQualifiedName(klass);
-        }
         return qualifiedName;
     }
 
@@ -118,50 +176,49 @@ public class JDTClass implements ClassMirror, IBindingProvider {
 
     @Override
     public String getName() {
-        if (simpleName == null) {
-            simpleName = new String(klass.sourceName());
-        }
         return simpleName;
     }
 
     @Override
     public PackageMirror getPackage() {
-        if (pkg == null) {
-            pkg = new JDTPackage(klass.getPackage());
-        }
         return pkg;
     }
 
     @Override
     public boolean isInterface() {
-        return klass.isInterface();
+        return isInterface;
     }
 
     @Override
     public boolean isAbstract() {
-        return klass.isAbstract();
+        return isAbstract;
     }
     
     @Override
     public boolean isProtected() {
-        return klass.isProtected();
+        return isProtected;
     }
     
     @Override
     public boolean isDefaultAccess() {
-        return klass.isDefault();
+        return isDefaultAccess;
     }
     
     @Override
     public List<MethodMirror> getDirectMethods() {
         if (methods == null) {
-            MethodBinding[] directMethods;
-            directMethods = klass.methods();
-            methods = new ArrayList<MethodMirror>(directMethods.length);
-            for(MethodBinding method : directMethods) {
-                if(!method.isBridge() && !method.isSynthetic() && !method.isPrivate())
-                    methods.add(new JDTMethod(this, method, lookupEnvironment));
-            }
+            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+                @Override
+                public void doWithBinding(ReferenceBinding klass) {
+                    MethodBinding[] directMethods;
+                    directMethods = klass.methods();
+                    methods = new ArrayList<MethodMirror>(directMethods.length);
+                    for(MethodBinding method : directMethods) {
+                        if(!method.isBridge() && !method.isSynthetic() && !method.isPrivate())
+                            methods.add(new JDTMethod(JDTClass.this, method));
+                    }
+                }
+            });
         }
         return methods;
     }
@@ -169,16 +226,21 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public TypeMirror getSuperclass() {
         if (! superClassSet) {
-            if (klass.isInterface() || "java.lang.Object".equals(getQualifiedName())) {
-                superclass = null;
-            } else {
-                ReferenceBinding superClassBinding = klass.superclass();
-                if (superClassBinding != null) {
-                    superClassBinding = JDTUtils.inferTypeParametersFromSuperClass(klass,
-                            superClassBinding, lookupEnvironment);
-                    superclass = new JDTType(superClassBinding, lookupEnvironment);
+            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+                @Override
+                public void doWithBinding(ReferenceBinding klass) {
+                    if (klass.isInterface() || "java.lang.Object".equals(getQualifiedName())) {
+                        superclass = null;
+                    } else {
+                        ReferenceBinding superClassBinding = klass.superclass();
+                        if (superClassBinding != null) {
+                            superClassBinding = JDTUtils.inferTypeParametersFromSuperClass(klass,
+                                    superClassBinding);
+                            superclass = new JDTType(superClassBinding);
+                        }
+                    }
                 }
-            }
+            });
             superClassSet = true;
         }
         return superclass;
@@ -187,10 +249,15 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public List<TypeMirror> getInterfaces() {
         if (interfaces == null) {
-            ReferenceBinding[] superInterfaces = klass.superInterfaces();
-            interfaces = new ArrayList<TypeMirror>(superInterfaces.length);
-            for(ReferenceBinding superInterface : superInterfaces)
-                interfaces.add(new JDTType(superInterface, lookupEnvironment));
+            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+                @Override
+                public void doWithBinding(ReferenceBinding klass) {
+                    ReferenceBinding[] superInterfaces = klass.superInterfaces();
+                    interfaces = new ArrayList<TypeMirror>(superInterfaces.length);
+                    for(ReferenceBinding superInterface : superInterfaces)
+                        interfaces.add(new JDTType(superInterface));
+                }
+            });
         }
         return interfaces;
     }
@@ -198,10 +265,15 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public List<TypeParameterMirror> getTypeParameters() {
         if (typeParams == null) {
-            TypeVariableBinding[] typeParameters = klass.typeVariables();
-            typeParams = new ArrayList<TypeParameterMirror>(typeParameters.length);
-            for(TypeVariableBinding parameter : typeParameters)
-                typeParams.add(new JDTTypeParameter(parameter, lookupEnvironment));
+            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+                @Override
+                public void doWithBinding(ReferenceBinding klass) {
+                    TypeVariableBinding[] typeParameters = klass.typeVariables();
+                    typeParams = new ArrayList<TypeParameterMirror>(typeParameters.length);
+                    for(TypeVariableBinding parameter : typeParameters)
+                        typeParams.add(new JDTTypeParameter(parameter));
+                }
+            });
         }
         return typeParams;
     }
@@ -232,27 +304,45 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public List<FieldMirror> getDirectFields() {
         if (fields == null) {
-            FieldBinding[] directFields = klass.fields();
-            fields = new ArrayList<FieldMirror>(directFields.length);
-            for(FieldBinding field : directFields){
-                if(!field.isSynthetic() && !field.isPrivate()){
-                    fields.add(new JDTField(field, lookupEnvironment));
+            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+                @Override
+                public void doWithBinding(ReferenceBinding klass) {
+                    FieldBinding[] directFields = klass.fields();
+                    fields = new ArrayList<FieldMirror>(directFields.length);
+                    for(FieldBinding field : directFields){
+                        if(!field.isSynthetic() && !field.isPrivate()){
+                            fields.add(new JDTField(field));
+                        }
+                    }
                 }
-            }
+            });
         }
         return fields;
     }
 
     @Override
     public boolean isInnerClass() {
-        return getAnnotation(AbstractModelLoader.CEYLON_CONTAINER_ANNOTATION) != null || klass.isMemberType();
+        return isInnerType;
     }
     
     @Override
     public ClassMirror getEnclosingClass() {
         if(!enclosingClassSet){
-            ReferenceBinding enclosingType = klass.enclosingType();
-            enclosingClass = enclosingType==null ? null : new JDTClass(enclosingType, lookupEnvironment);
+            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+                @Override
+                public void doWithBinding(ReferenceBinding klass) {
+                    ReferenceBinding enclosingType = klass.enclosingType();
+                    IType enclosingTypeModel = type.getDeclaringType();
+                    if (enclosingType != null) {
+                        if (enclosingTypeModel == null) {
+                            throw new ModelResolutionException("JDT reference binding without a JDT IType element !");
+                        }
+                        enclosingClass =  new JDTClass(enclosingType, enclosingTypeModel);
+                    } else {
+                        enclosingClass = null;
+                    }
+                }
+            });
             enclosingClassSet = true;
         }
         return enclosingClass;
@@ -261,10 +351,15 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public MethodMirror getEnclosingMethod() {
         if(!enclosingMethodSet){
-            if(klass.isLocalType()){
-                LocalTypeBinding localClass = (LocalTypeBinding) klass;
-                MethodBinding enclosingMethodBinding = localClass.enclosingMethod;
-                enclosingMethod = enclosingMethodBinding != null ? new JDTMethod(this, enclosingMethodBinding, lookupEnvironment) : null;
+            if(isLocalType){
+                JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+                    @Override
+                    public void doWithBinding(ReferenceBinding klass) {
+                        LocalTypeBinding localClass = (LocalTypeBinding) klass;
+                        MethodBinding enclosingMethodBinding = localClass.enclosingMethod;
+                        enclosingMethod = enclosingMethodBinding != null ? new JDTMethod(JDTClass.this, enclosingMethodBinding) : null;
+                    }
+                });
             }
             enclosingMethodSet = true;
         }
@@ -275,42 +370,43 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public List<ClassMirror> getDirectInnerClasses() {
         if (innerClasses == null) {
-            ReferenceBinding[] memberTypeBindings = klass.memberTypes();
-            innerClasses = new ArrayList<ClassMirror>(memberTypeBindings.length);
-            for(ReferenceBinding memberTypeBinding : memberTypeBindings) {
-                ReferenceBinding classBinding = memberTypeBinding;
-                innerClasses.add(new JDTClass(classBinding, lookupEnvironment));
-            }
+            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+                @Override
+                public void doWithBinding(ReferenceBinding klass) {
+                    ReferenceBinding[] memberTypeBindings = klass.memberTypes();
+                    innerClasses = new ArrayList<ClassMirror>(memberTypeBindings.length);
+                    for(ReferenceBinding memberTypeBinding : memberTypeBindings) {
+                        ReferenceBinding classBinding = memberTypeBinding;
+                        IType classTypeModel = JDTModelLoader.toType(classBinding);
+                        innerClasses.add(new JDTClass(classBinding, classTypeModel));
+                    }
+                }
+            });
         }
         return innerClasses;
     }
 
     @Override
     public boolean isStatic() {
-        return (klass.modifiers & ClassFileConstants.AccStatic) != 0;
+        return isStatic;
     }
 
     @Override
     public boolean isFinal() {
-        return klass.isFinal();
+        return isFinal;
     }
     
     @Override
     public boolean isEnum() {
-        return klass.isEnum();
+        return isEnum;
     }
 
     public String getFileName() {
-        char[] fileName = klass.getFileName();
-        int start = CharOperation.lastIndexOf('/', fileName) + 1;
-        if (start == 0 || start < CharOperation.lastIndexOf('\\', fileName))
-            start = CharOperation.lastIndexOf('\\', fileName) + 1;
-
-        return new String(CharOperation.subarray(fileName, start, -1));
+        return fileName;
     }
 
     public boolean isBinary() {
-        return klass.isBinaryBinding();
+        return isBinary;
     }
 
     @Override
@@ -320,57 +416,36 @@ public class JDTClass implements ClassMirror, IBindingProvider {
 
     @Override
     public boolean isAnonymous() {
-        return klass.isAnonymousType();
+        return isAnonymous;
     }
 
     @Override
     public boolean isJavaSource() {
-        return (klass instanceof SourceTypeBinding) && new String(((SourceTypeBinding) klass).getFileName()).endsWith(".java");
+        return isJavaSource;
     }
     
     public String getJavaModelPath() {
-        ReferenceBinding sourceOrClass = klass;
-        if (! klass.isBinaryBinding()) {
-            sourceOrClass = klass.outermostEnclosingType();
-        }
-        char[] classFullName = new char[0];
-        for (char[] part : sourceOrClass.compoundName) {
-            classFullName = CharOperation.concat(classFullName, part, '/');
-        }
-        char[][] temp = CharOperation.splitOn('.', sourceOrClass.getFileName());
-        String extension = temp.length > 1 ? "." + new String(temp[temp.length-1]) : "";
-        String result = new String(classFullName) + extension;
-        return result;
+        return javaModelPath;
     }
 
     public String getFullPath() {
-        char[] fileName = klass.getFileName();
-        int jarFileEntrySeparatorIndex = CharOperation.indexOf(IDependent.JAR_FILE_ENTRY_SEPARATOR, fileName);
-        if (jarFileEntrySeparatorIndex > 0) {
-            char[] jarPart = CharOperation.subarray(fileName, 0, jarFileEntrySeparatorIndex);
-            IJavaElement jarPackageFragmentRoot = JavaCore.create(new String(jarPart));
-            String jarPath = jarPackageFragmentRoot.getPath().toOSString();
-            char[] entryPart = CharOperation.subarray(fileName, jarFileEntrySeparatorIndex + 1, fileName.length);
-            return new StringBuilder(jarPath).append("!/").append(entryPart).toString();
-        }
-        String result = new String(fileName);
-        return result;
+        return fullPath;
     }
 
     @Override
     public boolean isAnnotationType() {
-        return klass.isAnnotationType();
+        return isAnnotationType;
     }
 
     @Override
     public boolean isLocalClass() {
         return getAnnotation(AbstractModelLoader.CEYLON_LOCAL_CONTAINER_ANNOTATION) != null 
-                || klass.isLocalType();
+                || isLocalType;
     }
     
     @Override
     public char[] getBindingKey() {
-        return klass.computeUniqueKey();
+        return bindingKey;
     }
 
     @Override
@@ -382,12 +457,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
         return cacheKey;
     }
 
-    /*
-     *  This method is only used by the model loader for optimization and should not used by clients
-     */
-    public IType useCachedType() {
-        IType typeToReturn = type;
-        type = null;
-        return typeToReturn;
+    public IType getType() {
+        return type;
     }
 }
