@@ -20,7 +20,10 @@
 
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,9 +51,167 @@ import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnClassBinding;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnResolvedType;
+
+class UnknownClassMirror implements ClassMirror {
+    static final String unknown = "unknown";
+    
+    @Override
+    public String getName() {
+        return unknown;
+    }
+    @Override
+    public AnnotationMirror getAnnotation(String type) {
+        return null;
+    }
+    @Override
+    public boolean isPublic() {
+        return true;
+    }
+    @Override
+    public boolean isProtected() {
+        return false;
+    }
+    @Override
+    public boolean isDefaultAccess() {
+        return false;
+    }
+    @Override
+    public boolean isInterface() {
+        return false;
+    }
+    @Override
+    public boolean isAnnotationType() {
+        return false;
+    }
+    @Override
+    public boolean isAbstract() {
+        return false;
+    }
+    @Override
+    public boolean isStatic() {
+        return false;
+    }
+    @Override
+    public boolean isInnerClass() {
+        return false;
+    }
+    @Override
+    public boolean isLocalClass() {
+        return false;
+    }
+    @Override
+    public boolean isAnonymous() {
+        return false;
+    }
+    @Override
+    public boolean isEnum() {
+        return false;
+    }
+    @Override
+    public String getQualifiedName() {
+        return unknown;
+    }
+    @Override
+    public String getFlatName() {
+        return unknown;
+    }
+    
+    static class DefaultPackage implements PackageMirror {
+        private final String name = "";
+
+        @Override
+        public String getQualifiedName() {
+            return name;
+        }
+        
+    }
+    static PackageMirror defaultPackage = new DefaultPackage();
+    @Override
+    public PackageMirror getPackage() {
+        return defaultPackage;
+    }
+
+    @Override
+    public List<MethodMirror> getDirectMethods() {
+        return Collections.emptyList();
+    }
+    @Override
+    public List<FieldMirror> getDirectFields() {
+        return Collections.emptyList();
+    }
+    @Override
+    public List<TypeParameterMirror> getTypeParameters() {
+        return Collections.emptyList();
+    }
+    @Override
+    public List<ClassMirror> getDirectInnerClasses() {
+        return Collections.emptyList();
+    }
+    @Override
+    public TypeMirror getSuperclass() {
+        return null;
+    }
+    @Override
+    public ClassMirror getEnclosingClass() {
+        return null;
+    }
+    @Override
+    public MethodMirror getEnclosingMethod() {
+        return null;
+    }
+    @Override
+    public List<TypeMirror> getInterfaces() {
+        return Collections.emptyList();
+    }
+    @Override
+    public boolean isCeylonToplevelAttribute() {
+        return false;
+    }
+
+    @Override
+    public boolean isCeylonToplevelObject() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isCeylonToplevelMethod() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isLoadedFromSource() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isJavaSource() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isFinal() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public String getCacheKey(Module module) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+}
 
 public class JDTClass implements ClassMirror, IBindingProvider {
-
+    public static final ClassMirror UNKNOWN_CLASS = new UnknownClassMirror();
+    
+    WeakReference<ReferenceBinding> bindingRef;
     private PackageMirror pkg;
     private TypeMirror superclass;
     private List<MethodMirror> methods;
@@ -90,10 +251,15 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     private char[] bindingKey;
     
     /*
-     *  This constructor is only used by the model loader for optimization and should not used by clients
+     *  the klass parameter should not be null
+     *  the type parameter might be null (in case of a 
+     *  MissingBinaryType). In such a case, take care of 
+     *  setting in the constructor all the lazy values calculated 
+     *  from the type.
      */
     public JDTClass(ReferenceBinding klass, IType type) {
         this.type = type;
+        bindingRef = new WeakReference<ReferenceBinding>(klass);
         pkg = new JDTPackage(klass.getPackage());
         simpleName = new String(klass.sourceName());
         qualifiedName = JDTUtils.getFullyQualifiedName(klass);
@@ -109,7 +275,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
         isBinary = klass.isBinaryBinding();
         isAnonymous = klass.isAnonymousType();
         isJavaSource = (klass instanceof SourceTypeBinding) && new String(((SourceTypeBinding) klass).getFileName()).endsWith(".java");
-        isAnnotationType = klass.isAnnotationType();;
+        isAnnotationType = klass.isAnnotationType();
         bindingKey = klass.computeUniqueKey();
 
         char[] bindingFileName = klass.getFileName();
@@ -141,14 +307,22 @@ public class JDTClass implements ClassMirror, IBindingProvider {
         String extension = temp.length > 1 ? "." + new String(temp[temp.length-1]) : "";
         javaModelPath = new String(classFullName) + extension;
         
+        if (type == null) {
+            annotations = new HashMap<>();
+            methods = Collections.emptyList();
+            interfaces = Collections.emptyList();
+            typeParams = Collections.emptyList();
+            fields = Collections.emptyList();
+            innerClasses = Collections.emptyList();
+        }
     }
 
     @Override
     public AnnotationMirror getAnnotation(String annotationType) {
         if (annotations == null) {
-            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+            doWithBindings(new ActionOnClassBinding() {
                 @Override
-                public void doWithBinding(ReferenceBinding klass) {
+                public void doWithBinding(IType classModel, ReferenceBinding klass) {
                     annotations = JDTUtils.getAnnotations(klass.getAnnotations());
                     isInnerType = getAnnotation(AbstractModelLoader.CEYLON_CONTAINER_ANNOTATION) != null || klass.isMemberType();
                 }
@@ -204,12 +378,25 @@ public class JDTClass implements ClassMirror, IBindingProvider {
         return isDefaultAccess;
     }
     
+    private void doWithBindings(final ActionOnClassBinding action) {
+        if (!JDTModelLoader.doWithReferenceBinding(type, bindingRef.get(), action)) {
+            JDTModelLoader.doWithResolvedType(type, new ActionOnResolvedType() {
+                @Override
+                public void doWithBinding(ReferenceBinding classBinding) {
+                    bindingRef = new WeakReference<ReferenceBinding>(classBinding);
+                    action.doWithBinding(type, classBinding);
+                }
+            });
+        }
+    }
+    
+    
     @Override
     public List<MethodMirror> getDirectMethods() {
         if (methods == null) {
-            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+            doWithBindings(new ActionOnClassBinding() {
                 @Override
-                public void doWithBinding(ReferenceBinding klass) {
+                public void doWithBinding(IType classModel, ReferenceBinding klass) {
                     MethodBinding[] directMethods;
                     directMethods = klass.methods();
                     methods = new ArrayList<MethodMirror>(directMethods.length);
@@ -226,9 +413,9 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public TypeMirror getSuperclass() {
         if (! superClassSet) {
-            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+            doWithBindings(new ActionOnClassBinding() {
                 @Override
-                public void doWithBinding(ReferenceBinding klass) {
+                public void doWithBinding(IType classModel, ReferenceBinding klass) {
                     if (klass.isInterface() || "java.lang.Object".equals(getQualifiedName())) {
                         superclass = null;
                     } else {
@@ -249,9 +436,9 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public List<TypeMirror> getInterfaces() {
         if (interfaces == null) {
-            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+            doWithBindings(new ActionOnClassBinding() {
                 @Override
-                public void doWithBinding(ReferenceBinding klass) {
+                public void doWithBinding(IType classModel, ReferenceBinding klass) {
                     ReferenceBinding[] superInterfaces = klass.superInterfaces();
                     interfaces = new ArrayList<TypeMirror>(superInterfaces.length);
                     for(ReferenceBinding superInterface : superInterfaces)
@@ -265,9 +452,9 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public List<TypeParameterMirror> getTypeParameters() {
         if (typeParams == null) {
-            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+            doWithBindings(new ActionOnClassBinding() {
                 @Override
-                public void doWithBinding(ReferenceBinding klass) {
+                public void doWithBinding(IType classModel, ReferenceBinding klass) {
                     TypeVariableBinding[] typeParameters = klass.typeVariables();
                     typeParams = new ArrayList<TypeParameterMirror>(typeParameters.length);
                     for(TypeVariableBinding parameter : typeParameters)
@@ -304,9 +491,9 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public List<FieldMirror> getDirectFields() {
         if (fields == null) {
-            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+            doWithBindings(new ActionOnClassBinding() {
                 @Override
-                public void doWithBinding(ReferenceBinding klass) {
+                public void doWithBinding(IType classModel, ReferenceBinding klass) {
                     FieldBinding[] directFields = klass.fields();
                     fields = new ArrayList<FieldMirror>(directFields.length);
                     for(FieldBinding field : directFields){
@@ -328,9 +515,9 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public ClassMirror getEnclosingClass() {
         if(!enclosingClassSet){
-            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+            doWithBindings(new ActionOnClassBinding() {
                 @Override
-                public void doWithBinding(ReferenceBinding klass) {
+                public void doWithBinding(IType classModel, ReferenceBinding klass) {
                     ReferenceBinding enclosingType = klass.enclosingType();
                     IType enclosingTypeModel = type.getDeclaringType();
                     if (enclosingType != null) {
@@ -352,9 +539,9 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     public MethodMirror getEnclosingMethod() {
         if(!enclosingMethodSet){
             if(isLocalType){
-                JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+                doWithBindings(new ActionOnClassBinding() {
                     @Override
-                    public void doWithBinding(ReferenceBinding klass) {
+                    public void doWithBinding(IType classModel, ReferenceBinding klass) {
                         LocalTypeBinding localClass = (LocalTypeBinding) klass;
                         MethodBinding enclosingMethodBinding = localClass.enclosingMethod;
                         enclosingMethod = enclosingMethodBinding != null ? new JDTMethod(JDTClass.this, enclosingMethodBinding) : null;
@@ -370,9 +557,9 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     @Override
     public List<ClassMirror> getDirectInnerClasses() {
         if (innerClasses == null) {
-            JDTModelLoader.doWithResolvedType(type, new JDTModelLoader.ActionOnResolvedType() {
+            doWithBindings(new ActionOnClassBinding() {
                 @Override
-                public void doWithBinding(ReferenceBinding klass) {
+                public void doWithBinding(IType classModel, ReferenceBinding klass) {
                     ReferenceBinding[] memberTypeBindings = klass.memberTypes();
                     innerClasses = new ArrayList<ClassMirror>(memberTypeBindings.length);
                     for(ReferenceBinding memberTypeBinding : memberTypeBindings) {

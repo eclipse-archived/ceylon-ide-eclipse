@@ -2013,10 +2013,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
                 modelLoader.setupSourceFileObjects(typeChecker.getPhasedUnits().getPhasedUnits());
 
-                typeCheckers.put(project, typeChecker);
-                projectFiles.put(project, scannedFiles);
-
-
                 monitor.worked(1);
                 
                 // Parsing of ALL units in the source folder should have been done
@@ -2134,7 +2130,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
                 }
                 
-
+                modelLoader.setModuleAndPackageUnits();
+                
                 if (compileToJs(project)) {
                     for (Module module : typeChecker.getContext().getModules().getListOfModules()) {
                         if (module instanceof JDTModule) {
@@ -2155,11 +2152,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         }
                     }
                 }
-
-                modelLoader.setModuleAndPackageUnits();
                 
+
                 monitor.worked(1);
 
+                typeCheckers.put(project, typeChecker);
+                projectFiles.put(project, scannedFiles);
                 modelStates.put(project, ModelState.Parsed);
 
                 ExternalSourceArchiveManager externalArchiveManager = getExternalSourceArchiveManager();

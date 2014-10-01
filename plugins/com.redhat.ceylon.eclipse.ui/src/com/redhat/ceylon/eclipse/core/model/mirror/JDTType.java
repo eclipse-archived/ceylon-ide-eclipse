@@ -31,7 +31,6 @@ import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
-import org.eclipse.jdt.internal.compiler.lookup.MissingTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.RawTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
@@ -39,7 +38,6 @@ import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
-import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
@@ -47,8 +45,52 @@ import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 
-public class JDTType implements TypeMirror {
+class UnknownTypeMirror implements TypeMirror {
+    @Override
+    public String getQualifiedName() {
+        return UnknownClassMirror.unknown;
+    }
+    @Override
+    public List<TypeMirror> getTypeArguments() {
+        return Collections.emptyList();
+    }
+    @Override
+    public TypeKind getKind() {
+        return TypeKind.DECLARED;
+    }
+    @Override
+    public TypeMirror getComponentType() {
+        return null;
+    }
+    @Override
+    public boolean isPrimitive() {
+        return false;
+    }
+    @Override
+    public boolean isRaw() {
+        return false;
+    }
+    @Override
+    public TypeMirror getUpperBound() {
+        return null;
+    }
+    @Override
+    public TypeMirror getLowerBound() {
+        return null;
+    }
+    @Override
+    public ClassMirror getDeclaredClass() {
+        return JDTClass.UNKNOWN_CLASS;
+    }
+    @Override
+    public TypeParameterMirror getTypeParameter() {
+        return null;
+    }
+}
 
+public class JDTType implements TypeMirror {
+    public static final TypeMirror UNKNOWN_TYPE = new UnknownTypeMirror();
+    
     private String qualifiedName;
     private List<TypeMirror> typeArguments;
     private TypeKind typeKind;
@@ -95,7 +137,7 @@ public class JDTType implements TypeMirror {
         isRaw = type.isRawType();
 
         if(type instanceof ParameterizedTypeBinding && ! (type instanceof RawTypeBinding)){
-            TypeBinding[] javaTypeArguments = ((ParameterizedTypeBinding)type).typeArguments();
+            TypeBinding[] javaTypeArguments = ((ParameterizedTypeBinding)type).arguments;
             if (javaTypeArguments == null) {
                 javaTypeArguments = new TypeBinding[0];
             }

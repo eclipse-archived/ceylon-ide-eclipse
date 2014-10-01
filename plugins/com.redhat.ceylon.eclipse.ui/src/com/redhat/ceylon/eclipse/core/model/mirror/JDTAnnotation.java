@@ -30,6 +30,7 @@ import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ElementValuePair;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
+import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
@@ -43,7 +44,13 @@ public class JDTAnnotation implements AnnotationMirror {
         ElementValuePair[] annotationVaues = annotation.getElementValuePairs();
         for (ElementValuePair annotationValue : annotationVaues) {
             String name = new String(annotationValue.getName());
-            Object value = convertValue(annotationValue.getMethodBinding().returnType, annotationValue.getValue());
+            MethodBinding elementMethod = annotationValue.getMethodBinding();
+            Object value = null;
+            if (elementMethod != null) {
+                value = convertValue(annotationValue.getMethodBinding().returnType, annotationValue.getValue());
+            } else {
+                value = JDTType.UNKNOWN_TYPE;
+            }
             values.put(name, value);
         }
     }

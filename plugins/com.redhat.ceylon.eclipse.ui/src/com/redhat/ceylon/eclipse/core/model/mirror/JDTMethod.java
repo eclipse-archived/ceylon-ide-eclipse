@@ -22,11 +22,13 @@ package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import static java.lang.Character.toLowerCase;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.eclipse.jdt.core.IType;
@@ -34,6 +36,7 @@ import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodVerifier;
+import org.eclipse.jdt.internal.compiler.lookup.ProblemMethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
@@ -50,13 +53,14 @@ import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 import com.redhat.ceylon.compiler.loader.mirror.VariableMirror;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnMethodBinding;
 
 public class JDTMethod implements MethodMirror, IBindingProvider {
-
+    private WeakReference<MethodBinding> bindingRef;
     private Map<String, AnnotationMirror> annotations;
     private String name;
     private List<VariableMirror> parameters;
-    private JDTType returnType;
+    private TypeMirror returnType;
     private List<TypeParameterMirror> typeParameters;
     Boolean isOverriding;
     private Boolean isOverloading;
@@ -77,6 +81,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     public JDTMethod(JDTClass enclosingClass, MethodBinding method) {
         this.enclosingClass = enclosingClass;
+        bindingRef = new WeakReference<MethodBinding>(method);
         name = new String(method.selector);
         readableName = new String(method.readableName());
         isStatic = method.isStatic();
@@ -91,6 +96,14 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         isVariadic = method.isVarargs();
         isDefault = method.getDefaultValue()!=null;
         bindingKey = method.computeUniqueKey();
+        if (method instanceof ProblemMethodBinding) {
+            annotations = new HashMap<>();
+            parameters = Collections.emptyList();
+            returnType = JDTType.UNKNOWN_TYPE;
+            typeParameters = Collections.emptyList();
+            isOverriding = false;
+            isOverloading = false;
+        }
     }
 
     
@@ -98,9 +111,9 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     @Override
     public AnnotationMirror getAnnotation(String type) {
         if (annotations == null) {
-            doWithBindings(new ActionWithBindings() {
+            doWithBindings(new ActionOnMethodBinding() {
                 @Override
-                public void doAction(IType declaringClassModel,
+                public void doWithBinding(IType declaringClassModel,
                         ReferenceBinding declaringClass,
                         MethodBinding method) {
                     annotations = JDTUtils.getAnnotations(method.getAnnotations());
@@ -138,7 +151,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     @Override
     public List<VariableMirror> getParameters() {
         if (parameters == null) {
-            doWithBindings(new ActionWithBindings() {
+            doWithBindings(new ActionOnMethodBinding() {
                 private String toParameterName(TypeBinding parameterType) {
                     String typeName = new String(parameterType.sourceName());
                     StringTokenizer tokens = new StringTokenizer(typeName, "$.[]");
@@ -154,7 +167,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                 }
                 
                 @Override
-                public void doAction(IType declaringClassModel,
+                public void doWithBinding(IType declaringClassModel,
                         ReferenceBinding declaringClassBinding, MethodBinding methodBinding) {
                     TypeBinding[] parameterBindings;
                     AnnotationBinding[][] parameterAnnotationBindings;
@@ -210,9 +223,9 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     @Override
     public TypeMirror getReturnType() {
         if (returnType == null) {
-            doWithBindings(new ActionWithBindings() {
+            doWithBindings(new ActionOnMethodBinding() {
                 @Override
-                public void doAction(IType declaringClassModel,
+                public void doWithBinding(IType declaringClassModel,
                         ReferenceBinding declaringClassBinding, MethodBinding methodBinding) {
                     returnType = new JDTType(methodBinding.returnType);
                 }
@@ -224,9 +237,9 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     @Override
     public List<TypeParameterMirror> getTypeParameters() {
         if (typeParameters == null) {
-            doWithBindings(new ActionWithBindings() {
+            doWithBindings(new ActionOnMethodBinding() {
                 @Override
-                public void doAction(IType declaringClassModel,
+                public void doWithBinding(IType declaringClassModel,
                         ReferenceBinding declaringClassBinding, MethodBinding methodBinding) {
                     TypeVariableBinding[] jdtTypeParameters = methodBinding.typeVariables();
                     typeParameters = new ArrayList<TypeParameterMirror>(jdtTypeParameters.length);
@@ -242,9 +255,9 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         if (isOverriding == null) {
             isOverriding = false;
 
-            doWithBindings(new ActionWithBindings() {
+            doWithBindings(new ActionOnMethodBinding() {
                 @Override
-                public void doAction(IType declaringClassModel,
+                public void doWithBinding(IType declaringClassModel,
                         ReferenceBinding declaringClass,
                         MethodBinding method) {
 
@@ -277,39 +290,37 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         return isOverriding.booleanValue();
     }
 
-    private static interface ActionWithBindings {
-        void doAction(IType declaringClassModel, ReferenceBinding declaringClassBinding, MethodBinding methodBinding);
-    }
-    
-    private void doWithBindings(final ActionWithBindings action) {
+    private void doWithBindings(final ActionOnMethodBinding action) {
         final IType declaringClassModel = enclosingClass.getType();
-
-        JDTModelLoader.doWithResolvedType(declaringClassModel, new JDTModelLoader.ActionOnResolvedType() {
-            @Override
-            public void doWithBinding(ReferenceBinding declaringClass) {
-                MethodBinding method = null;
-                for (MethodBinding m : declaringClass.methods()) {
-                    if (CharOperation.equals(m.computeUniqueKey(), bindingKey)) {
-                        method = m;
-                        break;
+        if (!JDTModelLoader.doWithMethodBinding(declaringClassModel, bindingRef.get(), action)) {
+            JDTModelLoader.doWithResolvedType(declaringClassModel, new JDTModelLoader.ActionOnResolvedType() {
+                @Override
+                public void doWithBinding(ReferenceBinding declaringClass) {
+                    MethodBinding method = null;
+                    for (MethodBinding m : declaringClass.methods()) {
+                        if (CharOperation.equals(m.computeUniqueKey(), bindingKey)) {
+                            method = m;
+                            break;
+                        }
                     }
-                }
-                if (method == null) {
-                    throw new ModelResolutionException("Method '" + readableName + "' not found in the binding of class '" + declaringClassModel.getFullyQualifiedName() + "'");
-                }
+                    if (method == null) {
+                        throw new ModelResolutionException("Method '" + readableName + "' not found in the binding of class '" + declaringClassModel.getFullyQualifiedName() + "'");
+                    }
 
-                action.doAction(declaringClassModel, declaringClass, method);
-            }
-        });
+                    bindingRef = new WeakReference<MethodBinding>(method);
+                    action.doWithBinding(declaringClassModel, declaringClass, method);
+                }
+            });
+        }
     }
     
     public boolean isOverloadingMethod() {
         if (isOverloading == null) {
             isOverloading = Boolean.FALSE;
 
-            doWithBindings(new ActionWithBindings() {
+            doWithBindings(new ActionOnMethodBinding() {
                 @Override
-                public void doAction(IType declaringClassModel,
+                public void doWithBinding(IType declaringClassModel,
                         ReferenceBinding declaringClass,
                         MethodBinding method) {
 

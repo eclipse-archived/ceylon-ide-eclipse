@@ -22,6 +22,7 @@ package com.redhat.ceylon.eclipse.core.model;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -66,6 +68,7 @@ import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
+import org.eclipse.jdt.internal.compiler.lookup.MissingTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemReasons;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemReferenceBinding;
@@ -138,6 +141,8 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     private ProblemReporter problemReporter;
     private LookupEnvironment lookupEnvironment;
+    private MissingTypeBinding missingTypeBinding;
+    private final Object lookupEnvironmentMutex = new Object();
     private boolean mustResetLookupEnvironment = false;
     private Set<Module> modulesInClassPath = new HashSet<Module>();
     
@@ -156,6 +161,9 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
         this.timer = new Timer(false);
         internalCreate();
+        if (javaProject != null) {
+            modelLoaders.put(javaProject.getProject(), new WeakReference<JDTModelLoader>(this));
+        }
     }
 
     public JDTModuleManager getModuleManager() {
@@ -287,6 +295,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                 }
             }, compilerOptions, problemReporter, createSearchableEnvironment());
             lookupEnvironment.mayTolerateMissingType = true;
+            missingTypeBinding = new MissingTypeBinding(lookupEnvironment.defaultPackage, new char[][] {"unknown".toCharArray()}, lookupEnvironment);
         } catch (JavaModelException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -456,6 +465,10 @@ public class JDTModelLoader extends AbstractModelLoader {
             super((JavaProject)javaProject, (WorkingCopyOwner) null);
         }
 
+        public IJavaProject getJavaProject() {
+            return project;
+        }
+        
         public IType findTypeInNameLookup(char[][] compoundTypeName) {
             if (compoundTypeName == null) return null;
 
@@ -601,9 +614,8 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     synchronized private LookupEnvironment getLookupEnvironment() {
         if (mustResetLookupEnvironment) {
-            refreshNameEnvironment();
             synchronized (lookupEnvironment) {
-                lookupEnvironment.reset();
+                createLookupEnvironment();
             }
             mustResetLookupEnvironment = false;
         }
@@ -674,21 +686,117 @@ public class JDTModelLoader extends AbstractModelLoader {
         return mirror;
     }
 
+    public synchronized MissingTypeBinding getMissingTypeBinding() {
+        return missingTypeBinding;
+    }
+    
     public static interface ActionOnResolvedType {
         void doWithBinding(ReferenceBinding referenceBinding);
     }
     
-    public static void doWithResolvedType(IType type, ActionOnResolvedType action) {
-        JDTModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(type.getJavaProject().getProject());
-        if (modelLoader == null) {
-            return;
+    private static WeakHashMap<IProject, WeakReference<JDTModelLoader>> modelLoaders = new WeakHashMap<>();
+    
+    public static JDTModelLoader getModelLoader(IProject project) {
+        WeakReference<JDTModelLoader> modelLoaderRef = modelLoaders.get(project);
+        if (modelLoaderRef != null) {
+            return modelLoaderRef.get();
         }
-        char[][] compoundName = CharOperation.splitOn('.', type.getFullyQualifiedName().toCharArray());
+        return null;
+    }
+
+    public static JDTModelLoader getModelLoader(IJavaProject javaProject) {
+        return getModelLoader(javaProject.getProject());
+    }
+    
+    public static JDTModelLoader getModelLoader(IType type) {
+        return type == null ? null : getModelLoader(type.getJavaProject());
+    }
+
+    public static interface ActionOnMethodBinding {
+        void doWithBinding(IType declaringClassModel, ReferenceBinding declaringClassBinding, MethodBinding methodBinding);
+    }
+    
+    public static interface ActionOnClassBinding {
+        void doWithBinding(IType classModel, ReferenceBinding classBinding);
+    }
+    
+    public static boolean doWithReferenceBinding(final IType typeModel, final ReferenceBinding binding, final ActionOnClassBinding action) {
+        if (typeModel == null) {
+            throw new ModelResolutionException("Resolving action requested on a missing declaration");
+        }
+        
+        PackageBinding packageBinding = binding.getPackage();
+        if (packageBinding == null) {
+            return false;
+        }
+        LookupEnvironment lookupEnvironment = packageBinding.environment;
+        if (lookupEnvironment == null) {
+            return false;
+        }
+        JDTModelLoader modelLoader = getModelLoader(typeModel);
+        if (modelLoader == null) {
+            throw new ModelResolutionException("The Model Loader corresponding the type '" + typeModel.getFullyQualifiedName() + "'");
+        }
+        
+        synchronized (modelLoader.lookupEnvironmentMutex) {
+            if (modelLoader.lookupEnvironment != lookupEnvironment) {
+                return false;
+            }
+            action.doWithBinding(typeModel, binding);
+            return true;
+        }
+    }
+
+    public static boolean doWithMethodBinding(final IType declaringClassModel, final MethodBinding binding, final ActionOnMethodBinding action) {
+        if (declaringClassModel == null) {
+            throw new ModelResolutionException("Resolving action requested on a missing declaration");
+        }
+
+        if (binding == null) {
+            return false;
+        }
+        ReferenceBinding declaringClassBinding = binding.declaringClass;
+        if (declaringClassBinding == null) {
+            return false;
+        }
+        PackageBinding packageBinding = declaringClassBinding.getPackage();
+        if (packageBinding == null) {
+            return false;
+        }
+        LookupEnvironment lookupEnvironment = packageBinding.environment;
+        if (lookupEnvironment == null) {
+            return false;
+        }
+        
+        JDTModelLoader modelLoader = getModelLoader(declaringClassModel);
+        if (modelLoader == null) {
+            throw new ModelResolutionException("The Model Loader corresponding the type '" + declaringClassModel.getFullyQualifiedName() + "' doesn't exist");
+        }
+        
+        synchronized (modelLoader.lookupEnvironmentMutex) {
+            if (modelLoader.lookupEnvironment != lookupEnvironment) {
+                return false;
+            }
+            action.doWithBinding(declaringClassModel, declaringClassBinding, binding);
+            return true;
+        }
+    }
+
+    public static void doWithResolvedType(IType typeModel, ActionOnResolvedType action) {
+        if (typeModel == null) {
+            throw new ModelResolutionException("Resolving action requested on a missing declaration");
+        }
+        
+        JDTModelLoader modelLoader = getModelLoader(typeModel);
+        if (modelLoader == null) {
+            throw new ModelResolutionException("The Model Loader is not available to resolve type '" + typeModel.getFullyQualifiedName() + "'");
+        }
+        char[][] compoundName = CharOperation.splitOn('.', typeModel.getFullyQualifiedName().toCharArray());
         LookupEnvironment lookupEnvironment = modelLoader.getLookupEnvironment();
-        synchronized (lookupEnvironment) {
+        synchronized (modelLoader.lookupEnvironmentMutex) {
             ReferenceBinding binding;
             try {
-                binding = toBinding(type, lookupEnvironment, compoundName);
+                binding = toBinding(typeModel, lookupEnvironment, compoundName);
             } catch (JavaModelException e) {
                 throw new ModelResolutionException(e);
             }
@@ -698,8 +806,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     public static IType toType(ReferenceBinding binding) {
         ModelLoaderNameEnvironment nameEnvironment = (ModelLoaderNameEnvironment) binding.getPackage().environment.nameEnvironment;
-        IType typeModel = nameEnvironment.findTypeInNameLookup(((ReferenceBinding) binding).compoundName);
-        if (typeModel == null) {
+        char[][] compoundName = ((ReferenceBinding) binding).compoundName;
+        IType typeModel = nameEnvironment.findTypeInNameLookup(compoundName);
+        if (typeModel == null && ! (binding instanceof MissingTypeBinding)) {
             throw new ModelResolutionException("JDT reference binding without a JDT IType element !");
         }
         return typeModel;
