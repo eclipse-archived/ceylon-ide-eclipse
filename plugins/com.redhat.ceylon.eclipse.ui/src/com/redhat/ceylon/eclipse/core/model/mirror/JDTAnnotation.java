@@ -30,33 +30,26 @@ import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ElementValuePair;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
-import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
 
 public class JDTAnnotation implements AnnotationMirror {
 
-    private AnnotationBinding annotation;
     private Map<String, Object> values;
-    private LookupEnvironment lookupEnvironment;
 
-    public JDTAnnotation(AnnotationBinding annotation, LookupEnvironment lookupEnvironment) {
-        this.annotation = annotation;
-        this.lookupEnvironment = lookupEnvironment;
+    public JDTAnnotation(AnnotationBinding annotation) {
+        values = new HashMap<String, Object>();
+        ElementValuePair[] annotationVaues = annotation.getElementValuePairs();
+        for (ElementValuePair annotationValue : annotationVaues) {
+            String name = new String(annotationValue.getName());
+            Object value = convertValue(annotationValue.getMethodBinding().returnType, annotationValue.getValue());
+            values.put(name, value);
+        }
     }
 
     @Override
     public Object getValue(String fieldName) {
-        if (values == null) {
-            values = new HashMap<String, Object>();
-            ElementValuePair[] annotationVaues = annotation.getElementValuePairs();
-            for (ElementValuePair annotationValue : annotationVaues) {
-                String name = new String(annotationValue.getName());
-                Object value = convertValue(annotationValue.getMethodBinding().returnType, annotationValue.getValue());
-                values.put(name, value);
-            }
-        }
         return values.get(fieldName);
     }
 
@@ -77,10 +70,10 @@ public class JDTAnnotation implements AnnotationMirror {
             return values;
         }
         if(value instanceof AnnotationBinding){
-            return new JDTAnnotation((AnnotationBinding) value, lookupEnvironment);
+            return new JDTAnnotation((AnnotationBinding) value);
         }
         if(value instanceof TypeBinding){
-            return new JDTType((TypeBinding) value, lookupEnvironment);
+            return new JDTType((TypeBinding) value);
         }
         if(value instanceof FieldBinding){
             return new String(((FieldBinding) value).name);

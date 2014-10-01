@@ -20,14 +20,18 @@
 
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
+import static java.lang.Character.toLowerCase;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
-import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodVerifier;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
@@ -36,105 +40,183 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
+import com.redhat.ceylon.compiler.java.metadata.Name;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
+import com.redhat.ceylon.compiler.loader.ModelResolutionException;
 import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
 import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
 import com.redhat.ceylon.compiler.loader.mirror.TypeParameterMirror;
 import com.redhat.ceylon.compiler.loader.mirror.VariableMirror;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 
 public class JDTMethod implements MethodMirror, IBindingProvider {
 
-    private MethodBinding method;
-    private MethodVerifier methodVerifier;
     private Map<String, AnnotationMirror> annotations;
     private String name;
     private List<VariableMirror> parameters;
-    private TypeMirror returnType;
+    private JDTType returnType;
     private List<TypeParameterMirror> typeParameters;
     Boolean isOverriding;
-    private LookupEnvironment lookupEnvironment;
     private Boolean isOverloading;
-    private ClassMirror enclosingClass;
-    
-    public JDTMethod(ClassMirror enclosingClass, MethodBinding method, LookupEnvironment lookupEnvironment) {
+    private JDTClass enclosingClass;
+    private boolean isStatic;
+    private boolean isPublic;
+    private boolean isConstructor;
+    private boolean isStaticInit;
+    private boolean isAbstract;
+    private boolean isFinal;
+    private char[] bindingKey;
+    private String readableName;
+    private boolean isProtected;
+    private boolean isDefaultAccess;
+    private boolean isDeclaredVoid;
+    private boolean isVariadic;
+    private boolean isDefault;
+
+    public JDTMethod(JDTClass enclosingClass, MethodBinding method) {
         this.enclosingClass = enclosingClass;
-        this.method = method;
-        this.lookupEnvironment = lookupEnvironment;
-        this.methodVerifier = lookupEnvironment.methodVerifier();
+        name = new String(method.selector);
+        readableName = new String(method.readableName());
+        isStatic = method.isStatic();
+        isPublic = method.isPublic();
+        isConstructor = method.isConstructor();
+        isStaticInit = method.selector == TypeConstants.CLINIT; // TODO : check if it is right
+        isAbstract = method.isAbstract();
+        isFinal = method.isFinal();
+        isProtected  = method.isProtected();
+        isDefaultAccess = method.isDefault();
+        isDeclaredVoid = method.returnType.id == TypeIds.T_void;
+        isVariadic = method.isVarargs();
+        isDefault = method.getDefaultValue()!=null;
+        bindingKey = method.computeUniqueKey();
     }
 
+    
+    
     @Override
     public AnnotationMirror getAnnotation(String type) {
         if (annotations == null) {
-            annotations = JDTUtils.getAnnotations(method.getAnnotations(), lookupEnvironment);
+            doWithBindings(new ActionWithBindings() {
+                @Override
+                public void doAction(IType declaringClassModel,
+                        ReferenceBinding declaringClass,
+                        MethodBinding method) {
+                    annotations = JDTUtils.getAnnotations(method.getAnnotations());
+                }
+            });
         }
         return annotations.get(type);
     }
 
     @Override
     public String getName() {
-        if (name == null) {
-            name = new String(method.selector);
-        }
         return name;
     }
 
     @Override
     public boolean isStatic() {
-        return method.isStatic();
+        return isStatic;
     }
 
     @Override
     public boolean isPublic() {
-        return method.isPublic();
+        return isPublic;
     }
 
     @Override
     public boolean isConstructor() {
-        return method.isConstructor();
+        return isConstructor;
     }
 
     @Override
     public boolean isStaticInit() {
-        return method.selector == TypeConstants.CLINIT; // TODO : check if it is right
+        return isStaticInit;
     }
 
     @Override
     public List<VariableMirror> getParameters() {
         if (parameters == null) {
-            TypeBinding[] javaParameters;
-            AnnotationBinding[][] annotations;
-            javaParameters = ((MethodBinding)method).parameters;
-            annotations = ((MethodBinding)method).getParameterAnnotations();
-            if (annotations == null) {
-                annotations = new AnnotationBinding[javaParameters.length][];
-                for (int i=0; i<annotations.length; i++) {
-                    annotations[i] = new AnnotationBinding[0];
+            doWithBindings(new ActionWithBindings() {
+                private String toParameterName(TypeBinding parameterType) {
+                    String typeName = new String(parameterType.sourceName());
+                    StringTokenizer tokens = new StringTokenizer(typeName, "$.[]");
+                    String result = null;
+                    while (tokens.hasMoreTokens()) {
+                        result = tokens.nextToken();
+                    }
+                    if (typeName.endsWith("[]")) {
+                        result = result + "Array";
+                    }
+                    return toLowerCase(result.charAt(0)) + 
+                            result.substring(1);
                 }
-            }
-            parameters = new ArrayList<VariableMirror>(javaParameters.length);
-            for(int i=0;i<javaParameters.length;i++)
-                parameters.add(new JDTVariable(javaParameters[i], annotations[i], this, lookupEnvironment));
+                
+                @Override
+                public void doAction(IType declaringClassModel,
+                        ReferenceBinding declaringClassBinding, MethodBinding methodBinding) {
+                    TypeBinding[] parameterBindings;
+                    AnnotationBinding[][] parameterAnnotationBindings;
+                    parameterBindings = ((MethodBinding)methodBinding).parameters;
+                    parameterAnnotationBindings = ((MethodBinding)methodBinding).getParameterAnnotations();
+                    if (parameterAnnotationBindings == null) {
+                        parameterAnnotationBindings = new AnnotationBinding[parameterBindings.length][];
+                        for (int i=0; i<parameterAnnotationBindings.length; i++) {
+                            parameterAnnotationBindings[i] = new AnnotationBinding[0];
+                        }
+                    }
+                    parameters = new ArrayList<VariableMirror>(parameterBindings.length);
+                    List<String> givenNames = new ArrayList<>(parameterBindings.length);
+                    for(int i=0;i<parameterBindings.length;i++) {
+                        Map<String, AnnotationMirror> parameterAnnotations = JDTUtils.getAnnotations(parameterAnnotationBindings[i]);
+                        String parameterName;
+                        AnnotationMirror nameAnnotation = getAnnotation(Name.class.getName());
+                        TypeBinding parameterTypeBinding = parameterBindings[i];
+                        if(nameAnnotation != null) {
+                            parameterName = (String) nameAnnotation.getValue();
+                        } else {
+                            String baseName = toParameterName(parameterTypeBinding);
+                            int count = 0;
+                            String nameToReturn = baseName;
+                            for (String givenName : givenNames) {
+                                if (givenName.equals(nameToReturn)) {
+                                    count ++;
+                                    nameToReturn = baseName + Integer.toString(count);
+                                }
+                            }
+                            parameterName = nameToReturn;
+                        }
+                        givenNames.add(parameterName);
+                        parameters.add(new JDTVariable(parameterName, new JDTType(parameterTypeBinding), parameterAnnotations));
+                    }
+                }
+            });
         }
+        
         return parameters;
     }
 
     @Override
     public boolean isAbstract() {
-        return method.isAbstract();
+        return isAbstract;
     }
 
     @Override
     public boolean isFinal() {
-        return method.isFinal();
+        return isFinal;
     }
 
     @Override
     public TypeMirror getReturnType() {
         if (returnType == null) {
-            returnType = new JDTType(method.returnType, lookupEnvironment);
+            doWithBindings(new ActionWithBindings() {
+                @Override
+                public void doAction(IType declaringClassModel,
+                        ReferenceBinding declaringClassBinding, MethodBinding methodBinding) {
+                    returnType = new JDTType(methodBinding.returnType);
+                }
+            });
         }
         return returnType;
     }
@@ -142,62 +224,111 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     @Override
     public List<TypeParameterMirror> getTypeParameters() {
         if (typeParameters == null) {
-            TypeVariableBinding[] jdtTypeParameters = method.typeVariables();
-            typeParameters = new ArrayList<TypeParameterMirror>(jdtTypeParameters.length);
-            for(TypeVariableBinding jdtTypeParameter : jdtTypeParameters)
-                typeParameters.add(new JDTTypeParameter(jdtTypeParameter, lookupEnvironment));
+            doWithBindings(new ActionWithBindings() {
+                @Override
+                public void doAction(IType declaringClassModel,
+                        ReferenceBinding declaringClassBinding, MethodBinding methodBinding) {
+                    TypeVariableBinding[] jdtTypeParameters = methodBinding.typeVariables();
+                    typeParameters = new ArrayList<TypeParameterMirror>(jdtTypeParameters.length);
+                    for(TypeVariableBinding jdtTypeParameter : jdtTypeParameters)
+                        typeParameters.add(new JDTTypeParameter(jdtTypeParameter));
+                }
+            });
         }
         return typeParameters;
     }
 
     public boolean isOverridingMethod() {
         if (isOverriding == null) {
-            isOverriding = Boolean.FALSE;
+            isOverriding = false;
 
-            ReferenceBinding declaringClass = method.declaringClass;
-            if (CharOperation.equals(declaringClass.readableName(), "ceylon.language.Identifiable".toCharArray())) {
-                if (CharOperation.equals(method.selector, "equals".toCharArray()) 
-                        || CharOperation.equals(method.selector, "hashCode".toCharArray())) {
-                    return true;
+            doWithBindings(new ActionWithBindings() {
+                @Override
+                public void doAction(IType declaringClassModel,
+                        ReferenceBinding declaringClass,
+                        MethodBinding method) {
+
+                    if (CharOperation.equals(declaringClass.readableName(), "ceylon.language.Identifiable".toCharArray())) {
+                        if ("equals".equals(name) 
+                                || "hashCode".equals(name)) {
+                            isOverriding = true;
+                            return;
+                        }
+                    }
+                    if (CharOperation.equals(declaringClass.readableName(), "ceylon.language.Object".toCharArray())) {
+                        if ("equals".equals(name) 
+                                || "hashCode".equals(name)
+                                || "toString".equals(name)) {
+                            isOverriding = false;
+                            return;
+                        }
+                    }
+                    
+                    // try the superclass first
+                    if (isDefinedInSuperClasses(declaringClass, method)) {
+                        isOverriding = true;
+                    } 
+                    if (isDefinedInSuperInterfaces(declaringClass, method)) {
+                        isOverriding = true;
+                    }
                 }
-            }
-            if (CharOperation.equals(declaringClass.readableName(), "ceylon.language.Object".toCharArray())) {
-                if (CharOperation.equals(method.selector, "equals".toCharArray()) 
-                        || CharOperation.equals(method.selector, "hashCode".toCharArray())
-                        || CharOperation.equals(method.selector, "toString".toCharArray())) {
-                    return false;
-                }
-            }
-                
-            // try the superclass first
-            if (isDefinedInSuperClasses(declaringClass)) {
-                isOverriding = Boolean.TRUE;
-            } 
-            if (isDefinedInSuperInterfaces(declaringClass)) {
-                isOverriding = Boolean.TRUE;
-            }
+            });
         }
         return isOverriding.booleanValue();
     }
 
+    private static interface ActionWithBindings {
+        void doAction(IType declaringClassModel, ReferenceBinding declaringClassBinding, MethodBinding methodBinding);
+    }
+    
+    private void doWithBindings(final ActionWithBindings action) {
+        final IType declaringClassModel = enclosingClass.getType();
+
+        JDTModelLoader.doWithResolvedType(declaringClassModel, new JDTModelLoader.ActionOnResolvedType() {
+            @Override
+            public void doWithBinding(ReferenceBinding declaringClass) {
+                MethodBinding method = null;
+                for (MethodBinding m : declaringClass.methods()) {
+                    if (CharOperation.equals(m.computeUniqueKey(), bindingKey)) {
+                        method = m;
+                        break;
+                    }
+                }
+                if (method == null) {
+                    throw new ModelResolutionException("Method '" + readableName + "' not found in the binding of class '" + declaringClassModel.getFullyQualifiedName() + "'");
+                }
+
+                action.doAction(declaringClassModel, declaringClass, method);
+            }
+        });
+    }
+    
     public boolean isOverloadingMethod() {
         if (isOverloading == null) {
             isOverloading = Boolean.FALSE;
 
-            ReferenceBinding declaringClass = method.declaringClass;
-            
-            // Exception has a pretend supertype of Object, unlike its Java supertype of java.lang.RuntimeException
-            // so we stop there for it, especially since it does not have any overloading
-            if(CharOperation.equals(declaringClass.qualifiedSourceName(), "ceylon.language.Exception".toCharArray()))
-                return false;
+            doWithBindings(new ActionWithBindings() {
+                @Override
+                public void doAction(IType declaringClassModel,
+                        ReferenceBinding declaringClass,
+                        MethodBinding method) {
 
-            // try the superclass first
-            if (isOverloadingInSuperClasses(declaringClass)) {
-                isOverloading = Boolean.TRUE;
-            } 
-            if (isOverloadingInSuperInterfaces(declaringClass)) {
-                isOverloading = Boolean.TRUE;
-            }
+                    // Exception has a pretend supertype of Object, unlike its Java supertype of java.lang.RuntimeException
+                    // so we stop there for it, especially since it does not have any overloading
+                    if(CharOperation.equals(declaringClass.qualifiedSourceName(), "ceylon.language.Exception".toCharArray())) {
+                        isOverloading = false;
+                        return;
+                    }
+
+                    // try the superclass first
+                    if (isOverloadingInSuperClasses(declaringClass, method)) {
+                        isOverloading = Boolean.TRUE;
+                    } 
+                    if (isOverloadingInSuperInterfaces(declaringClass, method)) {
+                        isOverloading = Boolean.TRUE;
+                    }
+                }
+            });
         }
         return isOverloading.booleanValue();
     }
@@ -217,7 +348,8 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         return false;
     }
     
-    private boolean isDefinedInType(ReferenceBinding superClass) {
+    private boolean isDefinedInType(ReferenceBinding superClass, MethodBinding method) {
+        MethodVerifier methodVerifier = superClass.getPackage().environment.methodVerifier();
         for (MethodBinding inheritedMethod : superClass.methods()) {
             // skip ignored methods
             if(ignoreMethodInAncestorSearch(inheritedMethod)) {
@@ -231,7 +363,8 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         return false;
     }
 
-    private boolean isOverloadingInType(ReferenceBinding superClass) {
+    private boolean isOverloadingInType(ReferenceBinding superClass, MethodBinding method) {
+        MethodVerifier methodVerifier = superClass.getPackage().environment.methodVerifier();
         for (MethodBinding inheritedMethod : superClass.methods()) {
             if(inheritedMethod.isPrivate()
                     || inheritedMethod.isStatic()
@@ -254,39 +387,40 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         return false;
     }
 
-    boolean isDefinedInSuperClasses(ReferenceBinding declaringClass) {
+    boolean isDefinedInSuperClasses(ReferenceBinding declaringClass, MethodBinding method) {
         ReferenceBinding superClass = declaringClass.superclass();
         if (superClass == null) {
             return false;
         }
 
         superClass = JDTUtils.inferTypeParametersFromSuperClass(declaringClass,
-                superClass, lookupEnvironment);
+                superClass);
         
-        if (isDefinedInType(superClass)) {
+        if (isDefinedInType(superClass, method)) {
             return true;
         }
-        return isDefinedInSuperClasses(superClass);
+        return isDefinedInSuperClasses(superClass, method);
     }
 
-    boolean isDefinedInSuperInterfaces(ReferenceBinding declaringType) {
+    boolean isDefinedInSuperInterfaces(ReferenceBinding declaringType, MethodBinding method) {
+        
         ReferenceBinding[] superInterfaces = declaringType.superInterfaces();
         if (superInterfaces == null) {
             return false;
         }
         
         for (ReferenceBinding superInterface : superInterfaces) {
-            if (isDefinedInType(superInterface)) {
+            if (isDefinedInType(superInterface, method)) {
                 return true;
             }
-            if (isDefinedInSuperInterfaces(superInterface)) {
+            if (isDefinedInSuperInterfaces(superInterface, method)) {
                 return true;
             }
         }
         return false;
     }
 
-    boolean isOverloadingInSuperClasses(ReferenceBinding declaringClass) {
+    boolean isOverloadingInSuperClasses(ReferenceBinding declaringClass, MethodBinding method) {
         ReferenceBinding superClass = declaringClass.superclass();
         if (superClass == null) {
             return false;
@@ -298,25 +432,25 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
             return false;
 
         superClass = JDTUtils.inferTypeParametersFromSuperClass(declaringClass,
-                superClass, lookupEnvironment);
+                superClass);
         
-        if (isOverloadingInType(superClass)) {
+        if (isOverloadingInType(superClass, method)) {
             return true;
         }
-        return isOverloadingInSuperClasses(superClass);
+        return isOverloadingInSuperClasses(superClass, method);
     }
 
-    boolean isOverloadingInSuperInterfaces(ReferenceBinding declaringType) {
+    boolean isOverloadingInSuperInterfaces(ReferenceBinding declaringType, MethodBinding method) {
         ReferenceBinding[] superInterfaces = declaringType.superInterfaces();
         if (superInterfaces == null) {
             return false;
         }
         
         for (ReferenceBinding superInterface : superInterfaces) {
-            if (isOverloadingInType(superInterface)) {
+            if (isOverloadingInType(superInterface, method)) {
                 return true;
             }
-            if (isOverloadingInSuperInterfaces(superInterface)) {
+            if (isOverloadingInSuperInterfaces(superInterface, method)) {
                 return true;
             }
         }
@@ -325,32 +459,32 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     @Override
     public boolean isProtected() {
-        return method.isProtected();
+        return isProtected;
     }
 
     @Override
     public boolean isDefaultAccess() {
-        return method.isDefault();
+        return isDefaultAccess;
     }
     
     @Override
     public boolean isDeclaredVoid() {
-        return method.returnType.id == TypeIds.T_void;
+        return isDeclaredVoid;
     }
 
     @Override
     public boolean isVariadic() {
-        return method.isVarargs();
+        return isVariadic;
     }
 
     @Override
     public boolean isDefault() {
-        return method.getDefaultValue()!=null;
+        return isDefault;
     }
     
     @Override
     public char[] getBindingKey() {
-        return method.computeUniqueKey();
+        return bindingKey;
     }
 
     @Override

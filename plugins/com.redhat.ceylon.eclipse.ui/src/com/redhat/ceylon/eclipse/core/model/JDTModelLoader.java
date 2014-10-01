@@ -96,6 +96,7 @@ import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.util.Timer;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
+import com.redhat.ceylon.compiler.loader.ModelResolutionException;
 import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
 import com.redhat.ceylon.compiler.loader.TypeParser;
 import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
@@ -450,11 +451,29 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
 
-    private class ModelLoaderNameEnvironment extends SearchableEnvironment {
-        public ModelLoaderNameEnvironment() throws JavaModelException {
+    public static class ModelLoaderNameEnvironment extends SearchableEnvironment {
+        public ModelLoaderNameEnvironment(IJavaProject javaProject) throws JavaModelException {
             super((JavaProject)javaProject, (WorkingCopyOwner) null);
         }
 
+        public IType findTypeInNameLookup(char[][] compoundTypeName) {
+            if (compoundTypeName == null) return null;
+
+            int length = compoundTypeName.length;
+            if (length <= 1) {
+                if (length == 0) return null;
+                return findTypeInNameLookup(new String(compoundTypeName[0]), IPackageFragment.DEFAULT_PACKAGE_NAME);
+            }
+
+            int lengthM1 = length - 1;
+            char[][] packageName = new char[lengthM1][];
+            System.arraycopy(compoundTypeName, 0, packageName, 0, lengthM1);
+
+            return findTypeInNameLookup(
+                new String(compoundTypeName[lengthM1]),
+                CharOperation.toString(packageName));
+        }
+        
         public IType findTypeInNameLookup(String typeName, String packageName) {
             JavaElementRequestor packageRequestor = new JavaElementRequestor();
             nameLookup.seekPackageFragments(packageName, false, packageRequestor);
@@ -577,13 +596,15 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     private INameEnvironment createSearchableEnvironment() throws JavaModelException {
-        return new ModelLoaderNameEnvironment();
+        return new ModelLoaderNameEnvironment(javaProject);
     }
     
     synchronized private LookupEnvironment getLookupEnvironment() {
         if (mustResetLookupEnvironment) {
             refreshNameEnvironment();
-            lookupEnvironment.reset();
+            synchronized (lookupEnvironment) {
+                lookupEnvironment.reset();
+            }
             mustResetLookupEnvironment = false;
         }
         return lookupEnvironment;
@@ -653,7 +674,38 @@ public class JDTModelLoader extends AbstractModelLoader {
         return mirror;
     }
 
-    private ClassMirror buildClassMirror(String name) {
+    public static interface ActionOnResolvedType {
+        void doWithBinding(ReferenceBinding referenceBinding);
+    }
+    
+    public static void doWithResolvedType(IType type, ActionOnResolvedType action) {
+        JDTModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(type.getJavaProject().getProject());
+        if (modelLoader == null) {
+            return;
+        }
+        char[][] compoundName = CharOperation.splitOn('.', type.getFullyQualifiedName().toCharArray());
+        LookupEnvironment lookupEnvironment = modelLoader.getLookupEnvironment();
+        synchronized (lookupEnvironment) {
+            ReferenceBinding binding;
+            try {
+                binding = toBinding(type, lookupEnvironment, compoundName);
+            } catch (JavaModelException e) {
+                throw new ModelResolutionException(e);
+            }
+            action.doWithBinding(binding);
+        }
+    }
+    
+    public static IType toType(ReferenceBinding binding) {
+        ModelLoaderNameEnvironment nameEnvironment = (ModelLoaderNameEnvironment) binding.getPackage().environment.nameEnvironment;
+        IType typeModel = nameEnvironment.findTypeInNameLookup(((ReferenceBinding) binding).compoundName);
+        if (typeModel == null) {
+            throw new ModelResolutionException("JDT reference binding without a JDT IType element !");
+        }
+        return typeModel;
+    }
+
+    private JDTClass buildClassMirror(String name) {
         if (javaProject == null) {
             return null;
         }
@@ -688,55 +740,64 @@ public class JDTModelLoader extends AbstractModelLoader {
                 return null;
             }
 
-            ITypeRoot typeRoot = type.getTypeRoot();
-            
-            if (typeRoot instanceof IClassFile) {
-                ClassFile classFile = (ClassFile) typeRoot;
-                
-                IFile classFileRsrc = (IFile) classFile.getCorrespondingResource();
-                if (classFileRsrc!=null && !classFileRsrc.exists()) {
-                    //the .class file has been deleted
-                    return null;
-                }
-                
-                BinaryTypeBinding binaryTypeBinding = null;
-                try {
-                    IBinaryType binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
-                    binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
-                } catch(JavaModelException e) {
-                    if (! e.isDoesNotExist()) {
-                        throw e;
-                    }
-                }
-                
-                if (binaryTypeBinding == null) {
-                    ReferenceBinding existingType = theLookupEnvironment.getCachedType(compoundName);
-                    if (existingType == null || ! (existingType instanceof BinaryTypeBinding)) {
-                        return null;
-                    }
-                    binaryTypeBinding = (BinaryTypeBinding) existingType;
-                }
-                return new JDTClass(binaryTypeBinding, theLookupEnvironment, type);
-            } else {
-                ReferenceBinding referenceBinding = theLookupEnvironment.getType(compoundName);
-                if (referenceBinding != null  && ! (referenceBinding instanceof BinaryTypeBinding)) {
-                    
-                    if (referenceBinding instanceof ProblemReferenceBinding) {
-                        ProblemReferenceBinding problemReferenceBinding = (ProblemReferenceBinding) referenceBinding;
-                        if (problemReferenceBinding.problemId() == ProblemReasons.InternalNameProvided) {
-                            referenceBinding = problemReferenceBinding.closestReferenceMatch();
-                        } else {
-                            System.out.println(ProblemReferenceBinding.problemReasonString(problemReferenceBinding.problemId()));
-                            return null;
-                        }
-                    }
-                    return new JDTClass(referenceBinding, theLookupEnvironment, type);
-                }
+            ReferenceBinding binding = toBinding(type, theLookupEnvironment, compoundName);
+            if (binding != null) {
+                return new JDTClass(binding, type);
             }
+            
         } catch (JavaModelException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private static ReferenceBinding toBinding(IType type, LookupEnvironment theLookupEnvironment, char[][] compoundName) throws JavaModelException {
+        ITypeRoot typeRoot = type.getTypeRoot();
+        
+        if (typeRoot instanceof IClassFile) {
+            ClassFile classFile = (ClassFile) typeRoot;
+            
+            IFile classFileRsrc = (IFile) classFile.getCorrespondingResource();
+            if (classFileRsrc!=null && !classFileRsrc.exists()) {
+                //the .class file has been deleted
+                return null;
+            }
+            
+            BinaryTypeBinding binaryTypeBinding = null;
+            try {
+                IBinaryType binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
+                binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
+            } catch(JavaModelException e) {
+                if (! e.isDoesNotExist()) {
+                    throw e;
+                }
+            }
+            
+            if (binaryTypeBinding == null) {
+                ReferenceBinding existingType = theLookupEnvironment.getCachedType(compoundName);
+                if (existingType == null || ! (existingType instanceof BinaryTypeBinding)) {
+                    return null;
+                }
+                binaryTypeBinding = (BinaryTypeBinding) existingType;
+            }
+            return binaryTypeBinding;
+        } else {
+            ReferenceBinding referenceBinding = theLookupEnvironment.getType(compoundName);
+            if (referenceBinding != null  && ! (referenceBinding instanceof BinaryTypeBinding)) {
+                
+                if (referenceBinding instanceof ProblemReferenceBinding) {
+                    ProblemReferenceBinding problemReferenceBinding = (ProblemReferenceBinding) referenceBinding;
+                    if (problemReferenceBinding.problemId() == ProblemReasons.InternalNameProvided) {
+                        referenceBinding = problemReferenceBinding.closestReferenceMatch();
+                    } else {
+                        System.out.println(ProblemReferenceBinding.problemReasonString(problemReferenceBinding.problemId()));
+                        return null;
+                    }
+                }
+                return referenceBinding;
+            }
+            return null;
+        }
     }
 
     private ModelLoaderNameEnvironment getNameEnvironment() {
@@ -867,13 +928,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     private Unit newCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
         Unit unit;
         JDTClass jdtClass = (JDTClass) classMirror;
-        IType type = jdtClass.useCachedType();
-        if (type == null && javaProject != null) {
-            String packageName = jdtClass.getPackage().getQualifiedName();
-            String className = jdtClass.getQualifiedName().substring(packageName.length() +1 );
-            type = getNameEnvironment().findTypeInNameLookup(className, packageName);
-        }
-
+        IType type = jdtClass.getType();
         if (type == null) {
             return null;
         }

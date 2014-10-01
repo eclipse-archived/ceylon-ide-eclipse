@@ -2,10 +2,12 @@ package com.redhat.ceylon.eclipse.core.builder;
 
 import static java.lang.Math.max;
 
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -18,18 +20,17 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 
 final class WarmupJob extends Job {
-    private final TypeChecker typeChecker;
+    private final IProject project;
 
-    WarmupJob(String name, TypeChecker typeChecker) {
-        super("Warming up completion processor for " + name);
-        this.typeChecker = typeChecker;
+    WarmupJob(IProject project) {
+        super("Warming up completion processor for " + project.getName());
+        this.project = project;
     }
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Warming up completion processor", 100000);
-        Set<Module> modules = typeChecker.getPhasedUnits().getModuleManager()
-                .getCompiledModules();
+        Collection<Module> modules = CeylonBuilder.getProjectDeclaredSourceModules(project);
         monitor.worked(10000);
         try {
             for (Module m: modules) {

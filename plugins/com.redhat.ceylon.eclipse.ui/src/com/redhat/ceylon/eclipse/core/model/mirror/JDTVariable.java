@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
-import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 import com.redhat.ceylon.compiler.java.metadata.Name;
@@ -37,76 +36,29 @@ import com.redhat.ceylon.compiler.loader.mirror.VariableMirror;
 
 public class JDTVariable implements VariableMirror {
 
-    private TypeBinding typeBinding;
-    private AnnotationBinding[] annotationBindings;
     private Map<String, AnnotationMirror> annotations;
     private TypeMirror type;
     private MethodMirror methodMirror;
     private String name;
-    private LookupEnvironment lookupEnvironment;
 
-    public JDTVariable(TypeBinding typeBinding, AnnotationBinding[] annotationBindings, MethodMirror methodMirror, LookupEnvironment lookupEnvironment) {
-        this.typeBinding = typeBinding;
-        this.annotationBindings = annotationBindings;
-        this.methodMirror = methodMirror;
-        this.lookupEnvironment = lookupEnvironment;
-        setName();
+    public JDTVariable(String name, JDTType type, Map<String, AnnotationMirror> annotations) {
+        this.name = name;
+        this.type = type;
+        this.annotations = annotations;
     }
 
     @Override
     public AnnotationMirror getAnnotation(String type) {
-        if (annotations == null) {
-            annotations = JDTUtils.getAnnotations(annotationBindings, lookupEnvironment);
-        }
         return annotations.get(type);
     }
 
     @Override
     public TypeMirror getType() {
-        if (type == null) {
-            type = new JDTType(typeBinding, lookupEnvironment);
-        }
         return type; 
     }
 
     @Override
     public String getName() {
-        if (name == null) {
-            setName();
-        }
         return name;
-    }
-    
-    private void setName() {
-        AnnotationMirror nameAnnotation = getAnnotation(Name.class.getName());
-        if(nameAnnotation != null) {
-            name = (String) nameAnnotation.getValue();
-            return;
-        }
-        
-        String baseName = toParameterName(typeBinding);
-        int count = 0;
-        String nameToReturn = baseName;
-        for (VariableMirror parameter : methodMirror.getParameters()) {
-            if (parameter.getName().equals(nameToReturn)) {
-                count ++;
-                nameToReturn = baseName + Integer.toString(count);
-            }
-        }
-        name = nameToReturn;
-    }
-    
-    private String toParameterName(TypeBinding parameterType) {
-        String typeName = new String(parameterType.sourceName());
-        StringTokenizer tokens = new StringTokenizer(typeName, "$.[]");
-        String result = null;
-        while (tokens.hasMoreTokens()) {
-            result = tokens.nextToken();
-        }
-        if (typeName.endsWith("[]")) {
-            result = result + "Array";
-        }
-        return toLowerCase(result.charAt(0)) + 
-                result.substring(1);
     }
 }

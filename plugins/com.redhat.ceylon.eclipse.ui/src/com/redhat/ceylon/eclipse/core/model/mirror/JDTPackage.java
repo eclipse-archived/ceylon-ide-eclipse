@@ -26,19 +26,14 @@ import com.redhat.ceylon.compiler.loader.mirror.PackageMirror;
 
 public class JDTPackage implements PackageMirror {
 
-    private PackageBinding pkg;
     private String name;
 
     public JDTPackage(PackageBinding pkg) {
-        this.pkg = pkg;
+        name = pkg == null ? "java.lang" : new String(pkg.readableName());
     }
 
     @Override
     public String getQualifiedName() {
-        if (name == null) {
-            // primitives and arrays don't have a package, so we pretend they come from java.lang
-            name = pkg == null ? "java.lang" : new String(pkg.readableName());
-        }
         return name;
     }
 
