@@ -153,10 +153,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 Declaration d = dwp.getDeclaration();
                 try {
                     if (!nameOccursMultipleTimes(d)) {
-                        text += " - " + getPackageLabel(d);
-                        if (dwp.getVersion()!=null) {
-                            text += " \"" + dwp.getVersion() + "\"";
-                        }
+                        text += " - " + getPackageLabel(d) + 
+                                " - " + getModule(dwp);
                     }
                 }
                 catch (Exception e) {
@@ -282,9 +280,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                     StyledString label = getQualifiedDescriptionFor(d);
                     if (nameOccursMultipleTimes(d)) {
                         label.append(" - ", Highlights.PACKAGE_STYLER)
-                        .append(getPackageLabel(d), Highlights.PACKAGE_STYLER)
-                        .append(" - ", COUNTER_STYLER)
-                        .append(getModule(dwp), COUNTER_STYLER);
+                             .append(getPackageLabel(d), Highlights.PACKAGE_STYLER)
+                             .append(" - ", COUNTER_STYLER)
+                             .append(getModule(dwp), COUNTER_STYLER);
                     }
                     return label;
                 }
@@ -586,12 +584,11 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         Module module = dwp.getDeclaration().getUnit()
                 .getPackage().getModule();
         StringBuilder sb = new StringBuilder();
-        sb.append("in module ")
-        .append(module.getNameAsString());
+        sb.append(module.getNameAsString());
         if (module.getVersion()!=null) {
             sb.append(" \"")
-            .append(module.getVersion())
-            .append("\"");
+              .append(module.getVersion())
+              .append("\"");
         }
         return sb.toString();
     }
