@@ -532,7 +532,22 @@ public class JDTModelLoader extends AbstractModelLoader {
                             @SuppressWarnings("rawtypes")
                             Map types = (Map) secondaryTypePaths.get(packageName==null?"":packageName); //$NON-NLS-1$
                             if (types != null && types.size() > 0) {
-                                type = (IType) types.get(typeName);
+                                String[] parts = typeName.split("(\\.|\\$)");
+                                int index = 0;
+                                String topLevelClassName = parts[index++];
+                                IType currentClass = (IType) types.get(topLevelClassName);
+                                IType result = currentClass;
+                                while (index < parts.length) {
+                                    result = null;
+                                    String nestedClassName = parts[index++];
+                                    currentClass = currentClass.getType(nestedClassName);
+                                    if (currentClass.exists()) {
+                                        result = currentClass;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                type = result;
                             }
                         }
                     }
@@ -808,6 +823,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         ModelLoaderNameEnvironment nameEnvironment = (ModelLoaderNameEnvironment) binding.getPackage().environment.nameEnvironment;
         char[][] compoundName = ((ReferenceBinding) binding).compoundName;
         IType typeModel = nameEnvironment.findTypeInNameLookup(compoundName);
+        
         if (typeModel == null && ! (binding instanceof MissingTypeBinding)) {
             throw new ModelResolutionException("JDT reference binding without a JDT IType element !");
         }
