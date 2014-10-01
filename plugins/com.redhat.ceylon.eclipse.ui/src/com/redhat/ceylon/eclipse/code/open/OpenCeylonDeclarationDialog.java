@@ -152,27 +152,19 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
                 try {
-                    if (nameOccursMultipleTimes(d)) {
-                        return text;
-                    }
-                    else {
-                        String string = text + " - " + 
-                                getPackageLabel(d);
+                    if (!nameOccursMultipleTimes(d)) {
+                        text += " - " + getPackageLabel(d);
                         if (dwp.getVersion()!=null) {
-                            string += " \"" + dwp.getVersion() + "\"";
+                            text += " \"" + dwp.getVersion() + "\"";
                         }
-                        return string;
                     }
                 }
                 catch (Exception e) {
                     System.err.println(d.getName());
                     e.printStackTrace();
-                    return null;
                 }
             }
-            else {
-                return text;
-            }
+            return text;
         }
         
         @Override
@@ -203,7 +195,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
                 try {
-                    return getPackageLabel(d) + " - " + getLocation(dwp);
+                    return getPackageLabel(d) + " - " + 
+                            getLocation(dwp, true);
                 }
                 catch (Exception e) {
                     System.err.println(d.getName());
@@ -292,7 +285,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         label.append(" - ", Highlights.PACKAGE_STYLER)
                         .append(getPackageLabel(d), Highlights.PACKAGE_STYLER)
                         .append(" - ", COUNTER_STYLER)
-                        .append(getLocation(dwp), COUNTER_STYLER);
+                        .append(getLocation(dwp, false), COUNTER_STYLER);
                     }
                     return label;
                 }
@@ -590,7 +583,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         return true;
     }
 
-    private static String getLocation(DeclarationWithProject dwp) {
+    private static String getLocation(DeclarationWithProject dwp,
+            boolean importInformation) {
         IProject project = dwp.getProject();
         if (project!=null && dwp.getPath()!=null) {
             IResource r = project.isOpen() ? 
@@ -613,7 +607,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                   .append(module.getVersion())
                   .append("\"");
             }
-            if (project!=null) {
+            if (project!=null && importInformation) {
                 sb.append(" imported by project ")
                   .append(project.getName());
             }
