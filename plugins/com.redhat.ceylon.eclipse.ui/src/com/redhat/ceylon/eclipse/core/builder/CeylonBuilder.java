@@ -91,7 +91,7 @@ import com.redhat.ceylon.cmr.api.ArtifactCallback;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.api.SourceArchiveCreator;
+import com.redhat.ceylon.cmr.api.ArtifactCreator;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Constants;
@@ -2390,9 +2390,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         	
             for (Module m : getProjectDeclaredSourceModules(project)) {
             	if (m instanceof JDTModule) {
-                	SourceArchiveCreator sac;
+                	ArtifactCreator sac;
 					try {
-						sac = CeylonUtils.makeSourceArchiveCreator(outRepo, js_srcdir,
+						sac = CeylonUtils.makeSourceArtifactCreator(outRepo, js_srcdir,
 						        m.getNameAsString(), m.getVersion(), js_verbose, logger);
 	                	List<String> moduleFiles = new ArrayList<>();
 	                	for (IFile file : filesToCompile) {
@@ -2406,7 +2406,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 	                    		}                			
 	                		}
 	                	}
-	                    sac.copySourceFiles(moduleFiles);
+	                    sac.copy(moduleFiles);
 					} catch (IOException e) {
 						e.printStackTrace();
 						success = false;
