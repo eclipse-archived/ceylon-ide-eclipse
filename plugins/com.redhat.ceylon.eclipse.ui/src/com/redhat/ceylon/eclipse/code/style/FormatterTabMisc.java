@@ -65,10 +65,10 @@ public class FormatterTabMisc extends FormatterTabPage {
                         return null;
                     }
                 });
-
-        updatePreferences(
-                this.workingValues.get(FORMATTER_inlineAnnotations_List),
-                annotationsList, allAnnotations);
+        
+        if (allAnnotations.getChecked()) {
+            annotationsList.setEnabled(false);
+        }
 
         allAnnotations.addObserver(new Observer() {
             public void update(Observable o, Object arg) {
