@@ -58,18 +58,24 @@ public class FormatterTabMisc extends FormatterTabPage {
                     public String isValid(String l) {
                         String[] tokens = l.split(",");
                         for (String token : tokens) {
-                            if (!acceptedInlineAnnotations.contains(token.trim())) {
-                                return "Invalid Annotation: " + token;
+                            for (int i = 0; i < token.length(); i += Character.isBmpCodePoint(i) ? 1 : 2) {
+                                int cp = token.codePointAt(i);
+                                if (!Character.isLetterOrDigit(cp) && cp != '_'
+                                        || Character.isUpperCase(cp)
+                                        || i == 0 && Character.isDigit(cp)) {
+                                    StringBuilder ret = new StringBuilder();
+                                    ret.append("Invalid character in annotation name: \'");
+                                    ret.appendCodePoint(cp);
+                                    ret.append('\'');
+                                    return ret.toString();
+                                }
                             }
                         }
                         return null;
                     }
-                });
+                },
+                /* enabled = */ !allAnnotations.getChecked());
         
-        if (allAnnotations.getChecked()) {
-            annotationsList.setEnabled(false);
-        }
-
         allAnnotations.addObserver(new Observer() {
             public void update(Observable o, Object arg) {
                 updatePreferences((String) arg, annotationsList,

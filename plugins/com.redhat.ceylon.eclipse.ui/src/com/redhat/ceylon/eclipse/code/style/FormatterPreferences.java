@@ -2,8 +2,6 @@ package com.redhat.ceylon.eclipse.code.style;
 
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
 
-import org.apache.commons.lang.StringUtils;
-
 import ceylon.formatter.options.FormattingOptions;
 import ceylon.formatter.options.IndentMode;
 import ceylon.formatter.options.Mixed;
@@ -35,7 +33,6 @@ public class FormatterPreferences {
     private VariableOptions options;
     private String space_AfterParamListClosingParen_Number;
     private String maxLineLength_Number;
-    private String inlineAnnotations_List;
 
     public FormatterPreferences(FormattingOptions options) {
         this.options = new VariableOptions(options);
@@ -236,16 +233,12 @@ public class FormatterPreferences {
             }
             break;
         case FORMATTER_inlineAnnotations_List:
-            if (! (options.getInlineAnnotations() instanceof ceylon.formatter.options.All)) {
+            if (options.getInlineAnnotations() instanceof ceylon.formatter.options.All) {
+                ret = "all";
+            } else {
                 @SuppressWarnings("unchecked") // checked by Ceylon type info
                 ceylon.language.Iterable<? extends String, ? extends Object> it = (ceylon.language.Iterable<? extends String, ? extends Object>)options.getInlineAnnotations();
                 ret = ceylon.language.String.join(",", it);
-                this.inlineAnnotations_List = ret; // save
-            }
-            if (this.inlineAnnotations_List != null) {
-                ret = this.inlineAnnotations_List;
-            } else {
-                ret = StringUtils.join(acceptedInlineAnnotations, ',');
             }
             break;
         case FORMATTER_lineBreak:
@@ -471,16 +464,19 @@ public class FormatterPreferences {
             if (TRUE.equals(value)) {
                 options.setInlineAnnotations(all_.get_());
             } else {
-                if (this.inlineAnnotations_List == null) {
-                    options.setInlineAnnotations(StringUtils.join(acceptedInlineAnnotations, ','));
-                } else {
-                    options.setInlineAnnotations(acceptedInlineAnnotations.toArray());
-                }
+                options.setInlineAnnotations(FormattingOptions.$default$inlineAnnotations(null, null, null, null, null, null, null, null));
             }
             break;
         case FORMATTER_inlineAnnotations_List:
-            String[] anns = value == null ? new String[] {} : value.split(",");
-            options.setInlineAnnotations(anns);
+            if (value == null) {
+                options.setInlineAnnotations(all_.get_());
+            } else {
+                if (value.equals("all")) {
+                    options.setInlineAnnotations(all_.get_());
+                } else {
+                    options.setInlineAnnotations(ceylon.language.String.split(value.replace(',', ' ')).sequence()); // TODO remove .sequence() when ceylon/ceylon-spec#1106 is fixed
+                }
+            }
             break;
         case FORMATTER_lineBreak:
             if (ceylon.formatter.options.lf_.get_().toString().equals(value)) {

@@ -973,8 +973,16 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
     protected StringPreference createStringPref(Composite composite,
             int numColumns, String name, String key,
             IInputValidator inputValidator) {
+        return createStringPref(composite, numColumns, name, key, inputValidator, true);
+    }
+
+    protected StringPreference createStringPref(Composite composite,
+            int numColumns, String name, String key,
+            IInputValidator inputValidator, boolean enabled) {
         StringPreference pref = new StringPreference(composite, numColumns,
                 workingValues, key, name, inputValidator);
+        if (!enabled)
+            pref.setEnabled(false);
         fDefaultFocusManager.add(pref);
         pref.addObserver(fUpdater);
         return pref;
