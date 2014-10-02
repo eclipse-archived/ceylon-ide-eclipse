@@ -11,11 +11,34 @@ import org.eclipse.swt.widgets.Group;
 
 public class FormatterTabIndent extends FormatterTabPage {
 
-    private final String PREVIEW = 
-            "import ceylon.collection { MutableList }\n\n\n"
-            + "shared class Example() {"
-            + "value test => 0;"
-            + "}";
+    private final String PREVIEW
+            = "shared class AccessCountingIterable<Element,Absent>(Iterable<Element,Absent> wrapped)\n"
+            + "        extends Object()\n"
+            + "        satisfies Iterable<Element,Absent>\n"
+            + "        given Absent satisfies Null {\n"
+            + "    \n"
+            + "    variable Integer accessCounter = 0;\n"
+            + "    shared Integer accessCount => accessCounter;\n"
+            + "    \n"
+            + "    shared actual Iterator<Element> iterator() {\n"
+            + "        accessCounter++;\n"
+            + "        return wrapped.iterator();\n"
+            + "    }\n"
+            + "    \n"
+            + "    shared actual Boolean equals(Object that) {\n"
+            + "        if (is Iterable<Element,Absent> that) {\n"
+            + "            return wrapped == that;\n"
+            + "        } else {\n"
+            + "            return false;\n"
+            + "        }\n"
+            + "    }\n"
+            + "    \n"
+            + "    shared actual Integer hash =>\n"
+            + "            sum {\n"
+            + "        accessCounter.hash,\n"
+            + "        wrapped.hash\n"
+            + "    };\n"
+            + "}\n";
 
     private CeylonPreview ceylonPreview;
 
