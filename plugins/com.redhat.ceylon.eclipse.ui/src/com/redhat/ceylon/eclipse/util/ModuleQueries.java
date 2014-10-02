@@ -20,6 +20,9 @@ public class ModuleQueries {
             if (compileToJs&&!compileToJava) {
                 return ModuleQuery.Type.JS;
             }
+            if (compileToJs&&compileToJava) {
+                return ModuleQuery.Type.CEYLON_CODE;
+            }
         }
         return ModuleQuery.Type.CODE;
     }
