@@ -68,9 +68,4 @@ public class CeylonFormatterConstants {
     // required for preview setup
     public static final String FORMATTER_LINE_SPLIT = "lineSplit";
     public static final String FORMATTER_TAB_SIZE = "tabSize";
-
-    public static final List<String> acceptedInlineAnnotations = Collections.unmodifiableList(
-            Arrays.asList(new String[] { "abstract",
-            "actual", "annotation", "default", "final", "formal", "late",
-            "native", "optional", "shared", "variable" }));
 }
