@@ -508,7 +508,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             AbstractContentProvider contentProvider, 
             ItemsFilter itemsFilter, IProject project, 
             JDTModule module, Declaration dec) {
-        if (includeDeclaration(dec) &&
+        if (includeDeclaration(module, dec) &&
                 //watch out for dupes!
                 (!module.isProjectModule() || 
                  !dec.getUnit().getFilename().endsWith("ceylon"))) {
@@ -531,9 +531,10 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             ItemsFilter itemsFilter, IProject project, 
             List<? extends PhasedUnit> units) {
         for (PhasedUnit unit: units) {
+            JDTModule jdtModule = (JDTModule) unit.getPackage().getModule();
             for (Declaration dec: unit.getDeclarations()) {
-                if (includeDeclaration(dec)) {
-                    String version = unit.getPackage().getModule().getVersion();
+                if (includeDeclaration(jdtModule, dec)) {
+                    String version = jdtModule.getVersion();
                     String path = unit.getUnitFile().getPath();
                     DeclarationWithProject dwp = 
                             new DeclarationWithProject(dec, 
@@ -546,9 +547,14 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
-    private boolean includeDeclaration(Declaration dec) {
-        return (dec.isToplevel() || includeMembers && dec.isShared()) 
-                && isPresentable(dec);
+    private boolean includeDeclaration(JDTModule module, Declaration dec) {
+        boolean visibleFromSourceModules;
+        if (dec.isToplevel()) {
+            visibleFromSourceModules = dec.isShared() || module.isProjectModule();
+        } else {
+            visibleFromSourceModules = includeMembers && dec.isShared();
+        }
+        return visibleFromSourceModules && isPresentable(dec);
     }
     
     private int estimateWork(IProgressMonitor monitor) {
