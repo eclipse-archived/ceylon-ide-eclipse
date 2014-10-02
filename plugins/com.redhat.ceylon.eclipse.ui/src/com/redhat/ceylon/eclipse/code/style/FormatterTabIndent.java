@@ -6,7 +6,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 
