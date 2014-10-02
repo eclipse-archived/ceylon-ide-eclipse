@@ -237,7 +237,9 @@ public class FormatterPreferences {
             break;
         case FORMATTER_inlineAnnotations_List:
             if (! (options.getInlineAnnotations() instanceof ceylon.formatter.options.All)) {
-                ret = StringUtils.join(((String[])options.getInlineAnnotations()), ',');
+                @SuppressWarnings("unchecked") // checked by Ceylon type info
+                ceylon.language.Iterable<? extends String, ? extends Object> it = (ceylon.language.Iterable<? extends String, ? extends Object>)options.getInlineAnnotations();
+                ret = ceylon.language.String.join(",", it);
                 this.inlineAnnotations_List = ret; // save
             }
             if (this.inlineAnnotations_List != null) {
