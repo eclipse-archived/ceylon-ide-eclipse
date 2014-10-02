@@ -32,8 +32,8 @@ public class FormatterTabLine extends FormatterTabPage {
         }
     }
 
-    private final String PREVIEW = createPreviewHeader("Preview")
-            + "import ceylon.collection { MutableList, freq=frequencies }\n\n\n"
+    private final String PREVIEW = 
+            "import ceylon.collection { MutableList, freq=frequencies }\n\n\n"
             + "shared class Example(str) {"
             + "shared String str; \n"
             + "value test => 0;\n"

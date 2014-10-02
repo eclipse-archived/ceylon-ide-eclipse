@@ -302,16 +302,17 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
     protected class MinMaxValidator implements IInputValidator {
         int fMinValue;
         int fMaxValue;
-        
+
         protected MinMaxValidator() {
             super();
         }
+
         public MinMaxValidator(int minValue, int maxValue) {
             this.fMinValue = minValue;
             this.fMaxValue = maxValue;
         }
-        
-        public String isValid (String trimInput) {
+
+        public String isValid(String trimInput) {
             int number;
 
             try {
@@ -325,17 +326,17 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
             if (number > fMaxValue)
                 return Boolean.toString(false);
             return Boolean.toString(true);
-        }    
+        }
     }
-    
+
     protected final class RangePreference extends Preference {
 
         private Composite comp;
 
         public RangePreference(Composite composite, int numColumns,
-                FormatterPreferences workingValues, String keyFirst, String keyLast, 
-                int minValue, int maxValue, String text) {
-            super(workingValues, keyFirst+":"+keyLast);
+                FormatterPreferences workingValues, String keyFirst,
+                String keyLast, int minValue, int maxValue, String text) {
+            super(workingValues, keyFirst + ":" + keyLast);
             comp = new Composite(composite, SWT.NONE);
         }
 
@@ -347,11 +348,11 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
         @Override
         protected void updateWidget() {
             // TODO Auto-generated method stub
-            
+
         }
-        
+
     }
-    
+
     protected class NumberPreference extends Preference {
 
         private MinMaxValidator fValidator;
@@ -362,15 +363,16 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
         protected int fOldSelected;
 
         public NumberPreference(Composite composite, int numColumns,
-                FormatterPreferences workingValues, String key, MinMaxValidator validator, 
-                String text, boolean compact) {
+                FormatterPreferences workingValues, String key,
+                MinMaxValidator validator, String text, boolean compact) {
             super(workingValues, key);
-            
+
             if (compact) {
-                fNumberLabel = createCompactLabel(numColumns - 1, composite, text, SWT.RIGHT, 40);
+                fNumberLabel = createCompactLabel(numColumns - 1, composite,
+                        text, SWT.RIGHT, 40);
             } else {
                 fNumberLabel = createLabel(numColumns - 1, composite, text,
-                        GridData.FILL_HORIZONTAL);                
+                        GridData.FILL_HORIZONTAL);
             }
             fNumberText = new Text(composite, SWT.SINGLE | SWT.BORDER
                     | SWT.RIGHT);
@@ -378,8 +380,9 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
 
             final int length = Integer.toString(validator.fMaxValue).length() + 3;
             fNumberText.setLayoutData(createGridData(1,
-                    (compact ? GridData.HORIZONTAL_ALIGN_BEGINNING : GridData.HORIZONTAL_ALIGN_END),
-                    fPixelConverter.convertWidthInCharsToPixels(length)));
+                    (compact ? GridData.HORIZONTAL_ALIGN_BEGINNING
+                            : GridData.HORIZONTAL_ALIGN_END), fPixelConverter
+                            .convertWidthInCharsToPixels(length)));
 
             fValidator = validator;
 
@@ -405,15 +408,15 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
         private IStatus createErrorStatus(MinMaxValidator validator) {
             int min, max;
             String rangeText = "";
-            if (validator != null ) {
+            if (validator != null) {
                 min = validator.fMinValue;
                 max = validator.fMaxValue;
                 rangeText = Integer.toString(min) + " and "
-                + Integer.toString(max);
+                        + Integer.toString(max);
             }
             return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 0,
-                    "Inavlid number value. Should be between - "
-                    + rangeText, null);
+                    "Inavlid number value. Should be between - " + rangeText,
+                    null);
         }
 
         protected void focusGained() {
@@ -436,7 +439,8 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
 
         protected void fieldModified() {
             final String trimInput = fNumberText.getText().trim();
-            final boolean valid = Boolean.parseBoolean(fValidator.isValid(trimInput));
+            final boolean valid = Boolean.parseBoolean(fValidator
+                    .isValid(trimInput));
 
             updateStatus(valid ? null : createErrorStatus(fValidator));
 
@@ -922,11 +926,12 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
         label.setText(text);
 
         PixelConverter pixelConverter = new PixelConverter(parent);
-        label.setLayoutData(createGridData(numColumns,GridData.FILL_HORIZONTAL,
+        label.setLayoutData(createGridData(numColumns,
+                GridData.FILL_HORIZONTAL,
                 pixelConverter.convertHorizontalDLUsToPixels(width)));
         return label;
     }
-    
+
     protected Group createGroup(int numColumns, Composite parent, String text) {
         final Group group = new Group(parent, SWT.NONE);
         group.setFont(parent.getFont());
@@ -949,7 +954,8 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
     protected NumberPreference createNumberPref(Composite composite,
             int numColumns, String name, String key, int minValue, int maxValue) {
         final NumberPreference pref = new NumberPreference(composite,
-                numColumns, workingValues, key, new MinMaxValidator(minValue, maxValue), name, false);
+                numColumns, workingValues, key, new MinMaxValidator(minValue,
+                        maxValue), name, false);
         fDefaultFocusManager.add(pref);
         pref.addObserver(fUpdater);
         return pref;
@@ -963,7 +969,7 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
         pref.addObserver(fUpdater);
         return pref;
     }
-    
+
     protected StringPreference createStringPref(Composite composite,
             int numColumns, String name, String key,
             IInputValidator inputValidator) {
