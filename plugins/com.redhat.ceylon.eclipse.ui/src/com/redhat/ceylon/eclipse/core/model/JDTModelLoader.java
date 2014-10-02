@@ -434,8 +434,10 @@ public class JDTModelLoader extends AbstractModelLoader {
                 
                 for (IType type : typesToLoad) {
                     String typeFullyQualifiedName = type.getFullyQualifiedName();
+                    String[] nameParts = typeFullyQualifiedName.split("\\.");
+                    String typeQualifiedName = nameParts[nameParts.length - 1];
                     // only top-levels are added in source declarations
-                    if (typeFullyQualifiedName.indexOf('$') > 0) {
+                    if (typeQualifiedName.indexOf('$') > 0) {
                         continue;
                     }
                     
