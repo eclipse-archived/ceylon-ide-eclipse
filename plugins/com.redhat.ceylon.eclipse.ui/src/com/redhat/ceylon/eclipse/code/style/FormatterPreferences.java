@@ -474,7 +474,7 @@ public class FormatterPreferences {
                 if (value.equals("all")) {
                     options.setInlineAnnotations(all_.get_());
                 } else {
-                    options.setInlineAnnotations(ceylon.language.String.split(value.replace(',', ' ')).sequence()); // TODO remove .sequence() when ceylon/ceylon-spec#1106 is fixed
+                    options.setInlineAnnotations(ceylon.language.String.split(value.replace(',', ' ')));
                 }
             }
             break;
