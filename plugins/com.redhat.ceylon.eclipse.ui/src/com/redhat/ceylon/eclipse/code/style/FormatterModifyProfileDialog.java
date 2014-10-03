@@ -31,6 +31,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class FormatterModifyProfileDialog extends StatusDialog implements
         IModifyDialogTabPage.IModificationListener {
 
+    private static final IStatus STATUS_OK = new Status(IStatus.OK, CeylonPlugin.PLUGIN_ID, null);
+
     private static final int APPLY_BUTTON_ID = IDialogConstants.CLIENT_ID;
 
     private final boolean newProfile;
@@ -229,7 +231,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
         String name = profileNameField.getText().trim();
         if (name.equals(profile.getName())
                 && profile.hasEqualSettings(workingValues)) {
-            updateStatus(StatusInfo.OK_STATUS);
+            updateStatus(STATUS_OK);
             return;
         }
 
@@ -252,7 +254,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
             return;
         }
 
-        updateStatus(StatusInfo.OK_STATUS);
+        updateStatus(STATUS_OK);
     }
 
     private IStatus validateProfileName() {
@@ -270,7 +272,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
                     "Empty Name");
         }
 
-        return StatusInfo.OK_STATUS;
+        return STATUS_OK;
     }
 
     private boolean hasChanges() {

@@ -244,10 +244,8 @@ public class CeylonPreview {
             fPreviewCu = new CeylonParser(new CommonTokenStream(
                     fPreviewLexer)).compilationUnit();
         } catch (RecognitionException re) {
-            CeylonPlugin
-                    .getInstance()
-                    .getLog()
-                    .log(new StatusInfo(IStatus.WARNING,
+            CeylonPlugin.getInstance().getLog()
+                    .log(new Status(IStatus.WARNING, CeylonPlugin.PLUGIN_ID,
                             "Error parsing preview code, should not have happened"));
             fPreviewCu = null;
         }

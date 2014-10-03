@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.style;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -17,6 +18,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
 
 /**
@@ -29,10 +32,12 @@ public class FormatterProfileAlreadyExistsDialog extends StatusDialog {
     private Button fRenameRadio, fOverwriteRadio;
 
     private final int NUM_COLUMNS = 2;
-
-    private final StatusInfo fOk;
-    private final StatusInfo fEmpty;
-    private final StatusInfo fDuplicate;
+    private static final IStatus STATUS_OK = 
+            new Status(IStatus.OK, CeylonPlugin.PLUGIN_ID, null);
+    
+    private final IStatus fOk;
+    private final IStatus fEmpty;
+    private final IStatus fDuplicate;
 
     private final Profile profile;
     private final FormatterProfileManager fProfileManager;
@@ -42,10 +47,10 @@ public class FormatterProfileAlreadyExistsDialog extends StatusDialog {
         super(parentShell);
         this.profile = profile;
         fProfileManager = profileManager;
-        fOk = new StatusInfo();
-        fDuplicate = new StatusInfo(IStatus.ERROR,
+        fOk = STATUS_OK;
+        fDuplicate = new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
                 "Formatter Profile already exists");
-        fEmpty = new StatusInfo(IStatus.ERROR,
+        fEmpty = new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID,
                 "Formatter Profile name is empty");
 
         setHelpAvailable(false);

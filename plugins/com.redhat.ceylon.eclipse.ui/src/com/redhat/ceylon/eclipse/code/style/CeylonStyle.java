@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 import ceylon.formatter.options.saveProfile_;
 
@@ -13,6 +14,7 @@ import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.ConfigWriter;
 import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
 
 
@@ -55,8 +57,8 @@ public class CeylonStyle {
                     file.isDirectory() ? file.getAbsolutePath() : file
                             .getParent());
         } catch (Exception e) {
-            throw new CoreException(new StatusInfo(IStatus.ERROR,
-                    e.getMessage()));
+            throw new CoreException(new Status(IStatus.ERROR,
+                    CeylonPlugin.PLUGIN_ID, e.getMessage()));
         }
     }
 
@@ -69,7 +71,8 @@ public class CeylonStyle {
                 return true;
             } catch (IOException e) {
                 CeylonPlugin.getInstance().getLog()
-                        .log(new StatusInfo(IStatus.ERROR, e.getMessage()));
+                        .log(new Status(IStatus.ERROR, 
+                                CeylonPlugin.PLUGIN_ID, e.getMessage()));
                 return false;
             }
         } else {
