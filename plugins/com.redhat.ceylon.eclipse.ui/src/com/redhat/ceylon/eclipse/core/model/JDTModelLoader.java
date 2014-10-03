@@ -534,7 +534,15 @@ public class JDTModelLoader extends AbstractModelLoader {
                             @SuppressWarnings("rawtypes")
                             Map types = (Map) secondaryTypePaths.get(packageName==null?"":packageName); //$NON-NLS-1$
                             if (types != null && types.size() > 0) {
+                                boolean startsWithDollar = false;
+                                if(typeName.startsWith("$")) {
+                                    startsWithDollar = true;
+                                    typeName = typeName.substring(1);
+                                }
                                 String[] parts = typeName.split("(\\.|\\$)");
+                                if (startsWithDollar) {
+                                    parts[0] = "$" + parts[0];
+                                }
                                 int index = 0;
                                 String topLevelClassName = parts[index++];
                                 IType currentClass = (IType) types.get(topLevelClassName);
@@ -542,8 +550,8 @@ public class JDTModelLoader extends AbstractModelLoader {
                                 while (index < parts.length) {
                                     result = null;
                                     String nestedClassName = parts[index++];
-                                    currentClass = currentClass.getType(nestedClassName);
-                                    if (currentClass.exists()) {
+                                    if (currentClass != null && currentClass.exists()) {
+                                        currentClass = currentClass.getType(nestedClassName);
                                         result = currentClass;
                                     } else {
                                         break;
@@ -742,6 +750,10 @@ public class JDTModelLoader extends AbstractModelLoader {
             throw new ModelResolutionException("Resolving action requested on a missing declaration");
         }
         
+        if (binding == null) {
+            return false;
+        }
+        
         PackageBinding packageBinding = binding.getPackage();
         if (packageBinding == null) {
             return false;
@@ -800,7 +812,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     public static void doWithResolvedType(IType typeModel, ActionOnResolvedType action) {
-        if (typeModel == null) {
+        if (typeModel == null || ! typeModel.exists()) {
             throw new ModelResolutionException("Resolving action requested on a missing declaration");
         }
         
@@ -816,6 +828,9 @@ public class JDTModelLoader extends AbstractModelLoader {
                 binding = toBinding(typeModel, lookupEnvironment, compoundName);
             } catch (JavaModelException e) {
                 throw new ModelResolutionException(e);
+            }
+            if (binding == null) {
+                throw new ModelResolutionException("Binding not found for type : '" + typeModel.getFullyQualifiedName() + "'");
             }
             action.doWithBinding(binding);
         }
