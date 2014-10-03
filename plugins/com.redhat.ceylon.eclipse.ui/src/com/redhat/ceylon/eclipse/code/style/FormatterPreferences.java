@@ -32,7 +32,6 @@ public class FormatterPreferences {
     private static final String TRUE = "true";
     private VariableOptions options;
     private String space_AfterParamListClosingParen_Number;
-    private String maxLineLength_Number;
 
     public FormatterPreferences(FormattingOptions options) {
         this.options = new VariableOptions(options);
@@ -142,19 +141,15 @@ public class FormatterPreferences {
         case FORMATTER_maxLineLength:
             if ((options.getMaxLineLength() instanceof ceylon.formatter.options.Unlimited)) {
                 ret = TRUE; // unlimited
+            } else {
+                ret = FALSE;
             }
             break;
         case FORMATTER_maxLineLength_Number:
-            if (options.getMaxLineLength() instanceof ceylon.language.Integer) {
-                ret = ((ceylon.language.Integer) options.getMaxLineLength())
-                        .toString();
-                this.maxLineLength_Number = ret; // save the value in case user
-                                                 // enables again
-            }
-            if (this.maxLineLength_Number != null) {
-                ret = this.maxLineLength_Number;
-            } else {
+            if (options.getMaxLineLength() instanceof ceylon.formatter.options.Unlimited) {
                 ret = "0";
+            } else {
+                ret = options.getMaxLineLength().toString();
             }
             break;
         case FORMATTER_lineBreakStrategy:
@@ -357,17 +352,18 @@ public class FormatterPreferences {
             if (TRUE.equals(value)) {
                 options.setMaxLineLength(unlimited_.get_());
             } else {
-                if (this.maxLineLength_Number == null) {
-                    options.setMaxLineLength(0); // TODO magic number
-                } else {
-                    options.setMaxLineLength(this.maxLineLength_Number);
-                }
+                options.setMaxLineLength(ceylon.language.Integer.instance(80L)); // don't use FormattingOptions.$default$maxLineLength(null): that's unlimited!
             }
             break;
         case FORMATTER_maxLineLength_Number:
-            num = Integer.parseInt(value);
-            if (num != 0 && num >= 20 && num <= 1256) { // TODO magic numbers
-                options.setMaxLineLength(num);
+            if (value == null) {
+                options.setMaxLineLength(unlimited_.get_());
+            } else {
+                if (value.equals("0")) {
+                    options.setMaxLineLength(unlimited_.get_());
+                } else {
+                    options.setMaxLineLength(ceylon.language.Integer.instance(java.lang.Integer.parseInt(value)));
+                }
             }
             break;
         case FORMATTER_lineBreakStrategy:
