@@ -11,11 +11,8 @@ import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.MarginPainter;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.WhitespaceCharacterPainter;
 import org.eclipse.jface.text.formatter.FormattingContextProperties;
-import org.eclipse.jface.text.formatter.IContentFormatter;
-import org.eclipse.jface.text.formatter.IContentFormatterExtension;
 import org.eclipse.jface.text.formatter.IFormattingContext;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -37,7 +34,6 @@ import ceylon.formatter.format_;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
@@ -126,10 +122,6 @@ public class CeylonPreview {
                 .getSystemCursor(SWT.CURSOR_ARROW);
         fSourceViewer.getTextWidget().setCursor(arrowCursor);
 
-        // Don't set caret to 'null' as this causes
-        // https://bugs.eclipse.org/293263
-        // fSourceViewer.getTextWidget().setCaret(null);
-
         viewerConfiguration = new CeylonSourceViewerConfiguration(null);
         fSourceViewer.configure(viewerConfiguration);
         fSourceViewer.getTextWidget().setFont(
@@ -210,8 +202,6 @@ public class CeylonPreview {
         }
         fPreviewDocument.set(fPreviewText);
         if (fPreviewCu == null) {
-            // an error will already have been logged in setPreviewText(),
-            // so we simply abort, keeping the unformatted text
             return;
         }
 
