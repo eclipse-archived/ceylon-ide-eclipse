@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.style;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
@@ -37,11 +38,12 @@ public class FormatterCreateProfileDialog extends StatusDialog {
     private Combo fProfileCombo;
     private Button fEditCheckbox;
 
-    private final static StatusInfo fOk = new StatusInfo();
-    private final static StatusInfo fEmpty = new StatusInfo(IStatus.ERROR,
-            "Formatter Profile name is empty");
-    private final static StatusInfo fDuplicate = new StatusInfo(IStatus.ERROR,
-            "Formatter Profile with this name already exists");
+    private final static Status fOk = new Status(IStatus.OK, 
+            CeylonPlugin.PLUGIN_ID, null);
+    private final static Status fEmpty = new Status(IStatus.ERROR,
+            CeylonPlugin.PLUGIN_ID, "Formatter Profile name is empty");
+    private final static Status fDuplicate = new Status(IStatus.ERROR,
+            CeylonPlugin.PLUGIN_ID, "Formatter Profile with this name already exists");
 
     private final FormatterProfileManager fProfileManager;
     private final List<Profile> fSortedProfiles;

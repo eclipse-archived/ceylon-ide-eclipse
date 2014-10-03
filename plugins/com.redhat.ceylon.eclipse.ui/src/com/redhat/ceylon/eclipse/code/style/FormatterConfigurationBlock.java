@@ -12,6 +12,7 @@ import java.util.Observer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.ui.util.ExceptionHandler;
 import org.eclipse.jdt.internal.ui.util.SWTUtil;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -35,6 +36,7 @@ import ceylon.formatter.options.saveProfile_;
 
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
  * The Ceylon code formatter preference page.
@@ -430,8 +432,8 @@ public class FormatterConfigurationBlock extends StyleBlock {
                 final String title = "Error exporting profile";
                 final String message = "There was an error exporting the profile: "
                         + e.getMessage();
-                CoreException coreException = new CoreException(new StatusInfo(
-                        IStatus.ERROR, message));
+                CoreException coreException = new CoreException(new Status(
+                        IStatus.ERROR, CeylonPlugin.PLUGIN_ID, message));
                 ExceptionHandler.handle(coreException, block.getShell(), title,
                         message);
             }
@@ -474,7 +476,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
                         final String message = "There was an error deleting profile "
                                 + profileName + " : " + e.getMessage();
                         CoreException coreException = new CoreException(
-                                new StatusInfo(IStatus.ERROR, message));
+                                new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, message));
                         ExceptionHandler.handle(coreException,
                                 block.getShell(), title, message);
                         return false;
@@ -529,8 +531,8 @@ public class FormatterConfigurationBlock extends StyleBlock {
                 final String title = "Error importing profile";
                 final String message = "There was an error importing the profile from file "
                         + file.getName() + " : " + e.getMessage();
-                CoreException coreException = new CoreException(new StatusInfo(
-                        IStatus.ERROR, message));
+                CoreException coreException = new CoreException(new Status(
+                        IStatus.ERROR, CeylonPlugin.PLUGIN_ID, message));
                 ExceptionHandler.handle(coreException, block.getShell(), title,
                         message);
             }
