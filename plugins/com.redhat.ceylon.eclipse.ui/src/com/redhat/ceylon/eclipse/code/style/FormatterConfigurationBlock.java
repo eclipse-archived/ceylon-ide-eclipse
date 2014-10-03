@@ -13,8 +13,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.internal.ui.util.ExceptionHandler;
 import org.eclipse.jdt.internal.ui.util.SWTUtil;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.jface.layout.PixelConverter;
@@ -299,7 +299,6 @@ public class FormatterConfigurationBlock extends StyleBlock {
 
         final Combo combo = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
         combo.setFont(composite.getFont());
-        SWTUtil.setDefaultVisibleItemCount(combo);
         combo.setLayoutData(gd);
         return combo;
     }
@@ -432,10 +431,9 @@ public class FormatterConfigurationBlock extends StyleBlock {
                 final String title = "Error exporting profile";
                 final String message = "There was an error exporting the profile: "
                         + e.getMessage();
-                CoreException coreException = new CoreException(new Status(
-                        IStatus.ERROR, CeylonPlugin.PLUGIN_ID, message));
-                ExceptionHandler.handle(coreException, block.getShell(), title,
-                        message);
+                handleException(
+                        new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, message), 
+                        block.getShell(), title, message);
             }
         }
 
@@ -475,9 +473,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
                         final String title = "Error deleting profile";
                         final String message = "There was an error deleting profile "
                                 + profileName + " : " + e.getMessage();
-                        CoreException coreException = new CoreException(
-                                new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, message));
-                        ExceptionHandler.handle(coreException,
+                        handleException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, message),
                                 block.getShell(), title, message);
                         return false;
                     }
@@ -530,11 +526,10 @@ public class FormatterConfigurationBlock extends StyleBlock {
             } catch (Exception e) {
                 final String title = "Error importing profile";
                 final String message = "There was an error importing the profile from file "
-                        + file.getName() + " : " + e.getMessage();
-                CoreException coreException = new CoreException(new Status(
-                        IStatus.ERROR, CeylonPlugin.PLUGIN_ID, message));
-                ExceptionHandler.handle(coreException, block.getShell(), title,
-                        message);
+                        + file.getName();
+                handleException(new Status(
+                        IStatus.ERROR, CeylonPlugin.PLUGIN_ID, message), 
+                        block.getShell(), title, e.getMessage());
             }
             if (profile == null) {
                 return;
@@ -552,7 +547,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
                         .toFile());
                 fFormatterProfileManager.addProfile(profile);
             } catch (CoreException ce) {
-                ExceptionHandler.handle(ce, block.getShell(),
+                handleException(ce.getStatus(), block.getShell(),
                         "Error importing into prject",
                         "There was an error importing profile to project : "
                                 + project.getName());
@@ -580,7 +575,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
                 }
             }
         } catch (CoreException ce) {
-            ExceptionHandler.handle(ce, block.getShell(),
+            handleException(ce.getStatus(), block.getShell(),
                     "Error applying changes",
                     "There was an error applying changes to project : "
                             + project.getName());
@@ -602,5 +597,13 @@ public class FormatterConfigurationBlock extends StyleBlock {
         // revert to default
         this.fFormatterProfileManager.setSelected(fFormatterProfileManager.getDefaultProfile());
         CeylonStyle.setFormatterProfile(project, this.fFormatterProfileManager.getSelected().getName());
+    }
+    
+    private void handleException(IStatus status, Shell shell, String title, String extMsg) {
+        if (status != null) {
+            ErrorDialog.openError(shell, title, extMsg, status);
+        } else {
+            MessageDialog.openError(shell, title, extMsg);
+        }
     }
 }
