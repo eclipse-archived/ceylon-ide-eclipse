@@ -26,10 +26,11 @@ import org.eclipse.swt.widgets.TabItem;
 import ceylon.formatter.options.FormattingOptions;
 
 import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
+import com.redhat.ceylon.eclipse.code.style.FormatterTabPage.ModificationListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class FormatterModifyProfileDialog extends StatusDialog implements
-        IModifyDialogTabPage.IModificationListener {
+        ModificationListener {
 
     private static final IStatus STATUS_OK = new Status(IStatus.OK, CeylonPlugin.PLUGIN_ID, null);
 
@@ -40,7 +41,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
 
     private Profile profile;
     private FormattingOptions workingValues;
-    private final List<IModifyDialogTabPage> tabPages;
+    private final List<FormatterTabPage> tabPages;
 
     private TabFolder tabFolder;
     private final FormatterProfileManager profileManager;
@@ -61,7 +62,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
         setTitle("Modify Formatter Profile - " + profile.getName());
         this.workingValues = profile.getSettings();
         setStatusLineAboveButtons(false);
-        this.tabPages = new ArrayList<IModifyDialogTabPage>();
+        this.tabPages = new ArrayList<FormatterTabPage>();
     }
 
     @Override
@@ -85,7 +86,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
 
         if (!newProfile) {
             tabFolder.setSelection(lastFocusNr);
-            ((IModifyDialogTabPage) tabFolder.getSelection()[0].getData())
+            ((FormatterTabPage) tabFolder.getSelection()[0].getData())
                     .setInitialFocus();
         }
     }
@@ -129,7 +130,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
 
             public void widgetSelected(SelectionEvent e) {
                 final TabItem tabItem = (TabItem) e.item;
-                final IModifyDialogTabPage page = (IModifyDialogTabPage) tabItem
+                final FormatterTabPage page = (FormatterTabPage) tabItem
                         .getData();
                 // page.fSashForm.setWeights();
                 // TODO fDialogSettings.put(fKeyLastFocus,
@@ -200,7 +201,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
         super.createButtonsForButtonBar(parent);
     }
 
-    protected final void addTabPage(String title, IModifyDialogTabPage tabPage) {
+    protected final void addTabPage(String title, FormatterTabPage tabPage) {
         final TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
         applyDialogFont(tabItem.getControl());
         tabItem.setText(title);
