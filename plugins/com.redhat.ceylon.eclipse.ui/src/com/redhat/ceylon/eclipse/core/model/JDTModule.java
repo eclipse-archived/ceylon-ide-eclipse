@@ -630,6 +630,46 @@ public class JDTModule extends LazyModule {
             return;
         }
         originalUnitsToRemove.add(relativePathToSource);
+
+        try {
+            if (isCeylonBinaryArchive() || JavaCore.isJavaLikeFileName(relativePathToSource)) {
+                List<String> unitPathsToSearch = new ArrayList<>();
+                unitPathsToSearch.add(relativePathToSource);
+                unitPathsToSearch.addAll(toBinaryUnitRelativePaths(relativePathToSource));
+                for (String relativePathOfUnitToRemove : unitPathsToSearch) {
+                    Package p = getPackageFromRelativePath(relativePathOfUnitToRemove);
+                    if (p != null) {
+                        Set<Unit> units = new HashSet<>();
+                        try {
+                            for(Declaration d : p.getMembers()) {
+                                Unit u = d.getUnit();
+                                if (u.getRelativePath().equals(relativePathOfUnitToRemove)) {
+                                    units.add(u);
+                                }
+                            }
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                        
+                        for (Unit u : units) {
+                            try {
+                                for (Declaration d : u.getDeclarations()) {
+                                    d.getMembers(); 
+                                    // Just to fully load the declaration before 
+                                    // the corresponding class is removed (so that 
+                                    // the real removing from the model loader
+                                    // will not require reading the bindings.
+                                }
+                            } catch(Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
     
     public void addedOriginalUnit(String relativePathToSource) {
@@ -673,9 +713,13 @@ public class JDTModule extends LazyModule {
                                         }
                                     }
                                     for (Unit u : units) {
-                                        p.removeUnit(u);
-                                        // In the future, when we are sure that we cannot add several unit objects with the 
-                                        // same relative path, we can add a break.
+                                        try {
+                                            p.removeUnit(u);
+                                            // In the future, when we are sure that we cannot add several unit objects with the 
+                                            // same relative path, we can add a break.
+                                        } catch(Exception e) {
+                                            e.printStackTrace();
+                                        }
                                     }
                                 } else {
                                     System.out.println("WARNING : The package of the following binary unit (" + relativePathOfUnitToRemove + ") "
