@@ -31,7 +31,6 @@ public class FormatterPreferences {
     private static final String FALSE = "false";
     private static final String TRUE = "true";
     private VariableOptions options;
-    private String space_AfterParamListClosingParen_Number;
 
     public FormatterPreferences(FormattingOptions options) {
         this.options = new VariableOptions(options);
@@ -94,23 +93,25 @@ public class FormatterPreferences {
             ret = booleanString(options.getSpaceBeforeParamListClosingParen());
             break;
         case FORMATTER_space_AfterParamListClosingParen:
-            if (!(options.getSpaceAfterParamListClosingParen() instanceof ceylon.language.Integer)) {
-                ret = booleanString((ceylon.language.Boolean) options
-                        .getSpaceAfterParamListClosingParen());
+            if (options.getSpaceAfterParamListClosingParen() instanceof ceylon.language.Integer) {
+                ret = ((ceylon.language.Integer)options.getSpaceAfterParamListClosingParen())
+                        .longValue() >= 0 ? TRUE : FALSE;
             } else {
-                ret = TRUE;
+                ret = options.getSpaceAfterParamListClosingParen().toString(); // is Boolean
             }
             break;
-        case FORMATTER_space_AfterParamListClosingParen_Number: // if queried, only if number
+        case FORMATTER_space_AfterParamListClosingParen_Number:
             if (options.getSpaceAfterParamListClosingParen() instanceof ceylon.language.Integer) {
-                ret = ((ceylon.language.Integer) options
-                        .getSpaceAfterParamListClosingParen()).toString();
-                this.space_AfterParamListClosingParen_Number = ret; // save the value in case user enables again
-            }
-            if (this.space_AfterParamListClosingParen_Number != null) {
-                ret = this.space_AfterParamListClosingParen_Number;
+                long num = ((ceylon.language.Integer) options.getSpaceAfterParamListClosingParen()).longValue();
+                if (num <= -80L)
+                    ret = "-80";
+                else if (num >= 80L)
+                    ret = "80";
+                else
+                    ret = options.getSpaceAfterParamListClosingParen().toString();
             } else {
-                ret = "0";
+                ret = ((ceylon.language.Boolean)options.getSpaceAfterParamListClosingParen())
+                        .booleanValue() ? "80" : "-80";
             }
             break;
         case FORMATTER_space_BeforeValueIteratorClosingParenthesis:
@@ -322,8 +323,10 @@ public class FormatterPreferences {
             break;
         case FORMATTER_space_AfterParamListClosingParen_Number:
             int num = Integer.parseInt(value);
-            if (num != 0) {
-                options.setSpaceAfterParamListClosingParen(num);
+            if (num != 80 && num != -80) { // extreme values are represented through booleans
+                options.setSpaceAfterParamListClosingParen(ceylon.language.Integer.instance(num));
+            } else {
+                options.setSpaceAfterParamListClosingParen(ceylon.language.Boolean.instance(num > 0));
             }
             break;
         case FORMATTER_space_BeforeValueIteratorClosingParenthesis:
