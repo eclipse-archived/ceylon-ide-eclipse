@@ -1,9 +1,5 @@
 package com.redhat.ceylon.eclipse.code.style;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -18,7 +14,6 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
-import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -82,7 +77,7 @@ public abstract class FormatterTabPage {
         fShowInvisibleButton.setSelection(isShowInvisible());
 
         fPreview = doCreateCeylonPreview(composite);
-        fDefaultFocusManager.add(fPreview.getControl());
+
         fPreview.showInvisibleCharacters(fShowInvisibleButton.getSelection());
 
         final GridData gd = createGridData(numColumns, GridData.FILL_BOTH, 0);
@@ -597,65 +592,7 @@ public abstract class FormatterTabPage {
             return fText;
         }
     }
-
-    protected final static class DefaultFocusManager extends FocusAdapter {
-
-        private final static String PREF_LAST_FOCUS_INDEX = CeylonPlugin.PLUGIN_ID
-                + ".formatter_page.modify_dialog_tab_page.last_focus_index";
-
-        private final IDialogSettings fDialogSettings;
-
-        private final Map<Control, Integer> fItemMap;
-        private final List<Control> fItemList;
-
-        private int fIndex;
-
-        public DefaultFocusManager() {
-            fDialogSettings = CeylonPlugin.getInstance().getDialogSettings();
-            fItemMap = new HashMap<Control, Integer>();
-            fItemList = new ArrayList<Control>();
-            fIndex = 0;
-        }
-
-        @Override
-        public void focusGained(FocusEvent e) {
-            fDialogSettings.put(PREF_LAST_FOCUS_INDEX, fItemMap.get(e.widget)
-                    .intValue());
-        }
-
-        public void add(Control control) {
-            control.addFocusListener(this);
-            fItemList.add(fIndex, control);
-            fItemMap.put(control, new Integer(fIndex++));
-        }
-
-        public void add(Preference preference) {
-            final Control control = preference.getControl();
-            if (control != null)
-                add(control);
-        }
-
-        public boolean isUsed() {
-            return fIndex != 0;
-        }
-
-        public void restoreFocus() {
-            int index = 0;
-            try {
-                index = fDialogSettings.getInt(PREF_LAST_FOCUS_INDEX);
-                if ((index >= 0) && (index <= fItemList.size() - 1)) {
-                    fItemList.get(index).setFocus();
-                }
-            } catch (NumberFormatException ex) {
-                // this is the first time
-            }
-        }
-
-        public void resetFocus() {
-            fDialogSettings.put(PREF_LAST_FOCUS_INDEX, -1);
-        }
-    }
-
+    
     private static class PageLayout extends Layout {
 
         private final ScrolledComposite fContainer;
@@ -719,8 +656,6 @@ public abstract class FormatterTabPage {
         }
     }
 
-    protected final DefaultFocusManager fDefaultFocusManager;
-
     protected PixelConverter fPixelConverter;
 
     protected FormatterPreferences workingValues;
@@ -736,7 +671,6 @@ public abstract class FormatterTabPage {
     }
 
     public FormatterTabPage() {
-        fDefaultFocusManager = new DefaultFocusManager();
         fDialogSettings = CeylonPlugin.getInstance().getDialogSettings();
     }
 
@@ -837,18 +771,11 @@ public abstract class FormatterTabPage {
             int numColumns);
 
     public final void makeVisible() {
-        fDefaultFocusManager.resetFocus();
         doUpdatePreview();
     }
 
     protected void notifyValuesModified() {
         fModifyListener.valuesModified(workingValues);
-    }
-
-    public void setInitialFocus() {
-        if (fDefaultFocusManager.isUsed()) {
-            fDefaultFocusManager.restoreFocus();
-        }
     }
 
     protected void updateStatus(IStatus status) {
@@ -935,7 +862,6 @@ public abstract class FormatterTabPage {
         final NumberPreference pref = new NumberPreference(composite,
                 numColumns, workingValues, key, new MinMaxValidator(minValue,
                         maxValue), name, false);
-        fDefaultFocusManager.add(pref);
         pref.addObserver(fUpdater);
         return pref;
     }
@@ -944,7 +870,6 @@ public abstract class FormatterTabPage {
             int numColumns, String name, String key, MinMaxValidator validator) {
         final NumberPreference pref = new NumberPreference(composite,
                 numColumns, workingValues, key, validator, name, true);
-        fDefaultFocusManager.add(pref);
         pref.addObserver(fUpdater);
         return pref;
     }
@@ -962,7 +887,6 @@ public abstract class FormatterTabPage {
                 workingValues, key, name, inputValidator);
         if (!enabled)
             pref.setEnabled(false);
-        fDefaultFocusManager.add(pref);
         pref.addObserver(fUpdater);
         return pref;
     }
@@ -972,7 +896,6 @@ public abstract class FormatterTabPage {
             String[] items) {
         final ComboPreference pref = new ComboPreference(composite, numColumns,
                 workingValues, key, values, name, items);
-        fDefaultFocusManager.add(pref);
         pref.addObserver(fUpdater);
         return pref;
     }
@@ -981,7 +904,6 @@ public abstract class FormatterTabPage {
             int numColumns, String name, String key, String[] values) {
         final CheckboxPreference pref = new CheckboxPreference(composite,
                 numColumns, workingValues, key, values, name);
-        fDefaultFocusManager.add(pref);
         pref.addObserver(fUpdater);
         return pref;
     }
@@ -990,7 +912,6 @@ public abstract class FormatterTabPage {
             int numColumns, String name, String key, String[] values) {
         final RadioPreference pref = new RadioPreference(composite, numColumns,
                 workingValues, key, values, name);
-        fDefaultFocusManager.add(pref);
         pref.addObserver(fUpdater);
         return pref;
     }

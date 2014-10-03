@@ -33,6 +33,9 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
         ModificationListener {
 
     private static final IStatus STATUS_OK = new Status(IStatus.OK, CeylonPlugin.PLUGIN_ID, null);
+    
+    private final static String LAST_TAB_INDEX = CeylonPlugin.PLUGIN_ID
+            + ".style.formatter_page.modify_dialog.last_focus_index";
 
     private static final int APPLY_BUTTON_ID = IDialogConstants.CLIENT_ID;
 
@@ -48,6 +51,8 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
     private Button applyButton;
     private Button saveButton;
     private StringDialogField profileNameField;
+    
+    private int tabIndex;
 
     public FormatterModifyProfileDialog(Shell parentShell, Profile profile,
             FormatterProfileManager profileManager, boolean newProfile,
@@ -82,12 +87,15 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
     public void create() {
         super.create();
         int lastFocusNr = 0;
-        // TODO load last focus tab etc.
+        try {
+            lastFocusNr = CeylonPlugin.getInstance().getDialogSettings()
+                    .getInt(LAST_TAB_INDEX);
+        } catch (NumberFormatException e) {
+            // may not exist
+        }
 
         if (!newProfile) {
             tabFolder.setSelection(lastFocusNr);
-            ((FormatterTabPage) tabFolder.getSelection()[0].getData())
-                    .setInitialFocus();
         }
     }
 
@@ -132,10 +140,8 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
                 final TabItem tabItem = (TabItem) e.item;
                 final FormatterTabPage page = (FormatterTabPage) tabItem
                         .getData();
-                // page.fSashForm.setWeights();
-                // TODO fDialogSettings.put(fKeyLastFocus,
-                // fTabPages.indexOf(page));
                 page.makeVisible();
+                tabIndex = tabPages.indexOf(page);
             }
         });
 
@@ -155,8 +161,8 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
 
     @Override
     public boolean close() {
-        // TODO save dialog settings and active tab
-        // final Rectangle shell= getShell().getBounds();
+        CeylonPlugin.getInstance().getDialogSettings()
+            .put(LAST_TAB_INDEX, tabIndex);
         return super.close();
     }
 
