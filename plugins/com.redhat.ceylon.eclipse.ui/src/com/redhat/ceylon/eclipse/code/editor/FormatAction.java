@@ -40,6 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
+import com.redhat.ceylon.eclipse.code.style.CeylonStyle;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
@@ -257,7 +258,7 @@ final class FormatAction extends Action {
                         unit.node,
                         combinedOptions_.combinedOptions(
                                 loadProfile_.loadProfile(
-                                        "default", // TODO profile management
+                                        CeylonStyle.getFormatterProfile(pc.getProject()),
                                         /* inherit = */ false,
                                         /* baseDir = */ pc.getProject().getLocation().toOSString()),
                                 new Singleton<SparseFormattingOptions>
