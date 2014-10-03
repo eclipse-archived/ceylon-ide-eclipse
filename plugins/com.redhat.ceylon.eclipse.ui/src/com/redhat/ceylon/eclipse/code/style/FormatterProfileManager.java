@@ -210,10 +210,6 @@ public class FormatterProfileManager extends Observable {
         return profiles.get(name);
     }
 
-    public void clearAllSettings() {
-        // TODO
-    }
-
     public Profile getSelected() {
         return this.selected;
     }

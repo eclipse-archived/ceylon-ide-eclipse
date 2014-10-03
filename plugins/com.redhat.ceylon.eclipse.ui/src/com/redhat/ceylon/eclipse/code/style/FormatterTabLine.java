@@ -104,7 +104,7 @@ public class FormatterTabLine extends FormatterTabPage {
         final CheckboxPreference unlimited = createCheckboxPref(generalGroup, numColumns, "Unlimited line length",
                 FORMATTER_maxLineLength, FALSE_TRUE);
         final NumberPreference maxLineLength = createNumberPref(generalGroup, numColumns, "Maximum line length",
-                FORMATTER_maxLineLength_Number, 20, 1256); //TODO magic numbers
+                FORMATTER_maxLineLength_Number, MINIMUM_SPECIFIED_LINE_LENGTH, MAXIMUM_SPECIFIED_LINE_LENGTH);
         updatePreferences(this.workingValues.get(FORMATTER_maxLineLength_Number), maxLineLength, unlimited);
 
         unlimited.addObserver(new Observer() {

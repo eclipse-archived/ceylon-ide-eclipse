@@ -67,4 +67,10 @@ public class CeylonFormatterConstants {
     
     public static final String DEFAULT_PROFILE_NAME = "default";
     public static final String UNNAMED_PROFILE_NAME = "unnamed";
+    
+    public static final int MINIMUM_SPECIFIED_LINE_LENGTH = 20;
+    public static final int MAXIMUM_SPECIFIED_LINE_LENGTH = 1256;
+    
+    public static final int MINIMUM_SPACE_AFTER_SHIFT = -80;
+    public static final int MAXIMUM_SPACE_AFTER_SHIFT = 80;
 }

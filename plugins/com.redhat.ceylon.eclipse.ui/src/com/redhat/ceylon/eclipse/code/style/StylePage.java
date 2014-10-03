@@ -34,20 +34,6 @@ public abstract class StylePage extends PropertyPage implements
         return project != null;
     }
 
-    protected void enableProjectSpecificSettings(boolean useProjectSettings) {
-        if (isProjectPreferencePage() && styleBlock != null) {
-            styleBlock.enableProjectSpecificSettings(useProjectSettings);
-        }
-    }
-
-    protected boolean hasProjectSpecificOptions(IProject project) {
-        if (isProjectPreferencePage() && styleBlock != null) {
-            return styleBlock.hasProjectSpecificOptions(project);
-        } else {
-            return false;
-        }
-    }
-
     @Override
     public void dispose() {
         super.dispose();

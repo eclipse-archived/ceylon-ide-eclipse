@@ -1,19 +1,14 @@
 package com.redhat.ceylon.eclipse.code.style;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.internal.ui.util.ExceptionHandler;
-import org.eclipse.jdt.internal.ui.viewsupport.BasicElementLabels;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.DialogField;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.IDialogFieldListener;
 import org.eclipse.jdt.internal.ui.wizards.dialogfields.StringDialogField;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -23,7 +18,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
@@ -38,7 +32,6 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
         IModifyDialogTabPage.IModificationListener {
 
     private static final int APPLY_BUTTON_ID = IDialogConstants.CLIENT_ID;
-    private static final int SAVE_BUTTON_ID = IDialogConstants.CLIENT_ID + 1;
 
     private final boolean newProfile;
     private boolean projectSpecific;
@@ -119,10 +112,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
         });
 
         profileNameField.setEnabled(!projectSpecific);
-        /*
-         * fSaveButton = createButton(nameComposite, SAVE_BUTTON_ID, "Export",
-         * false); fSaveButton.setEnabled(false); // !fProjectSpecific);
-         */
+        
         tabFolder = new TabFolder(composite, SWT.NONE);
         tabFolder.setFont(composite.getFont());
         tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -178,8 +168,6 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
         if (buttonId == APPLY_BUTTON_ID) {
             applyPressed();
             setTitle("Modify Formatter Profile - " + profile.getName());
-        } else if (buttonId == SAVE_BUTTON_ID) {
-            saveButtonPressed();
         } else {
             super.buttonPressed(buttonId);
         }
@@ -193,40 +181,6 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
         profile.setSettings(workingValues, this.profileManager);
         this.profileManager.setSelected(profile);
         doValidate();
-    }
-
-    private void saveButtonPressed() {
-        Profile selected = new Profile(profileNameField.getText(),
-                workingValues, 1, 0,
-                FormatterProfileManager.CEYLON_FORMATTER_VERSION);
-
-        final FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
-        dialog.setText("Save");
-        dialog.setFilterExtensions(new String[] { "*.xml" });
-
-        final String lastPath = "/"; // TODO load last
-        if (lastPath != null) {
-            dialog.setFilterPath(lastPath);
-        }
-        final String path = dialog.open();
-        if (path == null)
-            return;
-
-        final File file = new File(path);
-        if (file.exists()
-                && !MessageDialog.openQuestion(getShell(),
-                        "Overwrite Saving Profile", "Overwrite file  - "
-                                + BasicElementLabels.getPathLabel(file))) {
-            return;
-        }
-
-        try {
-            CeylonStyle.writeProfileToFile(selected, file);
-        } catch (CoreException e) {
-            final String title = "Formatter Profile Save Error";
-            final String message = "There was an error saving the formatter profile";
-            ExceptionHandler.handle(e, getShell(), title, message);
-        }
     }
 
     @Override

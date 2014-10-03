@@ -42,8 +42,6 @@ public class FormatterTabIndent extends FormatterTabPage {
 
     private CeylonPreview ceylonPreview;
 
-    private String oldTabChar;
-
     public FormatterTabIndent(FormatterModifyProfileDialog modifyDialog,
             FormatterPreferences workingValues) {
         super(modifyDialog, workingValues);
@@ -129,6 +127,5 @@ public class FormatterTabIndent extends FormatterTabPage {
         } else {
             Assert.isTrue(false);
         }
-        oldTabChar = tabPolicy;
     }
 }
