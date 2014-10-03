@@ -334,29 +334,6 @@ public abstract class FormatterTabPage {
         }
     }
 
-    protected final class RangePreference extends Preference {
-
-        private Composite comp;
-
-        public RangePreference(Composite composite, int numColumns,
-                FormatterPreferences workingValues, String keyFirst,
-                String keyLast, int minValue, int maxValue, String text) {
-            super(workingValues, keyFirst + ":" + keyLast);
-            comp = new Composite(composite, SWT.NONE);
-        }
-
-        @Override
-        public Control getControl() {
-            return comp;
-        }
-
-        @Override
-        protected void updateWidget() {
-            // do nothing
-        }
-
-    }
-
     protected class NumberPreference extends Preference {
 
         private MinMaxValidator fValidator;
