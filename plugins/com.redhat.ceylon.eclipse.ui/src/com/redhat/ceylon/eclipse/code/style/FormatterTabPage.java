@@ -40,7 +40,15 @@ import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public abstract class FormatterTabPage implements IModifyDialogTabPage {
+public abstract class FormatterTabPage {
+
+    public interface ModificationListener {
+
+        void valuesModified(FormatterPreferences workingValues);
+
+        void updateStatus(IStatus status);
+
+    }
 
     private final static String SHOW_INVISIBLE_PREFERENCE_KEY = CeylonPlugin.PLUGIN_ID
             + ".style.formatter_page.show_invisible_characters";
@@ -740,10 +748,10 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
 
     protected FormatterPreferences workingValues;
 
-    private IModifyDialogTabPage.IModificationListener fModifyListener;
+    private FormatterTabPage.ModificationListener fModifyListener;
 
     public FormatterTabPage(
-            IModifyDialogTabPage.IModificationListener modifyListener,
+            FormatterTabPage.ModificationListener modifyListener,
             FormatterPreferences workingValues) {
         this();
         this.workingValues = workingValues;
@@ -759,8 +767,7 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
         this.workingValues = workingValues;
     }
 
-    public void setModifyListener(
-            IModifyDialogTabPage.IModificationListener modifyListener) {
+    public void setModifyListener(ModificationListener modifyListener) {
         fModifyListener = modifyListener;
     }
 
