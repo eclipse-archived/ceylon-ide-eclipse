@@ -47,6 +47,13 @@ public class FormatterPreferencePage extends StylePage {
         return true;
     }
 
+    @Override
+    public void performDefaults() {
+        if (styleBlock != null) {
+            styleBlock.performDefaults();
+        }
+    }
+    
     private Control createPreferenceContent(Composite composite) {
         if (styleBlock == null) {
             styleBlock = new FormatterConfigurationBlock(project);
