@@ -1,9 +1,5 @@
 package com.redhat.ceylon.eclipse.code.style;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 public class CeylonFormatterConstants {
 
     public static final String FORMATTER_indentMode = "indentMode"; // Spaces(4)
