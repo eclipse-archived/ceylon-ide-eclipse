@@ -137,6 +137,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
         this.editor = ceylonEditor;
     }
 
+    public CeylonSourceViewer(Composite parent, IVerticalRuler verticalRuler, 
+            IOverviewRuler overviewRuler, boolean showAnnotationsOverview, int styles) {
+        this(null, parent, verticalRuler, overviewRuler, showAnnotationsOverview, styles);
+    }
+
     public boolean canDoOperation(int operation) {
         switch(operation) {
         case SHOW_OUTLINE:
