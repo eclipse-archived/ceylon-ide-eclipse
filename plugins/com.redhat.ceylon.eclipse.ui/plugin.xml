@@ -1841,7 +1841,7 @@
    <extension point="org.eclipse.ui.propertyPages">
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences"
-           name="Ceylon Compiler"
+           name="Ceylon Configuration"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonProjectPreferencesPage">
          <enabledWhen>
             <adapt type="org.eclipse.core.resources.IProject"/>
@@ -1859,7 +1859,7 @@
        <page 
            id="com.redhat.ceylon.eclipse.ui.preferences.paths" 
            category="com.redhat.ceylon.eclipse.ui.preferences"
-           name="Build Paths"
+           name="Compiler Build Paths"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage">
          <enabledWhen>
             <adapt type="org.eclipse.core.resources.IProject"/>
@@ -1889,19 +1889,9 @@
          </enabledWhen>
        </page>
        <page
-           id="com.redhat.ceylon.eclipse.ui.preferences.style"
-           name="Ceylon Code Style"
-           class="com.redhat.ceylon.eclipse.code.style.StyleMainPage">
-         <enabledWhen>
-             <adapt type="org.eclipse.core.resources.IProject">
-                 <test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
-             </adapt>
-         </enabledWhen>
-       </page>
-       <page
            id="com.redhat.ceylon.eclipse.ui.preferences.style.formatter"
-           name="Formatter"
-           category="com.redhat.ceylon.eclipse.ui.preferences.style"
+           name="Formatter Profiles"
+           category="com.redhat.ceylon.eclipse.ui.preferences"
            class="com.redhat.ceylon.eclipse.code.style.FormatterPreferencePage">
          <enabledWhen>
              <adapt type="org.eclipse.core.resources.IProject">
