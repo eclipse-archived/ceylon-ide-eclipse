@@ -253,7 +253,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
 
     @Override
     public void initialize() {
-        performDefaults();
+        // all in constructor
     }
 
     @Override
@@ -404,7 +404,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
             dialog.setText("Export Ceylon Formatter profile");
             dialog.setFilterExtensions(new String[] { "*"
                     + FORMATTER_PROFILE_SUFFIX });
-            // TODO find last path
+
             String lastPath = project.getLocation().toFile().getAbsolutePath();
             if (lastPath != null) {
                 dialog.setFilterPath(lastPath);
@@ -597,7 +597,8 @@ public class FormatterConfigurationBlock extends StyleBlock {
 
     @Override
     protected void performDefaults() {
-       // initialization in constructor
-       // no default values button on page, selecting default profile is enough
+        // revert to default
+        this.fFormatterProfileManager.setSelected(fFormatterProfileManager.getDefaultProfile());
+        CeylonStyle.setFormatterProfile(project, this.fFormatterProfileManager.getSelected().getName());
     }
 }
