@@ -12,9 +12,60 @@ import org.eclipse.swt.widgets.Group;
 public class FormatterTabMisc extends FormatterTabPage {
 
     private final String PREVIEW = 
-            "import ceylon.collection { MutableList, freq=frequencies }\n\n\n"
-            + "shared class Example(str) {" + "shared String str; \n"
-            + "value test => 0;\n" + "}";
+            "import ceylon.collection { HashSet, LinkedList }\n"
+            + "\n"
+            + "\"Tests the Collatz conjecture for all numbers up to the first argument\n"
+            + " (defaulting to 100).\n"
+            + " \n"
+            + " The Collatz conjecture states that if you start at any number,\n"
+            + " and repeatedly\n"
+            + " \n"
+            + " - divide it by 2 if it’s even, or\n"
+            + " - multiply it by 3 and add 1 if it’s odd,\n"
+            + " \n"
+            + " then you’ll always arrive at the cycle 1 4 2.\"\n"
+            + "throws (`class AssertionError`, \"If another cycle is found\")\n"
+            + "by (\"Lothar Collatz\")\n"
+            + "deprecated (\"Very inefficient\")\n"
+            + "shared void run() {\n"
+            + "    value max = parseInteger(process.arguments.first else \"100\") else 100;\n"
+            + "    HashSet<Integer[]> cycles = HashSet<Integer[]>();\n"
+            + "    for (start in 1..max) {\n"
+            + "        variable Integer i = start;\n"
+            + "        HashSet<Integer> current = HashSet<Integer>();\n"
+            + "        while (!i in current) {\n"
+            + "            current.add(i);\n"
+            + "            if (i % 2 == 0) {\n"
+            + "                i /= 2;\n"
+            + "            } else {\n"
+            + "                i = 3 * i + 1;\n"
+            + "            }\n"
+            + "        }\n"
+            + "        LinkedList<Integer> cycle = LinkedList<Integer>();\n"
+            + "        while (!i in cycle) {\n"
+            + "            cycle.add(i);\n"
+            + "            if (i % 2 == 0) {\n"
+            + "                i /= 2;\n"
+            + "            } else {\n"
+            + "                i = 3 * i + 1;\n"
+            + "            }\n"
+            + "        }\n"
+            + "        assert (exists smallestFromCycle = cycle.sort(byIncreasing(identity<Integer>)).first);\n"
+            + "        i = smallestFromCycle;\n"
+            + "        LinkedList<Integer> orderedCycle = LinkedList<Integer>();\n"
+            + "        while (!i in orderedCycle) {\n"
+            + "            orderedCycle.add(i);\n"
+            + "            if (i % 2 == 0) {\n"
+            + "                i /= 2;\n"
+            + "            } else {\n"
+            + "                i = 3 * i + 1;\n"
+            + "            }\n"
+            + "        }\n"
+            + "        cycles.add(orderedCycle.sequence());\n"
+            + "    }\n"
+            + "    \"Conjecture\"\n"
+            + "    assert (cycles.size == 1);\n"
+            + "}\n";
 
     private CeylonPreview ceylonPreview;
 
@@ -32,7 +83,7 @@ public class FormatterTabMisc extends FormatterTabPage {
         createComboPref(generalGroup, numColumns, "Line break strategy",
                 FORMATTER_lineBreak, new String[] { "os", "lf", "crlf" },
                 new String[] { "Operating System", "LF (Unix)",
-                        "CR and LF (Windwos)" });
+                        "CR + LF (Windows)" });
 
         createComboPref(generalGroup, numColumns, "Import Style",
                 FORMATTER_importStyle,
@@ -42,7 +93,7 @@ public class FormatterTabMisc extends FormatterTabPage {
         createCheckboxPref(generalGroup, numColumns, "'else' on its own line",
                 FORMATTER_elseOnOwnLine, FALSE_TRUE);
         createCheckboxPref(generalGroup, numColumns,
-                "Brace - { - on its own line", FORMATTER_braceOnOwnLine,
+                "Brace '{' on its own line", FORMATTER_braceOnOwnLine,
                 FALSE_TRUE);
         createCheckboxPref(generalGroup, numColumns, "Fail Fast",
                 FORMATTER_failFast, FALSE_TRUE);
