@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.style;
 
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AroundImportAliasEqualsSign;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -179,7 +179,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
                         0,
                         pf.getName().length()
                                 - FORMATTER_PROFILE_SUFFIX.length());
-                if ("default".equals(profileName)) {
+                if (DEFAULT_PROFILE_NAME.equals(profileName)) {
                     continue; // 'default.format' can be copied manually in the
                               // OS FS
                 }
@@ -195,7 +195,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
         // profiles may have been deleted, cannot rely on selected profile in
         // .style
         String candidateProfile = CeylonStyle.getFormatterProfile(project);
-        String activeProfile = "default";
+        String activeProfile = DEFAULT_PROFILE_NAME;
         for (Profile cpf : profiles) {
             if (cpf.getName().equals(candidateProfile)) {
                 activeProfile = candidateProfile;
@@ -513,7 +513,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
 
             final File file = new File(path);
             Profile profile = null;
-            String profileName = "unnamed";
+            String profileName = UNNAMED_PROFILE_NAME;
             String fileName = file.getName();
             if (fileName.length() > FORMATTER_PROFILE_SUFFIX.length()
                     && fileName.endsWith(FORMATTER_PROFILE_SUFFIX)) {
@@ -539,7 +539,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
             }
 
             if (fFormatterProfileManager.containsName(profile.getName())
-                    || "unnamed".equals(profile.getName())) {
+                    || UNNAMED_PROFILE_NAME.equals(profile.getName())) {
                 final FormatterProfileAlreadyExistsDialog aeDialog = new FormatterProfileAlreadyExistsDialog(
                         block.getShell(), profile, fFormatterProfileManager);
                 if (aeDialog.open() != Window.OK)
@@ -561,13 +561,21 @@ public class FormatterConfigurationBlock extends StyleBlock {
     @Override
     public boolean performApply() {
         try {
-            if (fFormatterProfileManager.getSelected() != null
-                    && fFormatterProfileManager.getSelected().getName() != "default"
-                    && fFormatterProfileManager.getSelected().getName() != "unnamed") {
-                CeylonStyle.writeProfileToFile(fFormatterProfileManager
-                        .getSelected(), project.getLocation().toFile());
-                CeylonStyle.setFormatterProfile(project,
-                        fFormatterProfileManager.getSelected().getName());
+            // the two possible values other than a real profile
+            Profile profile = fFormatterProfileManager.getSelected();
+            if (profile != null) {
+                if (profile.getName() != DEFAULT_PROFILE_NAME
+                        && profile.getName() != UNNAMED_PROFILE_NAME) {
+                    CeylonStyle.writeProfileToFile(fFormatterProfileManager
+                            .getSelected(), project.getLocation().toFile());
+                }
+                // save the chosen profile name to Ceylon config
+                // separate step for clarity
+                if (profile.getName() != UNNAMED_PROFILE_NAME) {
+                    CeylonStyle.setFormatterProfile(project,
+                            fFormatterProfileManager.getSelected()
+                                    .getName());
+                }
             }
         } catch (CoreException ce) {
             ExceptionHandler.handle(ce, block.getShell(),

@@ -125,6 +125,7 @@ public class FormatterProfileManager extends Observable {
      */
     private Profile selected;
 
+    // different semantics from the default profile name in CeylonFormatterConstants
     public final static String CEYLON_PROFILE = "default";
 
     public final static String DEFAULT_PROFILE = CEYLON_PROFILE;

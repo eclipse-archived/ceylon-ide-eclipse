@@ -64,4 +64,7 @@ public class CeylonFormatterConstants {
     // required for preview setup
     public static final String FORMATTER_LINE_SPLIT = "lineSplit";
     public static final String FORMATTER_TAB_SIZE = "tabSize";
+    
+    public static final String DEFAULT_PROFILE_NAME = "default";
+    public static final String UNNAMED_PROFILE_NAME = "unnamed";
 }

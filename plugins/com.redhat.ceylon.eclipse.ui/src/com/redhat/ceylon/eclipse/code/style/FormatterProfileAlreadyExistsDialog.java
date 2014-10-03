@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
 
 /**
  * The dialog to rename an imported profile.
@@ -70,8 +71,8 @@ public class FormatterProfileAlreadyExistsDialog extends StatusDialog {
 
         fOverwriteRadio = createRadioButton("Overwrite");
 
-        if (this.profile.getName().equalsIgnoreCase("default")
-                || this.profile.getName().equalsIgnoreCase("unnamed")) {
+        if (this.profile.getName().equalsIgnoreCase(DEFAULT_PROFILE_NAME)
+                || this.profile.getName().equalsIgnoreCase(UNNAMED_PROFILE_NAME)) {
             fOverwriteRadio.setEnabled(false);
         }
 

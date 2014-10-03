@@ -13,6 +13,8 @@ import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.ConfigWriter;
 import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
+
 
 /**
  * Utility query and update for style options
@@ -33,7 +35,7 @@ public class CeylonStyle {
                 && config.isOptionDefined(PREF_STYLE_FORMATTER_PROFILE)) {
             return config.getOption(PREF_STYLE_FORMATTER_PROFILE);
         } else {
-            return "default";
+            return DEFAULT_PROFILE_NAME;
         }
     }
 
