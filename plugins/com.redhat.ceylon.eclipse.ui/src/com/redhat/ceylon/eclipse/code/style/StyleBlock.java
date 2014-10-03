@@ -26,19 +26,9 @@ public abstract class StyleBlock {
         projectSettings = true;
     }
 
-    public boolean hasProjectSpecificOptions(IProject project) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
     protected abstract boolean performApply();
 
     protected abstract void performDefaults();
-
-    public void enableProjectSpecificSettings(boolean useProjectSettings) {
-        // TODO Auto-generated method stub
-
-    }
 
     protected abstract Control createContents(Composite composite);
 

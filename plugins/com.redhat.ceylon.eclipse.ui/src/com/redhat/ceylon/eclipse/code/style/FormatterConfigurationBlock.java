@@ -534,7 +534,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
                 ExceptionHandler.handle(coreException, block.getShell(), title,
                         message);
             }
-            if (profile == null) { // TODO is it just a blank or default profile
+            if (profile == null) {
                 return;
             }
 
@@ -597,6 +597,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
 
     @Override
     protected void performDefaults() {
-        // TODO ?
+       // initialization in constructor
+       // no default values button on page, selecting default profile is enough
     }
 }

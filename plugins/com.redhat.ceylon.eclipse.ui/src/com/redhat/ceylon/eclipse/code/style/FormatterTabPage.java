@@ -347,8 +347,7 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
 
         @Override
         protected void updateWidget() {
-            // TODO Auto-generated method stub
-
+            // do nothing
         }
 
     }

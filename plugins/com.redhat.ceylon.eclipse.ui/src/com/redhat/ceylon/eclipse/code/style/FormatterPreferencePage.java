@@ -30,11 +30,6 @@ public class FormatterPreferencePage extends StylePage {
         styleBlockControl = createPreferenceContent(composite);
         styleBlockControl.setLayoutData(data);
 
-        if (isProjectPreferencePage()) {
-            boolean useProjectSettings = hasProjectSpecificOptions(project);
-            enableProjectSpecificSettings(useProjectSettings);
-        }
-
         Dialog.applyDialogFont(composite);
         return composite;
     }

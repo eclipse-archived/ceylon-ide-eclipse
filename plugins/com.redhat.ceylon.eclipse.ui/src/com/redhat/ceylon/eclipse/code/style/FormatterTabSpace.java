@@ -98,8 +98,9 @@ public class FormatterTabSpace extends FormatterTabPage {
         final CheckboxPreference saplcp = createCheckboxPref(generalGroup, 1, "After )",
                 FORMATTER_space_AfterParamListClosingParen, FALSE_TRUE);
 
-        final NumberPreference saplcpn = createNumberPref(generalGroup, numColumns, "Detailed, -80 to 80",
-                FORMATTER_space_AfterParamListClosingParen_Number, -80, 80); //TODO magic numbers
+        final NumberPreference saplcpn = createNumberPref(generalGroup, numColumns, 
+                "Detailed, " + MINIMUM_SPACE_AFTER_SHIFT + " to " + MAXIMUM_SPACE_AFTER_SHIFT,
+                FORMATTER_space_AfterParamListClosingParen_Number, MINIMUM_SPACE_AFTER_SHIFT, MAXIMUM_SPACE_AFTER_SHIFT);
         
         Observer o = new Observer() {
             public void update(Observable o, Object arg) {

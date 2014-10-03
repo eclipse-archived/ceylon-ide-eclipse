@@ -72,7 +72,7 @@ public class CeylonPreview {
             }
 
             private boolean affectsTextPresentation(PropertyChangeEvent event) {
-                return true; // TODO analyze
+                return true; // Always
             }
         };
 
