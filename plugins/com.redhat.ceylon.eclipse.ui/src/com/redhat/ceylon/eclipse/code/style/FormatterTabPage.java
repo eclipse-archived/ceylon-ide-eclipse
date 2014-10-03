@@ -9,8 +9,6 @@ import java.util.Observer;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.internal.ui.util.SWTUtil;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IInputValidator;
@@ -240,7 +238,6 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
             createLabel(numColumns - 1, composite, text);
             fCombo = new Combo(composite, SWT.SINGLE | SWT.READ_ONLY);
             fCombo.setFont(composite.getFont());
-            SWTUtil.setDefaultVisibleItemCount(fCombo);
             fCombo.setItems(items);
 
             int max = 0;
@@ -274,7 +271,7 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
                 fCombo.setEnabled(getEnabled());
                 fCombo.setText(getSelectedItem());
             } else {
-                fCombo.setText(""); //$NON-NLS-1$
+                fCombo.setText("");
                 fCombo.setEnabled(false);
             }
         }
@@ -286,7 +283,7 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
                     return fItems[i];
                 }
             }
-            return ""; //$NON-NLS-1$
+            return "";
         }
 
         public boolean hasValue(String value) {
@@ -618,8 +615,8 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
 
     protected final static class DefaultFocusManager extends FocusAdapter {
 
-        private final static String PREF_LAST_FOCUS_INDEX = JavaUI.ID_PLUGIN
-                + "formatter_page.modify_dialog_tab_page.last_focus_index"; //$NON-NLS-1$
+        private final static String PREF_LAST_FOCUS_INDEX = CeylonPlugin.PLUGIN_ID
+                + ".formatter_page.modify_dialog_tab_page.last_focus_index";
 
         private final IDialogSettings fDialogSettings;
 
@@ -661,7 +658,6 @@ public abstract class FormatterTabPage implements IModifyDialogTabPage {
             int index = 0;
             try {
                 index = fDialogSettings.getInt(PREF_LAST_FOCUS_INDEX);
-                // make sure the value is within the range
                 if ((index >= 0) && (index <= fItemList.size() - 1)) {
                     fItemList.get(index).setFocus();
                 }

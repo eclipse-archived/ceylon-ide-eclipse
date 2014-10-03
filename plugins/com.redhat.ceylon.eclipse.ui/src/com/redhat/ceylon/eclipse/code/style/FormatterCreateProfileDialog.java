@@ -3,8 +3,6 @@ package com.redhat.ceylon.eclipse.code.style;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.util.SWTUtil;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
@@ -114,9 +112,7 @@ public class FormatterCreateProfileDialog extends StatusDialog {
         gd.horizontalSpan = numColumns;
         fProfileCombo = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
         fProfileCombo.setLayoutData(gd);
-        SWTUtil.setDefaultVisibleItemCount(fProfileCombo);
 
-        // "Open the edit dialog now" checkbox
         gd = new GridData();
         gd.horizontalSpan = numColumns;
         fEditCheckbox = new Button(composite, SWT.CHECK);
@@ -130,8 +126,8 @@ public class FormatterCreateProfileDialog extends StatusDialog {
             }
         });
 
-        final IDialogSettings dialogSettings = JavaPlugin.getDefault()
-                .getDialogSettings();// .get(PREF_OPEN_EDIT_DIALOG);
+        final IDialogSettings dialogSettings = CeylonPlugin.getInstance()
+                .getDialogSettings();
         if (dialogSettings.get(PREF_OPEN_EDIT_DIALOG) != null) {
             fOpenEditDialog = dialogSettings.getBoolean(PREF_OPEN_EDIT_DIALOG);
         } else {
@@ -175,9 +171,6 @@ public class FormatterCreateProfileDialog extends StatusDialog {
     protected void okPressed() {
         if (!getStatus().isOK())
             return;
-
-        JavaPlugin.getDefault().getDialogSettings()
-                .put(PREF_OPEN_EDIT_DIALOG, fOpenEditDialog);
 
         final FormattingOptions baseSettings = fSortedProfiles.get(
                 fProfileCombo.getSelectionIndex()).getSettings();
