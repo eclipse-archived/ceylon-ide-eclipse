@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.Test;
 
 import com.redhat.ceylon.compiler.java.codegen.Decl;
 import com.redhat.ceylon.compiler.java.test.model.ModelLoaderTest;
@@ -205,4 +206,9 @@ public class JDTModelLoaderTests extends ModelLoaderTest {
         test.test(CeylonBuilder.getProjectModelLoader(projectReferences));
     }
     
+    @Test
+    @Ignore
+    @Override
+    public void compareNativeRuntimeWithJavaRuntime() {
+    }    
 }
