@@ -100,7 +100,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
             buildSummary.waitForBuildEnd(30);
             assertThat("The build should have an error",
                     Utils.getProjectErrorMarkers(mainProject),
-                    Matchers.contains(stringContainsInOrder(Arrays.asList("src/mainModule/Use.ceylon", "l.2","type declaration does not exist"))));
+                    Matchers.hasItem(stringContainsInOrder(Arrays.asList("src/mainModule/Use.ceylon", "l.2","type declaration does not exist"))));
             
             buildSummary = new Utils.CeylonBuildSummary(mainProject);
             buildSummary.install();
