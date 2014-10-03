@@ -33,11 +33,61 @@ public class FormatterTabLine extends FormatterTabPage {
     }
 
     private final String PREVIEW = 
-            "import ceylon.collection { MutableList, freq=frequencies }\n\n\n"
-            + "shared class Example(str) {"
-            + "shared String str; \n"
-            + "value test => 0;\n"
-            + "}";
+            "{String*} words = { \"You\", \"may\", \"want\", \"to\", \"break\", \"this\", \"up\", \"into\", \"multiple\", \"lines\", \"because\", \"like\", \"this\", \"it\", \"can\", \"be\", \"hard\", \"to\", \"read\" };\n"
+            + "{String*} moreWords = {\n"
+            + "    \"However\", \"keep\", \"in\", \"mind\", \"that\",\n"
+            + "    \"the\", \"formatter\", \"can\", \"never\", \"be\",\n"
+            + "    \"as\", \"clever\", \"as\", \"a\", \"human\",\n"
+            + "    \"when\", \"deciding\", \"where\", \"line\", \"breaks\",\n"
+            + "    \"are\", \"most\", \"appropriate\"\n"
+            + "};\n"
+            + "\n"
+            + "class ManyTypeParams<\n"
+            + "        \n"
+            + "        \n"
+            + "        P1,\n"
+            + "        \n"
+            + "        \n"
+            + "        \n"
+            + "        P2,\n"
+            + "        \n"
+            + "        \n"
+            + "        \n"
+            + "        P3\n"
+            + "        \n"
+            + "        >() {\n"
+            + "    String s1 = \"\";\n"
+            + "    \n"
+            + "    \n"
+            + "    \n"
+            + "    // how many line breaks do you want to allow between this comment and other content?\n"
+            + "    \n"
+            + "    \n"
+            + "    \n"
+            + "    String s2 = \"\";\n"
+            + "    \n"
+            + "    \n"
+            + "    \n"
+            + "    /*\n"
+            + "     And how about\n"
+            + "     multi-line comments?\n"
+            + "     */\n"
+            + "    \n"
+            + "    \n"
+            + "    \n"
+            + "    String s3\n"
+            + "            =\n"
+            + "            \n"
+            + "            \n"
+            + "            \n"
+            + "            /*\n"
+            + "               or something like this?\n"
+            + "               */\n"
+            + "            \n"
+            + "            \n"
+            + "            \n"
+            + "            \"\";\n"
+            + "}\n";
 
     private CeylonPreview ceylonPreview;
 
@@ -80,10 +130,10 @@ public class FormatterTabLine extends FormatterTabPage {
         createCompactLabel(1, lineCommentGroup,  "After line comment", SWT.LEFT, 50);
         createCompactNumberPref(lineCommentGroup, 2, "Minimum",
                 FORMATTER_lineBreaksAfterLineComment_First,
-                new RangeValidator(null, FORMATTER_lineBreaksAfterLineComment_Last, 0, 0));
+                new RangeValidator(null, FORMATTER_lineBreaksAfterLineComment_Last, 1, 1));
         createCompactNumberPref(lineCommentGroup, 2, "Maximum", 
                 FORMATTER_lineBreaksAfterLineComment_Last,
-                new RangeValidator(FORMATTER_lineBreaksAfterLineComment_First, null, 0, 999));
+                new RangeValidator(FORMATTER_lineBreaksAfterLineComment_First, null, 1, 999));
         
         createCompactLabel(1, lineCommentGroup,  "Before single comment", SWT.LEFT, 50);
         createCompactNumberPref(lineCommentGroup, 2, "Minimum",
