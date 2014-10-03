@@ -879,8 +879,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
                     
                 monitor.subTask("Cleaning removed files for project " + project.getName());
-                cleanRemovedFilesFromOutputs(filesToRemove, project);
                 cleanRemovedFilesFromCeylonModel(filesToRemove, phasedUnits, project);
+                cleanRemovedFilesFromOutputs(filesToRemove, project);
                 monitor.worked(1);
                 
                 if (monitor.isCanceled()) {
