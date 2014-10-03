@@ -54,16 +54,17 @@ public class FormatterTabSpace extends FormatterTabPage {
         final CheckboxPreference saplcp = createCheckboxPref(generalGroup, 1, "After )",
                 FORMATTER_space_AfterParamListClosingParen, FALSE_TRUE);
 
-        final NumberPreference saplcpn = createNumberPref(generalGroup, numColumns, "Optionally, -80 to 80, 0 resets",
+        final NumberPreference saplcpn = createNumberPref(generalGroup, numColumns, "Detailed, -80 to 80",
                 FORMATTER_space_AfterParamListClosingParen_Number, -80, 80); //TODO magic numbers
         
-        updatePreferences(this.workingValues.get(FORMATTER_space_AfterParamListClosingParen), saplcpn, saplcp);
-
-        saplcp.addObserver(new Observer() {
+        Observer o = new Observer() {
             public void update(Observable o, Object arg) {
-                updatePreferences((String) arg, saplcpn, (CheckboxPreference)o);
+                saplcp.updateWidget();
+                saplcpn.updateWidget();
             }
-        });
+        };
+        saplcp.addObserver(o);
+        saplcpn.addObserver(o);
         
         createLabel(2, generalGroup, "Value Iterator");
         createCheckboxPref(generalGroup, 1, "After (",
@@ -86,14 +87,6 @@ public class FormatterTabSpace extends FormatterTabPage {
         createCheckboxPref(generalGroup, numColumns, "Space before annotation positional argument list",
                 FORMATTER_space_BeforeAnnotationPositionalArgumentList, FALSE_TRUE);
   
-    }
-
-    private void updatePreferences(String v, NumberPreference np, CheckboxPreference cbp) {
-        if (cbp.getChecked()) {
-            np.setEnabled(true);
-        } else {
-            np.setEnabled(false);
-        }
     }
 
     @Override
