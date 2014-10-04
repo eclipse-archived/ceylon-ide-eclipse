@@ -135,10 +135,10 @@ public class FormatterTabLine extends FormatterTabPage {
         final Group lbGroup = createGroup(numColumns, composite,
                 "Line Endings");
 
-        final ComboPreference lbCombo = createComboPref(lbGroup, numColumns, "Line ending character sequence",
+        final ComboPreference lbCombo = createComboPref(lbGroup, numColumns, 
+                "Line ending character sequence",
                 FORMATTER_lineBreak, new String[] { "os", "lf", "crlf" },
-                new String[] { "Operating System", "LF (Unix)",
-                        "CR + LF (Windows)" });
+                new String[] { "Operating System", "LF (Unix)", "CR + LF (Windows)" });
         if (ideMode) {
             lbCombo.setEnabled(false);
             Label warning = createLabel(numColumns, lbGroup, 
