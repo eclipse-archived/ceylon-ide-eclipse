@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
-import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQueryType;
+import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
 
 import java.util.Collection;
 import java.util.List;
@@ -108,7 +108,7 @@ class AddModuleImportProposal implements ICompletionProposal,
                 }
             }
         }
-        ModuleQuery query = new ModuleQuery("", getModuleQueryType(project));
+        ModuleQuery query = getModuleQuery("", project);
         query.setMemberName(formatPath(ids));
         query.setMemberSearchPackageOnly(true);
         query.setMemberSearchExact(true);
