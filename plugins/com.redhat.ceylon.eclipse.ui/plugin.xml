@@ -1890,7 +1890,7 @@
        </page>
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences.style.formatter"
-           name="Formatter Profiles"
+           name="Code Formatter"
            category="com.redhat.ceylon.eclipse.ui.preferences"
            class="com.redhat.ceylon.eclipse.code.style.FormatterPreferencePage">
          <enabledWhen>

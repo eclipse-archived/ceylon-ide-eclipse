@@ -1,9 +1,23 @@
 package com.redhat.ceylon.eclipse.code.style;
 
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
-
-import java.util.Observable;
-import java.util.Observer;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterParamListClosingParen;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterParamListOpeningParen;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterSequenceEnumerationOpeningBrace;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterTypeArgOrParamListComma;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterValueIteratorOpeningParenthesis;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AroundImportAliasEqualsSign;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AroundSatisfiesOf;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeAnnotationPositionalArgumentList;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeCatchVariable;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeForOpeningParenthesis;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeIfOpeningParenthesis;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeMethodOrClassPositionalArgumentList;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeParamListClosingParen;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeParamListOpeningParen;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeResourceList;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeSequenceEnumerationClosingBrace;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeValueIteratorClosingParenthesis;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeWhileOpeningParenthesis;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
@@ -75,30 +89,42 @@ public class FormatterTabSpace extends FormatterTabPage {
                 "Spacing Options");
         createCheckboxPref(generalGroup, numColumns, "Space before positional argument list",
                 FORMATTER_space_BeforeMethodOrClassPositionalArgumentList, FALSE_TRUE);
-        createCheckboxPref(generalGroup, numColumns, "Space before resource list",
-                FORMATTER_space_BeforeResourceList, FALSE_TRUE);
-        createCheckboxPref(generalGroup, numColumns, "Space before catch variable",
-                FORMATTER_space_BeforeCatchVariable, FALSE_TRUE);
-        createCheckboxPref(generalGroup, numColumns, "Space around satisfied and case types",
+        createCheckboxPref(generalGroup, numColumns, "Space before annotation positional argument list",
+                FORMATTER_space_BeforeAnnotationPositionalArgumentList, FALSE_TRUE);
+        
+        createCheckboxPref(generalGroup, numColumns, "Spaces around '&&' and '|' in 'satisfies' and 'of'",
                 FORMATTER_space_AroundSatisfiesOf, FALSE_TRUE);
-        createCheckboxPref(generalGroup, numColumns, "Space around '=' for import alias",
+        createCheckboxPref(generalGroup, numColumns, "Spaces around '=' in 'import' alias",
                 FORMATTER_space_AroundImportAliasEqualsSign, FALSE_TRUE);
         createCheckboxPref(generalGroup, numColumns, "Space after type argument or parameter list comma",
                 FORMATTER_space_AfterTypeArgOrParamListComma, FALSE_TRUE);
-
-        createLabel(2, generalGroup, "Parameter List Opening");
-        createCheckboxPref(generalGroup, 1, "Before (",
+        
+        final Group control = createGroup(numColumns, composite, 
+                "Control Structures");
+        createCheckboxPref(control, 2, "Space after 'if'",
+                FORMATTER_space_BeforeIfOpeningParenthesis, FALSE_TRUE);
+        createCheckboxPref(control, 2, "Space after 'for'",
+                FORMATTER_space_BeforeForOpeningParenthesis, FALSE_TRUE);  
+        createCheckboxPref(control, 2, "Space after 'while'",
+                FORMATTER_space_BeforeWhileOpeningParenthesis, FALSE_TRUE);  
+        createCheckboxPref(control, 2, "Space after 'try'",
+                FORMATTER_space_BeforeResourceList, FALSE_TRUE);
+        createCheckboxPref(control, 2, "Space after 'catch'",
+                FORMATTER_space_BeforeCatchVariable, FALSE_TRUE);
+  
+        final Group parameter = createGroup(numColumns, composite, 
+                "Parameter Lists");
+        createCheckboxPref(parameter, 2, "Space before opening '('",
                 FORMATTER_space_BeforeParamListOpeningParen, FALSE_TRUE);
-        createCheckboxPref(generalGroup, 1, "After (",
+        createCheckboxPref(parameter, 2, "Space after opening '('",
                 FORMATTER_space_AfterParamListOpeningParen, FALSE_TRUE);
-            
-        createLabel(2, generalGroup, "Parameter List Closing");
-        createCheckboxPref(generalGroup, 1, "Before )",
+        createCheckboxPref(parameter, 2, "Space before closing ')'",
                 FORMATTER_space_BeforeParamListClosingParen, FALSE_TRUE);  
-        final CheckboxPreference saplcp = createCheckboxPref(generalGroup, 1, "After )",
+        /*final CheckboxPreference saplcp =*/ 
+        createCheckboxPref(parameter, 2, "Space after closing ')'",
                 FORMATTER_space_AfterParamListClosingParen, FALSE_TRUE);
 
-        final NumberPreference saplcpn = createNumberPref(generalGroup, numColumns, 
+        /*final NumberPreference saplcpn = createNumberPref(generalGroup, numColumns, 
                 "Detailed, " + MINIMUM_SPACE_AFTER_SHIFT + " to " + MAXIMUM_SPACE_AFTER_SHIFT,
                 FORMATTER_space_AfterParamListClosingParen_Number, MINIMUM_SPACE_AFTER_SHIFT, MAXIMUM_SPACE_AFTER_SHIFT);
         
@@ -109,29 +135,22 @@ public class FormatterTabSpace extends FormatterTabPage {
             }
         };
         saplcp.addObserver(o);
-        saplcpn.addObserver(o);
+        saplcpn.addObserver(o);*/
         
-        createLabel(2, generalGroup, "Value Iterator");
-        createCheckboxPref(generalGroup, 1, "After (",
-                FORMATTER_space_AfterValueIteratorOpeningParenthesis, FALSE_TRUE);  
-        createCheckboxPref(generalGroup, 1, "Before )",
-                FORMATTER_space_BeforeValueIteratorClosingParenthesis, FALSE_TRUE);
-        
-        createLabel(2, generalGroup, "Iterable Enumeration");
-        createCheckboxPref(generalGroup, 1, "After {",
+        final Group enumeration = createGroup(numColumns, composite, 
+                "Iterable Enumerations");
+        createCheckboxPref(enumeration, 1, "Space after opening '{'",
                 FORMATTER_space_AfterSequenceEnumerationOpeningBrace, FALSE_TRUE);         
-        createCheckboxPref(generalGroup, 1, "Before }",
+        createCheckboxPref(enumeration, 1, "Space before closing '}'",
                 FORMATTER_space_BeforeSequenceEnumerationClosingBrace, FALSE_TRUE);
  
-        createCheckboxPref(generalGroup, numColumns, "Space before 'if' opening (",
-                FORMATTER_space_BeforeIfOpeningParenthesis, FALSE_TRUE);
-        createCheckboxPref(generalGroup, numColumns, "Space before 'for' opening (",
-                FORMATTER_space_BeforeForOpeningParenthesis, FALSE_TRUE);  
-        createCheckboxPref(generalGroup, numColumns, "Space before 'while' opening (",
-                FORMATTER_space_BeforeWhileOpeningParenthesis, FALSE_TRUE);  
-        createCheckboxPref(generalGroup, numColumns, "Space before annotation positional argument list",
-                FORMATTER_space_BeforeAnnotationPositionalArgumentList, FALSE_TRUE);
-  
+        final Group iterator = createGroup(numColumns, composite, 
+                "Iterator in 'for' Loop");
+        createCheckboxPref(iterator, 1, "Space after opening '('",
+                FORMATTER_space_AfterValueIteratorOpeningParenthesis, FALSE_TRUE);  
+        createCheckboxPref(iterator, 1, "Space before closing ')'",
+                FORMATTER_space_BeforeValueIteratorClosingParenthesis, FALSE_TRUE);
+        
     }
 
     @Override
