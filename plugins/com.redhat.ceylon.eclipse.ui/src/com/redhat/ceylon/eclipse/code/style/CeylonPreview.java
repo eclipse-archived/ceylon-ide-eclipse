@@ -232,7 +232,7 @@ public class CeylonPreview {
                 new StringBuilderWriter(builder),
                 new BufferedTokenStream(fPreviewLexer));
             fPreviewDocument.set(builder.toString());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             final IStatus status = new Status(IStatus.ERROR,
                     CeylonPlugin.PLUGIN_ID, 10001,
                     "Internal Formatter Preview Exception", e);

@@ -79,7 +79,7 @@ public class FormatterTabLine extends FormatterTabPage {
             + "    \n"
             + "    \n"
             + "    \n"
-            + "    // how many line breaks do you want to allow between this comment and other content?\n"
+            + "    // How many line breaks do you want to allow between this comment and other content?\n"
             + "    \n"
             + "    \n"
             + "    \n"
@@ -87,24 +87,37 @@ public class FormatterTabLine extends FormatterTabPage {
             + "    \n"
             + "    \n"
             + "    \n"
+            + "    /* How about your single line comments like this one? */\n"
+            + "    \n"
+            + "    \n"
+            + "    \n"
+            + "    String s3 = \"\";\n"
+            + "    \n"
+            + "    \n"
+            + "    \n"
             + "    /*\n"
-            + "     And how about\n"
-            + "     multi-line comments?\n"
+            + "     And how about your\n"
+            + "     multiline comments\n"
+            + "     like this one?\n"
             + "     */\n"
             + "    \n"
             + "    \n"
             + "    \n"
-            + "    String s3\n"
-            + "            =\n"
-            + "            \n"
-            + "            \n"
-            + "            \n"
-            + "            /*\n"
-            + "               or something like this?\n"
-            + "               */\n"
-            + "            \n"
-            + "            \n"
-            + "            \n"
+            + "    String s4 = \"\";\n"
+            + "    \n"
+            + "    \n"
+            + "    \n"
+//            + "    String s3\n"
+//            + "            =\n"
+//            + "            \n"
+//            + "            \n"
+//            + "            \n"
+//            + "            /*\n"
+//            + "               or something like this?\n"
+//            + "               */\n"
+//            + "            \n"
+//            + "            \n"
+//            + "            \n"
             + "            \"\";\n"
             + "}\n";
 
@@ -192,7 +205,7 @@ public class FormatterTabLine extends FormatterTabPage {
                 FORMATTER_lineBreaksBeforeMultiComment_Last,
                 new RangeValidator(FORMATTER_lineBreaksBeforeMultiComment_First, null, 0, 999));
         
-        createCompactLabel(1, lineCommentGroup,  "After multi-line comment", SWT.LEFT, 50);
+        createCompactLabel(1, lineCommentGroup,  "After multiline comment", SWT.LEFT, 50);
         createCompactNumberPref(lineCommentGroup, 2, "Minimum",
                 FORMATTER_lineBreaksAfterMultiComment_First,
                 new RangeValidator(null, FORMATTER_lineBreaksAfterMultiComment_Last, 0, 0));
