@@ -66,12 +66,6 @@ public class FormatterPreferences {
             ret = booleanString(options
                     .getSpaceBeforeMethodOrClassPositionalArgumentList());
             break;
-        case FORMATTER_space_BeforeResourceList:
-            ret = booleanString(options.getSpaceBeforeResourceList());
-            break;
-        case FORMATTER_space_BeforeCatchVariable:
-            ret = booleanString(options.getSpaceBeforeCatchVariable());
-            break;
         case FORMATTER_space_AroundSatisfiesOf:
             ret = booleanString(options.getSpaceAroundSatisfiesOf());
             break;
@@ -80,9 +74,6 @@ public class FormatterPreferences {
             break;
         case FORMATTER_space_AfterTypeArgOrParamListComma:
             ret = booleanString(options.getSpaceAfterTypeArgOrParamListComma());
-            break;
-        case FORMATTER_space_BeforeIfOpeningParenthesis:
-            ret = booleanString(options.getSpaceBeforeIfOpeningParenthesis());
             break;
         case FORMATTER_space_BeforeSequenceEnumerationClosingBrace:
             ret = booleanString(options
@@ -110,12 +101,6 @@ public class FormatterPreferences {
             ret = booleanString(options
                     .getSpaceAfterSequenceEnumerationOpeningBrace());
             break;
-        case FORMATTER_space_BeforeForOpeningParenthesis:
-            ret = booleanString(options.getSpaceBeforeForOpeningParenthesis());
-            break;
-        case FORMATTER_space_BeforeWhileOpeningParenthesis:
-            ret = booleanString(options.getSpaceBeforeWhileOpeningParenthesis());
-            break;
         case FORMATTER_space_BeforeAnnotationPositionalArgumentList:
             ret = booleanString(options
                     .getSpaceBeforeAnnotationPositionalArgumentList());
@@ -127,6 +112,9 @@ public class FormatterPreferences {
         case FORMATTER_space_AfterParamListOpeningParen:
             ret = booleanString(options.getSpaceAfterParamListOpeningParen());
             break;
+        case FORMATTER_space_AfterControlStructureKeyword:
+            ret = booleanString(options.getSpaceAfterControlStructureKeyword());
+        
         case FORMATTER_maxLineLength:
             if ((options.getMaxLineLength() instanceof ceylon.formatter.options.Unlimited)) {
                 ret = TRUE; // unlimited
@@ -280,12 +268,6 @@ public class FormatterPreferences {
         case FORMATTER_space_BeforeMethodOrClassPositionalArgumentList:
             options.setSpaceBeforeMethodOrClassPositionalArgumentList(ceylonBoolean(value));
             break;
-        case FORMATTER_space_BeforeResourceList:
-            options.setSpaceBeforeResourceList(ceylonBoolean(value));
-            break;
-        case FORMATTER_space_BeforeCatchVariable:
-            options.setSpaceBeforeCatchVariable(ceylonBoolean(value));
-            break;
         case FORMATTER_space_AroundSatisfiesOf:
             options.setSpaceAroundSatisfiesOf(ceylonBoolean(value));
             break;
@@ -294,9 +276,6 @@ public class FormatterPreferences {
             break;
         case FORMATTER_space_AfterTypeArgOrParamListComma:
             options.setSpaceAfterTypeArgOrParamListComma(ceylonBoolean(value));
-            break;
-        case FORMATTER_space_BeforeIfOpeningParenthesis:
-            options.setSpaceBeforeIfOpeningParenthesis(ceylonBoolean(value));
             break;
         case FORMATTER_space_BeforeSequenceEnumerationClosingBrace:
             options.setSpaceBeforeSequenceEnumerationClosingBrace(ceylonBoolean(value));
@@ -320,12 +299,6 @@ public class FormatterPreferences {
         case FORMATTER_space_AfterSequenceEnumerationOpeningBrace:
             options.setSpaceAfterSequenceEnumerationOpeningBrace(ceylonBoolean(value));
             break;
-        case FORMATTER_space_BeforeForOpeningParenthesis:
-            options.setSpaceBeforeForOpeningParenthesis(ceylonBoolean(value));
-            break;
-        case FORMATTER_space_BeforeWhileOpeningParenthesis:
-            options.setSpaceBeforeWhileOpeningParenthesis(ceylonBoolean(value));
-            break;
         case FORMATTER_space_BeforeAnnotationPositionalArgumentList:
             options.setSpaceBeforeAnnotationPositionalArgumentList(ceylonBoolean(value));
             break;
@@ -334,6 +307,9 @@ public class FormatterPreferences {
             break;
         case FORMATTER_space_AfterParamListOpeningParen:
             options.setSpaceAfterParamListOpeningParen(ceylonBoolean(value));
+            break;
+        case FORMATTER_space_AfterControlStructureKeyword:
+            options.setSpaceAfterControlStructureKeyword(ceylonBoolean(value));
             break;
 
         case FORMATTER_maxLineLength:
