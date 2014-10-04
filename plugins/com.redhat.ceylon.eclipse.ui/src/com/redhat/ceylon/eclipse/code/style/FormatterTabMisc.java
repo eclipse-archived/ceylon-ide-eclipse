@@ -89,8 +89,7 @@ public class FormatterTabMisc extends FormatterTabPage {
         if (ideMode) {
             lbCombo.setEnabled(false);
             Label warning = createLabel(numColumns, lbGroup, 
-                    "IDE and source settings override this profile setting when formatting in the IDE:\n\n"
-                    + "lb=" + workingValues.getOptions().getLineBreak().toString());
+                    "IDE and source settings override this profile setting");
             warning.setForeground(composite.getDisplay().getSystemColor(SWT.COLOR_RED));
         }
 
