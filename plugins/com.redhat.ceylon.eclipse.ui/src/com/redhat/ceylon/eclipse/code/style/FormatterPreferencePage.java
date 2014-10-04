@@ -15,7 +15,7 @@ public class FormatterPreferencePage extends StylePage {
     public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.style.formatter";
 
     public FormatterPreferencePage() {
-        setTitle("Ceylon Formatter");
+        setTitle("Code Formatter");
     }
 
     @Override

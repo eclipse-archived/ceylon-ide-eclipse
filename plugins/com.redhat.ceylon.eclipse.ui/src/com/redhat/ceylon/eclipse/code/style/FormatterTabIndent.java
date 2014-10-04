@@ -63,17 +63,17 @@ public class FormatterTabIndent extends FormatterTabPage {
                 FORMATTER_indentMode_Spaces, FORMATTER_indentMode_Tabs,
                 FORMATTER_indentMode_Mixed };
         final ComboPreference indentMode = createComboPref(generalGroup,
-                numColumns, "Indent Mode", FORMATTER_indentMode,
+                numColumns, "Indent mode", FORMATTER_indentMode,
                 indentModeValues, indentModeLabels);
         indentMode.setEnabled(!ideMode);
 
         final NumberPreference indentSpacesSize = createNumberPref(
-                generalGroup, numColumns, "Indent Mode Spaces Size",
+                generalGroup, numColumns, "Indent mode spaces",
                 FORMATTER_indentMode_Spaces_Size, 0, 32);
         indentSpacesSize.setEnabled(!ideMode);
 
         final NumberPreference indentTabsSize = createNumberPref(generalGroup,
-                numColumns, "Indent Mode Tabs Size",
+                numColumns, "Indent mode tab width",
                 FORMATTER_indentMode_Tabs_Size, 0, 32);
         indentTabsSize.setEnabled(!ideMode);
 
@@ -96,7 +96,7 @@ public class FormatterTabIndent extends FormatterTabPage {
         // group ended
         final Group otherGroup = createGroup(numColumns, composite,
                 "Other Indent Options");
-        createCheckboxPref(otherGroup, numColumns, "Indent Blank Lines",
+        createCheckboxPref(otherGroup, numColumns, "Indent blank lines",
                 FORMATTER_indent_Blank_Lines, FALSE_TRUE);
         createNumberPref(otherGroup, 3, "Indent before type info",
                 FORMATTER_indent_Before_Type_Info, 0, 32);

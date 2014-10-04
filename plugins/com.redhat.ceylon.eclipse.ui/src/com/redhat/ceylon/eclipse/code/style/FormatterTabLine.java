@@ -1,6 +1,24 @@
 package com.redhat.ceylon.eclipse.code.style;
 
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreak;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksAfterLineComment_First;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksAfterLineComment_Last;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksAfterMultiComment_First;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksAfterMultiComment_Last;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksAfterSingleComment_First;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksAfterSingleComment_Last;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksBeforeLineComment_First;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksBeforeLineComment_Last;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksBeforeMultiComment_First;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksBeforeMultiComment_Last;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksBeforeSingleComment_First;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksBeforeSingleComment_Last;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksInTypeParameterList_First;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksInTypeParameterList_Last;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_maxLineLength;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_maxLineLength_Number;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.MAXIMUM_SPECIFIED_LINE_LENGTH;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.MINIMUM_SPECIFIED_LINE_LENGTH;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -8,6 +26,7 @@ import java.util.Observer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 
 public class FormatterTabLine extends FormatterTabPage {
 
@@ -100,7 +119,7 @@ public class FormatterTabLine extends FormatterTabPage {
     protected void doCreatePreferences(Composite composite, int numColumns) {
 
         final Group generalGroup = createGroup(numColumns, composite,
-                "Line Options");
+                "Line Length");
         final CheckboxPreference unlimited = createCheckboxPref(generalGroup, numColumns, "Unlimited line length",
                 FORMATTER_maxLineLength, FALSE_TRUE);
         final NumberPreference maxLineLength = createNumberPref(generalGroup, numColumns, "Maximum line length",
@@ -113,12 +132,26 @@ public class FormatterTabLine extends FormatterTabPage {
             }
         });
         
-        createComboPref(generalGroup,
+        final Group lbGroup = createGroup(numColumns, composite,
+                "Line Endings");
+
+        final ComboPreference lbCombo = createComboPref(lbGroup, numColumns, "Line ending character sequence",
+                FORMATTER_lineBreak, new String[] { "os", "lf", "crlf" },
+                new String[] { "Operating System", "LF (Unix)",
+                        "CR + LF (Windows)" });
+        if (ideMode) {
+            lbCombo.setEnabled(false);
+            Label warning = createLabel(numColumns, lbGroup, 
+                    "IDE and source settings override this profile setting");
+            warning.setForeground(composite.getDisplay().getSystemColor(SWT.COLOR_RED));
+        }
+
+        /*createComboPref(generalGroup,
                 numColumns, "Line break strategy", FORMATTER_lineBreakStrategy,
-                new String[]{"default"}, new String[]{"Default"});
+                new String[]{"default"}, new String[]{"Default"});*/
  
         final Group lineCommentGroup = createGroup(5, composite,
-                "Line breaks");
+                "Line Breaks");
         createCompactLabel(1, lineCommentGroup,  "Before line comment", SWT.LEFT, 50);
         createCompactNumberPref(lineCommentGroup, 2, "Minimum",
                 FORMATTER_lineBreaksBeforeLineComment_First,

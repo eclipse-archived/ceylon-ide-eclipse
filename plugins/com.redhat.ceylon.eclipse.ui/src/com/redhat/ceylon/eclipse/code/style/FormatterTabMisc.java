@@ -1,15 +1,18 @@
 package com.redhat.ceylon.eclipse.code.style;
 
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_braceOnOwnLine;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_elseOnOwnLine;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_failFast;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_importStyle;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_inlineAnnotations;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_inlineAnnotations_List;
 
 import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.jface.dialogs.IInputValidator;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 
 public class FormatterTabMisc extends FormatterTabPage {
 
@@ -79,40 +82,24 @@ public class FormatterTabMisc extends FormatterTabPage {
     @Override
     protected void doCreatePreferences(Composite composite, int numColumns) {
 
-        final Group lbGroup = createGroup(numColumns, composite,
-                "Line Break");
-
-        final ComboPreference lbCombo = createComboPref(lbGroup, numColumns, "Line break strategy",
-                FORMATTER_lineBreak, new String[] { "os", "lf", "crlf" },
-                new String[] { "Operating System", "LF (Unix)",
-                        "CR + LF (Windows)" });
-        if (ideMode) {
-            lbCombo.setEnabled(false);
-            Label warning = createLabel(numColumns, lbGroup, 
-                    "IDE and source settings override this profile setting");
-            warning.setForeground(composite.getDisplay().getSystemColor(SWT.COLOR_RED));
-        }
-
         final Group generalGroup = createGroup(numColumns, composite,
-                "Other");
-        createComboPref(generalGroup, numColumns, "Import Style",
+                "Other Options");
+        createCheckboxPref(generalGroup, numColumns,
+                "Opening brace '{' on its own line", FORMATTER_braceOnOwnLine,
+                FALSE_TRUE);
+        createCheckboxPref(generalGroup, numColumns, "Line break before 'else' or 'catch'",
+                FORMATTER_elseOnOwnLine, FALSE_TRUE);
+        createComboPref(generalGroup, numColumns, "Import statements",
                 FORMATTER_importStyle,
                 new String[] { "singleLine", "multiLine" }, new String[] {
-                        "Single Line", "Multi-line" });
-
-        createCheckboxPref(generalGroup, numColumns, "'else' on its own line",
-                FORMATTER_elseOnOwnLine, FALSE_TRUE);
-        createCheckboxPref(generalGroup, numColumns,
-                "Brace '{' on its own line", FORMATTER_braceOnOwnLine,
-                FALSE_TRUE);
-        createCheckboxPref(generalGroup, numColumns, "Fail Fast",
-                FORMATTER_failFast, FALSE_TRUE);
-
+                        "Single line", "Multiline" });
+        
+        final Group annotationGroup = createGroup(numColumns, composite,
+                "Annotations");
         final CheckboxPreference allAnnotations = createCheckboxPref(
-                generalGroup, numColumns, "All annotations inline",
+                annotationGroup, numColumns, "All annotations inline",
                 FORMATTER_inlineAnnotations, FALSE_TRUE);
-
-        final StringPreference annotationsList = createStringPref(generalGroup,
+        final StringPreference annotationsList = createStringPref(annotationGroup,
                 numColumns, "Only these:", FORMATTER_inlineAnnotations_List,
                 new IInputValidator() {
                     @Override
@@ -136,13 +123,18 @@ public class FormatterTabMisc extends FormatterTabPage {
                     }
                 },
                 /* enabled = */ !allAnnotations.getChecked());
-        
         allAnnotations.addObserver(new Observer() {
             public void update(Observable o, Object arg) {
                 updatePreferences((String) arg, annotationsList,
                         (CheckboxPreference) o);
             }
         });
+        
+        final Group errorGroup = createGroup(numColumns, composite,
+                "Errors");
+        createCheckboxPref(errorGroup, numColumns, "Fail fast",
+                FORMATTER_failFast, FALSE_TRUE);
+
     }
 
     private void updatePreferences(String v, StringPreference np,
