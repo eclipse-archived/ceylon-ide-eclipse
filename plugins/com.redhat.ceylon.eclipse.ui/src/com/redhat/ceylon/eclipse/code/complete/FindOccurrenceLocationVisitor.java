@@ -147,7 +147,9 @@ class FindOccurrenceLocationVisitor extends Visitor
                 !inBounds(that.getBlock())) {
             occurrence = CATCH;
         }
-        super.visit(that);
+        else {
+            super.visit(that);
+        }
     }
     
     public void visit(Tree.CaseClause that) {
