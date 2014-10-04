@@ -19,7 +19,9 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -43,7 +45,7 @@ public class KeywordCompletionProposal extends CompletionProposal {
     
     static void addKeywordProposals(CeylonParseController cpc, int offset, 
             String prefix, List<ICompletionProposal> result, Node node,
-            OccurrenceLocation ol, boolean postfix) {
+            OccurrenceLocation ol, boolean postfix, int previousTokenType) {
         if (isModuleDescriptor(cpc) && 
                 ol!=META && (ol==null||!ol.reference)) {
             //outside of backtick quotes, the only keyword allowed
@@ -66,6 +68,19 @@ public class KeywordCompletionProposal extends CompletionProposal {
                     addKeywordProposal(offset, prefix, result, keyword);
                 }
             }
+        }
+        else if (ol==CASE && previousTokenType==CeylonLexer.LPAREN) {
+            addKeywordProposal(offset, prefix, result, "is"); 
+        }
+        else if (!prefix.isEmpty() && ol==CASE) {
+            if ("case".startsWith(prefix)) {
+                addKeywordProposal(offset, prefix, result, "case");
+            }
+        }
+        else if (ol==null && node instanceof Tree.ConditionList && 
+                previousTokenType==CeylonLexer.LPAREN) {
+            addKeywordProposal(offset, prefix, result, "exists");
+            addKeywordProposal(offset, prefix, result, "nonempty");
         }
     }
     

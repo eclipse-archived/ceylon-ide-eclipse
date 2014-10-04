@@ -138,6 +138,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -294,6 +295,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             offset>adjustedToken.getStartIndex()) {
             index--;
         }
+        int tokenType = adjustedToken.getType();
         int previousTokenType = index>=0 ? 
                 adjust(index, offset, tokens).getType() : 
                 -1;
@@ -366,7 +368,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         ICompletionProposal[] completions = 
                 constructCompletions(offset, fullPrefix, cpc, node, 
                         adjustedToken, scope, returnedParamInfo, 
-                        isMemberOp, viewer.getDocument());
+                        isMemberOp, viewer.getDocument(), tokenType);
         if (completions==null) {
             //finally, construct and sort proposals
             Map<String, DeclarationWithProximity> proposals = 
@@ -382,7 +384,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                             sortedProposals, sortedFunctionProposals, 
                             cpc, scope, node, adjustedToken, isMemberOp, 
                             viewer.getDocument(), secondLevel, inDoc,
-                            requiredType, previousTokenType);
+                            requiredType, previousTokenType, tokenType);
         }
         return completions;
         
@@ -545,7 +547,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     private static ICompletionProposal[] constructCompletions(final int offset, 
             final String prefix, final CeylonParseController cpc, final Node node, 
             final CommonToken token, final Scope scope, boolean returnedParamInfo, 
-            boolean memberOp, final IDocument document) {
+            boolean memberOp, final IDocument document, int tokenType) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         
@@ -575,11 +577,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else if (isEmptyModuleDescriptor(cpc)) {
             addModuleDescriptorCompletion(cpc, offset, prefix, result);
-            addKeywordProposals(cpc, offset, prefix, result, node, null, false);
+            addKeywordProposals(cpc, offset, prefix, result, node, null, false, tokenType);
         }
         else if (isEmptyPackageDescriptor(cpc)) {
             addPackageDescriptorCompletion(cpc, offset, prefix, result);
-            addKeywordProposals(cpc, offset, prefix, result, node, null, false);
+            addKeywordProposals(cpc, offset, prefix, result, node, null, false, tokenType);
         }
         else if (node instanceof Tree.TypeArgumentList && 
                 token.getType()==LARGER_OP) {
@@ -643,7 +645,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             Set<DeclarationWithProximity> sortedFunctionProposals, 
             CeylonParseController cpc, Scope scope, Node node, CommonToken token, 
             boolean memberOp, IDocument doc, boolean secondLevel, boolean inDoc,
-            ProducedType requiredType, int previousTokenType) {
+            ProducedType requiredType, int previousTokenType, int tokenType) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node, offset);
@@ -710,7 +712,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                             ((Tree.MemberLiteral) node).getType()!=null;
             
             if (!secondLevel && !inDoc && !memberOp) {
-                addKeywordProposals(cpc, offset, prefix, result, node, ol, isMember);
+                addKeywordProposals(cpc, offset, prefix, result, node, ol, isMember, tokenType);
                 //addTemplateProposal(offset, prefix, result);
             }
             if (!secondLevel && !inDoc && !isMember) {
@@ -765,7 +767,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 if (isProposable(dwp, ol, scope, node.getUnit(), 
                             requiredType, previousTokenType) && 
                             isProposable(node, ol, dec) &&
-                        (definitelyRequiresType(ol) || noParamsFollow || 
+                            (definitelyRequiresType(ol) || noParamsFollow || 
                                 dec instanceof Functional)) {
                     if (ol==DOCLINK) {
                         addDocLinkProposal(offset, prefix, cpc, result, dec, scope);
@@ -1058,13 +1060,42 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 
     private static boolean isCaseOfSwitch(ProducedType requiredType,
             Declaration dec, int previousTokenType) {
-        return dec instanceof TypeDeclaration && previousTokenType==IS_OP &&
-                    (requiredType==null ||
-                    !dec.equals(requiredType.getDeclaration()) &&
-                    ((TypeDeclaration) dec).inherits(requiredType.getDeclaration())) || 
-                isAnonymousClassValue(dec) && 
-                    (requiredType==null ||
-                    ((TypedDeclaration) dec).getType().isSubtypeOf(requiredType));
+        return previousTokenType==IS_OP &&
+                isTypeCaseOfSwitch(requiredType, dec) || 
+                previousTokenType!=IS_OP && 
+                isValueCaseOfSwitch(requiredType, dec);
+    }
+
+    private static boolean isValueCaseOfSwitch(ProducedType requiredType,
+            Declaration dec) {
+        TypeDeclaration rtd = requiredType==null ? 
+                null: requiredType.getDeclaration();
+        if (rtd instanceof UnionType) {
+            for (ProducedType td: rtd.getCaseTypes()) {
+                if (isValueCaseOfSwitch(td, dec)) return true;
+            }
+            return false;
+        }
+        else {
+            return isAnonymousClassValue(dec) && 
+                    (rtd==null || ((TypedDeclaration) dec).getTypeDeclaration().inherits(rtd));
+        }
+    }
+
+    private static boolean isTypeCaseOfSwitch(ProducedType requiredType,
+            Declaration dec) {
+        TypeDeclaration rtd = requiredType==null ? 
+                null : requiredType.getDeclaration();
+        if (rtd instanceof UnionType) {
+            for (ProducedType td: rtd.getCaseTypes()) {
+                if (isTypeCaseOfSwitch(td, dec)) return true;
+            }
+            return false;
+        }
+        else {
+            return dec instanceof TypeDeclaration && 
+                    (rtd==null || ((TypeDeclaration) dec).inherits(rtd));
+        }
     }
 
     private static boolean isExceptionType(Unit unit, Declaration dec) {
