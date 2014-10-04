@@ -48,6 +48,7 @@ import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -518,7 +519,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                             module.getVersion(), null);
             contentProvider.add(dwp, itemsFilter);
             nameOccurs(dec);
-            if (includeMembers) {
+            if (includeMembers && dec instanceof ClassOrInterface) {
                 for (Declaration member: new ArrayList<Declaration>(dec.getMembers())) {
                     fillDeclarationAndMembers(contentProvider, 
                             itemsFilter, project, module, member);
