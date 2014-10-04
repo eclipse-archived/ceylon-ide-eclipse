@@ -1247,7 +1247,10 @@ public class CeylonEditor extends TextEditor {
             addModelListener(markerAnnotationUpdater);
         }
         
-        getSourceViewer().getDocument().addDocumentListener(documentListener);
+        IDocument document = getSourceViewer().getDocument();
+        if (document!=null) {
+            document.addDocumentListener(documentListener);
+        }
         addPropertyListener(editorInputPropertyListener);
         getWorkspace().addResourceChangeListener(moveListener, IResourceChangeEvent.POST_CHANGE);
         getWorkspace().addResourceChangeListener(buildListener, IResourceChangeEvent.POST_BUILD);
@@ -1693,6 +1696,9 @@ public class CeylonEditor extends TextEditor {
     public String getSelectionText() {
         IRegion sel = getSelection();
         IDocument document = getDocumentProvider().getDocument(getEditorInput());
+        if (document==null) {
+            return "";
+        }
         try {
             return document.get(sel.getOffset(), sel.getLength());
         } 
