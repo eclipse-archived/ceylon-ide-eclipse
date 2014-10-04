@@ -662,12 +662,22 @@ public abstract class FormatterTabPage {
 
     private FormatterTabPage.ModificationListener fModifyListener;
 
+    protected boolean ideMode;
+
     public FormatterTabPage(
             FormatterTabPage.ModificationListener modifyListener,
             FormatterPreferences workingValues) {
         this();
         this.workingValues = workingValues;
         fModifyListener = modifyListener;
+        if (fModifyListener instanceof FormatterModifyProfileDialog) {
+            ((FormatterModifyProfileDialog)fModifyListener)
+                .setHelpAvailable(false);
+            FormatterModifyProfileDialog
+                .setDialogHelpAvailable(false);
+            this.ideMode = ((FormatterModifyProfileDialog)fModifyListener)
+                .isProjectSpecific();
+        }
     }
 
     public FormatterTabPage() {

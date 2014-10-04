@@ -14,7 +14,6 @@ import org.antlr.runtime.TokenSource;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -22,14 +21,8 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import ceylon.formatter.format_;
-import ceylon.formatter.options.LineBreak;
-import ceylon.formatter.options.Spaces;
 import ceylon.formatter.options.SparseFormattingOptions;
-import ceylon.formatter.options.Tabs;
 import ceylon.formatter.options.combinedOptions_;
-import ceylon.formatter.options.crlf_;
-import ceylon.formatter.options.lf_;
-import ceylon.formatter.options.os_;
 import ceylon.formatter.options.loadProfile_;
 import ceylon.language.AssertionError;
 import ceylon.language.Singleton;
@@ -57,71 +50,6 @@ final class FormatAction extends Action {
         super(null);
         this.editor = editor;
         this.respectSelection = respectSelection;
-    }
-    
-    /**
-     * Creates {@link SparseFormattingOptions} that respect whitespace-relevant settings:
-     * <ul>
-     * <li>{@link SparseFormattingOptions#getIndentMode() indentMode} from spaces-for-tabs and editor-tab-width</li>
-     * <li>{@link SparseFormattingOptions#getLineBreak() lineBreak} from document newline character</li>
-     * </ul>
-     */
-    private static SparseFormattingOptions getWsOptions(IDocument document) {
-        LineBreak lb;
-        if (document instanceof IDocumentExtension4) {
-            switch(((IDocumentExtension4)document).getDefaultLineDelimiter()){
-            case "\n":
-                lb = lf_.get_();
-                break;
-            case "\r\n":
-                lb = crlf_.get_();
-                break;
-            default:
-                lb = os_.get_();
-                break;
-            }
-        } else {
-            lb = os_.get_();
-        }
-        return new SparseFormattingOptions(
-                /* indentMode = */ Indents.getIndentWithSpaces() ? 
-                        new Spaces(Indents.getIndentSpaces()) : 
-                        new Tabs(Indents.getIndentSpaces()),
-                /* maxLineLength = */ null,
-                /* lineBreakStrategy = */ null,
-                /* braceOnOwnLine = */ null,
-                /* spaceBeforeParamListOpeningParen = */ null,
-                /* spaceAfterParamListOpeningParen = */ null,
-                /* spaceBeforeParamListClosingParen = */ null,
-                /* spaceAfterParamListClosingParen = */ null,
-                /* inlineAnnotations = */ null,
-                /* spaceBeforeMethodOrClassPositionalArgumentList = */ null,
-                /* spaceBeforeAnnotationPositionalArgumentList = */ null,
-                /* importStyle = */ null,
-                /* spaceAroundImportAliasEqualsSign = */ null,
-                /* lineBreaksBeforeLineComment = */ null,
-                /* lineBreaksAfterLineComment = */ null,
-                /* lineBreaksBeforeSingleComment = */ null,
-                /* lineBreaksAfterSingleComment = */ null,
-                /* lineBreaksBeforeMultiComment = */ null,
-                /* lineBreaksAfterMultiComment = */ null,
-                /* lineBreaksInTypeParameterList = */ null,
-                /* spaceAfterSequenceEnumerationOpeningBrace = */ null,
-                /* spaceBeforeSequenceEnumerationClosingBrace = */ null,
-                /* spaceBeforeForOpeningParenthesis = */ null,
-                /* spaceAfterValueIteratorOpeningParenthesis = */ null,
-                /* spaceBeforeValueIteratorClosingParenthesis = */ null,
-                /* spaceBeforeIfOpeningParenthesis = */ null,
-                /* failFast = */ null,
-                /* spaceBeforeResourceList = */ null,
-                /* spaceBeforeCatchVariable = */ null,
-                /* spaceBeforeWhileOpeningParenthesis = */ null,
-                /* spaceAfterTypeArgOrParamListComma = */ null,
-                /* indentBeforeTypeInfo = */ null,
-                /* indentationAfterSpecifierExpressionStart = */ null,
-                /* indentBlankLines = */ null,
-                /* lineBreak = */ lb
-                );
     }
     
     @Override
@@ -227,7 +155,7 @@ final class FormatAction extends Action {
         }
         
         final StringBuilder builder = new StringBuilder(document.getLength());
-        final SparseFormattingOptions wsOptions = getWsOptions(document);
+        final SparseFormattingOptions wsOptions = CeylonStyle.getEclipseWsOptions(document);
         try {
             for (FormattingUnit unit : formattingUnits) {
                 final int startTokenIndex = unit.startToken.getTokenIndex();
