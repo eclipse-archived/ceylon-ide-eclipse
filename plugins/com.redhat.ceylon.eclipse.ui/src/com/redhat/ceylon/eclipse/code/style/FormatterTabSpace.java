@@ -8,16 +8,12 @@ import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORM
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AroundImportAliasEqualsSign;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AroundSatisfiesOf;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeAnnotationPositionalArgumentList;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeCatchVariable;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeForOpeningParenthesis;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeIfOpeningParenthesis;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeMethodOrClassPositionalArgumentList;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterControlStructureKeyword;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeParamListClosingParen;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeParamListOpeningParen;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeResourceList;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeSequenceEnumerationClosingBrace;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeValueIteratorClosingParenthesis;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeWhileOpeningParenthesis;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
@@ -98,19 +94,8 @@ public class FormatterTabSpace extends FormatterTabPage {
                 FORMATTER_space_AroundImportAliasEqualsSign, FALSE_TRUE);
         createCheckboxPref(generalGroup, numColumns, "Space after type argument or parameter list comma",
                 FORMATTER_space_AfterTypeArgOrParamListComma, FALSE_TRUE);
-        
-        final Group control = createGroup(numColumns, composite, 
-                "Control Structures");
-        createCheckboxPref(control, 2, "Space after 'if'",
-                FORMATTER_space_BeforeIfOpeningParenthesis, FALSE_TRUE);
-        createCheckboxPref(control, 2, "Space after 'for'",
-                FORMATTER_space_BeforeForOpeningParenthesis, FALSE_TRUE);  
-        createCheckboxPref(control, 2, "Space after 'while'",
-                FORMATTER_space_BeforeWhileOpeningParenthesis, FALSE_TRUE);  
-        createCheckboxPref(control, 2, "Space after 'try'",
-                FORMATTER_space_BeforeResourceList, FALSE_TRUE);
-        createCheckboxPref(control, 2, "Space after 'catch'",
-                FORMATTER_space_BeforeCatchVariable, FALSE_TRUE);
+        createCheckboxPref(generalGroup, numColumns, "Space after control structure keyword ('if', 'for', etc.)",
+                FORMATTER_space_AfterControlStructureKeyword, FALSE_TRUE);
   
         final Group parameter = createGroup(numColumns, composite, 
                 "Parameter Lists");

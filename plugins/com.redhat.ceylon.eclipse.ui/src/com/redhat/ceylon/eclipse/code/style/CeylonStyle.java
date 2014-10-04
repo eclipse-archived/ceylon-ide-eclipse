@@ -14,6 +14,7 @@ import ceylon.formatter.options.LineBreak;
 import ceylon.formatter.options.Spaces;
 import ceylon.formatter.options.SparseFormattingOptions;
 import ceylon.formatter.options.Tabs;
+import ceylon.formatter.options.VariableOptions;
 import ceylon.formatter.options.crlf_;
 import ceylon.formatter.options.lf_;
 import ceylon.formatter.options.os_;
@@ -26,7 +27,6 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
-
 
 /**
  * Utility query and update for style options
@@ -73,16 +73,19 @@ public class CeylonStyle {
     }
 
     /**
-     * Creates {@link SparseFormattingOptions} that respect whitespace-relevant settings:
+     * Creates {@link SparseFormattingOptions} that respect whitespace-relevant
+     * settings:
      * <ul>
-     * <li>{@link SparseFormattingOptions#getIndentMode() indentMode} from spaces-for-tabs and editor-tab-width</li>
-     * <li>{@link SparseFormattingOptions#getLineBreak() lineBreak} from document newline character</li>
+     * <li>{@link SparseFormattingOptions#getIndentMode() indentMode} from
+     * spaces-for-tabs and editor-tab-width</li>
+     * <li>{@link SparseFormattingOptions#getLineBreak() lineBreak} from
+     * document newline character</li>
      * </ul>
      */
     public static SparseFormattingOptions getEclipseWsOptions(IDocument document) {
         LineBreak lb;
         if (document instanceof IDocumentExtension4) {
-            switch(((IDocumentExtension4)document).getDefaultLineDelimiter()){
+            switch (((IDocumentExtension4) document).getDefaultLineDelimiter()) {
             case "\n":
                 lb = lf_.get_();
                 break;
@@ -96,47 +99,14 @@ public class CeylonStyle {
         } else {
             lb = os_.get_();
         }
-        return new SparseFormattingOptions(
-                /* indentMode = */ Indents.getIndentWithSpaces() ? 
-                        new Spaces(Indents.getIndentSpaces()) : 
-                        new Tabs(Indents.getIndentSpaces()),
-                /* maxLineLength = */ null,
-                /* lineBreakStrategy = */ null,
-                /* braceOnOwnLine = */ null,
-                /* spaceBeforeParamListOpeningParen = */ null,
-                /* spaceAfterParamListOpeningParen = */ null,
-                /* spaceBeforeParamListClosingParen = */ null,
-                /* spaceAfterParamListClosingParen = */ null,
-                /* inlineAnnotations = */ null,
-                /* spaceBeforeMethodOrClassPositionalArgumentList = */ null,
-                /* spaceBeforeAnnotationPositionalArgumentList = */ null,
-                /* importStyle = */ null,
-                /* spaceAroundImportAliasEqualsSign = */ null,
-                /* lineBreaksBeforeLineComment = */ null,
-                /* lineBreaksAfterLineComment = */ null,
-                /* lineBreaksBeforeSingleComment = */ null,
-                /* lineBreaksAfterSingleComment = */ null,
-                /* lineBreaksBeforeMultiComment = */ null,
-                /* lineBreaksAfterMultiComment = */ null,
-                /* lineBreaksInTypeParameterList = */ null,
-                /* spaceAfterSequenceEnumerationOpeningBrace = */ null,
-                /* spaceBeforeSequenceEnumerationClosingBrace = */ null,
-                /* spaceBeforeForOpeningParenthesis = */ null,
-                /* spaceAfterValueIteratorOpeningParenthesis = */ null,
-                /* spaceBeforeValueIteratorClosingParenthesis = */ null,
-                /* spaceBeforeIfOpeningParenthesis = */ null,
-                /* failFast = */ null,
-                /* spaceBeforeResourceList = */ null,
-                /* spaceBeforeCatchVariable = */ null,
-                /* spaceBeforeWhileOpeningParenthesis = */ null,
-                /* spaceAfterTypeArgOrParamListComma = */ null,
-                /* indentBeforeTypeInfo = */ null,
-                /* indentationAfterSpecifierExpressionStart = */ null,
-                /* indentBlankLines = */ null,
-                /* lineBreak = */ lb
-                );
+        VariableOptions ret = new VariableOptions(new SparseFormattingOptions());
+        ret.setIndentMode(Indents.getIndentWithSpaces() ?
+                new Spaces(Indents.getIndentSpaces()) :
+                new Tabs(Indents.getIndentSpaces()));
+        ret.setLineBreak(lb);
+        return ret;
     }
-    
+
     private static boolean writeProjectConfig(IProject project,
             CeylonConfig options) {
         if (project != null) {
@@ -146,7 +116,7 @@ public class CeylonStyle {
                 return true;
             } catch (IOException e) {
                 CeylonPlugin.getInstance().getLog()
-                        .log(new Status(IStatus.ERROR, 
+                        .log(new Status(IStatus.ERROR,
                                 CeylonPlugin.PLUGIN_ID, e.getMessage()));
                 return false;
             }
