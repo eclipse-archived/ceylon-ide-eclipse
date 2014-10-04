@@ -167,6 +167,7 @@ public class FormatterTabSpace extends FormatterTabPage {
     @Override
     protected void doUpdatePreview() {
         super.doUpdatePreview();
+        ceylonPreview.setPreviewText(PREVIEW);
         ceylonPreview.update();
     }
 }
