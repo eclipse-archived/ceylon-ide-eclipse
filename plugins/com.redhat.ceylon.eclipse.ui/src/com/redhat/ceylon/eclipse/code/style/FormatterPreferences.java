@@ -424,13 +424,13 @@ public class FormatterPreferences {
             break;
         case FORMATTER_lineBreaksInTypeParameterList_First:
             num = Integer.parseInt(value);
-            options.setLineBreaksBeforeSingleComment(setFirst(
-                    options.getLineBreaksBeforeSingleComment(), num));
+            options.setLineBreaksInTypeParameterList(setFirst(
+                    options.getLineBreaksInTypeParameterList(), num));
             break;
         case FORMATTER_lineBreaksInTypeParameterList_Last:
             num = Integer.parseInt(value);
-            options.setLineBreaksBeforeSingleComment(setLast(
-                    options.getLineBreaksBeforeSingleComment(), num));
+            options.setLineBreaksInTypeParameterList(setLast(
+                    options.getLineBreaksInTypeParameterList(), num));
             break;
         case FORMATTER_lineBreaksBeforeLineComment_First:
             num = Integer.parseInt(value);
