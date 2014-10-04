@@ -162,7 +162,8 @@ final class FormatAction extends Action {
         if (!isEnabled(pc)) return;
         final List<CommonToken> tokenList = pc.getTokens();
         final List<FormattingUnit> formattingUnits;
-        if (selected) {
+        boolean formatAll = !selected || document.getLength()==ts.getLength();
+        if (!formatAll) {
             // a node was selected, format only that
             Node selectedRootNode = Nodes.findNode(pc.getRootNode(), ts);
             if (selectedRootNode == null)
@@ -170,11 +171,11 @@ final class FormatAction extends Action {
             if (selectedRootNode instanceof Body || selectedRootNode instanceof CompilationUnit) {
                 // format only selected statements, not entire body / CU (from now on: body)
                 
-                Iterator<Statement> it;
+                Iterator<? extends Statement> it;
                 if (selectedRootNode instanceof Body) {
                     it = ((Body)selectedRootNode).getStatements().iterator();
                 } else {
-                    it = (Iterator<Statement>)(Iterator)((CompilationUnit)selectedRootNode).getDeclarations().iterator();
+                    it = ((CompilationUnit)selectedRootNode).getDeclarations().iterator();
                 }
                 Statement stat = null;
                 formattingUnits = new ArrayList<FormattingUnit>();
@@ -231,8 +232,8 @@ final class FormatAction extends Action {
             for (FormattingUnit unit : formattingUnits) {
                 final int startTokenIndex = unit.startToken.getTokenIndex();
                 final int endTokenIndex = unit.endToken.getTokenIndex();
-                final int startIndex = unit.startToken.getStartIndex();
-                final int stopIndex = unit.endToken.getStopIndex();
+//                final int startIndex = unit.startToken.getStartIndex();
+//                final int stopIndex = unit.endToken.getStopIndex();
                 final TokenSource tokens = new TokenSource() {
                     int i = startTokenIndex;
                     @Override
@@ -293,13 +294,11 @@ final class FormatAction extends Action {
         try {
             final int startIndex = formattingUnits.get(0).startToken.getStartIndex();
             final int stopIndex = formattingUnits.get(formattingUnits.size() - 1).endToken.getStopIndex();
-            if (!document.get().equals(text)) {
-                DocumentChange change = 
-                        new DocumentChange("Format", document);
-                change.setEdit(new ReplaceEdit(
-                        selected ? startIndex : 0,
-                                selected ? stopIndex - startIndex + 1 : document.getLength(),
-                                        text));
+            final int from = formatAll ? 0 : startIndex;
+            final int length = formatAll ? document.getLength() : stopIndex - startIndex + 1;
+            if (!document.get(from, length).equals(text)) {
+                DocumentChange change = new DocumentChange("Format", document);
+                change.setEdit(new ReplaceEdit(from, length, text));
                 change.perform(new NullProgressMonitor());
                 if (selected) {
                     selectionProvider.setSelection(new TextSelection(startIndex, text.length()));
