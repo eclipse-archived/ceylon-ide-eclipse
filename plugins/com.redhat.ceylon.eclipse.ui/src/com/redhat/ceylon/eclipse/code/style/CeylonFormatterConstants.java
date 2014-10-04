@@ -25,8 +25,6 @@ public class CeylonFormatterConstants {
     public static final String FORMATTER_space_BeforeParamListClosingParen = "spaceBeforeParamListClosingParen";
     public static final String FORMATTER_space_AfterParamListClosingParen = "spaceAfterParamListClosingParen";
 
-    public static final String FORMATTER_space_AfterParamListClosingParen_Number = "spaceAfterParamListClosingParenNumber";
-
     public static final String FORMATTER_space_BeforeValueIteratorClosingParenthesis = "spaceBeforeValueIteratorClosingParenthesis";
     public static final String FORMATTER_space_AfterSequenceEnumerationOpeningBrace = "spaceAfterSequenceEnumerationOpeningBrace";
     public static final String FORMATTER_space_BeforeForOpeningParenthesis = "spaceBeforeForOpeningParenthesis";

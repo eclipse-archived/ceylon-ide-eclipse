@@ -102,20 +102,6 @@ public class FormatterPreferences {
                 ret = options.getSpaceAfterParamListClosingParen().toString(); // is Boolean
             }
             break;
-        case FORMATTER_space_AfterParamListClosingParen_Number:
-            if (options.getSpaceAfterParamListClosingParen() instanceof ceylon.language.Integer) {
-                long num = ((ceylon.language.Integer) options.getSpaceAfterParamListClosingParen()).longValue();
-                if (num <= -80L)
-                    ret = "-80";
-                else if (num >= 80L)
-                    ret = "80";
-                else
-                    ret = options.getSpaceAfterParamListClosingParen().toString();
-            } else {
-                ret = ((ceylon.language.Boolean)options.getSpaceAfterParamListClosingParen())
-                        .booleanValue() ? "80" : "-80";
-            }
-            break;
         case FORMATTER_space_BeforeValueIteratorClosingParenthesis:
             ret = booleanString(options
                     .getSpaceBeforeValueIteratorClosingParenthesis());
@@ -261,6 +247,7 @@ public class FormatterPreferences {
     }
 
     public void put(String key, String value) {
+        int num;
         switch (key) {
         case FORMATTER_indentMode:
             IndentMode indentMode = getIndentMode(value, new Long(options
@@ -321,14 +308,10 @@ public class FormatterPreferences {
             options.setSpaceBeforeParamListClosingParen(ceylonBoolean(value));
             break;
         case FORMATTER_space_AfterParamListClosingParen:
-            options.setSpaceAfterParamListClosingParen(ceylonBoolean(value));
-            break;
-        case FORMATTER_space_AfterParamListClosingParen_Number:
-            int num = Integer.parseInt(value);
-            if (num != 80 && num != -80) { // extreme values are represented through booleans
-                options.setSpaceAfterParamListClosingParen(ceylon.language.Integer.instance(num));
+            if (TRUE.equals(value)) {
+                options.setSpaceAfterParamListClosingParen(ceylon.language.Integer.instance(10));
             } else {
-                options.setSpaceAfterParamListClosingParen(ceylon.language.Boolean.instance(num > 0));
+                options.setSpaceAfterParamListClosingParen(ceylon.language.Boolean.instance(false));
             }
             break;
         case FORMATTER_space_BeforeValueIteratorClosingParenthesis:
