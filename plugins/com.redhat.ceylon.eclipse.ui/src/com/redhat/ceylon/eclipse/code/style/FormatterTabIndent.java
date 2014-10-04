@@ -82,8 +82,7 @@ public class FormatterTabIndent extends FormatterTabPage {
                     indentSpacesSize, indentTabsSize);
         } else {
             Label warning = createLabel(numColumns, generalGroup, 
-                    "IDE Editor options override this profile setting when formatting in the IDE:\n\n"
-                    + "indentMode=" + workingValues.getOptions().getIndentMode().toString());
+                    "IDE editor options override this profile setting");
             warning.setForeground(composite.getDisplay().getSystemColor(SWT.COLOR_RED));
         }
 
