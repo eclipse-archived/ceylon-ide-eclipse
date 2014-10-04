@@ -10,26 +10,26 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 public class ModuleQueries {
 
-    public static ModuleQuery.Type getModuleQueryType(IProject project) {
+    private static ModuleQuery getModuleQuery(String prefix, IProject project) {
         if (project!=null) {
             boolean compileToJava = CeylonBuilder.compileToJava(project);
             boolean compileToJs = CeylonBuilder.compileToJs(project);
             if (compileToJava&&!compileToJs) {
-                return ModuleQuery.Type.JVM;
+                return new ModuleQuery(prefix, ModuleQuery.Type.JVM);
             }
             if (compileToJs&&!compileToJava) {
-                return ModuleQuery.Type.JS;
+                return new ModuleQuery(prefix, ModuleQuery.Type.JS);
             }
             if (compileToJs&&compileToJava) {
-                return ModuleQuery.Type.CEYLON_CODE;
+                return new ModuleQuery(prefix, ModuleQuery.Type.CEYLON_CODE, ModuleQuery.Retrieval.ALL);
             }
         }
-        return ModuleQuery.Type.CODE;
+        return new ModuleQuery(prefix, ModuleQuery.Type.CODE);
     }
 
     public static ModuleSearchResult getModuleSearchResults(String prefix,
             TypeChecker tc, IProject project) {
-        ModuleQuery query = new ModuleQuery(prefix, getModuleQueryType(project));
+        ModuleQuery query = getModuleQuery(prefix, project);
         query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
         return tc.getContext().getRepositoryManager().completeModules(query);
     }
