@@ -443,7 +443,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
         private void modifyButtonPressed() {
             final StatusDialog modifyDialog = createModifyDialog(
                     block.getShell(), fFormatterProfileManager.getSelected(),
-                    fFormatterProfileManager, false, false);
+                    fFormatterProfileManager, false, projectSettings);
             modifyDialog.open();
         }
 
@@ -491,7 +491,7 @@ public class FormatterConfigurationBlock extends StyleBlock {
                 return;
             final StatusDialog modifyDialog = createModifyDialog(
                     block.getShell(), p.getCreatedProfile(),
-                    fFormatterProfileManager, true, false);
+                    fFormatterProfileManager, true, projectSettings);
             modifyDialog.open();
         }
 

@@ -40,7 +40,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
     private static final int APPLY_BUTTON_ID = IDialogConstants.CLIENT_ID;
 
     private final boolean newProfile;
-    private boolean projectSpecific;
+    private final boolean projectSpecific;
 
     private Profile profile;
     private FormattingOptions workingValues;
@@ -75,6 +75,10 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
         return false;
     }
 
+    protected boolean isProjectSpecific() {
+        return this.projectSpecific;
+    }
+    
     protected void addPages(FormatterPreferences workingValues) {
         addTabPage("Indentation", new FormatterTabIndent(this, workingValues));
         addTabPage("Spacing", new FormatterTabSpace(this, workingValues));
@@ -122,7 +126,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
             }
         });
 
-        profileNameField.setEnabled(!projectSpecific);
+        profileNameField.setEnabled(false); // do not edit name when modifying
         
         tabFolder = new TabFolder(composite, SWT.NONE);
         tabFolder.setFont(composite.getFont());

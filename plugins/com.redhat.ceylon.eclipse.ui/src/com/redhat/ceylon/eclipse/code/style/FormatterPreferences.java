@@ -31,21 +31,23 @@ public class FormatterPreferences {
     private static final String FALSE = "false";
     private static final String TRUE = "true";
     private VariableOptions options;
+    private SparseFormattingOptions ideOptions;
 
     public FormatterPreferences(FormattingOptions options) {
         this.options = new VariableOptions(options);
+        this.ideOptions = CeylonStyle.getEclipseWsOptions(null);
     }
 
     public String get(String key) {
         String ret = null;
         switch (key) {
         case FORMATTER_indentMode:
-            ret = options.getIndentMode().getClass().getSimpleName()
+            ret = ideOptions.getIndentMode().getClass().getSimpleName()
                     .toLowerCase();
             break;
         case FORMATTER_indentMode_Spaces_Size:
         case FORMATTER_indentMode_Tabs_Size:
-            ret = new Long(options.getIndentMode().getWidthOfLevel())
+            ret = new Long(ideOptions.getIndentMode().getWidthOfLevel())
                     .toString();
             break;
         case FORMATTER_indent_Blank_Lines:
@@ -238,7 +240,7 @@ public class FormatterPreferences {
             }
             break;
         case FORMATTER_lineBreak:
-            ret = options.getLineBreak().toString();
+            ret = ideOptions.getLineBreak().toString();
             break;
 
         // to set up previewer only

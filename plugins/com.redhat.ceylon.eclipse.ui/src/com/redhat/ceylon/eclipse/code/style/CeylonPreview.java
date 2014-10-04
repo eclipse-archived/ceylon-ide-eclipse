@@ -31,6 +31,10 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 
 import ceylon.formatter.format_;
+import ceylon.formatter.options.FormattingOptions;
+import ceylon.formatter.options.SparseFormattingOptions;
+import ceylon.formatter.options.combinedOptions_;
+import ceylon.language.Singleton;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -212,16 +216,20 @@ public class CeylonPreview {
                     fPreviewDocument.getLength());
             context.setProperty(
                     FormattingContextProperties.CONTEXT_PREFERENCES,
-                    this.workingValues);
+                    combinedOptions_.combinedOptions(
+                            workingValues.getOptions(),
+                            new Singleton<SparseFormattingOptions>
+                                (SparseFormattingOptions.$TypeDescriptor$, 
+                                        CeylonStyle.getEclipseWsOptions(null)))
+                    );
             context.setProperty(
                     FormattingContextProperties.CONTEXT_DOCUMENT,
                     Boolean.valueOf(true));
             fPreviewLexer.reset();
             format_.format(
                 fPreviewCu,
-                ((FormatterPreferences) context
-                        .getProperty(FormattingContextProperties.CONTEXT_PREFERENCES))
-                        .getOptions(), new StringBuilderWriter(builder),
+                (FormattingOptions) context.getProperty(FormattingContextProperties.CONTEXT_PREFERENCES),
+                new StringBuilderWriter(builder),
                 new BufferedTokenStream(fPreviewLexer));
             fPreviewDocument.set(builder.toString());
         } catch (Exception e) {

@@ -6,8 +6,10 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 
 public class FormatterTabIndent extends FormatterTabPage {
 
@@ -63,17 +65,27 @@ public class FormatterTabIndent extends FormatterTabPage {
         final ComboPreference indentMode = createComboPref(generalGroup,
                 numColumns, "Indent Mode", FORMATTER_indentMode,
                 indentModeValues, indentModeLabels);
+        indentMode.setEnabled(!ideMode);
 
         final NumberPreference indentSpacesSize = createNumberPref(
                 generalGroup, numColumns, "Indent Mode Spaces Size",
                 FORMATTER_indentMode_Spaces_Size, 0, 32);
+        indentSpacesSize.setEnabled(!ideMode);
 
         final NumberPreference indentTabsSize = createNumberPref(generalGroup,
                 numColumns, "Indent Mode Tabs Size",
                 FORMATTER_indentMode_Tabs_Size, 0, 32);
+        indentTabsSize.setEnabled(!ideMode);
 
-        updateTabPreferences(this.workingValues.get(FORMATTER_indentMode),
-                indentSpacesSize, indentTabsSize);
+        if (!ideMode) {
+            updateTabPreferences(this.workingValues.get(FORMATTER_indentMode),
+                    indentSpacesSize, indentTabsSize);
+        } else {
+            Label warning = createLabel(numColumns, generalGroup, 
+                    "IDE Editor options override this profile setting when formatting in the IDE:\n\n"
+                    + "indentMode=" + workingValues.getOptions().getIndentMode().toString());
+            warning.setForeground(composite.getDisplay().getSystemColor(SWT.COLOR_RED));
+        }
 
         indentMode.addObserver(new Observer() {
             public void update(Observable o, Object arg) {
@@ -81,7 +93,7 @@ public class FormatterTabIndent extends FormatterTabPage {
                         indentTabsSize);
             }
         });
-
+        
         // group ended
         final Group otherGroup = createGroup(numColumns, composite,
                 "Other Indent Options");

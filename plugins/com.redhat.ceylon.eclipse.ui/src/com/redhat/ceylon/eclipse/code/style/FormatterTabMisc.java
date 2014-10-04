@@ -6,8 +6,10 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 
 public class FormatterTabMisc extends FormatterTabPage {
 
@@ -77,14 +79,23 @@ public class FormatterTabMisc extends FormatterTabPage {
     @Override
     protected void doCreatePreferences(Composite composite, int numColumns) {
 
-        final Group generalGroup = createGroup(numColumns, composite,
-                "Miscellaneous Options");
+        final Group lbGroup = createGroup(numColumns, composite,
+                "Line Break");
 
-        createComboPref(generalGroup, numColumns, "Line break strategy",
+        final ComboPreference lbCombo = createComboPref(lbGroup, numColumns, "Line break strategy",
                 FORMATTER_lineBreak, new String[] { "os", "lf", "crlf" },
                 new String[] { "Operating System", "LF (Unix)",
                         "CR + LF (Windows)" });
+        if (ideMode) {
+            lbCombo.setEnabled(false);
+            Label warning = createLabel(numColumns, lbGroup, 
+                    "IDE and source settings override this profile setting when formatting in the IDE:\n\n"
+                    + "lb=" + workingValues.getOptions().getLineBreak().toString());
+            warning.setForeground(composite.getDisplay().getSystemColor(SWT.COLOR_RED));
+        }
 
+        final Group generalGroup = createGroup(numColumns, composite,
+                "Other");
         createComboPref(generalGroup, numColumns, "Import Style",
                 FORMATTER_importStyle,
                 new String[] { "singleLine", "multiLine" }, new String[] {
