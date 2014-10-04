@@ -86,12 +86,7 @@ public class FormatterPreferences {
             ret = booleanString(options.getSpaceBeforeParamListClosingParen());
             break;
         case FORMATTER_space_AfterParamListClosingParen:
-            if (options.getSpaceAfterParamListClosingParen() instanceof ceylon.language.Integer) {
-                ret = ((ceylon.language.Integer)options.getSpaceAfterParamListClosingParen())
-                        .longValue() >= 0 ? TRUE : FALSE;
-            } else {
-                ret = options.getSpaceAfterParamListClosingParen().toString(); // is Boolean
-            }
+            ret = booleanString(options.getSpaceAfterParamListClosingParen());
             break;
         case FORMATTER_space_BeforeValueIteratorClosingParenthesis:
             ret = booleanString(options
@@ -287,11 +282,7 @@ public class FormatterPreferences {
             options.setSpaceBeforeParamListClosingParen(ceylonBoolean(value));
             break;
         case FORMATTER_space_AfterParamListClosingParen:
-            if (TRUE.equals(value)) {
-                options.setSpaceAfterParamListClosingParen(ceylon.language.Integer.instance(10));
-            } else {
-                options.setSpaceAfterParamListClosingParen(ceylon.language.Boolean.instance(false));
-            }
+            options.setSpaceAfterParamListClosingParen(ceylonBoolean(value));
             break;
         case FORMATTER_space_BeforeValueIteratorClosingParenthesis:
             options.setSpaceBeforeValueIteratorClosingParenthesis(ceylonBoolean(value));
