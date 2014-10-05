@@ -21,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -206,13 +207,20 @@ public class DeleteRefactoring extends AbstractRefactoring {
     public DeleteRefactoring(IEditorPart editor) {
         super(editor);
         if (rootNode!=null) {
-            declarationToDelete = (Declaration) 
+            Referenceable ref = 
                     getReferencedExplicitDeclaration(node, rootNode);
-            if (declarationToDelete!=null) {
-                refinedDeclaration = 
-                        declarationToDelete.getRefinedDeclaration();
+            if (ref instanceof Declaration) {
+                declarationToDelete = (Declaration) ref;
+                if (declarationToDelete!=null) {
+                    refinedDeclaration = 
+                            declarationToDelete.getRefinedDeclaration();
+                }
+                else {
+                    refinedDeclaration = null;
+                }
             }
             else {
+                declarationToDelete = null;
                 refinedDeclaration = null;
             }
         }
