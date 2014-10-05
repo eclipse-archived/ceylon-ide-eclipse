@@ -181,7 +181,8 @@ public class InlineRefactoring extends AbstractRefactoring {
                     result.merge(createWarningStatus("Definition contains unresolved reference"));
                 }
                 else if (declaration.isShared() &&
-                        !that.getDeclaration().isShared()) {
+                        !that.getDeclaration().isShared() &&
+                        !that.getDeclaration().isParameter()) {
                     result.merge(createWarningStatus("Definition contains reference to unshared declaration: " +
                             that.getDeclaration().getName()));
                 }
@@ -733,7 +734,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         boolean found = false;
         for (Tree.NamedArgument arg: 
         	    that.getNamedArgumentList().getNamedArguments()) {
-            if (it.getDeclaration().equals(arg.getParameter())) {
+            if (it.getDeclaration().equals(arg.getParameter().getModel())) {
                 Tree.SpecifiedArgument sa = (Tree.SpecifiedArgument) arg;
 				Tree.Term argTerm = sa.getSpecifierExpression()
                                 .getExpression().getTerm();
