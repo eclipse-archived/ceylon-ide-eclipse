@@ -79,7 +79,8 @@ abstract class FindSearchQuery implements ISearchQuery {
 
     private void findCeylonReferences(IProgressMonitor monitor) {
         Set<String> searchedArchives = new HashSet<String>();
-        Package pack = referencedDeclaration.getUnit().getPackage();
+        Package pack = getPackage();
+        if (pack==null) return;
         for (IProject project: getProjectsToSearch(this.project)) {
             if (CeylonNature.isEnabled(project)) {
                 TypeChecker typeChecker = getProjectTypeChecker(project);
@@ -111,11 +112,27 @@ abstract class FindSearchQuery implements ISearchQuery {
             }
         }
     }
+
+    private Package getPackage() {
+        if (referencedDeclaration instanceof Declaration) {
+            return referencedDeclaration.getUnit().getPackage();
+        }
+        else if (referencedDeclaration instanceof Package) {
+            return (Package) referencedDeclaration;
+        }
+        else if (referencedDeclaration instanceof Module) {
+            return ((Module) referencedDeclaration).getRootPackage();
+        }
+        else {
+            return null;
+        }
+    }
     
     private int estimateWork(IProgressMonitor monitor) {
         int work = 0;
         Set<String> searchedArchives = new HashSet<String>();
-        Package pack = referencedDeclaration.getUnit().getPackage();
+        Package pack = getPackage();
+        if (pack==null) return 0;
         for (IProject project: getProjectsToSearch(this.project)) {
             if (CeylonNature.isEnabled(project)) {
                 work++;
