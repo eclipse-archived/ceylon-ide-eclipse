@@ -13,7 +13,6 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.internal.corext.refactoring.rename.RenamePackageProcessor;
@@ -39,13 +38,13 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
     private IPackageFragment javaPackageFragment;
     
-    private static Map<IPackageFragment,String> allPackagesMoving = 
-            new HashMap<IPackageFragment,String>();
+    private static Map<String,TextFileChange> fileChanges = 
+            new HashMap<String,TextFileChange>();
 
     @Override
     protected boolean initialize(Object element) {
-        javaPackageFragment= (IPackageFragment) element;
-        final String newName = getArguments().getNewName();
+        javaPackageFragment = (IPackageFragment) element;
+        //final String newName = getArguments().getNewName();
         RefactoringProcessor processor = getProcessor();
         if (processor instanceof RenamePackageProcessor) {
             RenamePackageProcessor renamePackageProcessor = 
@@ -59,7 +58,6 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
         else {
             return false;
         }
-        allPackagesMoving.put(javaPackageFragment, newName);
         return getProjectTypeChecker(javaPackageFragment.getJavaProject().getProject())!=null;
     }
 
@@ -76,6 +74,12 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
     @Override
     public Change createChange(IProgressMonitor pm) 
+            throws CoreException {
+        return null;
+    }
+    
+    @Override
+    public Change createPreChange(IProgressMonitor pm) 
             throws CoreException {
         try {
             final String newName = getArguments().getNewName();
@@ -112,17 +116,24 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
                 if (!edits.isEmpty()) {
                     try {
+                        IFileVirtualFile virtualFile = 
+                                (IFileVirtualFile) phasedUnit.getUnitFile();
                         final IFile file = 
-                                ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                        IFile movedFile = getMovedFile(file);
-                        TextFileChange change = 
-                                new MovingTextFileChange(movedFile.getName(), 
-                                        movedFile, file);
-                        change.setEdit(new MultiTextEdit());
+                                virtualFile.getFile();
+                        String path = file.getProjectRelativePath().toPortableString();
+                        TextFileChange change = fileChanges.get(path);
+                        if (change==null) {
+                            change = new TextFileChange(file.getName(), file);
+                            change.setEdit(new MultiTextEdit());
+                            changes.add(change);
+                            fileChanges.put(path, change);
+                        }
+                        else {
+                            change.getFile().getName();
+                        }
                         for (ReplaceEdit edit: edits) {
                             change.addEdit(edit);
                         }
-                        changes.add(change);
                     }       
                     catch (Exception e) { 
                         e.printStackTrace(); 
@@ -136,11 +147,11 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
             }
             else {
                 CompositeChange result = 
-                        new CompositeChange("Ceylon source changes") {
+                        new CompositeChange("Ceylon source changes"){
                     @Override
                     public Change perform(IProgressMonitor pm) 
                             throws CoreException {
-                        allPackagesMoving.clear();
+                        fileChanges.clear();
                         return super.perform(pm);
                     }
                 };
@@ -156,20 +167,4 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
         }
     }
     
-    private static IFile getMovedFile(IFile file) {
-        for (Map.Entry<IPackageFragment,String> e: allPackagesMoving.entrySet()) {
-            IPackageFragment javaPackageFragment = e.getKey();
-            String newName = e.getValue();
-            String oldPath = javaPackageFragment.getElementName().replace('.', '/');
-            String newPath = newName.replace('.', '/');
-            IPath pathInSourceFolder = file.getParent().getProjectRelativePath()
-                    .removeFirstSegments(1); //TODO: lame, it assumes a the source folder belongs directly to the project
-            if (pathInSourceFolder.toPortableString().equals(oldPath)) {
-                return file.getProject().getFile(file.getParent().getProjectRelativePath()
-                        .removeLastSegments(pathInSourceFolder.segmentCount())
-                        .append(newPath).append(file.getName()));
-            }
-        }
-        return file;
-    }
 }
