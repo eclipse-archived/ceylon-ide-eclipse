@@ -15,6 +15,8 @@ import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORM
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksBeforeSingleComment_Last;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksInTypeParameterList_First;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksInTypeParameterList_Last;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksBetweenImportElements_First;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_lineBreaksBetweenImportElements_Last;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_maxLineLength;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_maxLineLength_Number;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.MAXIMUM_SPECIFIED_LINE_LENGTH;
@@ -52,7 +54,12 @@ public class FormatterTabLine extends FormatterTabPage {
     }
 
     private final String PREVIEW = 
-            "{String*} words = { \"You\", \"may\", \"want\", \"to\", \"break\", \"this\", \"up\", \"into\", \"multiple\", \"lines\", \"because\", \"like\", \"this\", \"it\", \"can\", \"be\", \"hard\", \"to\", \"read\" };\n"
+            "import ceylon.language {\n"
+            + "    pub=shared, var=variable,\n"
+            + "    Str=String\n"
+            + "}\n"
+            + "\n"
+            + "{String*} words = { \"You\", \"may\", \"want\", \"to\", \"break\", \"this\", \"up\", \"into\", \"multiple\", \"lines\", \"because\", \"like\", \"this\", \"it\", \"can\", \"be\", \"hard\", \"to\", \"read\" };\n"
             + "{String*} moreWords = {\n"
             + "    \"However\", \"keep\", \"in\", \"mind\", \"that\",\n"
             + "    \"the\", \"formatter\", \"can\", \"never\", \"be\",\n"
@@ -220,6 +227,14 @@ public class FormatterTabLine extends FormatterTabPage {
         createCompactNumberPref(lineCommentGroup, 2, "Maximum", 
                 FORMATTER_lineBreaksInTypeParameterList_Last,
                 new RangeValidator(FORMATTER_lineBreaksInTypeParameterList_First, null, 0, 999));
+        
+        createCompactLabel(1, lineCommentGroup,  "Between import elements", SWT.LEFT, 60);
+        createCompactNumberPref(lineCommentGroup, 2, "Minimum",
+                FORMATTER_lineBreaksBetweenImportElements_First,
+                new RangeValidator(null, FORMATTER_lineBreaksBetweenImportElements_Last, 0, 0));
+        createCompactNumberPref(lineCommentGroup, 2, "Maximum", 
+                FORMATTER_lineBreaksBetweenImportElements_Last,
+                new RangeValidator(FORMATTER_lineBreaksBetweenImportElements_First, null, 0, 999));
     }
 
     private void updatePreferences(String v, NumberPreference np, CheckboxPreference cbp) {

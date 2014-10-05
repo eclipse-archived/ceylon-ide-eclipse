@@ -47,8 +47,9 @@ public class CeylonFormatterConstants {
     public static final String FORMATTER_lineBreaksInTypeParameterList_Last = "lineBreaksInTypeParameterListLast";
     public static final String FORMATTER_lineBreaksBeforeLineComment_First = "lineBreaksBeforeLineCommentFirst";
     public static final String FORMATTER_lineBreaksBeforeLineComment_Last = "lineBreaksBeforeLineCommentLast";
-
-    public static final String FORMATTER_importStyle = "importStyle";
+    public static final String FORMATTER_lineBreaksBetweenImportElements_First = "lineBreaksBetweenImportElementsFirst";
+    public static final String FORMATTER_lineBreaksBetweenImportElements_Last = "lineBreaksBetweenImportElementsLast";
+    
     public static final String FORMATTER_elseOnOwnLine = "elseOnOwnLine";
     public static final String FORMATTER_failFast = "failFast";
     public static final String FORMATTER_braceOnOwnLine = "braceOnOwnLine";

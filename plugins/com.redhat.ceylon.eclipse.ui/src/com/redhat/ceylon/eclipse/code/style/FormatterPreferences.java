@@ -14,9 +14,7 @@ import ceylon.formatter.options.all_;
 import ceylon.formatter.options.combinedOptions_;
 import ceylon.formatter.options.crlf_;
 import ceylon.formatter.options.lf_;
-import ceylon.formatter.options.multiLine_;
 import ceylon.formatter.options.os_;
-import ceylon.formatter.options.singleLine_;
 import ceylon.formatter.options.stack_;
 import ceylon.formatter.options.unlimited_;
 import ceylon.language.Range;
@@ -179,10 +177,13 @@ public class FormatterPreferences {
         case FORMATTER_lineBreaksBeforeLineComment_Last:
             ret = options.getLineBreaksBeforeLineComment().getLast().toString();
             break;
-
-        case FORMATTER_importStyle:
-            ret = options.getImportStyle().toString();
+        case FORMATTER_lineBreaksBetweenImportElements_First:
+            ret = options.getLineBreaksBetweenImportElements().getFirst().toString();
             break;
+        case FORMATTER_lineBreaksBetweenImportElements_Last:
+            ret = options.getLineBreaksBetweenImportElements().getLast().toString();
+            break;
+            
         case FORMATTER_elseOnOwnLine:
             ret = booleanString(options.getElseOnOwnLine());
             break;
@@ -394,14 +395,17 @@ public class FormatterPreferences {
             options.setLineBreaksBeforeLineComment(setLast(
                     options.getLineBreaksBeforeLineComment(), num));
             break;
-
-        case FORMATTER_importStyle:
-            if ("singleLine".equals(value)) {
-                options.setImportStyle(singleLine_.get_());
-            } else if ("multiLine".equals(value)) {
-                options.setImportStyle(multiLine_.get_());
-            } // not simple 'else'
+        case FORMATTER_lineBreaksBetweenImportElements_First:
+            num = Integer.parseInt(value);
+            options.setLineBreaksBetweenImportElements(setFirst(
+                    options.getLineBreaksBetweenImportElements(), num));
             break;
+        case FORMATTER_lineBreaksBetweenImportElements_Last:
+            num = Integer.parseInt(value);
+            options.setLineBreaksBetweenImportElements(setLast(
+                    options.getLineBreaksBetweenImportElements(), num));
+            break;
+
         case FORMATTER_elseOnOwnLine:
             options.setElseOnOwnLine(ceylonBoolean(value));
             break;
