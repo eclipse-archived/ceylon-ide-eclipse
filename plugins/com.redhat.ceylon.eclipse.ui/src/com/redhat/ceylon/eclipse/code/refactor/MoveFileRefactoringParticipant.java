@@ -40,7 +40,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
@@ -49,7 +48,6 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 public class MoveFileRefactoringParticipant extends MoveParticipant {
 
     private IFile file;
-    private IFile newFile;
     
     @Override
     protected boolean initialize(Object element) {
@@ -72,9 +70,15 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                     throws OperationCanceledException {
         return new RefactoringStatus();
     }
-
+    
     @Override
     public Change createChange(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
+        return null;
+    }
+    
+    @Override
+    public Change createPreChange(IProgressMonitor pm) 
             throws CoreException, OperationCanceledException {
         try {
             IProject project = file.getProject();
@@ -91,7 +95,6 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                     .removeFirstSegments(1)
                     .toPortableString();
             String oldName = movedRelPath.replace('/', '.');
-            newFile = folder.getFile(file.getName());
 
             List<Change> changes = new ArrayList<Change>();
 
@@ -298,17 +301,19 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
         }
     }
     
-    private void collectEditsToMovedFile(final String newName, 
-            final String oldName, final List<Change> changes, 
+    private void collectEditsToMovedFile(String newName, 
+            String oldName, List<Change> changes, 
             PhasedUnit movedPhasedUnit, 
-            final Map<Declaration, String> imports) {
+            Map<Declaration, String> imports) {
         try {
-            CompilationUnit cu = 
-                    movedPhasedUnit.getCompilationUnit();
+//            TextFileChange change = 
+//                    new MovingTextFileChange(newFile.getName(), 
+//                            newFile, file);
             TextFileChange change = 
-                    new MovingTextFileChange(newFile.getName(), 
-                            newFile, file);
+                    new TextFileChange(file.getName(), file);
             change.setEdit(new MultiTextEdit());
+            Tree.CompilationUnit cu = 
+                    movedPhasedUnit.getCompilationUnit();
             if (!imports.isEmpty()) {
                 List<InsertEdit> edits = importEdits(cu, 
                         imports.keySet(), imports.values(), null, 
@@ -329,17 +334,21 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
         }
     }
     
-    private void collectEdits(final String newName, final String oldName,
-            final List<Change> changes, PhasedUnit phasedUnit,
-            final Map<Declaration, String> imports) {
+    private void collectEdits(String newName, 
+            String oldName, List<Change> changes, 
+            PhasedUnit phasedUnit,
+            Map<Declaration, String> imports) {
         try {
+            Tree.CompilationUnit cu = 
+                    phasedUnit.getCompilationUnit();
             if (!imports.isEmpty()) {
-                IFile file = 
-                        ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
+                IFileVirtualFile virtualFile = 
+                        (IFileVirtualFile) phasedUnit.getUnitFile();
+                IFile file = virtualFile.getFile();
                 TextFileChange change = 
                         new TextFileChange(file.getName(), file);
                 List<TextEdit> edits = 
-                        importEditForMove(phasedUnit.getCompilationUnit(), 
+                        importEditForMove(cu, 
                                 imports.keySet(), imports.values(), 
                                 newName, oldName, 
                                 EditorUtil.getDocument(change));
