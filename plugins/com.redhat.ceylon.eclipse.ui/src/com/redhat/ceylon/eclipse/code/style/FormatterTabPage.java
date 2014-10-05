@@ -725,7 +725,7 @@ public abstract class FormatterTabPage {
 
         scroll.setContent(settingsContainer);
 
-        settingsContainer.setLayout(new PageLayout(scroll, 400, 400));
+        settingsContainer.setLayout(new PageLayout(scroll, 0, 0));
         settingsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
                 true));
 
