@@ -35,7 +35,8 @@ public class SourceFileSelectionDialog extends ElementTreeSelectionDialog {
                 IFile file = (IFile) element;
                 String extension = file.getFileExtension();
                 String name = file.getName();
-                return extension!=null && extension.equals("ceylon") &&
+                return extension!=null && 
+                        extension.equals("ceylon") &&
                         !name.equals("package.ceylon") &&
                         !name.equals("module.ceylon");
             }
@@ -89,7 +90,8 @@ public class SourceFileSelectionDialog extends ElementTreeSelectionDialog {
 	}
 
 	private SourceFileSelectionDialog(Shell shell) {
-		super(shell,new CeylonLabelProvider(),new StandardJavaElementContentProvider());
+		super(shell,new CeylonLabelProvider(),
+		        new StandardJavaElementContentProvider());
 		setValidator(new PackageAndProjectSelectionValidator());
 		setComparator(new JavaElementComparator());
 		setTitle("Source File Selection");
