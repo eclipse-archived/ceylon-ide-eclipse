@@ -414,6 +414,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (element instanceof IProject) {
             return new StyledString(((IProject) element).getName());
         }
+        else if (element instanceof IJavaProject) {
+            return new StyledString(((IJavaProject) element).getElementName());
+        }
         else if (element instanceof IPackageFragment) {
             return new StyledString(((IPackageFragment) element).getElementName(), 
                     PACKAGE_STYLER);
