@@ -63,12 +63,17 @@ public class CeylonNavigatorLabelProvider extends
         }
         if (element instanceof SourceModuleNode) {
             JDTModule module = ((SourceModuleNode) element).getModule();
-            String name = super.getStyledText(module).toString();
-			StyledString result = new StyledString(name);
-            if (module != null && module.isDefaultModule()) {
-                result = result.insert('(', 0).append(')').append("");
+            if (module==null) {
+                return new StyledString(((SourceModuleNode) element).getElementName());
             }
-            return result;
+            else {
+                String name = super.getStyledText(module).toString();
+                StyledString result = new StyledString(name);
+                if (module != null && module.isDefaultModule()) {
+                    result = result.insert('(', 0).append(')').append("");
+                }
+                return result;
+            }
         }
         if (element instanceof RepositoryNode) {
             RepositoryNode repoNode = (RepositoryNode) element;
@@ -206,7 +211,13 @@ public class CeylonNavigatorLabelProvider extends
                 }
             }
             
-            return getDecoratedImage(getImageKey(((SourceModuleNode)element).getModule()), decorationAttributes, true);
+            JDTModule module = ((SourceModuleNode)element).getModule();
+            if (module==null) {
+                return getDecoratedImage(CEYLON_MODULE, decorationAttributes, true);
+            }
+            else {
+                return getDecoratedImage(getImageKey(module), decorationAttributes, true);
+            }
         }
         
         if (element instanceof CeylonArchiveFileStore) {
