@@ -427,14 +427,16 @@ public class ImportProposals {
 
     public static void importDeclaration(Set<Declaration> declarations,
             Declaration declaration, Tree.CompilationUnit rootNode) {
-        Package p = declaration.getUnit().getPackage();
-        if (!p.getNameAsString().isEmpty() && 
-            !p.equals(rootNode.getUnit().getPackage()) &&
-            !p.getNameAsString().equals(Module.LANGUAGE_MODULE_NAME) &&
-            (!declaration.isClassOrInterfaceMember() ||
-              declaration.isStaticallyImportable())) {
-            if (!isImported(declaration, rootNode)) {
-                declarations.add(declaration);
+        if (!declaration.isParameter()) {
+            Package p = declaration.getUnit().getPackage();
+            if (!p.getNameAsString().isEmpty() && 
+                    !p.equals(rootNode.getUnit().getPackage()) &&
+                    !p.getNameAsString().equals(Module.LANGUAGE_MODULE_NAME) &&
+                    (!declaration.isClassOrInterfaceMember() ||
+                            declaration.isStaticallyImportable())) {
+                if (!isImported(declaration, rootNode)) {
+                    declarations.add(declaration);
+                }
             }
         }
     }
@@ -474,4 +476,4 @@ public class ImportProposals {
         }
     }
     
-    }
+}
