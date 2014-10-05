@@ -72,7 +72,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
 
     @Override
     protected boolean isResizable() {
-        return false;
+        return true;
     }
 
     protected boolean isProjectSpecific() {
