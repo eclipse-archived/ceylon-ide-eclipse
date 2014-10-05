@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.style;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_braceOnOwnLine;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_elseOnOwnLine;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_failFast;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_importStyle;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_inlineAnnotations;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_inlineAnnotations_List;
 
@@ -89,10 +88,6 @@ public class FormatterTabMisc extends FormatterTabPage {
                 FALSE_TRUE);
         createCheckboxPref(generalGroup, numColumns, "Line break before 'else' or 'catch'",
                 FORMATTER_elseOnOwnLine, FALSE_TRUE);
-        createComboPref(generalGroup, numColumns, "Import statements",
-                FORMATTER_importStyle,
-                new String[] { "singleLine", "multiLine" }, new String[] {
-                        "Single line", "Multiline" });
         
         final Group annotationGroup = createGroup(numColumns, composite,
                 "Annotations");
