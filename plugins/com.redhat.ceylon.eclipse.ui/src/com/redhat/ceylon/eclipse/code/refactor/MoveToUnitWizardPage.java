@@ -165,7 +165,7 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
     }
 
     boolean unitIsNameLegal(String unitName) {
-        return unitName.matches("^(\\w*/)*(\\w|-)+\\.ceylon$");
+        return unitName.matches("^((\\w|-)*/)*(\\w|-)+\\.ceylon$");
     }
     
     private String getIllegalUnitNameMessage() {
