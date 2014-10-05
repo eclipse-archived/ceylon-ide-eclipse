@@ -231,7 +231,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (element instanceof Node) {
             return getImageKeyForNode((Node) element);
         }
-        return CEYLON_FILE;
+        return null;
     }
 
     public static String getImageKeyForFile(IFile element) {
@@ -454,7 +454,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return getStyledLabelForNode((Node) element);
         }
         else {
-            return new StyledString("<something>");
+            return new StyledString("");
         }
     }
 
@@ -668,7 +668,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return label;
         }
         
-        return new StyledString("<something>");
+        return new StyledString("");
     }
 
     private static boolean isNonempty(Tree.ImportPath p) {
