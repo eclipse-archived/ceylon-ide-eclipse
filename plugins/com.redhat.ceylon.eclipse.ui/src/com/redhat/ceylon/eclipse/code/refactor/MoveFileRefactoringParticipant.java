@@ -306,9 +306,6 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             PhasedUnit movedPhasedUnit, 
             Map<Declaration, String> imports) {
         try {
-//            TextFileChange change = 
-//                    new MovingTextFileChange(newFile.getName(), 
-//                            newFile, file);
             TextFileChange change = 
                     new TextFileChange(file.getName(), file);
             change.setEdit(new MultiTextEdit());
