@@ -63,7 +63,7 @@ public abstract class FormatterTabPage {
         fShowInvisibleButton = new Button(composite, SWT.CHECK);
         fShowInvisibleButton.setText("Show Invisible Characters");
         fShowInvisibleButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP,
-                true, false));
+                false, false));
         fShowInvisibleButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
