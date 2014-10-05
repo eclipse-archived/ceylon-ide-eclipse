@@ -131,14 +131,43 @@ public class InlineRefactoring extends AbstractRefactoring {
             declarationNode instanceof Tree.MethodDeclaration &&
                 ((Tree.MethodDeclaration) declarationNode).getSpecifierExpression()==null) {
             return createFatalErrorStatus("Cannot inline forward declaration: " + 
-                declaration.getName());
-        }
-        if (declarationNode instanceof Tree.MethodDefinition &&
-                ((Tree.MethodDefinition) declarationNode).getBlock().getStatements().size()!=1 ||
-            declarationNode instanceof Tree.AttributeGetterDefinition &&
-                ((Tree.AttributeGetterDefinition) declarationNode).getBlock().getStatements().size()!=1) {
-            return createFatalErrorStatus("Cannot inline declaration with multiple statements: " + 
                     declaration.getName());
+        }
+        if (declarationNode instanceof Tree.AttributeGetterDefinition) {
+            Tree.AttributeGetterDefinition attributeGetterDefinition = 
+                    (Tree.AttributeGetterDefinition) declarationNode;
+            List<Tree.Statement> statements = 
+                    attributeGetterDefinition.getBlock().getStatements();
+            if (statements.size()!=1) {
+                return createFatalErrorStatus("Getter body is not a single statement: " + 
+                        declaration.getName());
+            }
+            if (!(statements.get(0) instanceof Tree.Return)) {
+                return createFatalErrorStatus("Getter body is not a return statement: " + 
+                        declaration.getName());
+            }
+        }
+        if (declarationNode instanceof Tree.MethodDefinition) {
+            Tree.MethodDefinition methodDefinition = 
+                    (Tree.MethodDefinition) declarationNode;
+            List<Tree.Statement> statements = 
+                    methodDefinition.getBlock().getStatements();
+            if (statements.size()!=1) {
+                return createFatalErrorStatus("Method body is not a single statement: " + 
+                        declaration.getName());
+            }
+            if (methodDefinition.getType() instanceof Tree.VoidModifier) {
+                if (!(statements.get(0) instanceof Tree.ExpressionStatement)) {
+                    return createFatalErrorStatus("Method body is not an expression: " + 
+                            declaration.getName());
+                }
+            }
+            else {
+                if (!(statements.get(0) instanceof Tree.Return)) {
+                    return createFatalErrorStatus("Method body is not a return statement: " + 
+                            declaration.getName());
+                }
+            }
         }
         if (declarationNode instanceof Tree.AnyAttribute &&
                 ((Tree.AnyAttribute) declarationNode).getDeclarationModel().isVariable()) {
@@ -369,20 +398,26 @@ public class InlineRefactoring extends AbstractRefactoring {
             else if (declarationNode instanceof Tree.MethodDefinition) {
                 Tree.MethodDefinition meth = 
                 		(Tree.MethodDefinition) declarationNode;
-                if (meth.getBlock().getStatements().size()!=1) {
-                    throw new RuntimeException("method has multiple statements");
-                }
+                List<Tree.Statement> statements = meth.getBlock().getStatements();
                 if (meth.getType() instanceof Tree.VoidModifier) {
                     //TODO: in the case of a void method, tolerate 
-                    //      multiple statements 
+                    //      multiple statements , including control
+                    //      structures, not just expression statements
+                    if (statements.size()!=1 ||
+                            !(statements.get(0) instanceof Tree.ExpressionStatement)) {
+                        throw new RuntimeException("method body is not a single expression statement");
+                    }
                     Tree.ExpressionStatement e = 
-                    		(Tree.ExpressionStatement) meth.getBlock()
-                    		        .getStatements().get(0);
+                    		(Tree.ExpressionStatement) statements.get(0);
                     return e.getExpression().getTerm();
                     
                 }
                 else {
-                    Tree.Return r = (Tree.Return) meth.getBlock().getStatements().get(0);
+                    if (statements.size()!=1 ||
+                            !(statements.get(0) instanceof Tree.Return)) {
+                        throw new RuntimeException("method body is not a single expression statement");
+                    }
+                    Tree.Return r = (Tree.Return) statements.get(0);
                     return r.getExpression().getTerm();
                 }
             }
@@ -393,8 +428,10 @@ public class InlineRefactoring extends AbstractRefactoring {
             else if (declarationNode instanceof Tree.AttributeGetterDefinition) {
                 Tree.AttributeGetterDefinition att = 
                 		(Tree.AttributeGetterDefinition) declarationNode;
-                if (att.getBlock().getStatements().size()!=1) {
-                    throw new RuntimeException("getter has multiple statements");
+                List<Tree.Statement> statements = att.getBlock().getStatements();
+                if (statements.size()!=1 ||
+                        !(statements.get(0) instanceof Tree.Return)) {
+                    throw new RuntimeException("getter body is not a single expression statement");
                 }
                 Tree.Return r = (Tree.Return) att.getBlock().getStatements().get(0);
                 return r.getExpression().getTerm();
