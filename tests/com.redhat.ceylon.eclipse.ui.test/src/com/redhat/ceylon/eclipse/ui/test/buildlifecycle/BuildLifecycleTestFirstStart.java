@@ -49,6 +49,13 @@ public class BuildLifecycleTestFirstStart extends AbstractMultiProjectTest {
     public static void afterClass() throws CoreException {
         // Don't delete projects since we will start another test that use the OSGI 
         // workspace data left by this one        
+        try {
+            mainProjectJDT.save(null, false);
+            referencedCeylonProjectJDT.save(null, false);
+            workspace.save(true, null);
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
     }
     
     @After
@@ -60,41 +67,8 @@ public class BuildLifecycleTestFirstStart extends AbstractMultiProjectTest {
     
     @Test
     public void importShouldTriggerFullBuild() throws InterruptedException, CoreException {
+        importAndBuild();
         
-        IPath projectDescriptionPath = null;
-        IPath userDirPath = new Path(System.getProperty("user.dir"));
-
-        IProject project = workspace.getRoot().getProject(mainProjectName);
-        CeylonBuildSummary buildSummary = new CeylonBuildSummary(project);
-        buildSummary.install();
-        
-        IPath projectPathPrefix = userDirPath.append("resources/" + projectGroup + "/");
-        
-        try {
-            projectDescriptionPath = projectPathPrefix.append("referenced-ceylon-project/.project");
-            referencedCeylonProject = Utils.importProject(workspace, projectGroup, projectDescriptionPath);
-            referencedCeylonProjectJDT = JavaCore.create(referencedCeylonProject);
-        }
-        catch(Exception e) {
-            Assert.fail("Import of the referenced ceylon project failed with the exception : \n" + e.toString());
-        }
-
-        try {
-            projectDescriptionPath = projectPathPrefix.append("main-ceylon-project/.project");
-            mainProject = Utils.importProject(workspace, projectGroup,
-                    projectDescriptionPath);
-            mainProjectJDT = JavaCore.create(mainProject);
-        }
-        catch(Exception e) {
-            Assert.fail("Build of the main project failed with the exception : \n" + e.toString());
-        }
-        
-        if (!buildSummary.waitForBuildEnd(120)) {
-            fail("No build has been automatically started after the projects import");
-        }
-        
-        assertTrue("It should have done a full build after an import", buildSummary.didFullBuild());
-        assertEquals("It should have build the referenced projects first", 1, buildSummary.getPreviousBuilds().size());
         assertThat("The referenced Ceylon project build should not have any error",
                 Utils.getProjectErrorMarkers(referencedCeylonProject),
                 Matchers.empty());
