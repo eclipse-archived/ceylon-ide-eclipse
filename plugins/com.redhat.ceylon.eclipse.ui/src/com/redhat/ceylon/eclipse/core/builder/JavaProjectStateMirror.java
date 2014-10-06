@@ -42,7 +42,7 @@ public class JavaProjectStateMirror extends CompilationParticipant {
     }
 
     public static State getProjectCurrentState(IProject project) {
-        return javaProjectLastStates.get(project);
+        return javaProjectCurrentStates.get(project);
     }
 
 
@@ -130,7 +130,7 @@ public class JavaProjectStateMirror extends CompilationParticipant {
         newLength = newBinaryLocations.length;
         oldLength = oldBinaryLocations.length;
         for (n = o = 0; n < newLength && o < oldLength; n++, o++) {
-            if (newBinaryLocations[n].equals(oldBinaryLocations[o])) continue;
+            if (newBinaryLocations[n].toString().equals(oldBinaryLocations[o].toString())) continue;
             return true;
         }
         if (n < newLength || o < oldLength) {
