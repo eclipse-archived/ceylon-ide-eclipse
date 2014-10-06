@@ -321,8 +321,10 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 
             final Collection<IClasspathEntry> paths = findModuleArchivePaths(
                     javaProject, project, typeChecker);
+
+            CeylonProjectModulesContainer currentContainer = (CeylonProjectModulesContainer) JavaCore.getClasspathContainer(path, javaProject);
             if (oldEntries == null || 
-                    oldEntries != classpathEntries ||
+                    oldEntries != currentContainer.classpathEntries ||
                     !paths.equals(asList(oldEntries))) {
                 this.classpathEntries = paths.toArray(new IClasspathEntry[paths.size()]);
                 return true;
