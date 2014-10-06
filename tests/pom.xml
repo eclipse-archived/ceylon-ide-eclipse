@@ -52,6 +52,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 				       <artifactId>org.eclipse.jdt.feature.group</artifactId>
 				       <version>0.0.0</version>
 				     </dependency>
+                     <dependency>
+                       <type>p2-installable-unit</type>
+                       <artifactId>com.redhat.ceylon.dist.repo</artifactId>
+                       <version>0.0.0</version>
+                     </dependency>
 				     <!-- http://www.jmock.org/maven.html -->
 				     <dependency>
 				       <groupId>org.jmock</groupId>
