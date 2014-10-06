@@ -131,7 +131,7 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                 if (fileName.equals(ModuleManager.PACKAGE_FILE) || fileName.equals(ModuleManager.MODULE_FILE)) {
                     //a package or module descriptor has been added, removed, or changed
                     boolean descriptorContentChanged = true;
-                    if (astAwareIncrementalBuild && file.findMaxProblemSeverity(IMarker.PROBLEM, true, IResource.DEPTH_ZERO) <= IMarker.SEVERITY_WARNING) {
+                    if (astAwareIncrementalBuild && file.isAccessible() &&  file.findMaxProblemSeverity(IMarker.PROBLEM, true, IResource.DEPTH_ZERO) <= IMarker.SEVERITY_WARNING) {
                         IResourceAware unit = CeylonBuilder.getUnit(file);
                         if (unit instanceof ProjectSourceFile) {
                             ProjectSourceFile projectSourceFile = (ProjectSourceFile) unit;
