@@ -1283,10 +1283,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             IResourceDelta currentDelta,
             Collection<IFile> changedFiles, TypeChecker typeChecker, 
             PhasedUnits phasedUnits, Set<IFile> filesToTypeCheck, Set<IFile> filesToCompile, IProgressMonitor monitor) {
+
+        Set<IFile> filesToAddInTypecheck = new HashSet<IFile>();
+        Set<IFile> filesToAddInCompile = new HashSet<IFile>();
+
         if (!changedFiles.isEmpty()) {
             Set<IFile> allTransitivelyDependingFiles = searchForDependantFiles(
                     project, changedFiles, typeChecker, monitor,
                     false);
+
             Set<IFile> dependingFilesAccordingToStructureDelta;
             boolean astAwareIncrementalBuild = areAstAwareIncrementalBuildsEnabled(project);
             if (astAwareIncrementalBuild) {
@@ -1296,23 +1301,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             } else {
                 dependingFilesAccordingToStructureDelta = allTransitivelyDependingFiles;
             }
-            
+
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
-            Set<IFile> filesToAddInTypecheck = new HashSet<IFile>();
-            Set<IFile> filesToAddInCompile = new HashSet<IFile>();
             
-            for (IFile file : getProjectFiles(project)) {
-                try {
-                    if (file.findMarkers(PROBLEM_MARKER_ID + ".backend", false, IResource.DEPTH_ZERO).length > 0) {
-                        filesToAddInCompile.add(file);
-                    }
-                } catch (CoreException e) {
-                    e.printStackTrace();
-                    filesToAddInCompile.add(file);
-                }
-            }
             for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
                 Unit unit = phasedUnit.getUnit();
                 if (!unit.getUnresolvedReferences().isEmpty()) {
@@ -1346,14 +1339,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
-
+    
             for (IFile f: allTransitivelyDependingFiles) {
                 if (f.getProject() == project) {
                     if (isSourceFile(f) || isResourceFile(f)) {
                         if (f.exists()) {
-                            filesToTypeCheck.add(f);
+                            filesToAddInTypecheck.add(f);
                             if (!astAwareIncrementalBuild || dependingFilesAccordingToStructureDelta.contains(f)) {
-                                filesToCompile.add(f);
+                                filesToAddInCompile.add(f);
                             }
                         }
                         else {
@@ -1364,9 +1357,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                         (removedFile.getFlags() & IResourceDelta.MOVED_TO) != 0 &&
                                         removedFile.getMovedToPath() != null) {
                                     IFile movedFile = project.getFile(removedFile.getMovedToPath().removeFirstSegments(1));
-                                    filesToTypeCheck.add(movedFile);
+                                    filesToAddInTypecheck.add(movedFile);
                                     if (!astAwareIncrementalBuild || dependingFilesAccordingToStructureDelta.contains(movedFile)) {
-                                        filesToCompile.add(movedFile);
+                                        filesToAddInCompile.add(movedFile);
                                     }
                                 }
                             }
@@ -1374,11 +1367,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     }
                 }
             }
-            
-            filesToTypeCheck.addAll(filesToAddInTypecheck);
-            filesToCompile.addAll(filesToAddInCompile);
         }
         
+        for (IFile file : getProjectFiles(project)) {
+            try {
+                if (file.findMarkers(PROBLEM_MARKER_ID + ".backend", false, IResource.DEPTH_ZERO).length > 0) {
+                    filesToAddInCompile.add(file);
+                }
+            } catch (CoreException e) {
+                e.printStackTrace();
+                filesToAddInCompile.add(file);
+            }
+        }
+
+        filesToTypeCheck.addAll(filesToAddInTypecheck);
+        filesToCompile.addAll(filesToAddInCompile);
     }
 
     private Set<IFile> searchForDependantFiles(IProject project,
