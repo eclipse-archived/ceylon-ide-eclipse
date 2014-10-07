@@ -211,6 +211,9 @@ public class CeylonNavigatorContentProvider implements
         repositories.put(NodeUtils.UNKNOWN_REPOSITORY, unknownRepositoryNode);
         
         for (JDTModule externalModule : CeylonBuilder.getProjectExternalModules(project)) {
+            if (! externalModule.isAvailable()) {
+                continue;
+            }
             String repoDisplayString = externalModule.getRepositoryDisplayString();
             if (repositories.containsKey(repoDisplayString)) {
                 repositories.get(repoDisplayString).addModule(externalModule);
