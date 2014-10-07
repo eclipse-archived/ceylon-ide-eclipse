@@ -34,10 +34,10 @@ final class DeltaScanner implements IResourceDeltaVisitor {
     private final IProject project;
     private final BooleanHolder somethingToBuild;
     private final BooleanHolder mustResolveClasspathContainer;
-	private IPath explodedDirPath;
-	private Map<IProject, IPath> modulesDirPathByProject = new HashMap<>();
-	private boolean astAwareIncrementalBuild = true;
-	
+    private IPath explodedDirPath;
+    private Map<IProject, IPath> modulesDirPathByProject = new HashMap<>();
+    private boolean astAwareIncrementalBuild = true;
+    
     DeltaScanner(BooleanHolder mustDoFullBuild, IProject project,
             BooleanHolder somethingToBuild,
             BooleanHolder mustResolveClasspathContainer) {
@@ -51,13 +51,13 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         IPath modulesDirPath = modulesFolder != null ? modulesFolder.getFullPath() : null;
         modulesDirPathByProject.put(project, modulesDirPath);
         try {
-			for (IProject referencedProject : project.getReferencedProjects()) {
-		        modulesFolder = CeylonBuilder.getCeylonModulesOutputFolder(referencedProject);
-		        modulesDirPath = modulesFolder != null ? modulesFolder.getFullPath() : null;
-		        modulesDirPathByProject.put(referencedProject, modulesDirPath);
-			}
-		} catch (CoreException e) {
-		}
+            for (IProject referencedProject : project.getReferencedProjects()) {
+                modulesFolder = CeylonBuilder.getCeylonModulesOutputFolder(referencedProject);
+                modulesDirPath = modulesFolder != null ? modulesFolder.getFullPath() : null;
+                modulesDirPathByProject.put(referencedProject, modulesDirPath);
+            }
+        } catch (CoreException e) {
+        }
         astAwareIncrementalBuild = CeylonBuilder.areAstAwareIncrementalBuildsEnabled(project);
     }
 
@@ -79,6 +79,12 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                 /*mustDoFullBuild.value = true;
                 mustResolveClasspathContainer.value = true;*/
             }
+            try {
+                if (resource.equals(project) &&
+                        resource.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID + ".backend", false, IResource.DEPTH_ZERO).length > 0) {
+                    somethingToBuild.value = true;
+                }
+            } catch(Exception e) {}
         }
         
         if (resource instanceof IFolder) {
@@ -92,18 +98,18 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                 
                 IPath fullPath = resource.getFullPath();
                 if (fullPath != null) {
-            		if (explodedDirPath != null && explodedDirPath.isPrefixOf(fullPath)) {
+                    if (explodedDirPath != null && explodedDirPath.isPrefixOf(fullPath)) {
                         mustDoFullBuild.value = true;
                         mustResolveClasspathContainer.value = true;
-            		}
+                    }
 
-                	for (Map.Entry<IProject, IPath> entry : modulesDirPathByProject.entrySet()) {
-                		IPath modulesDirPath = entry.getValue();
-                		if (modulesDirPath != null && modulesDirPath.isPrefixOf(fullPath)) {
-	                        mustDoFullBuild.value = true;
-	                        mustResolveClasspathContainer.value = true;
-                		}
-                	}
+                    for (Map.Entry<IProject, IPath> entry : modulesDirPathByProject.entrySet()) {
+                        IPath modulesDirPath = entry.getValue();
+                        if (modulesDirPath != null && modulesDirPath.isPrefixOf(fullPath)) {
+                            mustDoFullBuild.value = true;
+                            mustResolveClasspathContainer.value = true;
+                        }
+                    }
                 }
             } else {
                 if (folder.exists() && folder.getProject().equals(project)) {
