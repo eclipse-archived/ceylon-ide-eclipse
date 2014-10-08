@@ -36,7 +36,7 @@ public class ModuleCategoryNode {
                 compileToJava(project) && !compileToJs(project)) {
             list.add(new ModuleCategoryNode("java.|javax.", "Java SE Modules"));
         }
-        list.add(new ModuleCategoryNode("", "All Modules"));
+        list.add(new ModuleCategoryNode("", "All Repository Modules"));
         return list;
     }
     
