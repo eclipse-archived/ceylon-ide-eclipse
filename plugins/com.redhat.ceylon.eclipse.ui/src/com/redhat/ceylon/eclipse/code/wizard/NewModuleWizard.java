@@ -160,10 +160,14 @@ public class NewModuleWizard extends Wizard implements INewWizard {
         }
         if (importsPage == null) {
             importsPage = new ImportModulesWizardPage() {
+                IProject getProject() {
+                    return page.getSourceDir()==null ?
+                            null : page.getSourceDir().getResource().getProject();
+                }
                 @Override
                 Map<String, String> getModules() {
                     return selectModules(new ModuleImportSelectionDialog(getShell(), 
-                            new ModuleImportContentProvider(null) {
+                            new ModuleImportContentProvider(null, getProject()) {
                         @Override
                         public ModuleSearchResult getModules(String prefix) {
                             IProject project = page.getSourceDir().getJavaProject()
@@ -171,7 +175,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                             return getModuleSearchResults(prefix, 
                                     getProjectTypeChecker(project), project);
                         }
-                    }));
+                    }), getProject());
                 }
             };
         }

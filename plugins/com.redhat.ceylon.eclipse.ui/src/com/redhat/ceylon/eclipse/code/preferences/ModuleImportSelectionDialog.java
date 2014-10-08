@@ -5,6 +5,7 @@ import static java.util.Collections.emptyMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 
@@ -75,8 +76,8 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
         return added;
     }
     
-    public static Map<String,String> selectModules(ModuleImportSelectionDialog dialog) {
-        dialog.setInput(ModuleCategoryNode.getCategoryNodes());
+    public static Map<String,String> selectModules(ModuleImportSelectionDialog dialog, IProject project) {
+        dialog.setInput(ModuleCategoryNode.getCategoryNodes(project));
         dialog.open();
         Object[] results = dialog.getResult();
         if (results==null) {

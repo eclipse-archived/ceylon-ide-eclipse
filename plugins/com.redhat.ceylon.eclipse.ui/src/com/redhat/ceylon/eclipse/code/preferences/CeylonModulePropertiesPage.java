@@ -473,13 +473,13 @@ public class CeylonModulePropertiesPage extends PropertyPage
 
     private void selectAndAddModules() {
         Map<String, String> added = selectModules(new ModuleImportSelectionDialog(getShell(), 
-                new ModuleImportContentProvider(getModule()) {
+                new ModuleImportContentProvider(getModule(), project) {
             @Override
             public ModuleSearchResult getModules(String prefix) {
                 return getModuleSearchResults(prefix, 
                         getProjectTypeChecker(project), project);
             }
-        }));
+        }), project);
         ModuleImportUtil.addModuleImports(project, getModule(), added);
         for (Map.Entry<String, String> entry: added.entrySet()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
