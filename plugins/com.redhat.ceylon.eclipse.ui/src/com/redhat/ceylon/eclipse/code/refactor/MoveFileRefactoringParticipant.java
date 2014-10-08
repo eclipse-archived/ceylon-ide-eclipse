@@ -49,6 +49,9 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
 
     private IFile file;
     
+    private static Map<String,TextFileChange> fileChanges = 
+            new HashMap<String,TextFileChange>();
+
     @Override
     protected boolean initialize(Object element) {
         file = (IFile) element;
@@ -122,7 +125,14 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 return null;
 
             CompositeChange result = 
-                    new CompositeChange("Ceylon source changes");
+                    new CompositeChange("Ceylon source changes") {
+                @Override
+                public Change perform(IProgressMonitor pm) 
+                        throws CoreException {
+                    fileChanges.clear();
+                    return super.perform(pm);
+                }
+            };
             for (Change change: changes) {
                 result.add(change);
             }
@@ -306,9 +316,17 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             PhasedUnit movedPhasedUnit, 
             Map<Declaration, String> imports) {
         try {
-            TextFileChange change = 
-                    new TextFileChange(file.getName(), file);
-            change.setEdit(new MultiTextEdit());
+            IFileVirtualFile virtualFile = 
+                    (IFileVirtualFile) movedPhasedUnit.getUnitFile();
+            IFile file = virtualFile.getFile();
+            String path = file.getProjectRelativePath().toPortableString();
+            TextFileChange change = fileChanges.get(path);
+            if (change==null) {
+                change = new TextFileChange(file.getName(), file);
+                change.setEdit(new MultiTextEdit());
+                changes.add(change);
+                fileChanges.put(path, change);
+            }
             Tree.CompilationUnit cu = 
                     movedPhasedUnit.getCompilationUnit();
             if (!imports.isEmpty()) {
@@ -324,7 +342,6 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
                         toDelete.getStopIndex()-toDelete.getStartIndex()+1));
             }
-            changes.add(change);
         }
         catch (Exception e) { 
             e.printStackTrace(); 
@@ -342,19 +359,23 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 IFileVirtualFile virtualFile = 
                         (IFileVirtualFile) phasedUnit.getUnitFile();
                 IFile file = virtualFile.getFile();
-                TextFileChange change = 
-                        new TextFileChange(file.getName(), file);
+                String path = file.getProjectRelativePath().toPortableString();
+                TextFileChange change = fileChanges.get(path);
+                if (change==null) {
+                    change = new TextFileChange(file.getName(), file);
+                    change.setEdit(new MultiTextEdit());
+                    changes.add(change);
+                    fileChanges.put(path, change);
+                }
                 List<TextEdit> edits = 
                         importEditForMove(cu, 
                                 imports.keySet(), imports.values(), 
                                 newName, oldName, 
                                 EditorUtil.getDocument(change));
                 if (!edits.isEmpty()) {
-                    change.setEdit(new MultiTextEdit());
                     for (TextEdit edit: edits) {
                         change.addEdit(edit);
                     }
-                    changes.add(change);
                 }
             }
         }
