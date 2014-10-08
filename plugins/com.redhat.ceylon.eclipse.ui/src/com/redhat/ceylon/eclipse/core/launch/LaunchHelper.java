@@ -112,7 +112,7 @@ public class LaunchHelper {
     
     private static boolean isRunnable(Declaration d) {
         boolean candidateDeclaration = true;
-        if (!d.isToplevel()) {
+        if (!d.isToplevel() || !d.isShared()) {
             candidateDeclaration = false;
         }
         if (d instanceof Method) {

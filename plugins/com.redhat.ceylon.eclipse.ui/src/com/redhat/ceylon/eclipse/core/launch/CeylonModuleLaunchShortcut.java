@@ -243,6 +243,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                             Method method = 
                                     ((Tree.AnyMethod) node).getDeclarationModel();
                             if (method!=null && 
+                                    method.isShared() &&
                                     method.isToplevel() && 
                                     !method.getParameterLists().isEmpty() &&
                                     method.getParameterLists().get(0).getParameters().isEmpty()) {
@@ -254,6 +255,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                             Class clazz = 
                                     ((Tree.AnyClass) node).getDeclarationModel();
                             if (clazz!=null && 
+                                    clazz.isShared() &&
                                     clazz.isToplevel() && 
                                     !clazz.isAbstract() &&
                                     clazz.getParameterList()!=null &&
@@ -348,6 +350,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                         Method method = 
                                 ((Tree.AnyMethod) node).getDeclarationModel();
                         if (method!=null && 
+                                method.isShared() &&
                                 method.isToplevel() && 
                                 !method.getParameterLists().isEmpty() &&
                                 method.getParameterLists().get(0).getParameters().isEmpty()) {
@@ -359,6 +362,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                         Class clazz = 
                                 ((Tree.AnyClass) node).getDeclarationModel();
                         if (clazz!=null && 
+                                clazz.isShared() &&
                                 clazz.isToplevel() && 
                                 !clazz.isAbstract() &&
                                 clazz.getParameterList()!=null &&
