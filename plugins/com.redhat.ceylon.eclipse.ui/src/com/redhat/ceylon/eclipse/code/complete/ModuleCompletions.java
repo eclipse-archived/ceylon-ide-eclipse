@@ -33,6 +33,8 @@ import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -69,11 +71,12 @@ public class ModuleCompletions {
         private final boolean withBody;
         private final ModuleVersionDetails version;
         private final String name;
+        private Node node;
 
         ModuleProposal(int offset, String prefix, int len, 
                 String versioned, ModuleDetails module,
                 boolean withBody, ModuleVersionDetails version, 
-                String name) {
+                String name, Node node) {
             super(offset, prefix, MODULE, versioned, 
                     versioned.substring(len));
             this.len = len;
@@ -82,6 +85,7 @@ public class ModuleCompletions {
             this.withBody = withBody;
             this.version = version;
             this.name = name;
+            this.node = node;
         }
         
         @Override
@@ -172,10 +176,14 @@ public class ModuleCompletions {
         
         @Override
         public String getAdditionalProposalInfo() {
+            Scope scope = node.getScope();
+            Unit unit = node.getUnit();
             return JDKUtils.isJDKModule(name) ?
                     getDocumentationForModule(name, JDKUtils.jdk.version,
-                            "This module forms part of the Java SDK.") :
-                    getDocumentationFor(module, version.getVersion());
+                            "This module forms part of the Java SDK.",
+                            scope, unit) :
+                    getDocumentationFor(module, version.getVersion(), 
+                            scope, unit);
         }
         
         @Override
@@ -197,7 +205,8 @@ public class ModuleCompletions {
         @Override
         public String getAdditionalProposalInfo() {
             return getDocumentationForModule(name, JDKUtils.jdk.version, 
-                    "This module forms part of the Java SDK.");
+                    "This module forms part of the Java SDK.",
+                    null, null);
         }
 
         @Override
@@ -247,14 +256,15 @@ public class ModuleCompletions {
                             result.add(new ModuleProposal(offset, prefix, len, 
                                     getModuleString(withBody, name, 
                                             module.getLastVersion().getVersion()), 
-                                    module, withBody, module.getLastVersion(), name));
+                                            module, withBody, module.getLastVersion(), 
+                                            name, node));
                         }
                         else {
                             for (final ModuleVersionDetails version: 
                                 module.getVersions().descendingSet()) {
                                 result.add(new ModuleProposal(offset, prefix, len, 
                                         getModuleString(withBody, name, version.getVersion()), 
-                                        module, withBody, version, name));
+                                        module, withBody, version, name, node));
                             }
                         }
                     }
