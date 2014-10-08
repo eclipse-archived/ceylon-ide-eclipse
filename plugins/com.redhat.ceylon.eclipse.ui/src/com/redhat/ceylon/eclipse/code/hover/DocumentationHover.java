@@ -1076,7 +1076,6 @@ public class DocumentationHover
 
     private static void addMainPackageDescription(Package pack,
             StringBuilder buffer) {
-        buffer.append("<p>");
         if (pack.isShared()) {
             String ann = toHex(getCurrentThemeColor(ANNOTATIONS));
             HTML.addImageAndLabel(buffer, null, 
@@ -1092,7 +1091,6 @@ public class DocumentationHover
                 HTML.highlightLine(description(pack)) +
                 "</tt>", 
                 20, 4);
-        buffer.append("</p>");
     }
 
     private static void addPackageModuleInfo(Package pack,
@@ -1168,7 +1166,6 @@ public class DocumentationHover
 
     private static void addMainModuleDescription(Module mod,
             StringBuilder buffer) {
-        buffer.append("<p>");
         HTML.addImageAndLabel(buffer, mod, 
                 HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                 16, 16, 
@@ -1176,7 +1173,6 @@ public class DocumentationHover
                 HTML.highlightLine(description(mod)) + 
                 "</tt>", 
                 20, 4);
-        buffer.append("</p>");
     }
 
     private static void addModuleDocumentation(CeylonParseController cpc,
