@@ -132,6 +132,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                         if (node instanceof Tree.AnyMethod) {
                             Method method = ((Tree.AnyMethod) node).getDeclarationModel();
                             if (method.isToplevel() && 
+                                    method.isShared() &&
                                     !method.getParameterLists().isEmpty() &&
                                     method.getParameterLists().get(0).getParameters().isEmpty()) {
                                 launch(method, file, mode);
@@ -140,7 +141,9 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                         }
                         if (node instanceof Tree.AnyClass) {
                             Class clazz = ((Tree.AnyClass) node).getDeclarationModel();
-                            if (clazz.isToplevel() && !clazz.isAbstract() &&
+                            if (clazz.isToplevel() && 
+                                    clazz.isShared() && 
+                                    !clazz.isAbstract() &&
                                     clazz.getParameterList()!=null &&
                                     clazz.getParameterList().getParameters().isEmpty()) {
                                 launch(clazz, file, mode);
@@ -167,7 +170,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                     List<Declaration> declarations = phasedUnit.getDeclarations();
                     for (Declaration d : declarations) {
                         boolean candidateDeclaration = true;
-                        if (!d.isToplevel()) {
+                        if (!d.isToplevel() || !d.isShared()) {
                             candidateDeclaration = false;
                         }
                         if (d instanceof Method) {
