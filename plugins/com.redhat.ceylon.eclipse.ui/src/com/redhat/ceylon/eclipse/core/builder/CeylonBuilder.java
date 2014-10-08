@@ -1167,6 +1167,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
             buildCanContinue = false;
         }
+
+        if (project.findMarkers(CHARSET_PROBLEM_MARKER_ID, false, IResource.DEPTH_ZERO).length > 0) {
+            buildCanContinue = false;
+        }
+
         return buildCanContinue;
     }
 

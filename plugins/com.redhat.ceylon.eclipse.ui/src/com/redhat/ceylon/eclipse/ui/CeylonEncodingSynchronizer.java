@@ -173,7 +173,9 @@ public class CeylonEncodingSynchronizer {
                 + project.getName() + " is "
                 + eclipseEncoding +
                 " but " + project.getFullPath() + "/.ceylon/config specifies "
-                + configEncoding;
+                + configEncoding + "\n" +
+                " The project cannot be built if the encoding is not synchronized. Use the Quick Fix to synchronize it."
+                ;
     }
     
     public void updateEncoding(IProject project, String encoding) {
