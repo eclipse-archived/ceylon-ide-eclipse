@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -37,11 +39,13 @@ import org.eclipse.text.edits.TextEdit;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -51,15 +55,24 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     
     private static Map<String,TextFileChange> fileChanges = 
             new HashMap<String,TextFileChange>();
-
+    private static List<IResource> movingFiles =
+            new ArrayList<IResource>();
+    
+    
     @Override
     protected boolean initialize(Object element) {
         file = (IFile) element;
-        return getProcessor() instanceof MoveProcessor &&
-                getProjectTypeChecker(file.getProject())!=null &&
-                file.getFileExtension()!=null &&
-                (file.getFileExtension().equals("ceylon") ||
-                file.getFileExtension().equals("java"));
+        if (getProcessor() instanceof MoveProcessor) {
+            MoveProcessor moveProcessor = (MoveProcessor) getProcessor();
+            movingFiles.addAll(Arrays.asList((IResource[]) moveProcessor.getElements()));
+            return getProjectTypeChecker(file.getProject())!=null &&
+                    file.getFileExtension()!=null &&
+                        (file.getFileExtension().equals("ceylon") ||
+                         file.getFileExtension().equals("java"));
+        }
+        else {
+            return false;
+        }
     }
 
     @Override
@@ -130,6 +143,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 public Change perform(IProgressMonitor pm) 
                         throws CoreException {
                     fileChanges.clear();
+                    movingFiles.clear();
                     return super.perform(pm);
                 }
             };
@@ -180,10 +194,15 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
 //                visitIt(that.getIdentifier(), that.getDeclarationModel());
 //            }
             protected void visitIt(Tree.Identifier id, Declaration dec) {
-                if (dec!=null && !declarations.contains(dec) &&
-                        dec.getUnit().getPackage()
-                                .equals(movedPhasedUnit.getPackage())) {
-                    imports.put(dec, id.getText());
+                if (dec!=null && !declarations.contains(dec)) {
+                    Unit unit = dec.getUnit();
+                    if (unit instanceof ProjectSourceFile && 
+                            movingFiles.contains(((ProjectSourceFile) unit).getFileResource())) {
+                        //also moving
+                    }
+                    else if (unit.getPackage().equals(movedPhasedUnit.getPackage())) {
+                        imports.put(dec, id.getText());
+                    }
                 }
             }
             //TODO: DocLinks!!
@@ -199,7 +218,9 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
         if (!getArguments().getUpdateReferences()) return;
         for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
                 .getPhasedUnits().getPhasedUnits()) {
-            if (phasedUnit==movedPhasedUnit) {
+            if (phasedUnit==movedPhasedUnit ||
+                    phasedUnit.getUnit() instanceof ProjectSourceFile &&
+                    movingFiles.contains(((ProjectSourceFile) phasedUnit.getUnit()).getFileResource())) {
                 continue;
             }
             final Map<Declaration,String> imports = 
