@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -79,10 +80,14 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
         }
         if (importsPage == null) {
             importsPage = new ImportModulesWizardPage() {
+                IProject getProject() {
+                    return page.getProject()==null ? 
+                            null : page.getProject().getProject();
+                }
                 @Override
                 Map<String, String> getModules() {
                     return selectModules(new ModuleImportSelectionDialog(getShell(), 
-                            new ModuleImportContentProvider(null) {
+                            new ModuleImportContentProvider(null, getProject()) {
                         @Override
                         public ModuleSearchResult getModules(String prefix) {
                             ModuleQuery query = new ModuleQuery(prefix, ModuleQuery.Type.JVM);
@@ -90,7 +95,7 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
                             return repoManager().logger(new EclipseLogger()).isJDKIncluded(true)
                                     .buildManager().completeModules(query);
                         }
-                    }));
+                    }), getProject());
                 }
             };
         }

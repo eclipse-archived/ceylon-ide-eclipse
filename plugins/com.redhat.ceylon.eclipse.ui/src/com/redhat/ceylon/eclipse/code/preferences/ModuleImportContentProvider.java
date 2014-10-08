@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,9 +26,11 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 public abstract class ModuleImportContentProvider extends ModuleSearchViewContentProvider {
     
     private final Module module;
+    private IProject project;
     
-    public ModuleImportContentProvider(Module module) {
-        this.module=module;
+    public ModuleImportContentProvider(Module module, IProject project) {
+        this.module = module;
+        this.project = project;
     }
     
     @Override
@@ -53,9 +58,14 @@ public abstract class ModuleImportContentProvider extends ModuleSearchViewConten
             List<ModuleNode> list = new ArrayList<ModuleNode>();
             TreeMap<String, String> map = new TreeMap<String, String>();
             for (IProject p: CeylonBuilder.getProjects()) {
-                for (Module m: CeylonBuilder.getProjectDeclaredSourceModules(p)) {
-                    if (!excluded(module, m.getNameAsString())) {
-                        map.put(m.getNameAsString(), m.getVersion());
+                if (project==null ||
+                        compileToJava(p) && compileToJs(p) ||
+                        compileToJava(p) && compileToJava(project) && !compileToJs(project) || 
+                        compileToJs(p) && compileToJs(project) && !compileToJava(project)) {
+                    for (Module m: CeylonBuilder.getProjectDeclaredSourceModules(p)) {
+                        if (!excluded(module, m.getNameAsString())) {
+                            map.put(m.getNameAsString(), m.getVersion());
+                        }
                     }
                 }
             }
