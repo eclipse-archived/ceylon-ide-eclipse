@@ -1119,7 +1119,6 @@ public class DocumentationHover
     public static String getDocumentationForModule(String name, 
             String version, String doc, Scope scope, Unit unit) {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("<p>");
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
                 16, 16, 
@@ -1127,7 +1126,6 @@ public class DocumentationHover
                 HTML.highlightLine(description(name, version)) + 
                 "</tt></b>",
                 20, 4);
-        buffer.append("</p>");
         
         if (doc!=null) {
             buffer.append(markdown(doc, scope, unit));
