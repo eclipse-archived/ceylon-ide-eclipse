@@ -69,7 +69,6 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
-import com.github.rjeschke.txtmark.SpanEmitter;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -83,6 +82,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 
 public class ModuleSearchViewPart extends ViewPart {
     
@@ -863,18 +863,7 @@ public class ModuleSearchViewPart extends ViewPart {
         Configuration config = Configuration.builder().
                 forceExtentedProfile().
                 setCodeBlockEmitter(new CeylonBlockEmitter()).
-                setSpecialLinkEmitter(new SpanEmitter() {
-                    @Override
-                    public void emitSpan(StringBuilder out, String content) {
-                    	int bar = content.indexOf('|');
-                    	if (bar>0) {
-                    		out.append(content.substring(0, bar));
-                    	}
-                    	else {
-                    		out.append("<code>").append(content).append("</code>");
-                    	}
-                    }
-                }).
+                setSpecialLinkEmitter(new UnlinkedSpanEmitter()).
                 build();
         
         return Processor.process(text, config);

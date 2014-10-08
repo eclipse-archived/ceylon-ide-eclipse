@@ -129,6 +129,7 @@ import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 
 
 public class DocumentationHover 
@@ -1109,12 +1110,14 @@ public class DocumentationHover
         return "package " + getLabel(pack);
     }
     
-    public static String getDocumentationFor(ModuleDetails mod, String version) {
-        return getDocumentationForModule(mod.getName(), version, mod.getDoc());
+    public static String getDocumentationFor(ModuleDetails mod, String version, 
+            Scope scope, Unit unit) {
+        return getDocumentationForModule(mod.getName(), version, mod.getDoc(),
+                scope, unit);
     }
     
     public static String getDocumentationForModule(String name, 
-            String version, String doc) {
+            String version, String doc, Scope scope, Unit unit) {
         StringBuilder buffer = new StringBuilder();
         buffer.append("<p>");
         HTML.addImageAndLabel(buffer, null, 
@@ -1127,7 +1130,7 @@ public class DocumentationHover
         buffer.append("</p>");
         
         if (doc!=null) {
-            buffer.append(markdown(doc, null, null));
+            buffer.append(markdown(doc, scope, unit));
         }
                 
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
@@ -2069,8 +2072,11 @@ public class DocumentationHover
         
         Builder builder = Configuration.builder().forceExtentedProfile();
         builder.setCodeBlockEmitter(new CeylonBlockEmitter());
-        if (linkScope!=null) {
+        if (linkScope!=null && unit!=null) {
             builder.setSpecialLinkEmitter(new CeylonSpanEmitter(linkScope, unit));
+        }
+        else {
+            builder.setSpecialLinkEmitter(new UnlinkedSpanEmitter());
         }
         return Processor.process(text, builder.build());
     }
