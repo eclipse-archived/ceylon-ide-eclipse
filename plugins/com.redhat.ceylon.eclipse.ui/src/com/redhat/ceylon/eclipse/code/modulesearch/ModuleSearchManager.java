@@ -36,11 +36,12 @@ public class ModuleSearchManager {
     
     public void searchModules(final String query) {
         final RepositoryManager repositoryManager = getRepositoryManager();
+        final IProject project = moduleSearchViewPart.getSelectedProject();
         new ModuleSearchJobTemplate("Searching modules in repositories") {
             @Override
             protected void onRun() {
                 lastQuery = query.trim();
-                lastResult = repositoryManager.searchModules(newModuleQuery(lastQuery));
+                lastResult = repositoryManager.searchModules(newModuleQuery(lastQuery, project));
                 modules = convertResult(lastResult.getResults());
             }
             @Override
@@ -52,10 +53,11 @@ public class ModuleSearchManager {
 
     public void fetchNextModules() {
         final RepositoryManager repositoryManager = getRepositoryManager();
+        final IProject project = moduleSearchViewPart.getSelectedProject();
         new ModuleSearchJobTemplate("Searching modules in repositories") {
             @Override
             protected void onRun() {
-                ModuleQuery moduleQuery = newModuleQuery(lastQuery);
+                ModuleQuery moduleQuery = newModuleQuery(lastQuery, project);
                 moduleQuery.setPagingInfo(lastResult.getNextPagingInfo());
                 lastResult = repositoryManager.searchModules(moduleQuery);
                 modules.addAll(convertResult(lastResult.getResults()));
@@ -67,8 +69,8 @@ public class ModuleSearchManager {
         }.schedule();
     }
     
-    private ModuleQuery newModuleQuery(String search) {
-        ModuleQuery query = getModuleQuery(search, moduleSearchViewPart.getSelectedProject());
+    private ModuleQuery newModuleQuery(String search, IProject project) {
+        ModuleQuery query = getModuleQuery(search, project);
         query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
         query.setCount(20l);
         return query;
