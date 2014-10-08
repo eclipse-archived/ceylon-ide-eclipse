@@ -83,10 +83,11 @@ public class ModuleSearchManager {
         }
         
         final RepositoryManager repositoryManager = getRepositoryManager();
+        final IProject project = moduleSearchViewPart.getSelectedProject();
         new ModuleSearchJobTemplate("Loading module documentation") {
             @Override
             protected void onRun() {
-                ModuleVersionQuery query = getModuleVersionQuery(moduleName, moduleVersion, moduleSearchViewPart.getSelectedProject());
+                ModuleVersionQuery query = getModuleVersionQuery(moduleName, moduleVersion, project);
                 query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
                 ModuleVersionResult result = repositoryManager.completeVersions(query);
                 if (result != null) {
