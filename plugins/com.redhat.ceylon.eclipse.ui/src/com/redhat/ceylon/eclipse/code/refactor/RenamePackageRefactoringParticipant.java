@@ -118,8 +118,7 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                     try {
                         IFileVirtualFile virtualFile = 
                                 (IFileVirtualFile) phasedUnit.getUnitFile();
-                        final IFile file = 
-                                virtualFile.getFile();
+                        IFile file = virtualFile.getFile();
                         String path = file.getProjectRelativePath().toPortableString();
                         TextFileChange change = fileChanges.get(path);
                         if (change==null) {
@@ -127,9 +126,6 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                             change.setEdit(new MultiTextEdit());
                             changes.add(change);
                             fileChanges.put(path, change);
-                        }
-                        else {
-                            change.getFile().getName();
                         }
                         for (ReplaceEdit edit: edits) {
                             change.addEdit(edit);
@@ -147,7 +143,7 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
             }
             else {
                 CompositeChange result = 
-                        new CompositeChange("Ceylon source changes"){
+                        new CompositeChange("Ceylon source changes") {
                     @Override
                     public Change perform(IProgressMonitor pm) 
                             throws CoreException {
