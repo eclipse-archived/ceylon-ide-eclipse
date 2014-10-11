@@ -45,8 +45,8 @@ public class TypeArgumentListCompletions {
                     Declaration d = that.getDeclaration();
                     if (d instanceof Functional && pr!=null) {
                         try {
-                            String pref = document.get(that.getStartIndex(), 
-                                    that.getStopIndex()-that.getStartIndex()+1);
+                            String pref = document.get(that.getIdentifier().getStartIndex(), 
+                                    that.getStopIndex()-that.getIdentifier().getStartIndex()+1);
                             addInvocationProposals(offset, pref, cpc, result, d, 
                                     pr, scope, null, typeArgText, false);
                         } 
