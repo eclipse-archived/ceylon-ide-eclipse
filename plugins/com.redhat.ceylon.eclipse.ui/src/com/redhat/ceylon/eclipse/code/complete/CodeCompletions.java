@@ -601,7 +601,7 @@ public class CodeCompletions {
                             if (tp.isCovariant()) {
                                 result.append("out ");
                             }
-                            if (tp.isContravariant()) {
+                            else if (tp.isContravariant()) {
                                 result.append("in ");
                             }
                         }
@@ -612,11 +612,19 @@ public class CodeCompletions {
                             if (variances) {
                                 SiteVariance variance = 
                                         ((ProducedType) pr).getVarianceOverrides().get(tp);
-                                if (variance==SiteVariance.IN) {
-                                    result.append("in ");
+                                if (variance==null) {
+                                    if (tp.isCovariant()) {
+                                        result.append("out ");
+                                    }
+                                    else if (tp.isContravariant()) {
+                                        result.append("in ");
+                                    }
                                 }
-                                if (variance==SiteVariance.OUT) {
+                                else if (variance==SiteVariance.OUT) {
                                     result.append("out ");
+                                }
+                                else if (variance==SiteVariance.IN) {
+                                    result.append("in ");
                                 }
                             }
                         }

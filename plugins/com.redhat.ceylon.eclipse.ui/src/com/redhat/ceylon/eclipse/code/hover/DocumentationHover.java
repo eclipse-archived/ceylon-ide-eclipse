@@ -44,6 +44,7 @@ import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD_DISABLED;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -1568,18 +1569,47 @@ public class DocumentationHover
         return PRINTER.getProducedTypeName(pt, unit);
     }
 
+    private static List<ProducedType> getTypeParameters(Declaration dec) {
+        if (dec instanceof Functional) {
+            List<TypeParameter> typeParameters = ((Functional) dec).getTypeParameters();
+            if (typeParameters.isEmpty()) {
+                return Collections.<ProducedType>emptyList();
+            }
+            else {
+                List<ProducedType> list = 
+                        new ArrayList<ProducedType>();
+                for (TypeParameter p: typeParameters) {
+                    list.add(p.getType());
+                }
+                return list;
+            }
+        }
+        else {
+            return Collections.<ProducedType>emptyList();
+        }
+    }
+
     private static ProducedReference getProducedReference(Declaration dec,
             Node node) {
-        if (node instanceof Tree.MemberOrTypeExpression) {
+        if (node instanceof Tree.TypeDeclaration) {
+            return ((TypeDeclaration) dec).getType();
+        }
+        else if (node instanceof Tree.MemberOrTypeExpression) {
             return ((Tree.MemberOrTypeExpression) node).getTarget();
         }
         else if (node instanceof Tree.Type) {
             return ((Tree.Type) node).getTypeModel();
         }
-        ClassOrInterface outer = dec.isClassOrInterfaceMember() ? 
-                (ClassOrInterface) dec.getContainer() : null;
-        return dec.getProducedReference(getQualifyingType(node, outer),
-                        Collections.<ProducedType>emptyList());
+        else {
+            //a member declaration - unfortunately there is 
+            //nothing matching TypeDeclaration.getType() for
+            //TypedDeclarations!
+            ClassOrInterface outer = dec.isClassOrInterfaceMember() ? 
+                    (ClassOrInterface) dec.getContainer() : null;
+            return dec.getProducedReference(
+                    outer==null ? null : outer.getType(),
+                    getTypeParameters(dec));
+        }
     }
 
     private static boolean addDoc(CeylonParseController cpc, 
