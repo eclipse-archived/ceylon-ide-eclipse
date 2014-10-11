@@ -156,13 +156,15 @@ public class Navigation {
     public static void gotoLocation(IPath path, int offset, int length) {
         if (path==null || path.isEmpty()) return;
         IEditorInput editorInput = getEditorInput(path);
-        try {
-            CeylonEditor editor = (CeylonEditor) getActivePage()
-                    .openEditor(editorInput, EDITOR_ID);
-            editor.selectAndReveal(offset, length);
-        }
-        catch (PartInitException pie) {
-            pie.printStackTrace();
+        if (editorInput instanceof CeylonEditor) {
+            try {
+                CeylonEditor editor = (CeylonEditor) getActivePage()
+                        .openEditor(editorInput, EDITOR_ID);
+                editor.selectAndReveal(offset, length);
+            }
+            catch (PartInitException pie) {
+                pie.printStackTrace();
+            }
         }
     }
     
