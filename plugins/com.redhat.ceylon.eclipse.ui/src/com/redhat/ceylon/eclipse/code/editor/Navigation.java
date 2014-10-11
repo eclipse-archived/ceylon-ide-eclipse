@@ -159,7 +159,7 @@ public class Navigation {
         try {
             IEditorPart editor = getActivePage()
                     .openEditor(editorInput, EDITOR_ID);
-            if (editorInput instanceof CeylonEditor) {
+            if (editor instanceof CeylonEditor) {
                 ((CeylonEditor) editor).selectAndReveal(offset, length);
             }
         }
