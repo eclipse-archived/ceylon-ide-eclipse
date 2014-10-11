@@ -67,7 +67,8 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
 
     public Change createChange(IProgressMonitor pm) throws CoreException {
         try {
-            IFolder dest = (IFolder) getArguments().getDestination();
+            IFolder dest = (IFolder) 
+                    getArguments().getDestination();
             final String newName = dest.getProjectRelativePath()
                     .removeFirstSegments(1).toPortableString()
                     .replace('/', '.');
@@ -79,29 +80,38 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                     .toPortableString();
             final String oldName = relPath.replace('/', '.');
             final IProject project = file.getProject();
+            
+            if (newName.equals(oldName)) return null;
 
             TypeChecker tc = getProjectTypeChecker(project);
             if (tc==null) return null;
-            PhasedUnit phasedUnit = tc.getPhasedUnitFromRelativePath(relFilePath);
+            PhasedUnit phasedUnit = 
+                    tc.getPhasedUnitFromRelativePath(relFilePath);
             if (phasedUnit==null) return null;
-            final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();                
-            final List<Declaration> declarations = phasedUnit.getDeclarations();
-            final Map<Declaration,String> imports = new HashMap<Declaration,String>();
+            final List<ReplaceEdit> edits = 
+                    new ArrayList<ReplaceEdit>();                
+            final List<Declaration> declarations = 
+                    phasedUnit.getDeclarations();
+            final Map<Declaration,String> imports = 
+                    new HashMap<Declaration,String>();
             phasedUnit.getCompilationUnit().visit(new Visitor() {
                 @Override
                 public void visit(ImportMemberOrType that) {
                     super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclarationModel());
+                    visitIt(that.getIdentifier(), 
+                            that.getDeclarationModel());
                 }
                 @Override
                 public void visit(BaseMemberOrTypeExpression that) {
                     super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclaration());
+                    visitIt(that.getIdentifier(), 
+                            that.getDeclaration());
                 }
                 @Override
                 public void visit(BaseType that) {
                     super.visit(that);
-                    visitIt(that.getIdentifier(), that.getDeclarationModel());
+                    visitIt(that.getIdentifier(), 
+                            that.getDeclarationModel());
                 }
                 @Override
                 public void visit(ModuleDescriptor that) {
@@ -114,7 +124,8 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                     visitIt(that.getImportPath());
                 }
                 private void visitIt(Tree.ImportPath importPath) {
-                    if (formatPath(importPath.getIdentifiers()).equals(oldName)) {
+                    String path = formatPath(importPath.getIdentifiers());
+                    if (path.equals(oldName)) {
                         edits.add(new ReplaceEdit(importPath.getStartIndex(), 
                                 oldName.length(), newName));
                     }
@@ -131,8 +142,10 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
             });
 
             try {
-                TextFileChange change = new TextFileChange(file.getName(), newFile);
-                Tree.CompilationUnit cu = phasedUnit.getCompilationUnit();
+                TextFileChange change = 
+                        new TextFileChange(file.getName(), newFile);
+                Tree.CompilationUnit cu = 
+                        phasedUnit.getCompilationUnit();
                 change.setEdit(new MultiTextEdit());
                 for (ReplaceEdit edit: edits) {
                     change.addEdit(edit);
@@ -145,7 +158,8 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                         change.addEdit(edit);
                     }
                 }
-                Tree.Import toDelete = findImportNode(cu, newName);
+                Tree.Import toDelete = 
+                        findImportNode(cu, newName);
                 if (toDelete!=null) {
                     change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
                             toDelete.getStopIndex()-toDelete.getStartIndex()+1));
