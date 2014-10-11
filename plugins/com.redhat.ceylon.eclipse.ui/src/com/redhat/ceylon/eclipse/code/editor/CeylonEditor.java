@@ -136,7 +136,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
@@ -153,7 +152,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 /**
@@ -1634,21 +1633,24 @@ public class CeylonEditor extends TextEditor {
                                     TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
                                     if (typeChecker != null) {
                                         PhasedUnit unit = typeChecker.getPhasedUnitFromRelativePath(relativePath.toString());
-                                        if (unit != null) {
-                                            IFile newFile = CeylonBuilder.getFile(unit);
-                                            if (newFile.exists() 
-                                                    && CeylonBuilder.getRootFolderType(newFile) == RootFolderType.SOURCE) {
-                                                file = newFile;
-                                                input = EditorUtil.getEditorInput(newFile);
-                                                replacedByTheSourceFile = true;
-                                                break;
+                                        if (unit!=null) {
+                                            if (unit.getUnitFile() instanceof IFileVirtualFile) {
+                                                IFile newFile = CeylonBuilder.getFile(unit);
+                                                if (newFile.exists() 
+                                                        && CeylonBuilder.getRootFolderType(newFile) == RootFolderType.SOURCE) {
+                                                    file = newFile;
+                                                    input = EditorUtil.getEditorInput(newFile);
+                                                    replacedByTheSourceFile = true;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    } else {
+                    }
+                    else {
                         IPath location = file.getLocation();
                         if (location != null) {
                             for (IProject project : file.getWorkspace().getRoot().getProjects()) {
