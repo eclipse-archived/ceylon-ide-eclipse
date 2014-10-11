@@ -205,16 +205,17 @@ class ChangeTypeProposal extends CorrectionProposal {
                     }
                     
                     if (typeNode != null && !isTypeUnknown(type)) {
-                        addChangeTypeProposal(typeNode, problem, proposals, dec, 
-                                type, getFile(unit), unit.getCompilationUnit());
+                        IFile file = getFile(unit);
+                        Tree.CompilationUnit rootNode = unit.getCompilationUnit();
+                        addChangeTypeProposal(typeNode, problem, 
+                                proposals, dec, type, file, rootNode);
                         if (t != null) {
                             ProducedType newType = intersect ? 
                                     intersectionType(t, type, unit.getUnit()) : 
                                     unionType(t, type, unit.getUnit());
-                            if (!newType.isExactly(t)) {
+                            if (!newType.isExactly(t) && !newType.isExactly(type)) {
                                 addChangeTypeProposal(typeNode, problem, 
-                                        proposals, dec, newType, getFile(unit), 
-                                        unit.getCompilationUnit());
+                                        proposals, dec, newType, file, rootNode);
                             }
                         }
                     }
