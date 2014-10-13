@@ -1206,11 +1206,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     private void warmupCompletionProcessor(final IProject project) {
-        Job job = new WarmupJob(project);
+        /*Job job = new WarmupJob(project);
         job.setPriority(Job.BUILD);
         //job.setSystem(true);
         job.setRule(project.getWorkspace().getRoot());
-        job.schedule();
+        job.schedule();*/
     }
 
     private void sheduleIncrementalRebuild(@SuppressWarnings("rawtypes") Map args, final IProject project, 
