@@ -136,6 +136,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
@@ -152,6 +153,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -1625,23 +1627,29 @@ public class CeylonEditor extends TextEditor {
                     // search if those files are also in the source directory of
                     // a Ceylon project existing in this project
                     if (input instanceof SourceArchiveEditorInput) {
+                        IPath fileFullPath = ExternalSourceArchiveManager.toFullPath(file);
                         IPath relativePath = file.getProjectRelativePath().removeFirstSegments(1);
-                        if (relativePath != null) {
+                        if (fileFullPath != null && relativePath != null) {
                             for (IProject project : file.getWorkspace().getRoot().getProjects()) {
                                 if (project.isAccessible()
                                         && CeylonNature.isEnabled(project)) {
-                                    TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
-                                    if (typeChecker != null) {
-                                        PhasedUnit unit = typeChecker.getPhasedUnitFromRelativePath(relativePath.toString());
-                                        if (unit!=null) {
-                                            if (unit.getUnitFile() instanceof IFileVirtualFile) {
-                                                IFile newFile = CeylonBuilder.getFile(unit);
-                                                if (newFile.exists() 
-                                                        && CeylonBuilder.getRootFolderType(newFile) == RootFolderType.SOURCE) {
-                                                    file = newFile;
-                                                    input = EditorUtil.getEditorInput(newFile);
-                                                    replacedByTheSourceFile = true;
-                                                    break;
+                                    IPath projectModuleDirFullPath = CeylonBuilder.getCeylonModulesOutputFolder(project).getLocation();
+                                    if (projectModuleDirFullPath != null &&
+                                            projectModuleDirFullPath.isPrefixOf(fileFullPath)) {
+                                        TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
+                                        if (typeChecker != null) {
+                                            PhasedUnits sourcePhasedUnits = typeChecker.getPhasedUnits();
+                                            PhasedUnit unit = sourcePhasedUnits.getPhasedUnitFromRelativePath(relativePath.toString());
+                                            if (unit instanceof ProjectPhasedUnit) {
+                                                if (unit.getUnitFile() instanceof IFileVirtualFile) {
+                                                    IFile newFile = CeylonBuilder.getFile(unit);
+                                                    if (newFile.exists() 
+                                                            && CeylonBuilder.getRootFolderType(newFile) == RootFolderType.SOURCE) {
+                                                        file = newFile;
+                                                        input = EditorUtil.getEditorInput(newFile);
+                                                        replacedByTheSourceFile = true;
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }
