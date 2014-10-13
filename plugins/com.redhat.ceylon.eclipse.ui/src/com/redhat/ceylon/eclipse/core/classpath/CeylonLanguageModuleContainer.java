@@ -74,11 +74,13 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
         int indexFirstContainer = -1;
         int indexSecondContainer = -1;
         int index = 0;
+        boolean languageModuleEntryWasExported = false;
         IClasspathEntry ceylonClasspathEntry = null;
         for (IClasspathEntry entry: newEntries) {
             boolean containerToReplace = false;
             if (entry.getPath().equals(runtimeEntry.getPath()) ) {
                 containerToReplace = true;
+                languageModuleEntryWasExported = entry.isExported();
             }
             if (entry.getPath().segment(0)
                     .equals(CeylonProjectModulesContainer.CONTAINER_ID) ) {
@@ -98,7 +100,7 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
         }
 
         IClasspathEntry newEntry = JavaCore.newContainerEntry(fPath, null, 
-                new IClasspathAttribute[0], false);
+                new IClasspathAttribute[0], languageModuleEntryWasExported);
 
         if (indexFirstContainer >= 0) {
             newEntries.set(indexFirstContainer, newEntry);
