@@ -68,6 +68,10 @@
 			<b>print("hello world");</b>
 			<br/>
 			<br/>
+			Then, add a <b>shared</b> annotation to the method or class to
+			mark it as runnable.
+			<br/>
+			<br/>
 			Remember to save the file.
 		</description>
 	</item>
