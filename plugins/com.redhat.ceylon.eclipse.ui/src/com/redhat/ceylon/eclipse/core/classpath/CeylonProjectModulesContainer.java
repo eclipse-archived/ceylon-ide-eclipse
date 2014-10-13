@@ -221,13 +221,18 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(asList(entries));
         int index = 0;
         boolean mustReplace = false;
+        boolean projectModulesEntryWasExported = false;
         for (IClasspathEntry entry: newEntries) {
             if (entry.getPath().equals(newEntry.getPath()) ) {
                 mustReplace = true;
+                projectModulesEntryWasExported = entry.isExported();
                 break;
             }
             index++;
         }
+
+        newEntry = JavaCore.newContainerEntry(path, null, 
+                new IClasspathAttribute[0], projectModulesEntryWasExported);
         if (mustReplace) {
             newEntries.set(index, newEntry);
         }
