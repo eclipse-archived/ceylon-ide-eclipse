@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbench;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
+import com.redhat.ceylon.cmr.ceylon.CeylonUtils.CeylonRepoManagerBuilder;
 import com.redhat.ceylon.cmr.ceylon.ModuleCopycat;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -149,15 +150,18 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                                     .offline(offline)
                                     .logger(new EclipseLogger());
                             RepositoryManager repo = rmb.buildManager();
-                            RepositoryManager outRepo = 
+                            CeylonRepoManagerBuilder builder = 
                                     CeylonUtils.repoManager()
                                     .noDefaultRepos(true)
                                     .systemRepo(systemRepo)
                                     .outRepo(repositoryPath)
                                     .offline(offline)
-                                    .logger(new EclipseLogger())
-                                    //.user(user).password(pass)  //TODO!
-                                    .buildOutputManager();
+                                    .logger(new EclipseLogger());
+                            if (page.isRemote()) {
+                                builder.user(page.getUser());
+                                builder.password(page.getPass());
+                            }
+                            RepositoryManager outRepo = builder.buildOutputManager();
                             ModuleCopycat copycat = new ModuleCopycat(repo,outRepo);
                             for (int i=0; i<selectedModules.length; i++) {
                                 String name = selectedModules[i];

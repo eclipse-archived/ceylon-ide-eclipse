@@ -47,6 +47,9 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     private IJavaElement selection;
     private boolean clean = true;
     private boolean recursive = false;
+    private String user;
+    private String pass;
+    private boolean remote = false;
     
     ExportModuleWizardPage(String defaultRepositoryPath, 
             IProject project, IJavaElement selection) {
@@ -90,7 +93,12 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             setErrorMessage("Please select a project");
         }
         else if (!isValidRepo()) {
-            setErrorMessage("Please select an existing local repository");
+            if (remote) {
+                setErrorMessage("Remote repository path must begin with http:// or https://");
+            }
+            else {
+                setErrorMessage("Please select an existing local repository");
+            }
         }
         else if (getModules().isEmpty()) {
             setErrorMessage("Please select a module to export");
@@ -101,17 +109,43 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     }
 
     void addSelectRepo(Composite composite) {
-        Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        folderLabel.setText("Target module repository: ");
-        GridData flgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        flgd.horizontalSpan = 1;
-        folderLabel.setLayoutData(flgd);
-
-        final Combo folder = new Combo(composite, SWT.SINGLE | SWT.BORDER);
+        Label sep = new Label(composite, SWT.NONE);
+        GridData rgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        rgd.horizontalSpan = 4;
+        rgd.grabExcessHorizontalSpace = true;
+        rgd.widthHint = 300;
+        sep.setLayoutData(rgd);
+        
         GridData fgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         fgd.horizontalSpan = 2;
         fgd.grabExcessHorizontalSpace = true;
         fgd.widthHint = 300;
+        
+        Label radioLabel = new Label(composite, SWT.NONE);
+        radioLabel.setText("Target repository type:");
+        Composite rg = new Composite(composite, SWT.NONE);
+        rg.setLayoutData(fgd);
+        GridLayout layout = new GridLayout();
+        layout.marginWidth = 0;
+        layout.marginHeight = 0;
+        layout.numColumns = 2;
+        rg.setLayout(layout);
+        final Button r1 = new Button(rg, SWT.RADIO);
+        final Button r2 = new Button(rg, SWT.RADIO);
+        r1.setText("Local");
+        r1.setSelection(true);
+        r2.setText("Remote");
+        r2.setSelection(false);
+        
+        new Label(composite, SWT.NONE);
+
+        Label folderLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        folderLabel.setText("Target module repository:");
+        GridData flgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        flgd.horizontalSpan = 1;
+        folderLabel.setLayoutData(flgd);
+
+        final Combo folder = new Combo(composite, SWT.SINGLE | SWT.BORDER);
         folder.setLayoutData(fgd);
         folder.addModifyListener(new ModifyListener() {
             @Override
@@ -132,7 +166,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             }
         }
         
-        Button selectFolder = new Button(composite, SWT.PUSH);
+        final Button selectFolder = new Button(composite, SWT.PUSH);
         selectFolder.setText("Browse...");
         GridData sfgd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sfgd.horizontalSpan = 1;
@@ -151,6 +185,88 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+                
+        Label userLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        userLabel.setText("User:");
+        userLabel.setLayoutData(flgd);
+
+        GridData fgd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        fgd2.horizontalSpan = 1;
+//        fgd2.grabExcessHorizontalSpace = true;
+        fgd2.widthHint = 80;
+        
+        final Text user = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        user.setLayoutData(fgd2);
+        user.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                ExportModuleWizardPage.this.user = user.getText();
+            }
+        });
+        user.setEnabled(false);
+        
+        new Label(composite, SWT.NONE);
+        new Label(composite, SWT.NONE);
+        
+        Label passLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        passLabel.setText("Password:");
+        passLabel.setLayoutData(flgd);
+
+        final Text pass = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        pass.setLayoutData(fgd2);
+        
+        folder.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                ExportModuleWizardPage.this.pass = pass.getText();
+            }
+        });
+        pass.setEnabled(false);
+        
+        new Label(composite, SWT.NONE);
+        new Label(composite, SWT.NONE);
+        
+        r1.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                r2.setSelection(false);
+                r1.setSelection(true);
+                remote = false;
+                selectFolder.setEnabled(!remote);
+                pass.setEnabled(remote);
+                user.setEnabled(remote);
+                updateMessage();
+                setPageComplete(isComplete());
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        
+        r2.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                r1.setSelection(false);
+                r2.setSelection(true);
+                remote = true;
+                selectFolder.setEnabled(!remote);
+                pass.setEnabled(remote);
+                user.setEnabled(remote);
+                updateMessage();
+                setPageComplete(isComplete());
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        
+        folder.setText(repositoryPath);
+        if (project!=null) {
+            folder.add(repositoryPath);
+            for (String path: getCeylonRepositories(project.getProject())) {
+                if (!path.startsWith("http://") && !path.equals(repositoryPath)) {
+                    folder.add(path);
+                }
+            }
+        }
         
         new Label(composite, SWT.NONE);
         final Button et = new Button(composite, SWT.CHECK);
@@ -340,11 +456,25 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     private boolean isValidRepo() {
         return repositoryPath!=null &&
                 !repositoryPath.isEmpty() &&
-                new File(repositoryPath).exists();
+                (remote ? repositoryPath.startsWith("http://") ||
+                          repositoryPath.startsWith("https://") : 
+                          new File(repositoryPath).exists());
     }
     
     public String getRepositoryPath() {
         return repositoryPath;
+    }
+    
+    public String getUser() {
+        return user;
+    }
+    
+    public String getPass() {
+        return pass;
+    }
+    
+    public boolean isRemote() {
+        return remote;
     }
     
     public IProject getProject() {
