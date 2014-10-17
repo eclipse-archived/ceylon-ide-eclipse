@@ -279,10 +279,8 @@ public class DocumentationHover
                 close(control);
                 CompilationUnit rn = editor.getParseController().getRootNode();
                 Node node = Nodes.findNode(rn, Integer.parseInt(location.substring(4)));
-                for (SpecifyTypeProposal stp: SpecifyTypeProposal.createProposals(rn, node, editor)) {
-                    stp.apply(editor.getParseController().getDocument());
-                    break;
-                }
+                SpecifyTypeProposal.createProposal(rn, node, editor)
+                                   .apply(editor.getParseController().getDocument());
             }
             else if (location.startsWith("exv:")) {
                 close(control);

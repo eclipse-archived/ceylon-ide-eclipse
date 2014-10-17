@@ -114,6 +114,13 @@ public class SpecifyTypeProposal implements ICompletionProposal,
             proposals.add(proposal);
         }
     }
+    
+    public static SpecifyTypeProposal createProposal(Tree.CompilationUnit cu, 
+            Node node, CeylonEditor editor) {
+        final Tree.Type type = (Tree.Type) node;
+        return new SpecifyTypeProposal("Declare explicit type", 
+                type, cu, type.getTypeModel(), editor);
+    }
 
     public static List<SpecifyTypeProposal> createProposals(Tree.CompilationUnit cu, 
             Node node, CeylonEditor editor) {
