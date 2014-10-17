@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.MoveParticipant;
 import org.eclipse.ltk.core.refactoring.participants.MoveProcessor;
+import org.eclipse.ltk.core.refactoring.participants.RefactoringProcessor;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -62,9 +62,12 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     @Override
     protected boolean initialize(Object element) {
         file = (IFile) element;
-        if (getProcessor() instanceof MoveProcessor) {
-            MoveProcessor moveProcessor = (MoveProcessor) getProcessor();
-            movingFiles.addAll(Arrays.asList((IResource[]) moveProcessor.getElements()));
+        RefactoringProcessor processor = getProcessor();
+        if (processor instanceof MoveProcessor) {
+            MoveProcessor moveProcessor = (MoveProcessor) processor;
+            for (Object e: moveProcessor.getElements()) {
+                movingFiles.add((IResource) e);
+            }
             return getProjectTypeChecker(file.getProject())!=null &&
                     file.getFileExtension()!=null &&
                         (file.getFileExtension().equals("ceylon") ||
