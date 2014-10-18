@@ -658,6 +658,16 @@ public class DocumentationHover
 
     }
     
+    private static String escape(String string) {
+        return string
+                .replace("\0", "\\{NULL}")
+                .replace("\b", "\\b")
+                .replace("\t", "\\t")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\f", "\\f");
+    }
+    
     private static CeylonBrowserInput getTermTypeHoverInfo(Node node, String selectedText, 
             IDocument doc, IProject project) {
         ProducedType t = ((Tree.Term) node).getTypeModel();
@@ -678,12 +688,16 @@ public class DocumentationHover
                 "<tt>" + producedTypeLink(t, node.getUnit()) + "</tt> " + desc, 
                 20, 4);
         if (node instanceof Tree.StringLiteral) {
+            String escaped = escape(node.getText());
+            if (escaped.length()>250) {
+                escaped = escaped.substring(0,250) + "...";
+            }
             buffer.append( "<br/>")
                 .append("<code style='color:")
                 .append(toHex(getCurrentThemeColor(STRINGS)))
                 .append("'><pre>")
                 .append('\"')
-                .append(convertToHTMLContent(node.getText()))
+                .append(convertToHTMLContent(escaped).replace("\\n", "<br/>"))
                 .append('\"')
                 .append("</pre></code>");
             // If a single char selection, then append info on that character too
@@ -750,7 +764,7 @@ public class DocumentationHover
             .append(toHex(getCurrentThemeColor(CHARS)))
             .append("'>")
             .append('\'')
-            .append(convertToHTMLContent(character))
+            .append(convertToHTMLContent(escape(character)))
             .append('\'')
             .append("</code>");
         int codepoint = Character.codePointAt(character, 0);
