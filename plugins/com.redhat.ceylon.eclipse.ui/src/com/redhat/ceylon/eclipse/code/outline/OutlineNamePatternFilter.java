@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
+import static com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationDialog.isMatchingGlob;
+
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -35,10 +38,16 @@ class OutlineNamePatternFilter extends ViewerFilter {
         return hasUnfilteredChild(treeViewer, element);*/
         TreeViewer treeViewer= (TreeViewer) viewer;
         if (element instanceof CeylonOutlineNode) {
-            String name = ((CeylonOutlineNode)element).getName();
-            return name!=null && name.toLowerCase()
-                    .startsWith(filterText.getText().toLowerCase()) ||
-                    hasUnfilteredChild(treeViewer, element);
+            String name = ((CeylonOutlineNode) element).getName();
+            String filter = filterText.getText().toLowerCase();
+            if (filter.contains("*")) {
+                return isMatchingGlob(filter, name) ||
+                        hasUnfilteredChild(treeViewer, element);
+            }
+            else {
+                return name!=null && isNameMatching(filter, name) ||
+                        hasUnfilteredChild(treeViewer, element);
+            }
         }
         return true;
     }
