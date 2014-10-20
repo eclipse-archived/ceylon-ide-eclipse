@@ -9,8 +9,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationDialog;
-
 /**
  * The NamePatternFilter selects the elements which
  * match the given string patterns.
