@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
+import static com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationDialog.isMatchingGlob;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
@@ -168,13 +169,11 @@ public final class ReferencesPopup extends PopupDialog
             Object value = treeNode.getValue();
             if (value instanceof CeylonSearchMatch) {
                 CeylonSearchMatch match = (CeylonSearchMatch) value;
-                String filter = filterText.getText().toLowerCase();
+                String filter = filterText.getText();
                 String[] split = match.getElement().getLabel().getString().split(" ");
-                return split.length>1 && split[1].toLowerCase().startsWith(filter) ||
-                        match.getElement().getPackageLabel()
-                            .toLowerCase().startsWith(filter) ||
-                        match.getElement().getFile().getName().toString()
-                            .toLowerCase().startsWith(filter);
+                return split.length>1 && isMatchingGlob(filter, split[1]) ||
+                        isMatchingGlob(filter, match.getElement().getPackageLabel()) ||
+                        isMatchingGlob(filter, match.getElement().getFile().getName());
             }
             else {
                 for (TreeNode child: treeNode.getChildren()) {

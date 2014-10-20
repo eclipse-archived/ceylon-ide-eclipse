@@ -1,10 +1,15 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
+import static com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationDialog.isMatchingGlob;
+
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Text;
+
+import com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationDialog;
 
 /**
  * The NamePatternFilter selects the elements which
@@ -36,9 +41,15 @@ class HierarchyNamePatternFilter extends ViewerFilter {
         TreeViewer treeViewer= (TreeViewer) viewer;
         if (element instanceof CeylonHierarchyNode) {
             String name = ((CeylonHierarchyNode) element).getName();
-            return name!=null && name.toLowerCase()
-                    .startsWith(filterText.getText().toLowerCase()) ||
-                    hasUnfilteredChild(treeViewer, element);
+            String filter = filterText.getText().toLowerCase();
+            if (filter.contains("*")) {
+                return isMatchingGlob(filter, name) ||
+                        hasUnfilteredChild(treeViewer, element);
+            }
+            else {
+                return name!=null && isNameMatching(filter, name) ||
+                        hasUnfilteredChild(treeViewer, element);
+            }
         }
         return true;
     }

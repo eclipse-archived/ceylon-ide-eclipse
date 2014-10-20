@@ -72,7 +72,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             String pattern = getPattern();
             int loc = pattern.indexOf('.');
             if (loc<0) {
-                return isNameMatching(pattern, declaration);
+                if (pattern.contains("*")) {
+                    return isMatchingGlob(pattern, declaration.getName());
+                }
+                else {
+                    return isNameMatching(pattern, declaration);
+                }
             }
             else {
                 if (declaration.isClassOrInterfaceMember()) {
@@ -681,6 +686,23 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         action.setChecked(includeMembers);
         menuManager.add(action);
         super.fillViewMenu(menuManager);
+    }
+
+    public static boolean isMatchingGlob(String filter, String name) {
+        if (name==null) {
+            return false;
+        }
+        int loc = 0;
+        boolean first = true;
+        for (String subfilter: filter.split("\\*")) {
+            int match = name.toLowerCase().indexOf(subfilter.toLowerCase(), loc);
+            if (match<0 || first && match>0) {
+                return false;
+            }
+            loc += match + subfilter.length();
+            first = false;
+        }
+        return true;
     }
     
 }
