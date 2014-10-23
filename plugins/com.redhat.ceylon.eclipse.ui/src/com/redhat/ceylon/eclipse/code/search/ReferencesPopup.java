@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
+import static java.util.Collections.emptySet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -362,13 +363,16 @@ public final class ReferencesPopup extends PopupDialog
     protected StyledString styleTitle(final StyledText title) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(title.getText(), "-'", false);
+                new StringTokenizer(title.getText(), "-", false);
         styleDescription(title, result, tokens.nextToken());
         result.append("-");
-        result.append(tokens.nextToken());
-        result.append("'");
-        Highlights.styleProposal(result, tokens.nextToken(), false);
-        result.append("'");
+        String rest = tokens.nextToken();
+        int loc = rest.indexOf(" to ");
+        if (loc<1) loc = rest.indexOf(" of ");
+        loc+=4;
+        result.append(rest.substring(0,loc));
+        int end = rest.indexOf(" in ", loc);
+        Highlights.styleProposal(result, rest.substring(loc, end), false);
         return result;
     }
 
@@ -730,13 +734,17 @@ public final class ReferencesPopup extends PopupDialog
         }
         String name;
         if (declaration instanceof Declaration) {
-            name = ((Declaration) declaration).getName(pc.getRootNode().getUnit());
+            Declaration dec = (Declaration) declaration;
+            name = dec.getName(pc.getRootNode().getUnit());
+            if (dec.isClassOrInterfaceMember()) {
+                name = ((Declaration) dec.getContainer()).getName() + '.' + name;
+            }
         }
         else {
             name = declaration.getNameAsString();
         }
-        setTitleText("Quick Find References - " + message + " '" + 
-                        name + "' in project source");
+        setTitleText("Quick Find References - " + message + " " + 
+                        name + " in project source");
         TreeNode root = new TreeNode(new Object());
         Map<Package,TreeNode> packageNodes = new HashMap<Package,TreeNode>();
         Map<Module,TreeNode> moduleNodes = new HashMap<Module,TreeNode>();
@@ -756,17 +764,22 @@ public final class ReferencesPopup extends PopupDialog
             List<TreeNode> unitList = new ArrayList<TreeNode>();
             Set<Node> nodes;
             if (showingRefinements) {
-                if (type) {
-                    FindSubtypesVisitor frv = 
-                            new FindSubtypesVisitor((TypeDeclaration) declaration);
-                    frv.visit(cu);
-                    nodes = new HashSet<Node>(frv.getDeclarationNodes());
+                if (declaration instanceof Declaration) {
+                    if (type) {
+                        FindSubtypesVisitor frv = 
+                                new FindSubtypesVisitor((TypeDeclaration) declaration);
+                        frv.visit(cu);
+                        nodes = new HashSet<Node>(frv.getDeclarationNodes());
+                    }
+                    else {
+                        FindRefinementsVisitor frv = 
+                                new FindRefinementsVisitor((Declaration) declaration);
+                        frv.visit(cu);
+                        nodes = new HashSet<Node>(frv.getDeclarationNodes());
+                    }
                 }
                 else {
-                    FindRefinementsVisitor frv = 
-                            new FindRefinementsVisitor((Declaration) declaration);
-                    frv.visit(cu);
-                    nodes = new HashSet<Node>(frv.getDeclarationNodes());
+                    nodes = emptySet();
                 }
             }
             else {
