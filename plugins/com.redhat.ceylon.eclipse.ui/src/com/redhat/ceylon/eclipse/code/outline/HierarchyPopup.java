@@ -176,13 +176,13 @@ public class HierarchyPopup extends TreeViewPopup {
     protected StyledString styleTitle(final StyledText title) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(title.getText(), "-'", false);
+                new StringTokenizer(title.getText(), "-", false);
         styleDescription(title, result, tokens.nextToken());
         result.append("-");
-        result.append(tokens.nextToken());
-        result.append("'");
-        Highlights.styleProposal(result, tokens.nextToken(), false);
-        result.append("'");
+        String rest = tokens.nextToken();
+        int loc = rest.indexOf(" of ") + 4;
+        result.append(rest.substring(0, loc));
+        Highlights.styleProposal(result, rest.substring(loc), false);
         return result;
     }
 

@@ -86,7 +86,7 @@ public final class CeylonHierarchyContentProvider
                         name.equals("ceylon.language::Basic") ||
                         name.equals("ceylon.language::Identifiable");
                 description = declaration.getName();//getDescriptionFor(declaration);
-                if (isShowingRefinements() && 
+                if (//isShowingRefinements() && 
                         declaration.isClassOrInterfaceMember()) {
                     ClassOrInterface classOrInterface = 
                             (ClassOrInterface) declaration.getContainer();
@@ -455,11 +455,11 @@ public final class CeylonHierarchyContentProvider
         if (isShowingRefinements()) {
             switch (getMode()) {
             case HIERARCHY:
-                return "Quick Hierarchy - refinement hierarchy of '" + description + "'";
+                return "Quick Hierarchy - refinement hierarchy of " + description;
             case SUPERTYPES:
-                return "Quick Hierarchy - generalizations of '" + description + "'";
+                return "Quick Hierarchy - generalizations of " + description;
             case SUBTYPES:
-                return "Quick Hierarchy - refinements of '" + description + "'";
+                return "Quick Hierarchy - refinements of " + description;
             default:
                 throw new RuntimeException();
             }
@@ -467,11 +467,11 @@ public final class CeylonHierarchyContentProvider
         else {
             switch (getMode()) {
             case HIERARCHY:
-                return "Quick Hierarchy - type hierarchy of '" + description + "'";
+                return "Quick Hierarchy - type hierarchy of " + description;
             case SUPERTYPES:
-                return "Quick Hierarchy - supertypes of '" + description + "'";
+                return "Quick Hierarchy - supertypes of " + description;
             case SUBTYPES:
-                return "Quick Hierarchy - subtypes of '" + description + "'";
+                return "Quick Hierarchy - subtypes of " + description;
             default:
                 throw new RuntimeException();
             }
