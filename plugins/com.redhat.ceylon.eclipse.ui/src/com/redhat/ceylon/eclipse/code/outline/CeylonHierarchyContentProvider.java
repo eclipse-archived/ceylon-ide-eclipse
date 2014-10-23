@@ -459,7 +459,7 @@ public final class CeylonHierarchyContentProvider
             case SUPERTYPES:
                 return "Quick Hierarchy - generalizations of '" + description + "'";
             case SUBTYPES:
-                return "Quick Hierarchy - refinements '" + description + "'";
+                return "Quick Hierarchy - refinements of '" + description + "'";
             default:
                 throw new RuntimeException();
             }
