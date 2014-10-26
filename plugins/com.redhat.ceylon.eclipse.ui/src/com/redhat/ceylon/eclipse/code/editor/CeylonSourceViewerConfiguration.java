@@ -59,6 +59,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String AUTO_ACTIVATION_CHARS = "autoActivationChars";
     public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
     public static final String COMPLETION = "completion";
+    public static final String COMPLETION_FILTERS = "completionFilters";
     public static final String INEXACT_MATCHES = "inexactMatches";
     public static final String LINKED_MODE = "linkedModeCompletion";
     public static final String LINKED_MODE_RENAME = "linkedModeRename";

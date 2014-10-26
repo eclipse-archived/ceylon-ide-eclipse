@@ -18,6 +18,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
@@ -41,6 +42,7 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.ScaleFieldEditor;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -74,6 +76,7 @@ public class CeylonCompletionPreferencesPage
     BooleanFieldEditor linkedMode;
     ScaleFieldEditor autoActivationDelay;
     RadioGroupFieldEditor autoActivationChars;
+    StringFieldEditor completionFilter;
 //    BooleanFieldEditor linkedModeRename;
 //    BooleanFieldEditor linkedModeExtract;
 //    BooleanFieldEditor displayOutlineTypes;
@@ -109,6 +112,7 @@ public class CeylonCompletionPreferencesPage
         autoActivation.store();
         autoActivationDelay.store();
         autoActivationChars.store();
+        completionFilter.store();
         completion.store();
         inexactMatches.store();
         linkedMode.store();
@@ -145,6 +149,7 @@ public class CeylonCompletionPreferencesPage
         autoInsert.loadDefault();
         autoActivationDelay.loadDefault();
         autoActivationChars.loadDefault();
+        completionFilter.loadDefault();
         completion.loadDefault();
         inexactMatches.loadDefault();
         linkedMode.loadDefault();
@@ -374,6 +379,12 @@ public class CeylonCompletionPreferencesPage
                 autoActivationDelay.setEnabled(newValue, p2);
             }
         });
+        group = createGroup(1, "Package name filters");
+        completionFilter = new StringFieldEditor(COMPLETION_FILTERS, 
+                "Declarations in the filtered packages will not be proposed. Separate package names\nusing ',', where '*' is a wildcard, e.g. 'ceylon.language.meta.*, ceylon.math.float'", 
+                55, getFieldEditorParent(group));
+        completionFilter.load();
+        addField(completionFilter);
 //        addField(new SpacerFieldEditor(getFieldEditorParent()));
     }
 

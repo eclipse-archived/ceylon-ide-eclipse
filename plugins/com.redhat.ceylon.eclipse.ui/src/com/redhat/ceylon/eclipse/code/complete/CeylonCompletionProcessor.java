@@ -90,6 +90,7 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.complete.TypeArgumentListCompletions.addTypeArgumentListProposal;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
 import static java.lang.Character.isDigit;
@@ -100,6 +101,7 @@ import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -118,6 +120,7 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -375,6 +378,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     getProposals(node, scope, prefix, isMemberOp, rn);
             Map<String, DeclarationWithProximity> functionProposals =
                     getFunctionProposals(node, scope, prefix, isMemberOp);
+            filterProposals(proposals);
+            filterProposals(functionProposals);
             Set<DeclarationWithProximity> sortedProposals = 
                     sortProposals(prefix, requiredType, proposals);
             Set<DeclarationWithProximity> sortedFunctionProposals = 
@@ -388,6 +393,26 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         return completions;
         
+    }
+    
+    private void filterProposals(Map<String, DeclarationWithProximity> proposals) {
+        String[] filters = 
+                EditorsUI.getPreferenceStore()
+                        .getString(COMPLETION_FILTERS).split(",");
+        Iterator<DeclarationWithProximity> iterator = proposals.values().iterator();
+        while (iterator.hasNext()) {
+            DeclarationWithProximity dwp = iterator.next();
+            for (String filter: filters) {
+                String pname = 
+                        dwp.getDeclaration().getUnit()
+                            .getPackage().getNameAsString();
+                String regex = filter.trim().replace(".", "\\.").replace("*", ".*");
+                if (pname.matches(regex)) {
+                    iterator.remove();
+                    continue;
+                }
+            }
+        }
     }
     
     private String getRealText(CommonToken token) {
