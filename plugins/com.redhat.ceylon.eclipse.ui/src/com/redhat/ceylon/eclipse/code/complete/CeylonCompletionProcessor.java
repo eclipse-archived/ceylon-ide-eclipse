@@ -396,20 +396,25 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
     
     private void filterProposals(Map<String, DeclarationWithProximity> proposals) {
-        String[] filters = 
-                EditorsUI.getPreferenceStore()
-                        .getString(COMPLETION_FILTERS).split(",");
-        Iterator<DeclarationWithProximity> iterator = proposals.values().iterator();
-        while (iterator.hasNext()) {
-            DeclarationWithProximity dwp = iterator.next();
-            for (String filter: filters) {
-                String pname = 
-                        dwp.getDeclaration().getUnit()
-                            .getPackage().getNameAsString();
-                String regex = filter.trim().replace(".", "\\.").replace("*", ".*");
-                if (pname.matches(regex)) {
-                    iterator.remove();
-                    continue;
+        String filtersString = EditorsUI.getPreferenceStore()
+                .getString(COMPLETION_FILTERS);
+        if (!filtersString.trim().isEmpty()) { 
+            String[] filters = 
+                    filtersString.replace(".", "\\.").replace("*", ".*")
+                            .split(",");
+            Iterator<DeclarationWithProximity> iterator = 
+                    proposals.values().iterator();
+            while (iterator.hasNext()) {
+                DeclarationWithProximity dwp = iterator.next();
+                for (String filter: filters) {
+                    String pname = 
+                            dwp.getDeclaration().getUnit()
+                                .getPackage().getNameAsString();
+                    String regex = filter.trim();
+                    if (!regex.isEmpty() && pname.matches(regex)) {
+                        iterator.remove();
+                        continue;
+                    }
                 }
             }
         }
