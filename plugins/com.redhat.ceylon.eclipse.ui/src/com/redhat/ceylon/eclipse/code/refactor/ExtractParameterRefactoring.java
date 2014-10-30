@@ -102,11 +102,14 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     private boolean isWithinParameterList() {
         Tree.ParameterList pl1, pl2;
         if (methodOrClass instanceof Tree.AnyClass) {
-            pl1 = pl2 = ((Tree.AnyClass) methodOrClass).getParameterList();
+            Tree.ParameterList pl = ((Tree.AnyClass) methodOrClass).getParameterList();
+            if (pl==null) return false;
+            pl1 = pl2 = pl;
         }
         else if (methodOrClass instanceof Tree.AnyMethod) {
             List<Tree.ParameterList> pls = 
                     ((Tree.AnyMethod) methodOrClass).getParameterLists();
+            if (pls.isEmpty()) return false;
             pl1 = pls.get(0);
             pl2 = pls.get(pls.size()-1);
         }
