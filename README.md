@@ -159,6 +159,16 @@ Then :
     
 9.  Go to `Help > Welcome to Ceylon` to get started.
 
+## Updating the Ceylon version
+
+1. Total panic
+
+2. It's a nightmare
+
+3. For proxy bundles, I used:
+
+    for f in *-1.1.0.?ar; do newf=${f/1.1.0/1.1.1}; if test \! -d $newf; then mkdir $newf; fi; cp $f/{.classpath,.project,.gitignore} $newf/; perl -pi -e 's/1\.1\.0/1.1.1/g' $newf/{.classpath,.project,.gitignore}; done
+
 ## Pushing a new release onto the development update site
 
 1.  Build with Tycho/Maven 3 (see previous section)
