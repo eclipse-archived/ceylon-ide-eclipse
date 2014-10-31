@@ -2,20 +2,20 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Ceylon IDE
 Bundle-SymbolicName: com.redhat.ceylon.eclipse.ui;singleton:=true
-Bundle-Version: 1.1.0.qualifier
+Bundle-Version: 1.1.1.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Localization: plugin
 Require-Bundle: com.github.rjeschke.txtmark;bundle-version="0.11.0",
  org.antlr.runtime;bundle-version="3.4.0",
- ceylon.runtime;bundle-version="1.1.0";visibility:=reexport,
+ ceylon.runtime;bundle-version="1.1.1";visibility:=reexport,
  com.redhat.ceylon.maven-support;bundle-version="2.0.0";visibility:=reexport,
- com.redhat.ceylon.module-resolver;bundle-version="1.1.0";visibility:=reexport,
- com.redhat.ceylon.compiler.java;bundle-version="1.1.0";visibility:=reexport,
- com.redhat.ceylon.typechecker;bundle-version="1.1.0";visibility:=reexport,
- com.redhat.ceylon.compiler.js;bundle-version="1.1.0";visibility:=reexport,
- ceylon.language;bundle-version="1.1.0";visibility:=reexport,
- com.redhat.ceylon.dist;bundle-version="1.1.0";visibility:=reexport,
- com.redhat.ceylon.dist.repo;bundle-version="1.1.0";resolution:=optional,
+ com.redhat.ceylon.module-resolver;bundle-version="1.1.1";visibility:=reexport,
+ com.redhat.ceylon.compiler.java;bundle-version="1.1.1";visibility:=reexport,
+ com.redhat.ceylon.typechecker;bundle-version="1.1.1";visibility:=reexport,
+ com.redhat.ceylon.compiler.js;bundle-version="1.1.1";visibility:=reexport,
+ ceylon.language;bundle-version="1.1.1";visibility:=reexport,
+ com.redhat.ceylon.dist;bundle-version="1.1.1";visibility:=reexport,
+ com.redhat.ceylon.dist.repo;bundle-version="1.1.1";resolution:=optional,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.ui,
@@ -48,15 +48,15 @@ Require-Bundle: com.github.rjeschke.txtmark;bundle-version="0.11.0",
  org.eclipse.ui.navigator,
  org.eclipse.ui.navigator.resources,
  org.eclipse.ui.views.properties.tabbed,
- ceylon.formatter;bundle-version="1.1.0",
- ceylon.collection;bundle-version="1.1.0",
- ceylon.interop.java;bundle-version="1.1.0"
+ ceylon.formatter;bundle-version="1.1.1",
+ ceylon.collection;bundle-version="1.1.1",
+ ceylon.interop.java;bundle-version="1.1.1"
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlugin"
 Bundle-ClassPath: ./,
  lib/zip4j_1.3.2.jar,
  lib/jgrapht-jdk1.6.jar,
- ceylon/modules/com/redhat/ceylon/eclipse/ui/1.1.0/com.redhat.ceylon.eclipse.ui-1.1.0.car
+ ceylon/modules/com/redhat/ceylon/eclipse/ui/1.1.1/com.redhat.ceylon.eclipse.ui-1.1.1.car
 Import-Package: org.eclipse.help
 Export-Package: com.redhat.ceylon.eclipse.code.complete;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.code.correct;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
