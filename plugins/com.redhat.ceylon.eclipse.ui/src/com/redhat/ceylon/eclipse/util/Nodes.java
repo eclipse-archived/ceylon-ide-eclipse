@@ -81,6 +81,24 @@ public class Nodes {
         return fcv.getArgumentNode();
     }
 
+    public static Tree.BinaryOperatorExpression findBinaryOperator(Tree.CompilationUnit cu, 
+            final Node node) {
+        class FindBinaryVisitor extends Visitor {
+            Tree.BinaryOperatorExpression result;
+            @Override
+            public void visit(Tree.BinaryOperatorExpression that) {
+                if (node.getStartIndex()>=that.getStartIndex() && 
+                        node.getStopIndex()<=that.getStopIndex()) {
+                    result = that;
+                }
+                super.visit(that);
+            }
+        }
+        FindBinaryVisitor fcv = new FindBinaryVisitor();
+        fcv.visit(cu);
+        return fcv.result;
+    }
+
     public static Statement findStatement(Tree.CompilationUnit cu, Node node) {
         FindStatementVisitor visitor = new FindStatementVisitor(node, false);
         cu.visit(visitor);
