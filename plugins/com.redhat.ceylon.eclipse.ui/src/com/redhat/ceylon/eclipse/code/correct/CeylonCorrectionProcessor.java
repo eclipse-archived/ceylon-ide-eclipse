@@ -92,7 +92,9 @@ import static com.redhat.ceylon.eclipse.code.correct.VerboseRefinementProposal.a
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
+import static com.redhat.ceylon.eclipse.util.Nodes.findBinaryOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
@@ -121,6 +123,11 @@ import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ide.IDE;
@@ -625,7 +632,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.Declaration declaration = findDeclaration(rootNode, node);
             Tree.NamedArgument argument = findArgument(rootNode, node);
             Tree.ImportMemberOrType imp = findImport(rootNode, node);
-                        
+            Tree.BinaryOperatorExpression boe = findBinaryOperator(rootNode, node);
+            
+            addBinaryOperatorProposals(proposals, file, boe);
+            
             addVerboseRefinementProposal(proposals, file, statement, rootNode);
             
             addAnnotationProposals(proposals, project, declaration,
@@ -674,6 +684,55 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addExpandTypeProposal(editor, statement, file, doc, proposals);
         }
         
+    }
+
+    private void addBinaryOperatorProposals(
+            Collection<ICompletionProposal> proposals, IFile file,
+            Tree.BinaryOperatorExpression boe) {
+        if (boe!=null) {
+            addParenthesizeBinaryOperatorProposal(proposals, file, boe);
+            addSwapBinaryOperandsProposal(proposals, file, boe);
+        }
+    }
+
+    private void addSwapBinaryOperandsProposal(
+            Collection<ICompletionProposal> proposals, IFile file,
+            Tree.BinaryOperatorExpression boe) {
+        TextChange change = new TextFileChange("Swap Operands", file);
+        change.setEdit(new MultiTextEdit());
+        Tree.Term lt = boe.getLeftTerm();
+        Tree.Term rt = boe.getRightTerm();
+        if (lt!=null && rt!=null) {
+            IDocument document = getDocument(change);
+            int lto = lt.getStartIndex();
+            int ltl = lt.getStopIndex()-lto+1;
+            int rto = rt.getStartIndex();
+            int rtl = rt.getStopIndex()-rto+1;
+            try {
+                change.addEdit(new ReplaceEdit(lto, ltl, 
+                        document.get(rto, rtl)));
+                change.addEdit(new ReplaceEdit(rto, rtl, 
+                        document.get(lto, ltl)));
+                proposals.add(new CorrectionProposal("Swap operands of " + 
+                        boe.getMainToken().getText() + 
+                        " expression", change, null));
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void addParenthesizeBinaryOperatorProposal(
+            Collection<ICompletionProposal> proposals, IFile file,
+            Tree.BinaryOperatorExpression boe) {
+        TextChange change = new TextFileChange("Parenthesize Expression", file);
+        change.setEdit(new MultiTextEdit());
+        change.addEdit(new InsertEdit(boe.getStartIndex(), "("));
+        change.addEdit(new InsertEdit(boe.getStopIndex()+1, ")"));
+        proposals.add(new CorrectionProposal("Parenthesize " + 
+                boe.getMainToken().getText() + 
+                " expression", change, null));
     }
 
     private void addAnnotationProposals(Collection<ICompletionProposal> proposals, 
