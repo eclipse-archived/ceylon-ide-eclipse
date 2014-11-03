@@ -107,6 +107,10 @@ public class FormatterPreferences {
             break;
         case FORMATTER_space_AfterControlStructureKeyword:
             ret = booleanString(options.getSpaceAfterControlStructureKeyword());
+            break;
+        case FORMATTER_forceSpaceAroundBinaryOp:
+            ret = booleanString(options.getForceSpaceAroundBinaryOp());
+            break;
         
         case FORMATTER_maxLineLength:
             if ((options.getMaxLineLength() instanceof ceylon.formatter.options.Unlimited)) {
@@ -302,6 +306,9 @@ public class FormatterPreferences {
             break;
         case FORMATTER_space_AfterControlStructureKeyword:
             options.setSpaceAfterControlStructureKeyword(ceylonBoolean(value));
+            break;
+        case FORMATTER_forceSpaceAroundBinaryOp:
+            options.setForceSpaceAroundBinaryOp(ceylonBoolean(value));
             break;
 
         case FORMATTER_maxLineLength:

@@ -14,6 +14,7 @@ import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORM
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeParamListOpeningParen;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeSequenceEnumerationClosingBrace;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeValueIteratorClosingParenthesis;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_forceSpaceAroundBinaryOp;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
@@ -69,6 +70,7 @@ public class FormatterTabSpace extends FormatterTabPage {
             + "        e.printStackTrace();\n"
             + "    }\n"
             + "    print({ \"Here\", \"have\", \"an\", \"iterable\", \"enumeration\" });\n"
+            + "    value hollowCubeVol = w*h*d - iW*iH*iD;\n"
             + "}\n";
 
     private CeylonPreview ceylonPreview;
@@ -96,6 +98,8 @@ public class FormatterTabSpace extends FormatterTabPage {
                 FORMATTER_space_AfterTypeArgOrParamListComma, FALSE_TRUE);
         createCheckboxPref(generalGroup, numColumns, "Space after control structure keyword ('if', 'for', etc.)",
                 FORMATTER_space_AfterControlStructureKeyword, FALSE_TRUE);
+        createCheckboxPref(generalGroup, numColumns, "Force spaces around binary operator",
+                FORMATTER_forceSpaceAroundBinaryOp, FALSE_TRUE);
   
         final Group parameter = createGroup(numColumns, composite, 
                 "Parameter Lists");
