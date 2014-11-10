@@ -242,8 +242,10 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     private void refactorInvocation(TextChange tfc,
             String paramName, Tree.ArgumentList al) {
         if (al instanceof Tree.PositionalArgumentList) {
+            Tree.PositionalArgumentList pal = 
+                    (Tree.PositionalArgumentList) al;
             List<Tree.PositionalArgument> pas = 
-                    ((Tree.PositionalArgumentList) al).getPositionalArguments();
+                    pal.getPositionalArguments();
             if (pas.size()>firstParam) {
                 Integer startIndex = pas.get(firstParam).getStartIndex();
                 tfc.addEdit(new InsertEdit(startIndex, newName + "("));
@@ -254,10 +256,12 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             }
         }
         else if (al instanceof Tree.NamedArgumentList) {
+            Tree.NamedArgumentList nal = 
+                    (Tree.NamedArgumentList) al;
             List<Tree.NamedArgument> nas = 
-                    ((Tree.NamedArgumentList) al).getNamedArguments();
-            List<Tree.NamedArgument> results = 
-                    new ArrayList<Tree.NamedArgument>();
+                    nal.getNamedArguments();
+            List<Tree.StatementOrArgument> results = 
+                    new ArrayList<Tree.StatementOrArgument>();
             Tree.NamedArgument prev = null;
             for (Tree.NamedArgument na: nas) {
                 if (models.contains(na.getParameter().getModel())) {
@@ -271,10 +275,18 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                 }
                 prev = na;
             }
+            Tree.SequencedArgument sa = nal.getSequencedArgument();
+            if (models.contains(sa.getParameter().getModel())) {
+                int fromOffset = Nodes.getNodeStartOffset(sa);
+                int toOffset = Nodes.getNodeEndOffset(sa);
+                tfc.addEdit(new DeleteEdit(fromOffset, 
+                        toOffset-fromOffset));
+                results.add(sa);
+            }
             if (!results.isEmpty()) {
                 StringBuilder builder = new StringBuilder();
                 builder.append(paramName).append(" = ").append(newName).append(" { ");
-                for (Tree.NamedArgument na: results) {
+                for (Tree.StatementOrArgument na: results) {
                     builder.append(toString(na)).append(" ");
                 }
                 builder.append("};");
