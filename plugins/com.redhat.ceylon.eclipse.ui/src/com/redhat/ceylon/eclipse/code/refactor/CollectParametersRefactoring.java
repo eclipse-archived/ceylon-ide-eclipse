@@ -249,9 +249,10 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             if (pas.size()>firstParam) {
                 Integer startIndex = pas.get(firstParam).getStartIndex();
                 tfc.addEdit(new InsertEdit(startIndex, newName + "("));
-                Integer stopIndex = pas.size()>lastParam?
+                Integer stopIndex = pas.size()>lastParam && 
+                            !pas.get(lastParam).getParameter().isSequenced() ?
                         pas.get(lastParam).getStopIndex()+1:
-                            pas.get(pas.size()-1).getStopIndex()+1;
+                        pas.get(pas.size()-1).getStopIndex()+1;
                 tfc.addEdit(new InsertEdit(stopIndex, ")"));
             }
         }
