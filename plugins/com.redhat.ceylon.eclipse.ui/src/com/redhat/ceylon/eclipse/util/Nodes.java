@@ -654,12 +654,14 @@ public class Nodes {
                 if (node.getUnit().isIterableType(type)) {
                     ProducedType iteratedType = 
                             node.getUnit().getIteratedType(type);
-                    TypeDeclaration itd = 
-                            iteratedType.getDeclaration();
-                    if (itd instanceof ClassOrInterface || 
-                        itd instanceof TypeParameter) {
-                        addNameProposals(names, true&&!unplural, 
-                                itd.getName());
+                    if (iteratedType!=null) {
+                        TypeDeclaration itd = 
+                                iteratedType.getDeclaration();
+                        if (itd instanceof ClassOrInterface || 
+                                itd instanceof TypeParameter) {
+                            addNameProposals(names, true&&!unplural, 
+                                    itd.getName());
+                        }
                     }
                 }
             }
