@@ -101,7 +101,12 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
                 if (od!=null && od.equals(declaration)) {
                     Referenceable d = declaration;
                     declaration = var.getDeclarationModel();
-                    that.getBlock().visit(this);
+                    if (that.getBlock()!=null) {
+                        that.getBlock().visit(this);
+                    }
+                    if (that.getExpression()!=null) {
+                        that.getExpression().visit(this);
+                    }
                     declaration = d;
                     return;
                 }
@@ -122,6 +127,9 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
                     declaration = var.getDeclarationModel();
                     if (that.getBlock()!=null) {
                         that.getBlock().visit(this);
+                    }
+                    if (that.getExpression()!=null) {
+                        that.getExpression().visit(this);
                     }
                     declaration = d;
                     return;
