@@ -42,6 +42,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifi
 import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeReferenceProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningParametersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningTypeProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ChangeToIfProposal.addChangeToIfProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeArgProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToMethodProposal.addConvertGetterToMethodProposal;
@@ -628,7 +629,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addConvertToPositionalArgumentsProposal(proposals, file, rootNode, 
                     editor, currentOffset);
             
-            Tree.Statement statement = findStatement(rootNode, node);
+            final Tree.Statement statement = findStatement(rootNode, node);
             Tree.Declaration declaration = findDeclaration(rootNode, node);
             Tree.NamedArgument argument = findArgument(rootNode, node);
             Tree.ImportMemberOrType imp = findImport(rootNode, node);
@@ -647,6 +648,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addDeclarationProposals(editor, proposals, doc, file, rootNode, 
                     declaration, currentOffset);
+            
+            addChangeToIfProposal(proposals, doc, file, rootNode, statement);
             
             addConvertToClassProposal(proposals, declaration, editor);
             addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
