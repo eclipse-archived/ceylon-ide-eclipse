@@ -555,6 +555,13 @@ public class InlineRefactoring extends AbstractRefactoring {
                 needsParens = onp;
             }
             @Override
+            public void visit(Tree.QualifiedMemberOrTypeExpression that) {
+                boolean onp = needsParens;
+                needsParens=true;
+                super.visit(that);
+                needsParens = onp;
+            }
+            @Override
             public void visit(Tree.StatementOrArgument that) {
                 boolean onp = needsParens;
                 needsParens = false;
