@@ -46,6 +46,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     private class FindParametersVisitor extends Visitor {
         private void handleParamList(Tree.Declaration that, int i,
                 Tree.ParameterList pl) {
+            if (pl==null) return;
             IRegion selection = editor.getSelection();
             int start = selection.getOffset();
             int end = selection.getOffset() + selection.getLength();
