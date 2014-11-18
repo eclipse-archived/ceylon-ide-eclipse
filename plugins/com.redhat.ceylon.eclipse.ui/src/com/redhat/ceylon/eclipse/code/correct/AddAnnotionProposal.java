@@ -322,6 +322,10 @@ public class AddAnnotionProposal extends CorrectionProposal {
             Tree.Declaration decNode = (Tree.Declaration) node;
             d = decNode.getDeclarationModel();
         }
+        if (node instanceof Tree.SpecifierStatement) {
+            Tree.SpecifierStatement specNode = (Tree.SpecifierStatement) node;
+            d = specNode.getRefined();
+        }
         else if (node instanceof Tree.BaseMemberExpression) {
             d = ((Tree.BaseMemberExpression) node).getDeclaration();
         }
