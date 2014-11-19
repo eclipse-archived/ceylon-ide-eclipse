@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
@@ -268,6 +269,16 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
             nodes.add(that);
         }
         else {
+            super.visit(that);
+        }
+    }
+    
+    @Override
+    public void visit(TypeConstraint that) {
+        if (isReference(that.getDeclarationModel())) {
+            nodes.add(that);
+        }
+        else { 
             super.visit(that);
         }
     }

@@ -40,7 +40,8 @@ public class FindRefinementsVisitor extends Visitor implements NaturalVisitor {
     
     @Override
     public void visit(Tree.Declaration that) {
-        if (isRefinement(that.getDeclarationModel())) {
+        if (!(that instanceof Tree.TypeConstraint) && 
+                isRefinement(that.getDeclarationModel())) {
             declarationNodes.add(that);
         }
         super.visit(that);
