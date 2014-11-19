@@ -178,8 +178,15 @@ class RequiredTypeVisitor extends Visitor
         ProducedType srt = that.getUnit().getAnythingDeclaration().getType();
         if (switchClause!=null) {
             switchClause.visit(this);
-            if (switchClause.getExpression()!=null) {
-                srt = switchClause.getExpression().getTypeModel();
+            Tree.Expression e = 
+                    switchClause.getSwitched().getExpression();
+            Tree.Variable v = 
+                    switchClause.getSwitched().getVariable();
+            if (e!=null) {
+                srt = e.getTypeModel();
+            }
+            else if (v!=null) {
+                srt = v.getType().getTypeModel();
             }
             else {
                 srt = null;
