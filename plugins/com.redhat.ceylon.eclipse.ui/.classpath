@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con"
-		path="org.eclipse.jdt.launching.JRE_CONTAINER" />
-	<classpathentry kind="con"
-		path="org.eclipse.pde.core.requiredPlugins">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins">
 		<accessrules>
-			<accessrule kind="accessible" pattern="org/eclipse/jdt/internal/**" />
-			<accessrule kind="accessible"
-				pattern="org/eclipse/core/internal/events/NotificationManager" />
-			<accessrule kind="accessible" pattern="org/eclipse/osgi/util/*" />
-			<accessrule kind="accessible" pattern="org/osgi/framework/**" />
+			<accessrule kind="accessible" pattern="org/eclipse/jdt/internal/**"/>
+			<accessrule kind="accessible" pattern="org/eclipse/core/internal/events/NotificationManager"/>
+			<accessrule kind="accessible" pattern="org/eclipse/osgi/util/*"/>
+			<accessrule kind="accessible" pattern="org/osgi/framework/**"/>
+			<accessrule kind="accessible" pattern="com/sun/jdi/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/debug/internal/**"/>
+			<accessrule kind="accessible" pattern="org/eclipse/core/internal/runtime/AdapterManager"/>
 		</accessrules>
 	</classpathentry>
-	<classpathentry kind="src" path="src" />
-	<classpathentry exported="true" kind="lib"
-		path="lib/zip4j_1.3.2.jar" sourcepath="zip4j_src_1.3.2.zip" />
-	<classpathentry kind="lib" path="lib/jgrapht-jdk1.6.jar"
-		sourcepath="/home/david/jgrapht-0.8.3/src" />
-	<classpathentry combineaccessrules="false" kind="src"
-		path="/com.redhat.ceylon.eclipse.ui.ceylon" />
-	<classpathentry kind="lib"
-		path="/com.redhat.ceylon.eclipse.ui.ceylon/.exploded" sourcepath="/com.redhat.ceylon.eclipse.ui.ceylon/source" />
-	<classpathentry kind="output" path="target/classes" />
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/zip4j_1.3.2.jar" sourcepath="zip4j_src_1.3.2.zip"/>
+	<classpathentry kind="lib" path="lib/jgrapht-jdk1.6.jar" sourcepath="/home/david/jgrapht-0.8.3/src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.redhat.ceylon.eclipse.ui.ceylon"/>
+	<classpathentry kind="lib" path="/com.redhat.ceylon.eclipse.ui.ceylon/.exploded" sourcepath="/com.redhat.ceylon.eclipse.ui.ceylon/source"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>

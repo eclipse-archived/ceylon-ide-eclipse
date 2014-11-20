@@ -39,6 +39,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.dist.osgi.Activator;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
+import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
 
 
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
@@ -128,6 +129,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         super.stop(context);
         unregisterProjectOpenCloseListener();
         CeylonEncodingSynchronizer.getInstance().uninstall();
+        CeylonDebugElementAdapterFactory.restoreJDTDebugElementAdapters();
     }
 
     private void addResourceFilterPreference() throws BackingStoreException {
