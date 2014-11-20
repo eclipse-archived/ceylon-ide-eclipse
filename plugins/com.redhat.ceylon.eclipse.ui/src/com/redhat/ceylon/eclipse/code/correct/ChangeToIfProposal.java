@@ -48,19 +48,26 @@ public class ChangeToIfProposal {
                 TextFileChange change = 
                         new TextFileChange("Change Assert To If", file);
                 change.setEdit(new MultiTextEdit());
+                String newline = getDefaultLineDelimiter(doc);
+                String indent = getIndent(last, doc);
                 int begin = statement.getStartIndex();
                 int end = conditionList.getStartIndex();
                 change.addEdit(new ReplaceEdit(begin, end-begin, "if "));
                 change.addEdit(new ReplaceEdit(statement.getStopIndex(), 1, 
                         isLast ? " {}" : " {"));
+                //TODO: this is wrong, need to look for lines, not statements!
                 for (int i=statements.indexOf(statement)+1; i<statements.size(); i++) {
                     change.addEdit(new InsertEdit(statements.get(i).getStartIndex(), 
                             getDefaultIndent()));
                 }
                 if (!isLast) {
                     change.addEdit(new InsertEdit(last.getStopIndex()+1, 
-                            getDefaultLineDelimiter(doc) + getIndent(last, doc) + "}"));
+                            newline + indent + "}"));
                 }
+                String elseBlock = newline + indent +
+                        "else {" + newline + indent + getDefaultIndent() + 
+                        "assert (false);" + newline + indent + "}" ;
+                change.addEdit(new InsertEdit(last.getStopIndex()+1, elseBlock));
                 proposals.add(new CorrectionProposal("Change 'assert' to 'if'", change, 
                         new Region(statement.getStopIndex()-2, 0)));
             }
