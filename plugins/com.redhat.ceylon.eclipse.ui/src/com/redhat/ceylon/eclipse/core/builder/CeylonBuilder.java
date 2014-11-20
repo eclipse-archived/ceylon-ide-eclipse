@@ -3044,6 +3044,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeCheckers.get(project);
     }
 
+    public static PhasedUnits getProjectPhasedUnits(IProject project) {
+        TypeChecker typeChecker = getProjectTypeChecker(project);
+        if (typeChecker != null) {
+            return typeChecker.getPhasedUnits();
+        }
+        return null;
+    }
+
     public static Modules getProjectModules(IProject project) {
         TypeChecker typeChecker = getProjectTypeChecker(project);
         if (typeChecker == null) {
