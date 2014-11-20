@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectMod
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencedProjects;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.isDeclarationOfLinkedElement;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
@@ -294,7 +295,7 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             if (CeylonNature.isEnabled(referencedProject)) {
                 TypeChecker typeChecker = getProjectTypeChecker(referencedProject);
                 if (typeChecker!=null) {
-                    Declaration result = getCeylonDeclaration(javaElement, 
+                    Declaration result = toCeylonDeclaration(javaElement, 
                             typeChecker.getPhasedUnits().getPhasedUnits());
                     if (result!=null) return result;
                     Modules modules = typeChecker.getContext().getModules();
@@ -305,25 +306,13 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                                 String archivePath = module.getArtifact().getAbsolutePath();
                                 if (searchedArchives.add(archivePath) &&
                                         belongsToModule(javaElement, module)) {
-                                    result = getCeylonDeclaration(javaElement, 
+                                    result = toCeylonDeclaration(javaElement, 
                                             module.getPhasedUnits());
                                     if (result!=null) return result;
                                 }
                             }
                         }
                     }
-                }
-            }
-        }
-        return null;
-    }
-
-    private static Declaration getCeylonDeclaration(IJavaElement javaElement,
-            List<? extends PhasedUnit> phasedUnits) {
-        for (PhasedUnit pu: phasedUnits) {
-            for (Declaration declaration: pu.getDeclarations()) {
-                if (isDeclarationOfLinkedElement(declaration, javaElement)) {
-                    return declaration;
                 }
             }
         }
