@@ -51,15 +51,16 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
     }
 
     @Override
-    protected void prepareArguments(List<String> args, List<IPath> workingRepos, IProject p, ILaunch launch, boolean runAsJs) throws CoreException {
+    protected void prepareArguments(List<String> args, List<IPath> workingRepos, IProject p, 
+            ILaunchConfiguration configuration, boolean runAsJs) throws CoreException {
         runAsJs = DebugPlugin.getDefault().getLaunchManager()
-                .getLaunchConfigurationType(LAUNCH_CONFIG_TYPE_JS).equals(launch.getLaunchConfiguration().getType());
+                .getLaunchConfigurationType(LAUNCH_CONFIG_TYPE_JS).equals(configuration.getType());
         
         LinkedHashSet<String> moduleArgs = new LinkedHashSet<String>();
         LinkedHashSet<String> testArgs = new LinkedHashSet<String>();
         LinkedHashSet<IProject> projects = new LinkedHashSet<IProject>();
 
-        List<CeylonTestLaunchConfigEntry> entries = CeylonTestLaunchConfigEntry.buildFromLaunchConfig(launch.getLaunchConfiguration());
+        List<CeylonTestLaunchConfigEntry> entries = CeylonTestLaunchConfigEntry.buildFromLaunchConfig(configuration);
         for (CeylonTestLaunchConfigEntry entry : entries) {
             IProject project = null;
             Module module = null;
