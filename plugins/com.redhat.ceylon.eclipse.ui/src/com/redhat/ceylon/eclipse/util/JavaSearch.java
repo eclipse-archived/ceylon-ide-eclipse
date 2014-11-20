@@ -7,6 +7,8 @@ import static org.eclipse.jdt.core.search.SearchPattern.R_EXACT_MATCH;
 import static org.eclipse.jdt.core.search.SearchPattern.createOrPattern;
 import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 
+import java.util.List;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -21,6 +23,7 @@ import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
@@ -137,6 +140,12 @@ public class JavaSearch {
                 name = Character.toLowerCase(name.charAt(3)) + 
                         name.substring(4);
             }
+            else if (name.equals("toString")) {
+               name = "string";
+            }
+            else if (name.equals("hashCode")) {
+                name = "hash";
+             }
         }
         
         if (dec!=type) {
@@ -145,8 +154,14 @@ public class JavaSearch {
                 return qualifier + '.' + name;
             }
             else {
+                if (typeName.length()>2 && 
+                        !Character.isUpperCase(typeName.charAt(0))
+                        && typeName.endsWith("_")) {
+                    // case of an object value
+                    typeName = typeName.substring(0, typeName.length()-1);
+                }
                 return qualifier + '.' + 
-                        type.getElementName() + '.' + name;
+                        typeName + '.' + name;
             }
         }
         else {
@@ -169,4 +184,18 @@ public class JavaSearch {
         }
     }
 
+    public static Declaration toCeylonDeclaration(IJavaElement javaElement,
+            List<? extends PhasedUnit> phasedUnits) {
+        for (PhasedUnit pu: phasedUnits) {
+            for (Declaration declaration: pu.getDeclarations()) {
+                if (isDeclarationOfLinkedElement(declaration, javaElement)) {
+                    System.out.print("");
+                    return declaration;
+                }
+            }
+        }
+        return null;
+    }
+
+    
 }
