@@ -38,17 +38,17 @@ public class CeylonStackFrameLabelProvider extends JavaStackFrameLabelProvider {
     protected String getLabel(TreePath elementPath,
             IPresentationContext presentationContext, String columnId)
             throws CoreException {
-        String existingLabel = super.getLabel(elementPath, presentationContext, columnId);
-        updateExistingLabel(elementPath, existingLabel);
-        return existingLabel;
+        return updateExistingLabel(
+                elementPath, 
+                super.getLabel(elementPath, presentationContext, columnId));
     }
 
     @Override
     protected String getLabel(TreePath elementPath,
             IPresentationContext presentationContext, String columnId,
             int columnIndex) throws CoreException {
-        String existingLabel = super.getLabel(elementPath, presentationContext, columnId, columnIndex);
-        updateExistingLabel(elementPath, existingLabel);
-        return existingLabel;
+        return updateExistingLabel(
+                elementPath, 
+                super.getLabel(elementPath, presentationContext, columnId, columnIndex));
     }
 }
