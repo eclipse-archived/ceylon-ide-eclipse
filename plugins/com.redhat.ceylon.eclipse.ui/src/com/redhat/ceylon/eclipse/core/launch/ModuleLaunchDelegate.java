@@ -2,9 +2,9 @@ package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_LAUNCH_VERBOSE;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_LAUNCH_VERBOSE;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE;
 
@@ -14,12 +14,20 @@ import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IDebugTarget;
+import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.jdt.debug.core.IJavaDebugTarget;
+import org.eclipse.jdt.internal.debug.core.JDIDebugPlugin;
+import org.eclipse.jdt.internal.launching.StandardVMDebugger;
+import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
@@ -27,8 +35,10 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.core.debug.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.sun.jdi.VirtualMachine;
 
 public class ModuleLaunchDelegate extends JavaLaunchDelegate {
 
@@ -38,62 +48,98 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
     }
     
     @Override
-    public IVMRunner getVMRunner(ILaunchConfiguration configuration, String mode) throws CoreException {
-        final IVMRunner runner = super.getVMRunner(configuration, mode);
-        
-        IProject[] requiredProjects = getBuildOrder(configuration, mode);       
+    public String getProgramArguments(ILaunchConfiguration configuration)
+            throws CoreException {
         final List<IPath> workingRepos = new ArrayList<IPath>();
         final IProject project = getJavaProject(configuration).getProject();
-        
-        for(int i = requiredProjects.length -1; i>=0 ; i--) { //contains current as well, reversed
+        ArrayList<IProject> projects = new ArrayList<>(project.getReferencedProjects().length+1);
+        projects.add(project);
+        projects.addAll(Arrays.asList(project.getReferencedProjects()));
+        for(IProject p : projects) {
             try {// projects may not exist in workspace
-                IPath test =getCeylonModulesOutputFolder(requiredProjects[i]).getLocation();
+                IPath test = getCeylonModulesOutputFolder(p).getLocation();
                 workingRepos.add(test);
             } catch (Exception e) {
                 continue;
             }
         }
+
+        boolean runAsJs = DebugPlugin.getDefault().getLaunchManager()
+                .getLaunchConfigurationType(ID_CEYLON_JAVASCRIPT_MODULE)
+                    .equals(configuration.getType());
         
-        return new IVMRunner(){
+        List<String> newArgs = new ArrayList<String>();
+        prepareArguments(newArgs, workingRepos, project, configuration, runAsJs);
 
-            @Override
-            public void run(VMRunnerConfiguration config, ILaunch launch, IProgressMonitor monitor) 
-                    throws CoreException {
-                try {
-                    List<String> newArgs = new ArrayList<String>();
-                    
-                    boolean runAsJs = DebugPlugin.getDefault().getLaunchManager()
-                            .getLaunchConfigurationType(ID_CEYLON_JAVASCRIPT_MODULE)
-                                .equals(launch.getLaunchConfiguration().getType());
-                    
-                    prepareArguments(newArgs, workingRepos, project, launch, runAsJs);
+        List<String> args = Arrays.asList(DebugPlugin.parseArguments(super.getProgramArguments(configuration)));
+        newArgs.addAll(args);
 
-                    List<String> args = Arrays.asList(config.getProgramArguments());
-                    newArgs.addAll(args);
-                    
-                    config.setProgramArguments(newArgs.toArray(new String[]{}));
-                    
-                    //user values at the end although JVMs behave differently
-                    List<String> vmArgs = new ArrayList<String>();
-                    vmArgs.add("-Dceylon.system.version="+Versions.CEYLON_VERSION_NUMBER);
-                    vmArgs.add("-Dceylon.system.repo="+CeylonPlugin.getCeylonPluginRepository(
-                        System.getProperty("ceylon.repo", "")).getAbsolutePath());
-                    
-                    vmArgs.addAll(Arrays.asList(config.getVMArguments()));
-                    config.setVMArguments(vmArgs.toArray(new String[]{}));
+        return DebugPlugin.renderArguments(newArgs.toArray(new String[0]), null);
+    }
 
-                    runner.run(config, launch, monitor);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    MessageDialog.openError(EditorUtil.getShell(), "Ceylon Module Launcher Error", 
-                            "Internal Error");
+
+
+    @Override
+    public String getVMArguments(ILaunchConfiguration configuration)
+            throws CoreException {
+        //user values at the end although JVMs behave differently
+        List<String> vmArgs = new ArrayList<String>();
+        vmArgs.add("-Dceylon.system.version="+Versions.CEYLON_VERSION_NUMBER);
+        vmArgs.add("-Dceylon.system.repo="+CeylonPlugin.getCeylonPluginRepository(
+            System.getProperty("ceylon.repo", "")).getAbsolutePath());
+        
+        vmArgs.addAll(Arrays.asList(DebugPlugin.parseArguments(super.getVMArguments(configuration))));
+        return DebugPlugin.renderArguments(vmArgs.toArray(new String[0]), null);
+    }
+
+
+
+    @Override
+    public IVMRunner getVMRunner(ILaunchConfiguration configuration, String mode) throws CoreException {
+        final IVMRunner runner = super.getVMRunner(configuration, mode);
+        
+        if (runner instanceof StandardVMDebugger) {
+            IVMInstall vmInstall = getVMInstall(configuration);
+            return new StandardVMDebugger(vmInstall){
+                @Override
+                public void run(VMRunnerConfiguration config, ILaunch launch, IProgressMonitor monitor) 
+                        throws CoreException {
+                    try {
+                        super.run(config, launch, monitor);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        MessageDialog.openError(EditorUtil.getShell(), "Ceylon Module Launcher Error", 
+                                "Internal Error");
+                    }
                 }
-            }
-        };
+                
+                @Override
+                protected IDebugTarget createDebugTarget(
+                        final VMRunnerConfiguration config, final ILaunch launch, final int port,
+                        final IProcess process, final VirtualMachine vm) {
+                    final IJavaDebugTarget[] target = new IJavaDebugTarget[1];
+                    IWorkspaceRunnable r = new IWorkspaceRunnable() {
+                        public void run(IProgressMonitor m) {
+                            target[0] = new CeylonJDIDebugTarget(launch, vm, 
+                                    renderDebugTarget(config.getClassToLaunch(), port),
+                                    true, false, process, config.isResumeOnStartup());
+                        }
+                    };
+                    try {
+                        ResourcesPlugin.getWorkspace().run(r, null, 0, null);
+                    } catch (CoreException e) {
+                        JDIDebugPlugin.log(e);
+                    }
+                    return target[0];
+                }
+            };
+        } else {
+            return runner;
+        }
     }
     
     protected void prepareArguments(List<String> args, List<IPath> workingRepos, IProject project, 
-            ILaunch launch, boolean runAsJs) throws CoreException {
+            ILaunchConfiguration configuration, boolean runAsJs) throws CoreException {
         if (runAsJs) {
             args.add("run-js");
         } else {
@@ -102,12 +148,11 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         
         prepareRepositoryArguments(args, project, workingRepos);
         prepareOfflineArgument(args, project);
-        if (launch.getLaunchConfiguration().getAttribute(ATTR_LAUNCH_VERBOSE, false)) {
-            prepareVerboseArgument(args, launch, runAsJs);
+        if (configuration.getAttribute(ATTR_LAUNCH_VERBOSE, false)) {
+            prepareVerboseArgument(args, runAsJs);
         }
         
-        String topLevel = launch.getLaunchConfiguration()
-                .getAttribute(ATTR_TOPLEVEL_NAME, "");
+        String topLevel = configuration.getAttribute(ATTR_TOPLEVEL_NAME, "");
         int def = topLevel.indexOf(DEFAULT_RUN_MARKER);
         if (def != -1) {
             topLevel = topLevel.substring(0, def);
@@ -118,8 +163,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         }
         
         args.add("--");
-        args.add(launch.getLaunchConfiguration()
-                .getAttribute(ATTR_MODULE_NAME, ""));
+        args.add(configuration.getAttribute(ATTR_MODULE_NAME, ""));
     }
 
     protected void prepareRepositoryArguments(List<String> args, 
@@ -142,7 +186,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         }
     }
 
-    protected void prepareVerboseArgument(List<String> args, ILaunch launch, boolean runAsJs) {
+    protected void prepareVerboseArgument(List<String> args, boolean runAsJs) {
         args.add("--verbose");        
         if (runAsJs) {
             args.add("--debug");

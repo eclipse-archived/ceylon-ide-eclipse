@@ -19,6 +19,7 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 
 import com.redhat.ceylon.eclipse.code.editor.RecentFilesPopup;
+import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonStartup implements IStartup {
@@ -71,6 +72,7 @@ public class CeylonStartup implements IStartup {
 
     @Override
     public void earlyStartup() {
+        CeylonDebugElementAdapterFactory.installCeylonDebugElementAdapters();
         getWorkbench().getDisplay().asyncExec(new Runnable() {
             @Override
             public void run() {
