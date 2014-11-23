@@ -38,7 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 class InvertIfElseProposal extends CorrectionProposal {
     
     InvertIfElseProposal(int offset, TextChange change) {
-        super("Invert if-else", change, new Region(offset, 0));
+        super("Invert 'if' 'else'", change, new Region(offset, 0));
     }
     
     static void addReverseIfElseProposal(IDocument doc,
@@ -135,7 +135,7 @@ class InvertIfElseProposal extends CorrectionProposal {
                     replace.append("else ")
                     .append(getTerm(doc, ifBlock));
 
-            TextChange change = new TextFileChange("Invert if-else", file);
+            TextChange change = new TextFileChange("Invert If Else", file);
             change.setEdit(new ReplaceEdit(ifStmt.getStartIndex(), 
                     ifStmt.getStopIndex() - ifStmt.getStartIndex() + 1, replace.toString()));
             proposals.add(new InvertIfElseProposal(ifStmt.getStartIndex(), change));
