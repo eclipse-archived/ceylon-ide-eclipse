@@ -40,8 +40,12 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
             Statement statement) {
         TextChange change = createTextChange(cu, doc, statement, file);
         if (change != null) {
-            proposals.add(new ConvertIfElseToThenElse(change.getEdit().getOffset(), change,
-                    change.getName().replace("If", "'if'").replace("Then", "'then'").replace("Else", "'else'")));
+            String desc = change.getName()
+                    .replace("If", "'if'")
+                    .replace("Then", "'then'")
+                    .replace("Else", "'else'") + 
+                    " expression";
+            proposals.add(new ConvertIfElseToThenElse(change.getEdit().getOffset(), change, desc));
         }
     }
 

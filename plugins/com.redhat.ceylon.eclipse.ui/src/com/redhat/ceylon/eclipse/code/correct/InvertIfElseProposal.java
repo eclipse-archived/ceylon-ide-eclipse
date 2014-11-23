@@ -38,7 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 class InvertIfElseProposal extends CorrectionProposal {
     
     InvertIfElseProposal(int offset, TextChange change) {
-        super("Invert 'if' 'else'", change, new Region(offset, 0));
+        super("Invert 'if' 'else' statement", change, new Region(offset, 0));
     }
     
     static void addReverseIfElseProposal(IDocument doc,
