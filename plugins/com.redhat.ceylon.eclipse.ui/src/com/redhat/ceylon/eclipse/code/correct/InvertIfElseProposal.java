@@ -112,7 +112,12 @@ class InvertIfElseProposal extends CorrectionProposal {
                    term = removeEnclosingParenthesis(term);
             }
             if (test == null) {
-                 test = "!" + term;
+                if (term.startsWith("!")) {
+                    test = term.substring(1);
+                }
+                else {
+                    test = "!" + term;
+                }
             }
             String baseIndent = getIndent(ifStmt, doc);
             String indent = getDefaultIndent();
