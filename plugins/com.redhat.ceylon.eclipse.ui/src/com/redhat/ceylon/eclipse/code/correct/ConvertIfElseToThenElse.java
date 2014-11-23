@@ -22,11 +22,13 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Block;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.IfStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ConvertIfElseToThenElse extends CorrectionProposal {
@@ -147,21 +149,16 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
             }
         }
         
-        /*if (condition instanceof Tree.ExistsCondition) {
+        boolean abbreviateToElse = false;
+        if (condition instanceof Tree.ExistsCondition) {
             Tree.ExistsCondition existsCond = (Tree.ExistsCondition) condition;
             Variable variable = existsCond.getVariable();
             if (thenStr.equals(getTerm(doc, variable.getIdentifier()))) {
                 Expression existsExpr = variable.getSpecifierExpression().getExpression();
                 test = getTerm(doc, existsExpr);
-                thenStr = null;
-            } else {
-                return null; //Disabling because type narrowing does not work with then.
-            }            
-        } else if (! (condition instanceof Tree.BooleanCondition)) {
-            return null; //Disabling because type narrowing does not work with then.
-        } else if (((BooleanCondition)condition).getExpression().getTerm() instanceof IsOp){
-            return null; //Disabling because type narrowing does not work with then.
-        }*/
+                abbreviateToElse = true;
+            }          
+        }
         
         boolean abbreviateToThen = 
                 condition instanceof Tree.BooleanCondition &&
@@ -169,20 +166,27 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
         
         StringBuilder replace = new StringBuilder();
         replace.append(action);
-        if (!abbreviateToThen) replace.append("if (");
+        if (!abbreviateToThen && !abbreviateToElse) replace.append("if (");
         replace.append(test);
-        if (!abbreviateToThen) replace.append(")");
-//        if (thenStr != null) {
+        if (!abbreviateToThen && !abbreviateToElse) replace.append(")");
+        if (!abbreviateToElse) {
             replace.append(" then ").append(thenStr);
-//        }
+        }
         if (!abbreviateToThen) {
             replace.append(" else ").append(elseStr);
         }
         replace.append(";");
         
-        String desc = abbreviateToThen ? 
-                "Convert to Then" : 
-                "Convert to If Then Else";
+        String desc;
+        if (abbreviateToThen) {
+            desc = "Convert to Then";
+        }
+        else if (abbreviateToElse) {
+            desc = "Convert to Else";
+        }
+        else {
+            desc = "Convert to If Then Else";
+        }
         TextChange change = new TextFileChange(desc, file);
 //      TextChange change = new DocumentChange("Convert to then-else", doc);
         change.setEdit(new ReplaceEdit(replaceFrom, 
