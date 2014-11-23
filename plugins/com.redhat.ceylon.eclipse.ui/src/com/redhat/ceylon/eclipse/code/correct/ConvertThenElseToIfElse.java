@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ConditionList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
@@ -130,9 +131,16 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
             } else if (operation instanceof Tree.ThenOp) {
                 Tree.ThenOp thenOp = (ThenOp) operation;
                 thenTerm = getTerm(doc, thenOp.getRightTerm());
-                    test = getTerm(doc, thenOp.getLeftTerm());
-                    elseTerm = "null";
-            } else {
+                test = getTerm(doc, thenOp.getLeftTerm());
+                elseTerm = "null";
+            } else if (operation instanceof Tree.IfExpression) {
+                Tree.IfExpression ie = (Tree.IfExpression) operation;
+                thenTerm = getTerm(doc, ie.getIfClause().getExpression());
+                elseTerm = getTerm(doc, ie.getElseClause().getExpression());
+                ConditionList cl = ie.getIfClause().getConditionList();
+                test = getTerm(doc, cl);
+            }
+            else {
                 return;
             }
 
@@ -160,7 +168,7 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
                     .append(delim)
                     .append(baseIndent).append("}");
 
-            TextChange change = new TextFileChange("Convert to if-else", file);
+            TextChange change = new TextFileChange("Convert to If Else", file);
             change.setEdit(new ReplaceEdit(statement.getStartIndex(), 
                     statement.getStopIndex() - statement.getStartIndex() + 1, 
                     replace.toString()));
