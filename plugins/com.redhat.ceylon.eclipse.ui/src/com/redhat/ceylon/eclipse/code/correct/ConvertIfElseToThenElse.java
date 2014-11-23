@@ -20,33 +20,30 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Block;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BooleanCondition;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.IfStatement;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.IsOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ConvertIfElseToThenElse extends CorrectionProposal {
     
-    ConvertIfElseToThenElse(int offset, TextChange change) {
-        super("Convert to then-else", change, new Region(offset, 0));
+    ConvertIfElseToThenElse(int offset, TextChange change, String desc) {
+        super(desc, change, new Region(offset, 0));
     }
     
     static void addConvertToThenElseProposal(CompilationUnit cu, IDocument doc,
             Collection<ICompletionProposal> proposals, IFile file,
             Statement statement) {
-            TextChange change = createTextChange(cu, doc, statement, file);
-            if (change != null) {
-                proposals.add(new ConvertIfElseToThenElse(change.getEdit().getOffset(), change));
-            }
-   }
+        TextChange change = createTextChange(cu, doc, statement, file);
+        if (change != null) {
+            proposals.add(new ConvertIfElseToThenElse(change.getEdit().getOffset(), change,
+                    change.getName().replace("If", "'if'").replace("Then", "'then'").replace("Else", "'else'")));
+        }
+    }
 
     static TextChange createTextChange(CompilationUnit cu,
             IDocument doc, Statement statement, IFile file) {
@@ -76,7 +73,7 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
         }
         Condition condition = conditions.get(0);
         Integer replaceFrom = statement.getStartIndex();
-        String test = removeEnclosingParentesis(getTerm(doc, condition));
+        String test = removeEnclosingParenthesis(getTerm(doc, condition));
         String thenStr = null;
         String elseStr = null;
         String attributeIdentifier = null;
@@ -105,7 +102,7 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
             }
             thenStr = getOperands(doc, ifSpecifierStmt.getSpecifierExpression().getExpression().getTerm());
             elseStr = getOperands(doc, ((Tree.SpecifierStatement) elseBlockNode).getSpecifierExpression().getExpression().getTerm());
-        } else if (ifBlockNode instanceof Tree.ExpressionStatement) {
+        } /*else if (ifBlockNode instanceof Tree.ExpressionStatement) {
             if (!(elseBlockNode instanceof Tree.ExpressionStatement)) {
                 return null;
             }
@@ -129,7 +126,7 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
             action = attributeIdentifier + operator;
             thenStr = getOperands(doc, ifAssign.getRightTerm());
             elseStr = getOperands(doc, elseAssign.getRightTerm());
-        } else {
+        }*/ else {
             return null;
         }
         
@@ -146,7 +143,7 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
             }
         }
         
-        if (condition instanceof Tree.ExistsCondition) {
+        /*if (condition instanceof Tree.ExistsCondition) {
             Tree.ExistsCondition existsCond = (Tree.ExistsCondition) condition;
             Variable variable = existsCond.getVariable();
             if (thenStr.equals(getTerm(doc, variable.getIdentifier()))) {
@@ -160,19 +157,29 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
             return null; //Disabling because type narrowing does not work with then.
         } else if (((BooleanCondition)condition).getExpression().getTerm() instanceof IsOp){
             return null; //Disabling because type narrowing does not work with then.
-        }
+        }*/
+        
+        boolean abbreviateToThen = 
+                condition instanceof Tree.BooleanCondition &&
+                    elseStr.equals("null");
         
         StringBuilder replace = new StringBuilder();
-        replace.append(action).append(test);
-        if (thenStr != null) {
+        replace.append(action);
+        if (!abbreviateToThen) replace.append("if (");
+        replace.append(test);
+        if (!abbreviateToThen) replace.append(")");
+//        if (thenStr != null) {
             replace.append(" then ").append(thenStr);
-        }
-        if (!elseStr.equals("null")) {
+//        }
+        if (!abbreviateToThen) {
             replace.append(" else ").append(elseStr);
         }
         replace.append(";");
-
-        TextChange change = new TextFileChange("Convert to then-else", file);
+        
+        String desc = abbreviateToThen ? 
+                "Convert to Then" : 
+                "Convert to If Then Else";
+        TextChange change = new TextFileChange(desc, file);
 //      TextChange change = new DocumentChange("Convert to then-else", doc);
         change.setEdit(new ReplaceEdit(replaceFrom, 
                 statement.getStopIndex() - replaceFrom + 1, 
@@ -230,7 +237,7 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
         return null;
     }
 
-    private static String removeEnclosingParentesis(String s) {
+    private static String removeEnclosingParenthesis(String s) {
         if (s.charAt(0) == '(' && s.charAt(s.length() - 1) == ')') {
             return s.substring(1, s.length() - 1);
         }
