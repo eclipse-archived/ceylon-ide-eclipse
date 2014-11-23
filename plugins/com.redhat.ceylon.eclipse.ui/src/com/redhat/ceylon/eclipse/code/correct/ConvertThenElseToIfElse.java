@@ -32,7 +32,7 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 class ConvertThenElseToIfElse extends CorrectionProposal {
     
     ConvertThenElseToIfElse(int offset, TextChange change) {
-        super("Convert to if-else", change, new Region(offset, 0));
+        super("Convert to 'if' 'else' statement", change, new Region(offset, 0));
     }
     
     static void addConvertToIfElseProposal(IDocument doc,
