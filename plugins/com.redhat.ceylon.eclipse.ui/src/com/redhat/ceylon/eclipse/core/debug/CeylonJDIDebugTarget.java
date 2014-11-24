@@ -95,21 +95,29 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
                 final IJavaClassObject ceylonAnnotationClass = annotationClassObject;
                 final IJavaClassObject theClassObject = valueType.getClassObject();
     
-                final Object lock = new Object();
                 class Listener {
                     boolean finished = false;
                     IJavaValue annotation = null;
     
-                    public void finished(
+                    synchronized public void finished(
                             IJavaValue annotation) {
-                        synchronized (lock) {
-                            this.annotation = annotation;
-                            finished = true;
-                            lock.notifyAll();
-                        }
+                        this.annotation = annotation;
+                        finished = true;
+                        notifyAll();
                     }
-                }
-                ;
+                    
+                    synchronized IJavaValue waitForAnnotation() {
+                        if (!finished) {
+                            try {
+                                wait(5000);
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
+                                // Fall through
+                            }
+                        }
+                        return annotation;
+                    }
+                };
                 final Listener listener = new Listener();
                 final IJavaThread evaluationThread = JDIModelPresentation
                         .getEvaluationThread((IJavaDebugTarget) theClassObject
@@ -120,57 +128,65 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
                     evaluationThread
                             .queueRunnable(new Runnable() {
                                 public void run() {
+                                    if (evaluationThread == null || !evaluationThread.isSuspended()) {
+                                        listener.finished(null);
+                                        System.err.println("Annotation retrieval cancelled : thread is not suspended");
+                                        return;
+                                    }
                                     IEvaluationRunnable eval = new IEvaluationRunnable() {
                                         public void run(
                                                 IJavaThread innerThread,
                                                 IProgressMonitor monitor)
                                                 throws DebugException {
-                                            IJavaValue result = theClassObject
-                                                    .sendMessage(
-                                                            getAnnotationMethodName,
-                                                            getAnnotationMethodSignature,
-                                                            new IJavaValue[] { ceylonAnnotationClass },
-                                                            evaluationThread,
-                                                            (String) null);
-                                            if (parameter == null) {
-                                                listener.finished(result);
-                                            } else {
-                                                if (result instanceof JDINullValue) {
-                                                    listener.finished(null);
-                                                } else {
-                                                    IJavaObject annotationObject = (IJavaObject)result;
-                                                    result = null;
-                                                    String annotationParameterMethodSignature = null;
-                                                    //TODO : the signatures for the annotation parameters should
-                                                    // be cached definitively inside the debug target.
-                                                    try {
-                                                        IJavaProject javaProject = JavaCore
-                                                                .create(getProject());
-                                                        IType annotationType = javaProject
-                                                                .findType(annotationClass.getName());
-                                                        IMethod method = annotationType.getMethod(parameter, new String[0]);
-                                                        if (method != null) {
-                                                            annotationParameterMethodSignature = method.getSignature();
-                                                        }
-                                                    } catch (JavaModelException e) {
-                                                        e.printStackTrace();
-                                                    }
-                                                    if (annotationParameterMethodSignature != null) {
-                                                        result = ((IJavaObject) annotationObject).sendMessage(
-                                                                parameter,
-                                                                annotationParameterMethodSignature,
-                                                                new IJavaValue[] { },
-                                                                evaluationThread,
-                                                                (String) null);
-                                                    }
+                                            try {
+                                                IJavaValue result = theClassObject.sendMessage(
+                                                        getAnnotationMethodName,
+                                                        getAnnotationMethodSignature,
+                                                        new IJavaValue[] { ceylonAnnotationClass },
+                                                        evaluationThread,
+                                                        (String) null);
+                                                if (parameter == null) {
                                                     listener.finished(result);
+                                                } else {
+                                                    if (result instanceof JDINullValue) {
+                                                        listener.finished(null);
+                                                    } else {
+                                                        IJavaObject annotationObject = (IJavaObject)result;
+                                                        result = null;
+                                                        String annotationParameterMethodSignature = null;
+                                                        //TODO : the signatures for the annotation parameters should
+                                                        // be cached definitively inside the debug target.
+                                                        try {
+                                                            IJavaProject javaProject = JavaCore
+                                                                    .create(getProject());
+                                                            IType annotationType = javaProject
+                                                                    .findType(annotationClass.getName());
+                                                            IMethod method = annotationType.getMethod(parameter, new String[0]);
+                                                            if (method != null) {
+                                                                annotationParameterMethodSignature = method.getSignature();
+                                                            }
+                                                        } catch (JavaModelException e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                        if (annotationParameterMethodSignature != null) {
+                                                            result = ((IJavaObject) annotationObject).sendMessage(
+                                                                    parameter,
+                                                                    annotationParameterMethodSignature,
+                                                                    new IJavaValue[] { },
+                                                                    evaluationThread,
+                                                                    (String) null);
+                                                        }
+                                                        listener.finished(result);
+                                                    }
                                                 }
+                                            } catch(Throwable t) {
+                                                t.printStackTrace();
+                                                listener.finished(null);
                                             }
                                         }
                                     };
                                     try {
-                                        evaluationThread
-                                                .runEvaluation(
+                                        evaluationThread.runEvaluation(
                                                         eval,
                                                         null,
                                                         DebugEvent.EVALUATION_IMPLICIT,
@@ -183,16 +199,7 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
                             });
                 }
     
-                synchronized (lock) {
-                    if (listener.finished == false) {
-                        try {
-                            lock.wait(5000);
-                        } catch (InterruptedException e1) {
-                            // Fall through
-                        }
-                    }
-                }
-                return listener.annotation;
+                return listener.waitForAnnotation();
             }
         } catch (DebugException e) {
             e.printStackTrace();
