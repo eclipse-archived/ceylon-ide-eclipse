@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import static com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory.installCeylonDebugElementAdapters;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
@@ -7,6 +8,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchListener;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
@@ -19,7 +23,6 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 
 import com.redhat.ceylon.eclipse.code.editor.RecentFilesPopup;
-import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonStartup implements IStartup {
@@ -72,7 +75,31 @@ public class CeylonStartup implements IStartup {
 
     @Override
     public void earlyStartup() {
-        CeylonDebugElementAdapterFactory.installCeylonDebugElementAdapters();
+        DebugPlugin.getDefault().getLaunchManager().addLaunchListener(new ILaunchListener() {
+            Boolean activated = false;
+            
+            @Override
+            public void launchRemoved(ILaunch launch) {
+            }
+            
+            @Override
+            public void launchChanged(ILaunch launch) {
+                synchronized (activated) {
+                    if (activated) {
+                        return;
+                    }
+                    activated = true;
+                    installCeylonDebugElementAdapters();
+                    DebugPlugin.getDefault().getLaunchManager().removeLaunchListener(this);
+                }
+            }
+            
+            @Override
+            public void launchAdded(ILaunch launch) {
+                launchChanged(launch);
+            }
+        });
+        
         getWorkbench().getDisplay().asyncExec(new Runnable() {
             @Override
             public void run() {
