@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.debug;
 
+import static com.redhat.ceylon.eclipse.core.debug.CeylonPresentationContext.isCeylonContext;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugException;
@@ -21,7 +23,7 @@ public class CeylonVariableLabelProvider extends JavaVariableLabelProvider{
         super.retrieveLabel(new ILabelUpdate() {
             @Override
             public IPresentationContext getPresentationContext() {
-                return new CeylonPresentationContext(update.getPresentationContext(), this);
+                return CeylonPresentationContext.toCeylonContextIfNecessary(update.getPresentationContext(), this);
             }
             @Override
             public Object getElement() {
@@ -87,12 +89,10 @@ public class CeylonVariableLabelProvider extends JavaVariableLabelProvider{
     protected String getVariableName(IVariable variable,
             IPresentationContext context) throws CoreException {
         String name = super.getVariableName(variable, context);
-        if (context instanceof CeylonPresentationContext) {
-            if (((CeylonPresentationContext) context).isCeylonContext()) {
-                if (name.charAt(0) == '$') {
-                    if (Naming.isJavaKeyword(name, 1, name.length())) {
-                        name = name.substring(1);
-                    }
+        if (isCeylonContext(context)) {
+            if (name.charAt(0) == '$') {
+                if (Naming.isJavaKeyword(name, 1, name.length())) {
+                    name = name.substring(1);
                 }
             }
         }
@@ -104,7 +104,7 @@ public class CeylonVariableLabelProvider extends JavaVariableLabelProvider{
             IPresentationContext context) throws CoreException {
         String name = super.getValueTypeName(variable, value, context);
 
-        if (((CeylonPresentationContext) context).isCeylonContext()) {
+        if (isCeylonContext(context)) {
             name = renameObjectTypeName(name);
         }
         return name;
@@ -128,7 +128,7 @@ public class CeylonVariableLabelProvider extends JavaVariableLabelProvider{
     protected String getValueText(IVariable variable, IValue value,
             IPresentationContext context) throws CoreException {
         String valueText = super.getValueText(variable, value, context);
-        if (((CeylonPresentationContext) context).isCeylonContext()) {
+        if (isCeylonContext(context)) {
             String valueTypeName = super.getValueTypeName(variable, value, context);
             if (valueText.contains(valueTypeName)) {
                 valueText = valueText.replace(valueTypeName, renameObjectTypeName(valueTypeName));
@@ -141,7 +141,7 @@ public class CeylonVariableLabelProvider extends JavaVariableLabelProvider{
     protected String getVariableTypeName(IVariable variable,
             IPresentationContext context) throws CoreException {
         String name = super.getVariableTypeName(variable, context);
-        if (((CeylonPresentationContext) context).isCeylonContext()) {
+        if (isCeylonContext(context)) {
             name = renameObjectTypeName(name);
         }
         return name;
