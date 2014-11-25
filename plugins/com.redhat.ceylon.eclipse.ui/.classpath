@@ -10,6 +10,7 @@
 			<accessrule kind="accessible" pattern="com/sun/jdi/*"/>
 			<accessrule kind="accessible" pattern="org/eclipse/debug/internal/**"/>
 			<accessrule kind="accessible" pattern="org/eclipse/core/internal/runtime/AdapterManager"/>
+			<accessrule kind="accessible" pattern="org/eclipse/core/internal/utils/Cache*"/>
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
