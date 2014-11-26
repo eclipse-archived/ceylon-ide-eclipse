@@ -690,7 +690,11 @@ public class InlineRefactoring extends AbstractRefactoring {
             iv.visit(term);
             iv.finish();
             if (needsParens && 
-                    term instanceof Tree.OperatorExpression) {
+                    (term instanceof Tree.OperatorExpression ||
+                    term instanceof Tree.IfExpression ||
+                    term instanceof Tree.ObjectExpression ||
+                    term instanceof Tree.LetExpression ||
+                    term instanceof Tree.FunctionArgument)) {
                 result.insert(0,'(').append(')');
             }
             Node node = that==null ? mte : that;
