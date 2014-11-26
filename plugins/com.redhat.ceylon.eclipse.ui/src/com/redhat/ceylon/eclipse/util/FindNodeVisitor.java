@@ -57,7 +57,8 @@ public class FindNodeVisitor extends Visitor
     
     @Override
     public void visitAny(Node that) {
-        if (inBounds(that))  {
+        if (inBounds(that) && 
+                !(that instanceof Tree.LetClause)) { //yick!
             node=that;
             super.visitAny(that);
         }
