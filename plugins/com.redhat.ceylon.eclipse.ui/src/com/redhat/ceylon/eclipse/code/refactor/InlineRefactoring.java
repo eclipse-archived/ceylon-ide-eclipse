@@ -692,6 +692,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             if (needsParens && 
                     (term instanceof Tree.OperatorExpression ||
                     term instanceof Tree.IfExpression ||
+                    term instanceof Tree.SwitchExpression ||
                     term instanceof Tree.ObjectExpression ||
                     term instanceof Tree.LetExpression ||
                     term instanceof Tree.FunctionArgument)) {
