@@ -43,7 +43,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -63,19 +62,22 @@ public class Nodes {
     
 
     public static Tree.Declaration findDeclaration(Tree.CompilationUnit cu, Node node) {
-        FindDeclarationVisitor fcv = new FindDeclarationVisitor(node);
+        FindDeclarationVisitor fcv = 
+                new FindDeclarationVisitor(node);
         fcv.visit(cu);
         return fcv.getDeclarationNode();
     }
 
     public static Tree.Declaration findDeclarationWithBody(Tree.CompilationUnit cu, Node node) {
-        FindBodyContainerVisitor fcv = new FindBodyContainerVisitor(node);
+        FindBodyContainerVisitor fcv = 
+                new FindBodyContainerVisitor(node);
         fcv.visit(cu);
         return fcv.getDeclarationNode();
     }
 
     public static Tree.NamedArgument findArgument(Tree.CompilationUnit cu, Node node) {
-        FindArgumentVisitor fcv = new FindArgumentVisitor(node);
+        FindArgumentVisitor fcv = 
+                new FindArgumentVisitor(node);
         fcv.visit(cu);
         return fcv.getArgumentNode();
     }
@@ -99,20 +101,23 @@ public class Nodes {
     }
 
     public static Statement findStatement(Tree.CompilationUnit cu, Node node) {
-        FindStatementVisitor visitor = new FindStatementVisitor(node, false);
+        FindStatementVisitor visitor = 
+                new FindStatementVisitor(node, false);
         cu.visit(visitor);
         return visitor.getStatement();
     }
 
     public static Statement findToplevelStatement(Tree.CompilationUnit cu, Node node) {
-        FindStatementVisitor visitor = new FindStatementVisitor(node, true);
+        FindStatementVisitor visitor = 
+                new FindStatementVisitor(node, true);
         cu.visit(visitor);
         return visitor.getStatement();
     }
 
     public static Declaration getAbstraction(Declaration d) {
         if (isOverloadedVersion(d)) {
-            return d.getContainer().getDirectMember(d.getName(), null, false);
+            return d.getContainer()
+                    .getDirectMember(d.getName(), null, false);
         }
         else {
             return d;
@@ -191,24 +196,34 @@ public class Nodes {
         return findNode(cu, offset, offset+1);
     }
 
-    public static Node findNode(Node cu, int startOffset, int endOffset) {
-        FindNodeVisitor visitor = new FindNodeVisitor(startOffset, endOffset);
+    public static Node findNode(Node cu, 
+            int startOffset, int endOffset) {
+        FindNodeVisitor visitor = 
+                new FindNodeVisitor(startOffset, endOffset);
         cu.visit(visitor);
         return visitor.getNode();
     }
 
-    private static Node findScope(Tree.CompilationUnit cu, int startOffset, int endOffset) {
-        FindScopeVisitor visitor = new FindScopeVisitor(startOffset, endOffset);
+    private static Node findScope(Tree.CompilationUnit cu, 
+            int startOffset, int endOffset) {
+        FindScopeVisitor visitor = 
+                new FindScopeVisitor(startOffset, endOffset);
         cu.visit(visitor);
         return visitor.getNode();
     }
 
-    public static Node findNode(Tree.CompilationUnit cu, ITextSelection s) {
-        return findNode(cu, s.getOffset(), s.getOffset()+s.getLength());
+    public static Node findNode(Tree.CompilationUnit cu, 
+            ITextSelection s) {
+        return findNode(cu, 
+                s.getOffset(), 
+                s.getOffset()+s.getLength());
     }
 
-    public static Node findScope(Tree.CompilationUnit cu, ITextSelection s) {
-        return findScope(cu, s.getOffset(), s.getOffset()+s.getLength());
+    public static Node findScope(Tree.CompilationUnit cu, 
+            ITextSelection s) {
+        return findScope(cu, 
+                s.getOffset(), 
+                s.getOffset()+s.getLength());
     }
 
     private static Node toNode(Node node) {
@@ -233,7 +248,8 @@ public class Nodes {
     }
 
     public static int getNodeLength(Node node) {
-        return Nodes.getNodeEndOffset(node) - Nodes.getNodeStartOffset(node);
+        return Nodes.getNodeEndOffset(node) - 
+               Nodes.getNodeStartOffset(node);
     }
 
     public static Node getIdentifyingNode(Node node) {
@@ -253,7 +269,8 @@ public class Nodes {
             return ((Tree.ImportModule) node).getImportPath();
         }
         else if (node instanceof Tree.NamedArgument) {
-            Identifier id = ((Tree.NamedArgument) node).getIdentifier();
+            Tree.Identifier id = 
+                    ((Tree.NamedArgument) node).getIdentifier();
             if (id==null || id.getToken()==null) {
                 return node;
             }
@@ -598,7 +615,8 @@ public class Nodes {
             }
         }
         if (identifyingNode instanceof Tree.FunctionType) {
-            Tree.StaticType type = ((Tree.FunctionType) identifyingNode).getReturnType();
+            Tree.StaticType type = 
+                    ((Tree.FunctionType) identifyingNode).getReturnType();
             if (type instanceof Tree.SimpleType) {
                 String name = ((Tree.SimpleType) type).getDeclarationModel().getName();
                 addNameProposals(names, false, name);
@@ -751,7 +769,8 @@ public class Nodes {
                     }
                 }
                 else {
-                    int tokenIndex = getTokenIndexAtCharacter(tokens, offset);
+                    int tokenIndex = 
+                            getTokenIndexAtCharacter(tokens, offset);
                     if (tokenIndex>=0) {
                         CommonToken token = tokens.get(tokenIndex);
                         if (token.getStartIndex()<offset) {
@@ -765,7 +784,8 @@ public class Nodes {
     }
 
     public static void appendParameters(StringBuilder result,
-            Tree.FunctionArgument fa, Unit unit, List<CommonToken> tokens) {
+            Tree.FunctionArgument fa, Unit unit, 
+            List<CommonToken> tokens) {
         for (Tree.ParameterList pl: fa.getParameterLists()) {
             result.append('(');
             boolean first=true;
