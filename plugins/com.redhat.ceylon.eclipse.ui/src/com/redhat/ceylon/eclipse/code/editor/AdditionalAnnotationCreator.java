@@ -209,7 +209,7 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                 model.removeAnnotation(initializerAnnotation);
             }
             initializerAnnotation = null;
-            if (node!=null) {
+            if (node!=null && model!=null) {
                 node.visit(new InitializerVisitor());
                 if (initializerAnnotation!=null) {
                     model.addAnnotation(initializerAnnotation, 
