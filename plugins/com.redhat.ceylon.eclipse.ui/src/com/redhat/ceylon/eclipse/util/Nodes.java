@@ -47,7 +47,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.resolve.FindReferencedNodeVisitor;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
@@ -445,6 +444,12 @@ public class Nodes {
         }
         else if (node instanceof Tree.MetaLiteral) {
             return ((Tree.MetaLiteral) node).getDeclaration();
+        }
+        else if (node instanceof Tree.SelfExpression) {
+            return ((Tree.SelfExpression) node).getDeclarationModel();
+        }
+        else if (node instanceof Tree.Outer) {
+            return ((Tree.Outer) node).getDeclarationModel();
         }
         else if (node instanceof Tree.DocLink) {
             DocLink docLink = (Tree.DocLink) node;

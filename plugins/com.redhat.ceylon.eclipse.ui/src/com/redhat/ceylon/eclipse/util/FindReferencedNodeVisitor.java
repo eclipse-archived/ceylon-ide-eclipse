@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.resolve;
+package com.redhat.ceylon.eclipse.util;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
@@ -8,16 +8,16 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class FindReferencedNodeVisitor extends Visitor {
+class FindReferencedNodeVisitor extends Visitor {
     
     private final Referenceable declaration;
     private Node declarationNode;
     
-    public FindReferencedNodeVisitor(Referenceable declaration) {
+    FindReferencedNodeVisitor(Referenceable declaration) {
         this.declaration = declaration;
     }
     
-    public Node getDeclarationNode() {
+    Node getDeclarationNode() {
         return declarationNode;
     }
     
