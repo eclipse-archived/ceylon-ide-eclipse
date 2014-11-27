@@ -32,34 +32,39 @@ public class FindNodeVisitor extends Visitor
     }
     
     public void visit(Tree.ExtendedType that) {
-        if (that.getType()!=null) that.getType().visit(this);
-        if (that.getInvocationExpression()!=null &&
-                that.getInvocationExpression().getPositionalArgumentList()!=null) {
-            that.getInvocationExpression().getPositionalArgumentList().visit(this);
+        Tree.SimpleType t = that.getType();
+        if (t!=null) t.visit(this);
+        Tree.InvocationExpression ie = 
+                that.getInvocationExpression();
+        if (ie!=null &&
+                ie.getPositionalArgumentList()!=null) {
+            ie.getPositionalArgumentList().visit(this);
         }
-        if (that.getType()==null && 
-            that.getInvocationExpression()==null) {
+        if (t==null && ie==null) {
             super.visit(that);
         }
     }
     
     public void visit(Tree.ClassSpecifier that) {
-        if (that.getType()!=null) that.getType().visit(this);
-        if (that.getInvocationExpression()!=null &&
-                that.getInvocationExpression().getPositionalArgumentList()!=null) {
-            that.getInvocationExpression().getPositionalArgumentList().visit(this);
+        Tree.SimpleType t = that.getType();
+        if (t!=null) t.visit(this);
+        Tree.InvocationExpression ie = 
+                that.getInvocationExpression();
+        if (ie!=null &&
+                ie.getPositionalArgumentList()!=null) {
+            ie.getPositionalArgumentList().visit(this);
         }
-        if (that.getType()==null && 
-            that.getInvocationExpression()==null) {
+        if (t==null && ie==null) {
             super.visit(that);
         }
     }
     
     @Override
     public void visitAny(Node that) {
-        if (inBounds(that) && 
-                !(that instanceof Tree.LetClause)) { //yick!
-            node=that;
+        if (inBounds(that)) {
+            if (!(that instanceof Tree.LetClause)) { //yick!
+                node=that;
+            }
             super.visitAny(that);
         }
         //otherwise, as a performance optimization
@@ -138,7 +143,8 @@ public class FindNodeVisitor extends Visitor
     
     @Override
     public void visit(Tree.QualifiedMemberOrTypeExpression that) {
-        if (inBounds(that.getMemberOperator(), that.getIdentifier())) {
+        if (inBounds(that.getMemberOperator(), 
+                that.getIdentifier())) {
             node=that;
         }
         else {
@@ -243,14 +249,18 @@ public class FindNodeVisitor extends Visitor
     protected boolean inBounds(Node left, Node right) {
         if (left==null) return false;
         if (right==null) right=left;
-        Integer tokenStartIndex = left.getStartIndex();
-        Integer tokenStopIndex = right.getStopIndex();
+        Integer tokenStartIndex = 
+                left.getStartIndex();
+        Integer tokenStopIndex = 
+                right.getStopIndex();
         /*Token endToken = right.getEndToken();
-        if (endToken!=null && (endToken.getType()==CeylonLexer.SEMICOLON ||
+        if (endToken!=null && 
+            (endToken.getType()==CeylonLexer.SEMICOLON ||
                 endToken.getType()==CeylonLexer.RBRACE)) {
             tokenStopIndex--;
         }*/
-        return tokenStartIndex!=null && tokenStopIndex!=null &&
+        return tokenStartIndex!=null && 
+                tokenStopIndex!=null &&
                 tokenStartIndex <= startOffset && 
                 tokenStopIndex+1 >= endOffset;
     }
