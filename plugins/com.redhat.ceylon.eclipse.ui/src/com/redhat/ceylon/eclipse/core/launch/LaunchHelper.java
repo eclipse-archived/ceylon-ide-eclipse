@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
@@ -440,5 +441,45 @@ public class LaunchHelper {
             return CeylonBuilder.compileToJs(project);
         }
         return false;
+    }
+
+    public static String getTopLevel(ILaunchConfiguration configuration)
+            throws CoreException {
+        String topLevelName = configuration.getAttribute(
+                ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME,
+                (String) null);
+        if (topLevelName == null) {
+            String moduleName = configuration.getAttribute(
+                    ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME,
+                    (String) null);
+            String packageName = moduleName.replaceAll("/.*$", "");
+            return packageName + ".run";
+        }
+        return topLevelName;
+    }
+
+    public static String getStartLocation(ILaunchConfiguration configuration)
+            throws CoreException {
+        String location;
+        String methodToStopIn = null;
+        String toplevel = getTopLevel(configuration);
+        if (toplevel != null) {
+            int index = toplevel.lastIndexOf(".");
+            if (index > 0 && index < toplevel.length() - 1) {
+                char typeFirstChar = toplevel.charAt(index + 1);
+                if (!Character.isUpperCase(typeFirstChar)) {
+                    // It's a top-level method
+                    methodToStopIn = toplevel.substring(index + 1);
+                    toplevel += "_";
+                } else {
+                    // It's a top-level class
+                    methodToStopIn = "<init>"; // constructor
+                }
+            }
+            location = new StringBuilder(toplevel).append('/').append(methodToStopIn).toString();
+        } else {
+            location = null;
+        }
+        return location;
     }    
 }

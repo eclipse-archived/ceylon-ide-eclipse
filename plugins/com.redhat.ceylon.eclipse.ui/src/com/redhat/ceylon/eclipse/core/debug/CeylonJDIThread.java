@@ -5,20 +5,67 @@ import java.util.List;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
-import org.eclipse.jdt.internal.debug.core.model.JDIThread;
+import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
+import org.eclipse.jdt.internal.debug.core.model.PatchedForCeylonJDIThread;
 
+import com.sun.jdi.Location;
+import com.sun.jdi.Method;
 import com.sun.jdi.ThreadReference;
 
-public class CeylonJDIThread extends JDIThread {
+public class CeylonJDIThread extends PatchedForCeylonJDIThread {
     public CeylonJDIThread(CeylonJDIDebugTarget debugTarget, ThreadReference reference) {
         super(debugTarget, reference);
     }
 
+    IJavaStackFrame startStackFrame = null;
+    
     @Override
     protected synchronized List<IJavaStackFrame> computeStackFrames(
             boolean refreshChildren) throws DebugException {
+        startStackFrame = null;
         List<IJavaStackFrame> stackFrames = super.computeStackFrames(refreshChildren);
+        CeylonJDIDebugTarget target = (CeylonJDIDebugTarget)getDebugTarget();
+        if (target.isMainThread(this)) {
+            for (int i=0; i<stackFrames.size(); i++) {
+                JDIStackFrame frame = (JDIStackFrame)stackFrames.get(i);
+                Location location = frame.getUnderlyingMethod().location();
+                String locationString = new StringBuilder()
+                                    .append(location.declaringType().name())
+                                    .append('/')
+                                    .append(location.method().name())
+                                    .toString();
+                if (locationString.equals(target.getStartLocation())) {
+                    startStackFrame = frame;
+                    break;
+                }
+            }
+        }
         return stackFrames;
+    }
+
+    @Override
+    public CeylonJDIDebugTarget getDebugTarget() {
+        return (CeylonJDIDebugTarget) super.getDebugTarget();
+    }
+    
+    public boolean isBeforeStart(IJavaStackFrame frame) {
+        CeylonJDIDebugTarget target = getDebugTarget();
+        if (target.isMainThread(this)) {
+            try {
+                IStackFrame[] frames = getStackFrames();
+                for (int i=frames.length - 1; i >= 0; i--) {
+                    if (frames[i].equals(startStackFrame)) {
+                        return false;
+                    }
+                    if (frames[i].equals(frame)) {
+                        return true;
+                    }
+                }
+            } catch (DebugException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     @Override
@@ -27,5 +74,33 @@ public class CeylonJDIThread extends JDIThread {
         return topStackFrame;
     }
     
-    
+    @Override
+    protected StepIntoHandler newStepIntoHandler() {
+        return new StepIntoHandler() {
+            @Override
+            protected boolean locationIsFiltered(Method method) {
+                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method);
+            }
+        };
+    }
+
+    @Override
+    protected StepOverHandler newStepOverHandler() {
+        return new StepOverHandler() {
+            @Override
+            protected boolean locationIsFiltered(Method method) {
+                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method);
+            }
+        };
+    }
+
+    @Override
+    protected StepReturnHandler newStepReturnHandler() {
+        return new StepReturnHandler() {
+            @Override
+            protected boolean locationIsFiltered(Method method) {
+                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method);
+            }
+        };
+    }
 }

@@ -56,6 +56,8 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
     private Button fModuleSearchButton;
     private Button fTopLevelSearchButton;
     private Button verboseCheck;
+    private Button fStopInMainCheckButton;
+
     
     public void createControl(Composite parent) {
         Composite comp = SWTFactory.createComposite(parent, parent.getFont(), 1, 1, GridData.FILL_BOTH);
@@ -137,6 +139,8 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
                 config.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, EMPTY_STRING));
             verboseCheck.setSelection(
                 config.getAttribute(ICeylonLaunchConfigurationConstants.ATTR_LAUNCH_VERBOSE, false));
+
+            updateStopInMainFromConfig(config);
         } catch (CoreException ce) {
             JDIDebugUIPlugin.log(ce);
         }
@@ -225,6 +229,14 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME, fTopLevelText.getText().trim());
         config.setAttribute(ICeylonLaunchConfigurationConstants.ATTR_LAUNCH_VERBOSE, verboseCheck.getSelection());
         mapResources(config);
+        
+        // attribute added in 2.1, so null must be used instead of false for backwards compatibility
+        if (fStopInMainCheckButton.getSelection()) {
+            config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, true);
+        }
+        else {
+            config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, (String)null);
+        }
     }
     
     public void setDefaults(ILaunchConfigurationWorkingCopy config) {
@@ -320,7 +332,24 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             }
             });
         
-        verboseCheck = createCheckButton(group, "Verbose output"); // creating here just for visual alignment
+        Composite checks = SWTFactory.createComposite(group, 2, 2, GridData.BEGINNING);
+        verboseCheck = createCheckButton(checks, "Verbose output"); // creating here just for visual alignment
         verboseCheck.addSelectionListener(getDefaultListener());
+        
+        fStopInMainCheckButton = SWTFactory.createCheckButton(checks, "St&op inside", null, false, 1);
+        fStopInMainCheckButton.addSelectionListener(getDefaultListener());
+    }
+    
+    /**
+     * updates the stop in main attribute from the specified launch config
+     * @param config the config to load the stop in main attribute from
+     */
+    private void updateStopInMainFromConfig(ILaunchConfiguration config) {
+        boolean stop = false;
+        try {
+            stop = config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
+        }
+        catch (CoreException e) {JDIDebugUIPlugin.log(e);}
+        fStopInMainCheckButton.setSelection(stop);
     }
 }

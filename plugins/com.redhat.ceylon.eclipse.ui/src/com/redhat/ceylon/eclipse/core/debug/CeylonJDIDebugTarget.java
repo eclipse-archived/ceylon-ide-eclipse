@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.core.debug;
 
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.internal.utils.Cache;
 import org.eclipse.core.resources.IProject;
@@ -13,26 +15,31 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.core.model.IThread;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.debug.core.IEvaluationRunnable;
+import org.eclipse.jdt.debug.core.IJavaBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaClassObject;
-import org.eclipse.jdt.debug.core.IJavaDebugTarget;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
+import org.eclipse.jdt.debug.core.IJavaMethodBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
-import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaThread;
+import org.eclipse.jdt.debug.core.IJavaThreadGroup;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
+import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.jdt.internal.debug.core.model.JDINullValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIThread;
-import org.eclipse.jdt.internal.debug.ui.JDIModelPresentation;
 
+import com.redhat.ceylon.eclipse.core.launch.LaunchHelper;
+import com.redhat.ceylon.launcher.CeylonDebugEvaluationThread;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
@@ -54,15 +61,105 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
                     project = theProject;
                 }
             }
+            startLocation = LaunchHelper.getStartLocation(config);
         } catch (CoreException e) {
             e.printStackTrace();
         }
     }
+        
+    private static IJavaBreakpoint ceylonDebugEvaluationBreakpoint = null;
+            
+    @Override
+    protected synchronized void initialize() {
+        super.initialize();
 
+        if (ceylonDebugEvaluationBreakpoint == null) {
+            try {
+                Map<String, Object> map = new HashMap<String, Object>();
+                IJavaMethodBreakpoint bp = JDIDebugModel
+                        .createMethodBreakpoint(
+                                ResourcesPlugin
+                                        .getWorkspace()
+                                        .getRoot(),
+                                CeylonDebugEvaluationThread.name, 
+                                CeylonDebugEvaluationThread.methodForBreakpoint,
+                                "()V",
+                                true, false, false, -1, -1,
+                                -1, 0, true, map);
+                bp.setPersisted(false);
+                breakpointAdded(bp);
+                ceylonDebugEvaluationBreakpoint = bp;
+            } catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private IJavaObject mainThread = null;
+    private String startLocation = null;
+    
+    public String getStartLocation() {
+        return startLocation;
+    }
+
+    public boolean isMainThread(IThread thread) {
+        if (! (thread instanceof JDIThread)) {
+            return false;
+        }
+        if (ceylonEvaluationThread == null) {
+            return false;
+        }
+        if (mainThread == null) {
+            return false;
+        }
+        JDIThread javaThread = (JDIThread) thread;
+        try {
+            return mainThread != null && mainThread.equals(javaThread.getThreadObject());
+        } catch (DebugException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private IJavaThread ceylonEvaluationThread = null;
+    private boolean hasEvaluationThreadGroup = false;
+    
+    public boolean hasCeylonEvaluationThread() {
+        return ceylonEvaluationThread != null;
+    }
+    
+    public boolean hasCeylonEvaluationThreadGroup() {
+        return hasEvaluationThreadGroup;
+    }
+    
     @Override
     protected JDIThread newThread(ThreadReference reference) {
         try {
-            return new CeylonJDIThread(this, reference);
+            JDIThread newThread = new CeylonJDIThread(this, reference);
+            try {
+                if (CeylonDebugEvaluationThread.name.equals(reference.name())) {
+                    ceylonEvaluationThread = newThread;
+                    for (IJavaThreadGroup threadGroup : getRootThreadGroups()) {
+                        if (CeylonDebugEvaluationThread.name.equals(threadGroup.getName())) {
+                            hasEvaluationThreadGroup = true;
+                            break;
+                        }
+                    }
+                    IJavaObject evalThreadObject = ceylonEvaluationThread.getThreadObject();
+                    IJavaFieldVariable mainThreadRefVariable = evalThreadObject.getField(CeylonDebugEvaluationThread.mainThreadRefFieldName, false);
+                    IJavaObject mainThreadRefValue = (IJavaObject)mainThreadRefVariable.getValue();
+                    if (mainThreadRefValue != null) {
+                        IJavaFieldVariable mainThreadVariable = mainThreadRefValue.getField("referent", true);
+                        IJavaObject mainThreadValue = (IJavaObject) mainThreadVariable.getValue();
+                        if (mainThreadValue != null) {
+                            mainThread = mainThreadValue;
+                        }
+                    }
+                }
+            } catch(com.sun.jdi.VMDisconnectedException | DebugException e) {
+                System.out.print("");
+            }
+            return newThread;
         } catch (ObjectCollectedException exception) {
             // ObjectCollectionException can be thrown if the thread has already
             // completed (exited) in the VM.
@@ -143,16 +240,16 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
     
     public static class EvaluationWaiter implements EvaluationListener { 
         boolean finished = false;
-        IJavaValue annotation = null;
+        IJavaValue result = null;
 
         synchronized public void finished(
                 IJavaValue annotation) {
-            this.annotation = annotation;
+            this.result = annotation;
             finished = true;
             notifyAll();
         }
         
-        synchronized IJavaValue waitForAnnotation(long timeout) {
+        synchronized IJavaValue waitForResult(long timeout) {
             if (!finished) {
                 try {
                     wait(timeout);
@@ -161,7 +258,7 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
                     // Fall through
                 }
             }
-            return annotation;
+            return result;
         }
     };
 
@@ -169,8 +266,81 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
         void finished(IJavaValue annotation);
     };
     
+    interface EvaluationRunner {
+        void run(
+                IJavaThread innerThread,
+                IProgressMonitor monitor,
+                EvaluationListener listener) throws DebugException;
+    }
     
-    public IJavaValue getAnnotation(IJavaStackFrame frame, IJavaReferenceType valueType, final Class<? extends Annotation> annotationClass, final String parameter, final EvaluationListener listener) {
+    public IJavaValue getEvaluationResult(final EvaluationRunner runner, long timeout) {
+        EvaluationWaiter listener = new EvaluationWaiter();
+        evaluate(runner, listener);
+        return jdiNullValueToNull(listener.waitForResult(timeout));
+    }
+    
+    public void evaluate(final EvaluationRunner runner, final EvaluationListener listener) {
+        if (listener == null) {
+            return;
+        }
+        final IJavaThread evaluationThread = ceylonEvaluationThread;
+        if (evaluationThread == null) {
+            listener.finished(null);
+        } else {
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    if (evaluationThread == null || !evaluationThread.isSuspended()) {
+                        System.err.println("Evaluation cancelled : thread is not suspended");
+                        listener.finished(null);
+                        return;
+                    }
+                    
+                    IEvaluationRunnable eval = new IEvaluationRunnable() {
+                        
+                        public void run(
+                                IJavaThread innerThread,
+                                IProgressMonitor monitor)
+                                throws DebugException {
+                            try {
+                                runner.run(innerThread, monitor, listener);
+                            } catch(Throwable t) {
+                                t.printStackTrace();
+                                listener.finished(null);
+                            }
+                        }
+                    };
+                    try {
+                        evaluationThread.runEvaluation(
+                                        eval,
+                                        null,
+                                        DebugEvent.EVALUATION_IMPLICIT,
+                                        false);
+                    } catch (DebugException e) {
+                        e.printStackTrace();
+                        listener.finished(null);
+                    }
+                }
+            };
+            if (listener != null) {
+                evaluationThread.queueRunnable(runnable);
+            }
+        }
+    }
+
+    private IJavaValue jdiNullValueToNull(IJavaValue value) {
+        if (value instanceof JDINullValue) {
+            return null;
+        }
+        return value;
+    }
+    
+    public IJavaValue getAnnotation(IJavaReferenceType valueType, Class<? extends Annotation> annotationClass, String parameter, long timeout) {
+        EvaluationWaiter listener = new EvaluationWaiter();
+        evaluateAnnotation(valueType, annotationClass, parameter, listener);
+        return jdiNullValueToNull(listener.waitForResult(timeout));
+    }
+    
+    public void evaluateAnnotation(IJavaReferenceType valueType, final Class<? extends Annotation> annotationClass, final String parameter, final EvaluationListener listener) {
         
         IJavaClassObject annotationClassObject = null;
         
@@ -181,96 +351,46 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
             if (annotationClassObject != null) {
                 final IJavaClassObject ceylonAnnotationClass = annotationClassObject;
                 final IJavaClassObject theClassObject = valueType.getClassObject();
-    
-                final IJavaThread evaluationThread = JDIModelPresentation
-                        .getEvaluationThread((IJavaDebugTarget) theClassObject
-                                .getDebugTarget());
-                if (evaluationThread == null) {
-                    if (listener != null) {
-                        listener.finished(null);
-                    }
-                } else {
-                    final IJavaValue[] immediateResult = new IJavaValue[1];
-                    Runnable runnable = new Runnable() {
-                        private void finished(IJavaValue result) {
-                            if (listener != null) {
-                                listener.finished(result);
+
+                EvaluationRunner runner = new EvaluationRunner() {
+                    public void run(
+                            IJavaThread innerThread,
+                            IProgressMonitor monitor,
+                            EvaluationListener listener) throws DebugException {
+                        IJavaValue result = theClassObject.sendMessage(
+                                getAnnotationMethodName,
+                                getAnnotationMethodSignature,
+                                new IJavaValue[] { ceylonAnnotationClass },
+                                innerThread,
+                                (String) null);
+                        if (parameter == null) {
+                            listener.finished(result);
+                        } else {
+                            if (result instanceof JDINullValue) {
+                                listener.finished(null);
                             } else {
-                                immediateResult[0] = result;
-                            }
-                        }
-                        
-                        public void run() {
-                            if (evaluationThread == null || !evaluationThread.isSuspended()) {
-                                System.err.println("Annotation retrieval cancelled : thread is not suspended");
-                                finished(null);
-                                return;
-                            }
-                            IEvaluationRunnable eval = new IEvaluationRunnable() {
-                                
-                                public void run(
-                                        IJavaThread innerThread,
-                                        IProgressMonitor monitor)
-                                        throws DebugException {
-                                    try {
-                                        IJavaValue result = theClassObject.sendMessage(
-                                                getAnnotationMethodName,
-                                                getAnnotationMethodSignature,
-                                                new IJavaValue[] { ceylonAnnotationClass },
-                                                evaluationThread,
-                                                (String) null);
-                                        if (parameter == null) {
-                                            finished(result);
-                                        } else {
-                                            if (result instanceof JDINullValue) {
-                                                finished(null);
-                                            } else {
-                                                IJavaObject annotationObject = (IJavaObject)result;
-                                                result = null;
-                                                String annotationParameterMethodSignature = getAnnotationParameterSignature(annotationClass, parameter);
-                                                if (annotationParameterMethodSignature != null) {
-                                                    result = ((IJavaObject) annotationObject).sendMessage(
-                                                            parameter,
-                                                            annotationParameterMethodSignature,
-                                                            new IJavaValue[] { },
-                                                            evaluationThread,
-                                                            (String) null);
-                                                }
-                                                finished(result);
-                                            }
-                                        }
-                                    } catch(Throwable t) {
-                                        t.printStackTrace();
-                                        finished(null);
-                                    }
+                                IJavaObject annotationObject = (IJavaObject)result;
+                                result = null;
+                                String annotationParameterMethodSignature = getAnnotationParameterSignature(annotationClass, parameter);
+                                if (annotationParameterMethodSignature != null) {
+                                    result = ((IJavaObject) annotationObject).sendMessage(
+                                            parameter,
+                                            annotationParameterMethodSignature,
+                                            new IJavaValue[] { },
+                                            innerThread,
+                                            (String) null);
                                 }
-                            };
-                            try {
-                                evaluationThread.runEvaluation(
-                                                eval,
-                                                null,
-                                                DebugEvent.EVALUATION_IMPLICIT,
-                                                false);
-                            } catch (DebugException e) {
-                                e.printStackTrace();
-                                finished(null);
+                                listener.finished(result);
                             }
                         }
-                    };
-                    if (listener != null) {
-                        evaluationThread.queueRunnable(runnable);
-                        return null;
-                    } else {
-                        runnable.run();
-                        return immediateResult[0];
                     }
-                }
+                };
                 
+                evaluate(runner, listener);
             }
         } catch (DebugException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     private boolean isAnnotationPresent(IJavaValue annotation) {
@@ -278,29 +398,31 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
                 !(annotation instanceof JDINullValue);
     }
     
-    public boolean isAnnotationPresent(IJavaStackFrame frame, IJavaReferenceType valueType, final Class<? extends Annotation> annotationClass, final EvaluationListener listener) {
+    public boolean isAnnotationPresent(IJavaReferenceType valueType, Class<? extends Annotation> annotationClass, long timeout) {
+        EvaluationWaiter listener = new EvaluationWaiter();
+        evaluateAnnotation(valueType, annotationClass, null, listener);
+        return isAnnotationPresent(listener.waitForResult(timeout));
+    }
+    
+    public void evaluateAnnotationPresent(IJavaReferenceType valueType, final Class<? extends Annotation> annotationClass, final EvaluationListener listener) {
         EvaluationListener internalListener = null;
-        if (listener != null) {
-            internalListener = new EvaluationListener() {
-                @Override
-                public void finished(IJavaValue annotation) {
+        internalListener = new EvaluationListener() {
+            @Override
+            public void finished(IJavaValue annotation) {
+                if (isAnnotationPresent(annotation)) {
                     IDebugTarget debugTarget = annotation.getDebugTarget();
                     if (! (debugTarget instanceof JDIDebugTarget)) {
                         System.err.println("This should be a JDIDebugTarget !!!");
                         listener.finished(null);
                         return;
                     }
-                    
-                    if (isAnnotationPresent(annotation)) {
-                        listener.finished(((JDIDebugTarget) debugTarget).newValue(true));
-                    } else {
-                        listener.finished(null);
-                    }
+                    listener.finished(((JDIDebugTarget) debugTarget).newValue(true));
+                } else {
+                    listener.finished(null);
                 }
-                
-            };
-        }
-        IJavaValue annotation = getAnnotation(frame, valueType, annotationClass, null, internalListener);
-        return isAnnotationPresent(annotation);
+            }
+            
+        };
+        evaluateAnnotation(valueType, annotationClass, null, internalListener);
     }
 }

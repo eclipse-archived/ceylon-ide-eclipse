@@ -7,10 +7,13 @@ import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationCo
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE;
+import static com.redhat.ceylon.eclipse.core.launch.LaunchHelper.getStartLocation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -19,14 +22,19 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.jdt.debug.core.IJavaDebugTarget;
+import org.eclipse.jdt.debug.core.IJavaMethodBreakpoint;
+import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.internal.debug.core.JDIDebugPlugin;
+import org.eclipse.jdt.internal.launching.LaunchingPlugin;
 import org.eclipse.jdt.internal.launching.StandardVMDebugger;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
@@ -87,6 +95,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         vmArgs.add("-Dceylon.system.version="+Versions.CEYLON_VERSION_NUMBER);
         vmArgs.add("-Dceylon.system.repo="+CeylonPlugin.getCeylonPluginRepository(
             System.getProperty("ceylon.repo", "")).getAbsolutePath());
+        vmArgs.add("-Dceylon.debug.startEvaluationThread=true");
         
         vmArgs.addAll(Arrays.asList(DebugPlugin.parseArguments(super.getVMArguments(configuration))));
         return DebugPlugin.renderArguments(vmArgs.toArray(new String[0]), null);
@@ -219,4 +228,59 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         }
         return false;
     }
+    
+    @Override
+    public void handleDebugEvents(DebugEvent[] events) {
+        for (int i = 0; i < events.length; i++) {
+            DebugEvent event = events[i];
+            if (event.getKind() == DebugEvent.CREATE
+                    && event.getSource() instanceof IJavaDebugTarget) {
+                IJavaDebugTarget target = (IJavaDebugTarget) event.getSource();
+                ILaunch launch = target.getLaunch();
+                if (launch != null) {
+                    ILaunchConfiguration configuration = launch
+                            .getLaunchConfiguration();
+                    if (configuration != null) {
+                        try {
+                            if (isStopInMain(configuration)) {
+                                String location=getStartLocation(configuration);
+                                
+                                String type = null;
+                                String method = null;
+                                if (location != null) {
+                                    String[] parts = location.split("/");
+                                    type = parts[0];
+                                    if (parts.length > 1)
+                                    method = parts[1];
+                                }
+                                if (type != null) {
+                                    Map<String, Object> map = new HashMap<String, Object>();
+                                    map
+                                            .put(
+                                                    IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN,
+                                                    IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN);
+                                    IJavaMethodBreakpoint bp = JDIDebugModel
+                                            .createMethodBreakpoint(
+                                                    ResourcesPlugin
+                                                            .getWorkspace()
+                                                            .getRoot(),
+                                                    type, method, //$NON-NLS-1$
+                                                    "()V",
+                                                    true, false, false, -1, -1,
+                                                    -1, 1, false, map); 
+                                    bp.setPersisted(false);
+                                    target.breakpointAdded(bp);
+                                    DebugPlugin.getDefault()
+                                            .removeDebugEventListener(this);
+                                }
+                            }
+                        } catch (CoreException e) {
+                            LaunchingPlugin.log(e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
 }

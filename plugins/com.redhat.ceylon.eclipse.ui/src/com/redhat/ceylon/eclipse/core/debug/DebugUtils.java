@@ -22,6 +22,8 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
+import com.sun.jdi.Location;
+import com.sun.jdi.Method;
 
 public class DebugUtils {
 
@@ -111,4 +113,34 @@ public class DebugUtils {
         return false;
     }
 
+    public static boolean isMethodFilteredForCeylon(Method method) {
+        Location location = method.location();
+        String declaringTypeName = location.declaringType().name();
+        if ((
+             declaringTypeName.equals("ceylon.language.Integer") ||
+             declaringTypeName.equals("ceylon.language.Float") ||
+             declaringTypeName.equals("ceylon.language.Byte") ||
+             declaringTypeName.equals("ceylon.language.String")
+            ) && 
+           ((
+             method.name().equals("instance") ||
+             method.name().equals("longValue") ||
+             method.name().equals("doubleValue") ||
+             method.name().equals("byteValue") ||
+             method.isStatic()
+            )
+           )
+          ) {
+            return true;
+        }
+        if (declaringTypeName.startsWith("com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor")) {
+            return true;
+        }
+
+        if (method.name().equals("$getType$")) {
+            return true;
+        }
+        
+        return false;
+    }
 }

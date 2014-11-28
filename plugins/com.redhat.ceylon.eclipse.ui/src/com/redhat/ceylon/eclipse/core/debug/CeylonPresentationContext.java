@@ -1,10 +1,8 @@
 package com.redhat.ceylon.eclipse.core.debug;
 
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugTarget;
-import org.eclipse.debug.core.model.IThread;
+import org.eclipse.debug.internal.core.LaunchManager;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationContext;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IViewerUpdate;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
@@ -12,13 +10,11 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.jdt.internal.debug.core.model.JDIThread;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import com.redhat.ceylon.compiler.java.metadata.Ceylon;
-import com.redhat.ceylon.eclipse.core.debug.CeylonJDIDebugTarget.EvaluationWaiter;
 
 class CeylonPresentationContext implements IPresentationContext {
     private IPresentationContext delegate;
@@ -83,12 +79,18 @@ class CeylonPresentationContext implements IPresentationContext {
     }
     
     static IJavaStackFrame getCeylonStackFrame(IViewerUpdate viewerUpdate) {
+        IJavaStackFrame frame = null;
         Object input = viewerUpdate.getViewerInput();
         if (input instanceof IJavaStackFrame) {
-            final IJavaStackFrame frame = (IJavaStackFrame) input;
-            if (DebugUtils.isCeylonFrame(frame)) {
-                return frame;
+            frame = (IJavaStackFrame) input;
+        }
+        if (input instanceof LaunchManager) {
+            if (viewerUpdate.getElement() instanceof IJavaStackFrame) {
+                frame = (IJavaStackFrame) viewerUpdate.getElement();
             }
+        }
+        if (frame != null && DebugUtils.isCeylonFrame(frame)) {
+                return frame;
         }
         return null;
     }
@@ -138,20 +140,6 @@ class CeylonPresentationContext implements IPresentationContext {
         return false;
     }
 
-    static boolean isRunningUnderThreadRule(IJavaStackFrame frame) {
-        ISchedulingRule currentRule = Job.getJobManager().currentRule();
-        if (currentRule == null) {
-            return false;
-        }
-        ISchedulingRule threadRule = null;
-        IThread thread = frame.getThread();
-        if (thread instanceof JDIThread) {
-            threadRule = ((JDIThread) thread).getThreadRule();
-        }
-        
-        return currentRule.equals(threadRule);
-    }
-    
     static boolean isCeylonContext(IViewerUpdate viewerUpdate) {
         IJavaStackFrame frame = getCeylonStackFrame(viewerUpdate);
         if (frame == null) {
@@ -171,11 +159,10 @@ class CeylonPresentationContext implements IPresentationContext {
                 }
                 String typeName = type.getName();
                 if (typeName != null) {
-/*                    
                     if (isKnownAsCeylon(typeName)) {
                         return true;
                     }
-*/
+
                     if (isKnownAsJava(typeName)) {
                         return false;
                     }
@@ -187,19 +174,7 @@ class CeylonPresentationContext implements IPresentationContext {
                 IDebugTarget dt = type.getDebugTarget();
                 if (dt instanceof CeylonJDIDebugTarget) {
                     CeylonJDIDebugTarget target = (CeylonJDIDebugTarget) dt;
-                    if (isRunningUnderThreadRule(frame)) {
-                        if (target.isAnnotationPresent(frame, (IJavaReferenceType) type, Ceylon.class, null)) {
-                            return true;
-                        }
-                    } else {
-                        EvaluationWaiter waiter = new EvaluationWaiter();
-                        target.isAnnotationPresent(frame, (IJavaReferenceType) type, Ceylon.class, waiter);
-                        IJavaValue annotationValue = waiter.waitForAnnotation(5000);
-                        if (annotationValue != null && annotationValue.getValueString().equals("true")) {
-                            return true;
-                        }
-                        
-                    }
+                    return target.isAnnotationPresent((IJavaReferenceType) type, Ceylon.class, 5000);
                 }
                 return false;
             }
