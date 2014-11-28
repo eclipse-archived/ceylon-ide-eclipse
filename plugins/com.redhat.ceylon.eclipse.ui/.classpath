@@ -18,5 +18,6 @@
 	<classpathentry kind="lib" path="lib/jgrapht-jdk1.6.jar" sourcepath="/home/david/jgrapht-0.8.3/src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.redhat.ceylon.eclipse.ui.ceylon"/>
 	<classpathentry kind="lib" path="/com.redhat.ceylon.eclipse.ui.ceylon/.exploded" sourcepath="/com.redhat.ceylon.eclipse.ui.ceylon/source"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.redhat.ceylon.eclipse.ui.jdt.debug.fragment"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
