@@ -265,19 +265,27 @@ public class CompletionUtil {
             sie = fiv.result;
         }
         if (sie!=null) {
-            if (sie.getExpression()!=null) {
-                Tree.Term term = sie.getExpression().getTerm();
-                if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
-                    return arrow + Nodes.toString(term, cpc.getTokens());
-                }
-                else if (term instanceof Tree.Literal) {
-                    return arrow + term.getToken().getText();
+            Tree.Expression e = sie.getExpression();
+            if (e!=null) {
+                Tree.Term term = e.getTerm();
+                if (term instanceof Tree.Literal) {
+                    String text = term.getToken().getText();
+                    if (text.length()<20) {
+                        return arrow + text;
+                    }
                 }
                 else if (term instanceof Tree.BaseMemberOrTypeExpression) {
                     Tree.BaseMemberOrTypeExpression bme = 
                             (Tree.BaseMemberOrTypeExpression) term;
-                    if (bme.getIdentifier()!=null && bme.getTypeArguments()==null) {
-                        return arrow + bme.getIdentifier().getText();
+                    Tree.Identifier id = bme.getIdentifier();
+                    if (id!=null && bme.getTypeArguments()==null) {
+                        return arrow + id.getText();
+                    }
+                }
+                else if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
+                    String impl = Nodes.toString(term, cpc.getTokens());
+                    if (impl.length()<10) {
+                        return arrow + impl;
                     }
                 }
                 //don't have the token stream :-/
