@@ -17,26 +17,34 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         super(debugTarget, reference);
     }
 
-    IJavaStackFrame startStackFrame = null;
+    private IJavaStackFrame[] startStackFrame = new IJavaStackFrame[1];
     
     @Override
     protected synchronized List<IJavaStackFrame> computeStackFrames(
             boolean refreshChildren) throws DebugException {
-        startStackFrame = null;
         List<IJavaStackFrame> stackFrames = super.computeStackFrames(refreshChildren);
-        CeylonJDIDebugTarget target = (CeylonJDIDebugTarget)getDebugTarget();
-        if (target.isMainThread(this)) {
-            for (int i=0; i<stackFrames.size(); i++) {
-                JDIStackFrame frame = (JDIStackFrame)stackFrames.get(i);
-                Location location = frame.getUnderlyingMethod().location();
-                String locationString = new StringBuilder()
-                                    .append(location.declaringType().name())
-                                    .append('/')
-                                    .append(location.method().name())
-                                    .toString();
-                if (locationString.equals(target.getStartLocation())) {
-                    startStackFrame = frame;
-                    break;
+        if (refreshChildren) {
+            synchronized (startStackFrame) {
+                try {
+                    CeylonJDIDebugTarget target = getDebugTarget();
+                    if (target.isMainThread(this)) {
+                        for (int i=0; i<stackFrames.size(); i++) {
+                            JDIStackFrame frame = (JDIStackFrame)stackFrames.get(i);
+                            Location location = frame.getUnderlyingMethod().location();
+                            String locationString = new StringBuilder()
+                                                .append(location.declaringType().name())
+                                                .append('/')
+                                                .append(location.method().name())
+                                                .toString();
+                            if (locationString.equals(target.getStartLocation())) {
+                                startStackFrame[0] = frame;
+                                break;
+                            }
+                        }
+                    }
+                } catch(Throwable t) {
+                    t.printStackTrace();
+                    startStackFrame[0] = null;
                 }
             }
         }
@@ -48,19 +56,25 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return (CeylonJDIDebugTarget) super.getDebugTarget();
     }
     
-    public boolean isBeforeStart(IJavaStackFrame frame) {
+    public boolean isBeforeStart(IJavaStackFrame aFrame) {
         CeylonJDIDebugTarget target = getDebugTarget();
         if (target.isMainThread(this)) {
             try {
-                IStackFrame[] frames = getStackFrames();
-                for (int i=frames.length - 1; i >= 0; i--) {
-                    if (frames[i].equals(startStackFrame)) {
-                        return false;
-                    }
-                    if (frames[i].equals(frame)) {
+                List<IJavaStackFrame> stackFrames = computeStackFrames();
+                synchronized (startStackFrame) {
+                    if (startStackFrame[0] != null) {
+                        for (int i=stackFrames.size() - 1; i >= 0; i--) {
+                            if (stackFrames.get(i).equals(startStackFrame[0])) {
+                                return false;
+                            }
+                            if (stackFrames.get(i).equals(aFrame)) {
+                                return true;
+                            }
+                        }
                         return true;
                     }
                 }
+                
             } catch (DebugException e) {
                 e.printStackTrace();
             }
