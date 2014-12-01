@@ -1,10 +1,12 @@
 package com.redhat.ceylon.eclipse.core.debug;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.internal.core.LaunchManager;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationContext;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IViewerUpdate;
+import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaType;
@@ -79,6 +81,14 @@ class CeylonPresentationContext implements IPresentationContext {
     }
     
     static IJavaStackFrame getCeylonStackFrame(IViewerUpdate viewerUpdate) {
+        IJavaStackFrame frame = getStackFrame(viewerUpdate);
+        if (frame != null && DebugUtils.isCeylonFrame(frame)) {
+                return frame;
+        }
+        return null;
+    }
+
+    private static IJavaStackFrame getStackFrame(IViewerUpdate viewerUpdate) {
         IJavaStackFrame frame = null;
         Object input = viewerUpdate.getViewerInput();
         if (input instanceof IJavaStackFrame) {
@@ -89,10 +99,7 @@ class CeylonPresentationContext implements IPresentationContext {
                 frame = (IJavaStackFrame) viewerUpdate.getElement();
             }
         }
-        if (frame != null && DebugUtils.isCeylonFrame(frame)) {
-                return frame;
-        }
-        return null;
+        return frame;
     }
     
     static Boolean isInCeylonFile(IJavaReferenceType type) throws DebugException {
@@ -140,14 +147,29 @@ class CeylonPresentationContext implements IPresentationContext {
         return false;
     }
 
+    static boolean isCeylonContext(IJavaValue value) {
+        IAdaptable debugContext = DebugUITools.getDebugContext();
+        if (! (debugContext instanceof IJavaStackFrame)) {
+            return false;
+        }
+        
+        return CeylonPresentationContext.isCeylonContext(
+                (IJavaStackFrame) debugContext,
+                value);
+    }
+
     static boolean isCeylonContext(IViewerUpdate viewerUpdate) {
-        IJavaStackFrame frame = getCeylonStackFrame(viewerUpdate);
-        if (frame == null) {
+        return isCeylonContext(
+                getStackFrame(viewerUpdate), 
+                viewerUpdate.getElement());
+    }
+    
+    static boolean isCeylonContext(IJavaStackFrame stackFrame, Object element) {
+        if (stackFrame == null || ! DebugUtils.isCeylonFrame(stackFrame)) {
             // We are suspended in a Java file => adopt the Java presentations
             return false;
         }
         
-        Object element = viewerUpdate.getElement();
         IJavaReferenceType type;
         try {
             type = getReferenceType(element);

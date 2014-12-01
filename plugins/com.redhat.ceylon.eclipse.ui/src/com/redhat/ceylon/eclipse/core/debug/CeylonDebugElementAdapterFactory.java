@@ -11,7 +11,9 @@ import org.eclipse.core.internal.runtime.AdapterManager;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.debug.internal.ui.viewers.model.provisional.IColumnPresentationFactory;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IElementContentProvider;
+import org.eclipse.debug.internal.ui.viewers.model.provisional.IElementEditor;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IElementLabelProvider;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IElementMementoProvider;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IModelProxyFactory;
@@ -21,6 +23,7 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jdt.internal.debug.ui.display.JavaInspectExpression;
 import org.eclipse.jdt.internal.debug.ui.monitors.MonitorsAdapterFactory;
+import org.eclipse.jdt.internal.debug.ui.variables.ColumnPresentationAdapterFactory;
 import org.eclipse.jdt.internal.debug.ui.variables.JavaDebugElementAdapterFactory;
 
 public class CeylonDebugElementAdapterFactory implements IAdapterFactory {
@@ -39,6 +42,9 @@ public class CeylonDebugElementAdapterFactory implements IAdapterFactory {
     private static final IModelProxyFactory fgCeylonModelProxyFactory = new CeylonModelProxyFactory();
     
     private static final IElementContentProvider ceylonStackFrameContentProvider = new CeylonStackFrameContentProvider();
+
+    private static final IColumnPresentationFactory fgColumnPresentation = new CeylonVariableColumnPresentationFactory();
+    private static final IElementEditor fgEEJavaVariable = new CeylonVariableEditor();
     
     public static class TargetAdapterFactory implements IAdapterFactory {
         @Override
@@ -100,6 +106,16 @@ public class CeylonDebugElementAdapterFactory implements IAdapterFactory {
                 return fgWEVariable;
             }
         }
+        if (IElementEditor.class.equals(adapterType)) {
+            if (adaptableObject instanceof IJavaVariable) {
+                return fgEEJavaVariable;
+            }
+        }
+        if (IColumnPresentationFactory.class.equals(adapterType)) {
+            if (adaptableObject instanceof IJavaStackFrame) {
+                return fgColumnPresentation;
+            }
+        }
         
         return javaDebugElementAdapterFactory.getAdapter(adaptableObject, adapterType);
     }
@@ -107,9 +123,10 @@ public class CeylonDebugElementAdapterFactory implements IAdapterFactory {
     @Override
     @SuppressWarnings("rawtypes")
     public Class[] getAdapterList() {
-        return new Class[] {IElementLabelProvider.class, IElementContentProvider.class, IWatchExpressionFactoryAdapter.class, IElementMementoProvider.class};
+        return new Class[] {IElementLabelProvider.class, IElementContentProvider.class, IWatchExpressionFactoryAdapter.class, IElementMementoProvider.class, IElementEditor.class, IColumnPresentationFactory.class};
     }
     
+
     private static final Map<Class<? extends IAdaptable>, List<IAdapterFactory>> replacedAdapters = new HashMap<Class<? extends IAdaptable>, List<IAdapterFactory>>();
     
     private static final Class<? extends IAdaptable> stackFrameAdaptableClass = IJavaStackFrame.class;
@@ -150,6 +167,11 @@ public class CeylonDebugElementAdapterFactory implements IAdapterFactory {
                         if (factory instanceof MonitorsAdapterFactory) {
                             remove = true;
                         }
+                        if (factory instanceof ColumnPresentationAdapterFactory) {
+                            remove = true;
+                        }
+                    } else if (adaptableClass == variableAdaptableClass && factory instanceof ColumnPresentationAdapterFactory) {
+                            remove = true;
                     } else {
                         if (factory instanceof JavaDebugElementAdapterFactory) {
                             remove = true;
