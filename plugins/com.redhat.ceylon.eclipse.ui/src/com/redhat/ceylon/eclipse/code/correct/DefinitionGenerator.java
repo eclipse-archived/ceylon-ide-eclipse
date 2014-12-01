@@ -23,6 +23,8 @@ public abstract class DefinitionGenerator {
     
     abstract String generateShared(String indent, String delim);
     abstract String generate(String indent, String delim);
+    abstract String generateSharedFormal(String indent, String delim);
+    abstract boolean isFormalSupported();
     abstract Set<Declaration> getImports();
     abstract String getBrokenName();
     abstract String getDescription();
