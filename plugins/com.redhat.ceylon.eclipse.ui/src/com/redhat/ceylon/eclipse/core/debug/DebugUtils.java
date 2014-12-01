@@ -116,23 +116,35 @@ public class DebugUtils {
     public static boolean isMethodFilteredForCeylon(Method method) {
         Location location = method.location();
         String declaringTypeName = location.declaringType().name();
-        if ((
-             declaringTypeName.equals("ceylon.language.Integer") ||
-             declaringTypeName.equals("ceylon.language.Float") ||
-             declaringTypeName.equals("ceylon.language.Byte") ||
-             declaringTypeName.equals("ceylon.language.String")
-            ) && 
-           ((
-             method.name().equals("instance") ||
-             method.name().equals("longValue") ||
-             method.name().equals("doubleValue") ||
-             method.name().equals("byteValue") ||
-             method.isStatic()
-            )
-           )
-          ) {
-            return true;
+        if (declaringTypeName.equals("ceylon.language.Boolean")) {
+               return true;
+           }
+        if (declaringTypeName.equals("ceylon.language.Integer")
+                && (    method.name().equals("instance") ||
+                        method.name().equals("longValue") ||
+                        method.isConstructor())) {
+           return true;
         }
+        if (declaringTypeName.equals("ceylon.language.Float")
+                && (    method.name().equals("instance") ||
+                        method.name().equals("doubleValue") ||
+                        method.isConstructor())) {
+           return true;
+        }
+        if (declaringTypeName.equals("ceylon.language.Byte")
+                && (    method.name().equals("instance") ||
+                        method.name().equals("byteValue") ||
+                        method.isConstructor())) {
+           return true;
+        }
+        if (declaringTypeName.equals("ceylon.language.String")
+                && (    method.name().equals("instance") ||
+                        (   method.isConstructor()
+                                && method.argumentTypeNames().size() == 1
+                                && "java.lang.String".equals(method.argumentTypeNames().get(0))))) {
+           return true;
+        }
+
         if (declaringTypeName.startsWith("com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor")) {
             return true;
         }
