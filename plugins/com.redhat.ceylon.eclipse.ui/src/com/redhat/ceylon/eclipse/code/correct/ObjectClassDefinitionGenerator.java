@@ -39,12 +39,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 class ObjectClassDefinitionGenerator extends DefinitionGenerator {
     
     private final String brokenName;
+    private final boolean isUpperCase;
     private final MemberOrTypeExpression node;
     private final CompilationUnit rootNode;
     private final String desc;
     private final Image image;
     private final ProducedType returnType;
     private final LinkedHashMap<String, ProducedType> parameters;
+   
 
     @Override
     String getBrokenName() {
@@ -89,6 +91,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             ProducedType returnType,
             LinkedHashMap<String, ProducedType> paramTypes) {
         this.brokenName = brokenName;
+        this.isUpperCase = Character.isUpperCase(brokenName.charAt(0));
         this.node = node;
         this.rootNode = rootNode;
         this.desc = desc;
@@ -98,15 +101,25 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
     }
         
     String generateShared(String indent, String delim) {
-        return "shared " + generate(indent, delim);
+        return "shared " + generateInternal(indent, delim, false);
     }
     
     String generate(String indent, String delim) {
+        return generateInternal(indent, delim, false);
+    }
+    
+    String generateSharedFormal(String indent, String delim) {
+        return "shared formal "+ generateInternal(indent, delim, true);
+    }
+    
+    boolean isFormalSupported(){
+        return isClassGenerator();
+    }
+    
+    private String generateInternal(String indent, String delim, boolean isFormal) {
         StringBuffer def = new StringBuffer();
-        boolean isUpperCase = 
-                Character.isUpperCase(brokenName.charAt(0));
         boolean isVoid = returnType==null;
-        if (isUpperCase && parameters!=null) {
+        if (isClassGenerator()) {
             List<TypeParameter> typeParams = new ArrayList<TypeParameter>();
             StringBuilder typeParamDef = new StringBuilder();
             StringBuilder typeParamConstDef = new StringBuilder();
@@ -133,7 +146,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             }
             def.append(indent).append("}");            
         }
-        else if (!isUpperCase && parameters==null) {
+        else if (isObjectGenerator()) {
             String defIndent = getDefaultIndent();
             String supertype = isVoid ? 
                     null : supertypeDeclaration(returnType);
@@ -152,6 +165,14 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             return null;
         }
         return def.toString();
+    }
+    
+    private boolean isClassGenerator(){
+        return isUpperCase && parameters!=null;
+    }
+    
+    private boolean isObjectGenerator(){
+        return !isUpperCase && parameters==null;
     }
     
     Set<Declaration> getImports() {

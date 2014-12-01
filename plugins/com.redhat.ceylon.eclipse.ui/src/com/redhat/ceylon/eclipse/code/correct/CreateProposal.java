@@ -31,6 +31,8 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -115,9 +117,10 @@ class CreateProposal extends InitializerProposal {
                 offset = st.getStopIndex()+1;
             }
         }
-        String def = indentBefore + 
-                dg.generateShared(indent, delim) + 
-                indentAfter;
+        String generated = typeDec instanceof Interface ?
+            dg.generateSharedFormal(indent, delim) :
+            dg.generateShared(indent, delim);
+        String def = indentBefore + generated + indentAfter;
         int il = applyImports(change, dg.getImports(), 
                 unit.getCompilationUnit(), doc);
         change.addEdit(new InsertEdit(offset, def));
@@ -184,7 +187,8 @@ class CreateProposal extends InitializerProposal {
     static void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg, Declaration typeDec, 
             Tree.Statement statement) {
-        if (typeDec!=null && typeDec instanceof ClassOrInterface) {
+        if (typeDec!=null && (typeDec instanceof Class
+                || (typeDec instanceof Interface && dg.isFormalSupported()))) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (typeDec.getUnit().equals(unit.getUnit())) {
                     //TODO: "object" declarations?

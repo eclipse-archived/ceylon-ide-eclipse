@@ -92,10 +92,22 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
     }
         
     String generateShared(String indent, String delim) {
-        return "shared " + generate(indent, delim);
+        return "shared " + generateInternal(indent, delim, false);
     }
-
+    
     String generate(String indent, String delim) {
+        return generateInternal(indent, delim, false);
+    }
+    
+    String generateSharedFormal(String indent, String delim) {
+        return "shared formal "+ generateInternal(indent, delim, true);
+    }
+    
+    boolean isFormalSupported(){
+        return true;
+    }
+    
+    private String generateInternal(String indent, String delim, boolean isFormal) {
         StringBuffer def = new StringBuffer();
         boolean isVoid = returnType==null;
         Unit unit = node.getUnit();
@@ -126,7 +138,10 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
             .append(brokenName).append(typeParamDef);
             appendParameters(parameters, def);
             def.append(typeParamConstDef);
-            if (isVoid) {
+            if(isFormal){
+                def.append(";");
+            }
+            else if (isVoid) {
                 def.append(" {}");
             }
             else {
@@ -153,10 +168,12 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
                 }
             }
             def.append(" ")
-            .append(brokenName)
-            .append(" = ")
-            .append(defaultValue(unit, returnType))
-            .append(";");
+               .append(brokenName);
+            if(!isFormal){
+                def.append(" = ")
+                   .append(defaultValue(unit, returnType));
+            }
+            def.append(";");
         }
         return def.toString();
     }
