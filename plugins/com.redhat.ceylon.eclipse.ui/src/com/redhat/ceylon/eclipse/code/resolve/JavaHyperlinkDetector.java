@@ -114,6 +114,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                         if (! JavaCore.isJavaLikeFileName(ceylonBinaryUnit.getSourceRelativePath())) {
                             return null; 
                         }
+                        jp = ceylonBinaryUnit.getTypeRoot().getJavaProject();
                     }
                     if (jp==null) {
                         return null;
