@@ -4,10 +4,9 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencedProjects;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getQualifiedName;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.isDeclarationOfLinkedElement;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.IMPLEMENTORS;
@@ -64,7 +63,6 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
-import com.redhat.ceylon.eclipse.util.JavaSearch;
 
 public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentation {
     
@@ -142,7 +140,7 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             if (pack==null) {
                 //this is the case for Ceylon decs, since 
                 //they sit in the .exploded directory
-                declaration = getCeylonDeclaration(elementProject, element);
+                declaration = toCeylonDeclaration(elementProject, element);
                 if (declaration!=null) {
                     pack = declaration.getUnit().getPackage();
                 }
@@ -150,7 +148,7 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             else {
                 //this is the case for Java decs
                 IType type = (IType) element.getAncestor(IJavaElement.TYPE);
-                String qualifiedName = JavaSearch.getQualifiedName(type);
+                String qualifiedName = getQualifiedName(type);
                 declaration = 
                         getProjectModelLoader(elementProject)
                         .convertToDeclaration(pack.getModule(), 
@@ -281,42 +279,6 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             }
         }
         return nodes;
-    }
-
-    private static boolean belongsToModule(IJavaElement javaElement,
-            JDTModule module) {
-        return javaElement.getAncestor(PACKAGE_FRAGMENT).getElementName()
-                .startsWith(module.getNameAsString());
-    }
-
-    private static Declaration getCeylonDeclaration(IProject project, IJavaElement javaElement) {
-        Set<String> searchedArchives = new HashSet<String>();
-        for (IProject referencedProject: getProjectAndReferencedProjects(project)) {
-            if (CeylonNature.isEnabled(referencedProject)) {
-                TypeChecker typeChecker = getProjectTypeChecker(referencedProject);
-                if (typeChecker!=null) {
-                    Declaration result = toCeylonDeclaration(javaElement, 
-                            typeChecker.getPhasedUnits().getPhasedUnits());
-                    if (result!=null) return result;
-                    Modules modules = typeChecker.getContext().getModules();
-                    for (Module m: modules.getListOfModules()) {
-                        if (m instanceof JDTModule) {
-                            JDTModule module = (JDTModule) m;
-                            if (module.isCeylonArchive() && module.getArtifact()!=null) {
-                                String archivePath = module.getArtifact().getAbsolutePath();
-                                if (searchedArchives.add(archivePath) &&
-                                        belongsToModule(javaElement, module)) {
-                                    result = toCeylonDeclaration(javaElement, 
-                                            module.getPhasedUnits());
-                                    if (result!=null) return result;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     @Override

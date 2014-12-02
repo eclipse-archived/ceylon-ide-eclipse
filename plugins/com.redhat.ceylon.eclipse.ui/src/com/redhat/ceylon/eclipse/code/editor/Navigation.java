@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getCompilationUnit;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
@@ -22,6 +23,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -434,5 +436,19 @@ public class Navigation {
             }
         }
     }
-    
+
+    public static void gotoCeylonDeclaration(IProject project, IJavaElement javaElement) {
+        Declaration d = toCeylonDeclaration(project, javaElement);
+        if (d != null) {
+            Unit u = d.getUnit();
+            if (u instanceof CeylonUnit) {
+                PhasedUnit pu = ((CeylonUnit) u).getPhasedUnit();
+                if (pu != null){
+                    gotoDeclaration(project, pu, d);
+                    return;
+                }
+            }
+            gotoDeclaration(d, project);
+        }
+    }
 }

@@ -1,13 +1,19 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.compiler.java.codegen.CodegenUtil.getJavaNameOfDeclaration;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
+import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.CLASS_AND_INTERFACE;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.METHOD;
 import static org.eclipse.jdt.core.search.SearchPattern.R_EXACT_MATCH;
 import static org.eclipse.jdt.core.search.SearchPattern.createOrPattern;
 import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -23,11 +29,16 @@ import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 public class JavaSearch {
 
@@ -189,12 +200,60 @@ public class JavaSearch {
         for (PhasedUnit pu: phasedUnits) {
             for (Declaration declaration: pu.getDeclarations()) {
                 if (isDeclarationOfLinkedElement(declaration, javaElement)) {
-                    System.out.print("");
                     return declaration;
                 }
             }
         }
         return null;
+    }
+
+    private static boolean belongsToModule(IJavaElement javaElement,
+            JDTModule module) {
+        return javaElement.getAncestor(PACKAGE_FRAGMENT).getElementName()
+                .startsWith(module.getNameAsString());
+    }
+
+    public static Declaration toCeylonDeclaration(IProject project, IJavaElement javaElement) {
+        Set<String> searchedArchives = new HashSet<String>();
+        for (IProject referencedProject: getProjectAndReferencedProjects(project)) {
+            if (CeylonNature.isEnabled(referencedProject)) {
+                TypeChecker typeChecker = getProjectTypeChecker(referencedProject);
+                if (typeChecker!=null) {
+                    Declaration result = toCeylonDeclaration(javaElement, 
+                            typeChecker.getPhasedUnits().getPhasedUnits());
+                    if (result!=null) return result;
+                    Modules modules = typeChecker.getContext().getModules();
+                    for (Module m: modules.getListOfModules()) {
+                        if (m instanceof JDTModule) {
+                            JDTModule module = (JDTModule) m;
+                            if (module.isCeylonArchive() && 
+                                    !module.isProjectModule() && 
+                                    module.getArtifact()!=null) {
+                                String archivePath = module.getArtifact().getAbsolutePath();
+                                if (searchedArchives.add(archivePath) &&
+                                        belongsToModule(javaElement, module)) {
+                                    result = toCeylonDeclaration(javaElement, 
+                                            module.getPhasedUnits());
+                                    if (result!=null) return result;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static boolean isCeylonDeclaration(IJavaElement javaElement) {
+        IProject project = javaElement.getJavaProject().getProject();
+        if (javaElement.getPath().getFileExtension().equals("car") ||
+                (isExplodeModulesEnabled(project)
+                        && getCeylonClassesOutputFolder(project).getFullPath()
+                            .isPrefixOf(javaElement.getPath()))) {
+            return true;
+        }
+        return false;
     }
 
     
