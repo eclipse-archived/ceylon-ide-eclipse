@@ -27,7 +27,7 @@ import usedModule {
 }
 
 doc ("Run the module `mainModule`.")
-void run() {
+shared void run() {
     value logger = getLogger("logger");
     
     value v1 = CeylonTopLevelClass_Main_Ceylon_Project();
