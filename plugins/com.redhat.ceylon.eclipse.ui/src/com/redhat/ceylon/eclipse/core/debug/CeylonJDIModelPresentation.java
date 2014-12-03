@@ -7,6 +7,7 @@ import org.eclipse.debug.internal.ui.DefaultLabelProvider;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
+import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
@@ -99,6 +100,18 @@ class CeylonJDIModelPresentation extends JDIModelPresentation {
 
     public String getCeylonReifiedTypeName(IValue value) throws DebugException {
         if (value instanceof JDIObjectValue) {
+            if (((IJavaReferenceType)((JDIObjectValue)value).getJavaType()).getName().endsWith("$impl")) {
+                IJavaFieldVariable thisField = ((JDIObjectValue) value).getField("$this", 0);
+                if (thisField != null) {
+                    IValue fieldValue = thisField.getValue();
+                    if (fieldValue instanceof IJavaObject) {
+                        if (fieldValue instanceof JDINullValue) {
+                            return null;
+                        }
+                        value = fieldValue;
+                    }
+                }
+            }
             final IJavaValue javaValue = (IJavaValue) value;
             final JDIDebugTarget debugTarget = ((JDIObjectValue) value).getJavaDebugTarget();
             if (debugTarget instanceof CeylonJDIDebugTarget) {
