@@ -132,13 +132,16 @@ public class JavaSearch {
         IType type = (IType) dec.getAncestor(IJavaElement.TYPE);
         
         String qualifier = packageFragment.getElementName();
+        if (! qualifier.isEmpty()) {
+            qualifier += '.';
+        }
         String name = dec.getElementName();
         
         if (dec instanceof IMethod && name.equals("get_")) {
             return getQualifiedName(type);
         }
         else if (dec instanceof IType && name.endsWith("_")) {
-            return qualifier + '.' + 
+            return qualifier + 
                     name.substring(0, name.length()-1);
         }
         
@@ -160,9 +163,14 @@ public class JavaSearch {
         }
         
         if (dec!=type) {
-            String typeName = type.getElementName();
+            String fullyQualifiedTypeName = type.getFullyQualifiedName();
+            String[] parts = fullyQualifiedTypeName.split("\\.");
+            String typeName = parts.length == 0 ? fullyQualifiedTypeName : parts[parts.length-1];
+            if (typeName.endsWith("$impl")) {
+                typeName = typeName.substring(0, typeName.length()-5);
+            }
             if (typeName.endsWith(name + "_")) {
-                return qualifier + '.' + name;
+                return qualifier + name;
             }
             else {
                 if (typeName.length()>2 && 
@@ -171,12 +179,12 @@ public class JavaSearch {
                     // case of an object value
                     typeName = typeName.substring(0, typeName.length()-1);
                 }
-                return qualifier + '.' + 
+                return qualifier + 
                         typeName + '.' + name;
             }
         }
         else {
-            return qualifier + '.' + name;
+            return qualifier + name;
         }
     }
 
