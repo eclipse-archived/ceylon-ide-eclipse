@@ -465,7 +465,7 @@ public class LaunchHelper {
         String toplevel = getTopLevel(configuration);
         if (toplevel != null) {
             int index = toplevel.lastIndexOf(".");
-            if (index > 0 && index < toplevel.length() - 1) {
+            if (index >= -1 && index < toplevel.length() - 1) {
                 char typeFirstChar = toplevel.charAt(index + 1);
                 if (!Character.isUpperCase(typeFirstChar)) {
                     // It's a top-level method
