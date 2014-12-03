@@ -22,6 +22,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
+import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 
@@ -39,7 +40,7 @@ public class DebugUtils {
         IProject project = getProject(frame);
         IJavaProject javaProject = JavaCore.create(project);
         try {
-            IType declaringType = javaProject.findType(frame.getDeclaringTypeName());
+            IType declaringType = javaProject.findType(frame.getReferenceType().getName());
             if (declaringType != null) {
                 for (IMethod method : declaringType.getMethods()) {
                     if (method.getElementName().equals(frame.getMethodName()) ||
@@ -139,9 +140,19 @@ public class DebugUtils {
         }
         if (declaringTypeName.equals("ceylon.language.String")
                 && (    method.name().equals("instance") ||
+                        method.name().equals("toString") ||
                         (   method.isConstructor()
                                 && method.argumentTypeNames().size() == 1
                                 && "java.lang.String".equals(method.argumentTypeNames().get(0))))) {
+           return true;
+        }
+        
+        if (declaringTypeName.startsWith("ceylon.language.impl.Base")) {
+           return true;
+        }
+
+        if (declaringTypeName.endsWith("$impl") && 
+        		method.isConstructor()) {
            return true;
         }
 
@@ -153,6 +164,16 @@ public class DebugUtils {
             return true;
         }
         
+        try {
+            if (method.isStatic() &&
+                    method.name().equals("get_") &&
+                    method.argumentTypeNames().isEmpty() &&
+                    method.returnType().name().equals(method.declaringType().name())) {
+                return true;
+            }
+        } catch (ClassNotLoadedException e) {
+        }
+
         return false;
     }
 }
