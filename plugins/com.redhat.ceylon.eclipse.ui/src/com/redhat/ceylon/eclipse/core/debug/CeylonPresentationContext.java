@@ -158,6 +158,25 @@ class CeylonPresentationContext implements IPresentationContext {
                 value);
     }
 
+    static boolean isCeylonContext(IJavaVariable var) {
+        IAdaptable debugContext = DebugUITools.getDebugContext();
+        if (! (debugContext instanceof IJavaStackFrame)) {
+            return false;
+        }
+        IJavaValue value = null;
+        try {
+            value = (IJavaValue) var.getValue();
+        } catch (DebugException e) {
+            return false;
+        }
+        if (value == null) {
+            return false;
+        }
+        return CeylonPresentationContext.isCeylonContext(
+                (IJavaStackFrame) debugContext,
+                value);
+    }
+
     static boolean isCeylonContext(IViewerUpdate viewerUpdate) {
         return isCeylonContext(
                 getStackFrame(viewerUpdate), 

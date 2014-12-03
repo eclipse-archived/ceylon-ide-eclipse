@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.core.debug;
 import static com.redhat.ceylon.eclipse.core.debug.CeylonPresentationContext.isCeylonContext;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.ILabelUpdate;
@@ -11,8 +10,6 @@ import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationCont
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.jdt.internal.debug.ui.variables.JavaVariableLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
-
-import com.redhat.ceylon.compiler.java.codegen.Naming;
 
 public class CeylonVariableLabelProvider extends JavaVariableLabelProvider{
 
@@ -35,11 +32,7 @@ public class CeylonVariableLabelProvider extends JavaVariableLabelProvider{
             IPresentationContext context) throws CoreException {
         String name = super.getVariableName(variable, context);
         if (isCeylonContext(context)) {
-            if (name.charAt(0) == '$') {
-                if (Naming.isJavaKeyword(name, 1, name.length())) {
-                    name = name.substring(1);
-                }
-            }
+            name = CeylonJDIModelPresentation.fixVariableName(name);
         }
         return name;
     }
@@ -50,25 +43,11 @@ public class CeylonVariableLabelProvider extends JavaVariableLabelProvider{
         String name = super.getValueTypeName(variable, value, context);
 
         if (isCeylonContext(context)) {
-            name = renameObjectTypeName(name);
+            name = CeylonJDIModelPresentation.fixObjectTypeName(name);
         }
         return name;
     }
 
-    private String renameObjectTypeName(String typeName)
-            throws DebugException {
-        int index = typeName.lastIndexOf('.');
-        if (index > 0) {
-            typeName = typeName.substring(index+1);
-        }
-        
-        if (! Character.isUpperCase(typeName.charAt(0)) &&
-                typeName.endsWith("_")) {
-            typeName = typeName.substring(0, typeName.length() - 1);
-        }
-        return typeName;
-    }
-    
     @Override
     protected String getLabel(TreePath elementPath,
             IPresentationContext context, String columnId) throws CoreException {
@@ -94,7 +73,7 @@ public class CeylonVariableLabelProvider extends JavaVariableLabelProvider{
             IPresentationContext context) throws CoreException {
         String name = super.getVariableTypeName(variable, context);
         if (isCeylonContext(context)) {
-            name = renameObjectTypeName(name);
+            name = CeylonJDIModelPresentation.fixObjectTypeName(name);
         }
         return name;
     }
