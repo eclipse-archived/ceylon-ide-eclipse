@@ -5,7 +5,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getQualifiedName;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getJavaQualifiedName;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getCeylonSimpleName;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
@@ -30,6 +31,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -48,7 +50,6 @@ import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.loader.ModelLoader;
-import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -129,10 +130,6 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             IProject elementProject = element.getJavaProject().getProject();
             IPackageFragment packageFragment = (IPackageFragment) 
                     element.getAncestor(PACKAGE_FRAGMENT);
-            DeclarationType declarationType = 
-                    element instanceof IType ? 
-                        ModelLoader.DeclarationType.TYPE : 
-                        ModelLoader.DeclarationType.VALUE;
             
             IFolder folder = (IFolder) packageFragment.getResource();
             Package pack = folder==null ? null : getPackage(folder);
@@ -148,13 +145,28 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             else {
                 //this is the case for Java decs
                 IType type = (IType) element.getAncestor(IJavaElement.TYPE);
-                String qualifiedName = getQualifiedName(type);
-                declaration = 
-                        getProjectModelLoader(elementProject)
-                        .convertToDeclaration(pack.getModule(), 
-                                qualifiedName, declarationType);
-                if (declaration!=null && type!=element) {
-                    declaration = declaration.getMember(element.getElementName(), null, false);
+                String typeQualifiedName = getJavaQualifiedName(type);
+                String ceylonMemberName = type!=element ? getCeylonSimpleName((IMember)element) : null;
+                String typeName = type.getElementName();
+                if (!Character.isUpperCase(typeName.charAt(0))
+                    && typeName.endsWith("_") 
+                    && ceylonMemberName == null) {
+                    // Ceylon object value ... 
+                    // ... without a method call
+                    declaration = 
+                            getProjectModelLoader(elementProject)
+                            .convertToDeclaration(pack.getModule(), 
+                                    typeQualifiedName, ModelLoader.DeclarationType.VALUE);
+                } else {
+                    declaration = 
+                            getProjectModelLoader(elementProject)
+                            .convertToDeclaration(pack.getModule(), 
+                                    typeQualifiedName, ModelLoader.DeclarationType.TYPE);
+                    if (declaration!=null 
+                            && ceylonMemberName != null 
+                            && element instanceof IMember) {
+                        declaration = declaration.getMember(ceylonMemberName, null, false);
+                    }
                 }
             }
             if (declaration==null) return;
@@ -235,6 +247,7 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
         AbstractTextSearchResult searchResult = 
                 (AbstractTextSearchResult) searchResultField.get(requestor);
         searchResult.addMatch(match);
+        @SuppressWarnings("unchecked")
         Map<Object, IMatchPresentation> participants = 
                 (Map<Object, IMatchPresentation>) participantsField.get(searchResult);
         participants.put(match.getElement(), this);

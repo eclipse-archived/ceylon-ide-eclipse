@@ -1,12 +1,11 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static java.lang.Character.isJavaIdentifierPart;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -86,7 +85,7 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
             for (final IJavaElement javaElement: selection) {
                 final IProject project = javaElement.getJavaProject().getProject();
 
-                if (JavaSearch.isCeylonDeclaration(javaElement)) {
+                if (JavaSearch.isCeylonDeclaration(javaElement) && !(javaElement instanceof IPackageFragment)) {
                     return new IHyperlink[] {
                             new JavaToCeylonLink(region, doc, project, javaElement)
                         };

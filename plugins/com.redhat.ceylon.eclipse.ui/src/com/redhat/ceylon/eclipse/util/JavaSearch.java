@@ -108,6 +108,7 @@ public class JavaSearch {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static void runSearch(IProgressMonitor pm, SearchEngine searchEngine,
             SearchPattern searchPattern, IProject[] projects,
             SearchRequestor requestor) 
@@ -126,7 +127,7 @@ public class JavaSearch {
         }
     }
 
-    public static String getQualifiedName(IMember dec) {
+    public static String getJavaQualifiedName(IMember dec) {
         IPackageFragment packageFragment = (IPackageFragment) 
                 dec.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
         IType type = (IType) dec.getAncestor(IJavaElement.TYPE);
@@ -138,10 +139,10 @@ public class JavaSearch {
         String name = dec.getElementName();
         
         if (dec instanceof IMethod && name.equals("get_")) {
-            return getQualifiedName(type);
+            return getJavaQualifiedName(type);
         }
         else if (dec instanceof IType && name.endsWith("_")) {
-            return qualifier + 
+            return qualifier +  
                     name.substring(0, name.length()-1);
         }
         
@@ -154,12 +155,67 @@ public class JavaSearch {
                 name = Character.toLowerCase(name.charAt(3)) + 
                         name.substring(4);
             }
-            else if (name.equals("toString")) {
-               name = "string";
+        }
+        
+        if (dec!=type) {
+            String fullyQualifiedTypeName = type.getFullyQualifiedName();
+            String[] parts = fullyQualifiedTypeName.split("\\.");
+            String typeName = parts.length == 0 ? fullyQualifiedTypeName : parts[parts.length-1];
+            if (typeName.endsWith(name + "_")) {
+                return qualifier + name;
             }
-            else if (name.equals("hashCode")) {
+            else {
+                return qualifier + 
+                        typeName + '.' + name;
+            }
+        }
+        else {
+            return qualifier + name;
+        }
+    }
+    
+    /*
+     * returns null if it's a method with no Ceylon equivalent
+     * (internal getter of a Ceylon object value)
+     */
+    public static String getCeylonSimpleName(IMember dec) {
+        String name = dec.getElementName();
+        
+        if (dec instanceof IMethod) {
+            if (name.equals("get_")) {
+                name = null;
+            } else if (name.startsWith("$")) {
+                name = name.substring(1);
+            } else if (name.startsWith("get") ||
+                     name.startsWith("set")) {
+                name = Character.toLowerCase(name.charAt(3)) + 
+                        name.substring(4);
+            } else if (name.equals("toString")) {
+               name = "string";
+            } else if (name.equals("hashCode")) {
                 name = "hash";
-             }
+            }
+        } else if (dec instanceof IType) {
+            if (name.endsWith("_")) {
+                name = name.substring(0, name.length()-1);
+            }
+        }
+        return name;
+    }
+
+    public static String getCeylonQualifiedName(IMember dec) {
+        IPackageFragment packageFragment = (IPackageFragment) 
+                dec.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
+        IType type = (IType) dec.getAncestor(IJavaElement.TYPE);
+        
+        String qualifier = packageFragment.getElementName();
+        if (! qualifier.isEmpty()) {
+            qualifier += "::";
+        }
+        String name = getCeylonSimpleName(dec);
+        if (name == null) {
+            // getter of a Ceylon object value
+            return getCeylonQualifiedName(type);
         }
         
         if (dec!=type) {
@@ -188,12 +244,6 @@ public class JavaSearch {
         }
     }
 
-    public static boolean isDeclarationOfLinkedElement(Declaration d, 
-            IJavaElement javaElement) {
-        return d.getQualifiedNameString().replace("::", ".")
-                .equals(getQualifiedName((IMember) javaElement));
-    }
-
     public static IProject[] getProjectsToSearch(IProject project) {
         if (project.getName().equals("Ceylon Source Archives")) {
             return CeylonBuilder.getProjects().toArray(new IProject[0]);
@@ -205,9 +255,10 @@ public class JavaSearch {
 
     public static Declaration toCeylonDeclaration(IJavaElement javaElement,
             List<? extends PhasedUnit> phasedUnits) {
+        String ceylonQualifiedName = getCeylonQualifiedName((IMember) javaElement);
         for (PhasedUnit pu: phasedUnits) {
             for (Declaration declaration: pu.getDeclarations()) {
-                if (isDeclarationOfLinkedElement(declaration, javaElement)) {
+                if (declaration.getQualifiedNameString().equals(ceylonQualifiedName)) {
                     return declaration;
                 }
             }
