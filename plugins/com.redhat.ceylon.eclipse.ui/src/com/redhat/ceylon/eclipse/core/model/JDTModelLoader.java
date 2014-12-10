@@ -182,124 +182,36 @@ public class JDTModelLoader extends AbstractModelLoader {
             return;
         }
         try {
-            lookupEnvironment = new LookupEnvironment(new ITypeRequestor() {
-                
-                private Parser basicParser;
-
-                @Override
-                public void accept(ISourceType[] sourceTypes, PackageBinding packageBinding,
-                        AccessRestriction accessRestriction) {
-                    // case of SearchableEnvironment of an IJavaProject is used
-                    ISourceType sourceType = sourceTypes[0];
-                    while (sourceType.getEnclosingType() != null)
-                        sourceType = sourceType.getEnclosingType();
-                    if (sourceType instanceof SourceTypeElementInfo) {
-                        // get source
-                        SourceTypeElementInfo elementInfo = (SourceTypeElementInfo) sourceType;
-                        IType type = elementInfo.getHandle();
-                        ICompilationUnit sourceUnit = (ICompilationUnit) type.getCompilationUnit();
-                        accept(sourceUnit, accessRestriction);
-                    } else {
-                        CompilationResult result = new CompilationResult(sourceType.getFileName(), 1, 1, 0);
-                        CompilationUnitDeclaration unit =
-                            SourceTypeConverter.buildCompilationUnit(
-                                sourceTypes,
-                                SourceTypeConverter.FIELD_AND_METHOD // need field and methods
-                                | SourceTypeConverter.MEMBER_TYPE, // need member types
-                                // no need for field initialization
-                                lookupEnvironment.problemReporter,
-                                result);
-                        lookupEnvironment.buildTypeBindings(unit, accessRestriction);
-                        lookupEnvironment.completeTypeBindings(unit, true);
-                    }
-                }
-                
-                @Override
-                public void accept(IBinaryType binaryType, PackageBinding packageBinding,
-                        AccessRestriction accessRestriction) {
-                    BinaryTypeBinding btb = lookupEnvironment.createBinaryTypeFrom(binaryType, packageBinding, accessRestriction);
-
-                    if (btb.isNestedType() && !btb.isStatic()) {
-                        for (MethodBinding method : btb.methods()) {
-                            if (method.isConstructor() && method.parameters.length > 0) {
-                                char[] signature = method.signature();
-                                for (IBinaryMethod methodInfo : binaryType.getMethods()) {
-                                    if (methodInfo.isConstructor()) {
-                                        char[] methodInfoSignature = methodInfo.getMethodDescriptor();
-                                        if (new String(signature).equals(new String(methodInfoSignature))) {
-                                            IBinaryAnnotation[] binaryAnnotation = methodInfo.getParameterAnnotations(0);
-                                            if (binaryAnnotation == null) {
-                                                if (methodInfo.getAnnotatedParametersCount() == method.parameters.length + 1) {
-                                                    AnnotationBinding[][] newParameterAnnotations = new AnnotationBinding[method.parameters.length][];
-                                                    for (int i=0; i<method.parameters.length; i++) {
-                                                        IBinaryAnnotation[] goodAnnotations = null;
-                                                        try {
-                                                             goodAnnotations = methodInfo.getParameterAnnotations(i + 1);
-                                                        }
-                                                        catch(IndexOutOfBoundsException e) {
-                                                            break;
-                                                        }
-                                                        if (goodAnnotations != null) {
-                                                            AnnotationBinding[] parameterAnnotations = BinaryTypeBinding.createAnnotations(goodAnnotations, lookupEnvironment, new char[][][] {});
-                                                            newParameterAnnotations[i] = parameterAnnotations;
-                                                        }
-                                                    }
-                                                    method.setParameterAnnotations(newParameterAnnotations);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                @Override
-                public void accept(ICompilationUnit sourceUnit,
-                        AccessRestriction accessRestriction) {
-                    // Switch the current policy and compilation result for this unit to the requested one.
-                    CompilationResult unitResult = new CompilationResult(sourceUnit, 1, 1, compilerOptions.maxProblemsPerUnit);
-                    try {
-                        CompilationUnitDeclaration parsedUnit = basicParser().dietParse(sourceUnit, unitResult);
-                        lookupEnvironment.buildTypeBindings(parsedUnit, accessRestriction);
-                        lookupEnvironment.completeTypeBindings(parsedUnit, true);
-                    } catch (AbortCompilationUnit e) {
-                        // at this point, currentCompilationUnitResult may not be sourceUnit, but some other
-                        // one requested further along to resolve sourceUnit.
-                        if (unitResult.compilationUnit == sourceUnit) { // only report once
-                            //requestor.acceptResult(unitResult.tagAsAccepted());
-                        } else {
-                            throw e; // want to abort enclosing request to compile
-                        }
-                    }
-                    // Display unit error in debug mode
-                    if (BasicSearchEngine.VERBOSE) {
-                        if (unitResult.problemCount > 0) {
-                            System.out.println(unitResult);
-                        }
-                    }
-                }
-
-                private Parser basicParser() {
-                    if (this.basicParser == null) {
-                        ProblemReporter problemReporter =
-                            new ProblemReporter(
-                                DefaultErrorHandlingPolicies.proceedWithAllProblems(),
-                                compilerOptions,
-                                new DefaultProblemFactory());
-                        this.basicParser = new Parser(problemReporter, false);
-                        this.basicParser.reportOnlyOneSyntaxError = true;
-                    }
-                    return this.basicParser;
-                }
-            }, compilerOptions, problemReporter, createSearchableEnvironment());
+            ModelLoaderTypeRequestor requestor = new ModelLoaderTypeRequestor();
+            lookupEnvironment = new LookupEnvironment(requestor, compilerOptions, problemReporter, createSearchableEnvironment());
+            requestor.initialize(lookupEnvironment);
             lookupEnvironment.mayTolerateMissingType = true;
             missingTypeBinding = new MissingTypeBinding(lookupEnvironment.defaultPackage, new char[][] {"unknown".toCharArray()}, lookupEnvironment);
         } catch (JavaModelException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+    
+
+    public LookupEnvironment createLookupEnvironmentForGeneratedCode() {
+        if (javaProject == null) {
+            return null;
+        }
+        try {
+            ModelLoaderTypeRequestor requestor = new ModelLoaderTypeRequestor();
+            LookupEnvironment lookupEnvironmentForGeneratedCode = new LookupEnvironment(requestor, 
+                    compilerOptions, 
+                    problemReporter, 
+                    ((JavaProject)javaProject).newSearchableNameEnvironment((WorkingCopyOwner)null));
+            requestor.initialize(lookupEnvironmentForGeneratedCode);
+            lookupEnvironmentForGeneratedCode.mayTolerateMissingType = true;
+            return lookupEnvironmentForGeneratedCode;
+        } catch (JavaModelException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
     }
     
     // TODO : remove when the bug in the AbstractModelLoader is corrected
@@ -461,6 +373,124 @@ public class JDTModelLoader extends AbstractModelLoader {
         }            
     }
     
+
+    public final class ModelLoaderTypeRequestor implements
+            ITypeRequestor {
+        private Parser basicParser;
+        private LookupEnvironment lookupEnvironment;
+
+        public void initialize(LookupEnvironment lookupEnvironment) {
+            this.lookupEnvironment = lookupEnvironment;
+        }
+        
+        @Override
+        public void accept(ISourceType[] sourceTypes, PackageBinding packageBinding,
+                AccessRestriction accessRestriction) {
+            // case of SearchableEnvironment of an IJavaProject is used
+            ISourceType sourceType = sourceTypes[0];
+            while (sourceType.getEnclosingType() != null)
+                sourceType = sourceType.getEnclosingType();
+            if (sourceType instanceof SourceTypeElementInfo) {
+                // get source
+                SourceTypeElementInfo elementInfo = (SourceTypeElementInfo) sourceType;
+                IType type = elementInfo.getHandle();
+                ICompilationUnit sourceUnit = (ICompilationUnit) type.getCompilationUnit();
+                accept(sourceUnit, accessRestriction);
+            } else {
+                CompilationResult result = new CompilationResult(sourceType.getFileName(), 1, 1, 0);
+                CompilationUnitDeclaration unit =
+                    SourceTypeConverter.buildCompilationUnit(
+                        sourceTypes,
+                        SourceTypeConverter.FIELD_AND_METHOD // need field and methods
+                        | SourceTypeConverter.MEMBER_TYPE, // need member types
+                        // no need for field initialization
+                        lookupEnvironment.problemReporter,
+                        result);
+                lookupEnvironment.buildTypeBindings(unit, accessRestriction);
+                lookupEnvironment.completeTypeBindings(unit, true);
+            }
+        }
+
+        @Override
+        public void accept(IBinaryType binaryType, PackageBinding packageBinding,
+                AccessRestriction accessRestriction) {
+            BinaryTypeBinding btb = lookupEnvironment.createBinaryTypeFrom(binaryType, packageBinding, accessRestriction);
+
+            if (btb.isNestedType() && !btb.isStatic()) {
+                for (MethodBinding method : btb.methods()) {
+                    if (method.isConstructor() && method.parameters.length > 0) {
+                        char[] signature = method.signature();
+                        for (IBinaryMethod methodInfo : binaryType.getMethods()) {
+                            if (methodInfo.isConstructor()) {
+                                char[] methodInfoSignature = methodInfo.getMethodDescriptor();
+                                if (new String(signature).equals(new String(methodInfoSignature))) {
+                                    IBinaryAnnotation[] binaryAnnotation = methodInfo.getParameterAnnotations(0);
+                                    if (binaryAnnotation == null) {
+                                        if (methodInfo.getAnnotatedParametersCount() == method.parameters.length + 1) {
+                                            AnnotationBinding[][] newParameterAnnotations = new AnnotationBinding[method.parameters.length][];
+                                            for (int i=0; i<method.parameters.length; i++) {
+                                                IBinaryAnnotation[] goodAnnotations = null;
+                                                try {
+                                                     goodAnnotations = methodInfo.getParameterAnnotations(i + 1);
+                                                }
+                                                catch(IndexOutOfBoundsException e) {
+                                                    break;
+                                                }
+                                                if (goodAnnotations != null) {
+                                                    AnnotationBinding[] parameterAnnotations = BinaryTypeBinding.createAnnotations(goodAnnotations, lookupEnvironment, new char[][][] {});
+                                                    newParameterAnnotations[i] = parameterAnnotations;
+                                                }
+                                            }
+                                            method.setParameterAnnotations(newParameterAnnotations);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void accept(ICompilationUnit sourceUnit,
+                AccessRestriction accessRestriction) {
+            // Switch the current policy and compilation result for this unit to the requested one.
+            CompilationResult unitResult = new CompilationResult(sourceUnit, 1, 1, compilerOptions.maxProblemsPerUnit);
+            try {
+                CompilationUnitDeclaration parsedUnit = basicParser().dietParse(sourceUnit, unitResult);
+                lookupEnvironment.buildTypeBindings(parsedUnit, accessRestriction);
+                lookupEnvironment.completeTypeBindings(parsedUnit, true);
+            } catch (AbortCompilationUnit e) {
+                // at this point, currentCompilationUnitResult may not be sourceUnit, but some other
+                // one requested further along to resolve sourceUnit.
+                if (unitResult.compilationUnit == sourceUnit) { // only report once
+                    //requestor.acceptResult(unitResult.tagAsAccepted());
+                } else {
+                    throw e; // want to abort enclosing request to compile
+                }
+            }
+            // Display unit error in debug mode
+            if (BasicSearchEngine.VERBOSE) {
+                if (unitResult.problemCount > 0) {
+                    System.out.println(unitResult);
+                }
+            }
+        }
+
+        private Parser basicParser() {
+            if (this.basicParser == null) {
+                ProblemReporter problemReporter =
+                    new ProblemReporter(
+                        DefaultErrorHandlingPolicies.proceedWithAllProblems(),
+                        compilerOptions,
+                        new DefaultProblemFactory());
+                this.basicParser = new Parser(problemReporter, false);
+                this.basicParser.reportOnlyOneSyntaxError = true;
+            }
+            return this.basicParser;
+        }
+    }
 
     public static class ModelLoaderNameEnvironment extends SearchableEnvironment {
         public ModelLoaderNameEnvironment(IJavaProject javaProject) throws JavaModelException {
@@ -811,6 +841,63 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
     }
 
+    public static interface ActionOnResolvedGeneratedType {
+        void doWithBinding(IType classModel, ReferenceBinding classBinding, IBinaryType binaryType);
+    }
+
+    public static void doOnResolvedGeneratedType(IType typeModel, ActionOnResolvedGeneratedType action) {
+        if (typeModel == null || ! typeModel.exists()) {
+            throw new ModelResolutionException("Resolving action requested on a missing declaration");
+        }
+        
+        JDTModelLoader modelLoader = getModelLoader(typeModel);
+        if (modelLoader == null) {
+            throw new ModelResolutionException("The Model Loader is not available to resolve type '" + typeModel.getFullyQualifiedName() + "'");
+        }
+        char[][] compoundName = CharOperation.splitOn('.', typeModel.getFullyQualifiedName().toCharArray());
+        LookupEnvironment lookupEnvironment = modelLoader.createLookupEnvironmentForGeneratedCode();
+        ReferenceBinding binding = null;
+        IBinaryType binaryType = null;
+        try {
+            ITypeRoot typeRoot = typeModel.getTypeRoot();
+            
+            if (typeRoot instanceof IClassFile) {
+                ClassFile classFile = (ClassFile) typeRoot;
+                
+                IFile classFileRsrc = (IFile) classFile.getCorrespondingResource();
+                if (classFileRsrc!=null && !classFileRsrc.exists()) {
+                    //the .class file has been deleted
+                    return;
+                }
+                
+                BinaryTypeBinding binaryTypeBinding = null;
+                try {
+                    binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
+                    binaryTypeBinding = lookupEnvironment.cacheBinaryType(binaryType, null);
+                } catch(JavaModelException e) {
+                    if (! e.isDoesNotExist()) {
+                        throw e;
+                    }
+                }
+                
+                if (binaryTypeBinding == null) {
+                    ReferenceBinding existingType = lookupEnvironment.getCachedType(compoundName);
+                    if (existingType == null || ! (existingType instanceof BinaryTypeBinding)) {
+                        return;
+                    }
+                    binaryTypeBinding = (BinaryTypeBinding) existingType;
+                }
+                binding = binaryTypeBinding;
+            }
+        } catch (JavaModelException e) {
+            throw new ModelResolutionException(e);
+        }
+        if (binaryType != null
+                && binding != null) {
+            action.doWithBinding(typeModel, binding, binaryType);
+        }
+    }
+    
     public static void doWithResolvedType(IType typeModel, ActionOnResolvedType action) {
         if (typeModel == null || ! typeModel.exists()) {
             throw new ModelResolutionException("Resolving action requested on a missing declaration");
