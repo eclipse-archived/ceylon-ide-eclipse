@@ -24,7 +24,9 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
@@ -176,37 +178,51 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             }
             
             Set<String> searchedArchives = new HashSet<String>();
-            for (IProject project: getProjectsToSearch(elementProject)) {
-                if (CeylonNature.isEnabled(project)) {
-                    IJavaProject javaProject = JavaCore.create(project);
-                    for (IPackageFragmentRoot sourceFolder: 
-                            javaProject.getAllPackageFragmentRoots()) {
-                        if (sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
-                                querySpecification.getScope().encloses(sourceFolder)) {
-                            TypeChecker typeChecker = getProjectTypeChecker(project);
-                            searchInUnits(requestor, limitTo, declaration, 
-                                    typeChecker.getPhasedUnits().getPhasedUnits());
-                            if (monitor.isCanceled()) {
-                                throw new OperationCanceledException();
-                            }
-                            Modules modules = typeChecker.getContext().getModules();
-                            for (Module m: modules.getListOfModules()) {
-                                if (m instanceof JDTModule) {
-                                    JDTModule module = (JDTModule) m;
-                                    if (module.isCeylonArchive() && module.getArtifact()!=null) {
-                                        String archivePath = module.getArtifact().getAbsolutePath();
-                                        if (searchedArchives.add(archivePath) && 
-                                                m.getAllPackages().contains(pack)) {
-                                            searchInUnits(requestor, limitTo, declaration, 
-                                                    module.getPhasedUnits());
-                                            if (monitor.isCanceled()) {
-                                                throw new OperationCanceledException();
+            IWorkspaceRoot root = elementProject.getWorkspace().getRoot();
+            
+            for (IPath includedProjectOrJar : querySpecification.getScope().enclosingProjectsAndJars()) {
+                IProject project = null;
+                if (includedProjectOrJar.segmentCount() == 1) {
+                    project = root.getProject(includedProjectOrJar.segment(0));
+                    if (! project.exists()) {
+                        project = null;
+                    }
+                }
+                if (project == null) {
+                    continue;
+                }
+                for (IProject searchedProject: getProjectsToSearch(project.getProject())) {
+                    if (CeylonNature.isEnabled(searchedProject)) {
+                        IJavaProject javaProject = JavaCore.create(searchedProject);
+                        for (IPackageFragmentRoot sourceFolder: 
+                                javaProject.getAllPackageFragmentRoots()) {
+                            if (sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
+                                    querySpecification.getScope().encloses(sourceFolder)) {
+                                TypeChecker typeChecker = getProjectTypeChecker(searchedProject);
+                                searchInUnits(requestor, limitTo, declaration, 
+                                        typeChecker.getPhasedUnits().getPhasedUnits());
+                                if (monitor.isCanceled()) {
+                                    throw new OperationCanceledException();
+                                }
+                                Modules modules = typeChecker.getContext().getModules();
+                                for (Module m: modules.getListOfModules()) {
+                                    if (m instanceof JDTModule) {
+                                        JDTModule module = (JDTModule) m;
+                                        if (module.isCeylonArchive() && module.getArtifact()!=null) {
+                                            String archivePath = module.getArtifact().getAbsolutePath();
+                                            if (searchedArchives.add(archivePath) && 
+                                                    m.getAllPackages().contains(pack)) {
+                                                searchInUnits(requestor, limitTo, declaration, 
+                                                        module.getPhasedUnits());
+                                                if (monitor.isCanceled()) {
+                                                    throw new OperationCanceledException();
+                                                }
                                             }
                                         }
                                     }
                                 }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
