@@ -355,7 +355,7 @@ public class JavaSearch {
                 }
             }
             if (isCeylonObject(typeOrMethod) 
-                    && !(declaration instanceof Value)) {
+                    && declaration.isToplevel() && !(declaration instanceof Value)) {
                 return false;
             }
         }
@@ -504,9 +504,6 @@ public class JavaSearch {
             return null;
         }
         IMember declarationElement = toCeylonDeclarationElement((IMember)javaElement);
-        if (!isCeylon(declarationElement)) {
-            return null;
-        }
         for (PhasedUnit pu: phasedUnits) {
             for (Declaration declaration: pu.getDeclarations()) {
                 if (elementEqualsDeclaration(declarationElement, declaration)) {
