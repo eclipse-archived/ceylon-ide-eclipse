@@ -36,8 +36,7 @@ public class DebugUtils {
         return null;
     }
 
-    public static IMethod getStackFrameMethod(IJavaStackFrame frame) {
-        IProject project = getProject(frame);
+    public static IMethod getStackFrameMethod(IJavaStackFrame frame, IProject project) {
         IJavaProject javaProject = JavaCore.create(project);
         try {
             IType declaringType = javaProject.findType(frame.getReferenceType().getName());
@@ -61,9 +60,13 @@ public class DebugUtils {
         }
         return null;
     }
-
-    public static PhasedUnit getStackFramePhasedUnit(IJavaStackFrame frame) {
+        
+    public static IMethod getStackFrameMethod(IJavaStackFrame frame) {
         IProject project = getProject(frame);
+        return project == null ? null : getStackFrameMethod(frame, project);
+    }
+
+    public static PhasedUnit getStackFramePhasedUnit(IJavaStackFrame frame, IProject project) {
         try {
             PhasedUnits projectPhasedUnits = CeylonBuilder.getProjectPhasedUnits(project);
             if (projectPhasedUnits != null) {
@@ -92,10 +95,20 @@ public class DebugUtils {
         }
         return null;
     }
+    
+    public static PhasedUnit getStackFramePhasedUnit(IJavaStackFrame frame) {
+        IProject project = getProject(frame);
+        return project == null ? null : getStackFramePhasedUnit(frame, project);
+    }
 
     public static Declaration getStackFrameCeylonDeclaration(IJavaStackFrame frame) {
-        IMethod method = getStackFrameMethod(frame);
-        PhasedUnit unit = getStackFramePhasedUnit(frame);
+        IProject project = getProject(frame);
+        if (project == null) {
+            // Not a Ceylon debug target
+            return null;
+        }
+        IMethod method = getStackFrameMethod(frame, project);
+        PhasedUnit unit = getStackFramePhasedUnit(frame, project);
         if (method != null && unit != null) {
             return JavaSearch.toCeylonDeclaration(method, Arrays.asList(unit));
         }
