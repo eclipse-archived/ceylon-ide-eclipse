@@ -47,7 +47,10 @@ public class DebugUtils {
                         String[] methodParameterTypes = new String[method.getParameterTypes().length];
                         int i = 0;
                         for (String signature : method.getParameterTypes()) {
-                            methodParameterTypes[i++] = Signature.toString(signature);
+                            signature = signature.replace("$", "####dollar####");
+                            signature = Signature.toString(signature);
+                            signature = signature.replace("####dollar####", "$");
+                            methodParameterTypes[i++] = signature;
                         }
                         if (Arrays.equals(methodParameterTypes, frame.getArgumentTypeNames().toArray())) {
                             return method;
