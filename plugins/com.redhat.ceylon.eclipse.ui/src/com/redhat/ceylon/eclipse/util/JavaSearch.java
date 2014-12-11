@@ -461,15 +461,25 @@ public class JavaSearch {
     public static IMember toCeylonDeclarationElement(IMember typeOrMethod) {
         if (typeOrMethod instanceof IMethod) {
             IMethod method = (IMethod)typeOrMethod;
+            String methodName = method.getElementName();
+            if (methodName == null) {
+                return typeOrMethod;
+            }
+            
             try {
-                if ("get_".equals(method.getElementName())
+                IType parentType = method.getDeclaringType();
+                if (parentType != null) {
+                    if ("get_".equals(methodName)
                         && ((method.getFlags() & Flags.AccStatic) > 0)) {
-                    IType parentType = method.getDeclaringType();
-                    if (parentType != null) {
                         IAnnotation objectAnnotation = parentType.getAnnotation(com.redhat.ceylon.compiler.java.metadata.Object.class.getName());
                         if (objectAnnotation.exists()) {
                             return toCeylonDeclarationElement(parentType);
                         }
+                    }
+                    if (methodName.equals(parentType.getElementName())
+                            && method.isConstructor()
+                            && isCeylon(parentType) && true) {
+                        return toCeylonDeclarationElement(parentType);
                     }
                 }
             } catch (JavaModelException e) {
