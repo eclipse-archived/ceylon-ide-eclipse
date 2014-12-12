@@ -1931,6 +1931,16 @@
              id="com.redhat.ceylon.eclipse.ui.keywords.save">
        </keywordReference>
        </page>
+      <page
+            name="Ceylon-specific debugging"
+            category="org.eclipse.jdt.debug.ui.JavaDebugPreferencePage"
+            class="com.redhat.ceylon.eclipse.core.debug.CeylonStepFilterPreferencePage"
+            id="com.redhat.ceylon.eclipse.ui.CeylonDebugPreferencePage">
+           <keywordReference
+                 id="com.redhat.ceylon.eclipse.ui.keywords.debug">
+           </keywordReference>
+      </page>
+       
    </extension>
    <extension point="org.eclipse.ui.keywords">
    <keyword
@@ -1942,6 +1952,9 @@
    <keyword
          label="save actions imports format"
          id="com.redhat.ceylon.eclipse.ui.keywords.save"/>>
+   <keyword
+         label="ceylon debug"
+         id="com.redhat.ceylon.eclipse.ui.keywords.debug"/>
    </extension>
    <extension point="org.eclipse.core.expressions.propertyTesters">
        <propertyTester
@@ -3211,5 +3224,7 @@
           </propertySection>
        </propertySections>
     </extension>
-        
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="com.redhat.ceylon.eclipse.core.debug.CeylonDebugUIPreferenceInitializer"/>
+    </extension>
 </plugin>

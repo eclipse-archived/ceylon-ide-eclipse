@@ -46,6 +46,8 @@ import com.sun.jdi.VirtualMachine;
 
 public class CeylonJDIDebugTarget extends JDIDebugTarget {
     private IProject project = null;
+    private boolean filterLanguageModuleFrames;
+    private boolean filterModuleRuntimeFrames;
     
     public CeylonJDIDebugTarget(ILaunch launch, VirtualMachine jvm, String name,
             boolean supportTerminate, boolean supportDisconnect,
@@ -85,14 +87,14 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
                                 CeylonDebugEvaluationThread.methodForBreakpoint,
                                 "()V",
                                 true, false, false, -1, -1,
-                                -1, 0, true, map);
+                                -1, 0, false, map);
                 bp.setPersisted(false);
-                breakpointAdded(bp);
                 ceylonDebugEvaluationBreakpoint = bp;
             } catch (CoreException e) {
                 e.printStackTrace();
             }
         }
+        breakpointAdded(ceylonDebugEvaluationBreakpoint);
     }
 
     private IJavaObject mainThread = null;
@@ -424,5 +426,69 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
             
         };
         evaluateAnnotation(valueType, annotationClass, null, internalListener);
+    }
+
+    public void setCeylonFilters(
+            boolean filterLanguageModuleFrames,
+            boolean filterModuleRuntimeFrames) {
+
+        this.filterLanguageModuleFrames = filterLanguageModuleFrames;
+        this.filterModuleRuntimeFrames = filterModuleRuntimeFrames;
+        updateCeylonFilters();
+    }
+    
+    private String[] ceylonStepFilters;
+
+    private static String[] languageModuleStepFilters = {
+        "ceylon.language.*",
+        "com.redhat.ceylon.*"
+    };
+    
+    private static String[] moduleRuntimeFilters = {
+        "org.jboss.modules.*",
+        "ceylon.modules.*"
+    };
+    
+    private void updateCeylonFilters() {
+        String[] jdiFilters = super.getStepFilters();
+
+        int length = 0;
+        if (jdiFilters != null) {
+            length += jdiFilters.length;
+        }
+        if (filterLanguageModuleFrames) {
+            length += languageModuleStepFilters.length;
+        }
+        if (filterModuleRuntimeFrames) {
+            length += moduleRuntimeFilters.length;
+        }
+        
+        String[] destination = new String[length];
+        int currPos = 0;
+        if (jdiFilters != null) {
+            System.arraycopy(jdiFilters, 0, destination, currPos, jdiFilters.length);
+            currPos += jdiFilters.length;
+        }
+        if (filterLanguageModuleFrames) {
+            System.arraycopy(languageModuleStepFilters, 0, destination, currPos, languageModuleStepFilters.length);
+            currPos += languageModuleStepFilters.length;
+        }
+        if (filterModuleRuntimeFrames) {
+            System.arraycopy(moduleRuntimeFilters, 0, destination, currPos, moduleRuntimeFilters.length);
+            currPos += moduleRuntimeFilters.length;
+        }
+        
+        ceylonStepFilters = destination;
+    }
+    
+    @Override
+    public void setStepFilters(String[] list) {
+        super.setStepFilters(list);
+        updateCeylonFilters();
+    }
+    
+    @Override
+    public String[] getStepFilters() {
+        return ceylonStepFilters;
     }
 }

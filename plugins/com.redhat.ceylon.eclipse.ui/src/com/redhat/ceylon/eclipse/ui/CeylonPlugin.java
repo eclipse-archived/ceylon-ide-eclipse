@@ -40,6 +40,7 @@ import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.dist.osgi.Activator;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
+import com.redhat.ceylon.eclipse.core.debug.CeylonDebugOptionsManager;
 
 
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
@@ -122,6 +123,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         };
         registerCeylonModules.setRule(ResourcesPlugin.getWorkspace().getRoot());
         registerCeylonModules.schedule();
+        
+        CeylonDebugOptionsManager.getDefault().startup();
     }
     
     @Override
@@ -130,6 +133,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         unregisterProjectOpenCloseListener();
         CeylonEncodingSynchronizer.getInstance().uninstall();
         CeylonDebugElementAdapterFactory.restoreJDTDebugElementAdapters();
+        CeylonDebugOptionsManager.getDefault().shutdown();
     }
 
     private void addResourceFilterPreference() throws BackingStoreException {

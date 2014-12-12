@@ -93,7 +93,7 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return new StepIntoHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method);
+                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method, getDebugTarget());
             }
         };
     }
@@ -103,7 +103,7 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return new StepOverHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method);
+                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method, getDebugTarget());
             }
         };
     }
@@ -113,7 +113,7 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return new StepReturnHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method);
+                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method, getDebugTarget());
             }
         };
     }

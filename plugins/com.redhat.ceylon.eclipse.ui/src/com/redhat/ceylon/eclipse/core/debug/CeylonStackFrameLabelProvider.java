@@ -3,8 +3,7 @@ package com.redhat.ceylon.eclipse.core.debug;
 import static com.redhat.ceylon.eclipse.core.debug.CeylonDebugLabelUpdaterManager.getUpdater;
 import static com.redhat.ceylon.eclipse.core.debug.CeylonPresentationContext.isCeylonContext;
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getStackFrameCeylonDeclaration;
-import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.isMethodFilteredForCeylon;
-
+import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.isInternalCeylonMethod;
 import java.util.regex.Matcher;
 
 import org.eclipse.core.runtime.CoreException;
@@ -57,7 +56,7 @@ public class CeylonStackFrameLabelProvider extends JavaStackFrameLabelProvider {
             IThread thread = frame.getThread();
             if (thread instanceof CeylonJDIThread) {
                 CeylonJDIThread ceylonJdiThread = (CeylonJDIThread) thread;
-                if (ceylonJdiThread.isBeforeStart(frame) || isMethodFilteredForCeylon(frame.getUnderlyingMethod())) {
+                if (ceylonJdiThread.isBeforeStart(frame) || isInternalCeylonMethod(frame.getUnderlyingMethod())) {
                     return new RGB(200, 200, 200);
                 }
             }

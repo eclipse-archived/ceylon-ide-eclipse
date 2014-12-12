@@ -36,23 +36,29 @@ public class DebugUtils {
         return null;
     }
 
-    public static IMethod getStackFrameMethod(IJavaStackFrame frame, IProject project) {
+    public static IMethod getStackFrameMethod(IJavaStackFrame frame,
+            IProject project) {
         IJavaProject javaProject = JavaCore.create(project);
         try {
-            IType declaringType = javaProject.findType(frame.getReferenceType().getName());
+            IType declaringType = javaProject.findType(frame.getReferenceType()
+                    .getName());
             if (declaringType != null) {
                 for (IMethod method : declaringType.getMethods()) {
-                    if (method.getElementName().equals(frame.getMethodName()) ||
-                            frame.isConstructor() && method.isConstructor()) {
-                        String[] methodParameterTypes = new String[method.getParameterTypes().length];
+                    if (method.getElementName().equals(frame.getMethodName())
+                            || frame.isConstructor() && method.isConstructor()) {
+                        String[] methodParameterTypes = new String[method
+                                .getParameterTypes().length];
                         int i = 0;
                         for (String signature : method.getParameterTypes()) {
-                            signature = signature.replace("$", "####dollar####");
+                            signature = signature
+                                    .replace("$", "####dollar####");
                             signature = Signature.toString(signature);
-                            signature = signature.replace("####dollar####", "$");
+                            signature = signature
+                                    .replace("####dollar####", "$");
                             methodParameterTypes[i++] = signature;
                         }
-                        if (Arrays.equals(methodParameterTypes, frame.getArgumentTypeNames().toArray())) {
+                        if (Arrays.equals(methodParameterTypes, frame
+                                .getArgumentTypeNames().toArray())) {
                             return method;
                         }
                     }
@@ -63,30 +69,37 @@ public class DebugUtils {
         }
         return null;
     }
-        
+
     public static IMethod getStackFrameMethod(IJavaStackFrame frame) {
         IProject project = getProject(frame);
         return project == null ? null : getStackFrameMethod(frame, project);
     }
 
-    public static PhasedUnit getStackFramePhasedUnit(IJavaStackFrame frame, IProject project) {
+    public static PhasedUnit getStackFramePhasedUnit(IJavaStackFrame frame,
+            IProject project) {
         try {
-            PhasedUnits projectPhasedUnits = CeylonBuilder.getProjectPhasedUnits(project);
+            PhasedUnits projectPhasedUnits = CeylonBuilder
+                    .getProjectPhasedUnits(project);
             if (projectPhasedUnits != null) {
                 PhasedUnit phasedUnit = null;
-                phasedUnit = projectPhasedUnits.getPhasedUnitFromRelativePath(frame.getSourcePath());
+                phasedUnit = projectPhasedUnits
+                        .getPhasedUnitFromRelativePath(frame.getSourcePath());
                 if (phasedUnit != null) {
                     return phasedUnit;
                 }
             }
-            for (Module module : CeylonBuilder.getProjectExternalModules(project)) {
+            for (Module module : CeylonBuilder
+                    .getProjectExternalModules(project)) {
                 if (module instanceof JDTModule) {
                     JDTModule jdtModule = (JDTModule) module;
                     if (jdtModule.isCeylonArchive()) {
-                        PhasedUnit phasedUnit = jdtModule.getPhasedUnitFromRelativePath(frame.getSourcePath());
+                        PhasedUnit phasedUnit = jdtModule
+                                .getPhasedUnitFromRelativePath(frame
+                                        .getSourcePath());
                         if (phasedUnit != null) {
                             if (phasedUnit instanceof CrossProjectPhasedUnit) {
-                                phasedUnit = ((CrossProjectPhasedUnit) phasedUnit).getOriginalProjectPhasedUnit();
+                                phasedUnit = ((CrossProjectPhasedUnit) phasedUnit)
+                                        .getOriginalProjectPhasedUnit();
                             }
                             return phasedUnit;
                         }
@@ -98,13 +111,14 @@ public class DebugUtils {
         }
         return null;
     }
-    
+
     public static PhasedUnit getStackFramePhasedUnit(IJavaStackFrame frame) {
         IProject project = getProject(frame);
         return project == null ? null : getStackFramePhasedUnit(frame, project);
     }
 
-    public static Declaration getStackFrameCeylonDeclaration(IJavaStackFrame frame) {
+    public static Declaration getStackFrameCeylonDeclaration(
+            IJavaStackFrame frame) {
         IProject project = getProject(frame);
         if (project == null) {
             // Not a Ceylon debug target
@@ -120,8 +134,8 @@ public class DebugUtils {
 
     public static boolean isCeylonFrame(IJavaStackFrame frame) {
         try {
-            if (frame.getSourceName() != null &&
-                    frame.getSourceName().endsWith(".ceylon")) {
+            if (frame.getSourceName() != null
+                    && frame.getSourceName().endsWith(".ceylon")) {
                 return true;
             }
         } catch (DebugException e) {
@@ -130,66 +144,71 @@ public class DebugUtils {
         return false;
     }
 
-    public static boolean isMethodFilteredForCeylon(Method method) {
+    public static boolean isInternalCeylonMethod(Method method) {
         Location location = method.location();
         String declaringTypeName = location.declaringType().name();
         if (declaringTypeName.equals("ceylon.language.Boolean")) {
-               return true;
-           }
+            return true;
+        }
         if (declaringTypeName.equals("ceylon.language.Integer")
-                && (    method.name().equals("instance") ||
-                        method.name().equals("longValue") ||
-                        method.isConstructor())) {
-           return true;
+                && (method.name().equals("instance")
+                        || method.name().equals("longValue") || method
+                            .isConstructor())) {
+            return true;
         }
         if (declaringTypeName.equals("ceylon.language.Float")
-                && (    method.name().equals("instance") ||
-                        method.name().equals("doubleValue") ||
-                        method.isConstructor())) {
-           return true;
+                && (method.name().equals("instance")
+                        || method.name().equals("doubleValue") || method
+                            .isConstructor())) {
+            return true;
         }
         if (declaringTypeName.equals("ceylon.language.Byte")
-                && (    method.name().equals("instance") ||
-                        method.name().equals("byteValue") ||
-                        method.isConstructor())) {
-           return true;
+                && (method.name().equals("instance")
+                        || method.name().equals("byteValue") || method
+                            .isConstructor())) {
+            return true;
         }
         if (declaringTypeName.equals("ceylon.language.String")
-                && (    method.name().equals("instance") ||
-                        method.name().equals("toString") ||
-                        (   method.isConstructor()
-                                && method.argumentTypeNames().size() == 1
-                                && "java.lang.String".equals(method.argumentTypeNames().get(0))))) {
-           return true;
+                && (method.name().equals("instance")
+                        || method.name().equals("toString") || (method
+                        .isConstructor()
+                        && method.argumentTypeNames().size() == 1 && "java.lang.String"
+                            .equals(method.argumentTypeNames().get(0))))) {
+            return true;
         }
-        
+
         if (declaringTypeName.startsWith("ceylon.language.impl.Base")) {
-           return true;
+            return true;
         }
 
-        if (declaringTypeName.endsWith("$impl") && 
-        		method.isConstructor()) {
-           return true;
+        if (declaringTypeName
+                .startsWith("com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor")) {
+            return true;
         }
 
-        if (declaringTypeName.startsWith("com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor")) {
+        if (declaringTypeName.endsWith("$impl") && method.isConstructor()) {
             return true;
         }
 
         if (method.name().equals("$getType$")) {
             return true;
         }
-        
+
         try {
-            if (method.isStatic() &&
-                    method.name().equals("get_") &&
-                    method.argumentTypeNames().isEmpty() &&
-                    method.returnType().name().equals(method.declaringType().name())) {
+            if (method.isStatic()
+                    && method.name().equals("get_")
+                    && method.argumentTypeNames().isEmpty()
+                    && method.returnType().name()
+                            .equals(method.declaringType().name())) {
                 return true;
             }
-        } catch (ClassNotLoadedException e) {
-        }
+        } catch (ClassNotLoadedException e) {}
 
         return false;
+    }
+    
+    public static boolean isMethodFilteredForCeylon(Method method,
+            CeylonJDIDebugTarget debugTarget) {
+        return isInternalCeylonMethod(method);
     }
 }
