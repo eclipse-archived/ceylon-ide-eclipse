@@ -6,6 +6,7 @@ import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_LOCAL
 import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_METHOD_ANNOTATION;
 import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_NAME_ANNOTATION;
 import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_OBJECT_ANNOTATION;
+import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_ATTRIBUTE_ANNOTATION;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
@@ -213,6 +214,14 @@ public class JavaSearch {
         return false;
     }
     
+    private static boolean isCeylonAttribute(IMember element) {
+        if (element instanceof IAnnotatable) {
+            IAnnotation ceylonAnnotation = ((IAnnotatable) element).getAnnotation(CEYLON_ATTRIBUTE_ANNOTATION);
+            return ceylonAnnotation.exists();
+        }
+        return false;
+    }
+
     private static boolean isCeylonMethod(IMember element) {
         if (element instanceof IAnnotatable) {
             IAnnotation ceylonAnnotation = ((IAnnotatable) element).getAnnotation(CEYLON_METHOD_ANNOTATION);
@@ -343,7 +352,8 @@ public class JavaSearch {
 
         String javaElementSimpleName = getCeylonSimpleName(typeOrMethod);
         String ceylonDeclarationSimpleName = declaration.getName();
-        if (! javaElementSimpleName.equals(ceylonDeclarationSimpleName)) {
+        if (javaElementSimpleName == null ||
+                ! javaElementSimpleName.equals(ceylonDeclarationSimpleName)) {
             return false;
         }
         
@@ -470,11 +480,9 @@ public class JavaSearch {
                 IType parentType = method.getDeclaringType();
                 if (parentType != null) {
                     if ("get_".equals(methodName)
-                        && ((method.getFlags() & Flags.AccStatic) > 0)) {
-                        IAnnotation objectAnnotation = parentType.getAnnotation(com.redhat.ceylon.compiler.java.metadata.Object.class.getName());
-                        if (objectAnnotation.exists()) {
-                            return toCeylonDeclarationElement(parentType);
-                        }
+                        && ((method.getFlags() & Flags.AccStatic) > 0)
+                        && (isCeylonObject(parentType) || isCeylonAttribute(parentType))) {
+                        return toCeylonDeclarationElement(parentType);
                     }
                     if (methodName.equals(parentType.getElementName())
                             && method.isConstructor()
@@ -510,7 +518,7 @@ public class JavaSearch {
     
     public static Declaration toCeylonDeclaration(IJavaElement javaElement,
             List<? extends PhasedUnit> phasedUnits) {
-        if (! (javaElement instanceof IMember)) {
+        if (true & ! (javaElement instanceof IMember)) {
             return null;
         }
         IMember declarationElement = toCeylonDeclarationElement((IMember)javaElement);
