@@ -10,8 +10,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
-import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 
 public class CeylonNature extends ProjectNatureBase {
     
@@ -33,6 +33,7 @@ public class CeylonNature extends ProjectNatureBase {
     boolean keepSettings;
     boolean compileJs;
     boolean compileJava;
+    String verbose;
 
     public CeylonNature() {
         keepSettings=true;
@@ -43,13 +44,15 @@ public class CeylonNature extends ProjectNatureBase {
             boolean hideWarnings, 
             boolean java,
             boolean js,
-            boolean astAwareIncrementalBuilds) {
+            boolean astAwareIncrementalBuilds,
+            String verbose) {
         this.systemRepo = systemRepo;
         this.enableJdtClasses = enableJdtClasses;
         this.hideWarnings = hideWarnings;
         compileJs = js;
         compileJava = java;
         this.astAwareIncrementalBuilds = astAwareIncrementalBuilds;
+        this.verbose = verbose;
     }
     
     public String getNatureID() {
@@ -119,6 +122,12 @@ public class CeylonNature extends ProjectNatureBase {
                 args.put("compileJs", "true");
             } else {
                 args.remove("compileJs");
+            }
+            if (verbose==null) {
+                args.remove("verbose");
+            }
+            else {
+                args.put("verbose", verbose);
             }
         }
         return args;

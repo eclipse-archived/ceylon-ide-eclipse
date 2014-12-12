@@ -1,10 +1,11 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.areAstAwareIncrementalBuildsEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.areAstAwareIncrementalBuildsEnabled;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Composite;
@@ -39,8 +40,10 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
             boolean compileJs = compileToJs(project);
             boolean compileJava = compileToJava(project);
             boolean astAwareIncrementalBuildsEnabled = areAstAwareIncrementalBuildsEnabled(project);
+            String verbose = getVerbose(project);
             new CeylonNature(block.getSystemRepo(), explodeModules, !showCompilerWarnings, 
-                    compileJava, compileJs, astAwareIncrementalBuildsEnabled).addToProject(project);      
+                    compileJava, compileJs, astAwareIncrementalBuildsEnabled, verbose)
+                    .addToProject(project);      
         }
         return true;
     }

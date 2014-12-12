@@ -154,7 +154,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                     !firstPage.isShowCompilerWarnings(),
                     firstPage.isCompileJava(),
                     firstPage.isCompileJs(),
-                    firstPage.areAstAwareIncrementalBuildsEnabled())
+                    firstPage.areAstAwareIncrementalBuildsEnabled(), 
+                    null)
                             .addToProject(getCreatedElement().getProject());
 
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);

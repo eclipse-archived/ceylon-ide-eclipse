@@ -86,12 +86,17 @@ import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.PackageFragment;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.MessageConsoleStream;
 
 import com.redhat.ceylon.cmr.api.ArtifactCallback;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
+import com.redhat.ceylon.cmr.api.ArtifactCreator;
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.api.ArtifactCreator;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Constants;
@@ -158,6 +163,7 @@ import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.CompilationUnitDelta;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
@@ -2321,6 +2327,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             options.add("-verbose");
             js_verbose = true;
         }
+        else {
+            verbose = getVerbose(project);
+            if (verbose!=null) {
+                options.add("-verbose:"+verbose);
+            }
+        }
+        
         options.add("-g:lines,vars,source");
 
         String systemRepo = getInterpolatedCeylonSystemRepo(project);
@@ -2367,7 +2380,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
         }
 
-        PrintWriter printWriter = new PrintWriter(System.out);//(getConsoleErrorStream(), true);
+        PrintWriter printWriter = new PrintWriter(verbose==null ? System.out : getConsoleStream(), true);
         boolean success = true;
         //Compile JS first
         if ((forJavascriptBackend.size() + resources.size() > 0) && compileToJs(project)) {
@@ -2729,6 +2742,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             e1.printStackTrace();
         }
     }
+    
+    public static String getVerbose(IProject project) {
+        return getBuilderArgs(project).get("verbose");
+    }
+
+    public static void setVerbose(IProject project, String verbose) {
+        if (verbose==null) {
+            getBuilderArgs(project).remove(verbose);
+        }
+        else {
+            getBuilderArgs(project).put("verbose", verbose);
+        }
+    }
 
     public static boolean isExplodeModulesEnabled(IProject project) {
         Map<String,String> args = getBuilderArgs(project);
@@ -2901,9 +2927,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }*/
 
-//    protected static MessageConsoleStream getConsoleStream() {
-//        return findConsole().newMessageStream();
-//    }
+    protected static MessageConsoleStream getConsoleStream() {
+        return findConsole().newMessageStream();
+    }
 //    
 //    protected static MessageConsoleStream getConsoleErrorStream() {
 //        final MessageConsoleStream stream = findConsole().newMessageStream();
@@ -2930,29 +2956,28 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //        return String.format("[%1$10d] %2$s", elapsedTimeMs, message);
 //    }
 
-//    /**
-//     * Find or create the console with the given name
-//     * @param consoleName
-//     */
-//    protected static MessageConsole findConsole() {
-//        String consoleName = CEYLON_CONSOLE;
-//        MessageConsole myConsole= null;
-//        final IConsoleManager consoleManager= ConsolePlugin.getDefault().getConsoleManager();
-//        IConsole[] consoles= consoleManager.getConsoles();
-//        for(int i= 0; i < consoles.length; i++) {
-//            IConsole console= consoles[i];
-//            if (console.getName().equals(consoleName))
-//                myConsole= (MessageConsole) console;
-//        }
-//        if (myConsole == null) {
-//            myConsole= new MessageConsole(consoleName, 
-//                  CeylonPlugin.getInstance().getImageRegistry()
-//                      .getDescriptor(CeylonResources.BUILDER));
-//            consoleManager.addConsoles(new IConsole[] { myConsole });
-//        }
-////      consoleManager.showConsoleView(myConsole);
-//        return myConsole;
-//    }
+    /**
+     * Find or create the console with the given name
+     * @param consoleName
+     */
+    protected static MessageConsole findConsole() {
+        MessageConsole myConsole= null;
+        final IConsoleManager consoleManager= ConsolePlugin.getDefault().getConsoleManager();
+        IConsole[] consoles= consoleManager.getConsoles();
+        for(int i= 0; i < consoles.length; i++) {
+            IConsole console= consoles[i];
+            if (console.getName().equals(CEYLON_CONSOLE))
+                myConsole= (MessageConsole) console;
+        }
+        if (myConsole == null) {
+            myConsole= new MessageConsole(CEYLON_CONSOLE, 
+                  CeylonPlugin.getInstance().getImageRegistry()
+                      .getDescriptor(CeylonResources.BUILDER));
+            consoleManager.addConsoles(new IConsole[] { myConsole });
+        }
+//      consoleManager.showConsoleView(myConsole);
+        return myConsole;
+    }
 
     private static void addTaskMarkers(IFile file, List<CommonToken> tokens) {
         // clearTaskMarkersOn(file);

@@ -1,10 +1,11 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.areAstAwareIncrementalBuildsEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.areAstAwareIncrementalBuildsEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
@@ -13,6 +14,8 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -26,6 +29,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
@@ -43,6 +47,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     private boolean backendJava = false;
     private boolean astAwareIncrementalBuids = true;
     private Boolean offlineOption = null;
+    private String verbose = null;
 
     private Button showWarnings;
     private Button compileToJs;
@@ -50,6 +55,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     private Button compileToJava;
     private Button enableExplodeModules;
     private Button offlineButton;
+    private Text verboseText;
     
     @Override
     public boolean performOk() {
@@ -69,6 +75,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         compileToJava.setSelection(true);
         astAwareIncrementalBuidsButton.setSelection(true);
         offlineOption = null;
+        verboseText = null;
         updateOfflineButton();
         super.performDefaults();
     }
@@ -78,7 +85,8 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         if (CeylonNature.isEnabled(project)) {
             String systemRepo = getCeylonSystemRepo(project);
             new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, 
-                    backendJava, backendJs, astAwareIncrementalBuids).addToProject(project);
+                    backendJava, backendJs, astAwareIncrementalBuids, verbose)
+                    .addToProject(project);
 
             CeylonProjectConfig config = CeylonProjectConfig.get(project);
             if (offlineOption!=null) {
@@ -174,6 +182,34 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             }
         });
         updateOfflineButton();
+        
+        Composite comp = new Composite(composite, SWT.NONE);
+        comp.setLayout(new GridLayout(2, false));
+        
+        new Label(comp, SWT.NONE).setText("Compiler verbosity (--verbose)");
+        
+        verboseText = new Text(comp, SWT.BORDER);
+        GridData vgd = new GridData();
+        vgd.grabExcessHorizontalSpace = true;
+        vgd.minimumWidth = 100;
+//        vgd.widthHint = 100;
+        verboseText.setLayoutData(vgd);
+        if (verbose!=null) {
+            verboseText.setText(verbose);
+            verboseText.setTextLimit(20);
+        }
+        verboseText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                String str = verboseText.getText();
+                if (str==null || str.isEmpty()) {
+                    verbose = null;
+                }
+                else {
+                    verbose = str.trim();
+                }
+            }
+        });
         
         enableBuilder.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -301,6 +337,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 showCompilerWarnings = showWarnings(project);
                 backendJs = compileToJs(project);
                 backendJava = compileToJava(project);
+                verbose = getVerbose(project);
                 offlineOption = CeylonProjectConfig.get(project).isProjectOffline();
             }
         }
