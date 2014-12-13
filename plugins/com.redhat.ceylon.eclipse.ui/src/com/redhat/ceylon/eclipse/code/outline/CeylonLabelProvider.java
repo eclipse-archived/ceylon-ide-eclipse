@@ -297,7 +297,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private static String getImageKeyForDeclarationNode(Tree.Declaration n) {
         boolean shared = hasAnnotation(n.getAnnotationList(), 
                 "shared", n.getUnit());
-        if (n instanceof Tree.AnyClass) {
+        if (n instanceof Tree.AnyClass || 
+                n instanceof Tree.Constructor) {
             if (shared) {
                 return CEYLON_CLASS;
             }
@@ -501,6 +502,13 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             StyledString label = new StyledString("interface ", KW_STYLER);
             label.append(name(ai.getIdentifier()), TYPE_ID_STYLER);
             parameters(ai.getTypeParameterList(), label);
+            return label;
+        }
+        if (node instanceof Tree.Constructor) {
+            Tree.Constructor ac = (Tree.Constructor) node;
+            StyledString label = new StyledString("new ", KW_STYLER);
+            label.append(name(ac.getIdentifier()), TYPE_ID_STYLER);
+            parameters(ac.getParameterList(), label);
             return label;
         }
         if (node instanceof Tree.TypeAliasDeclaration) {

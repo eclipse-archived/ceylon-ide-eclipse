@@ -88,6 +88,7 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
@@ -860,7 +861,8 @@ public class DocumentationHover
         }
         else if (obj instanceof Declaration) {
             Declaration dec = (Declaration) obj;
-            if (dec instanceof Class) {
+            if (dec instanceof Class || 
+                dec instanceof Constructor) {
                 String icon = dec.isShared() ? 
                         "class_obj.gif" : 
                         "innerclass_private_obj.gif";
