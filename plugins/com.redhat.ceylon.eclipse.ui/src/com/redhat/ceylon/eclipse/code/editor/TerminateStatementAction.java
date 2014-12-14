@@ -344,9 +344,23 @@ final class TerminateStatementAction extends Action {
                 }
             }
             @Override
-            public void visit(Tree.AnyClass that) {
+            public void visit(Tree.ClassDeclaration that) {
                 super.visit(that);
                 if (that.getParameterList()==null) {
+                    if (!change.getEdit().hasChildren()) {
+                        change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
+                    }
+                }
+            }
+            @Override
+            public void visit(Tree.ClassDefinition that) {
+                super.visit(that);
+                if (that.getParameterList()==null && that.getClassBody()!=null) {
+                    for (Tree.Statement st: that.getClassBody().getStatements()) {
+                        if (st instanceof Tree.Constructor) {
+                            return;
+                        }
+                    }
                     if (!change.getEdit().hasChildren()) {
                         change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
                     }

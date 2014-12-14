@@ -260,11 +260,13 @@ public class RenameRefactoring extends AbstractRefactoring {
                 @Override
                 public void acceptSearchMatch(SearchMatch match) {
                     TextChange change = canonicalChange(cc, changes, match);
-                    int end = pattern.lastIndexOf("_.");
-                    int start = pattern.substring(0, end).lastIndexOf('.')+1;
-                    String oldName = pattern.substring(start, end);                    
-                    change.addEdit(new ReplaceEdit(match.getOffset(), 
-                            oldName.length(), newName));
+                    if (change!=null) {
+                        int end = pattern.lastIndexOf("_.");
+                        int start = pattern.substring(0, end).lastIndexOf('.')+1;
+                        String oldName = pattern.substring(start, end);                    
+                        change.addEdit(new ReplaceEdit(match.getOffset(), 
+                                oldName.length(), newName));
+                    }
                 }
             };
             runSearch(pm, searchEngine, searchPattern, projects, requestor);
@@ -274,14 +276,19 @@ public class RenameRefactoring extends AbstractRefactoring {
     private TextChange canonicalChange(final CompositeChange cc,
             final Map<IResource, TextChange> changes, SearchMatch match) {
         IResource resource = match.getResource();
-        TextChange change = changes.get(resource);
-        if (change==null) {
-            change = new TextFileChange("Rename", (IFile) resource);
-            change.setEdit(new MultiTextEdit());
-            changes.put(resource, change);
-            cc.add(change);
+        if (resource instanceof IFile) {
+            TextChange change = changes.get(resource);
+            if (change==null) {
+                change = new TextFileChange("Rename", (IFile) resource);
+                change.setEdit(new MultiTextEdit());
+                changes.put(resource, change);
+                cc.add(change);
+            }
+            return change;
         }
-        return change;
+        else {
+            return null;
+        }
     }
     
     private void renameInFile(TextChange tfc, CompositeChange cc, 
