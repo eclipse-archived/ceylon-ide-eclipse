@@ -55,7 +55,7 @@ class AssignToIfIsProposal extends LocalProposal {
         
         ProposalPosition namePosition = 
         		new ProposalPosition(document, offset+15, initialName.length(), 0, 
-        				getNameProposals(offset+15, 1, nameProposals));
+        				getNameProposals(offset+15, 2, nameProposals));
         
         LinkedMode.addLinkedPosition(linkedModeModel, typePosition);
         LinkedMode.addLinkedPosition(linkedModeModel, namePosition);

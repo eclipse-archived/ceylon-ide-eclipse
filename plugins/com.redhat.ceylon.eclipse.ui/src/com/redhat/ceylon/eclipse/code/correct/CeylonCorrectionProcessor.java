@@ -64,6 +64,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.add
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.addCreateProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal.addCreateTypeParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DeclareLocalProposal.addDeclareLocalProposal;
+import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposalForSupertypes;
@@ -549,6 +550,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 3000:
             addAssignToLocalProposal(rootNode, proposals, node, offset);
+            addDestructureProposal(rootNode, proposals, node, offset);
             addAssignToForProposal(rootNode, proposals, node, offset);
             addAssignToIfExistsProposal(rootNode, proposals, node, offset);
             addAssignToIfNonemptyProposal(rootNode, proposals, node, offset);
@@ -617,6 +619,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             InvertBooleanProposal.add(proposals, editor);
                     
             addAssignToLocalProposal(rootNode, proposals, node, currentOffset);
+            addDestructureProposal(rootNode, proposals, node, currentOffset);
             addAssignToForProposal(rootNode, proposals, node, currentOffset);
             addAssignToIfExistsProposal(rootNode, proposals, node, currentOffset);
             addAssignToIfNonemptyProposal(rootNode, proposals, node, currentOffset);

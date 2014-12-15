@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_NAME;
+import static com.redhat.ceylon.eclipse.util.Nodes.addNameProposals;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -16,7 +17,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class MemberNameCompletions {
     
@@ -156,7 +156,7 @@ public class MemberNameCompletions {
 
     private static void addProposals(Set<String> proposals,
             Tree.Identifier identifier, ProducedType type) {
-        Nodes.addNameProposals(proposals, false, identifier.getText());
+        addNameProposals(proposals, false, identifier.getText());
         if (!isTypeUnknown(type) &&
                 identifier.getUnit().isIterableType(type)) {
             addPluralProposals(proposals, identifier, type);
@@ -165,7 +165,7 @@ public class MemberNameCompletions {
 
     private static void addPluralProposals(Set<String> proposals,
             Tree.Identifier identifier, ProducedType type) {
-        Nodes.addNameProposals(proposals, true, 
+        addNameProposals(proposals, true, 
                 identifier.getUnit().getIteratedType(type)
                         .getDeclaration().getName());
     }

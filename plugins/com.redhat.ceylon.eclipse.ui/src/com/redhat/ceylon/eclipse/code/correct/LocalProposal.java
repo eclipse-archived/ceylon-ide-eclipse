@@ -178,15 +178,26 @@ public abstract class LocalProposal extends AbstractLinkedMode
     public void apply(IDocument document) {
         try {
             performInitialChange(document);
-            CeylonParseController cpc = editor.getParseController();
+            CeylonParseController cpc = 
+                    editor.getParseController();
             Unit unit = cpc.getRootNode().getUnit();
             addLinkedPositions(document, unit);
-            enterLinkedMode(document, 2, exitPos + initialName.length() + 9);
+            enterLinkedMode(document, 
+                    getExitSequenceNumber(), 
+                    getExitPosition());
             openPopup();
         }
         catch (BadLocationException e) {
             e.printStackTrace();
         }
+    }
+
+    int getExitSequenceNumber() {
+        return 2;
+    }
+
+    protected int getExitPosition() {
+        return exitPos + initialName.length() + 9;
     }
     
     protected abstract void addLinkedPositions(IDocument document, Unit unit)

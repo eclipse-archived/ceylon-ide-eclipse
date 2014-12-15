@@ -151,10 +151,12 @@ public class LinkedModeCompletionProposal
                 }
                 else {
                     start = i+1;
-                    length = -1;
+                    length = 0;
                 }
             }
-            length++;
+            if (Character.isJavaIdentifierPart(ch)) { //ignore commas
+                length++;
+            }
         }
         return new Region(start, length);
     }
