@@ -527,8 +527,7 @@ final class TerminateStatementAction extends Action {
                 }
                 private void terminateWithParenAndBaces(Node that, Node subnode) {
                     try {
-                        if (that.getStartIndex()<=endOfCodeInLine &&
-                                that.getStopIndex()>=endOfCodeInLine) {
+                        if (withinLine(that)) {
                             if (subnode==null || 
                                     subnode.getStartIndex()>endOfCodeInLine) {
                                 if (!change.getEdit().hasChildren()) {
@@ -561,8 +560,7 @@ final class TerminateStatementAction extends Action {
                 }
                 private void terminateWithBaces(Node that) {
                     try {
-                        if (that.getStartIndex()<=endOfCodeInLine &&
-                                that.getStopIndex()>=endOfCodeInLine) {
+                        if (withinLine(that)) {
                             Token et = that.getEndToken();
                             if (et==null || 
                                     et.getType()!=CeylonLexer.SEMICOLON &&
@@ -580,8 +578,7 @@ final class TerminateStatementAction extends Action {
                 }
                 private void terminateWithSemicolon(Node that) {
                     try {
-                        if (that.getStartIndex()<=endOfCodeInLine &&
-                                that.getStopIndex()>=endOfCodeInLine) {
+                        if (withinLine(that)) {
                             Token et = that.getEndToken();
                             if (et==null || 
                                     et.getType()!=CeylonLexer.SEMICOLON ||
@@ -595,6 +592,12 @@ final class TerminateStatementAction extends Action {
                     catch (Exception e) {
                         e.printStackTrace();
                     }
+                }
+                boolean withinLine(Node that) {
+                    return that.getStartIndex()!=null &&
+                        that.getStopIndex()!=null &&
+                            that.getStartIndex()<=endOfCodeInLine &&
+                            that.getStopIndex()>=endOfCodeInLine;
                 }
                 protected boolean missingBlock(Block block) {
                     return block==null || block.getMainToken()==null || 
