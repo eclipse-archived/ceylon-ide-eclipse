@@ -81,7 +81,9 @@ public class InlineRefactoring extends AbstractRefactoring {
                 (((MethodOrValue)declaration).getTypeDeclaration()!=null) &&
                 (!((MethodOrValue)declaration).getTypeDeclaration().isAnonymous()) &&
                 (declaration.isToplevel() || !declaration.isShared() ||
-                        (!declaration.isFormal() && !declaration.isDefault() && !declaration.isActual()));
+                        (!declaration.isFormal() && !declaration.isDefault() && !declaration.isActual())) &&
+                (!declaration.getUnit().equals(rootNode.getUnit()) || 
+                 !(getDeclararionNode(rootNode) instanceof Tree.Variable)); //not a Destructure
                 //TODO: && !declaration is a control structure variable 
                 //TODO: && !declaration is a value with lazy init
     }
@@ -122,10 +124,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
             }
         }
-        FindDeclarationNodeVisitor fdv = 
-        		new FindDeclarationNodeVisitor(declaration);
-        declarationUnit.visit(fdv);
-        declarationNode = (Tree.Declaration) fdv.getDeclarationNode();
+        declarationNode = getDeclararionNode(declarationUnit);
         if (declarationNode instanceof Tree.AttributeDeclaration &&
                 ((Tree.AttributeDeclaration) declarationNode).getSpecifierOrInitializerExpression()==null ||
             declarationNode instanceof Tree.MethodDeclaration &&
@@ -198,9 +197,9 @@ public class InlineRefactoring extends AbstractRefactoring {
 
     public Change createChange(IProgressMonitor pm) 
     		throws CoreException, OperationCanceledException {
-
-        Tree.Declaration declarationNode=null;
-        Tree.CompilationUnit declarationUnit=null;
+        
+        Tree.Declaration declarationNode = null;
+        Tree.CompilationUnit declarationUnit = null;
         Tree.Term term = null;
         List<CommonToken> declarationTokens = null;
         Tree.CompilationUnit editorRootNode = 
@@ -224,10 +223,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                     }
                 }
             }
-            FindDeclarationNodeVisitor fdv = 
-            		new FindDeclarationNodeVisitor(declaration);
-            declarationUnit.visit(fdv);
-            declarationNode = (Tree.Declaration) fdv.getDeclarationNode();
+            declarationNode = getDeclararionNode(declarationUnit);
             term = getInlinedTerm(declarationNode);
         }
         
@@ -253,6 +249,13 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
         return cc;
         
+    }
+
+    private Tree.Declaration getDeclararionNode(Tree.CompilationUnit declarationUnit) {
+        FindDeclarationNodeVisitor fdv = 
+        		new FindDeclarationNodeVisitor(declaration);
+        declarationUnit.visit(fdv);
+        return (Tree.Declaration) fdv.getDeclarationNode();
     }
 
     private boolean affectsUnit(Unit unit) {
