@@ -26,6 +26,19 @@ import org.eclipse.jdt.internal.debug.ui.monitors.MonitorsAdapterFactory;
 import org.eclipse.jdt.internal.debug.ui.variables.ColumnPresentationAdapterFactory;
 import org.eclipse.jdt.internal.debug.ui.variables.JavaDebugElementAdapterFactory;
 
+import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonDebugTargetContentProvider;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonExpressionContentProvider;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonExpressionLabelProvider;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonModelProxyFactory;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonStackFrameContentProvider;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonStackFrameLabelProvider;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonVariableColumnPresentationFactory;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonVariableContentProvider;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonVariableEditor;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonVariableLabelProvider;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonWatchExpressionFilter;
+
 public class CeylonDebugElementAdapterFactory implements IAdapterFactory {
     private static final CeylonDebugElementAdapterFactory ceylonDebugAdapterFactory = new CeylonDebugElementAdapterFactory();
     private static final TargetAdapterFactory ceylonDebugTargetAdapterFactory = new TargetAdapterFactory();

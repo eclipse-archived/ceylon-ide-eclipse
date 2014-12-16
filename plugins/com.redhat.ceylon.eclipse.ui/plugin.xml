@@ -1934,7 +1934,7 @@
       <page
             name="Ceylon-specific debugging"
             category="org.eclipse.jdt.debug.ui.JavaDebugPreferencePage"
-            class="com.redhat.ceylon.eclipse.core.debug.CeylonStepFilterPreferencePage"
+            class="com.redhat.ceylon.eclipse.core.debug.preferences.CeylonStepFilterPreferencePage"
             id="com.redhat.ceylon.eclipse.ui.CeylonDebugPreferencePage">
            <keywordReference
                  id="com.redhat.ceylon.eclipse.ui.keywords.debug">
@@ -2505,7 +2505,7 @@
                label="%openRecTypeHierarchy.label"
                helpContextId="open_receiving_type_hierarchy_action_context"
                tooltip="%openRecTypeHierarchy.tooltip"
-               class="com.redhat.ceylon.eclipse.core.debug.CeylonOpenReceivingTypeHierarchyAction"
+               class="com.redhat.ceylon.eclipse.core.debug.actions.CeylonOpenReceivingTypeHierarchyAction"
                menubarPath="emptyEditGroup"
                enablesFor="1"
                id="com.redhat.ceylon.eclipse.ui.actions.OpenReceivingTypeHierarchy"
@@ -2515,7 +2515,7 @@
                label="%openRecType.label"
                helpContextId="open_on_receiving_type_action_context"
                tooltip="%openRecType.tooltip"
-               class="com.redhat.ceylon.eclipse.core.debug.CeylonOpenReceivingTypeAction"
+               class="com.redhat.ceylon.eclipse.core.debug.actions.CeylonOpenReceivingTypeAction"
                menubarPath="emptyEditGroup"
                enablesFor="1"
                id="com.redhat.ceylon.eclipse.ui.actions.OpenReceivingType"
@@ -2529,7 +2529,7 @@
                label="%openDeclTypeHierarchy.label"
                helpContextId="open_declaring_type_hierarchy_action_context"
                tooltip="%openDeclTypeHierarchy.tooltip"
-               class="com.redhat.ceylon.eclipse.core.debug.CeylonOpenDeclaringTypeHierarchyAction"
+               class="com.redhat.ceylon.eclipse.core.debug.actions.CeylonOpenDeclaringTypeHierarchyAction"
                menubarPath="emptyEditGroup"
                enablesFor="1"
                id="com.redhat.ceylon.eclipse.ui.actions.OpenDeclaringTypeHierarchy"
@@ -2539,7 +2539,7 @@
                label="%openDeclType.label"
                helpContextId="open_on_declaring_type_action_context"
                tooltip="%openDeclType.tooltip"
-               class="com.redhat.ceylon.eclipse.core.debug.CeylonOpenDeclaringTypeAction"
+               class="com.redhat.ceylon.eclipse.core.debug.actions.CeylonOpenDeclaringTypeAction"
                menubarPath="emptyEditGroup"
                enablesFor="1"
                id="com.redhat.ceylon.eclipse.ui.actions.OpenDeclaringType"
@@ -2561,7 +2561,7 @@
                label="%openConcreteVarTypeHierarchy.label"
                helpContextId="open_variable_concrete_type_hierarchy_action_context"
                tooltip="%openConcreteVarTypeHierarchy.tooltip"
-               class="com.redhat.ceylon.eclipse.core.debug.CeylonOpenVariableConcreteTypeHierarchyAction"
+               class="com.redhat.ceylon.eclipse.core.debug.actions.CeylonOpenVariableConcreteTypeHierarchyAction"
                menubarPath="emptyNavigationGroup"
                enablesFor="1"
                id="com.redhat.ceylon.eclipse.ui.actions.OpenVariableConcreteTypeHierarchy"
@@ -2571,7 +2571,7 @@
                label="%openConcreteVarType.label"
                helpContextId="open_variable_concrete_type_action_context"
                tooltip="%openConcreteVarType.tooltip"
-               class="com.redhat.ceylon.eclipse.core.debug.CeylonOpenVariableConcreteTypeAction"
+               class="com.redhat.ceylon.eclipse.core.debug.actions.CeylonOpenVariableConcreteTypeAction"
                menubarPath="emptyNavigationGroup"
                enablesFor="1"
                id="com.redhat.ceylon.eclipse.ui.actions.OpenVariableConcreteType"
@@ -2605,7 +2605,7 @@
                label="%openDeclVarTypeHierarchy.label"
                helpContextId="open_variable_declared_type_hierarchy_action_context"
                tooltip="%openDeclVarTypeHierarchy.tooltip"
-               class="com.redhat.ceylon.eclipse.core.debug.CeylonOpenVariableDeclaredTypeHierarchyAction"
+               class="com.redhat.ceylon.eclipse.core.debug.actions.CeylonOpenVariableDeclaredTypeHierarchyAction"
                menubarPath="emptyNavigationGroup"
                enablesFor="1"
                id="com.redhat.ceylon.eclipse.ui.actions.OpenVariableDeclaredTypeHierarchy"
@@ -2615,7 +2615,7 @@
                label="%openDeclVarType.label"
                helpContextId="open_on_variable_type_action_context"
                tooltip="%openDeclVarType.tooltip"
-               class="com.redhat.ceylon.eclipse.core.debug.CeylonOpenVariableDeclaredTypeAction"
+               class="com.redhat.ceylon.eclipse.core.debug.actions.CeylonOpenVariableDeclaredTypeAction"
                menubarPath="emptyNavigationGroup"
                enablesFor="1"
                id="com.redhat.ceylon.eclipse.ui.actions.OpenVariableDeclaredType"
@@ -3225,6 +3225,6 @@
        </propertySections>
     </extension>
     <extension point="org.eclipse.core.runtime.preferences">
-        <initializer class="com.redhat.ceylon.eclipse.core.debug.CeylonDebugUIPreferenceInitializer"/>
+        <initializer class="com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugUIPreferenceInitializer"/>
     </extension>
 </plugin>

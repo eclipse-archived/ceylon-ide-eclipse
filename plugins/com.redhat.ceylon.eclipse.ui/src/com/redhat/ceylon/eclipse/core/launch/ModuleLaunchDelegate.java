@@ -43,7 +43,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
-import com.redhat.ceylon.eclipse.core.debug.CeylonJDIDebugTarget;
+import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.sun.jdi.VirtualMachine;

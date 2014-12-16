@@ -40,7 +40,7 @@ import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.dist.osgi.Activator;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
-import com.redhat.ceylon.eclipse.core.debug.CeylonDebugOptionsManager;
+import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugOptionsManager;
 
 
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
