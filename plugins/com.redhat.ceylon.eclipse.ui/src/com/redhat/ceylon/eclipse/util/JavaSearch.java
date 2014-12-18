@@ -48,6 +48,7 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.core.JavaElement;
 import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
+import com.redhat.ceylon.compiler.java.language.AbstractCallable;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -313,6 +314,69 @@ public class JavaSearch {
     }
 
     public static boolean elementEqualsDeclaration(IMember typeOrMethod, Declaration declaration) {
+        // loadAllAnnotations(typeOrMethod); // Uncomment to easily load all annotations while debugging
+
+        String javaElementSimpleName = getCeylonSimpleName(typeOrMethod);
+        String ceylonDeclarationSimpleName = declaration.getName();
+        if (javaElementSimpleName == null) {
+            return false;
+        }
+        if (!javaElementSimpleName.equals(ceylonDeclarationSimpleName)) {
+            if ( javaElementSimpleName.isEmpty()) {
+                try {
+                    if (!(typeOrMethod instanceof IType
+                            && ((IType)typeOrMethod).isAnonymous()
+                            && (declaration instanceof Method)
+                            && ! isCeylonObject(typeOrMethod)
+                            && AbstractCallable.class.getName().equals(((IType) typeOrMethod).getSuperclassName()))) {
+                        return false;
+                    }
+                } catch (JavaModelException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        
+        if (typeOrMethod instanceof IType) {
+            String localDeclarationQualifier = getLocalDeclarationQualifier(typeOrMethod);
+            if (localDeclarationQualifier != null) {
+                if (! localDeclarationQualifier.equals(declaration.getQualifier())) {
+                    return false;
+                }
+            }
+            if (isCeylonObject(typeOrMethod) 
+                    && declaration.isToplevel() && !(declaration instanceof Value)) {
+                return false;
+            }
+        }
+        
+        IMember declaringElement = getDeclaringElement(typeOrMethod);
+        
+        if (declaringElement != null) {
+            declaringElement = toCeylonDeclarationElement(declaringElement);
+            Declaration ceylonContainingDeclaration = getContainingDeclaration(declaration);
+            
+            if (ceylonContainingDeclaration != null) {
+                return elementEqualsDeclaration(declaringElement, 
+                        (Declaration) ceylonContainingDeclaration);
+            }
+        } else {
+            Scope scope = declaration.getScope();
+            if (scope instanceof Package) {
+                String ceylonDeclarationPkgName = scope.getQualifiedNameString();
+                IPackageFragment pkgFragment = (IPackageFragment) typeOrMethod.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
+                String pkgFragmentName = pkgFragment != null ? pkgFragment.getElementName() : null;
+                return ceylonDeclarationPkgName.equals(pkgFragmentName);
+            }
+        }
+        return false;
+    }
+
+    public static void loadAllAnnotations(IMember typeOrMethod) {
         Map<String, Map<String, Object>> memberAnnotations = new HashMap<>();
         if (typeOrMethod instanceof IAnnotatable) {
             try {
@@ -349,27 +413,28 @@ public class JavaSearch {
                 e.printStackTrace();
             }
         }
+    }
 
-        String javaElementSimpleName = getCeylonSimpleName(typeOrMethod);
-        String ceylonDeclarationSimpleName = declaration.getName();
-        if (javaElementSimpleName == null ||
-                ! javaElementSimpleName.equals(ceylonDeclarationSimpleName)) {
-            return false;
-        }
-        
-        if (typeOrMethod instanceof IType) {
-            String localDeclarationQualifier = getLocalDeclarationQualifier(typeOrMethod);
-            if (localDeclarationQualifier != null) {
-                if (! localDeclarationQualifier.equals(declaration.getQualifier())) {
-                    return false;
+    public static Declaration getContainingDeclaration(Declaration declaration) {
+        Declaration ceylonContainingDeclaration = null;
+        if (! declaration.isToplevel()) {
+            Scope scope = declaration.getContainer();
+            while (!(scope instanceof Package)) {
+                if (scope instanceof Declaration) {
+                    ceylonContainingDeclaration = (Declaration) scope;
+                    break;
                 }
-            }
-            if (isCeylonObject(typeOrMethod) 
-                    && declaration.isToplevel() && !(declaration instanceof Value)) {
-                return false;
+                if (scope instanceof Specification) {
+                    ceylonContainingDeclaration = ((Specification) scope).getDeclaration();
+                    break;
+                }
+                scope = scope.getContainer();
             }
         }
-        
+        return ceylonContainingDeclaration;
+    }
+
+    public static IMember getDeclaringElement(IMember typeOrMethod) {
         // TODO : also manage the case of local declarations that are 
         // wrongly top-level (specific retrieval of the parent IMember)
         
@@ -424,39 +489,7 @@ public class JavaSearch {
                 declaringElement = null;
             }
         }
-        
-        if (declaringElement != null) {
-            declaringElement = toCeylonDeclarationElement(declaringElement);
-            Declaration ceylonContainingDeclaration = null;
-            if (! declaration.isToplevel()) {
-                Scope scope = declaration.getContainer();
-                while (!(scope instanceof Package)) {
-                    if (scope instanceof Declaration) {
-                        ceylonContainingDeclaration = (Declaration) scope;
-                        break;
-                    }
-                    if (scope instanceof Specification) {
-                        ceylonContainingDeclaration = ((Specification) scope).getDeclaration();
-                        break;
-                    }
-                    scope = scope.getContainer();
-                }
-            }
-            
-            if (ceylonContainingDeclaration != null) {
-                return elementEqualsDeclaration(declaringElement, 
-                        (Declaration) ceylonContainingDeclaration);
-            }
-        } else {
-            Scope scope = declaration.getScope();
-            if (scope instanceof Package) {
-                String ceylonDeclarationPkgName = scope.getQualifiedNameString();
-                IPackageFragment pkgFragment = (IPackageFragment) typeOrMethod.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
-                String pkgFragmentName = pkgFragment != null ? pkgFragment.getElementName() : null;
-                return ceylonDeclarationPkgName.equals(pkgFragmentName);
-            }
-        }
-        return false;
+        return declaringElement;
     }
 
     public static IProject[] getProjectsToSearch(IProject project) {
@@ -486,8 +519,14 @@ public class JavaSearch {
                     }
                     if (methodName.equals(parentType.getElementName())
                             && method.isConstructor()
-                            && isCeylon(parentType) && true) {
+                            && isCeylon(parentType)) {
                         return toCeylonDeclarationElement(parentType);
+                    }
+                    if (methodName.equals("$call$")) {
+                        return toCeylonDeclarationElement(parentType);
+                    }
+                    if (methodName.equals("$evaluate$")) {
+                        return toCeylonDeclarationElement(getDeclaringElement(parentType));
                     }
                 }
             } catch (JavaModelException e) {
@@ -518,7 +557,7 @@ public class JavaSearch {
     
     public static Declaration toCeylonDeclaration(IJavaElement javaElement,
             List<? extends PhasedUnit> phasedUnits) {
-        if (true & ! (javaElement instanceof IMember)) {
+        if (! (javaElement instanceof IMember)) {
             return null;
         }
         IMember declarationElement = toCeylonDeclarationElement((IMember)javaElement);
