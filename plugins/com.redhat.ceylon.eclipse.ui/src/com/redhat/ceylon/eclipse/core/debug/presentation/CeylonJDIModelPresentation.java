@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.core.debug.presentation;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
@@ -15,6 +18,7 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jdt.internal.debug.core.logicalstructures.JDIAllInstancesValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIClassType;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
+import org.eclipse.jdt.internal.debug.core.model.JDILocalVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDINullValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIReferenceListValue;
@@ -28,7 +32,7 @@ import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationListener;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationRunner;
 
-class CeylonJDIModelPresentation extends JDIModelPresentation {
+public class CeylonJDIModelPresentation extends JDIModelPresentation {
     private static final String ceylonStringTypeName = ceylon.language.String.class.getName();
     private static final String ceylonStringValueFieldName = "value";
 
@@ -99,6 +103,9 @@ class CeylonJDIModelPresentation extends JDIModelPresentation {
     }
 
     public String getCeylonReifiedTypeName(IValue value) throws DebugException {
+        if (value instanceof JDINullValue) {
+            return "Null";
+        }
         if (value instanceof JDIObjectValue) {
             if (((IJavaReferenceType)((JDIObjectValue)value).getJavaType()).getName().endsWith("$impl")) {
                 IJavaFieldVariable thisField = ((JDIObjectValue) value).getField("$this", 0);
@@ -147,17 +154,19 @@ class CeylonJDIModelPresentation extends JDIModelPresentation {
     }
     
     @Override
-    protected String getVariableText(IJavaVariable var) {
+    public String getVariableText(IJavaVariable var) {
         boolean isCeylonContext = CeylonPresentationContext.isCeylonContext(var);
         String varLabel= DebugUIMessages.JDIModelPresentation_unknown_name__1; 
         try {
             varLabel= var.getName();
+            if (isCeylonContext) {
+                varLabel = CeylonJDIModelPresentation.fixVariableName(varLabel, 
+                        var instanceof JDILocalVariable,
+                        var.isSynthetic());
+            }
         } catch (DebugException exception) {
         }
 
-        if (isCeylonContext) {
-            varLabel = CeylonJDIModelPresentation.fixVariableName(varLabel);
-        }
         
         IJavaValue javaValue= null;
         try {
@@ -208,12 +217,26 @@ class CeylonJDIModelPresentation extends JDIModelPresentation {
         return buff.toString();
     }
 
-    static String fixVariableName(String name) {
+    
+    private final static Pattern localVariablePattern = Pattern.compile("([^$]+)\\$[0-9]+");
+    public static String fixVariableName(String name, boolean isLocalVariable, boolean isSynthetic) {
+        if (isSynthetic 
+                && name.startsWith("val$")) {
+            name = name.substring(4);
+        }
         if (name.charAt(0) == '$') {
             if (Naming.isJavaKeyword(name, 1, name.length())) {
                 name = name.substring(1);
             }
         }
+        if (isLocalVariable || isSynthetic 
+                && name.contains("$")) {
+            Matcher matcher = localVariablePattern.matcher(name);
+            if (matcher.matches()) {
+                name = matcher.group(1);
+            }
+        }
+        
         return name;
     }
 

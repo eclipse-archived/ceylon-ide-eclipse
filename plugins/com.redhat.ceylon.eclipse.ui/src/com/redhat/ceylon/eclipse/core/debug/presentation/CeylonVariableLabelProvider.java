@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.debug.presentation;
 
+import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonPresentationContext.isCeylonContext;
 
 import org.eclipse.core.runtime.CoreException;
@@ -8,6 +9,8 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.ILabelUpdate;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationContext;
 import org.eclipse.debug.ui.IDebugModelPresentation;
+import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.jdt.internal.debug.core.model.JDILocalVariable;
 import org.eclipse.jdt.internal.debug.ui.variables.JavaVariableLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
 
@@ -32,7 +35,10 @@ public class CeylonVariableLabelProvider extends JavaVariableLabelProvider{
             IPresentationContext context) throws CoreException {
         String name = super.getVariableName(variable, context);
         if (isCeylonContext(context)) {
-            name = CeylonJDIModelPresentation.fixVariableName(name);
+            name = fixVariableName(name, 
+                    variable instanceof JDILocalVariable,
+                    variable instanceof IJavaVariable
+                        && ((IJavaVariable) variable).isSynthetic());
         }
         return name;
     }
