@@ -59,19 +59,14 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IInputChangedListener;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextHover;
-import org.eclipse.jface.text.ITextHoverExtension;
-import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Region;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
@@ -134,61 +129,12 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 
 
-public class DocumentationHover 
-        implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
-    
-    private CeylonEditor editor;
+public class DocumentationHover extends SourceInfoHover {
     
     public DocumentationHover(CeylonEditor editor) {
-        this.editor = editor;
+        super(editor);
     }
 
-    public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-        IDocument document = textViewer.getDocument();
-        int start= -2;
-        int end= -1;
-        
-        try {
-            int pos= offset;
-            char c;
-        
-            while (pos >= 0) {
-                c= document.getChar(pos);
-                if (!Character.isJavaIdentifierPart(c)) {
-                    break;
-                }
-                --pos;
-            }
-            start= pos;
-        
-            pos= offset;
-            int length= document.getLength();
-        
-            while (pos < length) {
-                c= document.getChar(pos);
-                if (!Character.isJavaIdentifierPart(c)) {
-                    break;
-        
-                }
-                ++pos;
-            }
-            end= pos;
-        
-        } catch (BadLocationException x) {
-        }
-        
-        if (start >= -1 && end > -1) {
-            if (start == offset && end == offset)
-                return new Region(offset, 0);
-            else if (start == offset)
-                return new Region(start, end - start);
-            else
-                return new Region(start + 1, end - start - 1);
-        }
-        
-        return null;
-    }
-    
     final class CeylonLocationListener implements LocationListener {
         private final BrowserInformationControl control;
         
@@ -567,14 +513,9 @@ public class DocumentationHover
             IRegion hoverRegion) {
         CeylonParseController parseController = 
                 editor.getParseController();
-        if (parseController==null) {
-            return null;
-        }
-        Tree.CompilationUnit rootNode = 
-                parseController.getRootNode();
-        if (rootNode!=null) {
-            Node node = findNode(rootNode, 
-                    hoverRegion.getOffset());
+
+        Node node = getHoverNode(hoverRegion, parseController);
+        if (node != null) {
             if (node instanceof Tree.ImportPath) {
                 Referenceable r = 
                         ((Tree.ImportPath) node).getModel();
