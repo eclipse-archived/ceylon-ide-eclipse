@@ -91,17 +91,20 @@ class CeylonPresentationContext implements IPresentationContext {
     }
 
     private static IJavaStackFrame getStackFrame(IViewerUpdate viewerUpdate) {
-        IJavaStackFrame frame = null;
         Object input = viewerUpdate.getViewerInput();
         if (input instanceof IJavaStackFrame) {
-            frame = (IJavaStackFrame) input;
+            return (IJavaStackFrame) input;
         }
         if (input instanceof LaunchManager) {
             if (viewerUpdate.getElement() instanceof IJavaStackFrame) {
-                frame = (IJavaStackFrame) viewerUpdate.getElement();
+                return (IJavaStackFrame) viewerUpdate.getElement();
             }
         }
-        return frame;
+        IAdaptable context = DebugUITools.getDebugContext();
+        if (context != null) {
+            return (IJavaStackFrame) context.getAdapter(IJavaStackFrame.class);
+        }
+        return null;
     }
     
     static Boolean isInCeylonFile(IJavaReferenceType type) throws DebugException {
