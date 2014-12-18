@@ -13,6 +13,7 @@ package com.redhat.ceylon.eclipse.code.hover;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
@@ -22,6 +23,7 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover;
 
 /**
  * Caution: this implementation is a layer breaker and contains some "shortcuts"
@@ -45,6 +47,7 @@ public class BestMatchHover
      */
     private void installTextHovers() {
         fInstantiatedTextHovers= new ArrayList<ITextHover>(2);
+        fInstantiatedTextHovers.add(new CeylonDebugHover(editor));
         fInstantiatedTextHovers.add(new AnnotationHover(editor, false));
         fInstantiatedTextHovers.add(new DocumentationHover(editor));
     }
@@ -58,6 +61,11 @@ public class BestMatchHover
             return null;
 
         for (ITextHover hover: fInstantiatedTextHovers) {
+            if (hover instanceof CeylonDebugHover) {
+                if (((CeylonDebugHover)hover).isEnabled()) {
+                    continue;
+                }
+            }
             @SuppressWarnings("deprecation")
             String s= hover.getHoverInfo(textViewer, hoverRegion);
             if (s!=null && !s.trim().isEmpty()) {
@@ -78,6 +86,11 @@ public class BestMatchHover
             return null;
 
         for (ITextHover hover: fInstantiatedTextHovers) {
+            if (hover instanceof CeylonDebugHover) {
+                if (! ((CeylonDebugHover)hover).isEnabled()) {
+                    continue;
+                }
+            }
             if (hover instanceof ITextHoverExtension2) {
                 Object info= ((ITextHoverExtension2) hover).getHoverInfo2(textViewer, hoverRegion);
                 if (info != null) {
