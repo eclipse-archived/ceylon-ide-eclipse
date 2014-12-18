@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CASE;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CASE;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CATCH;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXPRESSION;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.META;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -25,6 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 
 public class KeywordCompletionProposal extends CompletionProposal {
     

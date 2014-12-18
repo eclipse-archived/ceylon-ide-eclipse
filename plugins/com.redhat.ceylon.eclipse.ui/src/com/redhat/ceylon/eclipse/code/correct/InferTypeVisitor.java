@@ -251,8 +251,8 @@ class InferTypeVisitor extends Visitor {
         }
     }
     
-    @Override
-    public void visit(Tree.KeyValueIterator that) {
+    /*@Override
+    public void visit(Tree.PatternIterator that) {
         super.visit(that);
         Tree.Term primary = that.getSpecifierExpression().getExpression().getTerm();
         if (primary instanceof Tree.BaseMemberExpression) {
@@ -263,7 +263,7 @@ class InferTypeVisitor extends Visitor {
                 result.intersect(that.getUnit().getIterableType(that.getUnit().getEntryType(kt, vt)));
             }
         }
-    }
+    }*/
     
     @Override
     public void visit(Tree.ValueIterator that) {
@@ -293,12 +293,16 @@ class InferTypeVisitor extends Visitor {
     @Override
     public void visit(Tree.NonemptyCondition that) {
         super.visit(that);
-        Tree.Term primary = that.getVariable().getSpecifierExpression().getExpression().getTerm();
-        if (primary instanceof Tree.BaseMemberExpression) {
-            Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
-            if (bmed!=null && bmed.equals(dec)) {
-                ProducedType et = that.getUnit().getSequentialElementType(that.getVariable().getType().getTypeModel());
-                result.intersect(that.getUnit().getSequentialType(et));
+        Tree.Statement st = that.getVariable();
+        if (st instanceof Tree.Variable) {
+            Tree.Variable var = (Tree.Variable) st;
+            Tree.Term primary = var.getSpecifierExpression().getExpression().getTerm();
+            if (primary instanceof Tree.BaseMemberExpression) {
+                Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
+                if (bmed!=null && bmed.equals(dec)) {
+                    ProducedType et = that.getUnit().getSequentialElementType(var.getType().getTypeModel());
+                    result.intersect(that.getUnit().getSequentialType(et));
+                }
             }
         }
     }

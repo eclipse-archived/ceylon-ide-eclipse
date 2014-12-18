@@ -1,31 +1,31 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.ALIAS_REF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CASE;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_REF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.DOCLINK;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXISTS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.FUNCTION_REF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.INTERFACE_REF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.MODULE_REF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.NONEMPTY;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.OF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PACKAGE_REF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.SATISFIES;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ALIAS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ARGUMENT_LIST;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_PARAMETER_REF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.UPPER_BOUND;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.VALUE_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.ALIAS_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CASE;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CATCH;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.DOCLINK;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXISTS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXPRESSION;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.FUNCTION_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.INTERFACE_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.IS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.META;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.MODULE_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.NONEMPTY;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.OF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.PACKAGE_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.PARAMETER_LIST;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ALIAS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ARGUMENT_LIST;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_PARAMETER_LIST;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_PARAMETER_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.UPPER_BOUND;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.VALUE_REF;
 
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -72,9 +72,10 @@ class FindOccurrenceLocationVisitor extends Visitor
     @Override
     public void visit(Tree.ExistsCondition that) {
         super.visit(that);
-        if (that.getVariable()==null ? 
+        Tree.Statement var = that.getVariable();
+        if (var instanceof Tree.Variable ? 
                 inBounds(that) :
-                inBounds(that.getVariable().getIdentifier())) {
+                inBounds(((Tree.Variable)var).getIdentifier())) {
             occurrence = EXISTS;
         }
     }
@@ -82,9 +83,10 @@ class FindOccurrenceLocationVisitor extends Visitor
     @Override
     public void visit(Tree.NonemptyCondition that) {
         super.visit(that);
-        if (that.getVariable()==null ? 
+        Tree.Statement var = that.getVariable();
+        if (var instanceof Tree.Variable ? 
                 inBounds(that) :
-                inBounds(that.getVariable().getIdentifier())) {
+                inBounds(((Tree.Variable)var).getIdentifier())) {
             occurrence = NONEMPTY;
         }
     }

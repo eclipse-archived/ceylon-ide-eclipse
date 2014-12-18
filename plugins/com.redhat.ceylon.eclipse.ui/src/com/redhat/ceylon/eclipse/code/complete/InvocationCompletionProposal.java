@@ -17,10 +17,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLa
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleType;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.SATISFIES;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ALIAS;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importCallableParameterParamTypes;
@@ -32,6 +28,10 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDeco
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ALIAS;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,6 +83,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 
 class InvocationCompletionProposal extends CompletionProposal {
     

@@ -1,12 +1,11 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.getProposals;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getOccurrenceLocation;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getLevenshteinDistance;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.IMPORT;
 import static java.lang.Character.isUpperCase;
 import static java.util.Collections.singleton;
 
@@ -29,10 +28,10 @@ import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 
 class ChangeReferenceProposal extends CorrectionProposal 
         implements ICompletionProposalExtension {
@@ -62,7 +61,7 @@ class ChangeReferenceProposal extends CorrectionProposal
             if (!pn.isEmpty() && 
                     !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
                 OccurrenceLocation ol = 
-                        getOccurrenceLocation(cu, 
+                        Nodes.getOccurrenceLocation(cu, 
                                 Nodes.findNode(cu, problem.getOffset()),
                                 problem.getOffset());
                 if (ol!=IMPORT) {

@@ -28,7 +28,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class ConvertIfElseToThenElse extends CorrectionProposal {
@@ -152,12 +151,15 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
         boolean abbreviateToElse = false;
         if (condition instanceof Tree.ExistsCondition) {
             Tree.ExistsCondition existsCond = (Tree.ExistsCondition) condition;
-            Variable variable = existsCond.getVariable();
-            if (thenStr.equals(getTerm(doc, variable.getIdentifier()))) {
-                Expression existsExpr = variable.getSpecifierExpression().getExpression();
-                test = getTerm(doc, existsExpr);
-                abbreviateToElse = true;
-            }          
+            Tree.Statement st = existsCond.getVariable();
+            if (st instanceof Tree.Variable) {
+                Tree.Variable variable = (Tree.Variable) st;
+                if (thenStr.equals(getTerm(doc, variable.getIdentifier()))) {
+                    Expression existsExpr = variable.getSpecifierExpression().getExpression();
+                    test = getTerm(doc, existsExpr);
+                    abbreviateToElse = true;
+                }
+            }
         }
         
         boolean abbreviateToThen = 

@@ -34,7 +34,6 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addDocLinkProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addImportProposal;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getLine;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getRealScope;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isEmptyModuleDescriptor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isEmptyPackageDescriptor;
@@ -59,28 +58,6 @@ import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addM
 import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addMemberNameProposals;
 import static com.redhat.ceylon.eclipse.code.complete.ModuleCompletions.addModuleCompletions;
 import static com.redhat.ceylon.eclipse.code.complete.ModuleCompletions.addModuleDescriptorCompletion;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.ALIAS_REF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CASE;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CATCH;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.CLASS_ALIAS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.DOCLINK;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXISTS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXPRESSION;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.EXTENDS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.FUNCTION_REF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IMPORT;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.IS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.META;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.NONEMPTY;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.OF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.SATISFIES;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ALIAS;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_ARGUMENT_LIST;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.TYPE_PARAMETER_REF;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.UPPER_BOUND;
-import static com.redhat.ceylon.eclipse.code.complete.OccurrenceLocation.VALUE_REF;
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addCurrentPackageNameCompletion;
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPackageCompletions;
 import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPackageDescriptorCompletion;
@@ -91,6 +68,28 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.TypeArgumentListCompletions.addTypeArgumentListProposal;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION_FILTERS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.ALIAS_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CASE;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CATCH;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.DOCLINK;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXISTS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXPRESSION;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.FUNCTION_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.IS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.META;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.NONEMPTY;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.OF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.PARAMETER_LIST;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ALIAS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ARGUMENT_LIST;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_PARAMETER_LIST;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_PARAMETER_REF;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.UPPER_BOUND;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.VALUE_REF;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
 import static java.lang.Character.isDigit;
@@ -153,6 +152,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 
 public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
@@ -678,7 +678,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             ProducedType requiredType, int previousTokenType, int tokenType) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-        OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node, offset);
+        OccurrenceLocation ol = Nodes.getOccurrenceLocation(cpc.getRootNode(), node, offset);
         
         if (node instanceof Tree.TypeConstraint) {
             for (DeclarationWithProximity dwp: sortedProposals) {

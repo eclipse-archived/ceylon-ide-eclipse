@@ -100,14 +100,6 @@ public class CompletionUtil {
                 cpc.getRootNode().getPackageDescriptors().isEmpty();
     }
 
-    public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, 
-            Node node, int offset) {
-        FindOccurrenceLocationVisitor visitor = 
-                new FindOccurrenceLocationVisitor(offset, node);
-        cu.visit(visitor);
-        return visitor.getOccurrenceLocation();
-    }
-
     static int nextTokenType(final CeylonParseController cpc,
             final CommonToken token) {
         for (int i=token.getTokenIndex()+1; i<cpc.getTokens().size(); i++) {

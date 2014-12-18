@@ -14,6 +14,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class FindArgumentsVisitor extends Visitor 
         implements NaturalVisitor {
+    
     Tree.MemberOrTypeExpression smte;
     Tree.NamedArgumentList namedArgs;
     Tree.PositionalArgumentList positionalArgs;
@@ -94,15 +95,23 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.ExistsCondition that) {
-        ProducedType varType = that.getVariable().getType().getTypeModel();
-        currentType = that.getUnit().getOptionalType(varType);
+        Tree.Statement st = that.getVariable();
+        if (st instanceof Tree.Variable) {
+            ProducedType varType = 
+                    ((Tree.Variable) st).getType().getTypeModel();
+            currentType = that.getUnit().getOptionalType(varType);
+        }
         super.visit(that);
         currentType = null;
     }
     @Override
     public void visit(Tree.NonemptyCondition that) {
-        ProducedType varType = that.getVariable().getType().getTypeModel();
-        currentType = that.getUnit().getEmptyType(varType);
+        Tree.Statement st = that.getVariable();
+        if (st instanceof Tree.Variable) {
+            ProducedType varType = 
+                    ((Tree.Variable) st).getType().getTypeModel();
+            currentType = that.getUnit().getEmptyType(varType);
+        }
         super.visit(that);
         currentType = null;
     }
@@ -135,15 +144,15 @@ class FindArgumentsVisitor extends Visitor
         super.visit(that);
         currentType = null;
     }
-    @Override
-    public void visit(Tree.KeyValueIterator that) {
+    /*@Override
+    public void visit(Tree.PatternIterator that) {
         ProducedType keyType = that.getKeyVariable().getType().getTypeModel();
         ProducedType valueType = that.getValueVariable().getType().getTypeModel();
         currentType = that.getUnit().getIterableType(that.getUnit()
                 .getEntryType(keyType, valueType));
         super.visit(that);
         currentType = null;
-    }
+    }*/
     @Override
     public void visit(Tree.BinaryOperatorExpression that) {
         if (currentType==null) {

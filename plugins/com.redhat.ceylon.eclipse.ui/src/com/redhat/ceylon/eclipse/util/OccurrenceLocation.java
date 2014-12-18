@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package com.redhat.ceylon.eclipse.util;
 
 public enum OccurrenceLocation {
     EXISTS(false), 

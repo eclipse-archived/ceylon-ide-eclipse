@@ -83,8 +83,13 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
     }
     
     private Tree.Variable getConditionVariable(Condition c) {
+        //NOTE: returns null for a destructuring condition!
         if (c instanceof Tree.ExistsOrNonemptyCondition) {
-            return ((Tree.ExistsOrNonemptyCondition) c).getVariable();
+            Tree.Statement st = 
+                    ((Tree.ExistsOrNonemptyCondition) c).getVariable();
+            if (st instanceof Tree.Variable) {
+                return (Tree.Variable) st;
+            }
         }
         if (c instanceof Tree.IsCondition) {
             return ((Tree.IsCondition) c).getVariable();

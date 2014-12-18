@@ -810,4 +810,12 @@ public class Nodes {
         }
     }
 
+    public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, 
+            Node node, int offset) {
+        FindOccurrenceLocationVisitor visitor = 
+                new FindOccurrenceLocationVisitor(offset, node);
+        cu.visit(visitor);
+        return visitor.getOccurrenceLocation();
+    }
+
 }
