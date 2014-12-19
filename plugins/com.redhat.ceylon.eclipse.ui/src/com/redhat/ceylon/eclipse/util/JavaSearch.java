@@ -417,6 +417,9 @@ public class JavaSearch {
 
     public static Declaration getContainingDeclaration(Declaration declaration) {
         Declaration ceylonContainingDeclaration = null;
+        if (declaration == null) {
+            return null;
+        }
         if (! declaration.isToplevel()) {
             Scope scope = declaration.getContainer();
             while (!(scope instanceof Package)) {
