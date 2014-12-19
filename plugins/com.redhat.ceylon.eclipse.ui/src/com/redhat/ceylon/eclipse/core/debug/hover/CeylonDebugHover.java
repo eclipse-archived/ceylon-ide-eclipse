@@ -60,8 +60,6 @@ import com.sun.jdi.Method;
 
 public class CeylonDebugHover extends SourceInfoHover {
     
-    
-    
     public CeylonDebugHover(CeylonEditor editor) {
         super(editor);
     }
@@ -70,9 +68,6 @@ public class CeylonDebugHover extends SourceInfoHover {
         return DebugUtils.getFrame() != null;
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.text.ITextHover#getHoverInfo(org.eclipse.jface.text.ITextViewer, org.eclipse.jface.text.IRegion)
-     */
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
         Object object = getHoverInfo2(textViewer, hoverRegion);
         if (object instanceof IVariable) {  

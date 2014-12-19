@@ -3,20 +3,14 @@ package com.redhat.ceylon.eclipse.core.debug.presentation;
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationContext;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDILocalVariable;
-
-import com.redhat.ceylon.compiler.java.codegen.Naming;
 
 public class CeylonContentProviderFilter {
     public static Object[] filterVariables(Object[] variables, IPresentationContext context) throws DebugException {

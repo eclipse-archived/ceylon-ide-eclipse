@@ -11,11 +11,6 @@ public class CeylonDebugUIPreferenceInitializer extends AbstractPreferenceInitia
         super();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
-     */
     @Override
     public void initializeDefaultPreferences() {
         IPreferenceStore store = CeylonPlugin.getInstance().getPreferenceStore();

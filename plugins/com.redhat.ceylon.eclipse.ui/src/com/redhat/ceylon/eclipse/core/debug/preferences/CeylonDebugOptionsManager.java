@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.debug.preferences;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
@@ -18,8 +20,10 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  */
 public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPropertyChangeListener, ILaunchListener {
     
-    public static final String PREF_FILTER_LANGUAGE_MODULE = CeylonPlugin.PLUGIN_ID + ".ceylonDebug.FilterCeylonLanguageFrames"; //$NON-NLS-1$
-    public static final String PREF_FILTER_MODULE_RUNTIME = CeylonPlugin.PLUGIN_ID + ".ceylonDebug.FilterJBossModulesFrames"; //$NON-NLS-1$
+    public static final String PREF_FILTER_LANGUAGE_MODULE = 
+            PLUGIN_ID + ".ceylonDebug.FilterCeylonLanguageFrames";
+    public static final String PREF_FILTER_MODULE_RUNTIME = 
+            PLUGIN_ID + ".ceylonDebug.FilterJBossModulesFrames";
     
     /**
      * Singleton options manager
