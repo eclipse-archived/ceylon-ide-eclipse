@@ -264,6 +264,10 @@ public class DebugUtils {
             return true;
         }
 
+        if (method.name().equals("$call$") || method.name().equals("$callvariadic$")) {
+            return true;
+        }
+
         try {
             if (method.isStatic()
                     && method.name().equals("get_")
