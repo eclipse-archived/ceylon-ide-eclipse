@@ -102,27 +102,38 @@ public class CeylonJDIModelPresentation extends JDIModelPresentation {
         return buffer.toString().trim();
     }
 
-    public String getCeylonReifiedTypeName(IValue value) throws DebugException {
+    private interface ProducedTypeAction<ReturnType extends IJavaValue> {
+        ReturnType doOnProducedType(IJavaObject producedType, 
+                IJavaThread innerThread, 
+                IProgressMonitor monitor) throws DebugException;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static <ReturnType extends IJavaValue> ReturnType getFromReifiedType(IValue value, final ProducedTypeAction<ReturnType> postAction) {
         if (value instanceof JDINullValue) {
-            return "Null";
+            return null;
         }
         if (value instanceof JDIObjectValue) {
-            if (((IJavaReferenceType)((JDIObjectValue)value).getJavaType()).getName().endsWith("$impl")) {
-                IJavaFieldVariable thisField = ((JDIObjectValue) value).getField("$this", 0);
-                value = null;
-                if (thisField != null) {
-                    IValue fieldValue = thisField.getValue();
-                    if (fieldValue instanceof IJavaObject && 
-                            !(fieldValue instanceof JDINullValue)) {
-                        value = fieldValue;
+            try {
+                if (((IJavaReferenceType)((JDIObjectValue)value).getJavaType()).getName().endsWith("$impl")) {
+                    IJavaFieldVariable thisField = ((JDIObjectValue) value).getField("$this", 0);
+                    value = null;
+                    if (thisField != null) {
+                        IValue fieldValue = thisField.getValue();
+                        if (fieldValue instanceof IJavaObject && 
+                                !(fieldValue instanceof JDINullValue)) {
+                            value = fieldValue;
+                        }
                     }
                 }
+            } catch (DebugException e) {
+                e.printStackTrace();
             }
             if (value != null) {
                 final IJavaValue javaValue = (IJavaValue) value;
                 final JDIDebugTarget debugTarget = ((JDIObjectValue) value).getJavaDebugTarget();
                 if (debugTarget instanceof CeylonJDIDebugTarget) {
-                    IJavaValue reifiedTypeNameValue = ((CeylonJDIDebugTarget) debugTarget).getEvaluationResult(new EvaluationRunner() {
+                    IJavaValue reifiedTypeInfo = ((CeylonJDIDebugTarget) debugTarget).getEvaluationResult(new EvaluationRunner() {
                         @Override
                         public void run(IJavaThread innerThread, IProgressMonitor monitor,
                                 EvaluationListener listener) throws DebugException {
@@ -132,9 +143,8 @@ public class CeylonJDIModelPresentation extends JDIModelPresentation {
                                 IJavaValue typeDescriptor = metamodelType.sendMessage("getTypeDescriptor", "(Ljava/lang/Object;)Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;", new IJavaValue[] {javaValue}, innerThread);
                                 if (typeDescriptor instanceof IJavaObject && ! (typeDescriptor instanceof JDINullValue)) {
                                     IJavaValue producedType = metamodelType.sendMessage("getProducedType", "(Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;)Lcom/redhat/ceylon/compiler/typechecker/model/ProducedType;", new IJavaValue[] {typeDescriptor}, innerThread);
-                                    if (producedType instanceof IJavaObject && ! (producedType instanceof JDINullValue)) {
-                                        IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("getProducedTypeName", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lcom/redhat/ceylon/compiler/typechecker/model/ProducedType;");
-                                        listener.finished(producedTypeName);
+                                    if (producedType instanceof IJavaObject) {
+                                        listener.finished(postAction.doOnProducedType((IJavaObject)producedType, innerThread, monitor));
                                         return;
                                     }
                                 }
@@ -142,16 +152,64 @@ public class CeylonJDIModelPresentation extends JDIModelPresentation {
                             listener.finished(null);
                         }
                     }, 5000);
-                    if (reifiedTypeNameValue instanceof JDIObjectValue  && !(reifiedTypeNameValue instanceof JDINullValue)) {
-                        String reifiedTypeName;
-                        reifiedTypeName = reifiedTypeNameValue.getValueString();
-                        return reifiedTypeName;
-                    }
+                    return (ReturnType)reifiedTypeInfo;
                 }
             }
         }
+        return null;
+    }
+    
+    public String getCeylonReifiedTypeName(IValue value) throws DebugException {
+        if (value instanceof JDINullValue) {
+            return "Null";
+        }
+        IJavaValue reifiedTypeNameValue = getFromReifiedType(value, new ProducedTypeAction<IJavaValue>() {
+            @Override
+            public IJavaValue doOnProducedType(IJavaObject producedType,
+                    IJavaThread innerThread, IProgressMonitor monitor)
+            throws DebugException {
+                if (producedType instanceof IJavaObject && ! (producedType instanceof JDINullValue)) {
+                    IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("getProducedTypeName", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lcom/redhat/ceylon/compiler/typechecker/model/ProducedType;");
+                    return producedTypeName;
+                }
+                return null;
+            }
+        });
+        
+        if (reifiedTypeNameValue instanceof JDIObjectValue  && !(reifiedTypeNameValue instanceof JDINullValue)) {
+            String reifiedTypeName;
+            reifiedTypeName = reifiedTypeNameValue.getValueString();
+            return reifiedTypeName;
+        }
         return getQualifiedName(value.getReferenceTypeName());
     }
+    
+
+    public static IJavaObject getCeylonReifiedType(IValue value) throws DebugException {
+        return getFromReifiedType(value, new ProducedTypeAction<IJavaObject>() {
+            @Override
+            public IJavaObject doOnProducedType(IJavaObject producedType,
+                    IJavaThread innerThread, IProgressMonitor monitor)
+            throws DebugException {
+                return producedType;
+            }
+        });
+    }
+    
+    public static IJavaObject getCeylonDeclaration(IValue value) throws DebugException {
+        IJavaObject producedType = getCeylonReifiedType(value);
+        if (producedType != null) {
+            IJavaFieldVariable fieldVariable = producedType.getField("declaration", true);
+            if (fieldVariable != null) {
+                IValue declValue = fieldVariable.getValue();
+                if (declValue instanceof IJavaObject) {
+                    return (IJavaObject) declValue;
+                }
+            }
+        }
+        return null;
+    }
+    
     
     @Override
     public String getVariableText(IJavaVariable var) {
