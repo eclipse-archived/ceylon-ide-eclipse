@@ -4,13 +4,16 @@ import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPr
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
-import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugUIConstants;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaThread;
@@ -34,6 +37,9 @@ import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 
+import com.redhat.ceylon.compiler.java.codegen.Naming;
+import com.redhat.ceylon.compiler.java.codegen.Naming.Suffix;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
@@ -48,6 +54,8 @@ import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.Evaluatio
 import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPresentation;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.Method;
 
 
 public class CeylonDebugHover extends SourceInfoHover {
@@ -58,26 +66,8 @@ public class CeylonDebugHover extends SourceInfoHover {
         super(editor);
     }
 
-    /**
-     * Returns the stack frame in which to search for variables, or <code>null</code>
-     * if none.
-     * 
-     * @return the stack frame in which to search for variables, or <code>null</code>
-     * if none
-     */
-    protected JDIStackFrame getFrame() {
-        IAdaptable adaptable = DebugUITools.getDebugContext();
-        if (adaptable != null) {
-            IJavaStackFrame stackFrame = (IJavaStackFrame)adaptable.getAdapter(IJavaStackFrame.class);
-            if (stackFrame instanceof JDIStackFrame) {
-                return (JDIStackFrame) stackFrame;
-            }
-        }
-        return null;
-    }
-        
     public boolean isEnabled() {
-        return getFrame() != null;
+        return DebugUtils.getFrame() != null;
     }
     
     /* (non-Javadoc)
@@ -91,13 +81,8 @@ public class CeylonDebugHover extends SourceInfoHover {
         }
         return null;
     }
-    
-    /**
-     * Returns a local variable in the given frame based on the hover region
-     * or <code>null</code> if none.
-     * 
-     * @return local variable or <code>null</code>
-     */
+
+/*
     private IVariable resolveCeylonVariable(IJavaStackFrame frame, ITextViewer textViewer, IRegion hoverRegion) {
         if (frame != null) {
             try {
@@ -111,12 +96,57 @@ public class CeylonDebugHover extends SourceInfoHover {
         }
         return null;
     }
-
+*/
     
-    private IVariable findCeylonField(IJavaVariable object, String variableName) {
+    private static Pattern enclosingObjectPattern = Pattern.compile("^this\\$([0-9]+)$");
+    public static IJavaObject getEnclosingObject(IJavaObject object) {
+        TreeMap<Integer, IJavaObject> enclosingScopes = new TreeMap<Integer, IJavaObject>();
+        if (object == null) {
+            return null;
+        }
+        try {
+            for (IVariable var : object.getVariables()) {
+                if (var instanceof IJavaFieldVariable
+                        && var.getName().startsWith("this$")) {
+                    Matcher matcher = enclosingObjectPattern.matcher(var.getName());
+                    if (matcher.matches()) {
+                        IValue value = var.getValue();
+                        if (value instanceof IJavaObject) {
+                            String numberString = matcher.group(1);
+                            try {
+                                Integer number = Integer.parseInt(numberString);
+                                enclosingScopes.put(number, (IJavaObject)value);
+                            } catch(NumberFormatException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    
+                }
+            }
+        } catch (DebugException e) {
+            e.printStackTrace();
+        }
+        
+        if (! enclosingScopes.isEmpty()) {
+            return enclosingScopes.lastEntry().getValue();
+        }
+        return null;
+    }
+    
+    private static IJavaVariable findCeylonFieldVariable(IJavaVariable object, String variableName) {
+        try {
+            return findCeylonField((IJavaValue)object.getValue(), variableName);
+        } catch (DebugException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    private static IJavaVariable findCeylonField(IJavaValue object, String variableName) {
         IVariable[] thisChildren;
         try {
-            thisChildren = object.getValue().getVariables();
+            thisChildren = object.getVariables();
             for (IVariable element : thisChildren) {
                 IJavaVariable var = (IJavaVariable) element;
                 if (variableName.equals(fixVariableName(var.getName(), 
@@ -132,14 +162,14 @@ public class CeylonDebugHover extends SourceInfoHover {
         }
         return null;
     }
-    
+
     /**
      * Returns a local variable in the given frame based on the the given name
      * or <code>null</code> if none.
      * 
      * @return local variable or <code>null</code>
      */
-    private IVariable findCeylonVariable(IJavaStackFrame frame, String variableName) {
+    private static IVariable findCeylonVariable(IJavaStackFrame frame, String variableName) {
         if (frame != null && variableName != null) {
             try {
                 if (frame.isNative()) {
@@ -171,7 +201,7 @@ public class CeylonDebugHover extends SourceInfoHover {
                 }
 
                 if (thisVariable != null) {
-                    return findCeylonField(thisVariable, variableName);
+                    return findCeylonFieldVariable(thisVariable, variableName);
                 }
                 return null;
             } catch (DebugException x) {
@@ -272,11 +302,114 @@ public class CeylonDebugHover extends SourceInfoHover {
         return new ExpressionInformationControlCreator();
     }
 
+    // copied from the compiler project since it is not visible
+    private static String getErasedGetterName(Declaration decl) {
+        String property = decl.getName();
+        // ERASURE
+        if (!(decl instanceof Value) || ((Value)decl).isShared()) {
+            if ("hash".equals(property)) {
+                return "hashCode";
+            } else if ("string".equals(property)) {
+                return "toString";
+            }
+        }
+        
+        @SuppressWarnings("deprecation")
+        String getterName = Naming.getGetterName(property);
+        if (decl.isMember() && !decl.isShared()) {
+            getterName = Naming.suffixName(Suffix.$priv$, getterName);
+        }
+        return getterName;
+    }
+
+    
+    private static IJavaVariable findClassFieldOrAttribute(Declaration searchedDeclaration,
+                                            ClassOrInterface searchedClassDeclaration,
+                                            IJavaObject jdiObject,
+                                            ClassOrInterface currentClassDeclaration) {
+        if (jdiObject == null ||
+                currentClassDeclaration == null) {
+            return null;
+        }
+        
+        if (searchedClassDeclaration.equals(currentClassDeclaration)) {
+            do {
+                Declaration objectDeclaration = DebugUtils.getCeylonDeclaration(jdiObject);
+                if (objectDeclaration instanceof ClassOrInterface
+                        && ((ClassOrInterface)objectDeclaration).inherits(searchedClassDeclaration)) {
+                    break;
+                }
+                IJavaObject enclosingJdiObject = getEnclosingObject(jdiObject);
+                if (enclosingJdiObject == jdiObject) {
+                    jdiObject = null;
+                } else {
+                    jdiObject = enclosingJdiObject;
+                }
+            } while (jdiObject != null);
+            
+            if (jdiObject == null) {
+                return null;
+            }
+            
+            final IJavaObject currentClassScope = jdiObject;
+            if (searchedDeclaration instanceof Value
+                    && ((Value)searchedDeclaration).isTransient()) {
+                // values with getters
+                CeylonJDIDebugTarget debugTarget = DebugUtils.getDebugTarget();
+                if (debugTarget != null) {
+                    final String getterName = getErasedGetterName(searchedDeclaration);
+                    try {
+                        ClassType classJDIType = (ClassType) ((JDIClassType)currentClassScope.getJavaType()).getUnderlyingType();
+                        for (Method m : classJDIType.allMethods()) {
+                            if (m.name().equals(getterName)) {
+                                final String signature = m.signature();
+                                IJavaValue result = debugTarget.getEvaluationResult(new EvaluationRunner() {
+                                    @Override
+                                    public void run(IJavaThread innerThread, IProgressMonitor monitor,
+                                            EvaluationListener listener) throws DebugException {
+                                        listener.finished(
+                                                currentClassScope.sendMessage(
+                                                        getterName, 
+                                                        signature,
+                                                        new IJavaValue[0], innerThread, false));
+                                    }
+                                }, 5000);
+                                return new JDIPlaceholderVariable(searchedDeclaration.getName(), result);
+                            }
+                        }
+                    } catch (DebugException e) {
+                        e.printStackTrace();
+                    }
+                    
+                }
+                return null;
+            }
+            // Simple fields
+            return findCeylonField(currentClassScope, searchedDeclaration.getName());
+        } else {
+            ClassOrInterface containerClassDeclaration = getContainingClassOrInterface(currentClassDeclaration);
+            return findClassFieldOrAttribute(searchedDeclaration, searchedClassDeclaration, jdiObject, (ClassOrInterface) containerClassDeclaration);
+        }
+    }
+
+    public static ClassOrInterface getContainingClassOrInterface(
+            Declaration declaration) {
+        Declaration containerClassDeclaration = null;
+        do {
+            declaration = JavaSearch.getContainingDeclaration(declaration);
+            if (declaration instanceof ClassOrInterface) {
+                containerClassDeclaration = declaration;
+                break;
+            }
+        } while(declaration != null);
+        return (ClassOrInterface) containerClassDeclaration;
+    }
+    
     /* (non-Javadoc)
      * @see org.eclipse.jface.text.ITextHoverExtension2#getHoverInfo2(org.eclipse.jface.text.ITextViewer, org.eclipse.jface.text.IRegion)
      */
     public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
-        JDIStackFrame frame = getFrame();
+        JDIStackFrame frame = DebugUtils.getFrame();
         if (frame != null
                 && frame.getDebugTarget() instanceof CeylonJDIDebugTarget) {
             try {
@@ -305,7 +438,7 @@ public class CeylonDebugHover extends SourceInfoHover {
                     if (referenceable instanceof Declaration) {
                         Declaration declaration = (Declaration) referenceable;
                         Declaration container = JavaSearch.getContainingDeclaration(declaration);
-                        Declaration frameMethodDeclaration = DebugUtils.getStackFrameCeylonDeclaration(frame);
+                        Declaration frameMethodDeclaration = DebugUtils.getCeylonDeclaration(frame);
                         // redescendre en utilisant le field this$x (si on est anonyme) de la classe de la méthode
                         // => Faire une fonction qui retourne dans le scope du dessous (classe, OK, ... ou méthode et là on utilise les val$... qui avac un peu de chance sont capturés explicitement par le compilateur Ceylon ???)
                         if (container != null
@@ -315,7 +448,12 @@ public class CeylonDebugHover extends SourceInfoHover {
                                 return findCeylonVariable(frame, variableName);
                             } else if (container instanceof MethodOrValue && ! frame.isStatic()) {
                                 return findCeylonCapturedVariables(frame, variableName);
-                            } else {
+                            } else if (container instanceof ClassOrInterface){
+                                if (!frame.isStatic()) {
+                                    IJavaObject thisObject = frame.getThis();
+                                    return findClassFieldOrAttribute(declaration, (ClassOrInterface) container, thisObject, getContainingClassOrInterface(frameMethodDeclaration));
+                                    
+                                }
                                 // case of attributes or getters of the class or an outer class
                             }
                         } else {
@@ -351,136 +489,11 @@ public class CeylonDebugHover extends SourceInfoHover {
             } catch (DebugException e) {
                 return null;
             }
-            
-            return resolveCeylonVariable(frame, textViewer, getHoverRegion(textViewer, hoverRegion.getOffset()));
-            
-            
-            /*
-            try {
-                if (javaElement instanceof IField) {
-                    IField field = (IField)javaElement;
-                    IJavaVariable variable = null;
-                    IJavaDebugTarget debugTarget = (IJavaDebugTarget)frame.getDebugTarget();
-                    if (Flags.isStatic(field.getFlags())) {
-                        IJavaType[] javaTypes = debugTarget.getJavaTypes(field.getDeclaringType().getFullyQualifiedName());
-                        if (javaTypes != null) {
-                            for (int j = 0; j < javaTypes.length; j++) {
-                                IJavaType type = javaTypes[j];
-                                if (type instanceof IJavaReferenceType) {
-                                    IJavaReferenceType referenceType = (IJavaReferenceType) type;
-                                    variable = referenceType.getField(field.getElementName());
-                                }
-                                if (variable != null) {
-                                    break;
-                                }
-                            }
-                        }
-                        if (variable == null) {
-                            // the class is not loaded yet, but may be an in-lined primitive constant
-                            Object constant = field.getConstant();
-                            if (constant != null) {
-                                IJavaValue value = null;
-                                if (constant instanceof Integer) {
-                                    value = debugTarget.newValue(((Integer)constant).intValue());
-                                } else if (constant instanceof Byte) {
-                                    value = debugTarget.newValue(((Byte)constant).byteValue());
-                                } else if (constant instanceof Boolean) {
-                                    value = debugTarget.newValue(((Boolean)constant).booleanValue());
-                                } else if (constant instanceof Character) {
-                                    value = debugTarget.newValue(((Character)constant).charValue());
-                                } else if (constant instanceof Double) {
-                                    value = debugTarget.newValue(((Double)constant).doubleValue());
-                                } else if (constant instanceof Float) {
-                                    value = debugTarget.newValue(((Float)constant).floatValue());
-                                } else if (constant instanceof Long) {
-                                    value = debugTarget.newValue(((Long)constant).longValue());
-                                } else if (constant instanceof Short) {
-                                    value = debugTarget.newValue(((Short)constant).shortValue());
-                                } else if (constant instanceof String) {
-                                    value = debugTarget.newValue((String)constant);
-                                }
-                                if (value != null) {
-                                    variable = new JDIPlaceholderVariable(field.getElementName(), value);
-                                }
-                            }
-                            if (variable == null) {
-                                return null; // class not loaded yet and not a constant
-                            }
-                        }
-                    } else {
-                        if (!frame.isStatic()) {
-                            // ensure that we only resolve a field access on 'this':
-                            if (!(codeAssist instanceof ITypeRoot))
-                                return null;
-                            ITypeRoot typeRoot = (ITypeRoot) codeAssist;
-                            ASTNode root= SharedASTProvider.getAST(typeRoot, SharedASTProvider.WAIT_NO, null);
-                            if (root == null) {
-                                ASTParser parser = ASTParser.newParser(AST.JLS4);
-                                parser.setSource(typeRoot);
-                                parser.setFocalPosition(hoverRegion.getOffset());
-                                root = parser.createAST(null);
-                            }
-                            ASTNode node = NodeFinder.perform(root, hoverRegion.getOffset(), hoverRegion.getLength());
-                            if (node == null)
-                                return null;
-                            StructuralPropertyDescriptor locationInParent = node.getLocationInParent();
-                            if (locationInParent == FieldAccess.NAME_PROPERTY) {
-                                FieldAccess fieldAccess = (FieldAccess) node.getParent();
-                                if (!(fieldAccess.getExpression() instanceof ThisExpression)) {
-                                    return null;
-                                }
-                            } else if (locationInParent == QualifiedName.NAME_PROPERTY) {
-                                return null;
-                            }
-                            
-                            String typeSignature = Signature.createTypeSignature(field.getDeclaringType().getFullyQualifiedName(), true);
-                            typeSignature = typeSignature.replace('.', '/');
-                            variable = frame.getThis().getField(field.getElementName(), typeSignature);
-                        }
-                    }
-                    if (variable != null) {
-                        return variable;
-                    }
-                    break;
-                }
-                if (javaElement instanceof ILocalVariable) {
-                    ILocalVariable var = (ILocalVariable)javaElement;
-                    IJavaElement parent = var.getParent();
-                    while (!(parent instanceof IMethod) && parent != null) {
-                        parent = parent.getParent();
-                    }
-                    if (parent instanceof IMethod) {
-                        IMethod method = (IMethod) parent;
-                        boolean equal = false;
-                        if (method.isBinary()) {
-                            // compare resolved signatures
-                            if (method.getSignature().equals(frame.getSignature())) {
-                                equal = true;
-                            }
-                        } else {
-                            // compare unresolved signatures
-                            if (((frame.isConstructor() && method.isConstructor()) || frame.getMethodName().equals(method.getElementName()))
-                                    && frame.getDeclaringTypeName().endsWith(method.getDeclaringType().getElementName())
-                                    && frame.getArgumentTypeNames().size() == method.getNumberOfParameters()) {
-                                equal = true;
-                            }
-                        }
-                        // find variable if equal or method is a Lambda Method
-                        if (equal || method.isLambdaMethod()) {
-                            return findLocalVariable(frame, var.getElementName());
-                        }
-                    }
-                    break;
-                }
-            } catch (CoreException e) {
-                JDIDebugPlugin.log(e);
-            }
-                */
         }
         return null;
     }
 
-    private IVariable findCeylonCapturedVariables(IJavaStackFrame frame,
+    private static IVariable findCeylonCapturedVariables(IJavaStackFrame frame,
             String variableName) {
         if (frame != null && variableName != null) {
             try {

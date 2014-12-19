@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.core.debug.presentation;
 
-import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getStackFrameCeylonDeclaration;
+import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getCeylonDeclaration;
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.isInternalCeylonMethod;
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonDebugLabelUpdaterManager.getUpdater;
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonPresentationContext.isCeylonContext;
@@ -35,7 +35,7 @@ public class CeylonStackFrameLabelProvider extends JavaStackFrameLabelProvider {
                 if (updater != null) {
                     Matcher matcher = updater.matches(existingLabel);
                     if (matcher != null) {
-                        Declaration declaration = getStackFrameCeylonDeclaration(frame);
+                        Declaration declaration = getCeylonDeclaration(frame);
                         if (declaration != null) {
                             return updater.updateLabel(matcher, declaration);
                         }
