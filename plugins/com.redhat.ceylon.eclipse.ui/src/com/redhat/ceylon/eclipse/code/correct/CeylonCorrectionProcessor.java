@@ -100,6 +100,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findBinaryOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -139,6 +140,7 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -533,6 +535,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 1600:
             addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
             break;
+        case 1700:
+            addTypeParameterProposal(file, rootNode, proposals, node);
+            break;
         case 2000:
             addCreateParameterProposals(rootNode, node, problem, proposals, 
                     project, tc, file);
@@ -591,6 +596,41 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addChangeRefiningParametersProposal(file, rootNode, proposals, node);
             break;
         }
+    }
+
+    void addTypeParameterProposal(IFile file, Tree.CompilationUnit rootNode,
+            Collection<ICompletionProposal> proposals, Node node) {
+        Tree.TypeConstraint tcn = (Tree.TypeConstraint) node;
+        TypeParameter tp = tcn.getDeclarationModel();
+        Tree.Declaration decNode = (Tree.Declaration) 
+                getReferencedNode(tp.getDeclaration(), rootNode);
+        Tree.TypeParameterList tpl;
+        if (decNode instanceof Tree.ClassOrInterface) {
+            tpl = ((Tree.ClassOrInterface) decNode).getTypeParameterList();
+        }
+        else if (decNode instanceof Tree.AnyMethod) {
+            tpl = ((Tree.AnyMethod) decNode).getTypeParameterList();
+        }
+        else if (decNode instanceof Tree.TypeAliasDeclaration) {
+            tpl = ((Tree.TypeAliasDeclaration) decNode).getTypeParameterList();
+        }
+        else {
+            return;
+        }
+        TextFileChange tfc = new TextFileChange("Add Type Parameter", file);
+        InsertEdit edit;
+        if (tpl==null) {
+            edit = new InsertEdit(decNode.getIdentifier().getStopIndex()+1, 
+                    "<" + tp.getName() + ">");
+        }
+        else {
+            edit = new InsertEdit(tpl.getStopIndex(), ", " + tp.getName());
+        }
+        tfc.setEdit(edit);
+        proposals.add(new CorrectionProposal("Add '" + tp.getName() + 
+                "' to type parameter list of '" + 
+                decNode.getDeclarationModel().getName() + "'", 
+                tfc, null));
     }
 
     private void addProposals(IQuickAssistInvocationContext context, 
