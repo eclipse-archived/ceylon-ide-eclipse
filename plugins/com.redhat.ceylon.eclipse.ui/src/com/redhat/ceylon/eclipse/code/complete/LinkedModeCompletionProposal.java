@@ -141,21 +141,24 @@ public class LinkedModeCompletionProposal
         int start = offset;
         int length = 0;
         int count = 0;
+        boolean lastWasWs = false;
         for (int i=offset;
                 i<document.getLength(); 
                 i++) {
         	char ch = document.getChar(i);
-            if (Character.isWhitespace(ch) || ch=='(') {
-                if (count++==position) {
-                    break;
-                }
-                else {
-                    start = i+1;
-                    length = 0;
-                }
-            }
-            if (Character.isJavaIdentifierPart(ch)) { //ignore commas
+            if (Character.isJavaIdentifierPart(ch)) {
+                lastWasWs = false;
                 length++;
+            }
+            else {
+                if (!lastWasWs) {
+                    if (count++==position) {
+                        break;
+                    }
+                    lastWasWs = true;
+                }
+                start = i+1;
+                length = 0;
             }
         }
         return new Region(start, length);
