@@ -63,20 +63,8 @@ class DestructureProposal extends LocalProposal {
             text = "value [" + builder + "] = ";
         }
         else {
-            ProducedType keyType = unit.getKeyType(type);
-            String keyName = lower(keyType.getDeclaration().getName(unit));
-            Set<String> keyMore = new LinkedHashSet<String>();
-            keyMore.add("key");
-            keyMore.add(keyName);
-            addNameProposals(keyMore, false, keyName);
-            nameProposals.add(keyMore.toArray(new String[0]));
-            ProducedType itemType = unit.getValueType(type);
-            String itemName = lower(itemType.getDeclaration().getName(unit));
-            Set<String> itemMore = new LinkedHashSet<String>();
-            itemMore.add("item");
-            itemMore.add(itemName);
-            addNameProposals(itemMore, false, itemName);
-            nameProposals.add(itemMore.toArray(new String[0]));
+            nameProposals.add(getKeyProposals(unit, type));
+            nameProposals.add(getItemProposals(unit, type));
             text = "value key -> item = ";
         }
         change.addEdit(new InsertEdit(offset, text));
@@ -92,7 +80,27 @@ class DestructureProposal extends LocalProposal {
         return change;
     }
 
-    String lower(String name) {
+    static String[] getItemProposals(Unit unit, ProducedType type) {
+        ProducedType itemType = unit.getValueType(type);
+        String itemName = lower(itemType.getDeclaration().getName(unit));
+        Set<String> itemMore = new LinkedHashSet<String>();
+        itemMore.add("item");
+        itemMore.add(itemName);
+        addNameProposals(itemMore, false, itemName);
+        return itemMore.toArray(new String[0]);
+    }
+
+    static String[] getKeyProposals(Unit unit, ProducedType type) {
+        ProducedType keyType = unit.getKeyType(type);
+        String keyName = lower(keyType.getDeclaration().getName(unit));
+        Set<String> keyMore = new LinkedHashSet<String>();
+        keyMore.add("key");
+        keyMore.add(keyName);
+        addNameProposals(keyMore, false, keyName);
+        return keyMore.toArray(new String[0]);
+    }
+
+    static String lower(String name) {
         return Character.toLowerCase(name.charAt(0)) + 
                 name.substring(1);
     }
