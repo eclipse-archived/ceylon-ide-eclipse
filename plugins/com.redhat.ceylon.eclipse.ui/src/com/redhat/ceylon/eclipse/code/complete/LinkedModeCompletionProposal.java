@@ -150,7 +150,7 @@ public class LinkedModeCompletionProposal
                 lastWasWs = false;
                 length++;
             }
-            else {
+            else if (Character.isWhitespace(ch) || ch=='(') {
                 if (!lastWasWs) {
                     if (count++==position) {
                         break;
