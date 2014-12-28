@@ -578,7 +578,9 @@ class NewUnitWizardPage extends WizardPage {
     }
     
     IFile getFile() {
-        IPath path = packageFragment.getPath().append(unitName + ".ceylon");
+        String filename = unitName.endsWith(".ceylon") ? 
+                unitName : unitName + ".ceylon";
+        IPath path = packageFragment.getPath().append(filename);
         IProject project = sourceDir.getJavaProject().getProject();
         return project.getFile(path.makeRelativeTo(project.getFullPath()));
     }
@@ -592,7 +594,7 @@ class NewUnitWizardPage extends WizardPage {
     }
     
     String getUnitName() {
-        return unitName;
+        return getFileNameWithoutExtension();
     }
     
     Text getUnitNameText() {
@@ -673,7 +675,7 @@ class NewUnitWizardPage extends WizardPage {
     }
 
     boolean unitIsNameLegal(String unitName) {
-        return unitName.matches("(\\w|-)+");
+        return unitName.matches("(\\w|-)+(\\.ceylon)?");
     }
     
     private String getIllegalUnitNameMessage() {
@@ -745,7 +747,16 @@ class NewUnitWizardPage extends WizardPage {
         return "Discouraged namespace: " + packageName.split("\\.")[0];
     }
 
+    private String getFileNameWithoutExtension() {
+        if (unitName.endsWith(".ceylon")) {
+            return unitName.substring(0, unitName.length()-7);
+        }
+        else {
+            return unitName;
+        }
+    }
+    
     String[] getFileNames() {
-        return new String[] { unitName };
+        return new String[] { getFileNameWithoutExtension() };
     }
 }
