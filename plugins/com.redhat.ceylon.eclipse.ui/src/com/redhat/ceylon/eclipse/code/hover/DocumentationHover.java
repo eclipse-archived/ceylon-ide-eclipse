@@ -131,6 +131,10 @@ import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 
 public class DocumentationHover extends SourceInfoHover {
     
+    private static final String smallerSize = "90%";
+    private static final String annotationSize = "85%";
+    private static final String largerSize = "103%";
+    
     public DocumentationHover(CeylonEditor editor) {
         super(editor);
     }
@@ -1037,15 +1041,15 @@ public class DocumentationHover extends SourceInfoHover {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("annotation_obj.gif").toExternalForm(), 
                     16, 16, 
-                    "<tt style='font-size:90%;color:" + ann + "'>shared</tt>"
+                    "<tt><span style='font-size:" + annotationSize + ";color:" + ann + "'>shared</span></tt>"
                     , 20, 4);
         }
         HTML.addImageAndLabel(buffer, pack, 
                 HTML.fileUrl(getIcon(pack)).toExternalForm(), 
                 16, 16, 
-                "<tt style='font-size:102%'>" + 
+                "<tt><span style='font-size:" + largerSize + "'>" + 
                 HTML.highlightLine(description(pack)) +
-                "</tt>", 
+                "</span></tt>", 
                 20, 4);
     }
 
@@ -1055,7 +1059,7 @@ public class DocumentationHover extends SourceInfoHover {
         HTML.addImageAndLabel(buffer, mod, 
                 HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                 16, 16, 
-                "<span style='font-size:96%'>in module&nbsp;&nbsp;" + 
+                "<span style='font-size:" + smallerSize + "'>in module&nbsp;&nbsp;" + 
                         link(mod) + "</span>", 
                 20, 2);
     }
@@ -1076,9 +1080,9 @@ public class DocumentationHover extends SourceInfoHover {
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
                 16, 16, 
-                "<tt style='font-size:102%'>" + 
+                "<tt><span style='font-size:" + largerSize + "'>" + 
                 HTML.highlightLine(description(name, version)) + 
-                "</tt></b>",
+                "</span></tt></b>",
                 20, 4);
         
         if (doc!=null) {
@@ -1125,9 +1129,9 @@ public class DocumentationHover extends SourceInfoHover {
         HTML.addImageAndLabel(buffer, mod, 
                 HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                 16, 16, 
-                "<tt style='font-size:102%'>" + 
+                "<tt><span style='font-size:" + largerSize + "'>" + 
                 HTML.highlightLine(description(mod)) + 
-                "</tt>", 
+                "</span></tt>", 
                 20, 4);
     }
 
@@ -1271,17 +1275,18 @@ public class DocumentationHover extends SourceInfoHover {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("annotation_obj.gif").toExternalForm(), 
                     16, 16, 
-                    "<tt style='font-size:91%;color:" + ann + "'>" + buf + "</tt>", 
+                    "<tt><span style='font-size:" + annotationSize + ";color:" + ann + "'>" + 
+                    buf + "</span></tt>", 
                     20, 4);
         }
         HTML.addImageAndLabel(buffer, dec, 
                 HTML.fileUrl(getIcon(dec)).toExternalForm(), 
                 16, 16, 
-                "<tt style='font-size:105%'>" + 
+                "<tt><span style='font-size:" + largerSize + "'>" + 
                 (dec.isDeprecated() ? "<s>":"") + 
                 description(dec, node, pr, cpc, unit) + 
                 (dec.isDeprecated() ? "</s>":"") + 
-                "</tt>", 
+                "</span></tt>", 
                 20, 4);
         
     }
@@ -1450,7 +1455,7 @@ public class DocumentationHover extends SourceInfoHover {
                         MethodOrValue model = p.getModel();
                         if (model!=null) {
                             StringBuilder param = new StringBuilder();
-                            param.append("<span style='font-size:96%'>accepts&nbsp;&nbsp;<tt>");
+                            param.append("<span style='font-size:" + smallerSize + "'>accepts&nbsp;&nbsp;<tt>");
                         	appendParameter(param, pr, p, unit);
                         	param.append(HTML.highlightLine(getInitialValueDescription(model, cpc)))
                         	     .append("</tt>");
@@ -1608,7 +1613,7 @@ public class DocumentationHover extends SourceInfoHover {
 //            HTML.addImageAndLabel(buffer, pd, 
 //                    HTML.fileUrl(getIcon(pd)).toExternalForm(),
 //                    16, 16, 
-//                    "<span style='font-size:96%'>parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
+//                    "<span style='font-size:" + smallerSize + "'>parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
 //                            pd.getName() +"</a></tt><span>", 20, 2);
         }
         else if (dec instanceof TypeParameter) {
@@ -1619,7 +1624,7 @@ public class DocumentationHover extends SourceInfoHover {
 //            HTML.addImageAndLabel(buffer, pd, 
 //                    HTML.fileUrl(getIcon(pd)).toExternalForm(),
 //                    16, 16, 
-//                    "<span style='font-size:96%'>type parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
+//                    "<span style='font-size:" + smallerSize + "'>type parameter of&nbsp;&nbsp;<tt><a " + HTML.link(pd) + ">" + 
 //                            pd.getName() +"</a></tt></span>", 
 //                    20, 2);
         }
@@ -1634,7 +1639,7 @@ public class DocumentationHover extends SourceInfoHover {
 //                    HTML.addImageAndLabel(buffer, outer, 
 //                            HTML.fileUrl(getIcon(outer)).toExternalForm(), 
 //                            16, 16, 
-//                            "<span style='font-size:96%'>member of&nbsp;&nbsp;<tt>" + 
+//                            "<span style='font-size:" + smallerSize + "'>member of&nbsp;&nbsp;<tt>" + 
 //                                producedTypeLink(qt, unit) + "</tt></span>", 
 //                            20, 2);
                 }
@@ -1652,10 +1657,10 @@ public class DocumentationHover extends SourceInfoHover {
                 !(dec instanceof NothingType)) {
             String label;
             if (pack.getNameAsString().isEmpty()) {
-                label = "<span style='font-size:96%'>in default package</span>";
+                label = "<span style='font-size:" + smallerSize + "'>in default package</span>";
             }
             else {
-                label = "<span style='font-size:96%'>in package&nbsp;&nbsp;" + 
+                label = "<span style='font-size:" + smallerSize + "'>in package&nbsp;&nbsp;" + 
                         link(pack) + "</span>";
             }
             HTML.addImageAndLabel(buffer, pack, 
@@ -1665,7 +1670,7 @@ public class DocumentationHover extends SourceInfoHover {
             HTML.addImageAndLabel(buffer, mod, 
                     HTML.fileUrl(getIcon(mod)).toExternalForm(), 
                     16, 16, 
-                    "<span style='font-size:96%'>in module&nbsp;&nbsp;" + 
+                    "<span style='font-size:" + smallerSize + "'>in module&nbsp;&nbsp;" + 
                             link(mod) + "</span>", 
                     20, 2);
         }
@@ -1705,7 +1710,7 @@ public class DocumentationHover extends SourceInfoHover {
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("unit.gif").toExternalForm(), 
                 16, 16, 
-                "<span style='font-size:96%'>declared in&nbsp;&nbsp;<tt><a href='dec:" + 
+                "<span style='font-size:" + smallerSize + "'>declared in&nbsp;&nbsp;<tt><a href='dec:" + 
                         HTML.declink(dec) + "'>"+ unitName + "</a></tt></span>", 
                 20, 2);
         //}
@@ -1718,7 +1723,7 @@ public class DocumentationHover extends SourceInfoHover {
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("search_ref_obj.png").toExternalForm(), 
                 16, 16, 
-                "<span style='font-size:96%'><a href='ref:" + HTML.declink(dec) + 
+                "<span style='font-size:" + smallerSize + "'><a href='ref:" + HTML.declink(dec) + 
                         "'>find references</a> to&nbsp;&nbsp;<tt>" +
                         dec.getName() + "</tt></span>",
                 20, 2);
@@ -1726,7 +1731,7 @@ public class DocumentationHover extends SourceInfoHover {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("search_decl_obj.png").toExternalForm(), 
                     16, 16, 
-                    "<span style='font-size:96%'><a href='sub:" + HTML.declink(dec) + 
+                    "<span style='font-size:" + smallerSize + "'><a href='sub:" + HTML.declink(dec) + 
                             "'>find subtypes</a> of&nbsp;&nbsp;<tt>" +
                             dec.getName() + "</tt></span>",
                     20, 2);
@@ -1736,7 +1741,7 @@ public class DocumentationHover extends SourceInfoHover {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("search_ref_obj.png").toExternalForm(), 
                     16, 16, 
-                    "<span style='font-size:96%'><a href='ass:" + HTML.declink(dec) + 
+                    "<span style='font-size:" + smallerSize + "'><a href='ass:" + HTML.declink(dec) + 
                             "'>find assignments</a> to&nbsp;&nbsp;<tt>" +
                             dec.getName() + "</tt></span>", 
                     20, 2);
@@ -1745,7 +1750,7 @@ public class DocumentationHover extends SourceInfoHover {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("search_decl_obj.png").toExternalForm(), 
                     16, 16, 
-                    "<span style='font-size:96%'><a href='act:" + HTML.declink(dec) + 
+                    "<span style='font-size:" + smallerSize + "'><a href='act:" + HTML.declink(dec) + 
                             "'>find refinements</a> of&nbsp;&nbsp;<tt>" +
                             dec.getName() + "</tt></span>", 
                     20, 2);
@@ -1781,7 +1786,8 @@ public class DocumentationHover extends SourceInfoHover {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("sub.gif").toExternalForm(), 
                     16, 16,
-                    " <tt style='font-size:96%'>of&nbsp;" + cases +"</tt>", 
+                    " <tt><span style='font-size:" + smallerSize + "'>of&nbsp;" + 
+                    cases +"</span></tt>", 
                     20, 2);
         }
         if (dec instanceof Class) {
@@ -1790,8 +1796,8 @@ public class DocumentationHover extends SourceInfoHover {
                 HTML.addImageAndLabel(buffer, sup.getDeclaration(), 
                         HTML.fileUrl("superclass.gif").toExternalForm(), 
                         16, 16, 
-                        "<tt style='font-size:96%'>extends&nbsp;" + 
-                            producedTypeLink(sup, unit) +"</tt>", 
+                        "<tt><span style='font-size:" + smallerSize + "'>extends&nbsp;" + 
+                            producedTypeLink(sup, unit) +"</span></tt>", 
                         20, 2);
             }
         }
@@ -1807,7 +1813,8 @@ public class DocumentationHover extends SourceInfoHover {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("super.gif").toExternalForm(), 
                     16, 16, 
-                    "<tt style='font-size:96%'>satisfies&nbsp;" + satisfies +"</tt>", 
+                    "<tt><span style='font-size:" + smallerSize + "'>satisfies&nbsp;" + 
+                    satisfies + "</span></tt>", 
                     20, 2);
         }
     }
@@ -1850,8 +1857,8 @@ public class DocumentationHover extends SourceInfoHover {
             HTML.addImageAndLabel(buffer, tp, 
                     HTML.fileUrl(getIcon(tp)).toExternalForm(), 
                     16, 16, 
-                    "<tt style='font-size:96%'>given&nbsp;<a " + HTML.link(tp) + ">" + 
-                            tp.getName() + "</a>" + bounds + arg + "</tt>", 
+                    "<tt><span style='font-size:" + smallerSize + "'>given&nbsp;<a " + HTML.link(tp) + ">" + 
+                            tp.getName() + "</a>" + bounds + arg + "</span></tt>", 
                             20, 4);
         }
     }

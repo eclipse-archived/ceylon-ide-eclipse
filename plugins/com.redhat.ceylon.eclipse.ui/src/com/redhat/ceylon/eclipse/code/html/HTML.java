@@ -22,7 +22,10 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 
 import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
@@ -64,11 +67,33 @@ public class HTML {
         if (fgStyleSheet == null) {
             fgStyleSheet = loadStyleSheet();
         }
-        String css = fgStyleSheet + "body { padding: 15px; }";
-        FontData textFontData= CeylonEditor.getHoverFont().getFontData()[0];
-        FontData monospaceFontData = CeylonEditor.getEditorFont().getFontData()[0];
-        css = HTMLPrinter.convertTopLevelFont(css, textFontData);
-        return css + " tt, pre, code { font-family: '" + monospaceFontData.getName()  + "', monospace }";
+        final StringBuffer monospaceSize = new StringBuffer();
+        final Font editorFont = CeylonEditor.getEditorFont();
+        final Font hoverFont = CeylonEditor.getHoverFont();
+        final FontData monospaceFontData = editorFont.getFontData()[0];
+        final FontData textFontData = hoverFont.getFontData()[0];
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                GC gc = new GC(Display.getDefault().getActiveShell());
+                Font font = gc.getFont();
+                gc.setFont(hoverFont);
+                int hoverFontHeight = gc.getFontMetrics().getAscent();
+                gc.setFont(editorFont);
+                int monospaceFontHeight = gc.getFontMetrics().getAscent();
+                gc.setFont(font);
+                int ratio = 100 * monospaceFontData.getHeight() * hoverFontHeight 
+                        / monospaceFontHeight / textFontData.getHeight();
+                monospaceSize.append(ratio).append("%");
+            }
+        });
+        return HTMLPrinter.convertTopLevelFont(fgStyleSheet, textFontData)
+                .replaceFirst("pre", "pre, tt, code")
+                .replaceFirst("font-family: monospace;", 
+                        "font-family: '" + 
+                                monospaceFontData.getName() + "', monospace;" +
+                        "font-size: " + monospaceSize + ";") + 
+                "body { padding: 15px; }\n";
     }
 
     /**
