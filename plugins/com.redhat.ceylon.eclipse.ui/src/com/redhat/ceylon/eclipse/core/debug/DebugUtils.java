@@ -21,6 +21,9 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 
+import com.redhat.ceylon.compiler.java.codegen.Naming;
+import com.redhat.ceylon.compiler.java.language.AbstractCallable;
+import com.redhat.ceylon.compiler.java.language.LazyIterable;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -31,8 +34,10 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
+import com.sun.jdi.ReferenceType;
 
 public class DebugUtils {
 
@@ -216,7 +221,8 @@ public class DebugUtils {
 
     public static boolean isInternalCeylonMethod(Method method) {
         Location location = method.location();
-        String declaringTypeName = location.declaringType().name();
+        ReferenceType declaringType = location.declaringType();
+        String declaringTypeName = declaringType.name();
         if (declaringTypeName.equals("ceylon.language.Boolean")) {
             return true;
         }
@@ -256,11 +262,33 @@ public class DebugUtils {
             return true;
         }
 
-        if (declaringTypeName.endsWith("$impl") && method.isConstructor()) {
-            return true;
+        if (method.isConstructor()) {
+            if (declaringTypeName.endsWith("$impl")) {
+                return true;
+            } else if (declaringType instanceof ClassType) {
+                ClassType classType = (ClassType) declaringType;
+                String superClassName = classType.superclass().name();
+                if (AbstractCallable.class.getName().equals(superClassName)) {
+                    return true;
+                }
+            }
+         }
+
+        if (method.name().equals(Naming.Unfix.$evaluate$.toString())) {
+            if (declaringType instanceof ClassType) {
+                ClassType classType = (ClassType) declaringType;
+                String superClassName = classType.superclass().name();
+                if (LazyIterable.class.getName().equals(superClassName)) {
+                    return true;
+                }
+            }
         }
 
         if (method.name().equals("$getType$")) {
+            return true;
+        }
+
+        if (method.name().equals("$getReifiedElement$")) {
             return true;
         }
 
