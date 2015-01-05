@@ -48,6 +48,7 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.core.JavaElement;
 import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
+import com.redhat.ceylon.compiler.java.codegen.Naming.Suffix;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -291,6 +292,9 @@ public class JavaSearch {
                      name.startsWith("set")) {
                 name = Character.toLowerCase(name.charAt(3)) + 
                         name.substring(4);
+                if (name.endsWith(Suffix.$priv$.name())) {
+                    name = name.substring(0, name.length() - Suffix.$priv$.name().length());
+                }
             } else if (name.equals("toString")) {
                name = "string";
             } else if (name.equals("hashCode")) {
