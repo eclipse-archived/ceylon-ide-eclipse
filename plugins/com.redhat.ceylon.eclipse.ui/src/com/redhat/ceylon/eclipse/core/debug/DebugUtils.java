@@ -22,6 +22,7 @@ import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 
 import com.redhat.ceylon.compiler.java.codegen.Naming;
+import com.redhat.ceylon.compiler.java.codegen.Naming.Suffix;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
 import com.redhat.ceylon.compiler.java.language.LazyIterable;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -35,6 +36,7 @@ import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
+import com.sun.jdi.Field;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
@@ -226,27 +228,29 @@ public class DebugUtils {
         if (declaringTypeName.equals("ceylon.language.Boolean")) {
             return true;
         }
+        
+        final String methodName = method.name();
         if (declaringTypeName.equals("ceylon.language.Integer")
-                && (method.name().equals("instance")
-                        || method.name().equals("longValue") || method
+                && (methodName.equals("instance")
+                        || methodName.equals("longValue") || method
                             .isConstructor())) {
             return true;
         }
         if (declaringTypeName.equals("ceylon.language.Float")
-                && (method.name().equals("instance")
-                        || method.name().equals("doubleValue") || method
+                && (methodName.equals("instance")
+                        || methodName.equals("doubleValue") || method
                             .isConstructor())) {
             return true;
         }
         if (declaringTypeName.equals("ceylon.language.Byte")
-                && (method.name().equals("instance")
-                        || method.name().equals("byteValue") || method
+                && (methodName.equals("instance")
+                        || methodName.equals("byteValue") || method
                             .isConstructor())) {
             return true;
         }
         if (declaringTypeName.equals("ceylon.language.String")
-                && (method.name().equals("instance")
-                        || method.name().equals("toString") || (method
+                && (methodName.equals("instance")
+                        || methodName.equals("toString") || (method
                         .isConstructor()
                         && method.argumentTypeNames().size() == 1 && "java.lang.String"
                             .equals(method.argumentTypeNames().get(0))))) {
@@ -274,7 +278,7 @@ public class DebugUtils {
             }
          }
 
-        if (method.name().equals(Naming.Unfix.$evaluate$.toString())) {
+        if (methodName.equals(Naming.Unfix.$evaluate$.toString())) {
             if (declaringType instanceof ClassType) {
                 ClassType classType = (ClassType) declaringType;
                 String superClassName = classType.superclass().name();
@@ -284,11 +288,31 @@ public class DebugUtils {
             }
         }
 
-        if (method.name().equals("$getType$")) {
+        if ((methodName.startsWith("get") ||
+                methodName.startsWith("set"))
+                && methodName.endsWith(Suffix.$priv$.name())) {
+            if (declaringType instanceof ClassType) {
+                ClassType classType = (ClassType) declaringType;
+                String fieldName = methodName.substring(3, methodName.length() - Suffix.$priv$.name().length());
+                fieldName = Character.toLowerCase(fieldName.charAt(0)) + 
+                        fieldName.substring(1);
+
+                Field field = classType.fieldByName(fieldName);
+                if (field != null) {
+                    // we are stepping in a getter that simply returns the raw field value.
+                    // Don't step then (or don't stop on breakpoints)
+                    return true;
+                }
+                // if no such field is found, it means that it is a Ceylon getter or a lazy specifier, then take 
+                // the location in account in step and breakpoint requests.
+            }
+        }
+
+        if (methodName.equals("$getType$")) {
             return true;
         }
 
-        if (method.name().equals("$getReifiedElement$")) {
+        if (methodName.equals("$getReifiedElement$")) {
             return true;
         }
 
@@ -298,7 +322,7 @@ public class DebugUtils {
 
         try {
             if (method.isStatic()
-                    && method.name().equals("get_")
+                    && methodName.equals("get_")
                     && method.argumentTypeNames().isEmpty()
                     && method.returnType().name()
                             .equals(method.declaringType().name())) {
