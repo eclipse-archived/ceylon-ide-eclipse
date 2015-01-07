@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.core.debug;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -25,6 +26,7 @@ import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.codegen.Naming.Suffix;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
 import com.redhat.ceylon.compiler.java.language.LazyIterable;
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -221,34 +223,44 @@ public class DebugUtils {
         return false;
     }
 
+    private final static String ABSTRACT_CALLABLE = AbstractCallable.class.getName();
+    private final static String LAZY_ITERABLE = LazyIterable.class.getName();
+    private final static String CEYLON_BOOLEAN = ceylon.language.Boolean.class.getName();
+    private final static String CEYLON_FLOAT = ceylon.language.Float.class.getName();
+    private final static String CEYLON_INTEGER = ceylon.language.Integer.class.getName();
+    private final static String CEYLON_BYTE = ceylon.language.Byte.class.getName();
+    private final static String CEYLON_STRING = ceylon.language.String.class.getName();
+    private final static String CEYLON_BASE_PACKAGE = "ceylon.language.impl.Base";
+    private final static String TYPE_DESCRIPTOR = TypeDescriptor.class.getName();
+    
     public static boolean isInternalCeylonMethod(Method method) {
         Location location = method.location();
         ReferenceType declaringType = location.declaringType();
         String declaringTypeName = declaringType.name();
-        if (declaringTypeName.equals("ceylon.language.Boolean")) {
+        if (declaringTypeName.equals(CEYLON_BOOLEAN)) {
             return true;
         }
         
         final String methodName = method.name();
-        if (declaringTypeName.equals("ceylon.language.Integer")
+        if (declaringTypeName.equals(CEYLON_INTEGER)
                 && (methodName.equals("instance")
                         || methodName.equals("longValue") || method
                             .isConstructor())) {
             return true;
         }
-        if (declaringTypeName.equals("ceylon.language.Float")
+        if (declaringTypeName.equals(CEYLON_FLOAT)
                 && (methodName.equals("instance")
                         || methodName.equals("doubleValue") || method
                             .isConstructor())) {
             return true;
         }
-        if (declaringTypeName.equals("ceylon.language.Byte")
+        if (declaringTypeName.equals(CEYLON_BYTE)
                 && (methodName.equals("instance")
                         || methodName.equals("byteValue") || method
                             .isConstructor())) {
             return true;
         }
-        if (declaringTypeName.equals("ceylon.language.String")
+        if (declaringTypeName.equals(CEYLON_STRING)
                 && (methodName.equals("instance")
                         || methodName.equals("toString") || (method
                         .isConstructor()
@@ -257,12 +269,16 @@ public class DebugUtils {
             return true;
         }
 
-        if (declaringTypeName.startsWith("ceylon.language.impl.Base")) {
+        if (declaringTypeName.startsWith(CEYLON_BASE_PACKAGE)) {
+            return true;
+        }
+
+        if (declaringTypeName.equals(ABSTRACT_CALLABLE)) {
             return true;
         }
 
         if (declaringTypeName
-                .startsWith("com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor")) {
+                .startsWith(TYPE_DESCRIPTOR)) {
             return true;
         }
 
@@ -272,18 +288,41 @@ public class DebugUtils {
             } else if (declaringType instanceof ClassType) {
                 ClassType classType = (ClassType) declaringType;
                 String superClassName = classType.superclass().name();
-                if (AbstractCallable.class.getName().equals(superClassName)) {
+                if (ABSTRACT_CALLABLE.equals(superClassName)) {
                     return true;
                 }
             }
          }
 
-        if (methodName.equals(Naming.Unfix.$evaluate$.toString())) {
+        if (methodName.equals(Naming.Unfix.$evaluate$.name())) {
             if (declaringType instanceof ClassType) {
                 ClassType classType = (ClassType) declaringType;
                 String superClassName = classType.superclass().name();
-                if (LazyIterable.class.getName().equals(superClassName)) {
+                if (LAZY_ITERABLE.equals(superClassName)) {
                     return true;
+                }
+            }
+        }
+
+        if (methodName.equals(Naming.Unfix.$call$.name())
+                || methodName.equals(Naming.Unfix.$callvariadic$.name()) 
+                || methodName.equals(Naming.Unfix.$calltyped$.name())) {
+            if (declaringType instanceof ClassType) {
+                ClassType classType = (ClassType) declaringType;
+                String superClassName = classType.superclass().name();
+                if (ABSTRACT_CALLABLE.equals(superClassName)) {
+                    if (method.isSynthetic()) {
+                        // some synthetic methods are generated by Javac apparently
+                        return true;
+                    }
+                    List<Method> methods = classType.methodsByName(Naming.Unfix.$calltyped$.name());
+                    if (methods != null && ! methods.isEmpty()) {
+                        if (methodName.equals(Naming.Unfix.$call$.name())
+                                || methodName.equals(Naming.Unfix.$callvariadic$.name())) {
+                            // they only delegate to $callTyped$
+                            return true;
+                        }
+                    }
                 }
             }
         }
@@ -313,10 +352,6 @@ public class DebugUtils {
         }
 
         if (methodName.equals("$getReifiedElement$")) {
-            return true;
-        }
-
-        if (method.name().equals("$call$") || method.name().equals("$callvariadic$")) {
             return true;
         }
 
