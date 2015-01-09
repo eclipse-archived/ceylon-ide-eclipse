@@ -26,7 +26,7 @@ import org.eclipse.jdt.internal.debug.ui.DebugUIMessages;
 import org.eclipse.jdt.internal.debug.ui.JDIModelPresentation;
 import org.eclipse.osgi.util.NLS;
 
-import com.redhat.ceylon.compiler.java.codegen.Naming;
+import com.redhat.ceylon.common.JVMModuleUtil;
 import com.redhat.ceylon.compiler.java.runtime.metamodel.Metamodel;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationListener;
@@ -283,7 +283,7 @@ public class CeylonJDIModelPresentation extends JDIModelPresentation {
             name = name.substring(4);
         }
         if (name.charAt(0) == '$') {
-            if (Naming.isJavaKeyword(name, 1, name.length())) {
+            if (JVMModuleUtil.isJavaKeyword(name, 1, name.length())) {
                 name = name.substring(1);
             }
         }
