@@ -2445,6 +2445,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     throws CoreException {
         
         Options jsopts = new Options()
+                .outWriter(printWriter)
                 .repos(js_repos)
                 .sourceDirs(js_srcdir)
                 .resourceDirs(js_rsrcdir)
