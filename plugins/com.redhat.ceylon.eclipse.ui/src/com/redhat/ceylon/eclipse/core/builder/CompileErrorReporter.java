@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.Path;
 
 import com.redhat.ceylon.compiler.java.launcher.Main;
 import com.redhat.ceylon.compiler.java.launcher.Main.ExitState;
+import com.redhat.ceylon.compiler.java.launcher.Main.ExitState.CeylonState;
 
 final class CompileErrorReporter implements
         DiagnosticListener<JavaFileObject> {
@@ -45,7 +46,8 @@ final class CompileErrorReporter implements
 
     public void failed(final ExitState exitState) {
         Diagnostic<? extends JavaFileObject> diagnostic = null;
-        if (exitState.javacExitCode == Main.EXIT_ABNORMAL) {
+        if (exitState.ceylonState.equals(CeylonState.BUG)
+                || exitState.ceylonState.equals(CeylonState.SYS)) {
             diagnostic = new Diagnostic<JavaFileObject>() {
                 @Override
                 public javax.tools.Diagnostic.Kind getKind() {
@@ -81,12 +83,15 @@ final class CompileErrorReporter implements
                 }
                 @Override
                 public String getMessage(Locale locale) {
-                    return "The Ceylon Java backend compiler failed abnormally" + 
+                    return exitState.ceylonState.equals(CeylonState.BUG) ? 
+                            "The Ceylon Java backend compilation failed" + 
                             (exitState.ceylonCodegenExceptionCount > 0 ? "\n  with " + exitState.ceylonCodegenExceptionCount + " code generation exceptions" : "") +
                             (exitState.ceylonCodegenErroneousCount > 0 ? "\n  with " + exitState.ceylonCodegenErroneousCount + " erroneous code generations" : "") +
                             (exitState.ceylonCodegenGarbageCount > 0 ? "\n  with " + exitState.ceylonCodegenGarbageCount + " malformed Javac tree cases" : "") +
-                            (exitState.abortingException != null ? "\n  with a throwable : " + exitState.abortingException.toString() : "") +
-                            "";
+                            (exitState.abortingException != null ? "\n  with a throwable : " + exitState.abortingException.toString() : "")
+                            :
+                            "The Ceylon Java backend compilation was aborted" +
+                            (exitState.abortingException != null ? "\n  due to the following event : " + exitState.abortingException.toString() : ".");
                 }
             };
         }
