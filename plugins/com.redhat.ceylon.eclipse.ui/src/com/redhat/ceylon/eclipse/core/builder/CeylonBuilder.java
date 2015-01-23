@@ -312,7 +312,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (inputFilesToGenerate.size() > 0) {
                 try {
                     String markerId = PROBLEM_MARKER_ID + ".backend";
-                    String message = "Some classes are missing from the generated module archives, probably because of an unexpected error in the Java backend compiler.\n"
+                    String message = "Some classes are missing from the generated module archives, probably because of an error in the Java backend compilation.\n"
                             + "The detail of missing classes is given in the Information markers.";
                     IMarker marker = project.createMarker(markerId);
                     marker.setAttribute(IMarker.MESSAGE, message);
