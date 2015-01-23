@@ -79,14 +79,15 @@ Then :
     to import the Java projects that are in these directories : 
 
     ```
-    ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui
-    ceyon-ide-eclipse/plugins/com.redhat.ceylon.test.eclipse.plugin
-    ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.android.plugin
+    ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui
+    ceylon-ide-eclipse/plugins/com.redhat.ceylon.test.eclipse.plugin
+    ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.android.plugin
+    ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui.jdt.debug.fragment
     ```
     And also the Ceylon project that is the following directory : 
 
     ```
-    ceyon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui/ceylon
+    ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui/ceylon
     ```
 
 6.  The `com.redhat.ceylon.eclipse.ui` plugin depends on several OSGI bundles, which must be available inside Eclipse to be able to build it.	
