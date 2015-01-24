@@ -21,6 +21,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -29,7 +30,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
@@ -55,7 +55,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     private Button compileToJava;
     private Button enableExplodeModules;
     private Button offlineButton;
-    private Text verboseText;
+    private Combo verboseText;
     
     @Override
     public boolean performOk() {
@@ -188,10 +188,14 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         
         new Label(comp, SWT.NONE).setText("Compiler verbosity (--verbose)");
         
-        verboseText = new Text(comp, SWT.BORDER);
+        verboseText = new Combo(comp, SWT.DROP_DOWN);
+        verboseText.add("code");
+        verboseText.add("loader");
+        verboseText.add("cmr");
+        verboseText.add("all");
         GridData vgd = new GridData();
         vgd.grabExcessHorizontalSpace = true;
-        vgd.minimumWidth = 100;
+        vgd.minimumWidth = 75;
 //        vgd.widthHint = 100;
         verboseText.setLayoutData(vgd);
         if (verbose!=null) {
