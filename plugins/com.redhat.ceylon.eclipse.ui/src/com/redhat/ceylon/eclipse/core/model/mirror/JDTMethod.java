@@ -278,7 +278,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                     }
                     
                     // try the superclass first
-                    if (isDefinedInSuperClasses(declaringClass, method)) {
+                    if (isDefinedInSuperClass(declaringClass, method)) {
                         isOverriding = true;
                     } 
                     if (isDefinedInSuperInterfaces(declaringClass, method)) {
@@ -398,7 +398,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         return false;
     }
 
-    boolean isDefinedInSuperClasses(ReferenceBinding declaringClass, MethodBinding method) {
+    boolean isDefinedInSuperClass(ReferenceBinding declaringClass, MethodBinding method) {
         ReferenceBinding superClass = declaringClass.superclass();
         if (superClass == null) {
             return false;
@@ -410,7 +410,10 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         if (isDefinedInType(superClass, method)) {
             return true;
         }
-        return isDefinedInSuperClasses(superClass, method);
+        if (isDefinedInSuperInterfaces(superClass, method)) {
+            return true;
+        }
+        return isDefinedInSuperClass(superClass, method);
     }
 
     boolean isDefinedInSuperInterfaces(ReferenceBinding declaringType, MethodBinding method) {
