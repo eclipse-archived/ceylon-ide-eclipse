@@ -602,7 +602,7 @@
             id="com.redhat.ceylon.eclipse.ui.action.openRefinedDeclaration"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Go to refined declaration"
-            name="Go to Refi/ned Declaration"/>
+            name="Go to Refined Declaration"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
             categoryId="com.redhat.ceylon.eclipse.ui"
