@@ -946,7 +946,7 @@ public class JDTModelLoader extends AbstractModelLoader {
             char[][] compoundName = null;
             IType type = null;
             
-            for (int i=numberOfParts-1; i>0; i--) {
+            for (int i=numberOfParts-1; i>=0; i--) {
                 char[][] triedPackageName = new char[0][];
                 for (int j=0; j<i; j++) {
                     triedPackageName = CharOperation.arrayConcat(triedPackageName, uncertainCompoundName[j]);
