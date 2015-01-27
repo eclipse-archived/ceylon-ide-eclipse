@@ -2287,7 +2287,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         List<File> js_srcdir = new ArrayList<File>();
         List<File> js_rsrcdir = new ArrayList<File>();
         List<String> js_repos = new ArrayList<String>();
-        boolean js_verbose = false;
+        String js_verbose = null;
         String js_outRepo = null;
 
         String srcPath = "";
@@ -2325,12 +2325,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         String verbose = System.getProperty("ceylon.verbose");
         if (verbose!=null && "true".equals(verbose)) {
             options.add("-verbose");
-            js_verbose = true;
+            js_verbose = "all";
         }
         else {
             verbose = getVerbose(project);
             if (verbose!=null) {
                 options.add("-verbose:"+verbose);
+                js_verbose = verbose;
             }
         }
         
@@ -2414,7 +2415,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 	ArtifactCreator sac;
 					try {
 						sac = CeylonUtils.makeSourceArtifactCreator(outRepo, js_srcdir,
-						        m.getNameAsString(), m.getVersion(), js_verbose, logger);
+						        m.getNameAsString(), m.getVersion(), js_verbose!=null, logger);
 	                	List<String> moduleFiles = new ArrayList<>();
 	                	for (IFile file : filesToCompile) {
 	                		IContainer container = file.getParent();
@@ -2440,7 +2441,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private boolean compileJs(IProject project, TypeChecker typeChecker,
             List<File> js_srcdir, List<File> js_rsrcdir, List<String> js_repos, 
-            boolean js_verbose, String js_outRepo, PrintWriter printWriter, 
+            String js_verbose, String js_outRepo, PrintWriter printWriter, 
             boolean generateSourceArchive, List<File> sources, List<File> resources) 
                     throws CoreException {
         
@@ -2452,7 +2453,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 .systemRepo(getInterpolatedCeylonSystemRepo(project))
                 .outRepo(js_outRepo)
                 .optimize(true)
-                .verbose(js_verbose ? "all" : null)
+                .verbose(js_verbose)
                 .generateSourceArchive(generateSourceArchive)
                 .encoding(project.getDefaultCharset())
                 .offline(CeylonProjectConfig.get(project).isOffline());
