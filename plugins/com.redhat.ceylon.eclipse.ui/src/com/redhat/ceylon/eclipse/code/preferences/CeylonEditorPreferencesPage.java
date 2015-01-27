@@ -25,6 +25,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME_SELECT;
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
@@ -71,6 +72,7 @@ public class CeylonEditorPreferencesPage
 //    ScaleFieldEditor autoActivationDelay;
 //    RadioGroupFieldEditor autoActivationChars;
     BooleanFieldEditor linkedModeRename;
+    BooleanFieldEditor linkedModeRenameSelect;
     BooleanFieldEditor linkedModeExtract;
     BooleanFieldEditor displayOutlineTypes;
 //    BooleanFieldEditor displayParameterTypes;
@@ -109,6 +111,7 @@ public class CeylonEditorPreferencesPage
 //        inexactMatches.store();
 //        linkedMode.store();
         linkedModeRename.store();
+        linkedModeRenameSelect.store();
         linkedModeExtract.store();
         displayOutlineTypes.store();
 //        displayParameterTypes.store();
@@ -145,6 +148,7 @@ public class CeylonEditorPreferencesPage
 //        inexactMatches.loadDefault();
 //        linkedMode.loadDefault();
         linkedModeRename.loadDefault();
+        linkedModeRenameSelect.loadDefault();
         linkedModeExtract.loadDefault();
         displayOutlineTypes.loadDefault();
 //        displayParameterTypes.loadDefault();
@@ -475,16 +479,21 @@ public class CeylonEditorPreferencesPage
     
     private void linkedModeSection() {
         Composite group = createGroup(1, "Linked mode");
-        linkedModeRename = new BooleanFieldEditor(LINKED_MODE_RENAME, 
-                "Use linked mode for rename", 
-                getFieldEditorParent(group));
-        linkedModeRename.load();
-        addField(linkedModeRename);
         linkedModeExtract = new BooleanFieldEditor(LINKED_MODE_EXTRACT, 
                 "Use linked mode for extract refactorings", 
                 getFieldEditorParent(group));
         linkedModeExtract.load();
         addField(linkedModeExtract);
+        linkedModeRename = new BooleanFieldEditor(LINKED_MODE_RENAME, 
+                "Use linked mode for rename", 
+                getFieldEditorParent(group));
+        linkedModeRename.load();
+        addField(linkedModeRename);
+        linkedModeRenameSelect = new BooleanFieldEditor(LINKED_MODE_RENAME_SELECT, 
+                "Fully select renamed identifier", 
+                getFieldEditorParent(group));
+        linkedModeRenameSelect.load();
+        addField(linkedModeRenameSelect);
     }
     
     /*private void onSaveSection() {

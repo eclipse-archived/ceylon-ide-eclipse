@@ -63,6 +63,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String INEXACT_MATCHES = "inexactMatches";
     public static final String LINKED_MODE = "linkedModeCompletion";
     public static final String LINKED_MODE_RENAME = "linkedModeRename";
+    public static final String LINKED_MODE_RENAME_SELECT = "linkedModeRenameSelect";
     public static final String LINKED_MODE_EXTRACT = "linkedModeExtract";
     public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
     public static final String DISPLAY_RETURN_TYPES = "displayReturnTypes";
@@ -110,6 +111,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         preferenceStore.setDefault(INEXACT_MATCHES, "positional");
         preferenceStore.setDefault(LINKED_MODE, true);
         preferenceStore.setDefault(LINKED_MODE_RENAME, true);
+        preferenceStore.setDefault(LINKED_MODE_RENAME_SELECT, true);
         preferenceStore.setDefault(LINKED_MODE_EXTRACT, true);
         preferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
         preferenceStore.setDefault(DISPLAY_RETURN_TYPES, false);

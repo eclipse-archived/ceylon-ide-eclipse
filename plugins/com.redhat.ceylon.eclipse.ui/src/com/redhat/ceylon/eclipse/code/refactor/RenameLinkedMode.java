@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME_SELECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
@@ -198,6 +199,19 @@ public final class RenameLinkedMode
                 editor.getParseController().getRootNode(), 
                 adjust, linkedPositionGroup);
         linkedModeModel.addGroup(linkedPositionGroup);
+    }
+    
+    @Override
+    protected void enterLinkedMode(IDocument document, int exitSequenceNumber,
+            int exitPosition) throws BadLocationException {
+        super.enterLinkedMode(document, exitSequenceNumber, exitPosition);
+        if (!EditorsUI.getPreferenceStore()
+                .getBoolean(LINKED_MODE_RENAME_SELECT)) {
+            // by default, full word is selected; restore original selection
+            editor.getCeylonSourceViewer()
+                .setSelectedRange(originalSelection.x, 
+                        originalSelection.y); 
+        }
     }
 
 //  private Image image= null;
