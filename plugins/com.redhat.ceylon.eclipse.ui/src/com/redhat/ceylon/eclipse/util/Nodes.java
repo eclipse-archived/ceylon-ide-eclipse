@@ -628,7 +628,7 @@ public class Nodes {
             Declaration declaration = bmte.getDeclaration();
             if (unplural) {
                 String name = declaration.getName();
-                if (name.endsWith("s")) {
+                if (name.endsWith("s") && name.length()>1) {
                     addNameProposals(names, false, name.substring(0, name.length()-1));
                 }
             }
