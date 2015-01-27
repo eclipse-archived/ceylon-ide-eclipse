@@ -66,7 +66,16 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
         if (processor instanceof MoveProcessor) {
             MoveProcessor moveProcessor = (MoveProcessor) processor;
             for (Object e: moveProcessor.getElements()) {
-                movingFiles.add((IResource) e);
+                IResource r = null;
+                if (e instanceof IResource) {
+                    r = (IResource) e;
+                }
+                else if (e instanceof ICompilationUnit) {
+                    r = ((ICompilationUnit) e).getResource();
+                }
+                if (r!=null) {
+                    movingFiles.add(r);
+                }
             }
             return getProjectTypeChecker(file.getProject())!=null &&
                     file.getFileExtension()!=null &&
