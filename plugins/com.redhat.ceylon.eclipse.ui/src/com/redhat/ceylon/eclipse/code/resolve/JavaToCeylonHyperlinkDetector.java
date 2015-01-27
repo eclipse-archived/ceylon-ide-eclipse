@@ -3,10 +3,11 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import static java.lang.Character.isJavaIdentifierPart;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.ICodeAssist;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.ui.javaeditor.IClassFileEditorInput;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -15,6 +16,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.part.FileEditorInput;
 
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -77,11 +79,18 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
             final IDocument doc = textViewer.getDocument();
             IEditorInput editorInput = 
                     EditorUtil.getCurrentEditor().getEditorInput();
-            ICompilationUnit cu = (ICompilationUnit) 
-                    JavaCore.create(EditorUtil.getFile(editorInput));
-            if (cu==null) return null;
+            ICodeAssist ca = null;
+            
+            if (editorInput instanceof FileEditorInput) {
+                ca = (ICodeAssist) JavaCore.create(EditorUtil.getFile(editorInput));
+            } else if (editorInput instanceof IClassFileEditorInput) {
+                ca = ((IClassFileEditorInput)editorInput).getClassFile();
+            }
+            
+                    
+            if (ca==null) return null;
             IJavaElement[] selection = 
-                    cu.codeSelect(region.getOffset(), region.getLength());
+                    ca.codeSelect(region.getOffset(), region.getLength());
             for (final IJavaElement javaElement: selection) {
                 final IProject project = javaElement.getJavaProject().getProject();
 
