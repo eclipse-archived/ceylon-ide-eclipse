@@ -69,13 +69,9 @@ public abstract class AbstractLinkedMode {
         final IEditingSupport editingSupport = 
                 new FocusEditingSupport(editor) {
             public boolean ownsFocusShell() {
-                if (infoPopup == null) {
-                    return false;
-                }
-                if (infoPopup.ownsFocusShell()) {
-                    return true;
-                }
-                return super.ownsFocusShell();
+                return infoPopup != null && 
+                            infoPopup.ownsFocusShell() || 
+                        super.ownsFocusShell();
             }
         };
         LinkedMode.installLinkedMode(editor, linkedModeModel, this, 
