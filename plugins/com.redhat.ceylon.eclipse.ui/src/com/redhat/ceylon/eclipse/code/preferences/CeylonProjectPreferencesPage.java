@@ -190,6 +190,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         
         verboseText = new Combo(comp, SWT.DROP_DOWN);
         verboseText.add("code");
+        verboseText.add("ast");
         verboseText.add("loader");
         verboseText.add("cmr");
         verboseText.add("all");
