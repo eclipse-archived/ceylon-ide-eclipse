@@ -46,6 +46,7 @@ public class LinkedMode {
         ui.setExitPolicy(exitPolicy);
         ui.setCyclingMode(LinkedModeUI.CYCLE_WHEN_NO_PARENT);
         ui.setDoContextInfo(true);
+        ui.enableColoredLabels(true);
         ui.enter();
     }
 

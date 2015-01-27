@@ -19,7 +19,9 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -28,9 +30,12 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class LinkedModeCompletionProposal 
-        implements ICompletionProposal, ICompletionProposalExtension2 {
+        implements ICompletionProposal, 
+                   ICompletionProposalExtension2,
+                   ICompletionProposalExtension6 {
     
     private static final class NullProposal 
             implements ICompletionProposal, ICompletionProposalExtension2 {
@@ -168,6 +173,13 @@ public class LinkedModeCompletionProposal
         return text;
     }
     
+    @Override
+    public StyledString getStyledDisplayString() {
+        StyledString result = new StyledString();
+        Highlights.styleProposal(result, getDisplayString(), false);
+        return result;
+    }
+
     public String getAdditionalProposalInfo() {
         return null;
     }

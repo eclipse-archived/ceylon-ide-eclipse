@@ -47,9 +47,11 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -82,6 +84,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 
@@ -213,7 +216,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     }
     
     final class NestedCompletionProposal implements ICompletionProposal, 
-            ICompletionProposalExtension2 {
+            ICompletionProposalExtension2, ICompletionProposalExtension6 {
         private final String op;
         private final int loc;
         private final int index;
@@ -328,6 +331,13 @@ class InvocationCompletionProposal extends CompletionProposal {
         @Override
         public String getDisplayString() {
             return getText(true);
+        }
+        
+        @Override
+        public StyledString getStyledDisplayString() {
+            StyledString result = new StyledString();
+            Highlights.styleProposal(result, getDisplayString(), false);
+            return result;
         }
 
         @Override
