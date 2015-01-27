@@ -84,8 +84,8 @@ public class LinkedModeCompletionProposal
             for (ICompletionProposal p: proposals) {
                 if (p instanceof ICompletionProposalExtension2) {
                     ICompletionProposalExtension2 ext = 
-                    		(ICompletionProposalExtension2) p;
-					if (ext.validate(document, offset, event)) {
+                            (ICompletionProposalExtension2) p;
+                    if (ext.validate(document, offset, event)) {
                         return true;
                     }
                 }
@@ -145,7 +145,7 @@ public class LinkedModeCompletionProposal
         for (int i=offset;
                 i<document.getLength(); 
                 i++) {
-        	char ch = document.getChar(i);
+            char ch = document.getChar(i);
             if (Character.isJavaIdentifierPart(ch)) {
                 lastWasWs = false;
                 length++;
@@ -220,13 +220,13 @@ public class LinkedModeCompletionProposal
             proposedNames.add(defaultName);
         }
         for (String name: names) {
-        	if (proposedNames.add(name)) {
-        		if (defaultName==null || !defaultName.equals(name)) {
-        			LinkedModeCompletionProposal nameProposal = 
-        					new LinkedModeCompletionProposal(offset, name, seq);
-        			nameProposals.add(nameProposal);
-        		}
-        	}
+            if (proposedNames.add(name)) {
+                if (defaultName==null || !defaultName.equals(name)) {
+                    LinkedModeCompletionProposal nameProposal = 
+                            new LinkedModeCompletionProposal(offset, name, seq);
+                    nameProposals.add(nameProposal);
+                }
+            }
         }
         ICompletionProposal[] proposals = 
                 new ICompletionProposal[nameProposals.size() + 1];
@@ -240,9 +240,9 @@ public class LinkedModeCompletionProposal
 
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
             Unit unit, ProducedType type, boolean includeValue, String kind) {
-    	if (type==null) {
-    	    return new ICompletionProposal[0];
-    	}
+        if (type==null) {
+            return new ICompletionProposal[0];
+        }
         TypeDeclaration td = type.getDeclaration();
         List<TypeDeclaration> supertypes = isTypeUnknown(type) ?
                 Collections.<TypeDeclaration>emptyList() :
