@@ -206,18 +206,19 @@ public class CleanImportsHandler extends AbstractHandler {
             StringBuilder builder, IDocument doc) {
         String indent = getDefaultIndent();
         for (Tree.ImportMemberOrType i: elements) {
-            if (i.getDeclarationModel()!=null && 
+            Declaration d = i.getDeclarationModel();
+            if (d!=null && 
                     i.getIdentifier().getErrors().isEmpty() &&
                     i.getErrors().isEmpty()) {
                 builder.append(getDefaultLineDelimiter(doc))
                         .append(indent);
                 if (!i.getImportModel().getAlias()
-                        .equals(i.getDeclarationModel().getName())) {
-                    String escapedAlias = escapeAliasedName(i.getDeclarationModel(), 
+                        .equals(d.getName())) {
+                    String escapedAlias = escapeAliasedName(d, 
                             i.getImportModel().getAlias());
                     builder.append(escapedAlias).append("=");
                 }
-                builder.append(escapeName(i.getDeclarationModel()));
+                builder.append(escapeName(d));
                 appendNestedImportElements(i, unused, builder, doc);
                 builder.append(",");
             }
@@ -250,19 +251,21 @@ public class CleanImportsHandler extends AbstractHandler {
             for (Tree.ImportMemberOrType nimt: 
                     imt.getImportMemberOrTypeList()
                             .getImportMemberOrTypes()) {
-                if (nimt.getDeclarationModel()!=null && 
+                Declaration d = nimt.getDeclarationModel();
+                if (d!=null && 
                         nimt.getIdentifier().getErrors().isEmpty() &&
                         nimt.getErrors().isEmpty()) {
-                    if (!unused.contains(nimt.getDeclarationModel())) {
+                    if (!unused.contains(d)) {
                         found=true;
                         builder.append(getDefaultLineDelimiter(doc))
                                 .append(indent).append(indent);
                         if (!nimt.getImportModel().getAlias()
-                                .equals(nimt.getDeclarationModel().getName())) {
-                            builder.append(nimt.getImportModel().getAlias())
-                                    .append("=");
+                                .equals(d.getName())) {
+                            String escapedAlias = escapeAliasedName(d, 
+                                    nimt.getImportModel().getAlias());
+                            builder.append(escapedAlias).append("=");
                         }
-                        builder.append(nimt.getDeclarationModel().getName())
+                        builder.append(escapeName(d))
                                 .append(",");
                     }
                 }
