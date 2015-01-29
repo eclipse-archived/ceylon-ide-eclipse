@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -2277,8 +2278,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         for (PhasedUnit phasedUnit: units) {
             IFile file = getFile(phasedUnit);
             CompilationUnit compilationUnit = phasedUnit.getCompilationUnit();
-            compilationUnit.visit(new WarningSuppressionVisitor<Warning>(Warning.class, 
-                    phasedUnit.getSuppressedWarnings()));
+            compilationUnit.visit(new WarningSuppressionVisitor<Warning>(Warning.class,
+                    CeylonBuilder.getSuppressedWarnings(project)));
             compilationUnit.visit(new MarkerCreator(file));
             addTaskMarkers(file, phasedUnit.getTokens());
         }
@@ -2785,14 +2786,39 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return compileToJava(project) && loadBinariesFirst;
     }
 
-    public static boolean showWarnings(IProject project) {
-        return getBuilderArgs(project).get("hideWarnings")==null;
-    }
     public static boolean compileToJs(IProject project) {
         return getBuilderArgs(project).get("compileJs")!=null;
     }
     public static boolean compileToJava(IProject project) {
         return CeylonNature.isEnabled(project) && getBuilderArgs(project).get("compileJava")==null;
+    }
+    
+    public static boolean showWarnings(IProject project) {
+        return getBuilderArgs(project).get("hideWarnings")==null;
+    }
+    
+    public static EnumSet<Warning> getSuppressedWarnings(IProject project) {
+        String suppressWarnings = getSuppressedWarningsString(project);
+        if (suppressWarnings==null) {
+            return EnumSet.noneOf(Warning.class);
+        }
+        else if (suppressWarnings.trim().isEmpty()) {
+            return EnumSet.allOf(Warning.class);
+        }
+        else {
+            EnumSet<Warning> suppressedWarnings = EnumSet.noneOf(Warning.class);
+            for (String name : suppressWarnings.trim().split(" *, *")) {
+                try {
+                    suppressedWarnings.add(Warning.valueOf(name));
+                }
+                catch (IllegalArgumentException iae) {}
+            }
+            return suppressedWarnings;
+        }
+    }
+
+    public static String getSuppressedWarningsString(IProject project) {
+        return getBuilderArgs(project).get("suppressedWarnings");
     }
     
     public static String fileName(ClassMirror c) {

@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
@@ -48,6 +49,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     private boolean astAwareIncrementalBuids = true;
     private Boolean offlineOption = null;
     private String verbose = null;
+    private String suppressedWarnings = "";
 
     private Button showWarnings;
     private Button compileToJs;
@@ -56,6 +58,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     private Button enableExplodeModules;
     private Button offlineButton;
     private Combo verboseText;
+    private Text suppressedWarningsText;
     
     @Override
     public boolean performOk() {
@@ -68,12 +71,14 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         explodeModules=true;
         enableExplodeModules.setSelection(true);
         showCompilerWarnings=true;
+        suppressedWarnings = "";
         showWarnings.setSelection(true);
         backendJs = false;
         backendJava = true;
         compileToJs.setSelection(false);
         compileToJava.setSelection(true);
         astAwareIncrementalBuidsButton.setSelection(true);
+        suppressedWarningsText.setText("");
         offlineOption = null;
         verboseText = null;
         updateOfflineButton();
@@ -85,7 +90,8 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         if (CeylonNature.isEnabled(project)) {
             String systemRepo = getCeylonSystemRepo(project);
             new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, 
-                    backendJava, backendJs, astAwareIncrementalBuids, verbose)
+                    backendJava, backendJs, astAwareIncrementalBuids, verbose,
+                    suppressedWarnings)
                     .addToProject(project);
 
             CeylonProjectConfig config = CeylonProjectConfig.get(project);
@@ -119,9 +125,9 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
 //        Label misc = new Label(parent, SWT.LEFT | SWT.WRAP);
 //        misc.setText("Ceylon compiler settings");
 
-        Group group = new Group(parent, SWT.NONE);
-        Composite composite = group;
-        group.setText("Platform");
+        Group pgroup = new Group(parent, SWT.NONE);
+        Composite composite = pgroup;
+        pgroup.setText("Platform");
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd.grabExcessHorizontalSpace=true;
         composite.setLayoutData(gd);
@@ -141,6 +147,36 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         compileToJs.setSelection(backendJs);
         compileToJs.setEnabled(builderEnabled);
         
+        Group wgroup = new Group(parent, SWT.NONE);
+        wgroup.setText("Compilation Warnings");
+        wgroup.setLayout(new GridLayout(2, false));
+        GridData gd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd2.grabExcessHorizontalSpace=true;
+        wgroup.setLayoutData(gd2);
+        
+        showWarnings = new Button(wgroup, SWT.CHECK);
+        showWarnings.setText("Show warnings");
+        showWarnings.setSelection(showCompilerWarnings);
+        showWarnings.setEnabled(builderEnabled);
+        
+        GridData wgd = new GridData();
+        wgd.horizontalSpan=2;
+        showWarnings.setLayoutData(wgd);
+        
+        new Label(wgroup, SWT.NONE).setText("Suppressed warning types (comma-separated)");
+        suppressedWarningsText = new Text(wgroup, SWT.SINGLE);
+        suppressedWarningsText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                suppressedWarnings = suppressedWarningsText.getText();
+            }
+        });
+        suppressedWarningsText.setEnabled(showCompilerWarnings);
+        
+        GridData wgd2 = new GridData();
+        wgd2.widthHint = 200;
+        suppressedWarningsText.setLayoutData(wgd2);
+
         composite = new Composite(parent, SWT.NONE);
         GridData gdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gdb.grabExcessHorizontalSpace=true;
@@ -152,13 +188,8 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         
         addCharacterEncodingLabel(composite);
         
-        showWarnings = new Button(composite, SWT.CHECK);
-        showWarnings.setText("Show compiler warnings (for unused declarations and use of deprecated declarations)");
-        showWarnings.setSelection(showCompilerWarnings);
-        showWarnings.setEnabled(builderEnabled);
-
         astAwareIncrementalBuidsButton = new Button(composite, SWT.CHECK);
-        astAwareIncrementalBuidsButton.setText("Fast structure-aware incremental builder (Experimental)");
+        astAwareIncrementalBuidsButton.setText("Fast structure-aware incremental builder (experimental)");
         astAwareIncrementalBuidsButton.setSelection(astAwareIncrementalBuids);
         astAwareIncrementalBuidsButton.setEnabled(builderEnabled);
 
@@ -183,10 +214,14 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         });
         updateOfflineButton();
         
-        Composite comp = new Composite(composite, SWT.NONE);
+        Group comp = new Group(parent, SWT.NONE);
+        comp.setText("Compiler Logging");
         comp.setLayout(new GridLayout(2, false));
+        GridData gd3 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd3.grabExcessHorizontalSpace=true;
+        comp.setLayoutData(gd3);
         
-        new Label(comp, SWT.NONE).setText("Compiler verbosity (--verbose)");
+        new Label(comp, SWT.NONE).setText("Logging verbosity level");
         
         verboseText = new Combo(comp, SWT.DROP_DOWN);
         verboseText.add("code");
@@ -197,7 +232,6 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         GridData vgd = new GridData();
         vgd.grabExcessHorizontalSpace = true;
         vgd.minimumWidth = 75;
-//        vgd.widthHint = 100;
         verboseText.setLayoutData(vgd);
         if (verbose!=null) {
             verboseText.setText(verbose);
@@ -249,6 +283,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showCompilerWarnings = !showCompilerWarnings;
+                suppressedWarningsText.setEnabled(showCompilerWarnings);
             }
         });
 
