@@ -122,6 +122,7 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
+import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
@@ -138,6 +139,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
+import com.redhat.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
@@ -2274,7 +2276,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             final IProject project) {
         for (PhasedUnit phasedUnit: units) {
             IFile file = getFile(phasedUnit);
-            phasedUnit.getCompilationUnit().visit(new MarkerCreator(file));
+            CompilationUnit compilationUnit = phasedUnit.getCompilationUnit();
+            compilationUnit.visit(new WarningSuppressionVisitor<Warning>(Warning.class, 
+                    phasedUnit.getSuppressedWarnings()));
+            compilationUnit.visit(new MarkerCreator(file));
             addTaskMarkers(file, phasedUnit.getTokens());
         }
     }

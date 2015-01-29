@@ -89,7 +89,12 @@ public abstract class ErrorVisitor extends Visitor {
             int startCol, int startLine, Message error);
 
     protected boolean include(Message msg) {
-        return true;
+        if (msg instanceof UsageWarning) {
+            return !((UsageWarning) msg).isSuppressed();
+        }
+        else {
+            return true;
+        }
     }
     
     protected int adjust(int stopIndex) {

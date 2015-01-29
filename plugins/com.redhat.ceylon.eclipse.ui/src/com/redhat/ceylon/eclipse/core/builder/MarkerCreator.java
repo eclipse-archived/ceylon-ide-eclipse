@@ -1,7 +1,8 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 
