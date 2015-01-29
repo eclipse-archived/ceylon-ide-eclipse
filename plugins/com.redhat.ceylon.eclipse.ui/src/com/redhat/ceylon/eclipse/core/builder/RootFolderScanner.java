@@ -79,24 +79,31 @@ final class RootFolderScanner implements IResourceVisitor {
             assert(pkg != null);
         }
 
+        String pkgNameAsString;
+        IFolder pkgFolder;
         if (resource instanceof IFolder) {
-            List<String> pkgName = getPackageName((IFolder)resource);
-            String pkgNameAsString = formatPath(pkgName);
-            
-            if ( module != defaultModule ) {
-                if (! pkgNameAsString.startsWith(module.getNameAsString() + ".")) {
-                    // We've ran above the last module => reset module to default 
-                    module = defaultModule;
-                }
+            pkgFolder = (IFolder) resource;
+        } else {
+            pkgFolder = (IFolder) resource.getParent();
+        }
+        
+        List<String> pkgName = getPackageName(pkgFolder);
+        pkgNameAsString = formatPath(pkgName);
+        if ( module != defaultModule ) {
+            if (! pkgNameAsString.startsWith(module.getNameAsString() + ".")) {
+                // We've ran above the last module => reset module to default 
+                module = defaultModule;
             }
-            
-            Module realModule = modelLoader.getLoadedModule(pkgNameAsString);
-            if (realModule != null) {
-                // The module descriptor had probably been found in another source directory
-                module = realModule;
-            }
-            
-            pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
+        }
+        
+        Module realModule = modelLoader.getLoadedModule(pkgNameAsString);
+        if (realModule != null) {
+            // The module descriptor had probably been found in another source directory
+            module = realModule;
+        }
+        pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
+
+        if (resource instanceof IFolder) {
             resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_PACKAGE_MODEL, new WeakReference<Package>(pkg));
             resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, rootDir.getFolder());
             return true;
@@ -107,10 +114,6 @@ final class RootFolderScanner implements IResourceVisitor {
             if (file.exists()) {
                 boolean isSourceFile = isInSourceForlder && isCompilable(file);
                 if (isInResourceForlder || isSourceFile ) {
-                    List<String> pkgName = getPackageName(file.getParent());
-                    String pkgNameAsString = formatPath(pkgName);
-                    pkg = modelLoader.findOrCreatePackage(module, pkgNameAsString);
-                    
                     if (scannedFiles != null) {
                         scannedFiles.add((IFile)resource);
                     }
