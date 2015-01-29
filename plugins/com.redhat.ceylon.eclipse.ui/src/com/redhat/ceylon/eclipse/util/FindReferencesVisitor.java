@@ -5,6 +5,8 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -46,6 +48,14 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
         if (declaration instanceof Setter) {
             declaration = ((Setter) declaration).getGetter();
         }
+        if (declaration instanceof Constructor) {
+            Constructor constructor = (Constructor) declaration;
+            ClassOrInterface c = constructor.getExtendedTypeDeclaration();
+            if (c.getName().equals(constructor.getName())) {
+                //default constructor
+                declaration = c;
+            }
+        }
         this.declaration = declaration;
     }
     
@@ -64,7 +74,8 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
     protected boolean isReference(Declaration ref) {
         return ref!=null && declaration instanceof Declaration && 
                 (((Declaration)declaration).refines(ref) || 
-                        isSetterParameterReference(ref));
+                        isSetterParameterReference(ref) ||
+                        isConstructorReference(ref));
     }
 
     private boolean isSetterParameterReference(Declaration ref) {
@@ -72,6 +83,18 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
             Setter setter = (Setter) ref.getContainer();
             return setter.getDirectMember(setter.getName(), null, false).equals(ref) &&
                     isReference(setter.getGetter());
+        }
+        else {
+            return false;
+        }
+    }
+
+    private boolean isConstructorReference(Declaration ref) {
+        if (ref instanceof Constructor) {
+            Constructor constructor = (Constructor) ref;
+            ClassOrInterface c = constructor.getExtendedTypeDeclaration();
+            return c.getName().equals(ref.getName()) &&
+                    c.equals(declaration);
         }
         else {
             return false;

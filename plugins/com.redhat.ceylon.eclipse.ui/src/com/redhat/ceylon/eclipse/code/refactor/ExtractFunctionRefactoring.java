@@ -48,10 +48,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Return;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
@@ -109,9 +105,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
 
     private final class CheckStatementsVisitor extends Visitor {
         final Tree.Body scope;
-        final Collection<Statement> statements;
+        final Collection<Tree.Statement> statements;
         CheckStatementsVisitor(Tree.Body scope, 
-                Collection<Statement> statements) {
+                Collection<Tree.Statement> statements) {
             this.scope = scope;
             this.statements = statements;
         }
@@ -174,11 +170,11 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     }
 
     private boolean hasOuterRefs(Declaration d, Tree.Body scope, 
-            Collection<Statement> statements) {
+            Collection<Tree.Statement> statements) {
         if (scope==null) return false; //TODO: what case is this?
         FindOuterReferencesVisitor v = 
                 new FindOuterReferencesVisitor(d);
-        for (Statement s: scope.getStatements()) {
+        for (Tree.Statement s: scope.getStatements()) {
             if (!statements.contains(s)) {
                 s.visit(v);
             }
@@ -190,9 +186,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         Node result = null;
         TypedDeclaration resultDeclaration = null;
         final Tree.Body scope;
-        final Collection<Statement> statements;
+        final Collection<Tree.Statement> statements;
         FindResultVisitor(Tree.Body scope, 
-                Collection<Statement> statements) {
+                Collection<Tree.Statement> statements) {
             this.scope = scope;
             this.statements = statements;
         }
@@ -246,8 +242,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     }
 
     private final class FindReturnsVisitor extends Visitor {
-        final Collection<Return> returns;
-        FindReturnsVisitor(Collection<Return> returns) {
+        final Collection<Tree.Return> returns;
+        FindReturnsVisitor(Collection<Tree.Return> returns) {
             this.returns = returns;
         }
         @Override
@@ -305,8 +301,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     private boolean explicitType;
     private Node result;
     private TypedDeclaration resultDeclaration;
-    private List<Statement> statements;
-    List<Return> returns;
+    private List<Tree.Statement> statements;
+    List<Tree.Return> returns;
     private ProducedType returnType;
 
     public ExtractFunctionRefactoring(IEditorPart editor) {
@@ -338,7 +334,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             class FindBodyVisitor extends Visitor {
                 Tree.Body body;
                 @Override
-                public void visit(Body that) {
+                public void visit(Tree.Body that) {
                     super.visit(that);
                     if (that.getStatements().contains(node)) {
                         body = that;
@@ -354,7 +350,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         else {
             return;
         }
-        for (Statement s: statements) {
+        for (Tree.Statement s: statements) {
             FindResultVisitor v = 
                     new FindResultVisitor(body, statements);
             s.visit(v);
@@ -364,8 +360,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 break;
             }
         }
-        returns = new ArrayList<Return>();
-        for (Statement s: statements) {
+        returns = new ArrayList<Tree.Return>();
+        for (Tree.Statement s: statements) {
             FindReturnsVisitor v = 
                     new FindReturnsVisitor(returns);
             s.visit(v);
@@ -380,7 +376,17 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 !sourceFile.getName().equals("package.ceylon") &&
                 (node instanceof Tree.Term || 
                  node instanceof Tree.Body &&
-                    !statements.isEmpty());
+                    !statements.isEmpty() &&
+                    !containsConstructor(statements));
+    }
+    
+    private boolean containsConstructor(List<Tree.Statement> statements) {
+        for (Tree.Statement statement : statements) {
+            if (statement instanceof Tree.Constructor) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public String getName() {
@@ -390,7 +396,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     public boolean forceWizardMode() {
         if (node instanceof Tree.Body) {
             Tree.Body body = (Tree.Body) node;
-            for (Statement s: statements) {
+            for (Tree.Statement s: statements) {
                 CheckStatementsVisitor v = 
                         new CheckStatementsVisitor(body, statements);
                 s.visit(v);
@@ -416,7 +422,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             throws CoreException, OperationCanceledException {
         if (node instanceof Tree.Body) {
             Tree.Body body = (Tree.Body) node;
-            for (Statement s: statements) {
+            for (Tree.Statement s: statements) {
                 CheckStatementsVisitor v = 
                         new CheckStatementsVisitor(body, statements);
                 s.visit(v);
@@ -510,7 +516,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 new FindLocalReferencesVisitor(node.getScope(), 
                 getContainingScope(decNode));
         term.visit(flrv);
-        List<BaseMemberExpression> localRefs = flrv.getLocalReferences();
+        List<Tree.BaseMemberExpression> localRefs = flrv.getLocalReferences();
         List<TypeDeclaration> localTypes = 
                 new ArrayList<TypeDeclaration>();
         for (Tree.BaseMemberExpression bme: localRefs) {
@@ -660,7 +666,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         FindLocalReferencesVisitor flrv = 
                 new FindLocalReferencesVisitor(node.getScope(),
                 getContainingScope(decNode));
-        for (Statement s: statements) {
+        for (Tree.Statement s: statements) {
             s.visit(flrv);
         }
         final List<TypeDeclaration> localTypes = 
@@ -669,7 +675,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             addLocalType(dec, unit.denotableType(bme.getTypeModel()), 
                   localTypes, new ArrayList<ProducedType>());
         }
-        for (Statement s: statements) {
+        for (Tree.Statement s: statements) {
             new Visitor() {
                 public void visit(Tree.TypeArgumentList that) {
                     for (ProducedType pt: that.getTypeModels()) {
@@ -681,7 +687,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         
         HashSet<Declaration> movingDecs = new HashSet<Declaration>();
-        for (Statement s: statements) {
+        for (Tree.Statement s: statements) {
             if (s instanceof Tree.Declaration) {
                 movingDecs.add(((Tree.Declaration) s).getDeclarationModel());
             }
@@ -746,7 +752,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         else if (!returns.isEmpty())  {
             UnionType ut = new UnionType(unit);
             List<ProducedType> list = new ArrayList<ProducedType>();
-            for (Return r: returns) {
+            for (Tree.Return r: returns) {
                 addToUnion(list, r.getExpression().getTypeModel());
             }
             ut.setCaseTypes(list);
@@ -783,9 +789,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 resultDeclaration.getType().getProducedTypeName(unit) +
                 " " + resultDeclaration.getName() + ";";
         }
-        Statement last = statements.isEmpty() ?
+        Tree.Statement last = statements.isEmpty() ?
                 null : statements.get(statements.size()-1);
-        for (Statement s: statements) {
+        for (Tree.Statement s: statements) {
             content += extraIndent + toString(s);
             int i = s.getEndToken().getTokenIndex();
             CommonToken tok;
@@ -839,8 +845,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         refRegion = new Region(start+content.length()+il+invocation.indexOf('=')+1, newName.length());
     }
 
-    private List<Statement> getStatements(Tree.Body body, ITextSelection selection) {
-        List<Statement> statements = new ArrayList<Statement>();
+    private List<Tree.Statement> getStatements(Tree.Body body, ITextSelection selection) {
+        List<Tree.Statement> statements = new ArrayList<Tree.Statement>();
         for (Tree.Statement s: body.getStatements()) {
             if (s.getStartIndex()>=selection.getOffset() &&
                     s.getStopIndex()<=selection.getOffset()+selection.getLength()) {
