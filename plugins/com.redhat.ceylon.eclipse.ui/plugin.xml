@@ -3055,6 +3055,19 @@
 		        	</or>
 		     	</enablement>
 		  	</commonWizard>
+            <dropAssistant
+                class="com.redhat.ceylon.eclipse.code.navigator.CeylonDropAdapterAssistant"
+                id="com.redhat.ceylon.eclipse.ui.dropAssistant">
+                <possibleDropTargets>
+                    <or>
+                        <instanceof value="org.eclipse.core.resources.IResource"/>
+                        <and>
+                            <instanceof value="org.eclipse.jdt.core.IJavaElement"/>
+                            <instanceof value="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode"/>
+                        </and>
+                    </or>
+                </possibleDropTargets>
+            </dropAssistant>
 		</navigatorContent>
   		<commonFilter
 		        activeByDefault="true"
@@ -3190,7 +3203,6 @@
        <dragAssistant
              class="org.eclipse.ui.navigator.resources.ResourceDragAdapterAssistant"
              viewerId="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
-       
    </extension>
     <extension
           point="org.eclipse.ui.views.properties.tabbed.propertyContributor">

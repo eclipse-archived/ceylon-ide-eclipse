@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -12,7 +15,6 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jdt.internal.core.PackageFragmentRoot;
-import org.eclipse.jdt.internal.core.util.Util;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
@@ -49,7 +51,7 @@ public class SourceModuleNode extends PackageFragment implements ModuleNode {
         super((PackageFragmentRoot)sourceFolder, packageName);
         this.moduleSignature = moduleSignature;
         this.sourceFolder = sourceFolder;
-        mainPackageFragment = this;
+        mainPackageFragment = sourceFolder.getPackageFragment(formatPath(Arrays.asList(packageName)));
     }
     
     public IProject getProject() {
