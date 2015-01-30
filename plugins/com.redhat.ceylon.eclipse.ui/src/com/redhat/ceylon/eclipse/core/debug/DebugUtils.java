@@ -286,9 +286,8 @@ public class DebugUtils {
             if (declaringTypeName.endsWith("$impl")) {
                 return true;
             } else if (declaringType instanceof ClassType) {
-                ClassType classType = (ClassType) declaringType;
-                String superClassName = classType.superclass().name();
-                if (ABSTRACT_CALLABLE.equals(superClassName)) {
+                ClassType superClassType = ((ClassType) declaringType).superclass();
+                if (superClassType != null && ABSTRACT_CALLABLE.equals(superClassType.name())) {
                     return true;
                 }
             }
