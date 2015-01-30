@@ -110,7 +110,11 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             throws CoreException, OperationCanceledException {
         try {
             IProject project = file.getProject();
-            IFolder folder = (IFolder) getArguments().getDestination();
+            Object destination = getArguments().getDestination();
+            if (! (destination instanceof IFolder)) {
+                return null;
+            }
+            IFolder folder = (IFolder) destination;
             String newName = folder.getProjectRelativePath()
                     .removeFirstSegments(1)
                     .toPortableString()

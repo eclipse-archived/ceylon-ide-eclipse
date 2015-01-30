@@ -1371,9 +1371,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                         (removedFile.getFlags() & IResourceDelta.MOVED_TO) != 0 &&
                                         removedFile.getMovedToPath() != null) {
                                     IFile movedFile = project.getFile(removedFile.getMovedToPath().removeFirstSegments(1));
-                                    filesToAddInTypecheck.add(movedFile);
-                                    if (!astAwareIncrementalBuild || dependingFilesAccordingToStructureDelta.contains(movedFile)) {
-                                        filesToAddInCompile.add(movedFile);
+                                    if (isSourceFile(movedFile) || isResourceFile(movedFile)) {
+                                        filesToAddInTypecheck.add(movedFile);
+                                        if (!astAwareIncrementalBuild || dependingFilesAccordingToStructureDelta.contains(movedFile)) {
+                                            filesToAddInCompile.add(movedFile);
+                                        }
                                     }
                                 }
                             }
