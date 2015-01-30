@@ -29,12 +29,10 @@ public class CeylonNature extends ProjectNatureBase {
     private String systemRepo;
     boolean enableJdtClasses;
     boolean astAwareIncrementalBuilds;
-    boolean hideWarnings;
     boolean keepSettings;
     boolean compileJs;
     boolean compileJava;
     String verbose;
-    String suppressedWarnings;
 
     public CeylonNature() {
         keepSettings=true;
@@ -42,20 +40,16 @@ public class CeylonNature extends ProjectNatureBase {
     
     public CeylonNature(String systemRepo, 
             boolean enableJdtClasses, 
-            boolean hideWarnings, 
             boolean java,
             boolean js,
             boolean astAwareIncrementalBuilds,
-            String verbose, 
-            String suppressedWarnings) {
+            String verbose) {
         this.systemRepo = systemRepo;
         this.enableJdtClasses = enableJdtClasses;
-        this.hideWarnings = hideWarnings;
         compileJs = js;
         compileJava = java;
         this.astAwareIncrementalBuilds = astAwareIncrementalBuilds;
         this.verbose = verbose;
-        this.suppressedWarnings = suppressedWarnings;
     }
     
     public String getNatureID() {
@@ -99,12 +93,6 @@ public class CeylonNature extends ProjectNatureBase {
             } else {
                 args.remove("systemRepo");
             }
-            if (hideWarnings) {
-                args.put("hideWarnings", "true");
-            }
-            else {
-                args.remove("hideWarnings");
-            }
             if (enableJdtClasses) {
                 args.put("explodeModules", "true");
             }
@@ -131,14 +119,6 @@ public class CeylonNature extends ProjectNatureBase {
             }
             else {
                 args.put("verbose", verbose);
-            }
-            if (suppressedWarnings==null || 
-                suppressedWarnings.isEmpty()) {
-                args.remove("suppressedWarnings");
-            }
-            else {
-                args.put("suppressedWarnings", 
-                        suppressedWarnings);
             }
         }
         return args;

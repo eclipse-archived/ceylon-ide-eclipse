@@ -7,6 +7,8 @@ import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.EnumSet;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -36,6 +38,7 @@ import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
+import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
 import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
@@ -136,12 +139,16 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             
             CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
             
+            projectConfig.setProjectSuppressWarningsEnum(
+                    firstPage.isShowCompilerWarnings() ? EnumSet.noneOf(Warning.class) : EnumSet.allOf(Warning.class));
+            
             if (thirdPage.getBlock().getProject() != null) {
                 projectConfig.setOutputRepo(thirdPage.getBlock().getOutputRepo());
                 projectConfig.setProjectLocalRepos(thirdPage.getBlock().getProjectLocalRepos());
                 projectConfig.setProjectRemoteRepos(thirdPage.getBlock().getProjectRemoteRepos());
-                projectConfig.save();
             }
+            
+            projectConfig.save();
             
             try {
                 project.setDefaultCharset(projectConfig.getEncoding(), new NullProgressMonitor());
@@ -151,11 +158,10 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
 
             new CeylonNature(thirdPage.getBlock().getSystemRepo(),
                     firstPage.isEnableJdtClassesDir(), 
-                    !firstPage.isShowCompilerWarnings(),
                     firstPage.isCompileJava(),
                     firstPage.isCompileJs(),
                     firstPage.areAstAwareIncrementalBuildsEnabled(), 
-                    null, null)
+                    null)
                             .addToProject(getCreatedElement().getProject());
 
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);

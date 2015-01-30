@@ -2796,31 +2796,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static boolean showWarnings(IProject project) {
-        return getBuilderArgs(project).get("hideWarnings")==null;
+        return !getSuppressedWarnings(project).isEmpty();
     }
     
     public static EnumSet<Warning> getSuppressedWarnings(IProject project) {
-        String suppressWarnings = getSuppressedWarningsString(project);
-        if (suppressWarnings==null) {
-            return EnumSet.noneOf(Warning.class);
-        }
-        else if (suppressWarnings.trim().isEmpty()) {
-            return EnumSet.allOf(Warning.class);
-        }
-        else {
-            EnumSet<Warning> suppressedWarnings = EnumSet.noneOf(Warning.class);
-            for (String name : suppressWarnings.trim().split(" *, *")) {
-                try {
-                    suppressedWarnings.add(Warning.valueOf(name));
-                }
-                catch (IllegalArgumentException iae) {}
-            }
-            return suppressedWarnings;
-        }
+        return CeylonProjectConfig.get(project).getSuppressWarningsEnum();
     }
 
     public static String getSuppressedWarningsString(IProject project) {
-        return getBuilderArgs(project).get("suppressedWarnings");
+        List<String> warnings = CeylonProjectConfig.get(project).getSuppressWarnings();
+        StringBuilder buf = new StringBuilder();
+        if (warnings != null) {
+            for (String w : warnings) {
+                if (buf.length() > 0) {
+                    buf.append(",");
+                }
+                buf.append(w.trim());
+            }
+        }
+        return buf.toString();
     }
     
     public static String fileName(ClassMirror c) {
