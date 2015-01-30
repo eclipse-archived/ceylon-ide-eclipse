@@ -18,6 +18,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -149,7 +150,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         
         Group wgroup = new Group(parent, SWT.NONE);
         wgroup.setText("Compilation Warnings");
-        wgroup.setLayout(new GridLayout(2, false));
+        wgroup.setLayout(new GridLayout(1, false));
         GridData gd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd2.grabExcessHorizontalSpace=true;
         wgroup.setLayoutData(gd2);
@@ -163,7 +164,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         wgd.horizontalSpan=2;
         showWarnings.setLayoutData(wgd);
         
-        new Label(wgroup, SWT.NONE).setText("Suppressed warning types (comma-separated)");
+        new Label(wgroup, SWT.NONE).setText("Suppressed warning types, separated by commas");
         suppressedWarningsText = new Text(wgroup, SWT.SINGLE);
         suppressedWarningsText.addModifyListener(new ModifyListener() {
             @Override
@@ -174,7 +175,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         suppressedWarningsText.setEnabled(showCompilerWarnings);
         
         GridData wgd2 = new GridData();
-        wgd2.widthHint = 200;
+        wgd2.widthHint = 350;
         suppressedWarningsText.setLayoutData(wgd2);
 
         composite = new Composite(parent, SWT.NONE);
@@ -215,15 +216,37 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         updateOfflineButton();
         
         Group comp = new Group(parent, SWT.NONE);
-        comp.setText("Compiler Logging");
-        comp.setLayout(new GridLayout(2, false));
+        comp.setText("Troubleshooting");
+        comp.setLayout(new GridLayout(1, false));
         GridData gd3 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd3.grabExcessHorizontalSpace=true;
         comp.setLayoutData(gd3);
         
-        new Label(comp, SWT.NONE).setText("Logging verbosity level");
+        final Button button = new Button(comp, SWT.CHECK);
+        button.setText("Log compiler activity to Eclipse console");
+        button.setSelection(verbose!=null && !verbose.isEmpty());
+        button.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean selected = button.getSelection();
+                verboseText.setEnabled(selected);
+                verbose = selected ? verboseText.getText() : null;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
         
-        verboseText = new Combo(comp, SWT.DROP_DOWN);
+//        new Label(comp, SWT.NONE);
+        
+        Composite comp2 = new Composite(comp, SWT.NONE);
+        comp2.setLayout(new GridLayout(2, false));
+        GridData gd4 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd4.grabExcessHorizontalSpace=true;
+        comp2.setLayoutData(gd4);
+        
+        new Label(comp2, SWT.NONE).setText("Verbosity level");
+        
+        verboseText = new Combo(comp2, SWT.DROP_DOWN);
         verboseText.add("code");
         verboseText.add("ast");
         verboseText.add("loader");
@@ -233,9 +256,13 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         vgd.grabExcessHorizontalSpace = true;
         vgd.minimumWidth = 75;
         verboseText.setLayoutData(vgd);
-        if (verbose!=null) {
+        verboseText.setTextLimit(20);
+        if (verbose!=null && !verbose.isEmpty()) {
             verboseText.setText(verbose);
-            verboseText.setTextLimit(20);
+            verboseText.setEnabled(true);
+        }
+        else {
+            verboseText.setEnabled(false);
         }
         verboseText.addModifyListener(new ModifyListener() {
             @Override
