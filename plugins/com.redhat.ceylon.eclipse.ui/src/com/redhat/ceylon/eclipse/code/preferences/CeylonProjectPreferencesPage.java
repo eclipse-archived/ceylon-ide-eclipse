@@ -5,14 +5,13 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressedWarnings;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressedWarningsString;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -57,7 +56,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     private boolean astAwareIncrementalBuids = true;
     private Boolean offlineOption = null;
     private String verbose = null;
-    private String suppressedWarnings = null;
+    private EnumSet<Warning> suppressedWarnings = null;
 
     private Button showWarnings;
     private Button compileToJs;
@@ -77,7 +76,6 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     protected void performDefaults() {
         explodeModules=true;
         enableExplodeModules.setSelection(true);
-        showCompilerWarnings=true;
         suppressedWarnings = null;
         showWarnings.setSelection(true);
         backendJs = false;
@@ -103,15 +101,15 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             if (offlineOption!=null) {
                 config.setProjectOffline(offlineOption);
             }
-            if (showCompilerWarnings) {
-                if (suppressedWarnings.isEmpty()) {
-                    config.setProjectSuppressWarnings(null);
-                } else {
-                    List<String> swList = Arrays.asList(suppressedWarnings.split(" *, *"));
-                    config.setProjectSuppressWarnings(swList);
+            if (suppressedWarnings.isEmpty()) {
+                config.setProjectSuppressWarnings(null);
+            }
+            else {
+                List<String> swList = new ArrayList<String>();
+                for (Warning w: suppressedWarnings) {
+                    swList.add(w.toString());
                 }
-            } else {
-                config.setProjectSuppressWarnings(Collections.singletonList(""));
+                config.setProjectSuppressWarnings(swList);
             }
             config.save();
         }
@@ -124,38 +122,38 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     final class OptionListener implements SelectionListener {
         private Warning[] types;
         private Button b;
-        private EnumSet<Warning> set;
-        OptionListener(Button b, EnumSet<Warning> list, Warning... type) {
+        OptionListener(Button b, Warning... type) {
             this.b = b;
-            this.set = list;
             this.types = type;
         }
         @Override
         public void widgetSelected(SelectionEvent e) {
             if (b.getSelection()) {
-                for (Warning t: types) set.remove(t);
+                for (Warning t: types) {
+                    suppressedWarnings.remove(t);
+                }
             }
             else {
-                for (Warning t: types) set.add(t);
+                for (Warning t: types) {
+                    suppressedWarnings.add(t);
+                }
             }
-            suppressedWarnings = set.toString().replace("[", "").replace("]", "");
         }
         @Override
         public void widgetDefaultSelected(SelectionEvent e) {}
     }
     
-    void createOption(Composite comp, String description, 
-            EnumSet<Warning> list, Warning... type) {
+    void createOption(Composite comp, String description, Warning... type) {
         final Button b = new Button(comp, SWT.CHECK);
         b.setText(description);
-        b.addSelectionListener(new OptionListener(b, list, type));
-        b.setSelection(!list.containsAll(Arrays.asList(type)));
-//        showWarnings.addSelectionListener(new SelectionAdapter() {
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                b.setEnabled(showCompilerWarnings);
-//            }
-//        });
+        b.addSelectionListener(new OptionListener(b, type));
+        b.setSelection(!suppressedWarnings.containsAll(Arrays.asList(type)));
+        showWarnings.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                b.setSelection(showWarnings.getSelection());
+            }
+        });
     }
     
     //TODO: fix copy/paste!
@@ -214,33 +212,33 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         wgd.horizontalSpan=2;
         showWarnings.setLayoutData(wgd);
         
-        final EnumSet<Warning> list = getSuppressedWarnings(getSelectedProject());
+        suppressedWarnings = getSuppressedWarnings(getSelectedProject());
         
         final Composite warningOptions = new Composite(warningsGroup, SWT.NONE);
         warningOptions.setLayout(new GridLayout(2, false));
         GridData gd5 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd5.grabExcessHorizontalSpace=true;
         warningOptions.setLayoutData(gd5);
-        createOption(warningOptions, "Unused declarations", list, 
+        createOption(warningOptions, "Unused declarations",
                 Warning.unusedDeclaration);
-        createOption(warningOptions, "Unused imports", list, 
+        createOption(warningOptions, "Unused imports", 
                 Warning.unusedImport);
-        createOption(warningOptions, "Deprecation", list, 
+        createOption(warningOptions, "Deprecation", 
                 Warning.deprecation);
-        createOption(warningOptions, "Expressions of type Nothing", list, 
+        createOption(warningOptions, "Expressions of type Nothing", 
                 Warning.expressionTypeNothing);
-        createOption(warningOptions, "Broken documentation links", list, 
+        createOption(warningOptions, "Broken documentation links", 
                 Warning.doclink);
-        createOption(warningOptions, "Discouraged namespaces", list, 
+        createOption(warningOptions, "Discouraged namespaces", 
                 Warning.ceylonNamespace, Warning.javaNamespace);
-        createOption(warningOptions, "Source file names", list, 
+        createOption(warningOptions, "Source file names", 
                 Warning.filenameCaselessCollision, Warning.filenameNonAscii);
-        createOption(warningOptions, "Warning suppression", list, 
+        createOption(warningOptions, "Warning suppression", 
                 Warning.suppressedAlready, Warning.suppressesNothing, 
                 Warning.unknownWarning);
-        createOption(warningOptions, "Ambiguous annotations", list, 
+        createOption(warningOptions, "Ambiguous annotations", 
                 Warning.ambiguousAnnotation);
-        createOption(warningOptions, "Compiler annotations", list, 
+        createOption(warningOptions, "Compiler annotations", 
                 Warning.compilerAnnotation);
         warningOptions.setEnabled(showCompilerWarnings);
         warningOptions.setVisible(showCompilerWarnings);
@@ -381,11 +379,16 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         showWarnings.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                showCompilerWarnings = !showCompilerWarnings;
+                boolean showCompilerWarnings = showWarnings.getSelection();
+                if (showCompilerWarnings) {
+                    suppressedWarnings = EnumSet.allOf(Warning.class);
+                }
+                else {
+                    suppressedWarnings = EnumSet.noneOf(Warning.class);
+                }
                 warningOptions.setEnabled(showCompilerWarnings);
                 warningOptions.setVisible(showCompilerWarnings);
                 ((GridData)warningOptions.getLayoutData()).exclude = !showCompilerWarnings;
-//                warningOptions.layout();
                 parent.layout();
             }
         });
@@ -482,7 +485,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 backendJava = compileToJava(project);
                 verbose = getVerbose(project);
                 offlineOption = CeylonProjectConfig.get(project).isProjectOffline();
-                suppressedWarnings = getSuppressedWarningsString(project);
+                suppressedWarnings = getSuppressedWarnings(project);
             }
         }
 
