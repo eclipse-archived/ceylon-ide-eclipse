@@ -452,8 +452,10 @@ public class LaunchHelper {
             String moduleName = configuration.getAttribute(
                     ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME,
                     (String) null);
-            String packageName = moduleName.replaceAll("/.*$", "");
-            return packageName + ".run";
+            if (moduleName != null) {
+                String packageName = moduleName.replaceAll("/.*$", "");
+                return packageName + ".run";
+            }
         }
         return topLevelName;
     }
