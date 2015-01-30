@@ -2329,6 +2329,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             options.add(repository);
             js_repos.add(repository);
         }
+        
+        EnumSet<Warning> suppressedWarnings = getSuppressedWarnings(project);
+        if (suppressedWarnings!=null && 
+                !suppressedWarnings.isEmpty()) {
+            options.add("-suppress-warnings");
+            options.add(suppressedWarnings.toString()
+                    .replace("[", "").replace("]", ""));
+        }
 
         String verbose = System.getProperty("ceylon.verbose");
         if (verbose!=null && "true".equals(verbose)) {
