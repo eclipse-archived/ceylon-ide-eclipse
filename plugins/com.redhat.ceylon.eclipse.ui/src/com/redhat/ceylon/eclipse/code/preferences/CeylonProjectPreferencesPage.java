@@ -340,6 +340,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 verboseText.setEnabled(selected);
                 ((GridData) verbosityOptions.getLayoutData()).exclude = !selected;
                 verbosityOptions.setVisible(selected);
+                verbosityOptions.setEnabled(selected);
                 verboseText.setVisible(selected);
                 parent.layout();
             }
