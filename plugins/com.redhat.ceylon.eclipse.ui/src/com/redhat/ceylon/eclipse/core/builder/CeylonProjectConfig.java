@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import com.redhat.ceylon.common.config.ConfigWriter;
 import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
+import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
 import com.redhat.ceylon.eclipse.ui.CeylonEncodingSynchronizer;
 
 public class CeylonProjectConfig {
@@ -64,6 +66,9 @@ public class CeylonProjectConfig {
 	private List<String> transientSourceDirectories;
 	private List<String> transientResourceDirectories;
 
+    private List<String> transientSuppressWarnings;
+    private boolean isSuppressWarningsChanged = false;
+    
     private CeylonProjectConfig(IProject project) {
         this.project = project;
         initMergedConfig();
@@ -201,12 +206,68 @@ public class CeylonProjectConfig {
         transientResourceDirectories = dirs;
     }
     
+    public List<String> getSuppressWarnings() {
+        return getConfigValuesAsList(mergedConfig, DefaultToolOptions.COMPILER_SUPPRESSWARNING, null);
+    }
+    
+    public EnumSet<Warning> getSuppressWarningsEnum() {
+        return getSuppressWarningsEnum(getSuppressWarnings());
+    }
+    
+    public List<String> getProjectSuppressWarnings() {
+        return getConfigValuesAsList(projectConfig, DefaultToolOptions.COMPILER_SUPPRESSWARNING, null);
+    }
+    
+    public EnumSet<Warning> getProjectSuppressWarningsEnum() {
+        return getSuppressWarningsEnum(getProjectSuppressWarnings());
+    }
+    
+    private EnumSet<Warning> getSuppressWarningsEnum(List<String> suppressWarnings) {
+        if (suppressWarnings==null) {
+            return EnumSet.noneOf(Warning.class);
+        }
+        else if (suppressWarnings.isEmpty()) {
+            return EnumSet.allOf(Warning.class);
+        }
+        else {
+            EnumSet<Warning> suppressedWarnings = EnumSet.noneOf(Warning.class);
+            for (String name : suppressWarnings) {
+                try {
+                    suppressedWarnings.add(Warning.valueOf(name.trim()));
+                }
+                catch (IllegalArgumentException iae) {}
+            }
+            return suppressedWarnings;
+        }
+    }
+    
+    public void setProjectSuppressWarnings(List<String> warnings) {
+        transientSuppressWarnings = warnings;
+        isSuppressWarningsChanged = true;
+    }
+
+    public void setProjectSuppressWarningsEnum(EnumSet<Warning> warnings) {
+        List<String> ws;
+        if (warnings == null || warnings.isEmpty()) {
+            ws = null;
+        } else if (warnings.containsAll(EnumSet.allOf(Warning.class))) {
+            ws = Collections.singletonList("");
+        } else {
+            ws = new ArrayList<String>(warnings.size());
+            for (Warning w : warnings) {
+                ws.add(w.name());
+            }
+        }
+        transientSuppressWarnings = ws;
+        isSuppressWarningsChanged = true;
+    }
+    
     public void refresh() {
-        
         initMergedConfig();
         initProjectConfig();
         isOfflineChanged = false;
         isEncodingChanged = false;
+        isSuppressWarningsChanged = false;
         transientEncoding = null;
         transientOffline = null;
         transientOutputRepo = null;
@@ -214,6 +275,7 @@ public class CeylonProjectConfig {
         transientProjectRemoteRepos = null;
         transientSourceDirectories = null;
         transientResourceDirectories = null;
+        transientSuppressWarnings = null;
     }
 
     public void save() {
@@ -246,7 +308,8 @@ public class CeylonProjectConfig {
         IResource config = project.findMember(".ceylon/config");
         if (config==null || 
                    isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged || 
-                   isOfflineChanged || isEncodingChanged || isSourceDirsChanged || isResourceDirsChanged) {
+                   isOfflineChanged || isEncodingChanged || isSourceDirsChanged || isResourceDirsChanged ||
+                   isSuppressWarningsChanged) {
             try {
                 if (isOutputRepoChanged) {
                     Repository newOutputRepo = new Repositories.SimpleRepository("", transientOutputRepo, null);
@@ -271,6 +334,9 @@ public class CeylonProjectConfig {
                 }
                 if (isResourceDirsChanged) {
                 	setConfigValuesAsList(projectConfig, DefaultToolOptions.COMPILER_RESOURCE, transientResourceDirectories);
+                }
+                if (isSuppressWarningsChanged) {
+                    setConfigValuesAsList(projectConfig, DefaultToolOptions.COMPILER_SUPPRESSWARNING, transientSuppressWarnings);
                 }
 
                 ConfigWriter.write(projectConfig, getProjectConfigFile());
@@ -378,17 +444,25 @@ public class CeylonProjectConfig {
         return url.startsWith("./") || url.startsWith(".\\") ? url.substring(2) : url;
     }
 
-    private static List<String> getConfigValuesAsList(CeylonConfig config, String optionKey, String defaultKey) {
+    private static List<String> getConfigValuesAsList(CeylonConfig config, String optionKey, String defaultValue) {
         String[] values = config.getOptionValues(optionKey);
         if (values != null) {
             return Arrays.asList(values);
         } else {
-            return Collections.singletonList(defaultKey);
+            if (defaultValue != null) {
+                return Collections.singletonList(defaultValue);
+            } else {
+                return null;
+            }
         }
     }
 
     private void setConfigValuesAsList(CeylonConfig config, String optionKey, List<String> values) {
-    	String[] array = new String[values.size()];
-        config.setOptionValues(optionKey, values.toArray(array));
+        if (values != null) {
+        	String[] array = new String[values.size()];
+            config.setOptionValues(optionKey, values.toArray(array));
+        } else {
+            config.removeOption(optionKey);
+        }
     }
 }

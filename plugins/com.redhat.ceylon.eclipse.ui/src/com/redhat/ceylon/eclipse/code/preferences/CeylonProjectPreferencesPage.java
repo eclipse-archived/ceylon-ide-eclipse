@@ -5,13 +5,16 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressedWarnings;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressedWarningsString;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -54,7 +57,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     private boolean astAwareIncrementalBuids = true;
     private Boolean offlineOption = null;
     private String verbose = null;
-    private String suppressedWarnings = "";
+    private String suppressedWarnings = null;
 
     private Button showWarnings;
     private Button compileToJs;
@@ -75,7 +78,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         explodeModules=true;
         enableExplodeModules.setSelection(true);
         showCompilerWarnings=true;
-        suppressedWarnings = "";
+        suppressedWarnings = null;
         showWarnings.setSelection(true);
         backendJs = false;
         backendJava = true;
@@ -92,14 +95,23 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         IProject project = getSelectedProject();
         if (CeylonNature.isEnabled(project)) {
             String systemRepo = getCeylonSystemRepo(project);
-            new CeylonNature(systemRepo, explodeModules, !showCompilerWarnings, 
-                    backendJava, backendJs, astAwareIncrementalBuids, verbose,
-                    suppressedWarnings)
+            new CeylonNature(systemRepo, explodeModules, 
+                    backendJava, backendJs, astAwareIncrementalBuids, verbose)
                     .addToProject(project);
 
             CeylonProjectConfig config = CeylonProjectConfig.get(project);
             if (offlineOption!=null) {
                 config.setProjectOffline(offlineOption);
+            }
+            if (showCompilerWarnings) {
+                if (suppressedWarnings.isEmpty()) {
+                    config.setProjectSuppressWarnings(null);
+                } else {
+                    List<String> swList = Arrays.asList(suppressedWarnings.split(" *, *"));
+                    config.setProjectSuppressWarnings(swList);
+                }
+            } else {
+                config.setProjectSuppressWarnings(Collections.singletonList(""));
             }
             config.save();
         }
@@ -470,6 +482,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 backendJava = compileToJava(project);
                 verbose = getVerbose(project);
                 offlineOption = CeylonProjectConfig.get(project).isProjectOffline();
+                suppressedWarnings = getSuppressedWarningsString(project);
             }
         }
 
