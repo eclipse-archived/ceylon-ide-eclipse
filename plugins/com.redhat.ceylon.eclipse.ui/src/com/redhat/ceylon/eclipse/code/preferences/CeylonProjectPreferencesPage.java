@@ -380,12 +380,9 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 boolean showCompilerWarnings = showWarnings.getSelection();
-                if (showCompilerWarnings) {
-                    suppressedWarnings = EnumSet.allOf(Warning.class);
-                }
-                else {
-                    suppressedWarnings = EnumSet.noneOf(Warning.class);
-                }
+                suppressedWarnings = showCompilerWarnings ? 
+                        EnumSet.noneOf(Warning.class) : 
+                        EnumSet.allOf(Warning.class);
                 warningOptions.setEnabled(showCompilerWarnings);
                 warningOptions.setVisible(showCompilerWarnings);
                 ((GridData)warningOptions.getLayoutData()).exclude = !showCompilerWarnings;
