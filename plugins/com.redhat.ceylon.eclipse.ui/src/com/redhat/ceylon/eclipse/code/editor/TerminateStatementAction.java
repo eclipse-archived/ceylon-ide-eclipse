@@ -22,11 +22,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Block;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.MethodDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -154,7 +149,7 @@ final class TerminateStatementAction extends Action {
         final TextChange change = new DocumentChange("Terminate Statement", doc);
         change.setEdit(new MultiTextEdit());
         CeylonParseController parser = parse();
-        CompilationUnit rootNode = parser.getRootNode();
+        Tree.CompilationUnit rootNode = parser.getRootNode();
         IRegion li = getLineInfo(doc);
         final String lineText = doc.get(li.getOffset(), li.getLength());
         final List<CommonToken> tokens = parser.getTokens();
@@ -367,6 +362,15 @@ final class TerminateStatementAction extends Action {
                 }
             }
             @Override
+            public void visit(Tree.Constructor that) {
+                super.visit(that);
+                if (that.getParameterList()==null && that.getBlock()!=null) {
+                    if (!change.getEdit().hasChildren()) {
+                        change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
+                    }
+                }
+            }
+            @Override
             public void visit(Tree.AnyMethod that) {
                 super.visit(that);
                 if (that.getParameterLists().isEmpty()) {
@@ -389,7 +393,7 @@ final class TerminateStatementAction extends Action {
         final TextChange change = new DocumentChange("Terminate Statement", doc);
         change.setEdit(new MultiTextEdit());
         CeylonParseController parser = parse();
-        CompilationUnit rootNode = parser.getRootNode();
+        Tree.CompilationUnit rootNode = parser.getRootNode();
         IRegion li = getLineInfo(doc);
         String lineText = doc.get(li.getOffset(), li.getLength());
         final List<CommonToken> tokens = parser.getTokens();
@@ -493,9 +497,9 @@ final class TerminateStatementAction extends Action {
                     }
                     
                     if (that instanceof Tree.MethodDeclaration) {
-                        MethodDeclaration md = (Tree.MethodDeclaration) that;
+                        Tree.MethodDeclaration md = (Tree.MethodDeclaration) that;
                         if (md.getSpecifierExpression()==null) {
-                            List<ParameterList> pl = md.getParameterLists();
+                            List<Tree.ParameterList> pl = md.getParameterLists();
                             if (md.getIdentifier()!=null && terminatedInLine(md.getIdentifier())) {
                                 terminateWithParenAndBaces(that, pl.isEmpty() ? null : pl.get(pl.size()-1));
                             }
@@ -505,13 +509,17 @@ final class TerminateStatementAction extends Action {
                         }
                     }
                     if (that instanceof Tree.ClassDeclaration) {
-                        ClassDeclaration cd = (Tree.ClassDeclaration) that;
+                        Tree.ClassDeclaration cd = (Tree.ClassDeclaration) that;
                         if (cd.getClassSpecifier()==null) {
                             terminateWithParenAndBaces(that, cd.getParameterList());
                         }
                         else {
                             terminateWithSemicolon(that);
                         }
+                    }
+                    if (that instanceof Tree.Constructor) {
+                        Tree.Constructor cd = (Tree.Constructor) that;
+                        terminateWithParenAndBaces(that, cd.getParameterList());
                     }
                     
                     if (that instanceof Tree.InterfaceDeclaration) {
@@ -599,7 +607,7 @@ final class TerminateStatementAction extends Action {
                             that.getStartIndex()<=endOfCodeInLine &&
                             that.getStopIndex()>=endOfCodeInLine;
                 }
-                protected boolean missingBlock(Block block) {
+                protected boolean missingBlock(Tree.Block block) {
                     return block==null || block.getMainToken()==null || 
                             block.getMainToken()
                                 .getText().startsWith("<missing");
