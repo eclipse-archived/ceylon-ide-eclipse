@@ -49,6 +49,9 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.InvocationExpression that) {
+        if (that.getPrimary()!=null) {
+            that.getPrimary().visit(this);
+        }
         ProducedType ort = requiredType;
         ProducedReference onat = namedArgTarget;
         Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
@@ -117,7 +120,12 @@ class RequiredTypeVisitor extends Visitor
             node==that.getNamedArgumentList()) {
             finalResult = requiredType;
         }
-        super.visit(that);
+        if (nal!=null) {
+            nal.visit(this);
+        }
+        if (pal!=null) {
+            pal.visit(this);
+        }
         requiredType = ort;
         namedArgTarget = onat;
     }
