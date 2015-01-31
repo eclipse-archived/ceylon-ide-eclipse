@@ -52,6 +52,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
@@ -297,8 +298,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private static String getImageKeyForDeclarationNode(Tree.Declaration n) {
         boolean shared = hasAnnotation(n.getAnnotationList(), 
                 "shared", n.getUnit());
-        if (n instanceof Tree.AnyClass || 
-                n instanceof Tree.Constructor) {
+        if (n instanceof Tree.AnyClass) {
             if (shared) {
                 return CEYLON_CLASS;
             }
@@ -312,6 +312,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             else { 
                 return CEYLON_LOCAL_INTERFACE;
+            }
+        }
+        else if (n instanceof Tree.Constructor) {
+            if (shared) {
+                return CEYLON_CONSTRUCTOR;
+            }
+            else {
+                return CEYLON_CONSTRUCTOR; //TODO!!
             }
         }
         else if (n instanceof Tree.AnyMethod) {
@@ -361,6 +369,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             else { 
                 return CEYLON_LOCAL_INTERFACE;
+            }
+        }
+        if (d instanceof Constructor) {
+            if (shared) {
+                return CEYLON_CONSTRUCTOR;
+            }
+            else {
+                return CEYLON_CONSTRUCTOR; //TODO!
             }
         }
         else if (d instanceof TypeParameter) {

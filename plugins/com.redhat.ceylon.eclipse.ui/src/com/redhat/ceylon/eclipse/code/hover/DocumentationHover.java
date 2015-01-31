@@ -806,8 +806,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
         else if (obj instanceof Declaration) {
             Declaration dec = (Declaration) obj;
-            if (dec instanceof Class || 
-                dec instanceof Constructor) {
+            if (dec instanceof Class) {
                 String icon = dec.isShared() ? 
                         "class_obj.gif" : 
                         "innerclass_private_obj.gif";
@@ -817,6 +816,12 @@ public class DocumentationHover extends SourceInfoHover {
                 String icon = dec.isShared() ? 
                         "int_obj.gif" : 
                         "innerinterface_private_obj.gif";
+                return decorateTypeIcon(dec, icon);
+            }
+            else if (dec instanceof Constructor) {
+                String icon = dec.isShared() ? 
+                        "constructor.gif" : 
+                        "constructor.gif"; //TODO!!!!!!
                 return decorateTypeIcon(dec, icon);
             }
             else if (dec instanceof TypeAlias||
