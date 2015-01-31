@@ -10,10 +10,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModu
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -65,6 +63,9 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     private Button enableExplodeModules;
     private Button offlineButton;
     private Combo verboseText;
+    private Button enableBuilderButton;
+    
+    private IResourceChangeListener encodingListener;
     
     @Override
     public boolean performOk() {
@@ -85,7 +86,6 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         astAwareIncrementalBuidsButton.setSelection(true);
         offlineOption = null;
         verboseText = null;
-        updateOfflineButton();
         super.performDefaults();
     }
     
@@ -105,11 +105,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 config.setProjectSuppressWarnings(null);
             }
             else {
-                List<String> swList = new ArrayList<String>();
-                for (Warning w: suppressedWarnings) {
-                    swList.add(w.toString());
-                }
-                config.setProjectSuppressWarnings(swList);
+                config.setProjectSuppressWarningsEnum(suppressedWarnings);
             }
             config.save();
         }
@@ -148,35 +144,63 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         b.setText(description);
         b.addSelectionListener(new OptionListener(b, type));
         b.setSelection(!suppressedWarnings.containsAll(Arrays.asList(type)));
+        b.setEnabled(builderEnabled);
         showWarnings.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 b.setSelection(showWarnings.getSelection());
             }
         });
+        enableBuilderButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                b.setEnabled(true);
+            }
+        });
     }
     
-    //TODO: fix copy/paste!
     void addControls(final Composite parent) {
         Label desc = new Label(parent, SWT.LEFT | SWT.WRAP);
         desc.setText("The Ceylon builder compiles Ceylon source contained in the project");
 
-        final Button enableBuilder = new Button(parent, SWT.PUSH);
-        enableBuilder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
-        enableBuilder.setText("Enable Ceylon Builder");
-        enableBuilder.setEnabled(!builderEnabled && getSelectedProject().isOpen());
-        enableBuilder.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.ELE32));
+        enableBuilderButton = new Button(parent, SWT.PUSH);
+        enableBuilderButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+        enableBuilderButton.setText("Enable Ceylon Builder");
+        enableBuilderButton.setEnabled(!builderEnabled && getSelectedProject().isOpen());
+        enableBuilderButton.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.ELE32));
         //enableBuilder.setSize(40, 40);
 
         Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
         GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sep.setLayoutData(sgd);
 
-//        Label misc = new Label(parent, SWT.LEFT | SWT.WRAP);
-//        misc.setText("Ceylon compiler settings");
-
+        Composite composite = new Composite(parent, SWT.NONE);
+        GridData gdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gdb.grabExcessHorizontalSpace=true;
+        composite.setLayoutData(gdb);
+        GridLayout layoutb = new GridLayout();
+        layoutb.numColumns = 1;
+        layoutb.marginBottom = 1;
+        composite.setLayout(layoutb);
+        
+        addCharacterEncodingLabel(composite);
+        
+        offlineButton = new Button(composite, SWT.CHECK);
+        offlineButton.setText("Work offline (disable connection to remote module repositories)");
+        offlineButton.setEnabled(builderEnabled);
+        offlineButton.setSelection(offlineOption!=null&&offlineOption);
+        offlineButton.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event e) {
+                if (offlineOption == null) {
+                    offlineOption = true;
+                } else {
+                    offlineOption = !offlineOption;
+                }
+            }
+        });
+        
         final Group platformGroup = new Group(parent, SWT.NONE);
-        platformGroup.setText("Platform");
+        platformGroup.setText("Target Virtual Machine");
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd.grabExcessHorizontalSpace=true;
         platformGroup.setLayoutData(gd);
@@ -242,44 +266,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 Warning.compilerAnnotation);
         warningOptions.setEnabled(showCompilerWarnings);
         warningOptions.setVisible(showCompilerWarnings);
-        ((GridData)warningOptions.getLayoutData()).exclude = !showCompilerWarnings;
-        
-        Composite composite = new Composite(parent, SWT.NONE);
-        GridData gdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        gdb.grabExcessHorizontalSpace=true;
-        composite.setLayoutData(gdb);
-        GridLayout layoutb = new GridLayout();
-        layoutb.numColumns = 1;
-        layoutb.marginBottom = 1;
-        composite.setLayout(layoutb);
-        
-        addCharacterEncodingLabel(composite);
-        
-        astAwareIncrementalBuidsButton = new Button(composite, SWT.CHECK);
-        astAwareIncrementalBuidsButton.setText("Fast structure-aware incremental builder (experimental)");
-        astAwareIncrementalBuidsButton.setSelection(astAwareIncrementalBuids);
-        astAwareIncrementalBuidsButton.setEnabled(builderEnabled);
-
-        enableExplodeModules = new Button(composite, SWT.CHECK);
-        enableExplodeModules.setText("Enable Java classes calling Ceylon");
-        enableExplodeModules.setSelection(explodeModules);
-        enableExplodeModules.setEnabled(builderEnabled&&backendJava);
-        
-        offlineButton = new Button(composite, SWT.CHECK);
-        offlineButton.setText("Work offline (disable connection to remote module repositories)");
-        offlineButton.setEnabled(builderEnabled);
-        offlineButton.setSelection(offlineOption!=null&&offlineOption);
-        offlineButton.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event e) {
-                if (offlineOption == null) {
-                    offlineOption = true;
-                } else {
-                    offlineOption = !offlineOption;
-                }
-                updateOfflineButton();
-            }
-        });
-        updateOfflineButton();
+        ((GridData) warningOptions.getLayoutData()).exclude = !showCompilerWarnings;
         
         Group troubleGroup = new Group(parent, SWT.NONE);
         troubleGroup.setText("Troubleshooting");
@@ -288,10 +275,21 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         gd3.grabExcessHorizontalSpace=true;
         troubleGroup.setLayoutData(gd3);
         
+        enableExplodeModules = new Button(troubleGroup, SWT.CHECK);
+        enableExplodeModules.setText("Disable Java classes calling Ceylon");
+        enableExplodeModules.setSelection(!explodeModules);
+        enableExplodeModules.setEnabled(builderEnabled&&backendJava);
+        
+        astAwareIncrementalBuidsButton = new Button(troubleGroup, SWT.CHECK);
+        astAwareIncrementalBuidsButton.setText("Disable structure-aware incremental compilation");
+        astAwareIncrementalBuidsButton.setSelection(!astAwareIncrementalBuids);
+        astAwareIncrementalBuidsButton.setEnabled(builderEnabled);
+
         final Button logButton = new Button(troubleGroup, SWT.CHECK);
         logButton.setText("Log compiler activity to Eclipse console");
         boolean loggingEnabled = verbose!=null && !verbose.isEmpty();
         logButton.setSelection(loggingEnabled);
+        logButton.setEnabled(builderEnabled);
 
         final Composite verbosityOptions = new Composite(troubleGroup, SWT.NONE);
         verbosityOptions.setLayout(new GridLayout(2, false));
@@ -348,17 +346,18 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        enableBuilder.addSelectionListener(new SelectionAdapter() {
+        enableBuilderButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 new CeylonNature().addToProject(getSelectedProject());
-                enableBuilder.setEnabled(false);
+                enableBuilderButton.setEnabled(false);
                 enableExplodeModules.setEnabled(true);
                 astAwareIncrementalBuidsButton.setEnabled(true);
                 showWarnings.setEnabled(true);
                 compileToJs.setEnabled(true);
                 compileToJava.setEnabled(true);
                 offlineButton.setEnabled(true);
+                logButton.setEnabled(true);
                 builderEnabled=true;
             }
         });
@@ -433,7 +432,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     private void addCharacterEncodingLabel(Composite composite) {
         final Link link = new Link(composite, SWT.NONE);
         try {
-            link.setText("Default source file encoding:   " +
+            link.setText("Default source file encoding:  " +
                     getSelectedProject().getDefaultCharset() + 
                     " <a>(Change...)</a>");
             link.addSelectionListener(new SelectionAdapter() {
@@ -490,9 +489,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         addControls(composite);
         return composite;
     }
-    
-    private IResourceChangeListener encodingListener;
-    
+        
     @Override
     public void dispose() {
         if (encodingListener!=null) {
@@ -502,21 +499,4 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         super.dispose();
     }
     
-    private void updateOfflineButton() {
-//        if (offlineOption == null) {
-//            offlineButton.setGrayed(true);
-//            offlineButton.setSelection(true);
-//            offlineButton.setText("Offline (will use default configuration)");
-//        } else if (offlineOption == true) {
-//            offlineButton.setGrayed(false);
-//            offlineButton.setSelection(true);
-//            offlineButton.setText("Offline (will prevent connecting to remote repositories)");
-//        } else {
-//            offlineButton.setGrayed(false);
-//            offlineButton.setSelection(false);
-//            offlineButton.setText("Offline");
-//        }
-//        offlineButton.pack();
-    }
-
 }

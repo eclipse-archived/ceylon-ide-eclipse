@@ -7,7 +7,6 @@ import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.EnumSet;
 
 import org.eclipse.core.resources.IProject;
@@ -139,8 +138,14 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             
             CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
             
-            projectConfig.setProjectSuppressWarningsEnum(
-                    firstPage.isShowCompilerWarnings() ? EnumSet.noneOf(Warning.class) : EnumSet.allOf(Warning.class));
+            if (!firstPage.isShowCompilerWarnings()) {
+                projectConfig.setProjectSuppressWarningsEnum(EnumSet.allOf(Warning.class));
+            }
+            
+            Boolean offlineOption = firstPage.getOfflineOption();
+            if (offlineOption!=null) {
+                projectConfig.setProjectOffline(offlineOption);
+            }
             
             if (thirdPage.getBlock().getProject() != null) {
                 projectConfig.setOutputRepo(thirdPage.getBlock().getOutputRepo());

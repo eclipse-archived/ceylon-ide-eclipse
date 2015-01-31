@@ -86,9 +86,11 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PlatformUI;
@@ -1456,8 +1458,13 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     public boolean isShowCompilerWarnings() {
         return showCompilerWarnings;
     }
+    
+    public Boolean getOfflineOption() {
+        return offlineOption;
+    }
 
     private boolean showCompilerWarnings = true;
+    private Boolean offlineOption = null;
 
     private boolean compileJava = true;
     public boolean isCompileJava() {
@@ -1478,7 +1485,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     void addCompilerSettings(Composite parent) {
         Group group = new Group(parent, SWT.NONE);
         Composite composite = group;
-        group.setText("Platform");
+        group.setText("Target Virtual Machine");
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         composite.setLayoutData(gd);
         GridLayout layout = new GridLayout();
@@ -1507,8 +1514,20 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         layoutb.marginBottom = 3;
         composite.setLayout(layoutb);
         
+        final Button offlineButton = new Button(composite, SWT.CHECK);
+        offlineButton.setText("Work offline (disable connection to remote module repositories)");
+        offlineButton.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event e) {
+                if (offlineOption == null) {
+                    offlineOption = true;
+                } else {
+                    offlineOption = !offlineOption;
+                }
+            }
+        });
+        
         final Button showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
-        showWarnings.setText("Show compiler warnings (for unused declarations and use of deprecated declarations)");
+        showWarnings.setText("Show compilation warnings");
         showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(true);
 
