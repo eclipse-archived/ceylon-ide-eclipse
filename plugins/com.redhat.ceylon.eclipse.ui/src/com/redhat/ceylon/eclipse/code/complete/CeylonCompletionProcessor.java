@@ -123,6 +123,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
@@ -784,7 +785,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 
                 if (!secondLevel && !inDoc && noParamsFollow &&
                         isInvocationProposable(dwp, ol, previousTokenType) && 
-                        (!isQualifiedType(node) || dec.isStaticallyImportable())) {
+                        (!isQualifiedType(node) || dec instanceof Constructor || dec.isStaticallyImportable())) {
                     for (Declaration d: overloads(dec)) {
                         ProducedReference pr = isMember ? 
                                 getQualifiedProducedReference(node, d) :
