@@ -206,12 +206,10 @@ public class CeylonProjectConfig {
         transientResourceDirectories = dirs;
     }
     
-    public List<String> getSuppressWarnings() {
-        return getConfigValuesAsList(mergedConfig, DefaultToolOptions.COMPILER_SUPPRESSWARNING, null);
-    }
-    
     public EnumSet<Warning> getSuppressWarningsEnum() {
-        return getSuppressWarningsEnum(getSuppressWarnings());
+        List<String> suppressWarnings = 
+                getConfigValuesAsList(mergedConfig, DefaultToolOptions.COMPILER_SUPPRESSWARNING, null);
+        return getSuppressWarningsEnum(suppressWarnings);
     }
     
     public List<String> getProjectSuppressWarnings() {
@@ -227,6 +225,11 @@ public class CeylonProjectConfig {
             return EnumSet.noneOf(Warning.class);
         }
         else if (suppressWarnings.isEmpty()) {
+            return EnumSet.allOf(Warning.class);
+        }
+        else if (suppressWarnings.size()==1 && 
+                suppressWarnings.get(0).isEmpty()) {
+            //special case because all warnings is encoded as the empty string
             return EnumSet.allOf(Warning.class);
         }
         else {
