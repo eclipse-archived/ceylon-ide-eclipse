@@ -496,6 +496,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             //TODO: replace body with ;
             break;
         case 1000:
+        case 1001:
             addAddParenthesesProposal(problem, file, proposals, node);
             addChangeDeclarationProposal(problem, file, proposals, node);
             break;
