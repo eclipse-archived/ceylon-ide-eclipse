@@ -50,7 +50,7 @@ public class CeylonIdeExampleTest {
 		IProject project = createJavaProject(name);
 		
 		String systemRepo = CeylonBuilder.getCeylonSystemRepo(project);
-		CeylonNature nature = new CeylonNature(systemRepo, true, false, true, false, true, null, null);
+		CeylonNature nature = new CeylonNature(systemRepo, true, true, false, true, null);
 		nature.addToProject(project);
 		
 		assertEquals(2,project.getDescription().getNatureIds().length);
