@@ -8,6 +8,7 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -141,8 +142,14 @@ class RequiredTypeVisitor extends Visitor
     }
     
     private static List<Parameter> getParameters(ProducedReference pr) {
-        List<ParameterList> pls = ((Functional) pr.getDeclaration()).getParameterLists();
-        return pls.isEmpty() ? null : pls.get(0).getParameters();
+        Declaration declaration = pr.getDeclaration();
+        if (declaration instanceof Functional) {
+            List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+            return pls.isEmpty() ? null : pls.get(0).getParameters();
+        }
+        else {
+            return null;
+        }
     }
     
     @Override
