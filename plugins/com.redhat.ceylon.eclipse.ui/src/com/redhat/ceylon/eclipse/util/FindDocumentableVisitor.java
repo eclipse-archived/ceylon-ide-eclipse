@@ -53,6 +53,7 @@ public class FindDocumentableVisitor extends Visitor implements NaturalVisitor {
         if (that instanceof Tree.ClassOrInterface || 
                 that instanceof Tree.AnyAttribute || 
                 that instanceof Tree.AnyMethod || 
+                that instanceof Tree.Constructor ||
                 that instanceof Tree.ObjectDefinition || 
                 that instanceof Tree.ModuleDescriptor || 
                 that instanceof Tree.PackageDescriptor ||

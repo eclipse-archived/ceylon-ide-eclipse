@@ -43,6 +43,13 @@ public class FindContainerVisitor extends Visitor {
         currentDeclaration = d;
     }
     @Override
+    public void visit(Tree.Constructor that) {
+        Tree.Declaration d = currentDeclaration;
+        currentDeclaration = that;
+        super.visit(that);
+        currentDeclaration = d;
+    }
+    @Override
     public void visit(Tree.ClassDefinition that) {
         Tree.Declaration d = currentDeclaration;
         currentDeclaration = that;
