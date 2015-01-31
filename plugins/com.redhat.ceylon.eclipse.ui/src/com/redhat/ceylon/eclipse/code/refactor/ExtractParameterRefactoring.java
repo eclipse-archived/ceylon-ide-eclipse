@@ -70,6 +70,14 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         }
         
         @Override
+        public void visit(Tree.Constructor that) {
+            Tree.Declaration outer = current;
+            current = that;
+            super.visit(that);
+            current = outer;
+        }
+        
+        @Override
         public void visitAny(Node node) {
             if (node == term) {
                 declaration = current;
@@ -102,13 +110,21 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     private boolean isWithinParameterList() {
         Tree.ParameterList pl1, pl2;
         if (methodOrClass instanceof Tree.AnyClass) {
-            Tree.ParameterList pl = ((Tree.AnyClass) methodOrClass).getParameterList();
+            Tree.AnyClass anyClass = (Tree.AnyClass) methodOrClass;
+            Tree.ParameterList pl = anyClass.getParameterList();
+            if (pl==null) return false;
+            pl1 = pl2 = pl;
+        }
+        else if (methodOrClass instanceof Tree.Constructor) {
+            Tree.Constructor constructor = (Tree.Constructor) methodOrClass;
+            Tree.ParameterList pl = constructor.getParameterList();
             if (pl==null) return false;
             pl1 = pl2 = pl;
         }
         else if (methodOrClass instanceof Tree.AnyMethod) {
+            Tree.AnyMethod anyMethod = (Tree.AnyMethod) methodOrClass;
             List<Tree.ParameterList> pls = 
-                    ((Tree.AnyMethod) methodOrClass).getParameterLists();
+                    anyMethod.getParameterLists();
             if (pls.isEmpty()) return false;
             pl1 = pls.get(0);
             pl2 = pls.get(pls.size()-1);
@@ -160,7 +176,8 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     IRegion typeRegion;
 
     private boolean isParameterOfMethodOrClass(Declaration d) {
-        return d.isParameter()&&d.getContainer().equals(methodOrClass.getDeclarationModel());
+        return d.isParameter() &&
+                d.getContainer().equals(methodOrClass.getDeclarationModel());
     }
     void extractInFile(TextChange tfc) 
             throws CoreException {
@@ -169,15 +186,27 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         
         Tree.ParameterList pl;
         if (methodOrClass instanceof Tree.MethodDefinition) {
+            Tree.MethodDefinition methodDefinition = 
+                    (Tree.MethodDefinition) methodOrClass;
             List<Tree.ParameterList> pls = 
-                    ((Tree.MethodDefinition) methodOrClass).getParameterLists();
+                    methodDefinition.getParameterLists();
             if (pls.isEmpty()) {
                 return; //TODO
             }
             pl = pls.get(0);
         }
         else if (methodOrClass instanceof Tree.ClassDefinition) {
-            pl = ((Tree.ClassDefinition) methodOrClass).getParameterList();
+            Tree.ClassDefinition classDefinition = 
+                    (Tree.ClassDefinition) methodOrClass;
+            pl = classDefinition.getParameterList();
+            if (pl==null) {
+                return; //TODO
+            }
+        }
+        else if (methodOrClass instanceof Tree.Constructor) {
+            Tree.Constructor constructor = 
+                    (Tree.Constructor) methodOrClass;
+            pl = constructor.getParameterList();
             if (pl==null) {
                 return; //TODO
             }
@@ -279,7 +308,8 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
                 Nodes.getNodeLength(node), call));
         int buffer = pl.getParameters().isEmpty()?0:2;
         decRegion = new Region(start+typeDec.length()+buffer+1, newName.length());
-        refRegion = new Region(Nodes.getNodeStartOffset(node)+dectext.length()+il+refStart, newName.length());
+        refRegion = new Region(Nodes.getNodeStartOffset(node)+dectext.length()+il+refStart, 
+                newName.length());
         typeRegion = new Region(start+buffer, typeDec.length());
     }
 
