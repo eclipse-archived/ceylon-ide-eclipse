@@ -154,6 +154,9 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     if (decNode instanceof Tree.AnyClass) {
                         pl = ((Tree.AnyClass) decNode).getParameterList();
                     }
+                    if (decNode instanceof Tree.Constructor) {
+                        pl = ((Tree.Constructor) decNode).getParameterList();
+                    }
                     else if (decNode instanceof Tree.AnyMethod) {
                         pl = ((Tree.AnyMethod) decNode).getParameterLists().get(0);
                     }
@@ -349,6 +352,11 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 }
                 else if (decNode instanceof Tree.AnyClass) {
                     Tree.AnyClass c = (Tree.AnyClass) decNode;
+                    pl = c.getParameterList();
+                    actual = c.getDeclarationModel().isActual();
+                }
+                else if (decNode instanceof Tree.Constructor) {
+                    Tree.Constructor c = (Tree.Constructor) decNode;
                     pl = c.getParameterList();
                     actual = c.getDeclarationModel().isActual();
                 }
