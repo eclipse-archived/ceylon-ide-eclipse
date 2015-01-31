@@ -1606,8 +1606,8 @@ public class DocumentationHover extends SourceInfoHover {
                 buffer.append("Parameter of anonymous function.");
             }
             else {
-                buffer.append("Parameter of&nbsp;&nbsp;");
-                appendLink(buffer, pd);
+                buffer.append("Parameter of");
+                appendParameterLink(buffer, pd);
                 buffer.append(".");
             }
 //            HTML.addImageAndLabel(buffer, pd, 
@@ -1618,8 +1618,8 @@ public class DocumentationHover extends SourceInfoHover {
         }
         else if (dec instanceof TypeParameter) {
             Declaration pd = ((TypeParameter) dec).getDeclaration();
-            buffer.append("Type parameter of&nbsp;&nbsp;");
-            appendLink(buffer, pd);
+            buffer.append("Type parameter of");
+            appendParameterLink(buffer, pd);
             buffer.append(".");
 //            HTML.addImageAndLabel(buffer, pd, 
 //                    HTML.fileUrl(getIcon(pd)).toExternalForm(),
@@ -1665,6 +1665,33 @@ public class DocumentationHover extends SourceInfoHover {
             
         }
         buffer.append("</p>");
+    }
+
+    private static void appendParameterLink(StringBuilder buffer, Declaration pd) {
+        if (pd instanceof Class) {
+            buffer.append(" class");
+        }
+        else if (pd instanceof Interface) {
+            buffer.append(" interface");
+        }
+        else if (pd instanceof Method) {
+            if (pd.isClassOrInterfaceMember()) {
+                buffer.append(" method");
+            }
+            else {
+                buffer.append(" function");
+            }
+        }
+        else if (pd instanceof Constructor) {
+            buffer.append(" constructor");
+        }
+        buffer.append("&nbsp;&nbsp;");
+        if (pd.isClassOrInterfaceMember()) {
+            appendLink(buffer, 
+                    (Referenceable) pd.getContainer());
+            buffer.append(".");
+        }
+        appendLink(buffer, pd);
     }
     
     private static void addPackageInfo(Declaration dec,
