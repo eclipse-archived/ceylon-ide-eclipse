@@ -23,6 +23,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedProposalForSupertypes;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddConstructorProposal.addConstructorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddInitializerProposal.addInitializerProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposals;
@@ -499,6 +500,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 1001:
             addAddParenthesesProposal(problem, file, proposals, node);
             addChangeDeclarationProposal(problem, file, proposals, node);
+            addConstructorProposal(file, proposals, node);
             break;
         case 1050:
             addFixAliasProposal(proposals, file, problem);
