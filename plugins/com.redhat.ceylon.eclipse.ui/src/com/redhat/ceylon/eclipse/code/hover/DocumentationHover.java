@@ -1406,8 +1406,10 @@ public class DocumentationHover extends SourceInfoHover {
     
     private static void appendParameter(StringBuilder result,
             ProducedReference pr, Parameter p, Unit unit) {
+        result.append("<tt>");
         if (p.getModel() == null) {
             result.append(p.getName());
+            result.append("</tt>");
         }
         else {
             ProducedTypedReference ppr = pr==null ? 
@@ -1435,6 +1437,7 @@ public class DocumentationHover extends SourceInfoHover {
                 }
             }
             result.append("&nbsp;");
+            result.append("</tt>");
             appendLink(result, p.getModel());
             appendParameters(p.getModel(), ppr, unit, result);
         }
@@ -1455,9 +1458,11 @@ public class DocumentationHover extends SourceInfoHover {
                         MethodOrValue model = p.getModel();
                         if (model!=null) {
                             StringBuilder param = new StringBuilder();
-                            param.append("<span style='font-size:" + smallerSize + "'>accepts&nbsp;&nbsp;<tt>");
+                            param.append("accepts&nbsp;&nbsp;");
+//                            param.append("<span style='font-size:" + smallerSize + "'>accepts&nbsp;&nbsp;");
                         	appendParameter(param, pr, p, unit);
-                        	param.append(HTML.highlightLine(getInitialValueDescription(model, cpc)))
+                        	param.append("<tt>")
+                        	     .append(HTML.highlightLine(getInitialValueDescription(model, cpc)))
                         	     .append("</tt>");
                             Tree.Declaration refNode = 
                                     (Tree.Declaration) getReferencedNode(model, cpc);
@@ -1465,7 +1470,7 @@ public class DocumentationHover extends SourceInfoHover {
                                 appendDocAnnotationContent(refNode.getAnnotationList(), 
                                         param, resolveScope(dec));
                             }
-                            param.append("</span>");
+//                            param.append("</span>");
                             HTML.addImageAndLabel(buffer, model, 
                                     HTML.fileUrl("methpro_obj.gif").toExternalForm(),
                                     16, 16, param.toString(), 20, 2);
