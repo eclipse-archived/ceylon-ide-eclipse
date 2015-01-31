@@ -1634,7 +1634,25 @@ public class DocumentationHover extends SourceInfoHover {
                 ProducedType qt = getQualifyingType(node, outer);
                 if (qt!=null) {
                     Unit unit = node==null ? null : node.getUnit();
-                    buffer.append("Member of&nbsp;&nbsp;<tt>" + 
+                    String desc;
+                    if (dec instanceof Constructor) {
+                        if (dec.getName().equals(outer.getName())) {
+                            desc = "Default constructor of";
+                        }
+                        else {
+                            desc = "Constructor of";
+                        }
+                    }
+                    else if (dec instanceof Value) {
+                        desc = "Attribute of";
+                    }
+                    else if (dec instanceof Method) {
+                        desc = "Method of";
+                    }
+                    else {
+                        desc = "Member of";
+                    }
+                    buffer.append(desc + "&nbsp;&nbsp;<tt>" + 
                             producedTypeLink(qt, unit) + "</tt>.");
 //                    HTML.addImageAndLabel(buffer, outer, 
 //                            HTML.fileUrl(getIcon(outer)).toExternalForm(), 
