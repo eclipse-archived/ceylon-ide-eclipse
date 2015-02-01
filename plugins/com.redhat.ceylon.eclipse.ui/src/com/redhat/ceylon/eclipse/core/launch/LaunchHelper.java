@@ -95,7 +95,7 @@ public class LaunchHelper {
         IFile fileToRun = null; 
         if (topLevelDeclarations.size() == 0) {
             MessageDialog.openError(EditorUtil.getShell(), "Ceylon Launcher", 
-                    "No ceylon runnable element"); 
+                    "No runnable function or class.\n(Only shared toplevel functions and classes with no parameters are runnable.)"); 
         } 
         else if (topLevelDeclarations.size() > 1) {
             declarationToRun = chooseDeclaration(topLevelDeclarations);
