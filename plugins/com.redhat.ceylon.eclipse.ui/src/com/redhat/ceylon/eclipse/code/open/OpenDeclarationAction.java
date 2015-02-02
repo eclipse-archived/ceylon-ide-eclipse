@@ -38,7 +38,7 @@ public class OpenDeclarationAction extends Action {
         OpenCeylonDeclarationDialog dialog = 
                 new OpenCeylonDeclarationDialog(true, shell, editor);
         dialog.setTitle("Open Ceylon Declaration");
-        dialog.setMessage("Select a Ceylon declaration to open:");
+        dialog.setMessage("Select a Ceylon declaration to open (with wildcard *, camel hump matching):");
         if (editor instanceof ITextEditor) {
             dialog.setInitialPattern(getSelectionText((ITextEditor) editor));
         }
