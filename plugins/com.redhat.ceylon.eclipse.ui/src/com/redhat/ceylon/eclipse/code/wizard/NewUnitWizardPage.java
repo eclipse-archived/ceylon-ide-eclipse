@@ -695,11 +695,13 @@ class NewUnitWizardPage extends WizardPage {
         sb.setLength(sb.length()-1);
         KEYWORDS = sb.toString();
     }
+    
+    static final String KEYWORD_PATTERN = ".*\\b("+KEYWORDS+")\\b.*";
 
     boolean packageNameIsLegal(String packageName) {
         return packageName.isEmpty() || 
             packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$") &&
-            !packageName.matches(".*\\b("+KEYWORDS+")\\b.*");
+            !packageName.matches(KEYWORD_PATTERN);
     }
     
     private boolean packageNameIsDiscouraged() {
@@ -712,7 +714,18 @@ class NewUnitWizardPage extends WizardPage {
     }
     
     String getIllegalPackageNameMessage() {
-        return "Please enter a legal package name (a period-separated list of all-lowercase identifiers).";
+        if (packageName.matches(KEYWORD_PATTERN)) {
+            return getIllegalPackageNameMessageStart() + 
+                    "\n (May not contain keywords).";
+        }
+        else {
+            return getIllegalPackageNameMessageStart() + 
+                    "\n (Must be a period-separated list of initial-lowercase identifiers).";
+        }
+    }
+    
+    String getIllegalPackageNameMessageStart() {
+        return "Please enter a legal package name.";
     }
     
     void setUnitName(String unitName) {
