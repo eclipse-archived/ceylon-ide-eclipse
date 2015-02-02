@@ -134,7 +134,8 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             String supertype = isVoid ? 
                     null : supertypeDeclaration(returnType);
             def.append("class ").append(brokenName).append(typeParamDef);
-            appendParameters(parameters, def);
+            appendParameters(parameters, def, 
+                    getDefaultedSupertype());
             if (supertype!=null) {
                 def.append(delim).append(indent).append(defIndent).append(defIndent)
                     .append(supertype);
@@ -227,9 +228,9 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                         null, "", 0).values();
         for (DeclarationWithProximity dwp: members) {
             Declaration dec = dwp.getDeclaration();
-            for (Declaration d: overloads(dec)) {
-                if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
-                    if (ambiguousNames.add(d.getName())) {
+            if (ambiguousNames.add(dec.getName())) {
+                for (Declaration d: overloads(dec)) {
+                    if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
                         appendRefinementText(indent, delim, def,
                                 defIndent, d);
                     }
@@ -270,6 +271,9 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                 getRefinedProducedReference(returnType, d);
         String text = getRefinementTextFor(d, pr, node.getUnit(), 
                 false, null, "", false);
+        if (parameters.containsKey(d.getName())) {
+            text = text.substring(0, text.indexOf(" =>")) + ";";
+        }
         def.append(indent).append(defIndent).append(text).append(delim);
     }
 

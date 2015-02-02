@@ -136,7 +136,8 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
             }
             def.append(" ")
             .append(brokenName).append(typeParamDef);
-            appendParameters(parameters, def);
+            appendParameters(parameters, def,
+                    unit.getAnythingDeclaration());
             def.append(typeParamConstDef);
             if(isFormal){
                 def.append(";");

@@ -14,6 +14,7 @@ import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -35,15 +36,18 @@ public abstract class DefinitionGenerator {
     abstract Node getNode();
     
     static void appendParameters(LinkedHashMap<String,ProducedType> parameters,
-            StringBuffer buffer) {
+            StringBuffer buffer, TypeDeclaration supertype) {
         if (parameters.isEmpty()) {
             buffer.append("()");
         }
         else {
             buffer.append("(");
             for (Map.Entry<String,ProducedType> e: parameters.entrySet()) {
-                buffer.append(e.getValue().getProducedTypeName()).append(" ")
-                        .append(e.getKey()).append(", ");
+                Declaration member = supertype.getMember(e.getKey(), null, false);
+                if (member==null || !member.isFormal()) {
+                    buffer.append(e.getValue().getProducedTypeName()).append(" ");
+                }
+                buffer.append(e.getKey()).append(", ");
             }
             buffer.setLength(buffer.length()-2);
             buffer.append(")");
