@@ -39,14 +39,19 @@ class HierarchyNamePatternFilter extends ViewerFilter {
         TreeViewer treeViewer= (TreeViewer) viewer;
         if (element instanceof CeylonHierarchyNode) {
             String name = ((CeylonHierarchyNode) element).getName();
-            String filter = filterText.getText().toLowerCase();
-            if (filter.contains("*")) {
-                return isMatchingGlob(filter, name) ||
-                        hasUnfilteredChild(treeViewer, element);
+            if (name==null) {
+                return false;
             }
             else {
-                return name!=null && isNameMatching(filter, name) ||
-                        hasUnfilteredChild(treeViewer, element);
+                String filter = filterText.getText();
+                if (filter.contains("*")) {
+                    return isMatchingGlob(filter, name) ||
+                            hasUnfilteredChild(treeViewer, element);
+                }
+                else {
+                    return isNameMatching(filter, name) ||
+                            hasUnfilteredChild(treeViewer, element);
+                }
             }
         }
         return true;

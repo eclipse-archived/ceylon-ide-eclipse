@@ -71,11 +71,15 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             String pattern = getPattern();
             int loc = pattern.indexOf('.');
             if (loc<0) {
-                if (pattern.contains("*")) {
-                    return isMatchingGlob(pattern, declaration.getName());
+                String name = declaration.getName();
+                if (name==null) {
+                    return false;
+                }
+                else if (pattern.contains("*")) {
+                    return isMatchingGlob(pattern, name);
                 }
                 else {
-                    return isNameMatching(pattern, declaration);
+                    return isNameMatching(pattern, name);
                 }
             }
             else {
