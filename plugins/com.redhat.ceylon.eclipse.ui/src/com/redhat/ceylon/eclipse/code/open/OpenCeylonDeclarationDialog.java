@@ -207,6 +207,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                     return "";
                 }
             }
+            else if (element instanceof String) {
+                return (String) element;
+            }
             else {
                 return "";
             }
@@ -214,7 +217,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public Image getImage(Object element) {
-            return CeylonLabelProvider.PACKAGE;
+            if (element instanceof DeclarationWithProject) {
+                return CeylonLabelProvider.PACKAGE;
+            }
+            else {
+                return null;
+            }
         }
     }
 
@@ -347,6 +355,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                     //this will find declarations in src archives
                     Modules modules = getProjectTypeChecker(project).getContext().getModules();
                     for (Module module: modules.getListOfModules()) {
+                        if (module.isJava() || //TODO: is this correct
+                                packageName.startsWith(module.getNameAsString()));
                         for (Package pkg: module.getAllPackages()) { 
                             if (pkg.getQualifiedNameString().equals(packageName)) {
                                 for (Declaration dec: pkg.getMembers()) {
@@ -380,8 +390,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
      }
     
-    public OpenCeylonDeclarationDialog(Shell shell, IEditorPart editor) {
-        super(shell);
+    public OpenCeylonDeclarationDialog(boolean multi, Shell shell, IEditorPart editor) {
+        super(shell, multi);
         //this.editor = editor;
         setSelectionHistory(new TypeSelectionHistory());
         setListLabelProvider(new LabelProvider());

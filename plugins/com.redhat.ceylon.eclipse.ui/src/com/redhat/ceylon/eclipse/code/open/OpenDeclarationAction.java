@@ -36,7 +36,7 @@ public class OpenDeclarationAction extends Action {
     public void run() {
         Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
         OpenCeylonDeclarationDialog dialog = 
-                new OpenCeylonDeclarationDialog(shell, editor);
+                new OpenCeylonDeclarationDialog(true, shell, editor);
         dialog.setTitle("Open Ceylon Declaration");
         dialog.setMessage("Select a Ceylon declaration to open:");
         if (editor instanceof ITextEditor) {
@@ -44,9 +44,11 @@ public class OpenDeclarationAction extends Action {
         }
         dialog.open();
         Object[] types = dialog.getResult();
-        if (types != null && types.length > 0) {
-            DeclarationWithProject dwp = (DeclarationWithProject) types[0];
-            gotoDeclaration(dwp.getDeclaration(), dwp.getProject(), editor);
+        if (types != null) { 
+            for (int i=0; i<types.length; i++) {
+                DeclarationWithProject dwp = (DeclarationWithProject) types[i];
+                gotoDeclaration(dwp.getDeclaration(), dwp.getProject(), editor);
+            }
         }
     }
 
