@@ -15,7 +15,9 @@ public class NonEssentialEmptyPackageFilter extends NonEssentialElementsFilter {
 		if (element instanceof IPackageFragment) {
 			IPackageFragment pkg= (IPackageFragment)element;
 			try {
-				return pkg.hasChildren() || hasUnfilteredResources(viewer, pkg);
+				return pkg.hasChildren() || 
+				        pkg.hasSubpackages() || 
+				        hasUnfilteredResources(viewer, pkg);
 			} catch (JavaModelException e) {
 				return false;
 			}
