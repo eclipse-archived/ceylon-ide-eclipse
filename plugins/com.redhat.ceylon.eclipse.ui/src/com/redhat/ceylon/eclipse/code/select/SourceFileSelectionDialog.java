@@ -15,6 +15,7 @@ import org.eclipse.jdt.internal.ui.wizards.TypedElementSelectionValidator;
 import org.eclipse.jdt.internal.ui.wizards.TypedViewerFilter;
 import org.eclipse.jdt.ui.JavaElementComparator;
 import org.eclipse.jdt.ui.StandardJavaElementContentProvider;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
@@ -91,8 +92,19 @@ public class SourceFileSelectionDialog extends ElementTreeSelectionDialog {
 	}
 
 	private SourceFileSelectionDialog(Shell shell) {
-		super(shell,new CeylonLabelProvider(),
-		        new StandardJavaElementContentProvider() {
+		super(shell,
+		new CeylonLabelProvider() {
+		    @Override
+		    public StyledString getStyledText(Object element) {
+		        if (element instanceof IPackageFragment) {
+		            return new StyledString(super.getStyledText(element).toString());
+		        }
+		        else {
+		            return super.getStyledText(element);
+		        }
+		    }
+		},
+		new StandardJavaElementContentProvider() {
 		    @Override
 		    protected Object[] getPackageContent(IPackageFragment fragment) throws JavaModelException {
 		        if (fragment.isDefaultPackage()) {

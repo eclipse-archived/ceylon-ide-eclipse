@@ -16,12 +16,15 @@ import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.editors.text.EditorsUI;
 
+import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
@@ -72,7 +75,14 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             return getStyledLabelForSearchResult((IJavaElement) element);
         }
         else {
-            return super.getStyledText(element);
+            if (element instanceof Module ||
+                element instanceof Package ||
+                element instanceof IPackageFragment) {
+                return new StyledString(super.getStyledText(element).toString());
+            }
+            else {
+                return super.getStyledText(element);
+            }
         }
     }
 
