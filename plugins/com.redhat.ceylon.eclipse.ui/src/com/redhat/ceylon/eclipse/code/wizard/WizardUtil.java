@@ -63,7 +63,9 @@ public class WizardUtil {
         
         try {
             RunOperation runnable = new RunOperation(op, container.getShell());
-            container.run(true, true, runnable);
+            //must use fork=false here or New Package
+            //wizard locks up when called from Move to New Unit
+            container.run(false, true, runnable);
             return runnable.created;
         } 
         catch (InvocationTargetException e) {
