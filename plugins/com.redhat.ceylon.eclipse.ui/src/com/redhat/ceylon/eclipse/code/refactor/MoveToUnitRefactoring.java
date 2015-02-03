@@ -118,7 +118,8 @@ public class MoveToUnitRefactoring extends Refactoring {
                         d.getName());
             }
             else {
-                if (!d.isShared()) {
+                if (!d.isShared() &&
+                        !packageName.equals(targetPackage.getNameAsString())) {
                     refactoringStatus.addWarning("moved declaration depends on unshared declaration: " + 
                             d.getName());
                 }
