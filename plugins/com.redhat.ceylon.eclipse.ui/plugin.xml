@@ -3076,7 +3076,7 @@
 		        description="Filter out empty 'Referenced Libraries' nodes"
 		        id="com.redhat.ceylon.eclipse.ui.navigator.filters.EmptyLibraryContainerFilter"/>
   		<commonFilter
-		        activeByDefault="false"
+		        activeByDefault="true"
 		        class="com.redhat.ceylon.eclipse.code.navigator.NonEssentialEmptyPackageFilter"
 		        name="Empty Ceylon packages"
 		        description="Hides all empty packages"

@@ -40,7 +40,7 @@ public class SourceModuleNode extends PackageFragment implements ModuleNode {
         JDTModule module = moduleFromSignatureAndProject(moduleSignature, sourceFolder.getJavaProject().getProject());
         String[] packageName;
         if (module.isDefaultModule()) {
-            packageName = new String[] {""};
+            packageName = new String[0];
         } else {
             packageName = module.getName().toArray(new String[0]);
         }
