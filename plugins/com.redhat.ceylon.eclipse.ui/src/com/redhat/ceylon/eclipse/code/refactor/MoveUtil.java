@@ -165,6 +165,21 @@ public class MoveUtil {
         }
     }
 
+    public static boolean isUnsharedUsedLocally(Tree.Declaration node,
+            IFile originalFile, String originalPackage, String targetPackage) {
+        Declaration dec = node.getDeclarationModel();
+        if (!dec.isShared() && !originalPackage.equals(targetPackage)) {
+            for (PhasedUnit pu: getAllUnits(originalFile.getProject())) {
+                Tree.CompilationUnit cu = pu.getCompilationUnit();
+                String pn = cu.getUnit().getPackage().getNameAsString();
+                if (pn.equals(originalPackage) && isUsedInUnit(cu, dec)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public static void refactorImports(Tree.Declaration node, 
             final String originalPackage, final String targetPackage, 
             Tree.CompilationUnit cu, final TextChange tc) {

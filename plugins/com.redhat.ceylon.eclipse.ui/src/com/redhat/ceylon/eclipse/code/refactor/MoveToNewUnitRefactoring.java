@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.createEditorChange;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.isUnsharedUsedLocally;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorDocLinks;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorImports;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectImportsAndDocLinks;
@@ -114,6 +115,9 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         if (targetFile.exists()) {
             refactoringStatus.addError("source file already exists");
         }
+        Package originalPackage = rootNode.getUnit().getPackage();
+        String originalPackageName = originalPackage.getNameAsString();
+        String targetPackageName = targetPackage.getElementName();
         HashSet<String> packages = new HashSet<String>();
         Map<Declaration, String> imports = 
                 MoveUtil.getImports(node, 
@@ -128,7 +132,7 @@ public class MoveToNewUnitRefactoring extends Refactoring {
             }
             else {
                 if (!d.isShared() && 
-                        !packageName.equals(targetPackage.getElementName())) {
+                        !packageName.equals(targetPackageName)) {
                     refactoringStatus.addWarning("moved declaration depends on unshared declaration: " + 
                             d.getName());
                 }
@@ -146,15 +150,24 @@ public class MoveToNewUnitRefactoring extends Refactoring {
                 }
             }
         }
+        if (isUnsharedUsedLocally(node, originalFile, 
+                originalPackageName, targetPackageName)) {
+            if (targetPackageName.isEmpty()) {
+                refactoringStatus.addWarning("moving declaration used locally to default package");
+            }
+            else if (originalPackage.getModule().getPackage(targetPackageName)==null) {
+                refactoringStatus.addWarning("moving declaration used locally to unimported module");
+            }
+        }
         return refactoringStatus;
     }
 
     @Override
     public Change createChange(IProgressMonitor pm) 
             throws CoreException, OperationCanceledException {
-        String original = rootNode.getUnit()
+        String originalPackageName = rootNode.getUnit()
                 .getPackage().getNameAsString();
-        String moved = targetPackage.getElementName();
+        String targetPackageName = targetPackage.getElementName();
         int start = getNodeStartOffset(node);
         int length = getNodeLength(node);
         String delim = getDefaultLineDelimiter(document);
@@ -170,9 +183,13 @@ public class MoveToNewUnitRefactoring extends Refactoring {
             e.printStackTrace();
             throw new OperationCanceledException();
         }
+        if (isUnsharedUsedLocally(node, originalFile, 
+                originalPackageName, targetPackageName)) {
+            contents = "shared " + contents;
+        }
         //TODO: should we use this alternative when original==moved?
 //        String importText = imports(node, cu.getImportList(), document);
-        String importText = getImportText(node, moved, delim);
+        String importText = getImportText(node, targetPackageName, delim);
         String text = importText.isEmpty() ? 
                 contents : importText + delim + contents;
         offset = importText.isEmpty() ? 
@@ -188,9 +205,9 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         TextChange originalUnitChange = 
                 createEditorChange(editor, document);
         originalUnitChange.setEdit(new MultiTextEdit());
-        refactorImports(node, original, 
-                moved, rootNode, originalUnitChange);
-        refactorDocLinks(node, moved, rootNode, 
+        refactorImports(node, originalPackageName, 
+                targetPackageName, rootNode, originalUnitChange);
+        refactorDocLinks(node, targetPackageName, rootNode, 
                 originalUnitChange);
         originalUnitChange.addEdit(new DeleteEdit(start, length));
         originalUnitChange.setTextType("ceylon");
@@ -198,7 +215,7 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         
         refactorProjectImportsAndDocLinks(node, 
                 originalFile, targetFile, 
-                change, original, moved);
+                change, originalPackageName, targetPackageName);
         
         //TODO: DocLinks
         
