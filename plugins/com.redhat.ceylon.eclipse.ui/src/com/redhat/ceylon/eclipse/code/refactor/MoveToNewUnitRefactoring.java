@@ -30,6 +30,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -130,13 +131,16 @@ public class MoveToNewUnitRefactoring extends Refactoring {
                     refactoringStatus.addWarning("moved declaration depends on unshared declaration: " + 
                             d.getName());
                 }
-                for (PhasedUnit phasedUnit: getProjectTypeChecker(targetProject).getPhasedUnits().getPhasedUnits()) {
-                    if (phasedUnit.getPackage().getNameAsString().equals(targetPackage.getElementName())) {
-                        if (phasedUnit.getPackage().getModule().getPackage(packageName)==null) {
-                            refactoringStatus.addWarning("moved declaration depends on declaration in unimported module: " + 
-                                    d.getName() + " in module " + p.getModule().getNameAsString());
+                TypeChecker tc = getProjectTypeChecker(targetProject);
+                if (tc!=null) {
+                    for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
+                        if (phasedUnit.getPackage().getNameAsString().equals(targetPackage.getElementName())) {
+                            if (phasedUnit.getPackage().getModule().getPackage(packageName)==null) {
+                                refactoringStatus.addWarning("moved declaration depends on declaration in unimported module: " + 
+                                        d.getName() + " in module " + p.getModule().getNameAsString());
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }
