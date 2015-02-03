@@ -299,55 +299,55 @@ public class Highlights  {
     public static final Styler TYPE_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(Highlights.colorRegistry, TYPES);
+            textStyle.foreground=color(colorRegistry, TYPES);
         }
     };
     public static final Styler MEMBER_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(Highlights.colorRegistry, MEMBERS);
+            textStyle.foreground=color(colorRegistry, MEMBERS);
         }
     };
     public static final Styler TYPE_ID_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(Highlights.colorRegistry, TYPES);
+            textStyle.foreground=color(colorRegistry, TYPES);
         }
     };
     public static final Styler KW_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(Highlights.colorRegistry, KEYWORDS);
+            textStyle.foreground=color(colorRegistry, KEYWORDS);
         }
     };
     public static final Styler VERSION_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(Highlights.colorRegistry, STRINGS);
+            textStyle.foreground=color(colorRegistry, STRINGS);
         }
     };
     public static final Styler PACKAGE_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(Highlights.colorRegistry, PACKAGES);
+            textStyle.foreground=color(colorRegistry, PACKAGES);
         }
     };
     public static final Styler ARROW_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(Highlights.colorRegistry, OUTLINE_TYPES);
+            textStyle.foreground=color(colorRegistry, OUTLINE_TYPES);
         }
     };
     public static final Styler ANN_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(Highlights.colorRegistry, ANNOTATIONS);
+            textStyle.foreground=color(colorRegistry, ANNOTATIONS);
         }
     };
     public static final Styler ID_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(Highlights.colorRegistry, IDENTIFIERS);
+            textStyle.foreground=color(colorRegistry, IDENTIFIERS);
         }
     };
     
