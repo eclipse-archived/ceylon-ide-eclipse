@@ -37,7 +37,7 @@ public class PackageSelectionDialog extends ElementListSelectionDialog {
             public String getText(Object element) {
                 String name = ((IPackageFragment) element).getElementName();
                 if (name.isEmpty()) {
-                    return "default package";
+                    return "(default package)";
                 }
                 else {
                     return name;
