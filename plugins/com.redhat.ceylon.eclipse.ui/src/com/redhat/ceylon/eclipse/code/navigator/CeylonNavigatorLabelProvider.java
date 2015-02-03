@@ -68,7 +68,7 @@ public class CeylonNavigatorLabelProvider extends
             }
             else {
 //                return super.getStyledText(module);
-                return new StyledString(super.getStyledText(element).getString());
+                return new StyledString(super.getStyledText(module).getString());
             }
         }
         if (element instanceof RepositoryNode) {
