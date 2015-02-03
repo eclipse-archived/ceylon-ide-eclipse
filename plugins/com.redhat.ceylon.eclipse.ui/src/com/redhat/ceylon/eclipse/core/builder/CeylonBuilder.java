@@ -2808,7 +2808,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static EnumSet<Warning> getSuppressedWarnings(IProject project) {
-        return CeylonProjectConfig.get(project).getSuppressWarningsEnum();
+        if (project==null) {
+            return EnumSet.noneOf(Warning.class);
+        }
+        else {
+            return CeylonProjectConfig.get(project).getSuppressWarningsEnum();
+        }
     }
 
     public static String fileName(ClassMirror c) {
