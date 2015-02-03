@@ -203,15 +203,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return CEYLON_PROJECT;
         }
         if (element instanceof IPackageFragment) {
-            IFolder folder = (IFolder)
-                    ((IPackageFragment)element).getResource();
-            if (folder!=null &&
-                    folder.getFile("module.ceylon").exists()) {
-                return CEYLON_MODULE;
-            }
-            else {
-                return CEYLON_PACKAGE;
-            }
+            return isModule((IPackageFragment) element) ? 
+                    CEYLON_MODULE : CEYLON_PACKAGE;
         }
         if (element instanceof Package ||
             element instanceof IPackageFragment) {
@@ -233,6 +226,17 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return getImageKeyForNode((Node) element);
         }
         return null;
+    }
+
+    public boolean isModule(IPackageFragment element) {
+        IFolder folder = (IFolder) element.getResource();
+        if (folder!=null &&
+                folder.getFile("module.ceylon").exists()) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     public static String getImageKeyForFile(IFile element) {
@@ -435,8 +439,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return new StyledString(((IJavaProject) element).getElementName());
         }
         else if (element instanceof IPackageFragment) {
-            return new StyledString(((IPackageFragment) element).getElementName(), 
-                    PACKAGE_STYLER);
+            String packageName = ((IPackageFragment) element).getElementName();
+            if (packageName.isEmpty()) packageName = "(default package)";
+            return new StyledString(packageName, PACKAGE_STYLER);
         }
         else if (element instanceof IPackageFragmentRoot) {
             boolean isCar = ((IPackageFragmentRoot) element).getPath().getFileExtension()!=null;
@@ -654,7 +659,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (node instanceof PackageNode) {
             PackageNode pn = (PackageNode) node;
             if (pn.getPackageName().isEmpty()) {
-                return new StyledString("default package");
+                return new StyledString("(default package)");
             }
             else {
                 return new StyledString(pn.getPackageName(), 
@@ -811,7 +816,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static String getLabel(Package packageModel) {
         String name = packageModel.getQualifiedNameString();
         if (name.isEmpty()) {
-            name="default package";
+            return "(default package)";
         }
         return name;
     }
@@ -820,23 +825,23 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         String name = moduleModel.getNameAsString();
         if (name.isEmpty() || 
                 name.equals(Module.DEFAULT_MODULE_NAME)) {
-            name="default module";
+            return "(default module)";
         }
         return name;
     }
     
     public static String getPackageLabel(Node decl) {
-        return decl.getUnit()==null ? "unknown package" : 
+        return decl.getUnit()==null ? "(unknown package)" : 
             getLabel(decl.getUnit().getPackage());
     }
     
     public static String getModuleLabel(Node decl) {
-        return decl.getUnit()==null ? "unknown module" : 
+        return decl.getUnit()==null ? "(unknown module)" : 
             getLabel(decl.getUnit().getPackage().getModule());
     }
     
     public static String getModuleLabel(Declaration decl) {
-        return decl.getUnit()==null ? "unknown module" : 
+        return decl.getUnit()==null ? "(unknown module)" : 
             getLabel(decl.getUnit().getPackage().getModule());
     }
     

@@ -10,6 +10,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.wizards.TypedElementSelectionValidator;
 import org.eclipse.jdt.internal.ui.wizards.TypedViewerFilter;
 import org.eclipse.jdt.ui.JavaElementComparator;
@@ -91,7 +92,22 @@ public class SourceFileSelectionDialog extends ElementTreeSelectionDialog {
 
 	private SourceFileSelectionDialog(Shell shell) {
 		super(shell,new CeylonLabelProvider(),
-		        new StandardJavaElementContentProvider());
+		        new StandardJavaElementContentProvider() {
+		    @Override
+		    protected Object[] getPackageContent(IPackageFragment fragment) throws JavaModelException {
+		        if (fragment.isDefaultPackage()) {
+	                return concatenate(((IPackageFragmentRoot)fragment.getParent()).getNonJavaResources(), 
+	                        fragment.getNonJavaResources());
+		        }
+		        else {
+		            return fragment.getNonJavaResources();
+		        }
+		    }
+		    @Override
+		    protected Object[] getPackageFragmentRootContent(IPackageFragmentRoot root) throws JavaModelException {
+		        return root.getChildren();
+		    }
+		});
 		setValidator(new PackageAndProjectSelectionValidator());
 		setComparator(new JavaElementComparator());
 		setTitle("Source File Selection");

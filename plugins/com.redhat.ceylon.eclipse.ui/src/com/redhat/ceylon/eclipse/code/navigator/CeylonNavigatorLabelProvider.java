@@ -67,12 +67,8 @@ public class CeylonNavigatorLabelProvider extends
                 return new StyledString(((SourceModuleNode) element).getElementName());
             }
             else {
-                String name = super.getStyledText(module).toString();
-                StyledString result = new StyledString(name);
-                if (module != null && module.isDefaultModule()) {
-                    result = result.insert('(', 0).append(')').append("");
-                }
-                return result;
+//                return super.getStyledText(module);
+                return new StyledString(super.getStyledText(element).getString());
             }
         }
         if (element instanceof RepositoryNode) {
@@ -82,6 +78,7 @@ public class CeylonNavigatorLabelProvider extends
         }
         
         if (element instanceof Package || element instanceof IPackageFragment) {
+//            return super.getStyledText(element);
             return new StyledString(super.getStyledText(element).getString());
         }
         
