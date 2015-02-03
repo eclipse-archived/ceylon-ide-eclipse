@@ -157,20 +157,27 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     private int fCurrentGrouping;
     
     private void initGroupingActions() {
-        fGroupProjectAction= new GroupAction("Project", "Group by Project", 
+        fGroupProjectAction= new GroupAction("Project", 
+                "Group by Project", 
                 PROJECT_MODE, LEVEL_PROJECT);
-        fGroupFolderAction= new GroupAction("Source Folder", "Group by Source Folder", 
+        fGroupFolderAction= new GroupAction("Source Folder", 
+                "Group by Source Folder", 
                 FOLDER_MODE, LEVEL_FOLDER);
-        fGroupModuleAction= new GroupAction("Module", "Group by Module", 
+        fGroupModuleAction= new GroupAction("Module", 
+                "Group by Module", 
                 MODULE_MODE, LEVEL_MODULE);
-        fGroupPackageAction= new GroupAction("Package", "Group by Package", 
+        fGroupPackageAction= new GroupAction("Package", 
+                "Group by Package", 
                 PACKAGE_MODE, LEVEL_PACKAGE);
-        fGroupFileAction= new GroupAction("Source File", "Group by Source File", 
+        fGroupFileAction= new GroupAction("Source File", 
+                "Group by Source File", 
                 UNIT_MODE, LEVEL_FILE);
         
-        fLayoutTreeAction= new LayoutAction("Tree", "Tree Layout", 
+        fLayoutTreeAction= new LayoutAction("Tree", 
+                "Tree Layout", 
                 TREE_MODE, FLAG_LAYOUT_TREE);
-        fLayoutFlatAction= new LayoutAction("Float", "Flat Layout", 
+        fLayoutFlatAction= new LayoutAction("Float", 
+                "Flat Layout", 
                 FLAT_MODE, FLAG_LAYOUT_FLAT);
     }
     
