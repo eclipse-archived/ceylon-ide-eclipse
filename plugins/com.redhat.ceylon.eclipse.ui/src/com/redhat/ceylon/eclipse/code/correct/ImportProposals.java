@@ -73,7 +73,7 @@ public class ImportProposals {
             String name, Tree.CompilationUnit cu) {
         Set<Declaration> result = new HashSet<Declaration>();
         for (Package pkg: module.getAllPackages()) {
-            if (!pkg.getName().isEmpty()) {
+            if (!pkg.getNameAsString().isEmpty()) {
                 Declaration member = 
                         pkg.getMember(name, null, false);
                 if (member!=null) {
