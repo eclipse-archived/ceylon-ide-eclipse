@@ -13,6 +13,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
@@ -32,8 +33,8 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -98,20 +99,42 @@ public class MoveToUnitRefactoring extends Refactoring {
     @Override
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
-        // TODO Auto-generated method stub
-        return new RefactoringStatus();
+        RefactoringStatus refactoringStatus = new RefactoringStatus();
+        if (!targetFile.exists()) {
+            refactoringStatus.addError("source file does not exist");
+        }
+        Tree.CompilationUnit targetRootNode = getTargetRootNode();
+        Package targetPackage = targetRootNode.getUnit().getPackage();
+        HashSet<String> packages = new HashSet<String>();
+        Map<Declaration, String> imports = 
+                MoveUtil.getImports(node, 
+                        targetPackage.getNameAsString(), 
+                        targetRootNode, packages);
+        for (Declaration d: imports.keySet()) {
+            Package p = d.getUnit().getPackage();
+            String packageName = p.getNameAsString();
+            if (packageName.isEmpty()) {
+                refactoringStatus.addWarning("moved declaration depends on declaration in the default package: " +
+                        d.getName());
+            }
+            else {
+                if (!d.isShared()) {
+                    refactoringStatus.addWarning("moved declaration depends on unshared declaration: " + 
+                            d.getName());
+                }
+                if (targetPackage.getModule().getPackage(packageName)==null) {
+                    refactoringStatus.addWarning("moved declaration depends on declaration in unimported module: " + 
+                            d.getName() + " in module " + p.getModule().getNameAsString());
+                }
+            }
+        }
+        return refactoringStatus;
     }
 
     @Override
     public Change createChange(IProgressMonitor pm) 
             throws CoreException, OperationCanceledException {
-        IProject project = targetFile.getProject();
-        String relpath = targetFile.getProjectRelativePath()
-                .removeFirstSegments(1)
-                .toPortableString();
-        PhasedUnit npu = getProjectTypeChecker(project)
-                .getPhasedUnitFromRelativePath(relpath);
-        Tree.CompilationUnit ncu = npu.getCompilationUnit();
+        Tree.CompilationUnit ncu = getTargetRootNode();
         String original = rootNode.getUnit()
                 .getPackage().getNameAsString();
         String moved = ncu.getUnit()
@@ -165,6 +188,17 @@ public class MoveToUnitRefactoring extends Refactoring {
         //TODO: DocLinks
         
         return change;
+    }
+
+    public Tree.CompilationUnit getTargetRootNode() {
+        IProject project = targetFile.getProject();
+        String path = 
+                targetFile.getProjectRelativePath()
+                    .removeFirstSegments(1)
+                    .toPortableString();
+        return getProjectTypeChecker(project)
+                .getPhasedUnitFromRelativePath(path)
+                .getCompilationUnit();
     }
 
     public int getOffset() {

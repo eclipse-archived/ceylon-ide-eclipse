@@ -112,6 +112,10 @@ public class MoveUtil {
     public static String getImportText(Set<String> packages, Map<Declaration, String> imports, String delim) {
         StringBuilder sb = new StringBuilder();
         for (String p: packages) {
+            if (p.isEmpty()) {
+                //can't import from default package
+                continue;
+            }
             sb.append("import ").append(p).append(" {")
               .append(delim);
             boolean first = true;
@@ -174,7 +178,9 @@ public class MoveUtil {
         if (foundOriginal && !inNewPackage || 
                 inOriginalPackage && !inNewPackage && 
                         isUsedInUnit(cu, dec)) {
-            addImport(targetPackage, dec, cu, tc);
+            if (!targetPackage.isEmpty()) {
+                addImport(targetPackage, dec, cu, tc);
+            }
         }
     }
 

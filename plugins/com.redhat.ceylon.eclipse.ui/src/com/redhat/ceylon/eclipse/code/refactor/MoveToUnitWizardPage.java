@@ -156,7 +156,8 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
     boolean isComplete() {
         return unitNameIsLegal() && 
                 getUnit()!=null &&
-                getUnit().exists();
+                getUnit().exists() &&
+                !getUnit().equals(file);
     }
 
     private boolean unitNameIsLegal() {
@@ -177,8 +178,9 @@ public class MoveToUnitWizardPage extends UserInputWizardPage {
     }
     
     private String getSameUnitMessage() {
-        return "Selected source file is the original source file";
+        return "Selected source file is the original source file.";
     }
+    
     Text getUnitNameText() {
         return unitNameText;
     }

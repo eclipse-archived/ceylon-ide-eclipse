@@ -5,10 +5,14 @@ import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorDocLinks;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorImports;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectImportsAndDocLinks;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
+
+import java.util.HashSet;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -26,6 +30,9 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -102,8 +109,39 @@ public class MoveToNewUnitRefactoring extends Refactoring {
     @Override
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
-        // TODO Auto-generated method stub
-        return new RefactoringStatus();
+        RefactoringStatus refactoringStatus = new RefactoringStatus();
+        if (targetFile.exists()) {
+            refactoringStatus.addError("source file already exists");
+        }
+        HashSet<String> packages = new HashSet<String>();
+        Map<Declaration, String> imports = 
+                MoveUtil.getImports(node, 
+                        targetPackage.getElementName(), 
+                        null, packages);
+        for (Declaration d: imports.keySet()) {
+            Package p = d.getUnit().getPackage();
+            String packageName = p.getNameAsString();
+            if (packageName.isEmpty()) {
+                refactoringStatus.addWarning("moved declaration depends on declaration in the default package: " +
+                        d.getName());
+            }
+            else {
+                if (!d.isShared()) {
+                    refactoringStatus.addWarning("moved declaration depends on unshared declaration: " + 
+                            d.getName());
+                }
+                for (PhasedUnit phasedUnit: getProjectTypeChecker(targetProject).getPhasedUnits().getPhasedUnits()) {
+                    if (phasedUnit.getPackage().getNameAsString().equals(targetPackage.getElementName())) {
+                        if (phasedUnit.getPackage().getModule().getPackage(packageName)==null) {
+                            refactoringStatus.addWarning("moved declaration depends on declaration in unimported module: " + 
+                                    d.getName() + " in module " + p.getModule().getNameAsString());
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return refactoringStatus;
     }
 
     @Override
@@ -153,7 +191,8 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         originalUnitChange.setTextType("ceylon");
         change.add(originalUnitChange);
         
-        refactorProjectImportsAndDocLinks(node, originalFile, targetFile, 
+        refactorProjectImportsAndDocLinks(node, 
+                originalFile, targetFile, 
                 change, original, moved);
         
         //TODO: DocLinks

@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.createEditorChange;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImports;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 
@@ -253,14 +255,18 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
     private void collectExtractedImports(Node node) {
         if (node != null) {
-            Map<Declaration, String> imports = MoveUtil.getImports(node, packageName, null, extractedImportsPackages);
+            Map<Declaration, String> imports = 
+                    getImports(node, packageName, null, 
+                            extractedImportsPackages);
             extractedImports.putAll(imports);
         }
     }
 
     private void addImports(StringBuilder content) {
         String delim = getDefaultLineDelimiter(document);
-        String importText = MoveUtil.getImportText(extractedImportsPackages, extractedImports, delim);
+        String importText = 
+                getImportText(extractedImportsPackages, 
+                        extractedImports, delim);
         if (!importText.isEmpty()) {
             content.append(importText);
             content.append(delim);

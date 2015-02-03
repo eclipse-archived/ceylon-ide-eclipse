@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.wizards.NewSourceFolderCreationWizard;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -742,6 +743,13 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
             setMessage(null);
         }
         if (complete) {
+            if (!packageFragment.exists()) {
+                setMessage("Package does not exist: " + 
+                        packageFragment.getElementName(), 
+                        IMessageProvider.ERROR);
+                super.setPageComplete(false);
+                return;
+            }
             for (String file: getFileNames()) {
                 IPath path = packageFragment.getPath()
                         .append(file).addFileExtension("ceylon");
@@ -749,8 +757,9 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
                         .exists()) {
                     setMessage("Existing unit will not be overwritten: " + 
                             path.toPortableString(), 
-                            WARNING);
-                    break;
+                            IMessageProvider.ERROR);
+                    super.setPageComplete(false);
+                    return;
                 }
             }
             MoveToNewUnitRefactoring refactoring = 
