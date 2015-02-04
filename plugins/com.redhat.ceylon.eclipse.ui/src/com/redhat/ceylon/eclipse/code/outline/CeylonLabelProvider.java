@@ -658,13 +658,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (node instanceof PackageNode) {
             PackageNode pn = (PackageNode) node;
-            if (pn.getPackageName().isEmpty()) {
-                return new StyledString("(default package)");
-            }
-            else {
-                return new StyledString(pn.getPackageName(), 
-                		PACKAGE_STYLER);
-            }
+            String name = pn.getPackageName();
+            if (name.isEmpty()) name = "(default package)";
+            return new StyledString(name); //PACKAGE_STYLER??
         }
         else if (node instanceof Tree.SpecifierStatement) {
             Tree.Term bme = ((Tree.SpecifierStatement) node).getBaseMemberExpression();
