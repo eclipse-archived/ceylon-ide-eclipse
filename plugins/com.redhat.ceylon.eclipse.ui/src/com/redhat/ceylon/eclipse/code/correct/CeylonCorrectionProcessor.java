@@ -96,6 +96,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKE
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findBinaryOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
@@ -128,6 +129,7 @@ import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
@@ -1059,6 +1061,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             TextFileChange change = 
                     new TextFileChange("Suppress Warnings", file);
             final StringBuilder sb = new StringBuilder();
+            final StyledString ss = 
+                    new StyledString("Suppress warnings of type ");
             new Visitor() {
                 @Override
                 public void visitAny(Node node) {
@@ -1066,10 +1070,16 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                         if (m instanceof UsageWarning) {
                             if (sb.length()>0) {
                                 sb.append(", ");
+                                ss.append(", ");
                             }
+                            UsageWarning warning = (UsageWarning) m;
+                            String warningName = warning.getWarningName();
                             sb.append('"')
-                              .append(((UsageWarning)m).getWarningName())
+                              .append(warningName)
                               .append('"');
+                            ss.append('"', VERSION_STYLER)
+                              .append(warningName, VERSION_STYLER)
+                              .append('"', VERSION_STYLER);
                         }
                     }
                 }
@@ -1078,8 +1088,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     Indents.getDefaultLineDelimiter(doc) +
                     Indents.getIndent(st, doc);
             change.setEdit(new InsertEdit(st.getStartIndex(), text));
-            proposals.add(new CorrectionProposal("Suppress warnings", 
-                    change, new Region(st.getStartIndex()+text.length(), 0)));
+            proposals.add(new CorrectionProposal(ss.toString(), 
+                    change, new Region(st.getStartIndex()+text.length(), 0)) {
+                @Override
+                public StyledString getStyledDisplayString() {
+                    return ss;
+                }
+            });
         }
         
     }
