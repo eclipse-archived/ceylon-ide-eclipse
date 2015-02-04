@@ -96,8 +96,11 @@ class AnnotationInfo {
             }
         };
         
-        new CeylonCorrectionProcessor(editor)
-                .collectCorrections(quickAssistContext, location, proposals);
+        CeylonCorrectionProcessor cp = 
+                new CeylonCorrectionProcessor(editor);
+        cp.collectCorrections(quickAssistContext, location, proposals);
+        cp.collectAnnotationCorrections(annotation, 
+                quickAssistContext, location, proposals);
     }
 
     private ICompletionProposal[] getMarkerAnnotationFixes(MarkerAnnotation markerAnnotation, 

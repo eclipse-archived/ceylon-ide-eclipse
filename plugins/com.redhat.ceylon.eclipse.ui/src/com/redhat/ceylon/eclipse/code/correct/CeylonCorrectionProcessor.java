@@ -120,6 +120,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
@@ -140,8 +141,10 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -149,6 +152,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -221,12 +225,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             IAnnotationModel model, Collection<Annotation> annotations,
             boolean addQuickFixes, boolean addQuickAssists,
             Collection<ICompletionProposal> proposals) {
-        ArrayList<ProblemLocation> problems = new ArrayList<ProblemLocation>();
+        ArrayList<ProblemLocation> problems = 
+                new ArrayList<ProblemLocation>();
         // collect problem locations and corrections from marker annotations
         for (Annotation curr: annotations) {
             if (curr instanceof CeylonAnnotation) {
+                CeylonAnnotation ca = (CeylonAnnotation) curr;
                 ProblemLocation problemLocation = 
-                        getProblemLocation((CeylonAnnotation) curr, model);
+                        getProblemLocation(ca, model);
                 if (problemLocation != null) {
                     problems.add(problemLocation);
                 }
@@ -235,7 +241,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         if (problems.isEmpty() && addQuickFixes) {
              for (Annotation curr: annotations) {
                  if (curr instanceof SimpleMarkerAnnotation) {
-                     collectMarkerProposals((SimpleMarkerAnnotation) curr, proposals);
+                     SimpleMarkerAnnotation sma = 
+                             (SimpleMarkerAnnotation) curr;
+                    collectMarkerProposals(sma, proposals);
                  }                 
              }
         }
@@ -248,6 +256,29 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
         if (addQuickAssists) {
             collectAssists(context, problemLocations, proposals);
+        }
+        if (addQuickFixes) {
+            addSuppressWarningsProposal(context, model, annotations, proposals);
+        }
+    }
+
+    public void addSuppressWarningsProposal(
+            IQuickAssistInvocationContext context, IAnnotationModel model,
+            Collection<Annotation> annotations,
+            Collection<ICompletionProposal> proposals) {
+        for (Annotation curr: annotations) {
+            if (curr instanceof CeylonAnnotation) {
+                CeylonAnnotation ca = (CeylonAnnotation) curr;
+                if (ca.getSeverity()==IMarker.SEVERITY_WARNING) {
+                    ProblemLocation problemLocation = 
+                            getProblemLocation(ca, model);
+                    if (problemLocation != null) {
+                        collectAnnotationCorrections(ca, context, 
+                                problemLocation, proposals);
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -367,7 +398,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     @Override
     public boolean canFix(Annotation annotation) {
         if (annotation instanceof CeylonAnnotation) {
-            return ((CeylonAnnotation) annotation).getId()>0;
+            CeylonAnnotation ca = (CeylonAnnotation) annotation;
+            return ca.getId()>0 || 
+                    ca.getSeverity() == IMarker.SEVERITY_WARNING;
         }
         else if (annotation instanceof MarkerAnnotation) {
             return canFix(((MarkerAnnotation) annotation).getMarker());
@@ -1010,6 +1043,45 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             String brokenName = bt.getIdentifier().getText();
             addCreateTypeParameterProposal(proposals, project, cu, bt, brokenName);
         }
+    }
+
+    public void collectAnnotationCorrections(CeylonAnnotation annotation,
+            IQuickAssistInvocationContext context,
+            ProblemLocation location, Collection<ICompletionProposal> proposals) {
+        if (annotation.getSeverity()==IMarker.SEVERITY_WARNING) {
+            Tree.CompilationUnit rootNode = getRootNode();
+            Tree.Statement st = Nodes.findStatement(rootNode,
+                    Nodes.findNode(rootNode, location.getOffset(), 
+                            location.getOffset()+location.getLength()));
+            if (st==null) return;
+            IFile file = EditorUtil.getFile(editor.getEditorInput());
+            IDocument doc = context.getSourceViewer().getDocument();
+            TextFileChange change = 
+                    new TextFileChange("Suppress Warnings", file);
+            final StringBuilder sb = new StringBuilder();
+            new Visitor() {
+                @Override
+                public void visitAny(Node node) {
+                    for (Message m: node.getErrors()) {
+                        if (m instanceof UsageWarning) {
+                            if (sb.length()>0) {
+                                sb.append(", ");
+                            }
+                            sb.append('"')
+                              .append(((UsageWarning)m).getWarningName())
+                              .append('"');
+                        }
+                    }
+                }
+            }.visit(st);
+            String text = "suppressWarnings(" + sb + ")" +
+                    Indents.getDefaultLineDelimiter(doc) +
+                    Indents.getIndent(st, doc);
+            change.setEdit(new InsertEdit(st.getStartIndex(), text));
+            proposals.add(new CorrectionProposal("Suppress warnings", 
+                    change, new Region(st.getStartIndex()+text.length(), 0)));
+        }
+        
     }
 
 }
