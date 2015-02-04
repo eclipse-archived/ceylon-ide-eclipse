@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 /**
@@ -83,8 +84,12 @@ public class CeylonStructureCreator extends StructureCreator {
         
         if (rootNode!=null) {
             // now visit the model, creating TreeCompareNodes for each ModelTreeNode
-            buildCompareTree(new CeylonOutlineBuilder().buildTree(pc), 
-                    structureRootNode, document);
+            buildCompareTree(new CeylonOutlineBuilder() {
+                //don't create nodes for shortcut refinement
+                //because we can't distinguish them w/o a
+                //full typecheck
+                public void visit(Tree.SpecifierStatement that) {}
+            }.buildTree(pc), structureRootNode, document);
         }
         
         return structureRootNode;
