@@ -595,7 +595,9 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
     }
     
     public IFile getFile() {
-        IPath path = packageFragment.getPath().append(unitName + ".ceylon");
+        String fileName = unitName;
+        if (!fileName.endsWith(".ceylon")) fileName += ".ceylon";
+        IPath path = packageFragment.getPath().append(fileName);
         IProject project = sourceDir.getJavaProject().getProject();
         return project.getFile(path.makeRelativeTo(project.getFullPath()));
     }
@@ -690,7 +692,7 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
     }
 
     boolean unitIsNameLegal(String unitName) {
-        return unitName.matches("(\\w|-)+");
+        return unitName.matches("(\\w|-)+(\\.ceylon)?");
     }
     
     private String getIllegalUnitNameMessage() {

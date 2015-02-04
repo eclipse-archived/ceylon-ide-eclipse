@@ -23,7 +23,7 @@ public class MoveToNewUnitWizard extends RefactoringWizard {
         MoveToNewUnitWizardPage page = 
                 new MoveToNewUnitWizardPage(refactoring.getName());
         Declaration dec = refactoring.getNode().getDeclarationModel();
-        page.setUnitName(dec.getName());
+        page.setUnitName(dec.getName() + ".ceylon");
         page.init(PlatformUI.getWorkbench(), getSelection());
         addPage(page);
     }
