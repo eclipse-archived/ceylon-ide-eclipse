@@ -1068,29 +1068,47 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 public void visitAny(Node node) {
                     for (Message m: node.getErrors()) {
                         if (m instanceof UsageWarning) {
-                            if (sb.length()>0) {
-                                sb.append(", ");
-                                ss.append(", ");
-                            }
                             UsageWarning warning = (UsageWarning) m;
                             String warningName = warning.getWarningName();
-                            sb.append('"')
-                              .append(warningName)
-                              .append('"');
-                            ss.append('"', VERSION_STYLER)
-                              .append(warningName, VERSION_STYLER)
-                              .append('"', VERSION_STYLER);
+                            if (!sb.toString().contains(warningName)) {
+                                if (sb.length()>0) {
+                                    sb.append(", ");
+                                    ss.append(", ");
+                                }
+                                sb.append('"')
+                                  .append(warningName)
+                                  .append('"');
+                                ss.append('"', VERSION_STYLER)
+                                  .append(warningName, VERSION_STYLER)
+                                  .append('"', VERSION_STYLER);
+                            }
                         }
                     }
                     super.visitAny(node);
                 }
             }.visit(st);
-            String text = "suppressWarnings(" + sb + ")" +
+            String ws = 
                     Indents.getDefaultLineDelimiter(doc) +
                     Indents.getIndent(st, doc);
-            change.setEdit(new InsertEdit(st.getStartIndex(), text));
+            String text = "suppressWarnings(" + sb + ")";
+            Integer start = st.getStartIndex();
+            if (st instanceof Tree.Declaration) {
+                Tree.AnnotationList al = 
+                        ((Tree.Declaration) st).getAnnotationList();
+                if (al!=null && al.getAnonymousAnnotation()!=null) {
+                    start = al.getAnonymousAnnotation().getStopIndex()+1;
+                    text = ws + text;
+                }
+                else {
+                    text += ws;
+                }
+            }
+            else {
+                text += ws;
+            }
+            change.setEdit(new InsertEdit(start, text));
             proposals.add(new CorrectionProposal(ss.toString(), 
-                    change, new Region(st.getStartIndex()+text.length(), 0)) {
+                    change, new Region(start+text.length(), 0)) {
                 @Override
                 public StyledString getStyledDisplayString() {
                     return ss;
