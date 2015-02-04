@@ -68,7 +68,17 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
             e.printStackTrace();
         }
     }
-        
+    
+    @Override
+    public boolean isStepThruFilters() {
+        return false;
+    }
+    
+    @Override
+    public boolean isStepFiltersEnabled() {
+        return true;
+    }
+    
     private static IJavaBreakpoint ceylonDebugEvaluationBreakpoint = null;
             
     @Override
@@ -440,13 +450,12 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
     private String[] ceylonStepFilters;
 
     private static String[] languageModuleStepFilters = {
-        "ceylon.language.*",
         "com.redhat.ceylon.*"
     };
     
     private static String[] moduleRuntimeFilters = {
         "org.jboss.modules.*",
-        "ceylon.modules.*"
+        "ceylon.modules.*",
     };
     
     private void updateCeylonFilters() {

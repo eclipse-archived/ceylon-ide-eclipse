@@ -22,19 +22,19 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements
     private Button filterJBossModulesButton;
 
     public CeylonStepFilterPreferencePage() {
-        this("Ceylon-specific Debug settings");
+        this("Ceylon Debugging");
     }
 
     public CeylonStepFilterPreferencePage(String title) {
         super(title);
         setPreferenceStore(CeylonPlugin.getInstance().getPreferenceStore());
-        setDescription("Additional options when debugging Ceylon programs");
+        setDescription("Additional options when debugging Ceylon programs.");
     }
 
     public CeylonStepFilterPreferencePage(String title, ImageDescriptor image) {
         super(title, image);
         setPreferenceStore(CeylonPlugin.getInstance().getPreferenceStore());
-        setDescription("Additional options when debugging Ceylon programs");
+        setDescription("Additional options when debugging Ceylon programs.");
     }
 
     @Override
@@ -54,7 +54,8 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements
     }
 
     private void createCeylonDebugPreferences(Composite parent) {
-        Composite container = SWTFactory.createComposite(parent, parent.getFont(), 2, 1, GridData.FILL_BOTH, 0, 0);
+        Composite container = SWTFactory.createComposite(SWTFactory.createGroup(parent, "Step Filters", 1, 1, GridData.FILL_HORIZONTAL),
+                parent.getFont(), 2, 1, GridData.FILL_BOTH, 0, 0);
         createStepFilterCheckboxes(container);
     }
 
@@ -64,10 +65,10 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements
      */
     private void createStepFilterCheckboxes(Composite container) {
         filterLanguageModuleButton = SWTFactory.createCheckButton(container, 
-                "Filter language module declarations (ceylon.language*, com.redhat.ceylon.*)", 
+                "Language module internal implementation (com.redhat.ceylon.*)", 
                 null, getPreferenceStore().getBoolean(CeylonDebugOptionsManager.PREF_FILTER_LANGUAGE_MODULE), 2);
         filterJBossModulesButton = SWTFactory.createCheckButton(container, 
-                "Filter Module Runtime declarations (JBoss Modules, Ceylon Runtime, Ceylon Bootstrap)", 
+                "Module runtime (org.jboss.modules.*, ceylon.modules.*)", 
                 null, getPreferenceStore().getBoolean(CeylonDebugOptionsManager.PREF_FILTER_MODULE_RUNTIME), 2);
     }
 

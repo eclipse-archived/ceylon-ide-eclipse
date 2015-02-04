@@ -363,7 +363,21 @@ public class DebugUtils {
                 return true;
             }
         } catch (ClassNotLoadedException e) {}
-
+        
+        if (declaringTypeName.equals("java.lang.ClassLoader")) {
+            return true;
+        }
+        
+        if (declaringTypeName.equals("java.lang.System") &&
+                methodName.equals("getSecurityManager")) {
+            return true;
+        }
+        
+        if (declaringTypeName.equals("java.lang.Object") 
+                && method.isConstructor()) {
+            return true;
+        }
+        
         return false;
     }
     

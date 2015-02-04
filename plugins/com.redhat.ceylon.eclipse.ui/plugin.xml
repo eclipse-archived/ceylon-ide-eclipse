@@ -1932,7 +1932,7 @@
        </keywordReference>
        </page>
       <page
-            name="Ceylon-specific debugging"
+            name="Ceylon Debugging"
             category="org.eclipse.jdt.debug.ui.JavaDebugPreferencePage"
             class="com.redhat.ceylon.eclipse.core.debug.preferences.CeylonStepFilterPreferencePage"
             id="com.redhat.ceylon.eclipse.ui.CeylonDebugPreferencePage">
