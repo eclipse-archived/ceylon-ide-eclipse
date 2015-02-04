@@ -60,6 +60,7 @@ public interface CeylonResources {
     public static final String CEYLON_ADD_CORRECTION = "add_correction";
     public static final String CEYLON_REMOVE_CORRECTION = "remove_correction";
     public static final String CEYLON_DELETE_IMPORT = "delete_import";
+    public static final String CEYLON_SUPPRESS_WARNINGS = "suppress_warnings";
     
     public static final String CEYLON_NEW_PROJECT = "ceylon_new_project";
     public static final String CEYLON_NEW_FILE = "ceylon_new_file";
@@ -158,6 +159,7 @@ public interface CeylonResources {
     public static final Image IMPORT_LIST = imageRegistry.get(CEYLON_IMPORT_LIST);
     public static final Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
     public static final Image MINOR_CHANGE = imageRegistry.get(CEYLON_CORRECTION);
+    public static final Image SUPPRESS_WARNING = imageRegistry.get(CEYLON_SUPPRESS_WARNINGS);
     public static final Image CHANGE = imageRegistry.get(CEYLON_CHANGE);
     public static final Image COMPOSITE_CHANGE = imageRegistry.get(CEYLON_COMPOSITE_CHANGE);
     public static final Image RENAME = imageRegistry.get(CEYLON_RENAME);

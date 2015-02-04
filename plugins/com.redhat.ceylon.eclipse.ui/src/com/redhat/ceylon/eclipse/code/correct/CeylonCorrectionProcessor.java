@@ -153,6 +153,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
@@ -1108,7 +1109,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             }
             change.setEdit(new InsertEdit(start, text));
             proposals.add(new CorrectionProposal(ss.toString(), 
-                    change, new Region(start+text.length(), 0)) {
+                    change, new Region(start+text.length(), 0), 
+                    CeylonResources.SUPPRESS_WARNING) {
                 @Override
                 public StyledString getStyledDisplayString() {
                     return ss;
