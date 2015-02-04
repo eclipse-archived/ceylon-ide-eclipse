@@ -1082,6 +1082,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                               .append('"', VERSION_STYLER);
                         }
                     }
+                    super.visitAny(node);
                 }
             }.visit(st);
             String text = "suppressWarnings(" + sb + ")" +
