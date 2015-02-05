@@ -12,6 +12,7 @@ package com.redhat.ceylon.eclipse.ui.test.headless;
 
 import junit.framework.Assert;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +28,12 @@ import org.eclipse.core.runtime.Path;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.redhat.ceylon.compiler.java.codegen.Decl;
-import com.redhat.ceylon.compiler.java.test.model.ModelLoaderTest;
+import com.redhat.ceylon.compiler.java.test.model.ModelLoaderTests;
 import com.redhat.ceylon.compiler.java.test.model.RunnableTest;
 import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -48,7 +52,18 @@ import static org.junit.Assert.assertTrue;
  * @author david
  * 
  */
-public class JDTModelLoaderTests extends ModelLoaderTest {
+
+@RunWith(Parameterized.class)
+public class JDTModelLoaderTests extends ModelLoaderTests {
+
+    @Parameters
+    public static Iterable<Object[]> testParameters() {
+        return Arrays.asList(new Object[][] { new Object[]{false} });
+    }
+    
+    public JDTModelLoaderTests(boolean simpleAnnotationModels) {
+        super(simpleAnnotationModels);
+    }
 
     static private AssertionError compilationError = null;
     static private IProject projectDeclarations = null;
