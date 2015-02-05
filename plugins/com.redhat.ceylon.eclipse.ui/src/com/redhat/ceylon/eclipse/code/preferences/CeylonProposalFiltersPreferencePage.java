@@ -13,8 +13,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.SearchEngine;
-import org.eclipse.jdt.internal.debug.ui.DebugUIMessages;
-import org.eclipse.jdt.internal.debug.ui.ExceptionHandler;
 import org.eclipse.jdt.internal.debug.ui.Filter;
 import org.eclipse.jdt.internal.debug.ui.FilterLabelProvider;
 import org.eclipse.jdt.internal.debug.ui.FilterViewerComparator;
@@ -295,8 +293,8 @@ public class CeylonProposalFiltersPreferencePage extends PreferencePage implemen
         buttonContainer.setLayout(buttonLayout);
     //Add filter button
         fAddFilterButton = SWTFactory.createPushButton(buttonContainer, 
-                DebugUIMessages.JavaStepFilterPreferencePage_Add__Filter_9, 
-                DebugUIMessages.JavaStepFilterPreferencePage_Key_in_the_name_of_a_new_step_filter_10, null);
+                "Add &Filter...", 
+                "Key in the Name of a New Proposal Filter", null);
         fAddFilterButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
                 addFilter();
@@ -304,8 +302,8 @@ public class CeylonProposalFiltersPreferencePage extends PreferencePage implemen
         });
     //Add type button
         fAddTypeButton = SWTFactory.createPushButton(buttonContainer, 
-                DebugUIMessages.JavaStepFilterPreferencePage_Add__Type____11, 
-                DebugUIMessages.JavaStepFilterPreferencePage_Choose_a_Java_type_and_add_it_to_step_filters_12, null);
+                "Add &Type...", 
+                "Choose a Type and Add It to Proposal Filters", null);
         fAddTypeButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
                 addType();
@@ -313,8 +311,8 @@ public class CeylonProposalFiltersPreferencePage extends PreferencePage implemen
         });
     //Add package button
         fAddPackageButton = SWTFactory.createPushButton(buttonContainer, 
-                DebugUIMessages.JavaStepFilterPreferencePage_Add__Package____13, 
-                DebugUIMessages.JavaStepFilterPreferencePage_Choose_a_package_and_add_it_to_step_filters_14, null);
+                "Add &Packages...", 
+                "Choose Package(s) to Add to Proposal Filters", null);
         fAddPackageButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
                 addPackage();
@@ -322,8 +320,8 @@ public class CeylonProposalFiltersPreferencePage extends PreferencePage implemen
         });
     //Remove button
         fRemoveFilterButton = SWTFactory.createPushButton(buttonContainer, 
-                DebugUIMessages.JavaStepFilterPreferencePage__Remove_15, 
-                DebugUIMessages.JavaStepFilterPreferencePage_Remove_all_selected_step_filters_16, 
+                "&Remove", 
+                "Remove a Filter", 
                 null);
         fRemoveFilterButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
@@ -341,8 +339,8 @@ public class CeylonProposalFiltersPreferencePage extends PreferencePage implemen
         separator.setLayoutData(gd);
     //Select All button
         fSelectAllButton = SWTFactory.createPushButton(buttonContainer, 
-                DebugUIMessages.JavaStepFilterPreferencePage__Select_All_1, 
-                DebugUIMessages.JavaStepFilterPreferencePage_Selects_all_step_filters_2, null);
+                "&Select All", 
+                "Selects all step filters", null);
         fSelectAllButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
                 fTableViewer.setAllChecked(true);
@@ -350,8 +348,8 @@ public class CeylonProposalFiltersPreferencePage extends PreferencePage implemen
         });
     //De-Select All button
         fDeselectAllButton = SWTFactory.createPushButton(buttonContainer, 
-                DebugUIMessages.JavaStepFilterPreferencePage_Deselect_All_3, 
-                DebugUIMessages.JavaStepFilterPreferencePage_Deselects_all_step_filters_4, null);
+                "D&eselect All", 
+                "Deselects all step filters", null);
         fDeselectAllButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
                 fTableViewer.setAllChecked(false);
@@ -380,10 +378,10 @@ public class CeylonProposalFiltersPreferencePage extends PreferencePage implemen
             SelectionDialog dialog = JavaUI.createTypeDialog(getShell(), 
                 PlatformUI.getWorkbench().getProgressService(),
                 SearchEngine.createWorkspaceScope(), 
-                IJavaElementSearchConstants.CONSIDER_CLASSES, 
+                IJavaElementSearchConstants.CONSIDER_ALL_TYPES, 
                 false);
-            dialog.setTitle(DebugUIMessages.JavaStepFilterPreferencePage_Add_type_to_step_filters_20); 
-            dialog.setMessage(DebugUIMessages.JavaStepFilterPreferencePage_Select_a_type_to_filter_when_stepping_23); 
+            dialog.setTitle("Add Type to Proposal Filters"); 
+            dialog.setMessage("&Select a type to filter from proposal lists:"); 
             if (dialog.open() == IDialogConstants.OK_ID) {
                 Object[] types = dialog.getResult();
                 if (types != null && types.length > 0) {
@@ -393,9 +391,7 @@ public class CeylonProposalFiltersPreferencePage extends PreferencePage implemen
             }           
         } 
         catch (JavaModelException jme) { 
-            ExceptionHandler.handle(jme, 
-                    DebugUIMessages.JavaStepFilterPreferencePage_Add_type_to_step_filters_20, 
-                    DebugUIMessages.JavaStepFilterPreferencePage_Could_not_open_type_selection_dialog_for_step_filters_21);
+            jme.printStackTrace();
         }   
     }
     
@@ -405,8 +401,8 @@ public class CeylonProposalFiltersPreferencePage extends PreferencePage implemen
     private void addPackage() {
         try {
             ElementListSelectionDialog dialog = JDIDebugUIPlugin.createAllPackagesDialog(getShell(), null, false);
-            dialog.setTitle(DebugUIMessages.JavaStepFilterPreferencePage_Add_package_to_step_filters_24); 
-            dialog.setMessage(DebugUIMessages.JavaStepFilterPreferencePage_Select_a_package_to_filter_when_stepping_27); 
+            dialog.setTitle("Add Packages to Proposal Filters"); 
+            dialog.setMessage("&Select a package to filter from proposal lists:"); 
             dialog.setMultipleSelection(true);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 Object[] packages = dialog.getResult();
@@ -422,9 +418,7 @@ public class CeylonProposalFiltersPreferencePage extends PreferencePage implemen
             
         } 
         catch (JavaModelException jme) { 
-            ExceptionHandler.handle(jme,
-                    DebugUIMessages.JavaStepFilterPreferencePage_Add_package_to_step_filters_24,
-                    DebugUIMessages.JavaStepFilterPreferencePage_Could_not_open_package_selection_dialog_for_step_filters_25);      
+            jme.printStackTrace();    
         }
     }
     

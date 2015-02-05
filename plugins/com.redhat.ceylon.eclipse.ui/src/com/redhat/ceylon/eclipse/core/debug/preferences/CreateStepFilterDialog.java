@@ -39,7 +39,7 @@ public class CreateStepFilterDialog extends StatusDialog {
 		this.filter = filter;
 		this.existingFilters = existingFilters;
 		
-		setTitle(DebugUIMessages.CreateStepFilterDialog_2); 
+		setTitle("Add Proposal Filter"); 
 		setStatusLineAboveButtons(false);
 		
 	}
