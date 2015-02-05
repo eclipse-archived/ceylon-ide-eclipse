@@ -60,6 +60,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
     public static final String COMPLETION = "completion";
     public static final String COMPLETION_FILTERS = "completionFilters";
+    public static final String INACTIVE_COMPLETION_FILTERS = "inactiveCompletionFilters";
     public static final String INEXACT_MATCHES = "inexactMatches";
     public static final String LINKED_MODE = "linkedModeCompletion";
     public static final String LINKED_MODE_RENAME = "linkedModeRename";
@@ -102,6 +103,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
     
     public static void setPreferenceDefaults() {
+        //TODO: use a PreferenceInitializer!!!
         IPreferenceStore preferenceStore = EditorsUI.getPreferenceStore();
         preferenceStore.setDefault(AUTO_INSERT, true);
         preferenceStore.setDefault(AUTO_ACTIVATION, true);

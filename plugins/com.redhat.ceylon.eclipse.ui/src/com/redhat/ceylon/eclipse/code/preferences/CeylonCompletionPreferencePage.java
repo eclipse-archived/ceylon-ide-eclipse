@@ -18,7 +18,6 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
 //import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
@@ -36,13 +35,13 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfigurat
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 //import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 
+
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.ScaleFieldEditor;
-import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -60,7 +59,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
-public class CeylonCompletionPreferencesPage 
+public class CeylonCompletionPreferencePage 
         extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
     
@@ -76,7 +75,7 @@ public class CeylonCompletionPreferencesPage
     BooleanFieldEditor linkedMode;
     ScaleFieldEditor autoActivationDelay;
     RadioGroupFieldEditor autoActivationChars;
-    StringFieldEditor completionFilter;
+//    StringFieldEditor completionFilter;
 //    BooleanFieldEditor linkedModeRename;
 //    BooleanFieldEditor linkedModeExtract;
 //    BooleanFieldEditor displayOutlineTypes;
@@ -98,9 +97,10 @@ public class CeylonCompletionPreferencesPage
 //    BooleanFieldEditor closeQuotes;
 //    BoolFieldEditor enableFolding;
     
-    public CeylonCompletionPreferencesPage() {
+    public CeylonCompletionPreferencePage() {
         super(GRID);
         setPreferenceDefaults();
+        setDescription("Preferences related to content completion in Ceylon source files.");
     }
     
     @Override
@@ -112,7 +112,7 @@ public class CeylonCompletionPreferencesPage
         autoActivation.store();
         autoActivationDelay.store();
         autoActivationChars.store();
-        completionFilter.store();
+//        completionFilter.store();
         completion.store();
         inexactMatches.store();
         linkedMode.store();
@@ -149,7 +149,7 @@ public class CeylonCompletionPreferencesPage
         autoInsert.loadDefault();
         autoActivationDelay.loadDefault();
         autoActivationChars.loadDefault();
-        completionFilter.loadDefault();
+//        completionFilter.loadDefault();
         completion.loadDefault();
         inexactMatches.loadDefault();
         linkedMode.loadDefault();
@@ -187,20 +187,10 @@ public class CeylonCompletionPreferencesPage
     
     @Override
     protected Control createContents(Composite parent) {
-        Link textEditorsLink = new Link(parent, 0);
-        textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
-        textEditorsLink.setText("See '<a>Ceylon Editor</a>' for more Ceylon editor preferences.");
-        textEditorsLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                createPreferenceDialogOn(getShell(), 
-                        CeylonEditorPreferencesPage.ID, null, null);
-            }
-        });
         
-        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        sep.setLayoutData(sgd);
+//        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+//        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+//        sep.setLayoutData(sgd);
 
         Composite composite = new Composite(parent, SWT.NONE);
         //composite.setText("Ceylon editor settings");
@@ -210,7 +200,34 @@ public class CeylonCompletionPreferencesPage
         GridLayout layout = new GridLayout();
         layout.numColumns = 1;
         composite.setLayout(layout); 
-        return super.createContents(composite);
+        Control result = super.createContents(composite);
+        
+        Label sep2 = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridData sgd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        sep2.setLayoutData(sgd2);
+
+        Link completionLink = new Link(parent, 0);
+        completionLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        completionLink.setText("See '<a>Ceylon Proposal Filters</a>' to set up filtering.");
+        completionLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonProposalFiltersPreferencePage.ID, null, null);
+            }
+        });
+        
+        Link textEditorsLink = new Link(parent, 0);
+        textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        textEditorsLink.setText("See '<a>Ceylon Editor</a>' for more Ceylon editor preferences.");
+        textEditorsLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonEditorPreferencesPage.ID, null, null);
+            }
+        });
+        return result;
     }
 
     @Override
@@ -310,21 +327,21 @@ public class CeylonCompletionPreferencesPage
     private void autocompletionSection() {
 //        addField(new LabelFieldEditor("Autocompletion:",
 //                getFieldEditorParent()));
-        Composite group = createGroup(1, "Completion");
+        final Composite group1 = createGroup(1, "Completion");
         displayParameterTypes = new BooleanFieldEditor(DISPLAY_PARAMETER_TYPES, 
                 "Display parameter types in proposals", 
-                getFieldEditorParent(group));
+                getFieldEditorParent(group1));
         displayParameterTypes.load();
         addField(displayParameterTypes);
-        final Composite p3 = getFieldEditorParent(group);
+        final Composite p3 = getFieldEditorParent(group1);
         completion = new RadioGroupFieldEditor(COMPLETION, 
                 "Completion with trailing identifier characters", 2, 
                 new String[][] { new String[] { "inserts", "insert" }, 
                                  new String[] { "overwrites", "overwrite" } }, p3);
         completion.load();
         addField(completion);
-        new Label(group, SWT.NONE).setText("   Press 'Ctrl' when selecting a proposal to toggle");
-        final Composite p4 = getFieldEditorParent(group);
+        new Label(group1, SWT.NONE).setText("   Press 'Ctrl' when selecting a proposal to toggle");
+        final Composite p4 = getFieldEditorParent(group1);
         inexactMatches = new RadioGroupFieldEditor(INEXACT_MATCHES, 
                 "For inexact matches propose", 3, 
                 new String[][] { new String[] { "no arguments", "none" }, 
@@ -333,25 +350,25 @@ public class CeylonCompletionPreferencesPage
         inexactMatches.load();
         addField(inexactMatches);
         
-        group = createGroup(1, "Linked mode");
+        final Composite group2 = createGroup(1, "Linked mode");
         linkedMode = new BooleanFieldEditor(LINKED_MODE, 
                 "Use linked mode to complete argument lists", 
-                getFieldEditorParent(group));
+                getFieldEditorParent(group2));
         linkedMode.load();
         addField(linkedMode);
         
-        group = createGroup(1, "Auto-insertion and auto-activation");
+        final Composite group3 = createGroup(1, "Auto-insertion and auto-activation");
         autoInsert = new BooleanFieldEditor(AUTO_INSERT, 
                 "Auto-insert unique completions", 
-                getFieldEditorParent(group));
+                getFieldEditorParent(group3));
         autoInsert.load();
         addField(autoInsert);
         autoActivation = new BoolFieldEditor(AUTO_ACTIVATION, 
                 "Auto-activate completions list", 
-                getFieldEditorParent(group));
+                getFieldEditorParent(group3));
         autoActivation.load();
         addField(autoActivation);
-        final Composite p1 = getFieldEditorParent(group);
+        final Composite p1 = getFieldEditorParent(group3);
         String letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         autoActivationChars = new RadioGroupFieldEditor(AUTO_ACTIVATION_CHARS, 
                 "Auto-activation characters", 3, 
@@ -360,7 +377,7 @@ public class CeylonCompletionPreferencesPage
                                  new String[] { "both", "." + letters } }, p1);
         autoActivationChars.load();
         addField(autoActivationChars);
-        final Composite p2 = getFieldEditorParent(group);
+        final Composite p2 = getFieldEditorParent(group3);
         autoActivationDelay = new ScaleWithLabelFieldEditor(AUTO_ACTIVATION_DELAY, 
                 "Auto-activation delay", p2);
         //autoActivationDelay.setValidRange(1, 9999);
@@ -379,12 +396,13 @@ public class CeylonCompletionPreferencesPage
                 autoActivationDelay.setEnabled(newValue, p2);
             }
         });
-        group = createGroup(1, "Package name filters");
-        completionFilter = new StringFieldEditor(COMPLETION_FILTERS, 
-                "Declarations in the filtered packages will not be proposed. Separate package names\nusing ',', where '*' is a wildcard, e.g. 'ceylon.language.meta.*, ceylon.math.float'", 
-                55, getFieldEditorParent(group));
-        completionFilter.load();
-        addField(completionFilter);
+//        group = createGroup(1, "Package name filters");
+        
+//        completionFilter = new StringFieldEditor(COMPLETION_FILTERS, 
+//                "Declarations in the filtered packages will not be proposed. Separate package names\nusing ',', where '*' is a wildcard, e.g. 'ceylon.language.meta.*, ceylon.math.float'", 
+//                55, getFieldEditorParent(group));
+//        completionFilter.load();
+//        addField(completionFilter);
 //        addField(new SpacerFieldEditor(getFieldEditorParent()));
     }
 

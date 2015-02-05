@@ -1914,7 +1914,7 @@
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences.completion"
            name="Ceylon Completion"
-           class="com.redhat.ceylon.eclipse.code.preferences.CeylonCompletionPreferencesPage"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonCompletionPreferencePage"
            category="com.redhat.ceylon.eclipse.ui.preferences.editor">
        <keywordReference id="org.eclipse.ui.editors.general"/>
        <keywordReference
@@ -1922,9 +1922,19 @@
        </keywordReference>
        </page>
        <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.completion.filters"
+           name="Ceylon Proposal Filters"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonProposalFiltersPreferencePage"
+           category="com.redhat.ceylon.eclipse.ui.preferences.completion">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="com.redhat.ceylon.eclipse.ui.keywords.completion.filters">
+       </keywordReference>
+       </page>
+       <page
            id="com.redhat.ceylon.eclipse.ui.preferences.save"
            name="Ceylon Save Actions"
-           class="com.redhat.ceylon.eclipse.code.preferences.CeylonSavePreferencesPage"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonSaveActionsPreferencePage"
            category="com.redhat.ceylon.eclipse.ui.preferences.editor">
        <keywordReference id="org.eclipse.ui.editors.general"/>
        <keywordReference
@@ -1945,13 +1955,16 @@
    <extension point="org.eclipse.ui.keywords">
    <keyword
          label="folding typing linked mode brackets braces parentheses quotes backticks"
-         id="com.redhat.ceylon.eclipse.ui.keywords.editor"/>>
+         id="com.redhat.ceylon.eclipse.ui.keywords.editor"/>
    <keyword
          label="completion linked mode"
-         id="com.redhat.ceylon.eclipse.ui.keywords.completion"/>>
+         id="com.redhat.ceylon.eclipse.ui.keywords.completion"/>
+   <keyword
+         label="completion proposals filters"
+         id="com.redhat.ceylon.eclipse.ui.keywords.completion.filters"/>
    <keyword
          label="save actions imports format"
-         id="com.redhat.ceylon.eclipse.ui.keywords.save"/>>
+         id="com.redhat.ceylon.eclipse.ui.keywords.save"/>
    <keyword
          label="ceylon debug"
          id="com.redhat.ceylon.eclipse.ui.keywords.debug"/>

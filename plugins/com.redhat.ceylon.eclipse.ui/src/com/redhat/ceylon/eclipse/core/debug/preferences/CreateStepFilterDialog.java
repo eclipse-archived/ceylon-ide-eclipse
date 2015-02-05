@@ -44,7 +44,7 @@ public class CreateStepFilterDialog extends StatusDialog {
 		
 	}
 	
-	static Filter showCreateStepFilterDialog(Shell parent, Filter[] existingFilters) {
+	public static Filter showCreateStepFilterDialog(Shell parent, Filter[] existingFilters) {
 		CreateStepFilterDialog createStepFilterDialog = new CreateStepFilterDialog(parent, new Filter(DEFAULT_NEW_FILTER_TEXT, true), existingFilters);
 		createStepFilterDialog.create();
 		createStepFilterDialog.open();

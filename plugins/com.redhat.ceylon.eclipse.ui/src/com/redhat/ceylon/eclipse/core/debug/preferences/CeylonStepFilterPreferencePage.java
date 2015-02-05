@@ -61,8 +61,6 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  */
 public class CeylonStepFilterPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
     
-    public static final String PAGE_ID = "org.eclipse.jdt.debug.ui.JavaStepFilterPreferencePage"; //$NON-NLS-1$
-    
     /**
      * Content provider for the table.  Content consists of instances of StepFilter.
      * @since 3.2

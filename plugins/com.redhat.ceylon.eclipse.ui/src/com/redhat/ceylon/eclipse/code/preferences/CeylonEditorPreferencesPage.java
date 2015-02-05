@@ -96,6 +96,7 @@ public class CeylonEditorPreferencesPage
     public CeylonEditorPreferencesPage() {
         super(GRID);
         setPreferenceDefaults();
+        setDescription("Preferences related to the editor for Ceylon source files.");
     }
     
     @Override
@@ -214,10 +215,6 @@ public class CeylonEditorPreferencesPage
             }
         });
         
-        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        sep.setLayoutData(sgd);
-
         Composite composite = new Composite(parent, SWT.NONE);
         //composite.setText("Ceylon editor settings");
         GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -229,7 +226,8 @@ public class CeylonEditorPreferencesPage
         
         Control contents = super.createContents(composite);
         
-        sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sep.setLayoutData(sgd);
         
         Link completionLink = new Link(parent, 0);
@@ -239,7 +237,7 @@ public class CeylonEditorPreferencesPage
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonCompletionPreferencesPage.ID, null, null);
+                        CeylonCompletionPreferencePage.ID, null, null);
             }
         });
         Link saveLink = new Link(parent, 0);
@@ -249,7 +247,7 @@ public class CeylonEditorPreferencesPage
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonSavePreferencesPage.ID, null, null);
+                        CeylonSaveActionsPreferencePage.ID, null, null);
             }
         });
         return contents;

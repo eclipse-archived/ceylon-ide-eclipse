@@ -56,7 +56,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
-public class CeylonSavePreferencesPage 
+public class CeylonSaveActionsPreferencePage 
         extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
     
@@ -93,8 +93,9 @@ public class CeylonSavePreferencesPage
 //    BooleanFieldEditor closeQuotes;
 //    BoolFieldEditor enableFolding;
     
-    public CeylonSavePreferencesPage() {
+    public CeylonSaveActionsPreferencePage() {
         super(GRID);
+        setDescription("Save actions are executed each time a Ceylon source file is saved.");
         setPreferenceDefaults();
     }
     
@@ -180,20 +181,6 @@ public class CeylonSavePreferencesPage
     
     @Override
     protected Control createContents(Composite parent) {
-        Link textEditorsLink = new Link(parent, 0);
-        textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
-        textEditorsLink.setText("See '<a>Ceylon Editor</a>' for more Ceylon editor preferences.");
-        textEditorsLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                createPreferenceDialogOn(getShell(), 
-                        CeylonEditorPreferencesPage.ID, null, null);
-            }
-        });
-                
-        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        sep.setLayoutData(sgd);
 
         Composite composite = new Composite(parent, SWT.NONE);
         //composite.setText("Ceylon editor settings");
@@ -203,7 +190,25 @@ public class CeylonSavePreferencesPage
         GridLayout layout = new GridLayout();
         layout.numColumns = 1;
         composite.setLayout(layout); 
-        return super.createContents(composite);
+        
+        Control result = super.createContents(composite);
+        
+        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        sep.setLayoutData(sgd);
+        
+        Link textEditorsLink = new Link(parent, 0);
+        textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        textEditorsLink.setText("See '<a>Ceylon Editor</a>' for more Ceylon editor preferences.");
+        textEditorsLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonEditorPreferencesPage.ID, null, null);
+            }
+        });
+                
+        return result;
     }
 
     @Override
