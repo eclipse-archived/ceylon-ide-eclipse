@@ -45,9 +45,10 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 
 public class CeylonJDIDebugTarget extends JDIDebugTarget {
+    
     private IProject project = null;
-    private boolean filterLanguageModuleFrames;
-    private boolean filterModuleRuntimeFrames;
+    private String[] ceylonStepFilters;
+    private boolean stepFiltersEnabled;
     
     public CeylonJDIDebugTarget(ILaunch launch, VirtualMachine jvm, String name,
             boolean supportTerminate, boolean supportDisconnect,
@@ -72,11 +73,6 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
     @Override
     public boolean isStepThruFilters() {
         return false;
-    }
-    
-    @Override
-    public boolean isStepFiltersEnabled() {
-        return true;
     }
     
     private static IJavaBreakpoint ceylonDebugEvaluationBreakpoint = null;
@@ -438,66 +434,21 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
         evaluateAnnotation(valueType, annotationClass, null, internalListener);
     }
 
-    public void setCeylonFilters(
-            boolean filterLanguageModuleFrames,
-            boolean filterModuleRuntimeFrames) {
-
-        this.filterLanguageModuleFrames = filterLanguageModuleFrames;
-        this.filterModuleRuntimeFrames = filterModuleRuntimeFrames;
-        updateCeylonFilters();
-    }
-    
-    private String[] ceylonStepFilters;
-
-    private static String[] languageModuleStepFilters = {
-        "com.redhat.ceylon.*"
-    };
-    
-    private static String[] moduleRuntimeFilters = {
-        "org.jboss.modules.*",
-        "ceylon.modules.*",
-    };
-    
-    private void updateCeylonFilters() {
-        String[] jdiFilters = super.getStepFilters();
-
-        int length = 0;
-        if (jdiFilters != null) {
-            length += jdiFilters.length;
-        }
-        if (filterLanguageModuleFrames) {
-            length += languageModuleStepFilters.length;
-        }
-        if (filterModuleRuntimeFrames) {
-            length += moduleRuntimeFilters.length;
-        }
-        
-        String[] destination = new String[length];
-        int currPos = 0;
-        if (jdiFilters != null) {
-            System.arraycopy(jdiFilters, 0, destination, currPos, jdiFilters.length);
-            currPos += jdiFilters.length;
-        }
-        if (filterLanguageModuleFrames) {
-            System.arraycopy(languageModuleStepFilters, 0, destination, currPos, languageModuleStepFilters.length);
-            currPos += languageModuleStepFilters.length;
-        }
-        if (filterModuleRuntimeFrames) {
-            System.arraycopy(moduleRuntimeFilters, 0, destination, currPos, moduleRuntimeFilters.length);
-            currPos += moduleRuntimeFilters.length;
-        }
-        
-        ceylonStepFilters = destination;
-    }
-    
-    @Override
-    public void setStepFilters(String[] list) {
-        super.setStepFilters(list);
-        updateCeylonFilters();
+    public void setCeylonStepFilters(String[] list) {
+        ceylonStepFilters = list;
     }
     
     @Override
     public String[] getStepFilters() {
         return ceylonStepFilters;
+    }
+    
+    public void setCeylonStepFiltersEnabled(boolean enabled) {
+        stepFiltersEnabled = enabled;
+    }
+    
+    @Override
+    public boolean isStepFiltersEnabled() {
+        return stepFiltersEnabled;
     }
 }

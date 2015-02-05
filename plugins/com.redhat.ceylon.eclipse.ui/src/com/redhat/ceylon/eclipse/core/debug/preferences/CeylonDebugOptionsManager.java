@@ -1,13 +1,14 @@
 package com.redhat.ceylon.eclipse.core.debug.preferences;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchListener;
 import org.eclipse.debug.core.model.IDebugTarget;
+import org.eclipse.debug.internal.core.StepFilterManager;
+import org.eclipse.jdt.internal.debug.ui.IJDIPreferencesConstants;
+import org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -19,11 +20,6 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
  * Manages options for the Ceylon Debugger
  */
 public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPropertyChangeListener, ILaunchListener {
-    
-    public static final String PREF_FILTER_LANGUAGE_MODULE = 
-            PLUGIN_ID + ".ceylonDebug.FilterCeylonLanguageFrames";
-    public static final String PREF_FILTER_MODULE_RUNTIME = 
-            PLUGIN_ID + ".ceylonDebug.FilterJBossModulesFrames";
     
     /**
      * Singleton options manager
@@ -79,15 +75,19 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
      * @param target Ceylon debug target
      */
     protected void notifyTargetOfFilters(CeylonJDIDebugTarget target) {
-
         IPreferenceStore store = CeylonPlugin.getInstance().getPreferenceStore();
-
-        target.setCeylonFilters(
-                store.getBoolean(PREF_FILTER_LANGUAGE_MODULE),
-                store.getBoolean(PREF_FILTER_MODULE_RUNTIME));
-        if (! registeredAsPropertyChangeListener) {
+        String[] filters = JavaDebugOptionsManager.parseList(store.getString(IJDIPreferencesConstants.PREF_ACTIVE_FILTERS_LIST));
+        target.setCeylonStepFilters(filters);
+        target.setCeylonStepFiltersEnabled(store.getBoolean(StepFilterManager.PREF_USE_STEP_FILTERS));
+//        target.setFilterConstructors(store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_CONSTRUCTORS));
+//        target.setFilterStaticInitializers(store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_STATIC_INITIALIZERS));
+//        target.setFilterSynthetics(store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_SYNTHETICS));
+//        target.setFilterGetters(store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_GETTERS));
+//        target.setFilterSetters(store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_SETTERS));
+        
+        if (!registeredAsPropertyChangeListener) {
             registeredAsPropertyChangeListener = true;
-            CeylonPlugin.getInstance().getPreferenceStore().addPropertyChangeListener(this);
+            store.addPropertyChangeListener(this);
         }
     }   
     
@@ -98,7 +98,7 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
         IDebugTarget[] targets = DebugPlugin.getDefault().getLaunchManager().getDebugTargets();
         for (int i = 0; i < targets.length; i++) {
             if (targets[i] instanceof CeylonJDIDebugTarget) {
-                CeylonJDIDebugTarget target = (CeylonJDIDebugTarget)targets[i];
+                CeylonJDIDebugTarget target = (CeylonJDIDebugTarget) targets[i];
                 notifyTargetOfFilters(target);
             }
         }   
@@ -109,7 +109,7 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
      */
     public void propertyChange(PropertyChangeEvent event) {
         String property = event.getProperty();
-        if (isUseFilterProperty(property)) {
+        if (isFilterProperty(property)) {
             notifyTargetsOfFilters();
         }
     }
@@ -118,9 +118,15 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
      * Returns whether the given property is a property that affects whether
      * or not step filters are used.
      */
-    private boolean isUseFilterProperty(String property) {
-        return property.equals(PREF_FILTER_LANGUAGE_MODULE) ||
-                property.equals(PREF_FILTER_MODULE_RUNTIME);
+    private boolean isFilterProperty(String property) {
+        return property.equals(IJDIPreferencesConstants.PREF_ACTIVE_FILTERS_LIST) ||
+                property.equals(IJDIPreferencesConstants.PREF_INACTIVE_FILTERS_LIST) ||
+                property.equals(IJDIPreferencesConstants.PREF_FILTER_CONSTRUCTORS) ||
+                property.equals(IJDIPreferencesConstants.PREF_FILTER_STATIC_INITIALIZERS) ||
+                property.equals(IJDIPreferencesConstants.PREF_FILTER_GETTERS) ||
+                property.equals(IJDIPreferencesConstants.PREF_FILTER_SETTERS) ||
+                property.equals(IJDIPreferencesConstants.PREF_FILTER_SYNTHETICS) ||
+                property.equals(StepFilterManager.PREF_USE_STEP_FILTERS);
     }
 
     private boolean registeredAsPropertyChangeListener = false;
