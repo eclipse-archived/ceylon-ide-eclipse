@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.core.debug.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.debug.internal.core.StepFilterManager;
 import org.eclipse.jdt.internal.debug.ui.IJDIPreferencesConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -8,9 +9,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonDebugUIPreferenceInitializer extends AbstractPreferenceInitializer {
 
-    public CeylonDebugUIPreferenceInitializer() {
-        super();
-    }
+    public CeylonDebugUIPreferenceInitializer() {}
 
     @Override
     public void initializeDefaultPreferences() {
@@ -19,5 +18,6 @@ public class CeylonDebugUIPreferenceInitializer extends AbstractPreferenceInitia
                 "org.jboss.modules.*,ceylon.modules.*");
         store.setDefault(IJDIPreferencesConstants.PREF_INACTIVE_FILTERS_LIST,
                 "ceylon.language.*,com.redhat.ceylon.*,java.lang.*");
+        store.setDefault(StepFilterManager.PREF_USE_STEP_FILTERS, true);
     }
 }
