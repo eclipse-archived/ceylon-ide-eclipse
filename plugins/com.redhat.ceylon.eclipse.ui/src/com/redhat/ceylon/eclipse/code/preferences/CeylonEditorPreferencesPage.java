@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.ENCLOSING_BRACKETS;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.MATCHING_BRACKET;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SELECTED_BRACKET;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_FOLD_COMMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_FOLD_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_ANGLES;
@@ -9,13 +12,10 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_QUOTES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_RETURN_TYPES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENCLOSING_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCHING_BRACKET;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SELECTED_BRACKET;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -261,7 +262,7 @@ public class CeylonEditorPreferencesPage
         void valueChanged(boolean oldValue, boolean newValue);
     }
     
-    class BoolFieldEditor extends BooleanFieldEditor {
+    static class BoolFieldEditor extends BooleanFieldEditor {
         private Listener listener;
         public BoolFieldEditor(String name, String label, Composite parent) {
             super(name, label, parent);
@@ -291,6 +292,16 @@ public class CeylonEditorPreferencesPage
         }
     }
     
+    static class SpecialBoolFieldEditor extends BoolFieldEditor {
+        public SpecialBoolFieldEditor(String name, String label, Composite parent) {
+            super(name, label, parent);
+        }
+        @Override
+        public IPreferenceStore getPreferenceStore() {
+            return EditorsUI.getPreferenceStore();
+        }
+    }
+    
     private void bracketHighlightingSection() {
 //        addField(new LabelFieldEditor("Bracket highlighting:",
 //                getFieldEditorParent()));
@@ -299,22 +310,21 @@ public class CeylonEditorPreferencesPage
         GridData gd = new GridData();
         gd.horizontalSpan=2;
         p0.setLayoutData(gd);
-        matchingBracket = new BoolFieldEditor(MATCHING_BRACKET, 
+        matchingBracket = new SpecialBoolFieldEditor(MATCHING_BRACKET, 
                 "Enable matching bracket highlighting", p0);
         matchingBracket.load();
         addField(matchingBracket);
         final Composite p1 = getFieldEditorParent(group);
-        currentBracket = new BooleanFieldEditor(SELECTED_BRACKET, 
+        currentBracket = new SpecialBoolFieldEditor(SELECTED_BRACKET, 
                 "Highlight selected bracket", p1);
         currentBracket.load();
         addField(currentBracket);
         final Composite p2 = getFieldEditorParent(group);
-        enclosingBrackets = new BooleanFieldEditor(ENCLOSING_BRACKETS, 
+        enclosingBrackets = new SpecialBoolFieldEditor(ENCLOSING_BRACKETS, 
                 "Highlight enclosing brackets", p2);
         enclosingBrackets.load();
         addField(enclosingBrackets);
-        final IPreferenceStore store = EditorUtil.getPreferences();
-        boolean enabled = store.getBoolean(MATCHING_BRACKET);
+        boolean enabled = EditorsUI.getPreferenceStore().getBoolean(MATCHING_BRACKET);
         currentBracket.setEnabled(enabled, p1);
         enclosingBrackets.setEnabled(enabled, p2);
         matchingBracket.setListener(new Listener() {

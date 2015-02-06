@@ -25,13 +25,9 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
 import static com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvider.isSrcArchive;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForFile;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLEAN_IMPORTS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENCLOSING_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FORMAT;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCHING_BRACKET;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCHING_BRACKETS_COLOR;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_NL;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_WS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SELECTED_BRACKET;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.STRIP_TRAILING_WS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
@@ -1470,12 +1466,22 @@ public class CeylonEditor extends TextEditor {
         super.configureSourceViewerDecorationSupport(support);
     }
     
+    //These preferences can't be stored in the CeylonPlugin preferences
+    public final static String MATCHING_BRACKET = "matchingBrackets";
+    public final static String MATCHING_BRACKETS_COLOR = "matchingBracketsColor";
+    public final static String SELECTED_BRACKET = "highlightBracketAtCaretLocation";
+    public final static String ENCLOSING_BRACKETS = "enclosingBrackets";
+    
     private void installBracketMatcher(SourceViewerDecorationSupport support) {
         ITheme currentTheme = 
                 getWorkbench().getThemeManager().getCurrentTheme();
         Color color = currentTheme.getColorRegistry()
                 .get(PLUGIN_ID + ".theme.matchingBracketsColor");
-        EditorUtil.getPreferences().setDefault(MATCHING_BRACKETS_COLOR, 
+        IPreferenceStore store = getPreferenceStore(); //can't be stored in the CeylonPlugin preferences!
+        store.setDefault(MATCHING_BRACKET, true);
+        store.setDefault(ENCLOSING_BRACKETS, false);
+        store.setDefault(SELECTED_BRACKET, false);
+        store.setDefault(MATCHING_BRACKETS_COLOR, 
                 color.getRed() +"," + color.getGreen() + "," + color.getBlue());
         bracketMatcher = new CeylonCharacterPairMatcher();
         support.setCharacterPairMatcher(bracketMatcher);

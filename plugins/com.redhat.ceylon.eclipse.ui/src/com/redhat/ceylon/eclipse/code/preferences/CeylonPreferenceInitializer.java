@@ -34,10 +34,6 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String CLEAN_IMPORTS = "cleanImports";
     public static final String FORMAT = "format";
     //preference keys
-    public final static String MATCHING_BRACKET = "matchingBrackets";
-    public final static String MATCHING_BRACKETS_COLOR = "matchingBracketsColor";
-    public final static String SELECTED_BRACKET = "highlightBracketAtCaretLocation";
-    public final static String ENCLOSING_BRACKETS = "enclosingBrackets";
     public final static String SUB_WORD_NAVIGATION = "subWordNavigation";
     public final static String AUTO_FOLD_IMPORTS = "autoFoldImports";
     public final static String AUTO_FOLD_COMMENTS = "autoFoldComments";
@@ -74,9 +70,5 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(AUTO_FOLD_IMPORTS, true);
         store.setDefault(AUTO_FOLD_COMMENTS, false);
         store.setDefault(SUB_WORD_NAVIGATION, true);
-        store.setDefault(MATCHING_BRACKET, true);
-        store.setDefault(MATCHING_BRACKET, true);
-        store.setDefault(ENCLOSING_BRACKETS, false);
-        store.setDefault(SELECTED_BRACKET, false);
    }
 }

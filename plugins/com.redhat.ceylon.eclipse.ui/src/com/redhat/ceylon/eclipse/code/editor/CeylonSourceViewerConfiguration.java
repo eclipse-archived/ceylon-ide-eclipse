@@ -37,6 +37,7 @@ import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
@@ -60,7 +61,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     protected final CeylonEditor editor;
     
     public CeylonSourceViewerConfiguration(CeylonEditor editor) {
-        super(EditorUtil.getPreferences());
+        super(EditorsUI.getPreferenceStore());
         this.editor = editor;
     }
     
