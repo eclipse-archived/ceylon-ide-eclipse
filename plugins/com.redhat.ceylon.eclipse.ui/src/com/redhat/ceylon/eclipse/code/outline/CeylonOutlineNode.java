@@ -125,7 +125,8 @@ public class CeylonOutlineNode implements IAdaptable {
             endOffset = Nodes.getEndOffset(treeNode);
         }
         if (treeNode!=null && 
-                !(treeNode instanceof PackageNode)) {
+                !(treeNode instanceof PackageNode) &&
+                !(treeNode instanceof ModuleNode)) {
             //whole span of the complete construct
             realStartOffset = treeNode.getStartIndex();
             realEndOffset = treeNode.getStopIndex()+1;
@@ -255,7 +256,9 @@ public class CeylonOutlineNode implements IAdaptable {
                 }
                 return "@root:" + path; 
             case PACKAGE_CATEGORY:
-                return "@package:" + ((PackageNode)treeNode).getPackageName();
+                return treeNode instanceof PackageNode ?
+                        "@package:" + ((PackageNode)treeNode).getPackageName() :
+                        "@module:" + ((ModuleNode)treeNode).getModuleName();
             case UNIT_CATEGORY:
                 return "@unit:" + treeNode.getUnit().getFilename();
             case IMPORT_LIST_CATEGORY:

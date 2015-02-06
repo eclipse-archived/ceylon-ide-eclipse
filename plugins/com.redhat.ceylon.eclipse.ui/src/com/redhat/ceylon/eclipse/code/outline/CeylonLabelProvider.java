@@ -11,6 +11,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
@@ -261,6 +262,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static String getImageKeyForNode(Node n) {
         if (n instanceof PackageNode) {
             return CEYLON_PACKAGE;
+        }
+        else if (n instanceof ModuleNode) {
+            return CEYLON_MODULE;
         }
         else if (n instanceof PackageDescriptor) {
             return CEYLON_PACKAGE;
@@ -614,8 +618,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.ModuleDescriptor i = (Tree.ModuleDescriptor) node;
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString("module ", KW_STYLER)
-                        .append(toPath(p), PACKAGE_STYLER);
+                StyledString styledString = 
+                        new StyledString("module ", KW_STYLER)
+                            .append(toPath(p), PACKAGE_STYLER);
+                Tree.QuotedLiteral version = 
+                        ((Tree.ModuleDescriptor) node).getVersion();
+                if (version!=null) {
+                    styledString.append(" ")
+                                .append(version.getText(), VERSION_STYLER);
+                }
+                return styledString;
             }
         }
         else if (node instanceof Tree.PackageDescriptor) {
@@ -623,7 +635,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
                 return new StyledString("package ", KW_STYLER)
-                        .append(toPath(p), PACKAGE_STYLER);
+                            .append(toPath(p), PACKAGE_STYLER);
             }
         }
         else if (node instanceof Tree.ImportList) {
@@ -657,10 +669,27 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
         }
         else if (node instanceof PackageNode) {
-            PackageNode pn = (PackageNode) node;
-            String name = pn.getPackageName();
-            if (name.isEmpty()) name = "(default package)";
-            return new StyledString(name); //PACKAGE_STYLER??
+            PackageNode packageNode = (PackageNode) node;
+            String name = packageNode.getPackageName();
+            if (name.isEmpty()) {
+                new StyledString("(default package)");
+            }
+            else {
+                return new StyledString(name); //PACKAGE_STYLER??
+            }
+        }
+        else if (node instanceof ModuleNode) {
+            ModuleNode moduleNode = (ModuleNode) node;
+            String name = moduleNode.getModuleName();
+            if (name.isEmpty()) {
+                return new StyledString("(default package)");
+            }
+            else {
+                return new StyledString(name)
+                    .append(" \"", VERSION_STYLER) //PACKAGE_STYLER??
+                    .append(moduleNode.getVersion(), VERSION_STYLER)
+                    .append("\"", VERSION_STYLER);
+            }
         }
         else if (node instanceof Tree.SpecifierStatement) {
             Tree.Term bme = ((Tree.SpecifierStatement) node).getBaseMemberExpression();

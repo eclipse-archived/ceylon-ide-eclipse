@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IResource;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -120,6 +121,15 @@ public class CeylonOutlineBuilder extends Visitor {
         itemStack.push(modelRoot);
         try {
             Unit unit = rootNode.getUnit();
+            if (unit!=null && 
+                !unit.getFilename().equals("module.ceylon")) { //it looks a bit funny to have two nodes representing the module
+                ModuleNode moduleNode = new ModuleNode();
+                Module module = unit.getPackage().getModule();
+                moduleNode.setModuleName(module.getNameAsString());
+                moduleNode.setVersion(module.getVersion());
+                createSubItem(moduleNode, PACKAGE_CATEGORY, 
+                        file==null ? null : file.getParent());
+            }
             if (unit!=null && 
                 !unit.getFilename().equals("module.ceylon") &&
                 !unit.getFilename().equals("package.ceylon")) { //it looks a bit funny to have two nodes representing the package
