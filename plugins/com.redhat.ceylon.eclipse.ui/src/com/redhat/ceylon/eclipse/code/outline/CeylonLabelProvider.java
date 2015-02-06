@@ -672,7 +672,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             PackageNode packageNode = (PackageNode) node;
             String name = packageNode.getPackageName();
             if (name.isEmpty()) {
-                new StyledString("(default package)");
+                return new StyledString("(default package)");
             }
             else {
                 return new StyledString(name/*, PACKAGE_STYLER*/);
