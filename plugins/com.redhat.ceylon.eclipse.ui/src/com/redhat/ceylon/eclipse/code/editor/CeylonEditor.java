@@ -1473,21 +1473,26 @@ public class CeylonEditor extends TextEditor {
     public final static String ENCLOSING_BRACKETS = "enclosingBrackets";
     
     private void installBracketMatcher(SourceViewerDecorationSupport support) {
-        ITheme currentTheme = 
-                getWorkbench().getThemeManager().getCurrentTheme();
-        Color color = currentTheme.getColorRegistry()
-                .get(PLUGIN_ID + ".theme.matchingBracketsColor");
-        IPreferenceStore store = getPreferenceStore(); //can't be stored in the CeylonPlugin preferences!
-        store.setDefault(MATCHING_BRACKET, true);
-        store.setDefault(ENCLOSING_BRACKETS, false);
-        store.setDefault(SELECTED_BRACKET, false);
-        store.setDefault(MATCHING_BRACKETS_COLOR, 
-                color.getRed() +"," + color.getGreen() + "," + color.getBlue());
+        initializeBrackMatcherPreferences();
         bracketMatcher = new CeylonCharacterPairMatcher();
         support.setCharacterPairMatcher(bracketMatcher);
         support.setMatchingCharacterPainterPreferenceKeys(
                 MATCHING_BRACKET, MATCHING_BRACKETS_COLOR, 
                 SELECTED_BRACKET, ENCLOSING_BRACKETS);
+    }
+
+    public static void initializeBrackMatcherPreferences() {
+        ITheme currentTheme = 
+                getWorkbench().getThemeManager().getCurrentTheme();
+        Color color = currentTheme.getColorRegistry()
+                .get(PLUGIN_ID + ".theme.matchingBracketsColor");
+        IPreferenceStore store = EditorsUI.getPreferenceStore(); //can't be stored in the CeylonPlugin preferences!
+        store.setDefault(MATCHING_BRACKET, true);
+        store.setDefault(ENCLOSING_BRACKETS, false);
+        store.setDefault(SELECTED_BRACKET, false);
+        store.setDefault(MATCHING_BRACKETS_COLOR, 
+                color.getRed() +"," + color.getGreen() + "," + color.getBlue());
+        store.setDefault(EDITOR_FOLDING_ENABLED, true);
     }
     
     public ICharacterPairMatcher getBracketMatcher() {

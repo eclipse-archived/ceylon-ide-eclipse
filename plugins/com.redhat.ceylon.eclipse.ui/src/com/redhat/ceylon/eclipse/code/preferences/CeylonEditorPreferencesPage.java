@@ -39,6 +39,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.editors.text.EditorsUI;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonEditorPreferencesPage 
@@ -159,6 +160,7 @@ public class CeylonEditorPreferencesPage
     @Override
     public void init(IWorkbench workbench) {
         setPreferenceStore(EditorUtil.getPreferences());
+        CeylonEditor.initializeBrackMatcherPreferences();
     }
     
     
@@ -416,7 +418,7 @@ public class CeylonEditorPreferencesPage
         GridData gd = new GridData();
         gd.horizontalSpan=2;
         p0.setLayoutData(gd);
-        enableFolding = new BoolFieldEditor(EDITOR_FOLDING_ENABLED, 
+        enableFolding = new SpecialBoolFieldEditor(EDITOR_FOLDING_ENABLED, 
                 "Enable source folding", p0);
         enableFolding.load();
         addField(enableFolding);
@@ -430,8 +432,8 @@ public class CeylonEditorPreferencesPage
                 "Automatically fold comments", p2);
         autoFoldComments.load();
         addField(autoFoldComments);
-        final IPreferenceStore store = EditorUtil.getPreferences();
-        boolean enabled = store.getBoolean(EDITOR_FOLDING_ENABLED);
+        boolean enabled = EditorsUI.getPreferenceStore()
+                .getBoolean(EDITOR_FOLDING_ENABLED);
         autoFoldImports.setEnabled(enabled, p1);
         autoFoldComments.setEnabled(enabled, p2);
         enableFolding.setListener(new Listener() {
