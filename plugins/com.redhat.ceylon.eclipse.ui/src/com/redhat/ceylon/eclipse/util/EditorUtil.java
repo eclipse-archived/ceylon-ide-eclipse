@@ -65,7 +65,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.keys.IBindingService;
@@ -83,6 +82,7 @@ import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class EditorUtil {
     
@@ -161,7 +161,7 @@ public class EditorUtil {
 
     public static IPreferenceStore getPreferences() {
         try {
-            return EditorsUI.getPreferenceStore();
+            return CeylonPlugin.getInstance().getPreferenceStore();
         }
         catch (Exception e) {
             return null;

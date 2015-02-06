@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 
@@ -9,6 +8,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 
@@ -42,12 +42,12 @@ public class Indents {
     }
     
     public static int getIndentSpaces() {
-        IPreferenceStore store = getPreferences();
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
         return store==null ? 4 : store.getInt(EDITOR_TAB_WIDTH);
     }
     
     public static boolean getIndentWithSpaces() {
-        IPreferenceStore store = getPreferences();
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
         return store==null ? false : store.getBoolean(EDITOR_SPACES_FOR_TABS);
     }
 

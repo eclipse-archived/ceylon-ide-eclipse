@@ -13,8 +13,8 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.util.Nodes.getTokenStrictlyContainingOffset;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
@@ -58,7 +58,6 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -71,6 +70,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
@@ -377,7 +377,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         }
                         try {
                             if (startOfLine && 
-                                    EditorsUI.getPreferenceStore().getBoolean(PASTE_CORRECT_INDENTATION)) {
+                                    EditorUtil.getPreferences().getBoolean(PASTE_CORRECT_INDENTATION)) {
                                 endOffset = correctSourceIndentation(endOffset-text.length(), text.length(), doc)+1;
                             }
                             return true;

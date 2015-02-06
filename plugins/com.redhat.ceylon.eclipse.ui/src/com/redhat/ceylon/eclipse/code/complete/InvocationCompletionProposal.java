@@ -21,11 +21,11 @@ import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importCallableParameterParamTypes;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.INEXACT_MATCHES;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
@@ -56,7 +56,6 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -172,7 +171,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (!pls.isEmpty()) {
                 ParameterList parameterList = pls.get(0);
                 List<Parameter> ps = parameterList.getParameters();
-                String inexactMatches = EditorsUI.getPreferenceStore().getString(INEXACT_MATCHES);
+                String inexactMatches = EditorUtil.getPreferences().getString(INEXACT_MATCHES);
                 boolean exact = (typeArgs==null ? prefix : prefix.substring(0,prefix.length()-typeArgs.length()))
                         .equalsIgnoreCase(dec.getName(unit));
                 boolean positional = exact ||
@@ -619,8 +618,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         catch (Exception e) {
             e.printStackTrace();
         }
-        if (EditorsUI.getPreferenceStore()
-                .getBoolean(LINKED_MODE)) {
+        if (EditorUtil.getPreferences().getBoolean(LINKED_MODE)) {
             activeLinkedMode(document);
         }
     }

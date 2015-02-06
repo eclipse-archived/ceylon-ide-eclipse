@@ -66,8 +66,8 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.addRefinementProposal;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.complete.TypeArgumentListCompletions.addTypeArgumentListProposal;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION_FILTERS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_CHARS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.ALIAS_REF;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CASE;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CATCH;
@@ -119,7 +119,6 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -151,6 +150,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
@@ -234,7 +234,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     public char[] getCompletionProposalAutoActivationCharacters() {
-        return editor.getPrefStore().getString(AUTO_ACTIVATION_CHARS).toCharArray();
+        return EditorUtil.getPreferences().getString(AUTO_ACTIVATION_CHARS).toCharArray();
     }
 
     public char[] getContextInformationAutoActivationCharacters() {
@@ -397,7 +397,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
     
     private void filterProposals(Map<String, DeclarationWithProximity> proposals) {
-        String filtersString = EditorsUI.getPreferenceStore()
+        String filtersString = EditorUtil.getPreferences()
                 .getString(COMPLETION_FILTERS);
         String[] filters = getProposalFilters(filtersString);
         if (filters.length>0) {

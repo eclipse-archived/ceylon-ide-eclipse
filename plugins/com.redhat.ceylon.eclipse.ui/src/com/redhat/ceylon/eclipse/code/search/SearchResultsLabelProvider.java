@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_RETURN_TYPES;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
@@ -21,11 +21,11 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class SearchResultsLabelProvider extends CeylonLabelProvider {
@@ -139,7 +139,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             catch (Exception e) {
                 e.printStackTrace();
             }
-            if (EditorsUI.getPreferenceStore().getBoolean(DISPLAY_RETURN_TYPES)) {
+            if (EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES)) {
                 try {
                     String returnType = ((IMethod) je).getReturnType();
                     styledString.append(" ∊ ");
@@ -163,7 +163,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                 e.printStackTrace();
             }*/
             styledString.append(' ').append(name, ID_STYLER);
-            if (EditorsUI.getPreferenceStore().getBoolean(DISPLAY_RETURN_TYPES)) {
+            if (EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES)) {
                 try {
                     String type = ((IField) je).getTypeSignature();
                     styledString.append(" ∊ ");

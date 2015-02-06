@@ -133,7 +133,7 @@ public class AnnotationHover
         }
     }
 
-    //private final IPreferenceStore fStore= CeylonPlugin.getInstance().getPreferenceStore();
+    //private final IPreferenceStore fStore= EditorUtil.getPreferences();
     private final DefaultMarkerAnnotationAccess fAnnotationAccess = 
             new DefaultMarkerAnnotationAccess();
 

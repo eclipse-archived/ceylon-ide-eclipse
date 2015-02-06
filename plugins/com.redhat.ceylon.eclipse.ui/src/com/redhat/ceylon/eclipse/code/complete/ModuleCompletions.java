@@ -3,9 +3,9 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
@@ -26,7 +26,6 @@ import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
@@ -92,7 +91,7 @@ public class ModuleCompletions {
         public String getDisplayString() {
             String str = super.getDisplayString();
             /*if (withBody && 
-                    EditorsUI.getPreferenceStore()
+                    EditorUtil.getPreferences()
                              .getBoolean(LINKED_MODE)) {
                 str = str.replaceAll("\".*\"", "\"<...>\"");
             }*/
@@ -115,8 +114,7 @@ public class ModuleCompletions {
         public void apply(IDocument document) {
             super.apply(document);
             if (withBody && //module.getVersions().size()>1 && //TODO: put this back in when sure it works
-                    EditorsUI.getPreferenceStore()
-                             .getBoolean(LINKED_MODE)) {
+                    EditorUtil.getPreferences().getBoolean(LINKED_MODE)) {
                 final LinkedModeModel linkedModeModel = new LinkedModeModel();
                 final Point selection = getSelection(document);
                 List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
@@ -251,8 +249,7 @@ public class ModuleCompletions {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
-                        if (EditorsUI.getPreferenceStore()
-                             .getBoolean(LINKED_MODE)) {
+                        if (EditorUtil.getPreferences().getBoolean(LINKED_MODE)) {
                             result.add(new ModuleProposal(offset, prefix, len, 
                                     getModuleString(withBody, name, 
                                             module.getLastVersion().getVersion()), 

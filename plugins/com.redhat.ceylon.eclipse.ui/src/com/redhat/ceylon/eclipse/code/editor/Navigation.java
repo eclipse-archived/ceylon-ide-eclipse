@@ -413,7 +413,7 @@ public class Navigation {
             boolean enable = toggleAction!=null;
             if (enable && editorPart instanceof CeylonEditor) {
                 // TODO Maybe support show segments?
-                enable = false; // CeylonPlugin.getInstance().getPreferenceStore().getBoolean(PreferenceConstants.EDITOR_SHOW_SEGMENTS);
+                enable = false; // EditorUtil.getPreferences().getBoolean(PreferenceConstants.EDITOR_SHOW_SEGMENTS);
             }
             else {
                 enable = enable && 

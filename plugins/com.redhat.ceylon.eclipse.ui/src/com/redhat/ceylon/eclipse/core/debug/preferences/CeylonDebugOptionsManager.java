@@ -1,25 +1,30 @@
 package com.redhat.ceylon.eclipse.core.debug.preferences;
 
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.ACTIVE_FILTERS_LIST;
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.INACTIVE_FILTERS_LIST;
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.USE_STEP_FILTERS;
+import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.parseList;
+
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchListener;
 import org.eclipse.debug.core.model.IDebugTarget;
-import org.eclipse.debug.internal.core.StepFilterManager;
-import org.eclipse.jdt.internal.debug.ui.IJDIPreferencesConstants;
-import org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 /**
  * Manages options for the Ceylon Debugger
  */
-public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPropertyChangeListener, ILaunchListener {
+public class CeylonDebugOptionsManager 
+        implements IDebugEventSetListener, 
+                   IPropertyChangeListener, 
+                   ILaunchListener {
     
     /**
      * Singleton options manager
@@ -66,7 +71,7 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
         DebugPlugin debugPlugin = DebugPlugin.getDefault();
         debugPlugin.getLaunchManager().removeLaunchListener(this);
         debugPlugin.removeDebugEventListener(this);
-        CeylonPlugin.getInstance().getPreferenceStore().removePropertyChangeListener(this);
+        EditorUtil.getPreferences().removePropertyChangeListener(this);
     }   
 
     /**
@@ -75,15 +80,10 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
      * @param target Ceylon debug target
      */
     protected void notifyTargetOfFilters(CeylonJDIDebugTarget target) {
-        IPreferenceStore store = CeylonPlugin.getInstance().getPreferenceStore();
-        String[] filters = JavaDebugOptionsManager.parseList(store.getString(IJDIPreferencesConstants.PREF_ACTIVE_FILTERS_LIST));
+        IPreferenceStore store = EditorUtil.getPreferences();
+        String[] filters = parseList(store.getString(ACTIVE_FILTERS_LIST));
         target.setCeylonStepFilters(filters);
-        target.setCeylonStepFiltersEnabled(store.getBoolean(StepFilterManager.PREF_USE_STEP_FILTERS));
-//        target.setFilterConstructors(store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_CONSTRUCTORS));
-//        target.setFilterStaticInitializers(store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_STATIC_INITIALIZERS));
-//        target.setFilterSynthetics(store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_SYNTHETICS));
-//        target.setFilterGetters(store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_GETTERS));
-//        target.setFilterSetters(store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_SETTERS));
+        target.setCeylonStepFiltersEnabled(store.getBoolean(USE_STEP_FILTERS));
         
         if (!registeredAsPropertyChangeListener) {
             registeredAsPropertyChangeListener = true;
@@ -95,10 +95,12 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
      * Notifies all targets of current filter specifications.
      */
     protected void notifyTargetsOfFilters() {
-        IDebugTarget[] targets = DebugPlugin.getDefault().getLaunchManager().getDebugTargets();
+        IDebugTarget[] targets = 
+                DebugPlugin.getDefault().getLaunchManager().getDebugTargets();
         for (int i = 0; i < targets.length; i++) {
             if (targets[i] instanceof CeylonJDIDebugTarget) {
-                CeylonJDIDebugTarget target = (CeylonJDIDebugTarget) targets[i];
+                CeylonJDIDebugTarget target = 
+                        (CeylonJDIDebugTarget) targets[i];
                 notifyTargetOfFilters(target);
             }
         }   
@@ -119,14 +121,9 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
      * or not step filters are used.
      */
     private boolean isFilterProperty(String property) {
-        return property.equals(IJDIPreferencesConstants.PREF_ACTIVE_FILTERS_LIST) ||
-                property.equals(IJDIPreferencesConstants.PREF_INACTIVE_FILTERS_LIST) ||
-                property.equals(IJDIPreferencesConstants.PREF_FILTER_CONSTRUCTORS) ||
-                property.equals(IJDIPreferencesConstants.PREF_FILTER_STATIC_INITIALIZERS) ||
-                property.equals(IJDIPreferencesConstants.PREF_FILTER_GETTERS) ||
-                property.equals(IJDIPreferencesConstants.PREF_FILTER_SETTERS) ||
-                property.equals(IJDIPreferencesConstants.PREF_FILTER_SYNTHETICS) ||
-                property.equals(StepFilterManager.PREF_USE_STEP_FILTERS);
+        return property.equals(ACTIVE_FILTERS_LIST) ||
+                property.equals(INACTIVE_FILTERS_LIST) ||
+                property.equals(USE_STEP_FILTERS);
     }
 
     private boolean registeredAsPropertyChangeListener = false;
@@ -134,8 +131,6 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
     /**
      * When a Ceylon debug target is created, install options in
      * the target.
-     * 
-     * @see IDebugEventSetListener#handleDebugEvents(DebugEvent[])
      */
     public void handleDebugEvents(DebugEvent[] events) {
         for (int i = 0; i < events.length; i++) {
@@ -143,8 +138,8 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
             if (event.getKind() == DebugEvent.CREATE) {
                 Object source = event.getSource();
                 if (source instanceof CeylonJDIDebugTarget) {
-                    CeylonJDIDebugTarget ceylonTarget = (CeylonJDIDebugTarget)source;
-                    
+                    CeylonJDIDebugTarget ceylonTarget = 
+                            (CeylonJDIDebugTarget)source;
                     // step filters
                     notifyTargetOfFilters(ceylonTarget);
                 }
@@ -177,17 +172,11 @@ public class CeylonDebugOptionsManager implements IDebugEventSetListener, IPrope
     public void launchAdded(ILaunch launch) {
         launchChanged(launch);
     }
-    /**
-     * @see ILaunchListener#launchChanged(ILaunch)
-     */
+    
     public void launchChanged(ILaunch launch) {
         activate();
         DebugPlugin.getDefault().getLaunchManager().removeLaunchListener(this);
     }
 
-    /**
-     * @see ILaunchListener#launchRemoved(ILaunch)
-     */
-    public void launchRemoved(ILaunch launch) {
-    }
+    public void launchRemoved(ILaunch launch) {}
 }

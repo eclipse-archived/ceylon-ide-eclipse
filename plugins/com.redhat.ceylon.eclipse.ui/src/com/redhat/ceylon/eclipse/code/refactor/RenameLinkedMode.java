@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME_SELECT;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
@@ -15,12 +15,12 @@ import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Escaping;
 
 public final class RenameLinkedMode
@@ -36,7 +36,7 @@ public final class RenameLinkedMode
     }
     
     public static boolean useLinkedMode() {
-        return EditorsUI.getPreferenceStore()
+        return EditorUtil.getPreferences()
                 .getBoolean(LINKED_MODE_RENAME);
     }
     
@@ -205,7 +205,7 @@ public final class RenameLinkedMode
     protected void enterLinkedMode(IDocument document, int exitSequenceNumber,
             int exitPosition) throws BadLocationException {
         super.enterLinkedMode(document, exitSequenceNumber, exitPosition);
-        if (!EditorsUI.getPreferenceStore()
+        if (!EditorUtil.getPreferences()
                 .getBoolean(LINKED_MODE_RENAME_SELECT)) {
             // by default, full word is selected; restore original selection
             editor.getCeylonSourceViewer()

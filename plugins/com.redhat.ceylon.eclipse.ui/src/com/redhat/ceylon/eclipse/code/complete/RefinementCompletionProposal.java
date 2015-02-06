@@ -17,10 +17,10 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importParameterTypes;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getRefinementIcon;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
@@ -46,7 +46,6 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -251,8 +250,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         catch (Exception e) {
             e.printStackTrace();
         }
-        if (EditorsUI.getPreferenceStore()
-                .getBoolean(LINKED_MODE)) {
+        if (EditorUtil.getPreferences().getBoolean(LINKED_MODE)) {
             enterLinkedMode(document);
         }
     }

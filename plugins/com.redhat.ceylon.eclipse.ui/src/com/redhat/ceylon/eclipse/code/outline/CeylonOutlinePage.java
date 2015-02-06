@@ -65,6 +65,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonOutlinePage extends ContentOutlinePage 
         implements TreeLifecycleListener, CaretListener {
@@ -289,7 +290,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             this.setHoverImageDescriptor(ALPHA);
             this.setImageDescriptor(ALPHA); 
             
-            boolean checked = CeylonPlugin.getInstance().getPreferenceStore()
+            boolean checked = EditorUtil.getPreferences()
                     .getBoolean("sortOutlineViewByName");
             valueChanged(checked, false);
         }
@@ -310,7 +311,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             });
 
             if (store) {
-                CeylonPlugin.getInstance().getPreferenceStore()
+                EditorUtil.getPreferences()
                         .setValue("sortOutlineViewByName", on);
             }
         }
@@ -333,7 +334,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             setHoverImageDescriptor(PUBLIC);
             setImageDescriptor(PUBLIC); 
             
-            boolean checked = CeylonPlugin.getInstance().getPreferenceStore()
+            boolean checked = EditorUtil.getPreferences()
                     .getBoolean("hideNonSharedInOutlineView");
             valueChanged(checked, false);
         }
@@ -359,7 +360,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             });
             
             if (store) {
-                CeylonPlugin.getInstance().getPreferenceStore()
+                EditorUtil.getPreferences()
                         .setValue("hideNonSharedInOutlineView", on);
             }
         }
@@ -430,7 +431,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         private final boolean hideNonshared;
         OutlineNodeVisitor(int offset) {
             this.offset = offset;
-            hideNonshared = CeylonPlugin.getInstance().getPreferenceStore()
+            hideNonshared = EditorUtil.getPreferences()
                     .getBoolean("hideNonSharedInOutlineView");
         }
         List<CeylonOutlineNode> result = new ArrayList<CeylonOutlineNode>();

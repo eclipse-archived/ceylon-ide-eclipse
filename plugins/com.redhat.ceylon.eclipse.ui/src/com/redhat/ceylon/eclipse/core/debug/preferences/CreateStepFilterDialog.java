@@ -2,10 +2,8 @@ package com.redhat.ceylon.eclipse.core.debug.preferences;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.internal.ui.actions.StatusInfo;
-import org.eclipse.jdt.debug.ui.IJavaDebugUIConstants;
 import org.eclipse.jdt.internal.debug.ui.DebugUIMessages;
 import org.eclipse.jdt.internal.debug.ui.Filter;
-import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
@@ -21,9 +19,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
 public class CreateStepFilterDialog extends StatusDialog {
 
-	private static final String DEFAULT_NEW_FILTER_TEXT = ""; //$NON-NLS-1$
+	private static final String DEFAULT_NEW_FILTER_TEXT = "";
 	
 	private Text text;
 	private Filter filter;
@@ -33,7 +33,8 @@ public class CreateStepFilterDialog extends StatusDialog {
 	private boolean okClicked;
 	private Filter[] existingFilters;
 
-	private CreateStepFilterDialog(Shell parent, Filter filter, Filter[] existingFilters) {
+	private CreateStepFilterDialog(Shell parent, 
+	        Filter filter, Filter[] existingFilters) {
 		super(parent);
 		setShellStyle(getShellStyle() | SWT.RESIZE);
 		this.filter = filter;
@@ -44,8 +45,12 @@ public class CreateStepFilterDialog extends StatusDialog {
 		
 	}
 	
-	public static Filter showCreateStepFilterDialog(Shell parent, Filter[] existingFilters) {
-		CreateStepFilterDialog createStepFilterDialog = new CreateStepFilterDialog(parent, new Filter(DEFAULT_NEW_FILTER_TEXT, true), existingFilters);
+	public static Filter showCreateStepFilterDialog(Shell parent, 
+	        Filter[] existingFilters) {
+		CreateStepFilterDialog createStepFilterDialog = 
+		        new CreateStepFilterDialog(parent, 
+		                new Filter(DEFAULT_NEW_FILTER_TEXT, true), 
+		                existingFilters);
 		createStepFilterDialog.create();
 		createStepFilterDialog.open();
 		
@@ -54,14 +59,21 @@ public class CreateStepFilterDialog extends StatusDialog {
 	
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
-		okButton= createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+		okButton= createButton(parent, 
+		        IDialogConstants.OK_ID, 
+		        IDialogConstants.OK_LABEL, 
+		        true);
 		okButton.setEnabled(false);		
-		createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+		createButton(parent, 
+		        IDialogConstants.CANCEL_ID, 
+		        IDialogConstants.CANCEL_LABEL, 
+		        false);
 	}
 	
 	@Override
 	protected Control createDialogArea(Composite parent) {
-		Composite container = (Composite)super.createDialogArea(parent);
+		Composite container = 
+		        (Composite) super.createDialogArea(parent);
 
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
@@ -95,9 +107,11 @@ public class CreateStepFilterDialog extends StatusDialog {
 			public void modifyText(ModifyEvent e) {
 				validateChange();
 				if (!filterValid) 
-					updateStatus(new StatusInfo(IStatus.ERROR, DebugUIMessages.CreateStepFilterDialog_4)); 
+					updateStatus(new StatusInfo(IStatus.ERROR, 
+					        DebugUIMessages.CreateStepFilterDialog_4)); 
 				else if (isDuplicateFilter(text.getText().trim())) {
-					updateStatus(new StatusInfo(IStatus.WARNING, DebugUIMessages.CreateStepFilterDialog_5)); 
+					updateStatus(new StatusInfo(IStatus.WARNING, 
+					        DebugUIMessages.CreateStepFilterDialog_5)); 
 					return;
 				} else 
 					updateStatus(new StatusInfo());		
@@ -164,12 +178,10 @@ public class CreateStepFilterDialog extends StatusDialog {
 	 * @return String
 	 */
 	protected String getDialogSettingsSectionName() {
-		return IJavaDebugUIConstants.PLUGIN_ID + ".CREATE_STEP_FILTER_DIALOG_SECTION"; //$NON-NLS-1$
+		return CeylonPlugin.PLUGIN_ID + 
+		        ".CREATE_STEP_FILTER_DIALOG_SECTION";
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.window.Window#close()
-	 */
 	@Override
 	public boolean close() {
 		if (!okClicked) {
@@ -179,13 +191,12 @@ public class CreateStepFilterDialog extends StatusDialog {
 		return super.close();
 	}
 	
-	 /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#getDialogBoundsSettings()
-     */
     @Override
 	protected IDialogSettings getDialogBoundsSettings() {
-    	 IDialogSettings settings = JDIDebugUIPlugin.getDefault().getDialogSettings();
-         IDialogSettings section = settings.getSection(getDialogSettingsSectionName());
+    	 IDialogSettings settings = 
+    	         CeylonPlugin.getInstance().getDialogSettings();
+         IDialogSettings section = 
+                 settings.getSection(getDialogSettingsSectionName());
          if (section == null) {
              section = settings.addNewSection(getDialogSettingsSectionName());
          } 

@@ -3250,7 +3250,8 @@
        </propertySections>
     </extension>
     <extension point="org.eclipse.core.runtime.preferences">
-        <initializer class="com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugUIPreferenceInitializer"/>
+        <initializer class="com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer"/>
+        <initializer class="com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer"/>
     </extension>
     <extension
        point="org.eclipse.jdt.debug.breakpointListeners">

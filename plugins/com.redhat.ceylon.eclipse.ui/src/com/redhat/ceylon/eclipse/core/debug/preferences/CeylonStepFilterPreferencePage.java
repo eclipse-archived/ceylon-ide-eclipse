@@ -1,9 +1,18 @@
 package com.redhat.ceylon.eclipse.core.debug.preferences;
 
 
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.ACTIVE_FILTERS_LIST;
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.INACTIVE_FILTERS_LIST;
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.USE_STEP_FILTERS;
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CreateStepFilterDialog.showCreateStepFilterDialog;
+import static org.eclipse.debug.internal.ui.SWTFactory.createPushButton;
+import static org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin.createAllPackagesDialog;
+import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.parseList;
+import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.serializeList;
+import static org.eclipse.jdt.ui.JavaUI.createTypeDialog;
+
 import java.util.ArrayList;
 
-import org.eclipse.debug.internal.core.StepFilterManager;
 import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
@@ -14,12 +23,7 @@ import org.eclipse.jdt.internal.debug.ui.ExceptionHandler;
 import org.eclipse.jdt.internal.debug.ui.Filter;
 import org.eclipse.jdt.internal.debug.ui.FilterLabelProvider;
 import org.eclipse.jdt.internal.debug.ui.FilterViewerComparator;
-import org.eclipse.jdt.internal.debug.ui.IJDIPreferencesConstants;
-import org.eclipse.jdt.internal.debug.ui.IJavaDebugHelpContextIds;
-import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
-import org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager;
 import org.eclipse.jdt.ui.IJavaElementSearchConstants;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
@@ -52,14 +56,15 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.dialogs.SelectionDialog;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 /**
- * The preference page for Java step filtering, located at the node Java > Debug > Step Filtering
+ * The preference page for Ceylon step filtering
  * 
  * @since 3.0
  */
-public class CeylonStepFilterPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
+public class CeylonStepFilterPreferencePage 
+        extends PreferencePage implements IWorkbenchPreferencePage {
     
     /**
      * Content provider for the table.  Content consists of instances of StepFilter.
@@ -98,26 +103,21 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
      */
     public CeylonStepFilterPreferencePage() {
         super();
-        setPreferenceStore(CeylonPlugin.getInstance().getPreferenceStore());
+        setPreferenceStore(EditorUtil.getPreferences());
         setTitle(DebugUIMessages.JavaStepFilterPreferencePage_title); 
         setDescription(DebugUIMessages.JavaStepFilterPreferencePage_description); 
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.preference.PreferencePage#createContents(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createContents(Composite parent) {
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.JAVA_STEP_FILTER_PREFERENCE_PAGE);
+//        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.JAVA_STEP_FILTER_PREFERENCE_PAGE);
     //The main composite
-        Composite composite = SWTFactory.createComposite(parent, parent.getFont(), 1, 1, GridData.FILL_BOTH, 0, 0);
+        Composite composite = SWTFactory.createComposite(parent, 
+                parent.getFont(), 1, 1, GridData.FILL_BOTH, 0, 0);
         createStepFilterPreferences(composite);
         return composite;   
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
-     */
     public void init(IWorkbench workbench) {}
     
     /**
@@ -134,10 +134,11 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
      * Create a group to contain the step filter related widgetry
      */
     private void createStepFilterPreferences(Composite parent) {
-        Composite container = SWTFactory.createComposite(parent, parent.getFont(), 2, 1, GridData.FILL_BOTH, 0, 0);
+        Composite container = SWTFactory.createComposite(parent, 
+                parent.getFont(), 2, 1, GridData.FILL_BOTH, 0, 0);
         fUseStepFiltersButton = SWTFactory.createCheckButton(container, 
                 DebugUIMessages.JavaStepFilterPreferencePage__Use_step_filters, 
-                null, getPreferenceStore().getBoolean(StepFilterManager.PREF_USE_STEP_FILTERS), 2);
+                null, getPreferenceStore().getBoolean(USE_STEP_FILTERS), 2);
         fUseStepFiltersButton.addSelectionListener(new SelectionListener() {
                 public void widgetSelected(SelectionEvent e) {
                     setPageEnablement(fUseStepFiltersButton.getSelection());
@@ -146,7 +147,8 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
             }
         );
         SWTFactory.createLabel(container, DebugUIMessages.JavaStepFilterPreferencePage_Defined_step_fi_lters__8, 2);
-        fTableViewer = CheckboxTableViewer.newCheckList(container, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
+        fTableViewer = CheckboxTableViewer.newCheckList(container, 
+                SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
         fTableViewer.getTable().setFont(container.getFont());
         fTableViewer.setLabelProvider(new FilterLabelProvider());
         fTableViewer.setComparator(new FilterViewerComparator());
@@ -213,7 +215,8 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
 //        fFilterStaticButton.setEnabled(enabled);
 //        fFilterSyntheticButton.setEnabled(enabled);
         fTableViewer.getTable().setEnabled(enabled);
-        fRemoveFilterButton.setEnabled(enabled & !fTableViewer.getSelection().isEmpty());
+        fRemoveFilterButton.setEnabled(enabled & 
+                !fTableViewer.getSelection().isEmpty());
     }
 
     /**
@@ -258,38 +261,42 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
         buttonLayout.marginWidth = 0;
         buttonContainer.setLayout(buttonLayout);
     //Add filter button
-        fAddFilterButton = SWTFactory.createPushButton(buttonContainer, 
+        fAddFilterButton = createPushButton(buttonContainer, 
                 DebugUIMessages.JavaStepFilterPreferencePage_Add__Filter_9, 
                 DebugUIMessages.JavaStepFilterPreferencePage_Key_in_the_name_of_a_new_step_filter_10, null);
-        fAddFilterButton.addListener(SWT.Selection, new Listener() {
+        fAddFilterButton.addListener(SWT.Selection, 
+                new Listener() {
             public void handleEvent(Event e) {
                 addFilter();
             }
         });
     //Add type button
-        fAddTypeButton = SWTFactory.createPushButton(buttonContainer, 
+        fAddTypeButton = createPushButton(buttonContainer, 
                 DebugUIMessages.JavaStepFilterPreferencePage_Add__Type____11, 
                 DebugUIMessages.JavaStepFilterPreferencePage_Choose_a_Java_type_and_add_it_to_step_filters_12, null);
-        fAddTypeButton.addListener(SWT.Selection, new Listener() {
+        fAddTypeButton.addListener(SWT.Selection, 
+                new Listener() {
             public void handleEvent(Event e) {
                 addType();
             }
         });
     //Add package button
-        fAddPackageButton = SWTFactory.createPushButton(buttonContainer, 
+        fAddPackageButton = createPushButton(buttonContainer, 
                 DebugUIMessages.JavaStepFilterPreferencePage_Add__Package____13, 
                 DebugUIMessages.JavaStepFilterPreferencePage_Choose_a_package_and_add_it_to_step_filters_14, null);
-        fAddPackageButton.addListener(SWT.Selection, new Listener() {
+        fAddPackageButton.addListener(SWT.Selection, 
+                new Listener() {
             public void handleEvent(Event e) {
                 addPackage();
             }
         });
     //Remove button
-        fRemoveFilterButton = SWTFactory.createPushButton(buttonContainer, 
+        fRemoveFilterButton = createPushButton(buttonContainer, 
                 DebugUIMessages.JavaStepFilterPreferencePage__Remove_15, 
                 DebugUIMessages.JavaStepFilterPreferencePage_Remove_all_selected_step_filters_16, 
                 null);
-        fRemoveFilterButton.addListener(SWT.Selection, new Listener() {
+        fRemoveFilterButton.addListener(SWT.Selection, 
+                new Listener() {
             public void handleEvent(Event e) {
                 removeFilters();
             }
@@ -304,16 +311,17 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
         gd.heightHint= 4;
         separator.setLayoutData(gd);
     //Select All button
-        fSelectAllButton = SWTFactory.createPushButton(buttonContainer, 
+        fSelectAllButton = createPushButton(buttonContainer, 
                 DebugUIMessages.JavaStepFilterPreferencePage__Select_All_1, 
                 DebugUIMessages.JavaStepFilterPreferencePage_Selects_all_step_filters_2, null);
-        fSelectAllButton.addListener(SWT.Selection, new Listener() {
+        fSelectAllButton.addListener(SWT.Selection, 
+                new Listener() {
             public void handleEvent(Event e) {
                 fTableViewer.setAllChecked(true);
             }
         });
     //De-Select All button
-        fDeselectAllButton = SWTFactory.createPushButton(buttonContainer, 
+        fDeselectAllButton = createPushButton(buttonContainer, 
                 DebugUIMessages.JavaStepFilterPreferencePage_Deselect_All_3, 
                 DebugUIMessages.JavaStepFilterPreferencePage_Deselects_all_step_filters_4, null);
         fDeselectAllButton.addListener(SWT.Selection, new Listener() {
@@ -328,7 +336,9 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
      * Allows a new filter to be added to the listing
      */
     private void addFilter() {
-        Filter newfilter = CreateStepFilterDialog.showCreateStepFilterDialog(getShell(), getAllFiltersFromTable());
+        Filter newfilter = 
+                showCreateStepFilterDialog(getShell(), 
+                        getAllFiltersFromTable());
         if (newfilter != null) {
             fTableViewer.add(newfilter);
             fTableViewer.setChecked(newfilter, true);
@@ -341,7 +351,7 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
      */
     private void addType() {
         try {
-            SelectionDialog dialog = JavaUI.createTypeDialog(getShell(), 
+            SelectionDialog dialog = createTypeDialog(getShell(), 
                 PlatformUI.getWorkbench().getProgressService(),
                 SearchEngine.createWorkspaceScope(), 
                 IJavaElementSearchConstants.CONSIDER_CLASSES, 
@@ -351,7 +361,7 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
             if (dialog.open() == IDialogConstants.OK_ID) {
                 Object[] types = dialog.getResult();
                 if (types != null && types.length > 0) {
-                    IType type = (IType)types[0];
+                    IType type = (IType) types[0];
                     addFilter(type.getFullyQualifiedName(), true);
                 }
             }           
@@ -368,7 +378,8 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
      */
     private void addPackage() {
         try {
-            ElementListSelectionDialog dialog = JDIDebugUIPlugin.createAllPackagesDialog(getShell(), null, false);
+            ElementListSelectionDialog dialog = 
+                    createAllPackagesDialog(getShell(), null, false);
             dialog.setTitle(DebugUIMessages.JavaStepFilterPreferencePage_Add_package_to_step_filters_24); 
             dialog.setMessage(DebugUIMessages.JavaStepFilterPreferencePage_Select_a_package_to_filter_when_stepping_27); 
             dialog.setMultipleSelection(true);
@@ -377,8 +388,8 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
                 if (packages != null) {
                     IJavaElement pkg = null;
                     for (int i = 0; i < packages.length; i++) {
-                        pkg = (IJavaElement)packages[i];
-                        String filter = pkg.getElementName() + ".*"; //$NON-NLS-1$
+                        pkg = (IJavaElement) packages[i];
+                        String filter = pkg.getElementName() + ".*";
                         addFilter(filter, true);
                     }
                 }       
@@ -399,17 +410,14 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
         fTableViewer.remove(((IStructuredSelection)fTableViewer.getSelection()).toArray());
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.preference.PreferencePage#performOk()
-     */
     @Override
     public boolean performOk() {
         IPreferenceStore store = getPreferenceStore();
-        store.setValue(StepFilterManager.PREF_USE_STEP_FILTERS, 
+        store.setValue(USE_STEP_FILTERS, 
                 fUseStepFiltersButton.getSelection());
         ArrayList<String> active = new ArrayList<String>();
         ArrayList<String> inactive = new ArrayList<String>();
-        String name = ""; //$NON-NLS-1$
+        String name = "";
         Filter[] filters = getAllFiltersFromTable();
         for(int i = 0; i < filters.length; i++) {
             name = filters[i].getName();
@@ -420,10 +428,10 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
                 inactive.add(name);
             }
         }
-        String pref = JavaDebugOptionsManager.serializeList(active.toArray(new String[active.size()]));
-        store.setValue(IJDIPreferencesConstants.PREF_ACTIVE_FILTERS_LIST, pref);
-        pref = JavaDebugOptionsManager.serializeList(inactive.toArray(new String[inactive.size()]));
-        store.setValue(IJDIPreferencesConstants.PREF_INACTIVE_FILTERS_LIST, pref);
+        String pref = serializeList(active.toArray(new String[active.size()]));
+        store.setValue(ACTIVE_FILTERS_LIST, pref);
+        pref = serializeList(inactive.toArray(new String[inactive.size()]));
+        store.setValue(INACTIVE_FILTERS_LIST, pref);
         
         //common with JDT preferences
 //        store.setValue(IJDIPreferencesConstants.PREF_FILTER_CONSTRUCTORS, fFilterConstructorButton.getSelection());
@@ -435,13 +443,10 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
         return super.performOk();
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.preference.PreferencePage#performDefaults()
-     */
     @Override
     protected void performDefaults() {
         IPreferenceStore store = getPreferenceStore();
-        boolean stepenabled = store.getBoolean(StepFilterManager.PREF_USE_STEP_FILTERS);
+        boolean stepenabled = store.getBoolean(USE_STEP_FILTERS);
         fUseStepFiltersButton.setSelection(stepenabled);
         setPageEnablement(stepenabled);
 //        fFilterSyntheticButton.setSelection(store.getDefaultBoolean(IJDIPreferencesConstants.PREF_FILTER_SYNTHETICS));
@@ -470,7 +475,8 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
     }
     
     /**
-     * returns all of the filters from the table, this includes ones that have not yet been saved
+     * returns all of the filters from the table, this 
+     * includes ones that have not yet been saved
      * @return a possibly empty lits of filters fron the table
      * @since 3.2
      */
@@ -497,15 +503,15 @@ public class CeylonStepFilterPreferencePage extends PreferencePage implements IW
         String activeString;
         String inactiveString;
         if (defaults) {
-            activeString = store.getDefaultString(IJDIPreferencesConstants.PREF_ACTIVE_FILTERS_LIST);
-            inactiveString = store.getDefaultString(IJDIPreferencesConstants.PREF_INACTIVE_FILTERS_LIST); 
+            activeString = store.getDefaultString(ACTIVE_FILTERS_LIST);
+            inactiveString = store.getDefaultString(INACTIVE_FILTERS_LIST); 
         }   
         else {
-            activeString = store.getString(IJDIPreferencesConstants.PREF_ACTIVE_FILTERS_LIST);
-            inactiveString = store.getString(IJDIPreferencesConstants.PREF_INACTIVE_FILTERS_LIST);
+            activeString = store.getString(ACTIVE_FILTERS_LIST);
+            inactiveString = store.getString(INACTIVE_FILTERS_LIST);
         }
-        activefilters = JavaDebugOptionsManager.parseList(activeString);
-        inactivefilters = JavaDebugOptionsManager.parseList(inactiveString);
+        activefilters = parseList(activeString);
+        inactivefilters = parseList(inactiveString);
         filters = new Filter[activefilters.length + inactivefilters.length];
         for(int i = 0; i < activefilters.length; i++) {
             filters[i] = new Filter(activefilters[i], true);

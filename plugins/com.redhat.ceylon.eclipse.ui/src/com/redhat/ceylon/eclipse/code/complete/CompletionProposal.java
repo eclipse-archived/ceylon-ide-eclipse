@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
@@ -18,8 +18,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.ui.editors.text.EditorsUI;
 
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 
@@ -72,7 +72,7 @@ public class CompletionProposal implements ICompletionProposal,
     }
 
     public int length(IDocument document) {
-        String overwrite = EditorsUI.getPreferenceStore().getString(COMPLETION);
+        String overwrite = EditorUtil.getPreferences().getString(COMPLETION);
         if ("overwrite".equals(overwrite)!=toggleOverwrite) {
             int length = prefix.length();
             try {

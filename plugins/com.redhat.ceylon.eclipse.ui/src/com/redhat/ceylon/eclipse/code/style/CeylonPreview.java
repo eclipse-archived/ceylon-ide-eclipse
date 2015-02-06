@@ -133,8 +133,7 @@ public class CeylonPreview {
 
         fMarginPainter = new MarginPainter(fSourceViewer);
         final RGB rgb = PreferenceConverter
-                .getColor(
-                        EditorsUI.getPreferenceStore(),
+                .getColor(EditorsUI.getPreferenceStore(),
                         AbstractDecoratedTextEditorPreferenceConstants.EDITOR_PRINT_MARGIN_COLOR);
         fMarginPainter.setMarginRulerColor(new Color(fSourceViewer
                 .getTextWidget().getDisplay(), rgb));

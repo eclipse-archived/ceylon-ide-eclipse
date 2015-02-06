@@ -4,9 +4,9 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVers
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
@@ -25,7 +25,6 @@ import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ImportList;
@@ -89,8 +88,7 @@ public class PackageCompletions {
         public void apply(IDocument document) {
             super.apply(document);
             if (withBody && 
-                    EditorsUI.getPreferenceStore()
-                             .getBoolean(LINKED_MODE)) {
+                    EditorUtil.getPreferences().getBoolean(LINKED_MODE)) {
                 final LinkedModeModel linkedModeModel = new LinkedModeModel();
                 final Point selection = getSelection(document);
                 List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();

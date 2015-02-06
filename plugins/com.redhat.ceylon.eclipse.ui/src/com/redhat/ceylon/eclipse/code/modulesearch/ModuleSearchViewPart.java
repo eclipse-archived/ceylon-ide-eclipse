@@ -82,6 +82,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 
 public class ModuleSearchViewPart extends ViewPart {
@@ -307,7 +308,7 @@ public class ModuleSearchViewPart extends ViewPart {
             setImageDescriptor(showDocImage);
             setHoverImageDescriptor(showDocImage);
             
-            setChecked(CeylonPlugin.getInstance().getPreferenceStore().getBoolean(IS_CHECKED));
+            setChecked(EditorUtil.getPreferences().getBoolean(IS_CHECKED));
             run();
         }
 
@@ -318,7 +319,7 @@ public class ModuleSearchViewPart extends ViewPart {
             } else {
                 sashForm.setMaximizedControl(moduleTreeViewer.getTree());
             }
-            CeylonPlugin.getInstance().getPreferenceStore().setValue(IS_CHECKED, isChecked());
+            EditorUtil.getPreferences().setValue(IS_CHECKED, isChecked());
         }
 
     }

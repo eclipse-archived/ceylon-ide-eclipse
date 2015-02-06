@@ -2,9 +2,9 @@ package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_PARAMETER_TYPES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_RETURN_TYPES;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -41,6 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 
@@ -326,7 +326,7 @@ public class CodeCompletions {
             appendTypeParameters(d, result, true);
             appendParametersDescription(d, result);
             if (d instanceof TypedDeclaration) {
-                if (EditorsUI.getPreferenceStore().getBoolean(DISPLAY_RETURN_TYPES)) {
+                if (EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES)) {
                     TypedDeclaration td = (TypedDeclaration) d;
                     if (!td.isParameter() && 
                             !td.isDynamicallyTyped() &&
@@ -354,7 +354,7 @@ public class CodeCompletions {
             appendTypeParameters(d, result, true);
             appendParametersDescription(d, result);
             if (d instanceof TypedDeclaration) {
-                if (EditorsUI.getPreferenceStore().getBoolean(DISPLAY_RETURN_TYPES)) {
+                if (EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES)) {
                     TypedDeclaration td = (TypedDeclaration) d;
                     if (!td.isParameter() && 
                             !td.isDynamicallyTyped() &&
@@ -400,7 +400,7 @@ public class CodeCompletions {
             }
             else {
                 boolean paramTypes = descriptionOnly && 
-                        EditorsUI.getPreferenceStore().getBoolean(DISPLAY_PARAMETER_TYPES);
+                        EditorUtil.getPreferences().getBoolean(DISPLAY_PARAMETER_TYPES);
                 result.append("(");
                 for (Parameter p: params) {
                     ProducedTypedReference typedParameter = 
@@ -493,7 +493,7 @@ public class CodeCompletions {
             }
             else {
                 boolean paramTypes = descriptionOnly && 
-                        EditorsUI.getPreferenceStore().getBoolean(DISPLAY_PARAMETER_TYPES);
+                        EditorUtil.getPreferences().getBoolean(DISPLAY_PARAMETER_TYPES);
                 result.append(" { ");
                 for (Parameter p: params) {
                     String name = descriptionOnly ? 

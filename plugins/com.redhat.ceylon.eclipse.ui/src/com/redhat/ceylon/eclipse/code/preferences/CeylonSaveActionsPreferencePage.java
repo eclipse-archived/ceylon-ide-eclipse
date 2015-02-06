@@ -1,37 +1,11 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_COMMENTS;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.ENCLOSING_BRACKETS;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.MATCHING_BRACKET;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SELECTED_BRACKET;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SUB_WORD_NAVIGATION;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_CHARS;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_ACTIVATION_DELAY;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.AUTO_INSERT;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLEAN_IMPORTS;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACES;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.COMPLETION;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_PARAMETER_TYPES;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.DISPLAY_RETURN_TYPES;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.INEXACT_MATCHES;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_EXTRACT;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.LINKED_MODE_RENAME;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
-//import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.PASTE_CORRECT_INDENTATION;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.STRIP_TRAILING_WS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.setPreferenceDefaults;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLEAN_IMPORTS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FORMAT;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_NL;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_WS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.STRIP_TRAILING_WS;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndentWithSpaces;
-//import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 
@@ -96,7 +70,6 @@ public class CeylonSaveActionsPreferencePage
     public CeylonSaveActionsPreferencePage() {
         super(GRID);
         setDescription("Save actions are executed each time a Ceylon source file is saved.");
-        setPreferenceDefaults();
     }
     
     @Override
@@ -171,11 +144,7 @@ public class CeylonSaveActionsPreferencePage
     
     @Override
     public void init(IWorkbench workbench) {
-        //TODO: is it really right that we're 
-        //      storing all our preferences
-        //      in some other plugin's store??
-        setPreferenceStore(EditorsUI.getPreferenceStore());
-//        setDescription("Preferences for the Ceylon editor");
+        setPreferenceStore(EditorUtil.getPreferences());
     }
     
     
@@ -290,7 +259,7 @@ public class CeylonSaveActionsPreferencePage
                 "Highlight enclosing brackets", p2);
         enclosingBrackets.load();
         addField(enclosingBrackets);
-        final IPreferenceStore store = EditorsUI.getPreferenceStore();
+        final IPreferenceStore store = EditorUtil.getPreferences();
         boolean enabled = store.getBoolean(MATCHING_BRACKET);
         currentBracket.setEnabled(enabled, p1);
         enclosingBrackets.setEnabled(enabled, p2);
@@ -346,7 +315,7 @@ public class CeylonSaveActionsPreferencePage
         autoActivationDelay.setMaximum(2000);
         autoActivationDelay.load();
         addField(autoActivationDelay);
-        final IPreferenceStore store = EditorsUI.getPreferenceStore();
+        final IPreferenceStore store = EditorUtil.getPreferences();
         boolean enabled = store.getBoolean(AUTO_ACTIVATION);
         autoActivationChars.setEnabled(enabled, p1);
         autoActivationDelay.setEnabled(enabled, p2);        
@@ -397,7 +366,7 @@ public class CeylonSaveActionsPreferencePage
                 "Automatically fold comments", p2);
         autoFoldComments.load();
         addField(autoFoldComments);
-        final IPreferenceStore store = EditorsUI.getPreferenceStore();
+        final IPreferenceStore store = EditorUtil.getPreferences();
         boolean enabled = store.getBoolean(EDITOR_FOLDING_ENABLED);
         autoFoldImports.setEnabled(enabled, p1);
         autoFoldComments.setEnabled(enabled, p2);
@@ -458,7 +427,7 @@ public class CeylonSaveActionsPreferencePage
                 }
             }
         };
-        EditorUtil.getPreferences().addPropertyChangeListener(listener);
+        EditorsUI.getPreferenceStore().addPropertyChangeListener(listener);
         addField(normalizeWs);
         normalizeNl = new BooleanFieldEditor(NORMALIZE_NL, 
                 "Fix line endings",

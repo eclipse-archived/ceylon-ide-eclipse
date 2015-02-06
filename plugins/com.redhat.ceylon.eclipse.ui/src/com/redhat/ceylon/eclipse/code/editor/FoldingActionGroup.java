@@ -26,13 +26,13 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.actions.ActionGroup;
-import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class FoldingActionGroup extends ActionGroup {
     
@@ -102,7 +102,7 @@ public class FoldingActionGroup extends ActionGroup {
         
         fViewer.addProjectionListener(fProjectionListener);
         
-        final IPreferenceStore store= EditorsUI.getPreferenceStore();
+        final IPreferenceStore store= EditorUtil.getPreferences();
         fToggle= new PreferenceAction(FoldingMessages.getResourceBundle(), "Projection.Toggle.", IAction.AS_CHECK_BOX) {
             public void run() {
                 store.setValue(EDITOR_FOLDING_ENABLED, !store.getBoolean(EDITOR_FOLDING_ENABLED));

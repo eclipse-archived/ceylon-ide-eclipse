@@ -11,11 +11,6 @@
 
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLEAN_IMPORTS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.FORMAT;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_NL;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.NORMALIZE_WS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.STRIP_TRAILING_WS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.configCompletionPopup;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
 import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
@@ -29,6 +24,16 @@ import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getFile;
 import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
 import static com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvider.isSrcArchive;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForFile;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLEAN_IMPORTS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENCLOSING_BRACKETS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FORMAT;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCHING_BRACKET;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCHING_BRACKETS_COLOR;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_NL;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_WS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SELECTED_BRACKET;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.STRIP_TRAILING_WS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
@@ -174,15 +179,6 @@ public class CeylonEditor extends TextEditor {
 
     private static final int REPARSE_SCHEDULE_DELAY = 200;
 
-    //preference keys
-    public final static String MATCHING_BRACKET = "matchingBrackets";
-    public final static String MATCHING_BRACKETS_COLOR = "matchingBracketsColor";    
-    public final static String SELECTED_BRACKET = "highlightBracketAtCaretLocation";
-    public final static String ENCLOSING_BRACKETS = "enclosingBrackets";
-    public final static String SUB_WORD_NAVIGATION = "subWordNavigation";
-    public final static String AUTO_FOLD_IMPORTS = "autoFoldImports";
-    public final static String AUTO_FOLD_COMMENTS = "autoFoldComments";
-    
     private CeylonParserScheduler parserScheduler;
     private ProblemMarkerManager problemMarkerManager;
     private ICharacterPairMatcher bracketMatcher;
@@ -262,10 +258,6 @@ public class CeylonEditor extends TextEditor {
      */
     protected CeylonSourceViewerConfiguration createSourceViewerConfiguration() {
         return new CeylonSourceViewerConfiguration(this);
-    }
-
-    public IPreferenceStore getPrefStore() {
-        return super.getPreferenceStore();
     }
     
     public Object getAdapter(@SuppressWarnings("rawtypes") Class required) {
@@ -466,8 +458,6 @@ public class CeylonEditor extends TextEditor {
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.SELECT_LINE_START);
         editor.setAction(ITextEditorActionDefinitionIds.SELECT_LINE_START, action);*/
         
-        getPreferenceStore().setDefault(SUB_WORD_NAVIGATION, true);
-        
         IAction action = new NavigatePreviousSubWordAction();
         action.setActionDefinitionId(WORD_PREVIOUS);
         setAction(WORD_PREVIOUS, action);
@@ -522,8 +512,7 @@ public class CeylonEditor extends TextEditor {
         @Override
         public void run() {
             // Check whether we are in a java code partition and the preference is enabled
-            final IPreferenceStore store= getPreferenceStore();
-            if (!store.getBoolean(SUB_WORD_NAVIGATION)) {
+            if (!EditorUtil.getPreferences().getBoolean(SUB_WORD_NAVIGATION)) {
                 super.run();
                 return;
             }
@@ -727,8 +716,7 @@ public class CeylonEditor extends TextEditor {
         @Override
         public void run() {
             // Check whether we are in a java code partition and the preference is enabled
-            final IPreferenceStore store= getPreferenceStore();
-            if (!store.getBoolean(SUB_WORD_NAVIGATION)) {
+            if (!EditorUtil.getPreferences().getBoolean(SUB_WORD_NAVIGATION)) {
                 super.run();
                 return;
             }
@@ -1290,7 +1278,7 @@ public class CeylonEditor extends TextEditor {
         }*/
         projectionSupport.install();
 
-        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        IPreferenceStore store = EditorUtil.getPreferences();
         store.setDefault(EDITOR_FOLDING_ENABLED, true);
         if (store.getBoolean(EDITOR_FOLDING_ENABLED)) {
             sourceViewer.doOperation(ProjectionViewer.TOGGLE);
@@ -1481,16 +1469,12 @@ public class CeylonEditor extends TextEditor {
     }
     
     private void installBracketMatcher(SourceViewerDecorationSupport support) {
-        IPreferenceStore store = getPreferenceStore();
-        store.setDefault(MATCHING_BRACKET, true);
-        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+        ITheme currentTheme = 
+                getWorkbench().getThemeManager().getCurrentTheme();
         Color color = currentTheme.getColorRegistry()
-                    .get(PLUGIN_ID + ".theme.matchingBracketsColor");
-        store.setDefault(MATCHING_BRACKETS_COLOR, 
+                .get(PLUGIN_ID + ".theme.matchingBracketsColor");
+        EditorUtil.getPreferences().setDefault(MATCHING_BRACKETS_COLOR, 
                 color.getRed() +"," + color.getGreen() + "," + color.getBlue());
-        store.setDefault(MATCHING_BRACKET, true);
-        store.setDefault(ENCLOSING_BRACKETS, false);
-        store.setDefault(SELECTED_BRACKET, false);
         bracketMatcher = new CeylonCharacterPairMatcher();
         support.setCharacterPairMatcher(bracketMatcher);
         support.setMatchingCharacterPainterPreferenceKeys(
@@ -1514,9 +1498,9 @@ public class CeylonEditor extends TextEditor {
     public void doSave(IProgressMonitor progressMonitor) {
         CeylonSourceViewer viewer = getCeylonSourceViewer();
         IDocument doc = viewer.getDocument();
-        IPreferenceStore prefs = EditorsUI.getPreferenceStore();
+        IPreferenceStore prefs = EditorUtil.getPreferences();
         boolean normalizeWs = prefs.getBoolean(NORMALIZE_WS) &&
-                prefs.getBoolean(EDITOR_SPACES_FOR_TABS);
+                EditorsUI.getPreferenceStore().getBoolean(EDITOR_SPACES_FOR_TABS);
         boolean normalizeNl = prefs.getBoolean(NORMALIZE_NL);
         boolean stripTrailingWs = prefs.getBoolean(STRIP_TRAILING_WS);
         boolean cleanImports = prefs.getBoolean(CLEAN_IMPORTS);

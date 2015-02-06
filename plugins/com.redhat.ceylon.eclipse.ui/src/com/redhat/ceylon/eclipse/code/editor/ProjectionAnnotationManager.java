@@ -7,9 +7,9 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_CO
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_COMMENTS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.AUTO_FOLD_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_FOLD_COMMENTS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_FOLD_IMPORTS;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +27,6 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.IProjectionListener;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
-import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -35,6 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class ProjectionAnnotationManager implements TreeLifecycleListener, IProjectionListener{
     
@@ -289,10 +289,8 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
         final boolean autofoldImports;
         final boolean autofoldComments;
         if (firstTime) {
-            IPreferenceStore store = EditorsUI.getPreferenceStore();
-            store.setDefault(AUTO_FOLD_IMPORTS, true);
+            IPreferenceStore store = EditorUtil.getPreferences();
             autofoldImports = store.getBoolean(AUTO_FOLD_IMPORTS);
-            store.setDefault(AUTO_FOLD_COMMENTS, false);
             autofoldComments = store.getBoolean(AUTO_FOLD_COMMENTS);
             firstTime = false;
         }

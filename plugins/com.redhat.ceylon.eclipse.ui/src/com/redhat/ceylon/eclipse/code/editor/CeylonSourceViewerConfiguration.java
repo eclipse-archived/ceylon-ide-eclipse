@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_DELAY;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
@@ -34,7 +37,6 @@ import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
@@ -51,43 +53,14 @@ import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.ReferencesPopup;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
-    
-    public static final String AUTO_INSERT = "autoInsert";
-    public static final String AUTO_ACTIVATION = "autoActivation";
-    public static final String AUTO_ACTIVATION_CHARS = "autoActivationChars";
-    public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
-    public static final String COMPLETION = "completion";
-    public static final String COMPLETION_FILTERS = "completionFilters";
-    public static final String INACTIVE_COMPLETION_FILTERS = "inactiveCompletionFilters";
-    public static final String INEXACT_MATCHES = "inexactMatches";
-    public static final String LINKED_MODE = "linkedModeCompletion";
-    public static final String LINKED_MODE_RENAME = "linkedModeRename";
-    public static final String LINKED_MODE_RENAME_SELECT = "linkedModeRenameSelect";
-    public static final String LINKED_MODE_EXTRACT = "linkedModeExtract";
-    public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
-    public static final String DISPLAY_RETURN_TYPES = "displayReturnTypes";
-    public static final String DISPLAY_PARAMETER_TYPES = "displayParameterTypes";
-    
-    public static final String CLOSE_PARENS = "closeParens";
-    public static final String CLOSE_BRACKETS = "closeBrackets";
-    public static final String CLOSE_ANGLES = "closeAngles";
-    public static final String CLOSE_BACKTICKS = "closeBackticks";
-    public static final String CLOSE_BRACES = "closeBraces";
-    public static final String CLOSE_QUOTES = "closeQuotes";
-    
-    public static final String NORMALIZE_WS = "normalizedWs";
-    public static final String NORMALIZE_NL = "normalizedNl";
-    public static final String STRIP_TRAILING_WS = "stripTrailingWs";
-    public static final String CLEAN_IMPORTS = "cleanImports";
-    public static final String FORMAT = "format";
     
     protected final CeylonEditor editor;
     
     public CeylonSourceViewerConfiguration(CeylonEditor editor) {
-        super(EditorsUI.getPreferenceStore());
-        setPreferenceDefaults();
+        super(EditorUtil.getPreferences());
         this.editor = editor;
     }
     
@@ -100,35 +73,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         reconciler.setRepairer(damageRepairer, DEFAULT_CONTENT_TYPE);
         reconciler.setDamager(damageRepairer, DEFAULT_CONTENT_TYPE);
         return reconciler;
-    }
-    
-    public static void setPreferenceDefaults() {
-        //TODO: use a PreferenceInitializer!!!
-        IPreferenceStore preferenceStore = EditorsUI.getPreferenceStore();
-        preferenceStore.setDefault(AUTO_INSERT, true);
-        preferenceStore.setDefault(AUTO_ACTIVATION, true);
-        preferenceStore.setDefault(AUTO_ACTIVATION_DELAY, 500);
-        preferenceStore.setDefault(AUTO_ACTIVATION_CHARS, ".");
-        preferenceStore.setDefault(COMPLETION, "insert");
-        preferenceStore.setDefault(INEXACT_MATCHES, "positional");
-        preferenceStore.setDefault(LINKED_MODE, true);
-        preferenceStore.setDefault(LINKED_MODE_RENAME, true);
-        preferenceStore.setDefault(LINKED_MODE_RENAME_SELECT, true);
-        preferenceStore.setDefault(LINKED_MODE_EXTRACT, true);
-        preferenceStore.setDefault(PASTE_CORRECT_INDENTATION, true);
-        preferenceStore.setDefault(DISPLAY_RETURN_TYPES, false);
-        preferenceStore.setDefault(DISPLAY_PARAMETER_TYPES, true);
-        preferenceStore.setDefault(NORMALIZE_WS, false);
-        preferenceStore.setDefault(NORMALIZE_NL, false);
-        preferenceStore.setDefault(STRIP_TRAILING_WS, false);
-        preferenceStore.setDefault(CLEAN_IMPORTS, false);
-        preferenceStore.setDefault(FORMAT, false);
-        preferenceStore.setDefault(CLOSE_PARENS, true);
-        preferenceStore.setDefault(CLOSE_BRACKETS, true);
-        preferenceStore.setDefault(CLOSE_ANGLES, true);
-        preferenceStore.setDefault(CLOSE_BRACES, true);
-        preferenceStore.setDefault(CLOSE_QUOTES, true);
-        preferenceStore.setDefault(CLOSE_BACKTICKS, true);
     }
     
     private static final class CompletionListener 
@@ -191,7 +135,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     static void configCompletionPopup(ContentAssistant contentAssistant) {
-        IPreferenceStore preferenceStore = EditorsUI.getPreferenceStore();
+        IPreferenceStore preferenceStore = EditorUtil.getPreferences();
         contentAssistant.enableAutoInsert(preferenceStore.getBoolean(AUTO_INSERT));
         contentAssistant.enableAutoActivation(preferenceStore.getBoolean(AUTO_ACTIVATION));
         contentAssistant.setAutoActivationDelay(preferenceStore.getInt(AUTO_ACTIVATION_DELAY));
