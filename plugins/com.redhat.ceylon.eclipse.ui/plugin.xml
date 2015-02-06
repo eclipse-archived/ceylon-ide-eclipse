@@ -1908,7 +1908,7 @@
        </page>
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences.editor"
-           name="Ceylon Editor"
+           name="Editor"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencePage"
            category="com.redhat.ceylon.eclipse.ui.preferences">
            <!--category="org.eclipse.ui.preferencePages.Editors"-->
@@ -1919,7 +1919,7 @@
        </page>
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences.completion"
-           name="Ceylon Completion"
+           name="Completion"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonCompletionPreferencePage"
            category="com.redhat.ceylon.eclipse.ui.preferences.editor">
        <keywordReference id="org.eclipse.ui.editors.general"/>
@@ -1929,7 +1929,7 @@
        </page>
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences.completion.filters"
-           name="Ceylon Proposal Filters"
+           name="Proposal Filters"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonProposalFiltersPreferencePage"
            category="com.redhat.ceylon.eclipse.ui.preferences.completion">
        <keywordReference id="org.eclipse.ui.editors.general"/>
@@ -1939,7 +1939,7 @@
        </page>
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences.save"
-           name="Ceylon Save Actions"
+           name="Save Actions"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonSaveActionsPreferencePage"
            category="com.redhat.ceylon.eclipse.ui.preferences.editor">
        <keywordReference id="org.eclipse.ui.editors.general"/>
@@ -1948,7 +1948,7 @@
        </keywordReference>
        </page>
       <page
-            name="Ceylon Debugging"
+            name="Debugging"
             class="com.redhat.ceylon.eclipse.core.debug.preferences.CeylonStepFilterPreferencePage"
             id="com.redhat.ceylon.eclipse.ui.preferences.debug.filters"
             category="com.redhat.ceylon.eclipse.ui.preferences">

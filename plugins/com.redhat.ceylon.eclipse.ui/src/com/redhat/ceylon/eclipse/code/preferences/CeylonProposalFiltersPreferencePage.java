@@ -120,7 +120,7 @@ public class CeylonProposalFiltersPreferencePage
         
         Link completionLink = new Link(parent, 0);
         completionLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        completionLink.setText("See '<a>Ceylon Completion</a>' for more preferences related to completion.");
+        completionLink.setText("See '<a>Completion</a>' for more preferences related to completion.");
         completionLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -130,7 +130,7 @@ public class CeylonProposalFiltersPreferencePage
         });
         Link textEditorsLink = new Link(parent, 0);
         textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        textEditorsLink.setText("See '<a>Ceylon Editor</a>' for more Ceylon editor preferences.");
+        textEditorsLink.setText("See '<a>Editor</a>' for more Ceylon editor preferences.");
         textEditorsLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

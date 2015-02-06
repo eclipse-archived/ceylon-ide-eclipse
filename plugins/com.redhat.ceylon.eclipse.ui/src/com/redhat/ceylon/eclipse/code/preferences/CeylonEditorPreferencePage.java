@@ -215,7 +215,7 @@ public class CeylonEditorPreferencePage
         
         Link completionLink = new Link(parent, 0);
         completionLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        completionLink.setText("See '<a>Ceylon Completion</a>' for preferences related to completion.");
+        completionLink.setText("See '<a>Completion</a>' for preferences related to completion.");
         completionLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -225,7 +225,7 @@ public class CeylonEditorPreferencePage
         });
         Link saveLink = new Link(parent, 0);
         saveLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        saveLink.setText("See '<a>Ceylon Save Actions</a>' to enable save actions.");
+        saveLink.setText("See '<a>Save Actions</a>' to enable save actions.");
         saveLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

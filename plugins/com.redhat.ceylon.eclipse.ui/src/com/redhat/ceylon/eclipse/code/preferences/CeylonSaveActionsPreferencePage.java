@@ -168,7 +168,7 @@ public class CeylonSaveActionsPreferencePage
         
         Link textEditorsLink = new Link(parent, 0);
         textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        textEditorsLink.setText("See '<a>Ceylon Editor</a>' for more Ceylon editor preferences.");
+        textEditorsLink.setText("See '<a>Editor</a>' for more Ceylon editor preferences.");
         textEditorsLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

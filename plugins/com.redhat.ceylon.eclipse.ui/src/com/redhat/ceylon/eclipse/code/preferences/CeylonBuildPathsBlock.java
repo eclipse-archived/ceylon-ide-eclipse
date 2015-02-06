@@ -12,8 +12,8 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
 
-import static com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard.DEFAULT_RESOURCE_FOLDER;
-import static com.redhat.ceylon.eclipse.code.wizard.NewProjectWizard.DEFAULT_SOURCE_FOLDER;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 
 import java.io.File;
@@ -92,10 +92,10 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.MenuAdapter;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.MenuAdapter;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -129,6 +129,7 @@ import com.redhat.ceylon.common.config.CeylonConfigFinder;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonBuildPathsBlock {
 
@@ -784,7 +785,8 @@ public class CeylonBuildPathsBlock {
 					newFolderNames, newResourcePath);
         }
         else {
-            IFolder defaultResourceFolder = fCurrJProject.getProject().getFolder(DEFAULT_RESOURCE_FOLDER);
+            String defaultResourceFolderName = EditorUtil.getPreferences().getString(DEFAULT_RESOURCE_FOLDER);
+            IFolder defaultResourceFolder = fCurrJProject.getProject().getFolder(defaultResourceFolderName);
             newResourcePath.add(new CPListElement(fCurrJProject, 
                     IClasspathEntry.CPE_SOURCE, 
                     defaultResourceFolder.getFullPath(), 

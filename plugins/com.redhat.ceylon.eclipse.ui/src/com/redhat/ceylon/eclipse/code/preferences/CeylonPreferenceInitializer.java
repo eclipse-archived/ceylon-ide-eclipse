@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.common.Constants.DEFAULT_RESOURCE_DIR;
+import static com.redhat.ceylon.common.Constants.DEFAULT_SOURCE_DIR;
+
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -33,10 +36,11 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String STRIP_TRAILING_WS = "stripTrailingWs";
     public static final String CLEAN_IMPORTS = "cleanImports";
     public static final String FORMAT = "format";
-    //preference keys
-    public final static String SUB_WORD_NAVIGATION = "subWordNavigation";
-    public final static String AUTO_FOLD_IMPORTS = "autoFoldImports";
-    public final static String AUTO_FOLD_COMMENTS = "autoFoldComments";
+    public static final String SUB_WORD_NAVIGATION = "subWordNavigation";
+    public static final String AUTO_FOLD_IMPORTS = "autoFoldImports";
+    public static final String AUTO_FOLD_COMMENTS = "autoFoldComments";
+    public static final String DEFAULT_SOURCE_FOLDER = "defaultSourceFolder";
+    public static final String DEFAULT_RESOURCE_FOLDER = "defaultResourceFolder";
 
     public CeylonPreferenceInitializer() {}
 
@@ -70,5 +74,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(AUTO_FOLD_IMPORTS, true);
         store.setDefault(AUTO_FOLD_COMMENTS, false);
         store.setDefault(SUB_WORD_NAVIGATION, true);
+        store.setDefault(DEFAULT_SOURCE_FOLDER, DEFAULT_SOURCE_DIR);
+        store.setDefault(DEFAULT_RESOURCE_FOLDER, DEFAULT_RESOURCE_DIR);
    }
 }
