@@ -74,8 +74,8 @@ class FindOccurrenceLocationVisitor extends Visitor
         super.visit(that);
         Tree.Statement var = that.getVariable();
         if (var instanceof Tree.Variable ? 
-                inBounds(that) :
-                inBounds(((Tree.Variable)var).getIdentifier())) {
+                inBounds(((Tree.Variable)var).getIdentifier()) :
+                inBounds(that)) {
             occurrence = EXISTS;
         }
     }
@@ -85,8 +85,8 @@ class FindOccurrenceLocationVisitor extends Visitor
         super.visit(that);
         Tree.Statement var = that.getVariable();
         if (var instanceof Tree.Variable ? 
-                inBounds(that) :
-                inBounds(((Tree.Variable)var).getIdentifier())) {
+                inBounds(((Tree.Variable)var).getIdentifier()) :
+                inBounds(that)) {
             occurrence = NONEMPTY;
         }
     }
