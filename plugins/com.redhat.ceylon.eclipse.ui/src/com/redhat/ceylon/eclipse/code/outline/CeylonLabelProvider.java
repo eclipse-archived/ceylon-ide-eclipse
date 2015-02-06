@@ -675,7 +675,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 new StyledString("(default package)");
             }
             else {
-                return new StyledString(name); //PACKAGE_STYLER??
+                return new StyledString(name/*, PACKAGE_STYLER*/);
             }
         }
         else if (node instanceof ModuleNode) {
@@ -685,8 +685,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return new StyledString("(default package)");
             }
             else {
-                return new StyledString(name)
-                    .append(" \"", VERSION_STYLER) //PACKAGE_STYLER??
+                return new StyledString(name/*, PACKAGE_STYLER*/)
+                    .append(" \"", VERSION_STYLER)
                     .append(moduleNode.getVersion(), VERSION_STYLER)
                     .append("\"", VERSION_STYLER);
             }
