@@ -24,7 +24,7 @@ public class BreakpointMethodFilter implements org.eclipse.jdt.debug.core.IJavaB
     @Override
     public int installingBreakpoint(IJavaDebugTarget target,
             IJavaBreakpoint breakpoint, IJavaType type) {
-        return DONT_CARE;
+        return INSTALL;
     }
 
     @Override
