@@ -681,8 +681,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (node instanceof ModuleNode) {
             ModuleNode moduleNode = (ModuleNode) node;
             String name = moduleNode.getModuleName();
-            if (name.isEmpty()) {
-                return new StyledString("(default package)");
+            if (name.isEmpty() || "default".equals(name)) {
+                return new StyledString("(default module)");
             }
             else {
                 return new StyledString(name/*, PACKAGE_STYLER*/)
