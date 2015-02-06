@@ -11,6 +11,7 @@
 
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static org.eclipse.jdt.core.JavaCore.newContainerEntry;
 import static org.eclipse.jdt.core.JavaCore.newSourceEntry;
@@ -1086,7 +1087,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         }
     }
 
-    private static final String PAGE_NAME= "NewJavaProjectWizardPageOne"; //$NON-NLS-1$
+    private static final String PAGE_NAME= "NewJavaProjectWizardPageOne";
 
     private final NameGroup fNameGroup;
     private final LocationGroup fLocationGroup;
@@ -1095,6 +1096,16 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     private final DetectGroup fDetectGroup;
     private final Validator fValidator;
     private final WorkingSetGroup fWorkingSetGroup;
+
+    private boolean showCompilerWarnings = true;
+    private Boolean offlineOption = null;
+    
+    private String defaultProjectType;
+    
+    private boolean compileJava;
+    private boolean compileJs;
+
+    private boolean astAwareIncrementalBuildsEnabled = true;
 
     /**
      * Creates a new {@link NewCeylonProjectWizardPageOne}.
@@ -1143,6 +1154,9 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
      */
     public void init(IStructuredSelection selection, IWorkbenchPart activePart) {
         setWorkingSets(getSelectedWorkingSet(selection, activePart));
+        defaultProjectType = EditorUtil.getPreferences().getString(DEFAULT_PROJECT_TYPE);
+        compileJava = defaultProjectType.contains("jvm");
+        compileJs = defaultProjectType.contains("js");
     }
 
     private void initializeDefaultVM() {
@@ -1466,20 +1480,14 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         return offlineOption;
     }
 
-    private boolean showCompilerWarnings = true;
-    private Boolean offlineOption = null;
-
-    private boolean compileJava = true;
     public boolean isCompileJava() {
         return compileJava;
     }
-
-    private boolean compileJs = false;
+    
     public boolean isCompileJs() {
         return compileJs;
     }
-
-    private boolean astAwareIncrementalBuildsEnabled = true;
+    
     public boolean areAstAwareIncrementalBuildsEnabled() {
         return astAwareIncrementalBuildsEnabled;
     }
@@ -1500,13 +1508,11 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         final Button jc = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         jc.setText("Compile project for JVM");
         jc.setSelection(compileJava);
-        jc.setEnabled(true);
-        jc.setSelection(true);
+        jc.setSelection(compileJava);
 
         final Button jsc = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         jsc.setText("Compile project to JavaScript");
         jsc.setSelection(compileJs);
-        jsc.setEnabled(true);
 
         composite = new Composite(parent, SWT.NONE);
         GridData gdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);

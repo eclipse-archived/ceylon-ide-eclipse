@@ -39,6 +39,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String SUB_WORD_NAVIGATION = "subWordNavigation";
     public static final String AUTO_FOLD_IMPORTS = "autoFoldImports";
     public static final String AUTO_FOLD_COMMENTS = "autoFoldComments";
+    public static final String DEFAULT_PROJECT_TYPE = "defaultProjectType";
     public static final String DEFAULT_SOURCE_FOLDER = "defaultSourceFolder";
     public static final String DEFAULT_RESOURCE_FOLDER = "defaultResourceFolder";
 
@@ -76,5 +77,6 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(SUB_WORD_NAVIGATION, true);
         store.setDefault(DEFAULT_SOURCE_FOLDER, DEFAULT_SOURCE_DIR);
         store.setDefault(DEFAULT_RESOURCE_FOLDER, DEFAULT_RESOURCE_DIR);
+        store.setDefault(DEFAULT_PROJECT_TYPE, "jvm");
    }
 }

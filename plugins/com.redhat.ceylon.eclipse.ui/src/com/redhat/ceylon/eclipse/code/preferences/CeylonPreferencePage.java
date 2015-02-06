@@ -1,17 +1,22 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -24,6 +29,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
 
     private StringFieldEditor sourceFolder;
     private StringFieldEditor resourceFolder;
+    private RadioGroupFieldEditor projectType;
 
     public CeylonPreferencePage() {
         super(GRID);
@@ -111,14 +117,44 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         return contents;
     }
 
+    private Composite createGroup(int cols, String text) {
+        Composite parent = getFieldEditorParent();
+        Group group = new Group(parent, SWT.NONE);
+        group.setText(text);
+        GridLayout layout = new GridLayout(cols, true);
+        group.setLayout(layout);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd.grabExcessHorizontalSpace=true;
+        gd.horizontalSpan=3;
+        group.setLayoutData(gd);
+        return group;
+    }
+    
+    protected Composite getFieldEditorParent(Composite group) {
+        Composite parent = new Composite(group, SWT.NULL);
+        parent.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        return parent;
+    }
+
     @Override
     protected void createFieldEditors() {
+        final Composite group = createGroup(1, "New Ceylon Projects");
+        projectType = new RadioGroupFieldEditor(DEFAULT_PROJECT_TYPE, 
+                "Default target virtual machine:", 3, 
+                new String[][] { new String[] { "JVM", "jvm" }, 
+                        new String[] { "JavaScript", "js" },
+                        new String[] { "Cross-platform", "jvm,js" } }, 
+                        getFieldEditorParent(group));
         sourceFolder = new StringFieldEditor(DEFAULT_SOURCE_FOLDER, 
-                "Default source folder name for new projects:", getFieldEditorParent());
+                "Default source folder name:", 
+                getFieldEditorParent(group));
         resourceFolder = new StringFieldEditor(DEFAULT_RESOURCE_FOLDER, 
-                "Default resource folder name for new projects:", getFieldEditorParent());
+                "Default resource folder name:", 
+                getFieldEditorParent(group));
+        projectType.load();
         sourceFolder.load();
         resourceFolder.load();
+        addField(projectType);
         addField(sourceFolder);
         addField(resourceFolder);
     }
@@ -126,12 +162,14 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
     @Override
     protected void performDefaults() {
         super.performDefaults();
+        projectType.loadDefault();
         sourceFolder.loadDefault();
         resourceFolder.loadDefault();
     }
     
     @Override
     public boolean performOk() {
+        projectType.store();
         sourceFolder.store();
         resourceFolder.store();
         return true;
