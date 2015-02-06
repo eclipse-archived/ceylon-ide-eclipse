@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.ui.test.headless;
 
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_ANGLES;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BACKTICKS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACKETS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_PARENS;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_QUOTES;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.CLOSE_BRACES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_ANGLES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BACKTICKS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BRACKETS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_PARENS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_QUOTES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BRACES;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -15,12 +15,12 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.editors.text.EditorsUI;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class AutoEditTests {
  
@@ -33,7 +33,7 @@ public class AutoEditTests {
             CLOSE_ANGLES,
             CLOSE_PARENS,
             CLOSE_BRACKETS};
-        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        IPreferenceStore store = EditorUtil.getPreferences();
         for (String closeSetting : FENCES) {
             store.setValue(closeSetting, true);
             store.setDefault(closeSetting, true);
