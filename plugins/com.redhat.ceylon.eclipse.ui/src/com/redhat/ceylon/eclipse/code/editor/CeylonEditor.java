@@ -146,7 +146,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonCompletionPreferencePage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonProposalFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonSaveActionsPreferencePage;
 import com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems;
@@ -435,7 +435,7 @@ public class CeylonEditor extends TextEditor {
         String[] pages = super.collectContextMenuPreferencePages();
         String[] result = new String[pages.length+4];
         System.arraycopy(pages, 0, result, 4, pages.length);
-        result[0] = CeylonEditorPreferencesPage.ID;
+        result[0] = CeylonEditorPreferencePage.ID;
         result[1] = CeylonCompletionPreferencePage.ID;
         result[2] = CeylonProposalFiltersPreferencePage.ID;
         result[3] = CeylonSaveActionsPreferencePage.ID;

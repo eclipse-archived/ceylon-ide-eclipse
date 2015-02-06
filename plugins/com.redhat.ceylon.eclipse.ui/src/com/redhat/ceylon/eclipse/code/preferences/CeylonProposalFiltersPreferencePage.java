@@ -135,7 +135,7 @@ public class CeylonProposalFiltersPreferencePage
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonEditorPreferencesPage.ID, null, null);
+                        CeylonEditorPreferencePage.ID, null, null);
             }
         });
 

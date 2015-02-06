@@ -80,7 +80,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencePage;
 
 public class RefactorInformationPopup 
         implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
@@ -758,7 +758,7 @@ public class RefactorInformationPopup
                 fLinkedMode.cancel();
                 String linkedModePrefPageID= 
                         "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
-                String refactoringPrefPageID = CeylonEditorPreferencesPage.ID;
+                String refactoringPrefPageID = CeylonEditorPreferencePage.ID;
                 PreferencesUtil.createPreferenceDialogOn(fEditor.getSite().getShell(), 
                         refactoringPrefPageID, 
                         new String[] { linkedModePrefPageID, refactoringPrefPageID }, 

@@ -42,7 +42,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
-public class CeylonEditorPreferencesPage 
+public class CeylonEditorPreferencePage 
         extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
     
@@ -80,7 +80,7 @@ public class CeylonEditorPreferencesPage
     BooleanFieldEditor closeQuotes;
     BoolFieldEditor enableFolding;
     
-    public CeylonEditorPreferencesPage() {
+    public CeylonEditorPreferencePage() {
         super(GRID);
         setDescription("Preferences related to the editor for Ceylon source files.");
     }

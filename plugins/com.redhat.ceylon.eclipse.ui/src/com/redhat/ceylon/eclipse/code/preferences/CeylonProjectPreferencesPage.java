@@ -249,7 +249,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 Warning.unusedImport);
         createOption(warningOptions, "Deprecation", 
                 Warning.deprecation);
-        createOption(warningOptions, "Expressions of type Nothing", 
+        createOption(warningOptions, "Expressions of type 'Nothing'", 
                 Warning.expressionTypeNothing);
         createOption(warningOptions, "Broken documentation links", 
                 Warning.doclink);

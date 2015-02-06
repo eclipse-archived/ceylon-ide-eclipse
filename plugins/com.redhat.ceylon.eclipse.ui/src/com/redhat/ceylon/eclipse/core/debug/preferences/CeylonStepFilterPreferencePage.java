@@ -10,6 +10,7 @@ import static org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin.createAllPackag
 import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.parseList;
 import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.serializeList;
 import static org.eclipse.jdt.ui.JavaUI.createTypeDialog;
+import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import java.util.ArrayList;
 
@@ -25,6 +26,7 @@ import org.eclipse.jdt.internal.debug.ui.FilterLabelProvider;
 import org.eclipse.jdt.internal.debug.ui.FilterViewerComparator;
 import org.eclipse.jdt.ui.IJavaElementSearchConstants;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -39,6 +41,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -48,6 +51,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbench;
@@ -65,6 +69,8 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
  */
 public class CeylonStepFilterPreferencePage 
         extends PreferencePage implements IWorkbenchPreferencePage {
+    
+    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.debug.filters";
     
     /**
      * Content provider for the table.  Content consists of instances of StepFilter.
@@ -112,9 +118,23 @@ public class CeylonStepFilterPreferencePage
     protected Control createContents(Composite parent) {
 //        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.JAVA_STEP_FILTER_PREFERENCE_PAGE);
     //The main composite
+        
+        Link debugLink = new Link(parent, 0);
+        debugLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        debugLink.setText("See Java '<a>Debug</a>' preferences for more settings.");
+        debugLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        "org.eclipse.jdt.debug.ui.JavaDebugPreferencePage", 
+                        null, null);
+            }
+        });
+        
         Composite composite = SWTFactory.createComposite(parent, 
                 parent.getFont(), 1, 1, GridData.FILL_BOTH, 0, 0);
         createStepFilterPreferences(composite);
+        
         return composite;   
     }
 

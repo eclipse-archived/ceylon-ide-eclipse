@@ -1902,10 +1902,16 @@
    </extension>
    <extension point="org.eclipse.ui.preferencePages">
        <page
+           id="com.redhat.ceylon.eclipse.ui.preferences"
+           name="Ceylon"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage">
+       </page>
+       <page
            id="com.redhat.ceylon.eclipse.ui.preferences.editor"
            name="Ceylon Editor"
-           class="com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencesPage"
-           category="org.eclipse.ui.preferencePages.Editors">
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencePage"
+           category="com.redhat.ceylon.eclipse.ui.preferences">
+           <!--category="org.eclipse.ui.preferencePages.Editors"-->
        <keywordReference id="org.eclipse.ui.editors.general"/>
        <keywordReference
              id="com.redhat.ceylon.eclipse.ui.keywords.editor">
@@ -1943,9 +1949,10 @@
        </page>
       <page
             name="Ceylon Debugging"
-            category="org.eclipse.jdt.debug.ui.JavaDebugPreferencePage"
             class="com.redhat.ceylon.eclipse.core.debug.preferences.CeylonStepFilterPreferencePage"
-            id="com.redhat.ceylon.eclipse.ui.CeylonDebugPreferencePage">
+            id="com.redhat.ceylon.eclipse.ui.preferences.debug.filters"
+            category="com.redhat.ceylon.eclipse.ui.preferences">
+            <!--category="org.eclipse.jdt.debug.ui.JavaDebugPreferencePage"-->
            <keywordReference
                  id="com.redhat.ceylon.eclipse.ui.keywords.debug">
            </keywordReference>
