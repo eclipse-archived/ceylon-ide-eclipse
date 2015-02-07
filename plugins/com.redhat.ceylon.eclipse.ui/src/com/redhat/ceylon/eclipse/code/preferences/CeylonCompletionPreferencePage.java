@@ -156,10 +156,6 @@ public class CeylonCompletionPreferencePage
     @Override
     protected Control createContents(Composite parent) {
         
-//        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-//        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-//        sep.setLayoutData(sgd);
-
         Composite composite = new Composite(parent, SWT.NONE);
         //composite.setText("Ceylon editor settings");
         GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -167,12 +163,13 @@ public class CeylonCompletionPreferencePage
         composite.setLayoutData(gd);
         GridLayout layout = new GridLayout();
         layout.numColumns = 1;
-        composite.setLayout(layout); 
+        composite.setLayout(layout);
+        
         Control result = super.createContents(composite);
         
-        Label sep2 = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        GridData sgd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        sep2.setLayoutData(sgd2);
+        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        sep.setLayoutData(sgd);
 
         Link completionLink = new Link(parent, 0);
         completionLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());

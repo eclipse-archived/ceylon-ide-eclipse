@@ -17,6 +17,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -44,6 +45,33 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
     @Override
     protected Control createContents(Composite parent) {
         
+        Link jreLink = new Link(parent, 0);
+        jreLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        jreLink.setText("See Java '<a>Installed JREs</a>' to set up a Java Virtual Machine.");
+        jreLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        "org.eclipse.jdt.debug.ui.preferences.VMPreferencePage", 
+                        null, null);
+            }
+        });
+        
+        Composite composite = new Composite(parent, SWT.NONE);
+        //composite.setText("Ceylon editor settings");
+        GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd.grabExcessHorizontalSpace=true;
+        composite.setLayoutData(gd);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 1;
+        composite.setLayout(layout);
+        
+        Control contents = super.createContents(composite);
+        
+        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        sep.setLayoutData(sgd);
+
         Link textEditorsLink = new Link(parent, 0);
         textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         textEditorsLink.setText("See '<a>Editor</a>' for Ceylon editor preferences.");
@@ -88,31 +116,17 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
             }
         });
         
-        Link colorsAndFontsLink = new Link(parent, 0);
-        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize appearance and syntax highlighting.");
-        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                createPreferenceDialogOn(getShell(), 
-                        "org.eclipse.ui.preferencePages.ColorsAndFonts", null, 
-                        "selectFont:com.redhat.ceylon.eclipse.ui.editorFont");
-            }
-        });
-        
-        Link jreLink = new Link(parent, 0);
-        jreLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        jreLink.setText("See Java '<a>Installed JREs</a>' to set up the Java Virtual Machine.");
-        jreLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                createPreferenceDialogOn(getShell(), 
-                        "org.eclipse.jdt.debug.ui.preferences.VMPreferencePage", 
-                        null, null);
-            }
-        });
-        
-        Control contents = super.createContents(parent);
+//        Link colorsAndFontsLink = new Link(parent, 0);
+//        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+//        colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize appearance and syntax highlighting.");
+//        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
+//            @Override
+//            public void widgetSelected(SelectionEvent e) {
+//                createPreferenceDialogOn(getShell(), 
+//                        "org.eclipse.ui.preferencePages.ColorsAndFonts", null, 
+//                        "selectFont:com.redhat.ceylon.eclipse.ui.editorFont");
+//            }
+//        });
         
         return contents;
     }
