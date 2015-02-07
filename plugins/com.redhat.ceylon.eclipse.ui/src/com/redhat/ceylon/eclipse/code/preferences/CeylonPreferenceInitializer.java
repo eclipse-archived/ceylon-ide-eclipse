@@ -17,6 +17,8 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String COMPLETION = "completion";
     public static final String COMPLETION_FILTERS = "completionFilters";
     public static final String INACTIVE_COMPLETION_FILTERS = "inactiveCompletionFilters";
+    public static final String OPEN_FILTERS = "openFilters";
+    public static final String INACTIVE_OPEN_FILTERS = "inactiveOpenFilters";
     public static final String INEXACT_MATCHES = "inexactMatches";
     public static final String LINKED_MODE = "linkedModeCompletion";
     public static final String LINKED_MODE_RENAME = "linkedModeRename";

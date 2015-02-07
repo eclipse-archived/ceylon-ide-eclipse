@@ -1948,6 +1948,16 @@
        </keywordReference>
        </page>
        <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.open.filters"
+           name="Open Dialog Filters"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonOpenFiltersPreferencePage"
+           category="com.redhat.ceylon.eclipse.ui.preferences">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="com.redhat.ceylon.eclipse.ui.keywords.open.filters">
+       </keywordReference>
+       </page>
+       <page
            id="com.redhat.ceylon.eclipse.ui.preferences.save"
            name="Save Actions"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonSaveActionsPreferencePage"
@@ -1982,6 +1992,9 @@
    <keyword
          label="completion proposals filters"
          id="com.redhat.ceylon.eclipse.ui.keywords.completion.filters"/>
+   <keyword
+         label="open declaration filters"
+         id="com.redhat.ceylon.eclipse.ui.keywords.open.filters"/>
    <keyword
          label="save actions imports format"
          id="com.redhat.ceylon.eclipse.ui.keywords.save"/>

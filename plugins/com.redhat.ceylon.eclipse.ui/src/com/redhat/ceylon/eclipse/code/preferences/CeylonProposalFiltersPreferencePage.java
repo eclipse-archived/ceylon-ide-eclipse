@@ -102,7 +102,6 @@ public class CeylonProposalFiltersPreferencePage
     public CeylonProposalFiltersPreferencePage() {
         super();
         setPreferenceStore(EditorUtil.getPreferences());
-        setTitle("Ceylon Proposal Filters"); 
         setDescription("Filtered packages and types will be excluded from Ceylon completion proposal lists."); 
     }
     
@@ -303,7 +302,7 @@ public class CeylonProposalFiltersPreferencePage
     //Select All button
         fSelectAllButton = createPushButton(buttonContainer, 
                 "&Select All", 
-                "Selects all step filters", null);
+                "Selects all proposal filters", null);
         fSelectAllButton.addListener(SWT.Selection, 
                 new Listener() {
             public void handleEvent(Event e) {
@@ -313,7 +312,7 @@ public class CeylonProposalFiltersPreferencePage
     //De-Select All button
         fDeselectAllButton = createPushButton(buttonContainer, 
                 "D&eselect All", 
-                "Deselects all step filters", null);
+                "Deselects all proposal filters", null);
         fDeselectAllButton.addListener(SWT.Selection, 
                 new Listener() {
             public void handleEvent(Event e) {

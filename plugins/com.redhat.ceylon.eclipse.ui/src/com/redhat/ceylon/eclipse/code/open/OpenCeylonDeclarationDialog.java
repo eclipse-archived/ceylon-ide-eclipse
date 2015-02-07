@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDe
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -55,6 +56,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
@@ -516,9 +518,11 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             ItemsFilter itemsFilter, IProject project, 
             JDTModule module) {
         for (Package pack: new ArrayList<Package>(module.getPackages())) {
-            for (Declaration dec: pack.getMembers()) {
-                fillDeclarationAndMembers(contentProvider, 
-                        itemsFilter, project, module, dec);
+            if (!isFiltered(pack)) {
+                for (Declaration dec: pack.getMembers()) {
+                    fillDeclarationAndMembers(contentProvider, 
+                            itemsFilter, project, module, dec);
+                }
             }
         }
     }
@@ -566,6 +570,51 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
+    String filtersString = EditorUtil.getPreferences()
+            .getString(OPEN_FILTERS);
+    
+    private String[] getFilters(String filtersString) {
+        if (!filtersString.trim().isEmpty()) { 
+            return filtersString
+                    .replace(".", "\\.").replace("*", ".*")
+                    .split(",");
+            
+        }
+        else {
+            return new String[0];
+        }
+    }
+
+    String[] filters = getFilters(filtersString);
+
+    private boolean isFiltered(Declaration declaration) {
+        if (filters.length>0) {
+            String name = declaration
+                    .getQualifiedNameString()
+                    .replace("::", ".");
+            for (String filter: filters) {
+                String regex = filter.trim();
+                if (!regex.isEmpty() && name.matches(regex)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isFiltered(Package pack) {
+        if (filters.length>0) {
+            String name = pack.getNameAsString();
+            for (String filter: filters) {
+                String regex = filter.trim();
+                if (!regex.isEmpty() && name.matches(regex)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private boolean includeDeclaration(JDTModule module, Declaration dec) {
         boolean visibleFromSourceModules;
         if (dec.isToplevel()) {
@@ -573,7 +622,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         } else {
             visibleFromSourceModules = includeMembers && dec.isShared();
         }
-        return visibleFromSourceModules && isPresentable(dec);
+        return visibleFromSourceModules && isPresentable(dec) && !isFiltered(dec);
     }
     
     private int estimateWork(IProgressMonitor monitor) {
