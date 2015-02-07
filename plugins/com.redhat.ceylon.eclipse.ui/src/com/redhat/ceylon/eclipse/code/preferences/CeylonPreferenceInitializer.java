@@ -23,6 +23,8 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String LINKED_MODE_RENAME_SELECT = "linkedModeRenameSelect";
     public static final String LINKED_MODE_EXTRACT = "linkedModeExtract";
     public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
+    public static final String PASTE_ESCAPE_QUOTED = "pasteEscapeQuoted";
+    public static final String PASTE_IMPORTS = "pasteImports";
     public static final String DISPLAY_RETURN_TYPES = "displayReturnTypes";
     public static final String DISPLAY_PARAMETER_TYPES = "displayParameterTypes";
     public static final String CLOSE_PARENS = "closeParens";
@@ -59,6 +61,8 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(LINKED_MODE_RENAME_SELECT, true);
         store.setDefault(LINKED_MODE_EXTRACT, true);
         store.setDefault(PASTE_CORRECT_INDENTATION, true);
+        store.setDefault(PASTE_ESCAPE_QUOTED, true);
+        store.setDefault(PASTE_IMPORTS, true);
         store.setDefault(DISPLAY_RETURN_TYPES, false);
         store.setDefault(DISPLAY_PARAMETER_TYPES, true);
         store.setDefault(NORMALIZE_WS, false);

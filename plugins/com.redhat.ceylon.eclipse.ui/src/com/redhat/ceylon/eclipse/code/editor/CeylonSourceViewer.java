@@ -15,6 +15,8 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_ESCAPE_QUOTED;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_IMPORTS;
 import static com.redhat.ceylon.eclipse.util.Nodes.getTokenStrictlyContainingOffset;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
@@ -339,7 +341,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     }
                     else {
                         int tt = token.getType();
-                        quoted = tt==CeylonLexer.STRING_LITERAL || 
+                        quoted = tt==CeylonLexer.ASTRING_LITERAL ||
+                                tt==CeylonLexer.STRING_LITERAL || 
                                 tt==CeylonLexer.STRING_END || 
                                 tt==CeylonLexer.STRING_END || 
                                 tt==CeylonLexer.STRING_MID;
@@ -357,10 +360,12 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         }
                         try {
                             MultiTextEdit edit = new MultiTextEdit();
-                            if (!quoted && imports!=null) {
+                            if (!quoted && imports!=null &&
+                                    EditorUtil.getPreferences().getBoolean(PASTE_IMPORTS)) {
                                 pasteImports(imports, edit, text, doc);
                             }
-                            if (quoted && !verbatim && !fromStringLiteral) {
+                            if (quoted && !verbatim && !fromStringLiteral &&
+                                    EditorUtil.getPreferences().getBoolean(PASTE_ESCAPE_QUOTED)) {
                                 text = text
                                         .replace("\\", "\\\\")
                                         .replace("\t", "\\t")

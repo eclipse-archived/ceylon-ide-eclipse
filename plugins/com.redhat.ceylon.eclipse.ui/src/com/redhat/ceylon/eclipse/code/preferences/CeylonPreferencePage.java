@@ -3,9 +3,11 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_RETURN_TYPES;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -31,6 +33,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
     private StringFieldEditor sourceFolder;
     private StringFieldEditor resourceFolder;
     private RadioGroupFieldEditor projectType;
+    private BooleanFieldEditor displayOutlineTypes;
 
     public CeylonPreferencePage() {
         super(GRID);
@@ -152,6 +155,13 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
 
     @Override
     protected void createFieldEditors() {
+        final Composite outlines = createGroup(1, "Outlines");
+        displayOutlineTypes = new BooleanFieldEditor(DISPLAY_RETURN_TYPES, 
+                "Display return types in outlines", 
+                getFieldEditorParent(outlines));
+        displayOutlineTypes.load();
+        addField(displayOutlineTypes);
+        
         final Composite group = createGroup(1, "Defaults for new Ceylon projects");
         projectType = new RadioGroupFieldEditor(DEFAULT_PROJECT_TYPE, 
                 "Default target virtual machine:", 3, 
@@ -186,6 +196,8 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         projectType.store();
         sourceFolder.store();
         resourceFolder.store();
+        displayOutlineTypes.store();
+        displayOutlineTypes.store();
         return true;
     }
 

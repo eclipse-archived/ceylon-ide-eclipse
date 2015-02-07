@@ -11,11 +11,12 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_QUOTES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_RETURN_TYPES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_ESCAPE_QUOTED;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
@@ -63,10 +64,11 @@ public class CeylonEditorPreferencePage
     BoolFieldEditor linkedModeRename;
     BooleanFieldEditor linkedModeRenameSelect;
     BooleanFieldEditor linkedModeExtract;
-    BooleanFieldEditor displayOutlineTypes;
 //    BooleanFieldEditor displayParameterTypes;
     BooleanFieldEditor smartCaret;
     BooleanFieldEditor pasteCorrectIndent;
+    BooleanFieldEditor pasteImports;
+    BooleanFieldEditor pasteEscapeQuoted;
     BooleanFieldEditor normalizeWs;
     BooleanFieldEditor normalizeNl;
     BooleanFieldEditor stripTrailingWs;
@@ -105,10 +107,11 @@ public class CeylonEditorPreferencePage
         linkedModeRename.store();
         linkedModeRenameSelect.store();
         linkedModeExtract.store();
-        displayOutlineTypes.store();
 //        displayParameterTypes.store();
         smartCaret.store();
         pasteCorrectIndent.store();
+        pasteEscapeQuoted.store();
+        pasteImports.store();
 //        normalizeWs.store();
 //        normalizeNl.store();
 //        stripTrailingWs.store();
@@ -144,10 +147,11 @@ public class CeylonEditorPreferencePage
         linkedModeRename.loadDefault();
         linkedModeRenameSelect.loadDefault();
         linkedModeExtract.loadDefault();
-        displayOutlineTypes.loadDefault();
 //        displayParameterTypes.loadDefault();
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
+        pasteEscapeQuoted.loadDefault();
+        pasteImports.loadDefault();
 //        normalizeWs.loadDefault();
 //        normalizeNl.loadDefault();
 //        stripTrailingWs.loadDefault();
@@ -521,11 +525,16 @@ public class CeylonEditorPreferencePage
                 getFieldEditorParent(group));
         pasteCorrectIndent.load();
         addField(pasteCorrectIndent);
-        displayOutlineTypes = new BooleanFieldEditor(DISPLAY_RETURN_TYPES, 
-                "Display return types in outlines", 
+        pasteImports = new BooleanFieldEditor(PASTE_IMPORTS,
+                "Automatically add missing imports when pasting code", 
                 getFieldEditorParent(group));
-        displayOutlineTypes.load();
-        addField(displayOutlineTypes);
+        pasteImports.load();
+        addField(pasteImports);
+        pasteEscapeQuoted = new BooleanFieldEditor(PASTE_ESCAPE_QUOTED, 
+                "Escape text pasted into quoted strings", 
+                getFieldEditorParent(group));
+        pasteEscapeQuoted.load();
+        addField(pasteEscapeQuoted);
     }
     
     private void linkedModeSection() {
