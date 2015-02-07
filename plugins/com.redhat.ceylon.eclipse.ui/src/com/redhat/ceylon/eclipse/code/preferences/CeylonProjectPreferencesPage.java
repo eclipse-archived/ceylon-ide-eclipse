@@ -330,7 +330,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             }
         });
         
-        logButton.addSelectionListener(new SelectionListener() {
+        logButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 boolean selected = logButton.getSelection();
@@ -342,8 +342,6 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 verboseText.setVisible(selected);
                 parent.layout();
             }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
         enableBuilderButton.addSelectionListener(new SelectionAdapter() {

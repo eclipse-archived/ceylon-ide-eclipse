@@ -30,6 +30,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -48,9 +49,10 @@ public class CeylonEditorPreferencePage
     
     public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.editor";
     
-    BooleanFieldEditor enclosingBrackets;
-    BoolFieldEditor matchingBracket;
-    BooleanFieldEditor currentBracket;
+    BoolFieldEditor bracketMatching;
+    Button oppositeBracket;
+    Button matchingBrackets;
+    Button enclosingBrackets;
 //    BooleanFieldEditor autoInsert;
 //    BoolFieldEditor autoActivation;
 //    RadioGroupFieldEditor completion;
@@ -58,7 +60,7 @@ public class CeylonEditorPreferencePage
 //    BooleanFieldEditor linkedMode;
 //    ScaleFieldEditor autoActivationDelay;
 //    RadioGroupFieldEditor autoActivationChars;
-    BooleanFieldEditor linkedModeRename;
+    BoolFieldEditor linkedModeRename;
     BooleanFieldEditor linkedModeRenameSelect;
     BooleanFieldEditor linkedModeExtract;
     BooleanFieldEditor displayOutlineTypes;
@@ -87,9 +89,12 @@ public class CeylonEditorPreferencePage
     
     @Override
     public boolean performOk() {
-        enclosingBrackets.store();
-        matchingBracket.store();
-        currentBracket.store();
+        bracketMatching.store();
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        store.setValue(SELECTED_BRACKET, 
+                matchingBrackets.getSelection());
+        store.setValue(ENCLOSING_BRACKETS, 
+                enclosingBrackets.getSelection());
 //        autoInsert.store();
 //        autoActivation.store();
 //        autoActivationDelay.store();
@@ -124,9 +129,11 @@ public class CeylonEditorPreferencePage
     @Override
     protected void performDefaults() {
         super.performDefaults();
-        enclosingBrackets.loadDefault();
-        matchingBracket.loadDefault();
-        currentBracket.loadDefault();
+        bracketMatching.loadDefault();
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        matchingBrackets.setSelection(store.getDefaultBoolean(SELECTED_BRACKET));
+        enclosingBrackets.setSelection(store.getDefaultBoolean(ENCLOSING_BRACKETS));
+        oppositeBracket.setSelection(false);
 //        autoActivation.loadDefault();
 //        autoInsert.loadDefault();
 //        autoActivationDelay.loadDefault();
@@ -247,7 +254,7 @@ public class CeylonEditorPreferencePage
 //        onSaveSection();
     }
 
-    private Composite createGroup(int cols, String text) {
+    private Group createGroup(int cols, String text) {
         Composite parent = getFieldEditorParent();
         Group group = new Group(parent, SWT.NONE);
         group.setText(text);
@@ -307,33 +314,71 @@ public class CeylonEditorPreferencePage
     private void bracketHighlightingSection() {
 //        addField(new LabelFieldEditor("Bracket highlighting:",
 //                getFieldEditorParent()));
-        Composite group = createGroup(2, "Bracket highlighting");
-        Composite p0 = getFieldEditorParent(group);
+        Group group = createGroup(1, "Bracket highlighting");
+        Composite p = getFieldEditorParent(group);
         GridData gd = new GridData();
-        gd.horizontalSpan=2;
-        p0.setLayoutData(gd);
-        matchingBracket = new SpecialBoolFieldEditor(MATCHING_BRACKET, 
-                "Enable matching bracket highlighting", p0);
-        matchingBracket.load();
-        addField(matchingBracket);
-        final Composite p1 = getFieldEditorParent(group);
-        currentBracket = new SpecialBoolFieldEditor(SELECTED_BRACKET, 
-                "Highlight selected bracket", p1);
-        currentBracket.load();
-        addField(currentBracket);
-        final Composite p2 = getFieldEditorParent(group);
-        enclosingBrackets = new SpecialBoolFieldEditor(ENCLOSING_BRACKETS, 
-                "Highlight enclosing brackets", p2);
-        enclosingBrackets.load();
-        addField(enclosingBrackets);
-        boolean enabled = EditorsUI.getPreferenceStore().getBoolean(MATCHING_BRACKET);
-        currentBracket.setEnabled(enabled, p1);
-        enclosingBrackets.setEnabled(enabled, p2);
-        matchingBracket.setListener(new Listener() {
+        gd.horizontalSpan=1;
+        p.setLayoutData(gd);
+        bracketMatching = new SpecialBoolFieldEditor(MATCHING_BRACKET, 
+                "Enable matching bracket highlighting", p);
+        bracketMatching.load();
+        addField(bracketMatching);
+        
+        Composite composite = new Composite(group, SWT.NONE);
+        GridLayout layout = new GridLayout(1, true);
+        composite.setLayout(layout);
+        GridData gd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd2.grabExcessHorizontalSpace=true;
+        composite.setLayoutData(gd2);
+        
+        oppositeBracket = new Button(composite, SWT.RADIO);
+        oppositeBracket.setText("Matching bracket only");
+        oppositeBracket.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean selected = oppositeBracket.getSelection();
+                matchingBrackets.setSelection(!selected);
+                enclosingBrackets.setSelection(!selected);
+            }
+        });
+        matchingBrackets = new Button(composite, SWT.RADIO);
+        matchingBrackets.setText("Matching bracket and selected bracket");
+        matchingBrackets.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean selected = matchingBrackets.getSelection();
+                oppositeBracket.setSelection(!selected);
+                enclosingBrackets.setSelection(!selected);
+            }
+        });
+        enclosingBrackets = new Button(composite, SWT.RADIO);
+        enclosingBrackets.setText("Enclosing brackets");
+        enclosingBrackets.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean selected = enclosingBrackets.getSelection();
+                matchingBrackets.setSelection(!selected);
+                oppositeBracket.setSelection(!selected);
+            }
+        });
+        
+        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        matchingBrackets.setSelection(store.getBoolean(SELECTED_BRACKET) &&
+                !store.getBoolean(ENCLOSING_BRACKETS));
+        enclosingBrackets.setSelection(store.getBoolean(ENCLOSING_BRACKETS));
+        oppositeBracket.setSelection(!store.getBoolean(SELECTED_BRACKET) && 
+                !store.getBoolean(ENCLOSING_BRACKETS));
+        
+        boolean enabled = EditorsUI.getPreferenceStore().getBoolean(MATCHING_BRACKET);        
+        oppositeBracket.setEnabled(enabled);
+        matchingBrackets.setEnabled(enabled);
+        enclosingBrackets.setEnabled(enabled);
+        bracketMatching.setListener(new Listener() {
             @Override
             public void valueChanged(boolean oldValue, boolean newValue) {
-                currentBracket.setEnabled(newValue, p1);
-                enclosingBrackets.setEnabled(newValue, p2);
+                oppositeBracket.setEnabled(newValue);
+                matchingBrackets.setEnabled(newValue);
+                enclosingBrackets.setEnabled(newValue);
             }
         });
 //        super.createDescriptionLabel(getFieldEditorParent()).setText("Autocompletion");
@@ -422,25 +467,41 @@ public class CeylonEditorPreferencePage
                 "Enable source folding", p0);
         enableFolding.load();
         addField(enableFolding);
-        final Composite p1 = getFieldEditorParent(group);
+        
+        final Composite composite = new Composite(group, SWT.NONE);
+        GridLayout layout = new GridLayout(1, true);
+        composite.setLayout(layout);
+        GridData gd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd2.grabExcessHorizontalSpace=true;
+        composite.setLayoutData(gd2);
+        
+        final Composite p1 = getFieldEditorParent(composite);
         autoFoldImports = new BooleanFieldEditor(AUTO_FOLD_IMPORTS, 
                 "Automatically fold import lists", p1);
         autoFoldImports.load();
         addField(autoFoldImports);
-        final Composite p2 = getFieldEditorParent(group);
+        final Composite p2 = getFieldEditorParent(composite);
         autoFoldComments = new BooleanFieldEditor(AUTO_FOLD_COMMENTS, 
                 "Automatically fold comments", p2);
         autoFoldComments.load();
         addField(autoFoldComments);
+        
         boolean enabled = EditorsUI.getPreferenceStore()
                 .getBoolean(EDITOR_FOLDING_ENABLED);
         autoFoldImports.setEnabled(enabled, p1);
         autoFoldComments.setEnabled(enabled, p2);
+//        composite.setVisible(enabled);
+//        composite.setEnabled(enabled);
+//        ((GridData) composite.getLayoutData()).exclude = !enabled;
         enableFolding.setListener(new Listener() {
             @Override
             public void valueChanged(boolean oldValue, boolean newValue) {
                 autoFoldImports.setEnabled(newValue, p1);
                 autoFoldComments.setEnabled(newValue, p2);
+//                composite.setVisible(newValue);
+//                composite.setEnabled(newValue);
+//                ((GridData) composite.getLayoutData()).exclude = !newValue;
+//                group.layout();
             }
         });
 //        addField(new SpacerFieldEditor(getFieldEditorParent()));
@@ -474,16 +535,26 @@ public class CeylonEditorPreferencePage
                 getFieldEditorParent(group));
         linkedModeExtract.load();
         addField(linkedModeExtract);
-        linkedModeRename = new BooleanFieldEditor(LINKED_MODE_RENAME, 
+        linkedModeRename = new BoolFieldEditor(LINKED_MODE_RENAME, 
                 "Use linked mode for rename", 
                 getFieldEditorParent(group));
         linkedModeRename.load();
         addField(linkedModeRename);
+        final Composite parent = getFieldEditorParent(group);
         linkedModeRenameSelect = new BooleanFieldEditor(LINKED_MODE_RENAME_SELECT, 
                 "Fully select renamed identifier", 
-                getFieldEditorParent(group));
+                parent);
         linkedModeRenameSelect.load();
         addField(linkedModeRenameSelect);
+        linkedModeRenameSelect.setEnabled(
+                getPreferenceStore().getBoolean(LINKED_MODE_RENAME), 
+                parent);
+        linkedModeRename.setListener(new Listener() {
+            @Override
+            public void valueChanged(boolean oldValue, boolean newValue) {
+                linkedModeRenameSelect.setEnabled(newValue, parent);
+            }
+        });
     }
     
     /*private void onSaveSection() {
