@@ -1918,6 +1918,16 @@
        </keywordReference>
        </page>
        <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.refactoring"
+           name="Refactoring"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonRefactoringPreferencePage"
+           category="com.redhat.ceylon.eclipse.ui.preferences.editor">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="com.redhat.ceylon.eclipse.ui.keywords.refactoring">
+       </keywordReference>
+       </page>
+       <page
            id="com.redhat.ceylon.eclipse.ui.preferences.completion"
            name="Completion"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonCompletionPreferencePage"
@@ -1961,8 +1971,11 @@
    </extension>
    <extension point="org.eclipse.ui.keywords">
    <keyword
-         label="folding typing linked mode brackets braces parentheses quotes backticks"
+         label="folding typing brackets braces parentheses quotes backticks paste imports"
          id="com.redhat.ceylon.eclipse.ui.keywords.editor"/>
+   <keyword
+         label="refactoring linked mode"
+         id="com.redhat.ceylon.eclipse.ui.keywords.refactoring"/>
    <keyword
          label="completion linked mode"
          id="com.redhat.ceylon.eclipse.ui.keywords.completion"/>

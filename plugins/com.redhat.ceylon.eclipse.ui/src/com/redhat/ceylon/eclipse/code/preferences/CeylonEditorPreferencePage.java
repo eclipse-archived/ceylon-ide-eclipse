@@ -11,9 +11,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_QUOTES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_EXTRACT;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_ESCAPE_QUOTED;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_IMPORTS;
@@ -61,9 +58,9 @@ public class CeylonEditorPreferencePage
 //    BooleanFieldEditor linkedMode;
 //    ScaleFieldEditor autoActivationDelay;
 //    RadioGroupFieldEditor autoActivationChars;
-    BoolFieldEditor linkedModeRename;
-    BooleanFieldEditor linkedModeRenameSelect;
-    BooleanFieldEditor linkedModeExtract;
+//    BoolFieldEditor linkedModeRename;
+//    BooleanFieldEditor linkedModeRenameSelect;
+//    BooleanFieldEditor linkedModeExtract;
 //    BooleanFieldEditor displayParameterTypes;
     BooleanFieldEditor smartCaret;
     BooleanFieldEditor pasteCorrectIndent;
@@ -104,9 +101,9 @@ public class CeylonEditorPreferencePage
 //        completion.store();
 //        inexactMatches.store();
 //        linkedMode.store();
-        linkedModeRename.store();
-        linkedModeRenameSelect.store();
-        linkedModeExtract.store();
+//        linkedModeRename.store();
+//        linkedModeRenameSelect.store();
+//        linkedModeExtract.store();
 //        displayParameterTypes.store();
         smartCaret.store();
         pasteCorrectIndent.store();
@@ -144,9 +141,9 @@ public class CeylonEditorPreferencePage
 //        completion.loadDefault();
 //        inexactMatches.loadDefault();
 //        linkedMode.loadDefault();
-        linkedModeRename.loadDefault();
-        linkedModeRenameSelect.loadDefault();
-        linkedModeExtract.loadDefault();
+//        linkedModeRename.loadDefault();
+//        linkedModeRenameSelect.loadDefault();
+//        linkedModeExtract.loadDefault();
 //        displayParameterTypes.loadDefault();
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
@@ -234,6 +231,16 @@ public class CeylonEditorPreferencePage
                         CeylonCompletionPreferencePage.ID, null, null);
             }
         });
+        Link refactoringLink = new Link(parent, 0);
+        refactoringLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        refactoringLink.setText("See '<a>Refactoring</a>' for preferences related to refactoring.");
+        refactoringLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonRefactoringPreferencePage.ID, null, null);
+            }
+        });
         Link saveLink = new Link(parent, 0);
         saveLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         saveLink.setText("See '<a>Save Actions</a>' to enable save actions.");
@@ -250,7 +257,7 @@ public class CeylonEditorPreferencePage
     @Override
     protected void createFieldEditors() {
         otherSection();
-        linkedModeSection();
+//        linkedModeSection();
 //        autocompletionSection();
         autocloseSection();
         bracketHighlightingSection();
@@ -537,34 +544,34 @@ public class CeylonEditorPreferencePage
         addField(pasteEscapeQuoted);
     }
     
-    private void linkedModeSection() {
-        Composite group = createGroup(1, "Linked mode");
-        linkedModeExtract = new BooleanFieldEditor(LINKED_MODE_EXTRACT, 
-                "Use linked mode for extract refactorings", 
-                getFieldEditorParent(group));
-        linkedModeExtract.load();
-        addField(linkedModeExtract);
-        linkedModeRename = new BoolFieldEditor(LINKED_MODE_RENAME, 
-                "Use linked mode for rename", 
-                getFieldEditorParent(group));
-        linkedModeRename.load();
-        addField(linkedModeRename);
-        final Composite parent = getFieldEditorParent(group);
-        linkedModeRenameSelect = new BooleanFieldEditor(LINKED_MODE_RENAME_SELECT, 
-                "Fully select renamed identifier", 
-                parent);
-        linkedModeRenameSelect.load();
-        addField(linkedModeRenameSelect);
-        linkedModeRenameSelect.setEnabled(
-                getPreferenceStore().getBoolean(LINKED_MODE_RENAME), 
-                parent);
-        linkedModeRename.setListener(new Listener() {
-            @Override
-            public void valueChanged(boolean oldValue, boolean newValue) {
-                linkedModeRenameSelect.setEnabled(newValue, parent);
-            }
-        });
-    }
+//    private void linkedModeSection() {
+//        Composite group = createGroup(1, "Linked mode");
+//        linkedModeExtract = new BooleanFieldEditor(LINKED_MODE_EXTRACT, 
+//                "Use linked mode for extract refactorings", 
+//                getFieldEditorParent(group));
+//        linkedModeExtract.load();
+//        addField(linkedModeExtract);
+//        linkedModeRename = new BoolFieldEditor(LINKED_MODE_RENAME, 
+//                "Use linked mode for rename", 
+//                getFieldEditorParent(group));
+//        linkedModeRename.load();
+//        addField(linkedModeRename);
+//        final Composite parent = getFieldEditorParent(group);
+//        linkedModeRenameSelect = new BooleanFieldEditor(LINKED_MODE_RENAME_SELECT, 
+//                "Fully select renamed identifier", 
+//                parent);
+//        linkedModeRenameSelect.load();
+//        addField(linkedModeRenameSelect);
+//        linkedModeRenameSelect.setEnabled(
+//                getPreferenceStore().getBoolean(LINKED_MODE_RENAME), 
+//                parent);
+//        linkedModeRename.setListener(new Listener() {
+//            @Override
+//            public void valueChanged(boolean oldValue, boolean newValue) {
+//                linkedModeRenameSelect.setEnabled(newValue, parent);
+//            }
+//        });
+//    }
     
     /*private void onSaveSection() {
         Composite group = createGroup(1, "On save");

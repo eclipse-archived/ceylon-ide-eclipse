@@ -97,6 +97,17 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
             }
         });
         
+        Link refactoringLink = new Link(parent, 0);
+        refactoringLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        refactoringLink.setText("See '<a>Refactoring</a>' for preferences related to refactoring.");
+        refactoringLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonRefactoringPreferencePage.ID, null, null);
+            }
+        });
+        
         Link saveLink = new Link(parent, 0);
         saveLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         saveLink.setText("See '<a>Save Actions</a>' to enable save actions.");
