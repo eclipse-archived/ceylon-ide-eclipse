@@ -1061,12 +1061,18 @@ public class DocumentationHover extends SourceInfoHover {
     private static void addPackageModuleInfo(Package pack,
             StringBuilder buffer) {
         Module mod = pack.getModule();
+        String label;
+        if (mod.getNameAsString().isEmpty() || 
+                mod.getNameAsString().equals("default")) {
+            label = "<span style='font-size:" + smallerSize + "'>in default module</span>";
+        }
+        else {
+            label = "<span style='font-size:" + smallerSize + "'>in module&nbsp;&nbsp;" + 
+                    link(mod) + " \"" + mod.getVersion() + "\"" + "</span>";
+        }
         HTML.addImageAndLabel(buffer, mod, 
                 HTML.fileUrl(getIcon(mod)).toExternalForm(), 
-                16, 16, 
-                "<span style='font-size:" + smallerSize + "'>in module&nbsp;&nbsp;" + 
-                        link(mod) + "</span>", 
-                20, 2);
+                16, 16, label, 20, 2);
     }
     
     private static String description(Package pack) {
@@ -1721,13 +1727,7 @@ public class DocumentationHover extends SourceInfoHover {
             HTML.addImageAndLabel(buffer, pack, 
                     HTML.fileUrl(getIcon(pack)).toExternalForm(), 
                     16, 16, label, 20, 2);
-            Module mod = pack.getModule();
-            HTML.addImageAndLabel(buffer, mod, 
-                    HTML.fileUrl(getIcon(mod)).toExternalForm(), 
-                    16, 16, 
-                    "<span style='font-size:" + smallerSize + "'>in module&nbsp;&nbsp;" + 
-                            link(mod) + "</span>", 
-                    20, 2);
+            addPackageModuleInfo(pack, buffer);
         }
         buffer.append("</p>");
     }
