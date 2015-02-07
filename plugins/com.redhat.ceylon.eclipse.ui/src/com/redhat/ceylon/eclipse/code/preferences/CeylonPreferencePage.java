@@ -138,7 +138,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
 
     @Override
     protected void createFieldEditors() {
-        final Composite group = createGroup(1, "New Ceylon Projects");
+        final Composite group = createGroup(1, "Defaults for new Ceylon projects");
         projectType = new RadioGroupFieldEditor(DEFAULT_PROJECT_TYPE, 
                 "Default target virtual machine:", 3, 
                 new String[][] { new String[] { "JVM", "jvm" }, 

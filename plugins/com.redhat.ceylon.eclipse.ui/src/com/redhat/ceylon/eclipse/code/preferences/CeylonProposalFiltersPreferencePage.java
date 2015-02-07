@@ -103,7 +103,7 @@ public class CeylonProposalFiltersPreferencePage
         super();
         setPreferenceStore(EditorUtil.getPreferences());
         setTitle("Ceylon Proposal Filters"); 
-        setDescription("Filtered packages will be excluded from completion proposal lists."); 
+        setDescription("Filtered packages and types will be excluded from Ceylon completion proposal lists."); 
     }
     
     @Override

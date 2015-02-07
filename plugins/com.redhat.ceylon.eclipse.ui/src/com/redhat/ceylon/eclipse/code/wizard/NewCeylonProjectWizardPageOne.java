@@ -1496,7 +1496,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     void addCompilerSettings(Composite parent) {
         Group group = new Group(parent, SWT.NONE);
         Composite composite = group;
-        group.setText("Target Virtual Machine");
+        group.setText("Target virtual machine");
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         composite.setLayoutData(gd);
         GridLayout layout = new GridLayout();

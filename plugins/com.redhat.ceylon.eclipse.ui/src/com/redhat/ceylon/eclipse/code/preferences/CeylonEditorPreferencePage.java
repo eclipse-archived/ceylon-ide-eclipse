@@ -413,7 +413,7 @@ public class CeylonEditorPreferencePage
     private void foldingSection() {
 //        addField(new LabelFieldEditor("Folding:",
 //                getFieldEditorParent()));
-        final Composite group = createGroup(2, "Source Folding");
+        final Composite group = createGroup(2, "Source folding");
         Composite p0 = getFieldEditorParent(group);
         GridData gd = new GridData();
         gd.horizontalSpan=2;

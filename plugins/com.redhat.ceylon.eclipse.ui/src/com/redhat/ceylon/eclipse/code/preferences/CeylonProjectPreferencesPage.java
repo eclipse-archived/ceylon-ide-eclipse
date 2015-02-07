@@ -200,7 +200,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         });
         
         final Group platformGroup = new Group(parent, SWT.NONE);
-        platformGroup.setText("Target Virtual Machine");
+        platformGroup.setText("Target virtual machine");
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd.grabExcessHorizontalSpace=true;
         platformGroup.setLayoutData(gd);
@@ -221,7 +221,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         compileToJs.setEnabled(builderEnabled);
         
         final Group warningsGroup = new Group(parent, SWT.NONE);
-        warningsGroup.setText("Compilation Warnings");
+        warningsGroup.setText("Compilation warnings");
         warningsGroup.setLayout(new GridLayout(1, false));
         GridData gd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd2.grabExcessHorizontalSpace=true;
