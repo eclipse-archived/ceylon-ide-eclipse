@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
@@ -45,6 +46,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -54,6 +56,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -748,6 +751,18 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         action.setChecked(includeMembers);
         menuManager.add(action);
         super.fillViewMenu(menuManager);
+        menuManager.add(new Separator());
+        action = 
+                new Action("Configure Filters...") {
+            @Override
+            public void run() {
+                PreferencesUtil.createPreferenceDialogOn(getShell(), 
+                        CeylonOpenFiltersPreferencePage.ID, 
+                        new String[] {CeylonOpenFiltersPreferencePage.ID}, 
+                        null).open();
+            }
+        };
+        menuManager.add(action);
     }
 
     public static boolean isMatchingGlob(String filter, String name) {
