@@ -36,7 +36,7 @@ public class OpenDeclarationAction extends Action {
     public void run() {
         Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
         OpenCeylonDeclarationDialog dialog = 
-                new OpenCeylonDeclarationDialog(true, shell, editor);
+                new OpenCeylonDeclarationDialog(true, shell);
         dialog.setTitle("Open Ceylon Declaration");
         dialog.setMessage("Select a Ceylon declaration to open (with wildcard *, camel hump matching):");
         if (editor instanceof ITextEditor) {

@@ -8,21 +8,15 @@ import static org.eclipse.debug.internal.ui.SWTFactory.createPushButton;
 import static org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin.createAllPackagesDialog;
 import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.parseList;
 import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.serializeList;
-import static org.eclipse.jdt.ui.JavaUI.createTypeDialog;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import java.util.ArrayList;
 
 import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.internal.debug.ui.Filter;
-import org.eclipse.jdt.internal.debug.ui.FilterLabelProvider;
 import org.eclipse.jdt.internal.debug.ui.FilterViewerComparator;
-import org.eclipse.jdt.ui.IJavaElementSearchConstants;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -54,8 +48,9 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
-import org.eclipse.ui.dialogs.SelectionDialog;
 
+import com.redhat.ceylon.eclipse.code.open.DeclarationWithProject;
+import com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationDialog;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 /**
@@ -261,12 +256,12 @@ public class CeylonProposalFiltersPreferencePage
         });
     //Add type button
         fAddTypeButton = createPushButton(buttonContainer, 
-                "Add &Type...", 
-                "Choose a Type and Add It to Proposal Filters", null);
+                "Add &Declarations...", 
+                "Choose Declaration(s) and Add to Filters", null);
         fAddTypeButton.addListener(SWT.Selection, 
                 new Listener() {
             public void handleEvent(Event e) {
-                addType();
+                addDeclaration();
             }
         });
     //Add package button
@@ -339,26 +334,23 @@ public class CeylonProposalFiltersPreferencePage
     /**
      * add a new type to the listing of available filters 
      */
-    private void addType() {
-        try {
-            SelectionDialog dialog = createTypeDialog(getShell(), 
-                getWorkbench().getProgressService(),
-                SearchEngine.createWorkspaceScope(), 
-                IJavaElementSearchConstants.CONSIDER_ALL_TYPES, 
-                false);
-            dialog.setTitle("Add Type to Proposal Filters"); 
-            dialog.setMessage("&Select a type to filter from proposal lists:"); 
-            if (dialog.open() == IDialogConstants.OK_ID) {
-                Object[] types = dialog.getResult();
-                if (types != null && types.length > 0) {
-                    IType type = (IType) types[0];
-                    addFilter(type.getFullyQualifiedName(), true);
-                }
-            }           
-        } 
-        catch (JavaModelException jme) { 
-            jme.printStackTrace();
-        }   
+    private void addDeclaration() {
+        OpenCeylonDeclarationDialog dialog = 
+                new OpenCeylonDeclarationDialog(true, getShell()) {
+            @Override
+            protected String getFilterListAsString() {
+                return "";
+            }
+        };
+        dialog.setTitle("Add Declaration to Filters");
+        dialog.setMessage("&Select a type to filter from dialog:");
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            Object[] types = dialog.getResult();
+            for (int i=0; i<types.length; i++) {
+                DeclarationWithProject dwp = (DeclarationWithProject) types[i];
+                addFilter(dwp.getDeclaration().getQualifiedNameString(), true);
+            }
+        }
     }
     
     /**
@@ -377,7 +369,7 @@ public class CeylonProposalFiltersPreferencePage
                     IJavaElement pkg = null;
                     for (int i = 0; i < packages.length; i++) {
                         pkg = (IJavaElement) packages[i];
-                        String filter = pkg.getElementName() + ".*";
+                        String filter = pkg.getElementName() + "::*";
                         addFilter(filter, true);
                     }
                 }       

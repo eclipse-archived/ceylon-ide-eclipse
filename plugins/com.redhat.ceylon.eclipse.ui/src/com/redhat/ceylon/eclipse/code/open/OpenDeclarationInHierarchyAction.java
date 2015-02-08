@@ -31,7 +31,7 @@ public class OpenDeclarationInHierarchyAction extends Action {
     public void run() {
         Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
         OpenCeylonDeclarationDialog dialog = 
-                new OpenCeylonDeclarationDialog(false, shell, editor);
+                new OpenCeylonDeclarationDialog(false, shell);
         dialog.setTitle("Open in Type Hierarchy View");
         dialog.setMessage("Select a Ceylon declaration to open (with wildcard *, camel hump matching):");
         if (editor instanceof ITextEditor) {

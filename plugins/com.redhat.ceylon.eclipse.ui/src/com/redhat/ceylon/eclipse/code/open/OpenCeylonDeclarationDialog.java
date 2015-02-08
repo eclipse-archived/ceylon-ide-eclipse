@@ -44,7 +44,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
@@ -66,9 +65,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     
     private boolean includeMembers;
     
+    private int filterVersion = 0;
+    
     private final class Filter extends ItemsFilter {
         boolean members = includeMembers;
-
+        int version = filterVersion;
+        
         @Override
         public boolean matchItem(Object item) {
             Declaration declaration = 
@@ -110,7 +112,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public boolean equalsFilter(ItemsFilter filter) {
             if (!(filter instanceof Filter) ||
-                    members!=((Filter) filter).members) {
+                    members!=((Filter) filter).members ||
+                    version!=((Filter) filter).version) {
                 return false;
             }
             else {
@@ -121,7 +124,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public boolean isSubFilter(ItemsFilter filter) {
             if (!(filter instanceof Filter) ||
-                    members!=((Filter) filter).members) {
+                    members!=((Filter) filter).members ||
+                    version!=((Filter) filter).version) {
                 return false;
             }
             else {
@@ -398,7 +402,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
      }
     
-    public OpenCeylonDeclarationDialog(boolean multi, Shell shell, IEditorPart editor) {
+    public OpenCeylonDeclarationDialog(boolean multi, Shell shell) {
         super(shell, multi);
         //this.editor = editor;
         setSelectionHistory(new TypeSelectionHistory());
@@ -573,28 +577,29 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
-    String filtersString = EditorUtil.getPreferences()
-            .getString(OPEN_FILTERS);
-    
-    private String[] getFilters(String filtersString) {
+    private void initFilters() {
+        String filtersString = getFilterListAsString();
         if (!filtersString.trim().isEmpty()) { 
-            return filtersString
+            filters = filtersString
                     .replace(".", "\\.").replace("*", ".*")
                     .split(",");
             
         }
         else {
-            return new String[0];
+            filters = new String[0];
         }
     }
 
-    String[] filters = getFilters(filtersString);
+    protected String getFilterListAsString() {
+        return EditorUtil.getPreferences()
+                .getString(OPEN_FILTERS);
+    }
+
+    private String[] filters; { initFilters(); }
 
     private boolean isFiltered(Declaration declaration) {
         if (filters.length>0) {
-            String name = declaration
-                    .getQualifiedNameString()
-                    .replace("::", ".");
+            String name = declaration.getQualifiedNameString();
             for (String filter: filters) {
                 String regex = filter.trim();
                 if (!regex.isEmpty() && name.matches(regex)) {
@@ -610,6 +615,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             String name = pack.getNameAsString();
             for (String filter: filters) {
                 String regex = filter.trim();
+                if (regex.endsWith("::*")) {
+                    regex = regex.substring(0, regex.length()-3);
+                }
                 if (!regex.isEmpty() && name.matches(regex)) {
                     return true;
                 }
@@ -760,6 +768,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         CeylonOpenFiltersPreferencePage.ID, 
                         new String[] {CeylonOpenFiltersPreferencePage.ID}, 
                         null).open();
+                initFilters();
+                filterVersion++;
+                applyFilter();
             }
         };
         menuManager.add(action);

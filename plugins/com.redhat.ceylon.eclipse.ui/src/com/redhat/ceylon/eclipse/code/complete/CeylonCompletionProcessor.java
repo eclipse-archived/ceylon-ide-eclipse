@@ -406,8 +406,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             while (iterator.hasNext()) {
                 DeclarationWithProximity dwp = iterator.next();
                 String name = dwp.getDeclaration()
-                        .getQualifiedNameString()
-                        .replace("::", ".");
+                        .getQualifiedNameString();
                 for (String filter: filters) {
                     String regex = filter.trim();
                     if (!regex.isEmpty() && name.matches(regex)) {
