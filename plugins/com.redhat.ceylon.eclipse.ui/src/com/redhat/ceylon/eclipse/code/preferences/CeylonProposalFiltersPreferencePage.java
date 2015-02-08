@@ -16,6 +16,7 @@ import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.debug.ui.Filter;
+import org.eclipse.jdt.internal.debug.ui.FilterLabelProvider;
 import org.eclipse.jdt.internal.debug.ui.FilterViewerComparator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
