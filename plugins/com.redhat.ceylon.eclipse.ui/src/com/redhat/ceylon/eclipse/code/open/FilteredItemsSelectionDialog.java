@@ -138,15 +138,15 @@ import org.eclipse.ui.statushandlers.StatusManager;
 public abstract class FilteredItemsSelectionDialog extends
         SelectionStatusDialog {
 
-    private static final String DIALOG_BOUNDS_SETTINGS = "DialogBoundsSettings"; //$NON-NLS-1$
+    protected static final String DIALOG_BOUNDS_SETTINGS = "DialogBoundsSettings";
 
-    private static final String SHOW_STATUS_LINE = "ShowStatusLine"; //$NON-NLS-1$
+    private static final String SHOW_STATUS_LINE = "ShowStatusLine";
 
-    private static final String HISTORY_SETTINGS = "History"; //$NON-NLS-1$
+    private static final String HISTORY_SETTINGS = "History";
 
-    private static final String DIALOG_HEIGHT = "DIALOG_HEIGHT"; //$NON-NLS-1$
+    protected static final String DIALOG_HEIGHT = "DIALOG_HEIGHT";
 
-    private static final String DIALOG_WIDTH = "DIALOG_WIDTH"; //$NON-NLS-1$
+    protected static final String DIALOG_WIDTH = "DIALOG_WIDTH";
 
     /**
      * Represents an empty selection in the pattern input field (used only for
@@ -376,8 +376,10 @@ public abstract class FilteredItemsSelectionDialog extends
         if (settings.get(SHOW_STATUS_LINE) != null) {
             toggleStatusLine = settings.getBoolean(SHOW_STATUS_LINE);
         }
-
-        toggleStatusLineAction.setChecked(toggleStatusLine);
+        
+        if (toggleStatusLineAction!=null) {
+            toggleStatusLineAction.setChecked(toggleStatusLine);
+        }
 
         details.setVisible(toggleStatusLine);
 
@@ -434,7 +436,9 @@ public abstract class FilteredItemsSelectionDialog extends
      *            settings used to store dialog
      */
     protected void storeDialog(IDialogSettings settings) {
-        settings.put(SHOW_STATUS_LINE, toggleStatusLineAction.isChecked());
+        settings.put(SHOW_STATUS_LINE, 
+                toggleStatusLineAction==null ||
+                toggleStatusLineAction.isChecked());
 
         XMLMemento memento = XMLMemento.createWriteRoot(HISTORY_SETTINGS);
         this.contentProvider.saveHistory(memento);
@@ -561,6 +565,7 @@ public abstract class FilteredItemsSelectionDialog extends
         menuManager = new MenuManager();
 
         fillViewMenu(menuManager);
+        toolBar.setVisible(!menuManager.isEmpty());
 
         IHandlerService service = (IHandlerService) PlatformUI.getWorkbench()
                 .getService(IHandlerService.class);
@@ -806,7 +811,8 @@ public abstract class FilteredItemsSelectionDialog extends
         createExtendedContentArea(content);
 
         details = new DetailsContentViewer(content, SWT.BORDER | SWT.FLAT);
-        details.setVisible(toggleStatusLineAction.isChecked());
+        details.setVisible(toggleStatusLineAction==null ||
+                toggleStatusLineAction.isChecked());
         details.setContentProvider(new NullContentProvider());
         details.setLabelProvider(getDetailsLabelProvider());
 

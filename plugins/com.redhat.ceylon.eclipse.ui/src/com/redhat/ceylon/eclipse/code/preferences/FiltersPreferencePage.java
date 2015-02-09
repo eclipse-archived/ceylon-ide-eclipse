@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.debug.ui.Filter;
 import org.eclipse.jdt.internal.debug.ui.FilterViewerComparator;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -56,8 +57,6 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 public abstract class FiltersPreferencePage 
         extends PreferencePage 
         implements IWorkbenchPreferencePage {
-    
-    private static final String SETTINGS_ID = CeylonPlugin.PLUGIN_ID + ".addDeclarationFilterDialog";
     
     class FilterContentProvider 
             implements IStructuredContentProvider {
@@ -286,6 +285,8 @@ public abstract class FiltersPreferencePage
     private void addDeclaration() {
         OpenCeylonDeclarationDialog dialog = 
                 new OpenCeylonDeclarationDialog(true, getShell()) {
+            private static final String SETTINGS_ID = 
+                    CeylonPlugin.PLUGIN_ID + ".addDeclarationFilterDialog";            
             @Override
             protected String getFilterListAsString() {
                 return "";
@@ -296,9 +297,22 @@ public abstract class FiltersPreferencePage
                 IDialogSettings section = settings.getSection(SETTINGS_ID);
                 if (section == null) {
                     section = settings.addNewSection(SETTINGS_ID);
-                } 
+                }
                 return section;
             }
+            @Override
+            protected IDialogSettings getDialogBoundsSettings() {
+                IDialogSettings settings = getDialogSettings();
+                IDialogSettings section = settings.getSection(DIALOG_BOUNDS_SETTINGS);
+                if (section == null) {
+                    section = settings.addNewSection(DIALOG_BOUNDS_SETTINGS);
+                    section.put(DIALOG_HEIGHT, 500);
+                    section.put(DIALOG_WIDTH, 400);
+                }
+                return section;
+            }
+            @Override
+            protected void fillViewMenu(IMenuManager menuManager) {}
         };
         dialog.setTitle("Add Declaration to Filters");
         dialog.setMessage("&Select a declaration to exclude:");
