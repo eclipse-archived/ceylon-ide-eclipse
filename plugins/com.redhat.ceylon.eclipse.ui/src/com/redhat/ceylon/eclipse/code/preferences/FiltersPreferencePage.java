@@ -15,6 +15,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.debug.ui.Filter;
 import org.eclipse.jdt.internal.debug.ui.FilterViewerComparator;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
@@ -49,11 +50,14 @@ import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.open.DeclarationWithProject;
 import com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationDialog;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public abstract class FiltersPreferencePage 
         extends PreferencePage 
         implements IWorkbenchPreferencePage {
+    
+    private static final String SETTINGS_ID = CeylonPlugin.PLUGIN_ID + ".addDeclarationFilterDialog";
     
     class FilterContentProvider 
             implements IStructuredContentProvider {
@@ -286,9 +290,18 @@ public abstract class FiltersPreferencePage
             protected String getFilterListAsString() {
                 return "";
             }
+            @Override
+            protected IDialogSettings getDialogSettings() {
+                IDialogSettings settings = CeylonPlugin.getInstance().getDialogSettings();
+                IDialogSettings section = settings.getSection(SETTINGS_ID);
+                if (section == null) {
+                    section = settings.addNewSection(SETTINGS_ID);
+                } 
+                return section;
+            }
         };
         dialog.setTitle("Add Declaration to Filters");
-        dialog.setMessage("&Select a type to exclude:");
+        dialog.setMessage("&Select a declaration to exclude:");
         if (dialog.open() == IDialogConstants.OK_ID) {
             Object[] types = dialog.getResult();
             for (int i=0; i<types.length; i++) {

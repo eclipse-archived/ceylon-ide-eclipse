@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isNamed;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
@@ -13,6 +14,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -62,6 +64,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
+    
+    private static final String SETTINGS_ID = CeylonPlugin.PLUGIN_ID + ".openDeclarationDialog";
     
     private boolean includeMembers;
     
@@ -354,20 +358,24 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 if (projectName==null || project.getName().equals(projectName)) {
                     //search for a source file in the project
                     for (PhasedUnit unit: getUnits(project)) {
-                        if (unit.getUnit().getFilename().equals(unitFileName) && 
-                                unit.getPackage().getQualifiedNameString().equals(packageName)) {
+                        String filename = unit.getUnit().getFilename();
+                        String pname = unit.getPackage().getQualifiedNameString();
+                        if (filename.equals(unitFileName) && 
+                                pname.equals(packageName)) {
                             for (Declaration dec: unit.getDeclarations()) {
                                 if (isPresentable(dec) && 
-                                        dec.getQualifiedNameString().equals(qualifiedName)) {
+                                        isNamed(qualifiedName, dec)) {
                                     if (isFiltered(dec)) return null;
-                                    return new DeclarationWithProject(dec, project, version, path);
+                                    return new DeclarationWithProject(dec, 
+                                            project, version, path);
                                 }
                             }
                         }
                     }
                     //if we don't find it, search all dependent modules
                     //this will find declarations in src archives
-                    Modules modules = getProjectTypeChecker(project).getContext().getModules();
+                    Modules modules = getProjectTypeChecker(project)
+                            .getContext().getModules();
                     for (Module module: modules.getListOfModules()) {
                         if (module.isJava() || //TODO: is this correct
                                 packageName.startsWith(module.getNameAsString()));
@@ -375,9 +383,10 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                             if (pkg.getQualifiedNameString().equals(packageName)) {
                                 for (Declaration dec: pkg.getMembers()) {
                                     if (isPresentable(dec) && 
-                                            dec.getQualifiedNameString().equals(qualifiedName)) {
+                                            isNamed(qualifiedName, dec)) {
                                         if (isFiltered(dec)) return null;
-                                        return new DeclarationWithProject(dec, project, version, path);
+                                        return new DeclarationWithProject(dec, 
+                                                project, version, path);
                                     }
                                     //TODO: members!
                                 }
@@ -421,7 +430,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     
     @Override
     protected IDialogSettings getDialogSettings() {
-        return CeylonPlugin.getInstance().getDialogSettings();
+        IDialogSettings settings = CeylonPlugin.getInstance().getDialogSettings();
+        IDialogSettings section = settings.getSection(SETTINGS_ID);
+        if (section == null) {
+            section = settings.addNewSection(SETTINGS_ID);
+        } 
+        return section;
     }
     
     @Override
@@ -527,7 +541,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     private void fill(AbstractContentProvider contentProvider,
             ItemsFilter itemsFilter, IProject project, 
             JDTModule module) {
-        for (Package pack: new ArrayList<Package>(module.getPackages())) {
+        for (Package pack: 
+                new ArrayList<Package>(module.getPackages())) {
             if (!isFiltered(pack)) {
                 for (Declaration dec: pack.getMembers()) {
                     fillDeclarationAndMembers(contentProvider, 
@@ -552,7 +567,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             contentProvider.add(dwp, itemsFilter);
             nameOccurs(dec);
             if (includeMembers && dec instanceof ClassOrInterface) {
-                for (Declaration member: new ArrayList<Declaration>(dec.getMembers())) {
+                for (Declaration member: 
+                        new ArrayList<Declaration>(dec.getMembers())) {
                     fillDeclarationAndMembers(contentProvider, 
                             itemsFilter, project, module, member);
                 }
@@ -564,7 +580,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             ItemsFilter itemsFilter, IProject project, 
             List<? extends PhasedUnit> units) {
         for (PhasedUnit unit: units) {
-            JDTModule jdtModule = (JDTModule) unit.getPackage().getModule();
+            JDTModule jdtModule = 
+                    (JDTModule) unit.getPackage().getModule();
             for (Declaration dec: unit.getDeclarations()) {
                 if (includeDeclaration(jdtModule, dec)) {
                     String version = jdtModule.getVersion();
@@ -633,20 +650,26 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     private boolean includeDeclaration(JDTModule module, Declaration dec) {
         boolean visibleFromSourceModules;
         if (dec.isToplevel()) {
-            visibleFromSourceModules = dec.isShared() || module.isProjectModule();
+            visibleFromSourceModules = 
+                    dec.isShared() || module.isProjectModule();
         } else {
-            visibleFromSourceModules = includeMembers && dec.isShared();
+            visibleFromSourceModules = 
+                    includeMembers && dec.isShared();
         }
-        return visibleFromSourceModules && isPresentable(dec) && !isFiltered(dec);
+        return visibleFromSourceModules && 
+                isPresentable(dec) && 
+                !isFiltered(dec);
     }
     
     private int estimateWork(IProgressMonitor monitor) {
         int work = 0;
-        Set<String> searchedArchives = new HashSet<String>();
+        Set<String> searchedArchives = 
+                new HashSet<String>();
         for (IProject project: getProjects()) {
             work++;
-            Modules modules = getProjectTypeChecker(project)
-                    .getContext().getModules();
+            Modules modules = 
+                    getProjectTypeChecker(project)
+                        .getContext().getModules();
             for (Module m: modules.getListOfModules()) {
                 if (m instanceof JDTModule) {
                     JDTModule module = (JDTModule) m;
@@ -706,7 +729,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 if (path==null) {
                     path = m.getArtifact().getPath();
                 }
-                if (path.indexOf(CeylonPlugin.getInstance().getCeylonRepository().getPath())>=0) {
+                File repo = CeylonPlugin.getInstance().getCeylonRepository();
+                if (path.indexOf(repo.getPath())>=0) {
                     return "Ceylon IDE system repository";
                 }
                 return path;
