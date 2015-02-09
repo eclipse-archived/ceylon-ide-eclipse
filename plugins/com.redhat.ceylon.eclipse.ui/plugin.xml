@@ -2083,6 +2083,10 @@
                   minimized="true"
                   ratio="0.68"
                   relationship="right"/>
+            <view id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"
+                  relative="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"
+                  visible="false"
+                  relationship="stack"/>
             <view id="org.eclipse.ui.views.ProblemView"
                   relative="org.eclipse.ui.editorss"
                   ratio="0.73"
@@ -2149,12 +2153,14 @@
             <perspectiveShortcut 
                   id="org.eclipse.jdt.ui.JavaPerspective"/>
             <showInPart id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
+            <showInPart id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"/>
             <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>
             <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
             <showInPart id="org.eclipse.jdt.ui.PackageExplorer"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
+            <!--viewShortcut id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"/-->
             <viewShortcut id="org.eclipse.ui.views.ContentOutline"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.DocumentationView"/>
@@ -2520,25 +2526,6 @@
           </and>
         </visibility>
      </objectContribution>
-     <objectContribution
-           objectClass="org.eclipse.core.resources.IProject"
-           adaptable="true"
-           nameFilter="*"
-           id="com.redhat.ceylon.eclipse.ui.projectViewAs">
-         <action
-               class="com.redhat.ceylon.eclipse.code.moduledependencies.DependencyGraph"
-               id="com.redhat.ceylon.eclipse.ui.actions.showDependencyGraph"
-               label="Visualize Module Dependencies..."
-               menubarPath="additions"
-               tooltip="Visualize module dependencies for this project"/>
-        <visibility>
-          <and>
-            <objectState name="open" value="true"/>
-            <objectState name="nature" value="com.redhat.ceylon.eclipse.ui.ceylonNature"/>
-          </and>
-        </visibility>
-     </objectContribution>
-
 
       <objectContribution
             objectClass="org.eclipse.jdt.debug.core.IJavaStackFrame"
@@ -2702,6 +2689,7 @@
       <view
             category="com.redhat.ceylon.eclipse.ui.views"
             class="com.redhat.ceylon.eclipse.code.moduledependencies.DependencyGraphView"
+            icon="icons/jar_l_obj.gif"
             id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"
             name="Ceylon Module Dependencies"/>
    </extension>

@@ -8,10 +8,12 @@ import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -19,6 +21,8 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.part.IShowInTarget;
+import org.eclipse.ui.part.ShowInContext;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.GraphViewer;
 import org.eclipse.zest.core.viewers.IGraphContentProvider;
@@ -38,16 +42,16 @@ import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.ModuleReference;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.ModuleWeakReference;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
-public class DependencyGraphView extends ViewPart {
+public class DependencyGraphView extends ViewPart implements IShowInTarget {
 
-    private IProject fProject;
+    private IProject project;
     
-    static final String ID = PLUGIN_ID + ".view.DependencyGraphView" ;
+    static final String ID = PLUGIN_ID + ".view.DependencyGraphView";
 
     private GraphViewer viewer;
 
     public void setProject(IProject project) {
-        fProject = project;
+        this.project = project;
         init();
     }
     
@@ -199,6 +203,12 @@ public class DependencyGraphView extends ViewPart {
     protected void createMenu() {
         final IMenuManager partMenu = 
                 getViewSite().getActionBars().getMenuManager();
+        partMenu.add(new Action("Lay Out") {
+            @Override
+            public void run() {
+                viewer.applyLayout();
+            }
+        });
         partMenu.add(new Action("Show All") {
             @Override
             public void run() {
@@ -320,11 +330,11 @@ public class DependencyGraphView extends ViewPart {
     }
     
     private void init() {
-        if (fProject==null) {
+        if (project==null) {
             return;
         }
         ModuleDependencies dependencies = 
-                getModuleDependenciesForProject(fProject);
+                getModuleDependenciesForProject(project);
         if (dependencies == null) {
             return;
         }
@@ -339,7 +349,7 @@ public class DependencyGraphView extends ViewPart {
             return;
         }*/
         setContentDescription("Ceylon module dependencies for project '" + 
-                fProject.getName() + "'");
+                project.getName() + "'");
         viewer.setInput(dependencies);
         viewer.refresh();
         viewer.applyLayout();
@@ -347,4 +357,23 @@ public class DependencyGraphView extends ViewPart {
     
     @Override
     public void setFocus() {}
+
+    @Override
+    public boolean show(ShowInContext context) {
+        ISelection selection = context.getSelection();
+        if (selection instanceof IStructuredSelection) {
+            IStructuredSelection ss = (IStructuredSelection) selection;
+            Object first = ss.getFirstElement();
+            if (first instanceof IProject) {
+                setProject((IProject) first);
+                return true;
+            }
+            else if (first instanceof IJavaProject) {
+                setProject(((IJavaProject) first).getProject());
+                return true;
+            }
+        }        
+        return false;
+    }
+    
 }
