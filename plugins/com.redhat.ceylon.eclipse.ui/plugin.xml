@@ -2153,15 +2153,15 @@
             <perspectiveShortcut 
                   id="org.eclipse.jdt.ui.JavaPerspective"/>
             <showInPart id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
-            <showInPart id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
-            <showInPart id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"/>
             <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>
             <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
+            <showInPart id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
+            <showInPart id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"/>
             <showInPart id="org.eclipse.jdt.ui.PackageExplorer"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
-            <!--viewShortcut id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"/-->
+            <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"/>
             <viewShortcut id="org.eclipse.ui.views.ContentOutline"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.DocumentationView"/>

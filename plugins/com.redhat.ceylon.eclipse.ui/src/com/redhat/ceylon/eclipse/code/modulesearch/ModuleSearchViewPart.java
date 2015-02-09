@@ -13,10 +13,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.ui.actions.CollapseAllAction;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -65,6 +66,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
@@ -78,10 +80,12 @@ import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.hover.CeylonBlockEmitter;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
+import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
@@ -900,11 +904,27 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
                 setProject((IProject) first);
                 return true;
             }
-            else if (first instanceof IJavaProject) {
-                setProject(((IJavaProject) first).getProject());
+            else if (first instanceof IJavaElement) {
+                setProject(((IJavaElement) first).getJavaProject().getProject());
                 return true;
             }
-        }        
+            else if (first instanceof IResource) {
+                setProject(((IResource) first).getProject());
+                return true;
+            }
+            else if (first instanceof SourceModuleNode) {
+                SourceModuleNode mod = (SourceModuleNode) first;
+                setProject(mod.getProject());
+                return true;
+            }
+        }
+        else {
+            IEditorPart editor = EditorUtil.getCurrentEditor();
+            if (editor instanceof CeylonEditor) {
+                setProject(((CeylonEditor) editor).getParseController().getProject());
+                return true;
+            }
+        }
         return false;
     }
     

@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -18,7 +19,7 @@ import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
-import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -38,6 +39,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.IShowInTarget;
 import org.eclipse.ui.part.ShowInContext;
 import org.eclipse.ui.part.ViewPart;
@@ -52,6 +54,8 @@ import org.eclipse.zest.layouts.algorithms.HorizontalTreeLayoutAlgorithm;
 import org.eclipse.zest.layouts.algorithms.TreeLayoutAlgorithm;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
@@ -59,6 +63,7 @@ import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.Dependency;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.ModuleReference;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.ModuleWeakReference;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class DependencyGraphView extends ViewPart implements IShowInTarget {
 
@@ -215,7 +220,8 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
         parent.setLayout(new GridLayout(2, false));
         initProjectCombo(parent);
         createViewer(parent);
-        createMenu();    
+        createMenu();
+        setProject(projectMap.get(projectCombo.getText()));
     }
 
     protected void createViewer(Composite parent) {
@@ -336,34 +342,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
                         if (first instanceof ModuleReference) {
                             final ModuleReference selectedModuleRef = 
                                     (ModuleReference) first;
-                            ModuleDependencies moduleDependencies = 
-                                    (ModuleDependencies) viewer.getInput();
-                            final Iterable<Module> modulesToShow = 
-                                    moduleDependencies.getTransitiveDependencies(selectedModuleRef);
-                            viewer.setFilters(new ViewerFilter[] { 
-                                    new ViewerFilter() {
-                                        @Override
-                                        public boolean select(Viewer viewer, 
-                                                Object parentElement, Object element) {
-                                            if (element.equals(selectedModuleRef) || 
-                                                    element instanceof Dependency) {
-                                                return true;
-                                            }
-                                            if (element instanceof ModuleWeakReference) {
-                                                Module moduleToSort = 
-                                                        ((ModuleWeakReference) element).get();
-                                                for (Module moduleToShow : modulesToShow) {
-                                                    if (moduleToShow.equals(moduleToSort)) {
-                                                        return true;
-                                                    }
-                                                }
-                                            }
-                                            return false;
-                                        }
-                                    } 
-                            });
-                            viewer.refresh();
-                            viewer.applyLayout();
+                            narrowToDependencies(selectedModuleRef);
                         }
                     }
                 });
@@ -383,34 +362,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
                         if (first instanceof ModuleReference) {
                             final ModuleReference selectedModuleRef = 
                                     (ModuleReference) first;
-                            ModuleDependencies moduleDependencies = 
-                                    (ModuleDependencies) viewer.getInput();
-                            final Iterable<Module> modulesToShow = 
-                                    moduleDependencies.getReferencingModules(selectedModuleRef);
-                            viewer.setFilters(new ViewerFilter[] { 
-                                    new ViewerFilter() {
-                                        @Override
-                                        public boolean select(Viewer viewer, 
-                                                Object parentElement, Object element) {
-                                            if (element.equals(selectedModuleRef) || 
-                                                    element instanceof Dependency) {
-                                                return true;
-                                            }
-                                            if (element instanceof ModuleWeakReference) {
-                                                Module moduleToSort = 
-                                                        ((ModuleWeakReference) element).get();
-                                                for (Module moduleToShow : modulesToShow) {
-                                                    if (moduleToShow.equals(moduleToSort)) {
-                                                        return true;
-                                                    }
-                                                }
-                                            }
-                                            return false;
-                                        }
-                                    } 
-                            });
-                            viewer.refresh();
-                            viewer.applyLayout();
+                            narrowToReferences(selectedModuleRef);
                         }
                     }
                 });
@@ -424,6 +376,70 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
                 });
             }
         });
+    }
+    
+    protected void narrowToDependencies(
+            final ModuleReference selectedModuleRef) {
+        ModuleDependencies moduleDependencies = 
+                (ModuleDependencies) viewer.getInput();
+        final Iterable<Module> modulesToShow = 
+                moduleDependencies.getTransitiveDependencies(selectedModuleRef);
+        viewer.setFilters(new ViewerFilter[] { 
+                new ViewerFilter() {
+                    @Override
+                    public boolean select(Viewer viewer, 
+                            Object parentElement, Object element) {
+                        if (element.equals(selectedModuleRef) || 
+                                element instanceof Dependency) {
+                            return true;
+                        }
+                        if (element instanceof ModuleWeakReference) {
+                            Module moduleToSort = 
+                                    ((ModuleWeakReference) element).get();
+                            for (Module moduleToShow : modulesToShow) {
+                                if (moduleToShow.equals(moduleToSort)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    }
+                } 
+        });
+        viewer.refresh();
+        viewer.applyLayout();
+    }
+    
+    protected void narrowToReferences(
+            final ModuleReference selectedModuleRef) {
+        ModuleDependencies moduleDependencies = 
+                (ModuleDependencies) viewer.getInput();
+        final Iterable<Module> modulesToShow = 
+                moduleDependencies.getReferencingModules(selectedModuleRef);
+        viewer.setFilters(new ViewerFilter[] { 
+                new ViewerFilter() {
+                    @Override
+                    public boolean select(Viewer viewer, 
+                            Object parentElement, Object element) {
+                        if (element.equals(selectedModuleRef) || 
+                                element instanceof Dependency) {
+                            return true;
+                        }
+                        if (element instanceof ModuleWeakReference) {
+                            Module moduleToSort = 
+                                    ((ModuleWeakReference) element).get();
+                            for (Module moduleToShow : modulesToShow) {
+                                if (moduleToShow.equals(moduleToSort)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    }
+                } 
+        });
+        viewer.refresh();
+        viewer.applyLayout();
     }
     
     private void init() {
@@ -470,11 +486,27 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
                 setProject((IProject) first);
                 return true;
             }
-            else if (first instanceof IJavaProject) {
-                setProject(((IJavaProject) first).getProject());
+            else if (first instanceof IJavaElement) {
+                setProject(((IJavaElement) first).getJavaProject().getProject());
                 return true;
             }
-        }        
+            else if (first instanceof IResource) {
+                setProject(((IResource) first).getProject());
+                return true;
+            }
+            else if (first instanceof SourceModuleNode) {
+                SourceModuleNode mod = (SourceModuleNode) first;
+                setProject(mod.getProject());
+                return true;
+            }
+        }
+        else {
+            IEditorPart editor = EditorUtil.getCurrentEditor();
+            if (editor instanceof CeylonEditor) {
+                setProject(((CeylonEditor) editor).getParseController().getProject());
+                return true;
+            }
+        }
         return false;
     }
     

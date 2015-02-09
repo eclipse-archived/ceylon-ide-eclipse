@@ -77,7 +77,7 @@ public class ModuleDependencies {
         String getIdentifier();
     }
 
-    private class ModuleStringReference implements ModuleReference {
+    private static class ModuleStringReference implements ModuleReference {
         private String moduleIdentifier;
         
         ModuleStringReference(Module module) {
