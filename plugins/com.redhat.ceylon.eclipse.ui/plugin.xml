@@ -2699,6 +2699,11 @@
             icon="icons/show_doc.gif"
             id="com.redhat.ceylon.eclipse.ui.view.DocumentationView"
             name="Ceylon Documentation"/>
+      <view
+            category="com.redhat.ceylon.eclipse.ui.views"
+            class="com.redhat.ceylon.eclipse.code.moduledependencies.DependencyGraphView"
+            id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"
+            name="Ceylon Module Dependencies"/>
    </extension>
 
     <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
