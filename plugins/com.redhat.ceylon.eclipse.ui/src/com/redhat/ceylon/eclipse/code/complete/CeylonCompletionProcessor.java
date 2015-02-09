@@ -421,9 +421,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     private String[] getProposalFilters(String filtersString) {
         if (!filtersString.trim().isEmpty()) { 
             return filtersString
-                    .replace(".", "\\.").replace("*", ".*")
+                    .replaceAll("\\(\\w+\\)", "")
+                    .replace(".", "\\.")
+                    .replace("*", ".*")
                     .split(",");
-            
         }
         else {
             return new String[0];

@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
 import java.util.ArrayList;
@@ -59,7 +60,6 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenFiltersPreferencePag
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     
@@ -303,10 +303,11 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
                 try {
-                    StyledString label = getQualifiedDescriptionFor(d);
+                    StyledString label = 
+                            getQualifiedDescriptionFor(d);
                     if (nameOccursMultipleTimes(d)) {
-                        label.append(" - ", Highlights.PACKAGE_STYLER)
-                             .append(getPackageLabel(d), Highlights.PACKAGE_STYLER)
+                        label.append(" - ", PACKAGE_STYLER)
+                             .append(getPackageLabel(d), PACKAGE_STYLER)
                              .append(" - ", COUNTER_STYLER)
                              .append(getModule(dwp), COUNTER_STYLER);
                     }
@@ -358,6 +359,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                             for (Declaration dec: unit.getDeclarations()) {
                                 if (isPresentable(dec) && 
                                         dec.getQualifiedNameString().equals(qualifiedName)) {
+                                    if (isFiltered(dec)) return null;
                                     return new DeclarationWithProject(dec, project, version, path);
                                 }
                             }
@@ -374,6 +376,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                                 for (Declaration dec: pkg.getMembers()) {
                                     if (isPresentable(dec) && 
                                             dec.getQualifiedNameString().equals(qualifiedName)) {
+                                        if (isFiltered(dec)) return null;
                                         return new DeclarationWithProject(dec, project, version, path);
                                     }
                                     //TODO: members!
@@ -581,9 +584,10 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         String filtersString = getFilterListAsString();
         if (!filtersString.trim().isEmpty()) { 
             filters = filtersString
-                    .replace(".", "\\.").replace("*", ".*")
+                    .replaceAll("\\(\\w+\\)", "")
+                    .replace(".", "\\.")
+                    .replace("*", ".*")
                     .split(",");
-            
         }
         else {
             filters = new String[0];

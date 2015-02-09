@@ -42,6 +42,11 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
+import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Interface;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.open.DeclarationWithProject;
 import com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationDialog;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -287,9 +292,32 @@ public abstract class FiltersPreferencePage
         if (dialog.open() == IDialogConstants.OK_ID) {
             Object[] types = dialog.getResult();
             for (int i=0; i<types.length; i++) {
-                DeclarationWithProject dwp = (DeclarationWithProject) types[i];
-                addFilter(dwp.getDeclaration().getQualifiedNameString(), true);
+                DeclarationWithProject dwp = 
+                        (DeclarationWithProject) types[i];
+                Declaration dec = dwp.getDeclaration();
+                String string = 
+                        dec.getQualifiedNameString() +
+                        declarationType(dec);
+                addFilter(string, true);
             }
+        }
+    }
+    
+    private static String declarationType(Declaration d) {
+        if (d instanceof Class) {
+            return "(Class)";
+        }
+        else if (d instanceof Interface) {
+            return "(Interface)";
+        }
+        else if (d instanceof Method) {
+            return "(Function)";
+        }
+        else if (d instanceof Value) {
+            return "(Value)";
+        }
+        else {
+            return "";
         }
     }
     
