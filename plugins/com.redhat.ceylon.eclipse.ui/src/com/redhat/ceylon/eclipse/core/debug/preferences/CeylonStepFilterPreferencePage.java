@@ -4,7 +4,7 @@ package com.redhat.ceylon.eclipse.core.debug.preferences;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.ACTIVE_FILTERS_LIST;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.INACTIVE_FILTERS_LIST;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.USE_STEP_FILTERS;
-import static com.redhat.ceylon.eclipse.core.debug.preferences.CreateStepFilterDialog.showCreateStepFilterDialog;
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CreateFilterDialog.showCreateFilterDialog;
 import static org.eclipse.debug.internal.ui.SWTFactory.createPushButton;
 import static org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin.createAllPackagesDialog;
 import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.parseList;
@@ -357,7 +357,7 @@ public class CeylonStepFilterPreferencePage
      */
     private void addFilter() {
         Filter newfilter = 
-                showCreateStepFilterDialog(getShell(), 
+                showCreateFilterDialog(getShell(), 
                         getAllFiltersFromTable());
         if (newfilter != null) {
             fTableViewer.add(newfilter);
