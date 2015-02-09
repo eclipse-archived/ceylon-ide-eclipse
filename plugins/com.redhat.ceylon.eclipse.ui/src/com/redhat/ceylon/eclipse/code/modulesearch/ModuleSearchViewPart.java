@@ -881,11 +881,13 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
     }
     
     public void setProject(IProject project) {
-        int index = Arrays.asList(projectCombo.getItems())
-                .indexOf(project.getName());
-        projectCombo.select(index);
-        updateBeforeSearch(true);
-        moduleSearchManager.searchModules(searchCombo.getText());
+        if (project!=null) {
+            int index = Arrays.asList(projectCombo.getItems())
+                    .indexOf(project.getName());
+            projectCombo.select(index);
+            updateBeforeSearch(true);
+            moduleSearchManager.searchModules(searchCombo.getText());
+        }
     }
 
     @Override

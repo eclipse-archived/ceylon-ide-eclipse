@@ -3,7 +3,17 @@ package com.redhat.ceylon.eclipse.code.moduledependencies;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModuleDependenciesForProject;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolygonDecoration;
@@ -13,14 +23,21 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.part.IShowInTarget;
 import org.eclipse.ui.part.ShowInContext;
 import org.eclipse.ui.part.ViewPart;
@@ -35,6 +52,7 @@ import org.eclipse.zest.layouts.algorithms.HorizontalTreeLayoutAlgorithm;
 import org.eclipse.zest.layouts.algorithms.TreeLayoutAlgorithm;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.Dependency;
@@ -44,15 +62,24 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class DependencyGraphView extends ViewPart implements IShowInTarget {
 
-    private IProject project;
-    
     static final String ID = PLUGIN_ID + ".view.DependencyGraphView";
 
+    private IProject project;
+    private Map<String, IProject> projectMap = new ConcurrentHashMap<String, IProject>();
+    
+    private IResourceChangeListener updateProjectComboListener;
+    
     private GraphViewer viewer;
+    private Combo projectCombo;
 
     public void setProject(IProject project) {
-        this.project = project;
-        init();
+        if (project!=null) {
+            this.project = project;
+            int index = Arrays.asList(projectCombo.getItems())
+                    .indexOf(project.getName());
+            projectCombo.select(index);
+            init();
+        }
     }
     
     class GraphContentProvider implements IGraphContentProvider {
@@ -184,7 +211,9 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
     @Override
     public void createPartControl(Composite parent) {
         setPartName("Ceylon Module Dependencies");
-        setContentDescription("Ceylon module dependencies");
+//        setContentDescription("Ceylon module dependencies");
+        parent.setLayout(new GridLayout(2, false));
+        initProjectCombo(parent);
         createViewer(parent);
         createMenu();    
     }
@@ -198,6 +227,74 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
         TreeLayoutAlgorithm tla = 
                 new HorizontalTreeLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING);
         viewer.setLayoutAlgorithm(tla);
+        viewer.getControl().setLayoutData(GridDataFactory.fillDefaults().span(2, 1).grab(true, true).create());
+    }
+    
+    private void initProjectCombo(Composite parent) {
+        org.eclipse.swt.widgets.Label projectLabel = 
+                new org.eclipse.swt.widgets.Label(parent, SWT.RIGHT | SWT.WRAP);
+        projectLabel.setText("Display modules for project");
+        GridData gd = GridDataFactory.swtDefaults().align(SWT.END, SWT.CENTER).create();
+        projectLabel.setLayoutData(gd);
+        
+        projectCombo = new Combo(parent, SWT.SINGLE | SWT.BORDER | SWT.READ_ONLY);
+        projectCombo.setLayoutData(GridDataFactory.swtDefaults().hint(120, SWT.DEFAULT).create());
+        projectCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setProject(projectMap.get(projectCombo.getText()));
+            }
+        });
+        
+        updateProjectCombo();
+        
+        updateProjectComboListener = new IResourceChangeListener() {
+            @Override
+            public void resourceChanged(IResourceChangeEvent event) {
+                if (event.getResource() == null || event.getResource() instanceof IProject) {
+                    updateProjectComboAsync();
+                }
+            }
+        };
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(updateProjectComboListener);
+    }
+    
+    private void updateProjectComboAsync() {
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (!projectCombo.isDisposed()) {
+                    updateProjectCombo();
+                }
+            }
+        });
+    }
+
+    private void updateProjectCombo() {
+        projectMap.clear();
+        IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+        if (projects != null) {
+            for (IProject project : projects) {
+                if (project.isOpen() && CeylonNature.isEnabled(project)) {
+                    projectMap.put(project.getName(), project);
+                }
+            }
+        }
+        
+        List<String> projectNames = new ArrayList<String>(projectMap.keySet());
+//        projectNames.add("");
+        Collections.sort(projectNames);
+        
+        int selectedIndex = projectCombo.getSelectionIndex();
+        String selectedProjectName = selectedIndex != -1 ? projectCombo.getItem(selectedIndex) : "";
+        
+        projectCombo.setItems(projectNames.toArray(new String[]{}));
+        
+        if (projectNames.contains(selectedProjectName)) {
+            projectCombo.select(projectNames.indexOf(selectedProjectName));
+        } else {
+            projectCombo.select(0);
+        }
     }
     
     protected void createMenu() {
@@ -348,11 +445,16 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
             messageBox.open();
             return;
         }*/
-        setContentDescription("Ceylon module dependencies for project '" + 
-                project.getName() + "'");
+//        setContentDescription("Ceylon module dependencies for project '" + 
+//                project.getName() + "'");
         viewer.setInput(dependencies);
         viewer.refresh();
         viewer.applyLayout();
+    }
+    
+    @Override
+    public void dispose() {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(updateProjectComboListener);
     }
     
     @Override
