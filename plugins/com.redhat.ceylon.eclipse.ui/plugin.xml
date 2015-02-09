@@ -2528,7 +2528,7 @@
          <action
                class="com.redhat.ceylon.eclipse.code.moduledependencies.DependencyGraph"
                id="com.redhat.ceylon.eclipse.ui.actions.showDependencyGraph"
-               label="Visualize Module Dependencies"
+               label="Visualize Module Dependencies..."
                menubarPath="additions"
                tooltip="Visualize module dependencies for this project"/>
         <visibility>
