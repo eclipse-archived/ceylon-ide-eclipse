@@ -2153,6 +2153,7 @@
             <perspectiveShortcut 
                   id="org.eclipse.jdt.ui.JavaPerspective"/>
             <showInPart id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
+            <showInPart id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
             <showInPart id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"/>
             <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>

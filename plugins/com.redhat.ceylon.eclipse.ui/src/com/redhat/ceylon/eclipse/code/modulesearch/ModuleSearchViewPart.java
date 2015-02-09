@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ADD;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.actions.CollapseAllAction;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -30,6 +32,7 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -65,6 +68,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
+import org.eclipse.ui.part.IShowInTarget;
+import org.eclipse.ui.part.ShowInContext;
 import org.eclipse.ui.part.ViewPart;
 
 import com.github.rjeschke.txtmark.Configuration;
@@ -85,7 +90,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 
-public class ModuleSearchViewPart extends ViewPart {
+public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
     
     private class RemoveSelectedAction extends Action implements ISelectionChangedListener {
 
@@ -873,6 +878,32 @@ public class ModuleSearchViewPart extends ViewPart {
     @Override
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(updateProjectComboListener);
+    }
+    
+    public void setProject(IProject project) {
+        int index = Arrays.asList(projectCombo.getItems())
+                .indexOf(project.getName());
+        projectCombo.select(index);
+        updateBeforeSearch(true);
+        moduleSearchManager.searchModules(searchCombo.getText());
+    }
+
+    @Override
+    public boolean show(ShowInContext context) {
+        ISelection selection = context.getSelection();
+        if (selection instanceof IStructuredSelection) {
+            IStructuredSelection ss = (IStructuredSelection) selection;
+            Object first = ss.getFirstElement();
+            if (first instanceof IProject) {
+                setProject((IProject) first);
+                return true;
+            }
+            else if (first instanceof IJavaProject) {
+                setProject(((IJavaProject) first).getProject());
+                return true;
+            }
+        }        
+        return false;
     }
     
 }
