@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -172,9 +171,6 @@ public class CeylonEditorPreferencePage
         composite.setLayout(new GridLayout(1, true));
         
         Control contents = super.createContents(composite);
-        
-        new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL)
-            .setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
         
         Link completionLink = new Link(parent, 0);
         completionLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());

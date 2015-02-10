@@ -15,12 +15,10 @@ import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -67,9 +65,6 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         
         Control contents = super.createContents(composite);
         
-        new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL)
-            .setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
-
         Link textEditorsLink = new Link(parent, 0);
         textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         textEditorsLink.setText("See '<a>Editor</a>' for Ceylon editor preferences.");
