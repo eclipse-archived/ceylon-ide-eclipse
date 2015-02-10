@@ -2,8 +2,9 @@ package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.PACKAGE;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
 
 import java.util.Comparator;
 import java.util.List;
@@ -29,15 +30,17 @@ import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonTopLevelSelectionDialog extends FilteredItemsSelectionDialog {
 
-    private static final String SETTINGS_ID = CeylonPlugin.PLUGIN_ID + ".TOPLEVEL_DECLARATION_SELECTION_DIALOG";
+    private static final String SETTINGS_ID = 
+            CeylonPlugin.PLUGIN_ID + ".TOPLEVEL_DECLARATION_SELECTION_DIALOG";
+    
     private List<Declaration> decls;
     
-    public CeylonTopLevelSelectionDialog(Shell shell, boolean multi, List<Declaration> decls ) {
+    public CeylonTopLevelSelectionDialog(Shell shell, boolean multi, 
+            List<Declaration> decls ) {
         super(shell, multi);
         setTitle("Ceylon Launcher");
         setMessage("Select the toplevel method or class to launch:");
@@ -54,7 +57,8 @@ public class CeylonTopLevelSelectionDialog extends FilteredItemsSelectionDialog 
 
     @Override
     protected IDialogSettings getDialogSettings() {
-        IDialogSettings settings = CeylonPlugin.getInstance().getDialogSettings();
+        IDialogSettings settings = 
+                CeylonPlugin.getInstance().getDialogSettings();
         IDialogSettings section = settings.getSection(SETTINGS_ID);
         if (section == null) {
             section = settings.addNewSection(SETTINGS_ID);
@@ -90,15 +94,19 @@ public class CeylonTopLevelSelectionDialog extends FilteredItemsSelectionDialog 
     protected Comparator<?> getItemsComparator() {
         Comparator<Object> comp = new Comparator<Object>() {
             public int compare(Object o1, Object o2) {
-                if(o1 instanceof Declaration && o2 instanceof Declaration) {
-                    if (o1 instanceof TypedDeclaration && o2 instanceof TypeDeclaration) {
+                if (o1 instanceof Declaration && 
+                        o2 instanceof Declaration) {
+                    if (o1 instanceof TypedDeclaration && 
+                            o2 instanceof TypeDeclaration) {
                         return -1;
                     }
-                    else if (o2 instanceof TypedDeclaration && o1 instanceof TypeDeclaration) {
+                    else if (o2 instanceof TypedDeclaration && 
+                            o1 instanceof TypeDeclaration) {
                         return 1;
                     }
                     else {
-                        return ((Declaration)o1).getName().compareTo(((Declaration)o2).getName());
+                        return ((Declaration)o1).getName()
+                                .compareTo(((Declaration)o2).getName());
                     }
                 }
                 return 0;
@@ -146,7 +154,7 @@ public class CeylonTopLevelSelectionDialog extends FilteredItemsSelectionDialog 
         @Override
         public Image getImage(Object element) {
             Declaration d = (Declaration) element;
-            return d==null ? null : CeylonLabelProvider.getImageForDeclaration(d);
+            return d==null ? null : getImageForDeclaration(d);
         }
         
         @Override

@@ -7,9 +7,11 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension3;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension4;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -25,7 +27,7 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class CompletionProposal implements ICompletionProposal, 
         ICompletionProposalExtension2, ICompletionProposalExtension4, 
-        ICompletionProposalExtension6 {
+        ICompletionProposalExtension6, ICompletionProposalExtension3 {
     
     protected final String text;
     private final Image image;
@@ -173,6 +175,22 @@ public class CompletionProposal implements ICompletionProposal,
         catch (BadLocationException e) {
             return false;
         }
+    }
+
+    @Override
+    public IInformationControlCreator getInformationControlCreator() {
+        return null;
+    }
+
+    @Override
+    public CharSequence getPrefixCompletionText(IDocument document,
+            int completionOffset) {
+        return withoutDupeSemi(document);
+    }
+
+    @Override
+    public int getPrefixCompletionStart(IDocument document, int completionOffset) {
+        return start();
     }
     
 }

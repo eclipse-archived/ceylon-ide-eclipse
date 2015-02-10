@@ -8,6 +8,8 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifi
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
@@ -35,6 +37,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -65,7 +68,8 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     
-    private static final String SETTINGS_ID = CeylonPlugin.PLUGIN_ID + ".openDeclarationDialog";
+    private static final String SETTINGS_ID = 
+            CeylonPlugin.PLUGIN_ID + ".openDeclarationDialog";
     
     private boolean includeMembers;
     
@@ -287,7 +291,10 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
                 try {
-                    return getLabelDescriptionFor(d);
+                    IPreferenceStore prefs = EditorUtil.getPreferences();
+                    return getLabelDescriptionFor(d,
+                            prefs.getBoolean(TYPE_PARAMS_IN_DIALOGS),
+                            prefs.getBoolean(PARAMS_IN_DIALOGS));
                 }
                 catch (Exception e) {
                     System.err.println(d.getName());
@@ -307,8 +314,11 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
                 try {
+                    IPreferenceStore prefs = EditorUtil.getPreferences();
                     StyledString label = 
-                            getQualifiedDescriptionFor(d);
+                            getQualifiedDescriptionFor(d,
+                                    prefs.getBoolean(TYPE_PARAMS_IN_DIALOGS),
+                                    prefs.getBoolean(PARAMS_IN_DIALOGS));
                     if (nameOccursMultipleTimes(d)) {
                         label.append(" - ", PACKAGE_STYLER)
                              .append(getPackageLabel(d), PACKAGE_STYLER)

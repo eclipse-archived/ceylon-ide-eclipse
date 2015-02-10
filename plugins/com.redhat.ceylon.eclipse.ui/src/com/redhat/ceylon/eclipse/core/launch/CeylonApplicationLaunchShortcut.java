@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.launch;
 import static com.redhat.ceylon.compiler.java.Util.declClassName;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_APPLICATION;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
@@ -64,7 +65,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
@@ -84,7 +84,8 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         List<IFile> files = new LinkedList<IFile>(); 
         for (Object object : structuredSelection.toList()) {
             if (object instanceof IAdaptable) {
-                IResource resource = (IResource) ((IAdaptable)object).getAdapter(IResource.class);
+                IResource resource = (IResource) 
+                        ((IAdaptable)object).getAdapter(IResource.class);
                 if (resource != null) {
                     addFiles(files, resource);
                 }
@@ -340,7 +341,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         @Override
         public Image getImage(Object element) {
             Declaration d = (Declaration) element;
-            return d==null ? null : CeylonLabelProvider.getImageForDeclaration(d);
+            return d==null ? null : getImageForDeclaration(d);
         }
         
         @Override
@@ -436,10 +437,13 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     private void launch(Declaration declarationToRun, IFile fileToRun, String mode) {
         String err = canLaunch(declarationToRun, fileToRun, mode);
         if (err != null) {
-            MessageDialog.openError(EditorUtil.getShell(), "Ceylon Launcher Error", err); 
+            MessageDialog.openError(EditorUtil.getShell(), 
+                    "Ceylon Launcher Error", err); 
             return;
         }
-        ILaunchConfiguration config = findLaunchConfiguration(declarationToRun, fileToRun, getConfigurationType());
+        ILaunchConfiguration config = 
+                findLaunchConfiguration(declarationToRun, fileToRun, 
+                        getConfigurationType());
         if (config == null) {
             config = createConfiguration(declarationToRun, fileToRun);
         }
@@ -464,10 +468,12 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
      */
     protected ILaunchConfiguration findLaunchConfiguration(Declaration declaration, IFile file, 
             ILaunchConfigurationType configType) {
-        List<ILaunchConfiguration> candidateConfigs = Collections.<ILaunchConfiguration>emptyList();
+        List<ILaunchConfiguration> candidateConfigs = 
+                Collections.<ILaunchConfiguration>emptyList();
         try {
-            ILaunchConfiguration[] configs = DebugPlugin.getDefault().getLaunchManager()
-                    .getLaunchConfigurations(configType);
+            ILaunchConfiguration[] configs = 
+                    DebugPlugin.getDefault().getLaunchManager()
+                        .getLaunchConfigurations(configType);
             candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
             String mainClass = getJavaClassName(declaration);
             for (int i = 0; i < configs.length; i++) {
@@ -503,8 +509,10 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
      * @return configuration to launch or <code>null</code> to cancel
      */
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList) {
-        IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
-        ElementListSelectionDialog dialog= new ElementListSelectionDialog(EditorUtil.getShell(), labelProvider);
+        IDebugModelPresentation labelProvider = 
+                DebugUITools.newDebugModelPresentation();
+        ElementListSelectionDialog dialog= 
+                new ElementListSelectionDialog(EditorUtil.getShell(), labelProvider);
         dialog.setElements(configList.toArray());
         dialog.setTitle("Ceylon Launcher");  
         dialog.setMessage("Please choose a configuration to start the Ceylon application");
@@ -542,7 +550,8 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             configurationName += packageName.isEmpty() ? "default package" : packageName;
             configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
             
-            wc = configType.newInstance(null, getLaunchManager().generateLaunchConfigurationName(configurationName));
+            wc = configType.newInstance(null, 
+                    getLaunchManager().generateLaunchConfigurationName(configurationName));
             wc.setAttribute(ATTR_MAIN_TYPE_NAME, getJavaClassName(declarationToRun));
             wc.setAttribute(ATTR_PROJECT_NAME, file.getProject().getName());
             wc.setMappedResources(new IResource[] {file});
