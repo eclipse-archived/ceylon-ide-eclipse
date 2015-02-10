@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
@@ -61,19 +62,13 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         });
         
         Composite composite = new Composite(parent, SWT.NONE);
-        //composite.setText("Ceylon editor settings");
-        GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        gd.grabExcessHorizontalSpace=true;
-        composite.setLayoutData(gd);
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 1;
-        composite.setLayout(layout);
+        composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        composite.setLayout(new GridLayout(1, true));
         
         Control contents = super.createContents(composite);
         
-        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        sep.setLayoutData(sgd);
+        new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL)
+            .setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
 
         Link textEditorsLink = new Link(parent, 0);
         textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
@@ -119,6 +114,17 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
             }
         });
         
+        Link openLink = new Link(parent, 0);
+        openLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        openLink.setText("See '<a>Open Dialogs</a>' to customize 'Open ...' dialog navigation.");
+        openLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonOpenDialogsPreferencePage.ID, null, null);
+            }
+        });
+        
         Link debugLink = new Link(parent, 0);
         debugLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         debugLink.setText("See '<a>Debugging</a>' to set up step filtering.");
@@ -145,22 +151,18 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         return contents;
     }
 
-    private Composite createGroup(int cols, String text) {
+    private Group createGroup(int cols, String text) {
         Composite parent = getFieldEditorParent();
         Group group = new Group(parent, SWT.NONE);
         group.setText(text);
-        GridLayout layout = new GridLayout(cols, true);
-        group.setLayout(layout);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        gd.grabExcessHorizontalSpace=true;
-        gd.horizontalSpan=3;
-        group.setLayoutData(gd);
+        group.setLayout(GridLayoutFactory.swtDefaults().equalWidth(true).numColumns(cols).create());
+        group.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).grab(true, false).create());
         return group;
     }
     
     protected Composite getFieldEditorParent(Composite group) {
         Composite parent = new Composite(group, SWT.NULL);
-        parent.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        parent.setLayoutData(GridDataFactory.fillDefaults().create());
         return parent;
     }
 

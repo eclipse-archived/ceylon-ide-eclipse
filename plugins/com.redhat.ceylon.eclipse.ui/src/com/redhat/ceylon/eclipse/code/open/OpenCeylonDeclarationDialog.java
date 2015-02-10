@@ -58,7 +58,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenFiltersPreferencePage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -789,12 +789,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         super.fillViewMenu(menuManager);
         menuManager.add(new Separator());
         action = 
-                new Action("Configure Filters...") {
+                new Action("Configure Filters and Labels...") {
             @Override
             public void run() {
                 PreferencesUtil.createPreferenceDialogOn(getShell(), 
-                        CeylonOpenFiltersPreferencePage.ID, 
-                        new String[] {CeylonOpenFiltersPreferencePage.ID}, 
+                        CeylonOpenDialogsPreferencePage.ID, 
+                        new String[] {CeylonOpenDialogsPreferencePage.ID}, 
                         null).open();
                 initFilters();
                 filterVersion++;

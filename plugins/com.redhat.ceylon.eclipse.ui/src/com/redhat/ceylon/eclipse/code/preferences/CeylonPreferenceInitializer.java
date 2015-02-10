@@ -46,6 +46,8 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String DEFAULT_PROJECT_TYPE = "defaultProjectType";
     public static final String DEFAULT_SOURCE_FOLDER = "defaultSourceFolder";
     public static final String DEFAULT_RESOURCE_FOLDER = "defaultResourceFolder";
+    public static final String PARAMS_IN_DIALOGS = "paramsInDialogs";
+    public static final String TYPE_PARAMS_IN_DIALOGS = "typeParamsInDialogs";
 
     public CeylonPreferenceInitializer() {}
 
@@ -84,5 +86,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DEFAULT_SOURCE_FOLDER, DEFAULT_SOURCE_DIR);
         store.setDefault(DEFAULT_RESOURCE_FOLDER, DEFAULT_RESOURCE_DIR);
         store.setDefault(DEFAULT_PROJECT_TYPE, "jvm");
+        store.setDefault(TYPE_PARAMS_IN_DIALOGS, true);
+        store.setDefault(PARAMS_IN_DIALOGS, true);
    }
 }

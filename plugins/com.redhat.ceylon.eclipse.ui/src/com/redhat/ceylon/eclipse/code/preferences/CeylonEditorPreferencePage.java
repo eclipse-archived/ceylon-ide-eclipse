@@ -19,6 +19,7 @@ import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -51,17 +52,6 @@ public class CeylonEditorPreferencePage
     Button oppositeBracket;
     Button matchingBrackets;
     Button enclosingBrackets;
-//    BooleanFieldEditor autoInsert;
-//    BoolFieldEditor autoActivation;
-//    RadioGroupFieldEditor completion;
-//    RadioGroupFieldEditor inexactMatches;
-//    BooleanFieldEditor linkedMode;
-//    ScaleFieldEditor autoActivationDelay;
-//    RadioGroupFieldEditor autoActivationChars;
-//    BoolFieldEditor linkedModeRename;
-//    BooleanFieldEditor linkedModeRenameSelect;
-//    BooleanFieldEditor linkedModeExtract;
-//    BooleanFieldEditor displayParameterTypes;
     BooleanFieldEditor smartCaret;
     BooleanFieldEditor pasteCorrectIndent;
     BooleanFieldEditor pasteImports;
@@ -94,26 +84,10 @@ public class CeylonEditorPreferencePage
                 matchingBrackets.getSelection());
         store.setValue(ENCLOSING_BRACKETS, 
                 enclosingBrackets.getSelection());
-//        autoInsert.store();
-//        autoActivation.store();
-//        autoActivationDelay.store();
-//        autoActivationChars.store();
-//        completion.store();
-//        inexactMatches.store();
-//        linkedMode.store();
-//        linkedModeRename.store();
-//        linkedModeRenameSelect.store();
-//        linkedModeExtract.store();
-//        displayParameterTypes.store();
         smartCaret.store();
         pasteCorrectIndent.store();
         pasteEscapeQuoted.store();
         pasteImports.store();
-//        normalizeWs.store();
-//        normalizeNl.store();
-//        stripTrailingWs.store();
-//        cleanImports.store();
-//        format.store();
         autoFoldImports.store();
         autoFoldComments.store();
         closeAngles.store();
@@ -134,26 +108,10 @@ public class CeylonEditorPreferencePage
         matchingBrackets.setSelection(store.getDefaultBoolean(SELECTED_BRACKET));
         enclosingBrackets.setSelection(store.getDefaultBoolean(ENCLOSING_BRACKETS));
         oppositeBracket.setSelection(false);
-//        autoActivation.loadDefault();
-//        autoInsert.loadDefault();
-//        autoActivationDelay.loadDefault();
-//        autoActivationChars.loadDefault();
-//        completion.loadDefault();
-//        inexactMatches.loadDefault();
-//        linkedMode.loadDefault();
-//        linkedModeRename.loadDefault();
-//        linkedModeRenameSelect.loadDefault();
-//        linkedModeExtract.loadDefault();
-//        displayParameterTypes.loadDefault();
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
         pasteEscapeQuoted.loadDefault();
         pasteImports.loadDefault();
-//        normalizeWs.loadDefault();
-//        normalizeNl.loadDefault();
-//        stripTrailingWs.loadDefault();
-//        cleanImports.loadDefault();
-//        format.loadDefault();
         autoFoldImports.loadDefault();
         autoFoldComments.loadDefault();
         closeAngles.loadDefault();
@@ -174,6 +132,7 @@ public class CeylonEditorPreferencePage
     
     @Override
     protected Control createContents(Composite parent) {
+        
         Link textEditorsLink = new Link(parent, 0);
         textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         textEditorsLink.setText("See '<a>Text Editors</a>' for general editor preferences.");
@@ -184,6 +143,7 @@ public class CeylonEditorPreferencePage
                         "org.eclipse.ui.preferencePages.GeneralTextEditor", null, null);
             }
         });
+        
         Link colorsAndFontsLink = new Link(parent, 0);
         colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize appearance and syntax highlighting.");
@@ -195,6 +155,7 @@ public class CeylonEditorPreferencePage
                         "selectFont:com.redhat.ceylon.eclipse.ui.editorFont");
             }
         });
+        
         Link annotationsLink = new Link(parent, 0);
         annotationsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         annotationsLink.setText("See '<a>Annotations</a>' to customize annotation appearance.");
@@ -207,19 +168,13 @@ public class CeylonEditorPreferencePage
         });
         
         Composite composite = new Composite(parent, SWT.NONE);
-        //composite.setText("Ceylon editor settings");
-        GridData gd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        gd.grabExcessHorizontalSpace=true;
-        composite.setLayoutData(gd);
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 1;
-        composite.setLayout(layout); 
+        composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        composite.setLayout(new GridLayout(1, true));
         
         Control contents = super.createContents(composite);
         
-        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        sep.setLayoutData(sgd);
+        new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL)
+            .setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
         
         Link completionLink = new Link(parent, 0);
         completionLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
@@ -231,6 +186,7 @@ public class CeylonEditorPreferencePage
                         CeylonCompletionPreferencePage.ID, null, null);
             }
         });
+        
         Link refactoringLink = new Link(parent, 0);
         refactoringLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         refactoringLink.setText("See '<a>Refactoring</a>' for preferences related to refactoring.");
@@ -241,6 +197,7 @@ public class CeylonEditorPreferencePage
                         CeylonRefactoringPreferencePage.ID, null, null);
             }
         });
+        
         Link saveLink = new Link(parent, 0);
         saveLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         saveLink.setText("See '<a>Save Actions</a>' to enable save actions.");
@@ -251,30 +208,24 @@ public class CeylonEditorPreferencePage
                         CeylonSaveActionsPreferencePage.ID, null, null);
             }
         });
+        
         return contents;
     }
 
     @Override
     protected void createFieldEditors() {
         otherSection();
-//        linkedModeSection();
-//        autocompletionSection();
         autocloseSection();
         bracketHighlightingSection();
         foldingSection();
-//        onSaveSection();
     }
 
     private Group createGroup(int cols, String text) {
         Composite parent = getFieldEditorParent();
         Group group = new Group(parent, SWT.NONE);
         group.setText(text);
-        GridLayout layout = new GridLayout(cols, true);
-        group.setLayout(layout);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        gd.grabExcessHorizontalSpace=true;
-        gd.horizontalSpan=3;
-        group.setLayoutData(gd);
+        group.setLayout(GridLayoutFactory.swtDefaults().equalWidth(true).numColumns(cols).create());
+        group.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).grab(true, false).create());
         return group;
     }
     
@@ -323,8 +274,6 @@ public class CeylonEditorPreferencePage
     }
     
     private void bracketHighlightingSection() {
-//        addField(new LabelFieldEditor("Bracket highlighting:",
-//                getFieldEditorParent()));
         Group group = createGroup(1, "Bracket highlighting");
         Composite p = getFieldEditorParent(group);
         GridData gd = new GridData();
@@ -392,83 +341,9 @@ public class CeylonEditorPreferencePage
                 enclosingBrackets.setEnabled(newValue);
             }
         });
-//        super.createDescriptionLabel(getFieldEditorParent()).setText("Autocompletion");
-//        addField(new SpacerFieldEditor(getFieldEditorParent()));
     }
 
-    /*private void autocompletionSection() {
-//        addField(new LabelFieldEditor("Autocompletion:",
-//                getFieldEditorParent()));
-        Composite group = createGroup(1, "Completion");
-        linkedMode = new BooleanFieldEditor(LINKED_MODE, 
-                "Use linked mode to complete argument lists", 
-                getFieldEditorParent(group));
-        linkedMode.load();
-        addField(linkedMode);
-        displayParameterTypes = new BooleanFieldEditor(DISPLAY_PARAMETER_TYPES, 
-                "Display parameter types in proposals", 
-                getFieldEditorParent(group));
-        displayParameterTypes.load();
-        addField(displayParameterTypes);
-        autoInsert = new BooleanFieldEditor(AUTO_INSERT, 
-                "Auto-insert unique completions", 
-                getFieldEditorParent(group));
-        autoInsert.load();
-        addField(autoInsert);
-        autoActivation = new BoolFieldEditor(AUTO_ACTIVATION, 
-                "Auto-activate completions list", 
-                getFieldEditorParent(group));
-        autoActivation.load();
-        addField(autoActivation);
-        final Composite p1 = getFieldEditorParent(group);
-        String letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        autoActivationChars = new RadioGroupFieldEditor(AUTO_ACTIVATION_CHARS, 
-                "Auto-activation characters", 3, 
-                new String[][] { new String[] { "period", "." }, 
-                                 new String[] { "letters", letters },
-                                 new String[] { "both", "." + letters } }, p1);
-        autoActivationChars.load();
-        addField(autoActivationChars);
-        final Composite p2 = getFieldEditorParent(group);
-        autoActivationDelay = new ScaleWithLabelFieldEditor(AUTO_ACTIVATION_DELAY, 
-                "Auto-activation delay", p2);
-        //autoActivationDelay.setValidRange(1, 9999);
-        autoActivationDelay.setMinimum(1);
-        autoActivationDelay.setMaximum(2000);
-        autoActivationDelay.load();
-        addField(autoActivationDelay);
-        final IPreferenceStore store = EditorUtil.getPreferences();
-        boolean enabled = store.getBoolean(AUTO_ACTIVATION);
-        autoActivationChars.setEnabled(enabled, p1);
-        autoActivationDelay.setEnabled(enabled, p2);        
-        autoActivation.setListener(new Listener() {
-            @Override
-            public void valueChanged(boolean oldValue, boolean newValue) {
-                autoActivationChars.setEnabled(newValue, p1);
-                autoActivationDelay.setEnabled(newValue, p2);
-            }
-        });
-//        addField(new SpacerFieldEditor(getFieldEditorParent()));
-        final Composite p3 = getFieldEditorParent(group);
-        completion = new RadioGroupFieldEditor(COMPLETION, 
-                "Completion with trailing identifier characters", 2, 
-                new String[][] { new String[] { "inserts", "insert" }, 
-                                 new String[] { "overwrites", "overwrite" } }, p3);
-        completion.load();
-        addField(completion);
-        final Composite p4 = getFieldEditorParent(group);
-        inexactMatches = new RadioGroupFieldEditor(INEXACT_MATCHES, 
-                "For inexact matches propose", 3, 
-                new String[][] { new String[] { "no arguments", "none" }, 
-                                 new String[] { "positional arguments", "positional" },
-                                 new String[] { "positional and named arguments", "both" } }, p4);
-        inexactMatches.load();
-        addField(inexactMatches);
-    }*/
-
     private void foldingSection() {
-//        addField(new LabelFieldEditor("Folding:",
-//                getFieldEditorParent()));
         final Composite group = createGroup(2, "Source folding");
         Composite p0 = getFieldEditorParent(group);
         GridData gd = new GridData();
@@ -515,12 +390,9 @@ public class CeylonEditorPreferencePage
 //                group.layout();
             }
         });
-//        addField(new SpacerFieldEditor(getFieldEditorParent()));
     }
 
     private void otherSection() {
-//        addField(new LabelFieldEditor("Other:",
-//                getFieldEditorParent()));
         Composite group = createGroup(1, "General");
         smartCaret = new BooleanFieldEditor(SUB_WORD_NAVIGATION, 
                 "Smart caret positioning inside identifiers", 
@@ -544,84 +416,13 @@ public class CeylonEditorPreferencePage
         addField(pasteEscapeQuoted);
     }
     
-//    private void linkedModeSection() {
-//        Composite group = createGroup(1, "Linked mode");
-//        linkedModeExtract = new BooleanFieldEditor(LINKED_MODE_EXTRACT, 
-//                "Use linked mode for extract refactorings", 
-//                getFieldEditorParent(group));
-//        linkedModeExtract.load();
-//        addField(linkedModeExtract);
-//        linkedModeRename = new BoolFieldEditor(LINKED_MODE_RENAME, 
-//                "Use linked mode for rename", 
-//                getFieldEditorParent(group));
-//        linkedModeRename.load();
-//        addField(linkedModeRename);
-//        final Composite parent = getFieldEditorParent(group);
-//        linkedModeRenameSelect = new BooleanFieldEditor(LINKED_MODE_RENAME_SELECT, 
-//                "Fully select renamed identifier", 
-//                parent);
-//        linkedModeRenameSelect.load();
-//        addField(linkedModeRenameSelect);
-//        linkedModeRenameSelect.setEnabled(
-//                getPreferenceStore().getBoolean(LINKED_MODE_RENAME), 
-//                parent);
-//        linkedModeRename.setListener(new Listener() {
-//            @Override
-//            public void valueChanged(boolean oldValue, boolean newValue) {
-//                linkedModeRenameSelect.setEnabled(newValue, parent);
-//            }
-//        });
-//    }
-    
-    /*private void onSaveSection() {
-        Composite group = createGroup(1, "On save");
-        final Composite parent = getFieldEditorParent(group);
-        normalizeWs = new BooleanFieldEditor(NORMALIZE_WS, 
-                "Convert tabs to spaces (if insert spaces for tabs enabled)",
-                parent);
-        normalizeWs.load();
-        normalizeWs.setEnabled(getIndentWithSpaces(), parent);
-        listener=new IPropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                if (event.getProperty().equals(EDITOR_SPACES_FOR_TABS)) {
-                    normalizeWs.setEnabled(getIndentWithSpaces(), parent);
-                }
-            }
-        };
-        EditorUtil.getPreferences().addPropertyChangeListener(listener);
-        addField(normalizeWs);
-        normalizeNl = new BooleanFieldEditor(NORMALIZE_NL, 
-                "Fix line endings",
-                parent);
-        normalizeNl.load();
-        addField(normalizeNl);
-        stripTrailingWs = new BooleanFieldEditor(STRIP_TRAILING_WS, 
-                "Strip trailing whitespace",
-                parent);
-        stripTrailingWs.load();
-        addField(stripTrailingWs);
-        cleanImports = new BooleanFieldEditor(CLEAN_IMPORTS, 
-                "Clean imports",
-                parent);
-        cleanImports.load();
-        addField(cleanImports);
-        format = new BooleanFieldEditor(FORMAT,
-                "Format",
-                parent);
-        format.load();
-        addField(format);
-    }*/
-    
     protected Composite getFieldEditorParent(Composite group) {
         Composite parent = new Composite(group, SWT.NULL);
-        parent.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        parent.setLayoutData(GridDataFactory.fillDefaults().create());
         return parent;
     }
 
     private void autocloseSection() {
-//        addField(new LabelFieldEditor("Automatically close:",
-//                getFieldEditorParent()));
         Composite group = createGroup(3, "Automatically close");
         closeParens = new BooleanFieldEditor(CLOSE_PARENS, 
                 "Parentheses", 
@@ -653,7 +454,6 @@ public class CeylonEditorPreferencePage
                 getFieldEditorParent(group));
         closeQuotes.load();
         addField(closeQuotes);
-//        addField(new SpacerFieldEditor(getFieldEditorParent()));
     }
     
     private IPropertyChangeListener listener;

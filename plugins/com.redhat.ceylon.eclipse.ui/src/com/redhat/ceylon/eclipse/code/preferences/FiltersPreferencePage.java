@@ -17,12 +17,13 @@ import org.eclipse.jdt.internal.debug.ui.FilterViewerComparator;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -37,7 +38,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbench;
@@ -55,7 +56,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public abstract class FiltersPreferencePage 
-        extends PreferencePage 
+        extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
     
     class FilterContentProvider 
@@ -80,41 +81,51 @@ public abstract class FiltersPreferencePage
     private Button fAddTypeButton;
     private Button fRemoveFilterButton;
     private Button fAddFilterButton;
-    private Button fSelectAllButton;
-    private Button fDeselectAllButton;
+//    private Button fSelectAllButton;
+//    private Button fDeselectAllButton;
     
     public FiltersPreferencePage() {
+        super(GRID);
         setPreferenceStore(EditorUtil.getPreferences());
     }
     
+    protected Group createGroup(int cols, String text) {
+        Composite parent = getFieldEditorParent();
+        Group group = new Group(parent, SWT.NONE);
+        group.setText(text);
+        group.setLayout(GridLayoutFactory.swtDefaults().equalWidth(true).numColumns(cols).create());
+        group.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).grab(true, false).create());
+        return group;
+    }
+    
+    protected Composite getFieldEditorParent(Composite group) {
+        Composite parent = new Composite(group, SWT.NULL);
+        parent.setLayoutData(GridDataFactory.fillDefaults().create());
+        return parent;
+    }
+
     @Override
     protected Control createContents(Composite parent) {
 //        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), 
 //            IJavaDebugHelpContextIds.JAVA_STEP_FILTER_PREFERENCE_PAGE);
         
-    //The main composite
-        Composite composite = SWTFactory.createComposite(parent, 
-                parent.getFont(), 1, 1, GridData.FILL_BOTH, 0, 0);
-        createStepFilterPreferences(composite);
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        composite.setLayout(new GridLayout(1, true));
+        
+        Control contents = super.createContents(composite);
+        
+        createFilterPreferences(composite);
 
-//        Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-//        GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-//        sep.setLayoutData(sgd);
-
-        return composite;   
+        return contents;   
     }
     
     public void init(IWorkbench workbench) {}
     
-    private void handleFilterViewerKeyPress(KeyEvent event) {
-        if (event.character == SWT.DEL && event.stateMask == 0) {
-            removeFilters();
-        }
-    }
-    
-    private void createStepFilterPreferences(Composite parent) {
+    private void createFilterPreferences(Composite parent) {
         Composite container = SWTFactory.createComposite(parent, 
                 parent.getFont(), 2, 1, GridData.FILL_BOTH, 0, 0);
+        
 //        fUseStepFiltersButton = SWTFactory.createCheckButton(container, 
 //                DebugUIMessages.JavaStepFilterPreferencePage__Use_step_filters, 
 //                null, getPreferenceStore().getBoolean(StepFilterManager.PREF_USE_STEP_FILTERS), 2);
@@ -125,6 +136,8 @@ public abstract class FiltersPreferencePage
 //                public void widgetDefaultSelected(SelectionEvent e) {}
 //            }
 //        );
+
+        SWTFactory.createLabel(container, getLabelText(), 2);
         SWTFactory.createLabel(container, "Defined filters:", 2);
         fTableViewer = CheckboxTableViewer.newCheckList(container, 
                 SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
@@ -136,29 +149,30 @@ public abstract class FiltersPreferencePage
         fTableViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         fTableViewer.addCheckStateListener(new ICheckStateListener() {
             public void checkStateChanged(CheckStateChangedEvent event) {
-                ((Filter)event.getElement()).setChecked(event.getChecked());
+                ((Filter) event.getElement()).setChecked(event.getChecked());
             }
         });
         fTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
-                ISelection selection = event.getSelection();
-                if (selection.isEmpty()) {
-                    fRemoveFilterButton.setEnabled(false);
-                } else {
-                    fRemoveFilterButton.setEnabled(true);                   
-                }
+                fRemoveFilterButton.setEnabled(!event.getSelection().isEmpty());
             }
         }); 
         fTableViewer.getControl().addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
-                handleFilterViewerKeyPress(event);
+                if (event.character == SWT.DEL && event.stateMask == 0) {
+                    removeFilters();
+                }
             }
         }); 
         
         createStepFilterButtons(container);
 
 //        setPageEnablement(fUseStepFiltersButton.getSelection());
+    }
+
+    protected String getLabelText() {
+        return "Defined filters:";
     }
     
     private void initTableState(boolean defaults) {
@@ -241,33 +255,33 @@ public abstract class FiltersPreferencePage
         });
         fRemoveFilterButton.setEnabled(false);
         
-        Label separator= new Label(buttonContainer, SWT.NONE);
-        separator.setVisible(false);
-        gd = new GridData();
-        gd.horizontalAlignment= GridData.FILL;
-        gd.verticalAlignment= GridData.BEGINNING;
-        gd.heightHint= 4;
-        separator.setLayoutData(gd);
+//        Label separator= new Label(buttonContainer, SWT.NONE);
+//        separator.setVisible(false);
+//        gd = new GridData();
+//        gd.horizontalAlignment= GridData.FILL;
+//        gd.verticalAlignment= GridData.BEGINNING;
+//        gd.heightHint= 4;
+//        separator.setLayoutData(gd);
     //Select All button
-        fSelectAllButton = createPushButton(buttonContainer, 
-                "&Select All", 
-                "Selects all filters", null);
-        fSelectAllButton.addListener(SWT.Selection, 
-                new Listener() {
-            public void handleEvent(Event e) {
-                fTableViewer.setAllChecked(true);
-            }
-        });
+//        fSelectAllButton = createPushButton(buttonContainer, 
+//                "&Select All", 
+//                "Selects all filters", null);
+//        fSelectAllButton.addListener(SWT.Selection, 
+//                new Listener() {
+//            public void handleEvent(Event e) {
+//                fTableViewer.setAllChecked(true);
+//            }
+//        });
     //De-Select All button
-        fDeselectAllButton = createPushButton(buttonContainer, 
-                "D&eselect All", 
-                "Deselects all filters", null);
-        fDeselectAllButton.addListener(SWT.Selection, 
-                new Listener() {
-            public void handleEvent(Event e) {
-                fTableViewer.setAllChecked(false);
-            }
-        });
+//        fDeselectAllButton = createPushButton(buttonContainer, 
+//                "D&eselect All", 
+//                "Deselects all filters", null);
+//        fDeselectAllButton.addListener(SWT.Selection, 
+//                new Listener() {
+//            public void handleEvent(Event e) {
+//                fTableViewer.setAllChecked(false);
+//            }
+//        });
         
     }
     
