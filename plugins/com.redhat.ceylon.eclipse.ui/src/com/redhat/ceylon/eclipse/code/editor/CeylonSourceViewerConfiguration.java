@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT_PREFIX;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
@@ -130,8 +131,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         contentAssistant.setStatusLineVisible(true);
         contentAssistant.setInformationControlCreator(new DocumentationHover(editor).getHoverControlCreator("Click for focus"));
         contentAssistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
-//      ca.setContextInformationPopupBackground(Display.getDefault().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-        //ca.enablePrefixCompletion(true); //TODO: prefix completion stuff in ICompletionProposalExtension3
+//      contentAssistant.setContextInformationPopupBackground(Display.getDefault().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
         return contentAssistant;
     }
 
@@ -140,6 +140,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         contentAssistant.enableAutoInsert(preferenceStore.getBoolean(AUTO_INSERT));
         contentAssistant.enableAutoActivation(preferenceStore.getBoolean(AUTO_ACTIVATION));
         contentAssistant.setAutoActivationDelay(preferenceStore.getInt(AUTO_ACTIVATION_DELAY));
+        contentAssistant.enablePrefixCompletion(preferenceStore.getBoolean(AUTO_INSERT_PREFIX));
     }
 
     @Override

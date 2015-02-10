@@ -11,6 +11,7 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
 
     public static final String AUTO_INSERT = "autoInsert";
+    public static final String AUTO_INSERT_PREFIX = "autoInsertPrefix";
     public static final String AUTO_ACTIVATION = "autoActivation";
     public static final String AUTO_ACTIVATION_CHARS = "autoActivationChars";
     public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
@@ -55,6 +56,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public void initializeDefaultPreferences() {
         IPreferenceStore store = EditorUtil.getPreferences();
         store.setDefault(AUTO_INSERT, true);
+        store.setDefault(AUTO_INSERT_PREFIX, false);
         store.setDefault(AUTO_ACTIVATION, true);
         store.setDefault(AUTO_ACTIVATION_DELAY, 500);
         store.setDefault(AUTO_ACTIVATION_CHARS, ".");

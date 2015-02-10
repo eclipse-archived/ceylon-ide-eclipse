@@ -13,7 +13,6 @@ package com.redhat.ceylon.eclipse.code.hover;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;

@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT_PREFIX;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_PARAMETER_TYPES;
@@ -32,6 +33,7 @@ public class CeylonCompletionPreferencePage
     public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.completion";
     
     BooleanFieldEditor autoInsert;
+    BooleanFieldEditor autoInsertPrefix;
     BoolFieldEditor autoActivation;
     RadioGroupFieldEditor completion;
     RadioGroupFieldEditor inexactMatches;
@@ -47,6 +49,7 @@ public class CeylonCompletionPreferencePage
     @Override
     public boolean performOk() {
         autoInsert.store();
+        autoInsertPrefix.store();
         autoActivation.store();
         autoActivationDelay.store();
         autoActivationChars.store();
@@ -60,8 +63,9 @@ public class CeylonCompletionPreferencePage
     @Override
     protected void performDefaults() {
         super.performDefaults();
-        autoActivation.loadDefault();
         autoInsert.loadDefault();
+        autoInsertPrefix.loadDefault();
+        autoActivation.loadDefault();
         autoActivationDelay.loadDefault();
         autoActivationChars.loadDefault();
         completion.loadDefault();
@@ -118,6 +122,11 @@ public class CeylonCompletionPreferencePage
                 getFieldEditorParent(group3));
         autoInsert.load();
         addField(autoInsert);
+        autoInsertPrefix = new BooleanFieldEditor(AUTO_INSERT_PREFIX, 
+                "Auto-insert prefix common to all completions", 
+                getFieldEditorParent(group3));
+        autoInsertPrefix.load();
+        addField(autoInsertPrefix);
         autoActivation = new BoolFieldEditor(AUTO_ACTIVATION, 
                 "Auto-activate completions list", 
                 getFieldEditorParent(group3));

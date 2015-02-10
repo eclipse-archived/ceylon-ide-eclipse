@@ -1309,6 +1309,20 @@ public class CeylonEditor extends TextEditor {
         configCompletionPopup(getCeylonSourceViewer().getContentAssistant());
     }
     
+    private IPropertyChangeListener propertyChangeListener;
+    
+    @Override
+    protected void initializeEditor() {
+        propertyChangeListener = new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                handlePreferenceStoreChanged(event);
+            }
+        };
+        EditorUtil.getPreferences().addPropertyChangeListener(propertyChangeListener);
+        super.initializeEditor();
+    }
+    
     public void updateTitleImage() {
         IFile file = getFile(getEditorInput());
         if (file!=null) {
@@ -1325,6 +1339,10 @@ public class CeylonEditor extends TextEditor {
         if (annotationUpdater!=null) {
             problemMarkerManager.removeListener(annotationUpdater);
             annotationUpdater = null;
+        }
+        if (propertyChangeListener!=null) {
+            EditorUtil.getPreferences().removePropertyChangeListener(propertyChangeListener);
+            propertyChangeListener = null;
         }
         
         outlinePage = null;
