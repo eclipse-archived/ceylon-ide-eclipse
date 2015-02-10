@@ -284,12 +284,17 @@ public class CodeCompletions {
     }
     
     public static String getLabelDescriptionFor(Declaration d) {
+        return getLabelDescriptionFor(d, true, true);
+    }    
+    
+    public static String getLabelDescriptionFor(Declaration d, 
+            boolean typeParams, boolean params) {
         StringBuilder result = new StringBuilder();
         if (d!=null) {
             appendDeclarationAnnotations(d, result);
             appendDeclarationHeaderDescription(d, d.getUnit(), result);
-            appendTypeParameters(d, result, true);
-            appendParametersDescription(d, result, null);
+            if (typeParams) appendTypeParameters(d, result, true);
+            if (params) appendParametersDescription(d, result, null);
         }
         return result.toString();
     }
@@ -312,6 +317,11 @@ public class CodeCompletions {
     }
     
     public static StyledString getQualifiedDescriptionFor(Declaration d) {
+        return getQualifiedDescriptionFor(d, true, true);
+    }
+    
+    public static StyledString getQualifiedDescriptionFor(Declaration d, 
+            boolean typeParameters, boolean parameters) {
         StyledString result = new StyledString();
         if (d!=null) {
             appendDeclarationDescription(d, result);
@@ -323,8 +333,8 @@ public class CodeCompletions {
             else {
                 appendDeclarationName(d, result);
             }
-            appendTypeParameters(d, result, true);
-            appendParametersDescription(d, result);
+            if (typeParameters) appendTypeParameters(d, result, true);
+            if (parameters) appendParametersDescription(d, result);
             if (d instanceof TypedDeclaration) {
                 if (EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES)) {
                     TypedDeclaration td = (TypedDeclaration) d;
