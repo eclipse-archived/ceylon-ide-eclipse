@@ -86,20 +86,13 @@ public class CeylonCompletionPreferencePage
     
     @Override
     protected void createFieldEditors() {
-        final Composite group1 = createGroup(1, "Completion");
+        
+        final Composite group1 = createGroup(1, "General");
         displayParameterTypes = new BooleanFieldEditor(DISPLAY_PARAMETER_TYPES, 
-                "Display parameter types in proposals", 
+                "Display parameter types in completion proposals", 
                 getFieldEditorParent(group1));
         displayParameterTypes.load();
         addField(displayParameterTypes);
-        final Composite p3 = getFieldEditorParent(group1);
-        completion = new RadioGroupFieldEditor(COMPLETION, 
-                "Completion with trailing identifier characters", 2, 
-                new String[][] { new String[] { "inserts", "insert" }, 
-                                 new String[] { "overwrites", "overwrite" } }, p3);
-        completion.load();
-        addField(completion);
-        new Label(group1, SWT.NONE).setText("   Press 'Ctrl' when selecting a proposal to toggle");
         final Composite p4 = getFieldEditorParent(group1);
         inexactMatches = new RadioGroupFieldEditor(INEXACT_MATCHES, 
                 "For inexact matches propose", 1, 
@@ -108,31 +101,39 @@ public class CeylonCompletionPreferencePage
                                  new String[] { "both positional and named argument lists", "both" } }, p4);
         inexactMatches.load();
         addField(inexactMatches);
-        
-        final Composite group2 = createGroup(1, "Linked mode");
+        final Composite p3 = getFieldEditorParent(group1);
+        completion = new RadioGroupFieldEditor(COMPLETION, 
+                "Completion with trailing identifier characters", 2, 
+                new String[][] { new String[] { "inserts", "insert" }, 
+                                 new String[] { "overwrites", "overwrite" } }, p3);
+        completion.load();
+        addField(completion);
+        new Label(group1, SWT.NONE).setText("   Press 'Ctrl' when selecting a proposal to toggle");
         linkedMode = new BooleanFieldEditor(LINKED_MODE, 
                 "Use linked mode to complete argument lists", 
-                getFieldEditorParent(group2));
+                getFieldEditorParent(group1));
         linkedMode.load();
         addField(linkedMode);
         
-        final Composite group3 = createGroup(1, "Auto-insertion and auto-activation");
+        final Composite group3 = createGroup(1, "Proposal auto-insertion");
         autoInsert = new BooleanFieldEditor(AUTO_INSERT, 
-                "Auto-insert unique completions", 
+                "Auto-insert unique completion proposals", 
                 getFieldEditorParent(group3));
         autoInsert.load();
         addField(autoInsert);
         autoInsertPrefix = new BooleanFieldEditor(AUTO_INSERT_PREFIX, 
-                "Auto-insert prefix common to all completions", 
+                "Auto-insert prefix common to all completion proposals", 
                 getFieldEditorParent(group3));
         autoInsertPrefix.load();
         addField(autoInsertPrefix);
+
+        final Composite group4 = createGroup(1, "Proposal list auto-activation");
         autoActivation = new BoolFieldEditor(AUTO_ACTIVATION, 
-                "Auto-activate completions list", 
-                getFieldEditorParent(group3));
+                "Auto-activate completion proposal list", 
+                getFieldEditorParent(group4));
         autoActivation.load();
         addField(autoActivation);
-        final Composite p1 = getFieldEditorParent(group3);
+        final Composite p1 = getFieldEditorParent(group4);
         String letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         autoActivationChars = new RadioGroupFieldEditor(AUTO_ACTIVATION_CHARS, 
                 "Auto-activation characters", 3, 
@@ -141,7 +142,7 @@ public class CeylonCompletionPreferencePage
                                  new String[] { "both", "." + letters } }, p1);
         autoActivationChars.load();
         addField(autoActivationChars);
-        final Composite p2 = getFieldEditorParent(group3);
+        final Composite p2 = getFieldEditorParent(group4);
         autoActivationDelay = new ScaleWithLabelFieldEditor(AUTO_ACTIVATION_DELAY, 
                 "Auto-activation delay", p2);
         //autoActivationDelay.setValidRange(1, 9999);
