@@ -58,7 +58,7 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
     protected Control createContents(Composite composite) {
         IProject project = getSelectedProject();
         boolean isCeylonNatureEnabled = project.isOpen() && CeylonNature.isEnabled(project);
-
+        
         block = new CeylonRepoConfigBlock(new CeylonRepoConfigBlock.ValidationCallback() {
             @Override
             public void validationResultChange(boolean isValid, String message) {

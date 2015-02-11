@@ -1842,9 +1842,21 @@
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences"
            name="Ceylon Configuration"
-           class="com.redhat.ceylon.eclipse.code.preferences.CeylonProjectPreferencesPage">
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonProjectPropertiesPage">
          <enabledWhen>
             <adapt type="org.eclipse.core.resources.IProject"/>
+         </enabledWhen>
+       </page>
+       <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.warnings"
+           category="com.redhat.ceylon.eclipse.ui.preferences"
+           name="Compilation Warnings"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonWarningsPropertiesPage">
+         <enabledWhen>
+             <adapt type="org.eclipse.core.resources.IProject">
+                 <test property="org.eclipse.core.resources.projectNature" 
+                          value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+             </adapt>
          </enabledWhen>
        </page>
        <page
@@ -1853,16 +1865,22 @@
            name="Module Repositories"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonRepoPropertiesPage">
          <enabledWhen>
-            <adapt type="org.eclipse.core.resources.IProject"/>
+             <adapt type="org.eclipse.core.resources.IProject">
+                 <test property="org.eclipse.core.resources.projectNature" 
+                          value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+             </adapt>
          </enabledWhen>
        </page>
        <page 
            id="com.redhat.ceylon.eclipse.ui.preferences.paths" 
            category="com.redhat.ceylon.eclipse.ui.preferences"
-           name="Compiler Build Paths"
+           name="Build Paths"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage">
          <enabledWhen>
-            <adapt type="org.eclipse.core.resources.IProject"/>
+             <adapt type="org.eclipse.core.resources.IProject">
+                 <test property="org.eclipse.core.resources.projectNature" 
+                          value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+             </adapt>
          </enabledWhen>
        </page>
        <page 
@@ -1895,7 +1913,8 @@
            class="com.redhat.ceylon.eclipse.code.style.FormatterPreferencePage">
          <enabledWhen>
              <adapt type="org.eclipse.core.resources.IProject">
-                 <test property="org.eclipse.core.resources.projectNature" value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
+                 <test property="org.eclipse.core.resources.projectNature" 
+                          value="com.redhat.ceylon.eclipse.ui.ceylonNature" />
              </adapt>
          </enabledWhen>
        </page>              

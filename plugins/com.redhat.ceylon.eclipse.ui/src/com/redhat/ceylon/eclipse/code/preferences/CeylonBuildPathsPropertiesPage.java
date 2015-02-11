@@ -31,6 +31,7 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonBuildPathsPropertiesPage extends PropertyPage implements IStatusChangeListener {
@@ -56,7 +57,7 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
             boolean overwriteCeylonConfig = false;
             if (!fBuildPathsBlock.wasInSyncWithCeylonConfigWhenOpening()
                     && !fBuildPathsBlock.isInSyncWithCeylonConfig()) {
-                if ( !MessageDialog.openQuestion(getShell(),
+                if (!MessageDialog.openQuestion(getShell(),
                         "Setting Ceylon Build Path", 
                         "The Ceylon configuration file (.ceylon/config) is not synchronized with the current build path settings.\n" +
                         "Do you want to overwrite the configuration file with the settings defined here ?")) {
@@ -68,7 +69,8 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
                     fBuildPathsBlock.isClassfileMissing() ||
                     overwriteCeylonConfig) {
                 IWorkspaceRunnable runnable= new IWorkspaceRunnable() {
-                    public void run(IProgressMonitor monitor)   throws CoreException, OperationCanceledException {
+                    public void run(IProgressMonitor monitor)
+                            throws CoreException, OperationCanceledException {
                         fBuildPathsBlock.configureJavaProject(monitor);
                     }
                 };
@@ -76,13 +78,18 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
                 if (fBlockOnApply) {
                     try {
                         new ProgressMonitorDialog(getShell()).run(true, true, op);
-                    } catch (InvocationTargetException e) {
-                        ExceptionHandler.handle(e, getShell(), PreferencesMessages.BuildPathsPropertyPage_error_title, PreferencesMessages.BuildPathsPropertyPage_error_message);
-                        return false;
-                    } catch (InterruptedException e) {
+                    }
+                    catch (InvocationTargetException e) {
+                        ExceptionHandler.handle(e, getShell(), 
+                                PreferencesMessages.BuildPathsPropertyPage_error_title, 
+                                PreferencesMessages.BuildPathsPropertyPage_error_message);
                         return false;
                     }
-                } else {
+                    catch (InterruptedException e) {
+                        return false;
+                    }
+                }
+                else {
                     op.runAsUserJob(PreferencesMessages.BuildPathsPropertyPage_job_title, null);
                 }
             }
@@ -96,14 +103,19 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
         // ensure the page has no special buttons
         noDefaultAndApplyButton();
 
-        IProject project= getProject();
+        IProject project = getProject();
         Control result;
-        if (project == null || !isJavaProject(project)) {
-            result= createWithoutJava(parent);
-        } else if (!project.isOpen()) {
-            result= createForClosedProject(parent);
-        } else {
-            result= createWithJava(parent, project);
+        if (project == null) {
+            result = createWithoutCeylon(parent);
+        }
+        else if (!project.isOpen()) {
+            result = createForClosedProject(parent);
+        } 
+        else if (!isCeylonProject(project)) {
+            result = createWithoutCeylon(parent);
+        } 
+        else  {
+            result = createWithCeylon(parent, project);
         }
         Dialog.applyDialogFont(result);
         return result;
@@ -115,14 +127,18 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
     @Override
     public void createControl(Composite parent) {
         super.createControl(parent);
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaHelpContextIds.BUILD_PATH_PROPERTY_PAGE);
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), 
+                IJavaHelpContextIds.BUILD_PATH_PROPERTY_PAGE);
     }
 
     private IDialogSettings getSettings() {
-        IDialogSettings javaSettings = CeylonPlugin.getInstance().getDialogSettings();
-        IDialogSettings pageSettings = javaSettings.getSection(PAGE_SETTINGS);
+        IDialogSettings javaSettings = 
+                CeylonPlugin.getInstance().getDialogSettings();
+        IDialogSettings pageSettings = 
+                javaSettings.getSection(PAGE_SETTINGS);
         if (pageSettings == null) {
-            pageSettings = javaSettings.addNewSection(PAGE_SETTINGS);
+            pageSettings = 
+                    javaSettings.addNewSection(PAGE_SETTINGS);
             pageSettings.put(INDEX, 1);
         }
         return pageSettings;
@@ -130,7 +146,8 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
 
     @Override
     public boolean okToLeave() {
-        if (fBuildPathsBlock != null && fBuildPathsBlock.hasChangesInDialog()) {
+        if (fBuildPathsBlock != null && 
+                fBuildPathsBlock.hasChangesInDialog()) {
             String title = PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_title;
             String message = PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_message;
             String[] buttonLabels = new String[] {
@@ -138,13 +155,17 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
                     PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_button_discard,
                     PreferencesMessages.BuildPathsPropertyPage_unsavedchanges_button_ignore
             };
-            MessageDialog dialog= new MessageDialog(getShell(), title, null, message, MessageDialog.QUESTION, buttonLabels, 0);
+            MessageDialog dialog= new MessageDialog(getShell(), 
+                    title, null, message, 
+                    MessageDialog.QUESTION, buttonLabels, 0);
             int res= dialog.open();
             if (res == 0) { //save
                 fBlockOnApply= true;
                 return performOk() && super.okToLeave();
             } else if (res == 1) { // discard
-                fBuildPathsBlock.init(JavaCore.create(getProject()), null, null, CeylonBuilder.compileToJava(getProject()));
+                fBuildPathsBlock.init(JavaCore.create(getProject()), 
+                        null, null, 
+                        CeylonBuilder.compileToJava(getProject()));
             } else {
                 // keep unsaved
             }
@@ -156,8 +177,11 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
     public void setVisible(boolean visible) {
         if (fBuildPathsBlock != null) {
             if (visible) {
-                if (!fBuildPathsBlock.hasChangesInDialog() && fBuildPathsBlock.hasChangesInClasspathFile()) {
-                    fBuildPathsBlock.init(JavaCore.create(getProject()), null, null, CeylonBuilder.compileToJava(getProject()));
+                if (!fBuildPathsBlock.hasChangesInDialog() && 
+                        fBuildPathsBlock.hasChangesInClasspathFile()) {
+                    fBuildPathsBlock.init(JavaCore.create(getProject()), 
+                            null, null, 
+                            CeylonBuilder.compileToJava(getProject()));
                 }
             }
         }
@@ -168,25 +192,27 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
     /*
      * Content for valid projects.
      */
-    private Control createWithJava(Composite parent, IProject project) {
+    private Control createWithCeylon(Composite parent, IProject project) {
         IWorkbenchPreferenceContainer pageContainer= null;
         IPreferencePageContainer container= getContainer();
         if (container instanceof IWorkbenchPreferenceContainer) {
             pageContainer= (IWorkbenchPreferenceContainer) container;
         }
 
-        fBuildPathsBlock= new CeylonBuildPathsBlock(this, getSettings().getInt(INDEX), pageContainer);
-        fBuildPathsBlock.init(JavaCore.create(project), null, null, CeylonBuilder.compileToJava(project));
+        fBuildPathsBlock= new CeylonBuildPathsBlock(this, 
+                getSettings().getInt(INDEX), pageContainer);
+        fBuildPathsBlock.init(JavaCore.create(project), 
+                null, null, 
+                CeylonBuilder.compileToJava(project));
         return fBuildPathsBlock.createControl(parent);
     }
 
     /*
      * Content for non-Java projects.
      */
-    private Control createWithoutJava(Composite parent) {
-        Label label= new Label(parent, SWT.LEFT);
-        label.setText(PreferencesMessages.BuildPathsPropertyPage_no_java_project_message);
-
+    private Control createWithoutCeylon(Composite parent) {
+        Label label = new Label(parent, SWT.LEFT);
+        label.setText("Not a Ceylon project");
         fBuildPathsBlock= null;
         setValid(true);
         return label;
@@ -197,21 +223,22 @@ public class CeylonBuildPathsPropertiesPage extends PropertyPage implements ISta
      */
     private Control createForClosedProject(Composite parent) {
         Label label= new Label(parent, SWT.LEFT);
-        label.setText(PreferencesMessages.BuildPathsPropertyPage_closed_project_message);
-
+        label.setText("Information not available for closed project.");
         fBuildPathsBlock= null;
         setValid(true);
         return label;
     }
 
     private IProject getProject() {
-        IAdaptable adaptable= getElement();
-        return adaptable == null ? null : (IProject)adaptable.getAdapter(IProject.class);
+        IAdaptable adaptable = getElement();
+        return adaptable == null ? null : 
+            (IProject) adaptable.getAdapter(IProject.class);
     }
 
-    private boolean isJavaProject(IProject proj) {
+    private boolean isCeylonProject(IProject proj) {
         try {
-            return proj.hasNature(JavaCore.NATURE_ID);
+            return proj.hasNature(JavaCore.NATURE_ID) &&
+                    proj.hasNature(CeylonNature.NATURE_ID);
         } catch (CoreException e) {
             JavaPlugin.log(e);
         }

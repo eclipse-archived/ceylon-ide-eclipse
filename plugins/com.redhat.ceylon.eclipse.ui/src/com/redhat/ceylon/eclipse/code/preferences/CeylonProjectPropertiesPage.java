@@ -4,14 +4,9 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.areAstAwareIn
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressedWarnings;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
-
-import java.util.Arrays;
-import java.util.EnumSet;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -22,7 +17,6 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -38,25 +32,21 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
-public class CeylonProjectPreferencesPage extends PropertyPage {
-
+public class CeylonProjectPropertiesPage extends PropertyPage {
+    
     private boolean explodeModules = true;
-    private boolean showCompilerWarnings = true;
     private boolean builderEnabled = false;
     private boolean backendJs = false;
     private boolean backendJava = false;
     private boolean astAwareIncrementalBuids = true;
     private Boolean offlineOption = null;
     private String verbose = null;
-    private EnumSet<Warning> suppressedWarnings = null;
 
-    private Button showWarnings;
     private Button compileToJs;
     private Button astAwareIncrementalBuidsButton;
     private Button compileToJava;
@@ -77,8 +67,6 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
     protected void performDefaults() {
         explodeModules=true;
         enableExplodeModules.setSelection(true);
-        suppressedWarnings = null;
-        showWarnings.setSelection(true);
         backendJs = false;
         backendJava = true;
         compileToJs.setSelection(false);
@@ -101,62 +89,12 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             if (offlineOption!=null) {
                 config.setProjectOffline(offlineOption);
             }
-            if (suppressedWarnings.isEmpty()) {
-                config.setProjectSuppressWarnings(null);
-            }
-            else {
-                config.setProjectSuppressWarningsEnum(suppressedWarnings);
-            }
             config.save();
         }
     }
 
     private IProject getSelectedProject() {
         return (IProject) getElement().getAdapter(IProject.class);
-    }
-    
-    final class OptionListener implements SelectionListener {
-        private Warning[] types;
-        private Button b;
-        OptionListener(Button b, Warning... type) {
-            this.b = b;
-            this.types = type;
-        }
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-            if (b.getSelection()) {
-                for (Warning t: types) {
-                    suppressedWarnings.remove(t);
-                }
-            }
-            else {
-                for (Warning t: types) {
-                    suppressedWarnings.add(t);
-                }
-            }
-        }
-        @Override
-        public void widgetDefaultSelected(SelectionEvent e) {}
-    }
-    
-    void createOption(Composite comp, String description, Warning... type) {
-        final Button b = new Button(comp, SWT.CHECK);
-        b.setText(description);
-        b.addSelectionListener(new OptionListener(b, type));
-        b.setSelection(!suppressedWarnings.containsAll(Arrays.asList(type)));
-        b.setEnabled(builderEnabled);
-        showWarnings.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                b.setSelection(showWarnings.getSelection());
-            }
-        });
-        enableBuilderButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                b.setEnabled(true);
-            }
-        });
     }
     
     void addControls(final Composite parent) {
@@ -219,54 +157,6 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         compileToJs.setText("Compile project to JavaScript");
         compileToJs.setSelection(backendJs);
         compileToJs.setEnabled(builderEnabled);
-        
-        final Group warningsGroup = new Group(parent, SWT.NONE);
-        warningsGroup.setText("Compilation warnings");
-        warningsGroup.setLayout(new GridLayout(1, false));
-        GridData gd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        gd2.grabExcessHorizontalSpace=true;
-        warningsGroup.setLayoutData(gd2);
-        
-        showWarnings = new Button(warningsGroup, SWT.CHECK);
-        showWarnings.setText("Show warnings");
-        showWarnings.setSelection(showCompilerWarnings);
-        showWarnings.setEnabled(builderEnabled);
-        
-        GridData wgd = new GridData();
-        wgd.horizontalSpan=2;
-        showWarnings.setLayoutData(wgd);
-        
-        suppressedWarnings = getSuppressedWarnings(getSelectedProject());
-        
-        final Composite warningOptions = new Composite(warningsGroup, SWT.NONE);
-        warningOptions.setLayout(new GridLayout(2, false));
-        GridData gd5 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        gd5.grabExcessHorizontalSpace=true;
-        warningOptions.setLayoutData(gd5);
-        createOption(warningOptions, "Unused declarations",
-                Warning.unusedDeclaration);
-        createOption(warningOptions, "Unused imports", 
-                Warning.unusedImport);
-        createOption(warningOptions, "Deprecation", 
-                Warning.deprecation);
-        createOption(warningOptions, "Expressions of type 'Nothing'", 
-                Warning.expressionTypeNothing);
-        createOption(warningOptions, "Broken documentation links", 
-                Warning.doclink);
-        createOption(warningOptions, "Discouraged namespaces", 
-                Warning.ceylonNamespace, Warning.javaNamespace);
-        createOption(warningOptions, "Source file names", 
-                Warning.filenameCaselessCollision, Warning.filenameNonAscii);
-        createOption(warningOptions, "Warning suppression", 
-                Warning.suppressedAlready, Warning.suppressesNothing, 
-                Warning.unknownWarning);
-        createOption(warningOptions, "Ambiguous annotations", 
-                Warning.ambiguousAnnotation);
-        createOption(warningOptions, "Compiler annotations", 
-                Warning.compilerAnnotation);
-        warningOptions.setEnabled(showCompilerWarnings);
-        warningOptions.setVisible(showCompilerWarnings);
-        ((GridData) warningOptions.getLayoutData()).exclude = !showCompilerWarnings;
         
         Group troubleGroup = new Group(parent, SWT.NONE);
         troubleGroup.setText("Troubleshooting");
@@ -351,7 +241,6 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 enableBuilderButton.setEnabled(false);
                 enableExplodeModules.setEnabled(true);
                 astAwareIncrementalBuidsButton.setEnabled(true);
-                showWarnings.setEnabled(true);
                 compileToJs.setEnabled(true);
                 compileToJava.setEnabled(true);
                 offlineButton.setEnabled(true);
@@ -374,20 +263,6 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             }
         });
         
-        showWarnings.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                boolean showCompilerWarnings = showWarnings.getSelection();
-                suppressedWarnings = showCompilerWarnings ? 
-                        EnumSet.noneOf(Warning.class) : 
-                        EnumSet.allOf(Warning.class);
-                warningOptions.setEnabled(showCompilerWarnings);
-                warningOptions.setVisible(showCompilerWarnings);
-                ((GridData)warningOptions.getLayoutData()).exclude = !showCompilerWarnings;
-                parent.layout();
-            }
-        });
-
         compileToJava.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -404,9 +279,7 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
         });
         
         Link buildPathsPageLink = new Link(parent, 0);
-//        buildPathsPageLink.setLayoutData(GridDataFactory.swtDefaults()
-//                .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
-        buildPathsPageLink.setText("<a>Change Project Build Paths...</a>");
+        buildPathsPageLink.setText("See '<a>Build Paths</a>' to configure project build paths.");
         buildPathsPageLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -414,10 +287,9 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 container.openPage(CeylonBuildPathsPropertiesPage.ID, null);
             }
         });
+        
         Link openRepoPageLink = new Link(parent, 0);
-//        openRepoPageLink.setLayoutData(GridDataFactory.swtDefaults()
-//                .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
-        openRepoPageLink.setText("<a>Configure Project Module Repositories...</a>");
+        openRepoPageLink.setText("See '<a>Module Repositories</a>' to configure project module repositores.");
         openRepoPageLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -425,6 +297,16 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
                 container.openPage(CeylonRepoPropertiesPage.ID, null);
             }
         });
+        
+        Link warningsPageLink = new Link(parent, 0);
+        warningsPageLink.setText("See '<a>Compilation Warnings</a>' to enable or disable warnings.");
+        warningsPageLink.addSelectionListener(new SelectionAdapter() {
+          @Override
+          public void widgetSelected(SelectionEvent e) {
+              IWorkbenchPreferenceContainer container = (IWorkbenchPreferenceContainer) getContainer();
+              container.openPage(CeylonWarningsPropertiesPage.ID, null);
+          }
+      });
     }
 
     private void addCharacterEncodingLabel(Composite composite) {
@@ -475,12 +357,10 @@ public class CeylonProjectPreferencesPage extends PropertyPage {
             if (builderEnabled) {
                 astAwareIncrementalBuids = areAstAwareIncrementalBuildsEnabled(project);
                 explodeModules = isExplodeModulesEnabled(project);
-                showCompilerWarnings = showWarnings(project);
                 backendJs = compileToJs(project);
                 backendJava = compileToJava(project);
                 verbose = getVerbose(project);
                 offlineOption = CeylonProjectConfig.get(project).isProjectOffline();
-                suppressedWarnings = getSuppressedWarnings(project);
             }
         }
 
