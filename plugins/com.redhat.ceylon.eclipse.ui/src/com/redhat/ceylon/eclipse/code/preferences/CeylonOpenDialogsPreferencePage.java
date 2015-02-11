@@ -4,6 +4,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INACTIVE_OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_DIALOGS;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
@@ -21,6 +22,7 @@ public class CeylonOpenDialogsPreferencePage
     
     private BooleanFieldEditor typeParams;
     private BooleanFieldEditor params;
+    private BooleanFieldEditor types;
     
     public CeylonOpenDialogsPreferencePage() {
         setDescription("Preferences applying to the 'Open Ceylon Declaration' and 'Open in Type Hierarchy View' dialogs."); 
@@ -30,6 +32,7 @@ public class CeylonOpenDialogsPreferencePage
     public boolean performOk() {
         params.store();
         typeParams.store();
+        types.store();
         return super.performOk();
     }
     
@@ -38,6 +41,7 @@ public class CeylonOpenDialogsPreferencePage
     protected void performDefaults() {
         params.loadDefault();
         typeParams.loadDefault();
+        types.loadDefault();
         super.performDefaults();
     }
     
@@ -54,15 +58,11 @@ public class CeylonOpenDialogsPreferencePage
                 getFieldEditorParent(group));
         params.load();
         addField(params);
-//        group.setLayout(GridLayoutFactory.swtDefaults().equalWidth(true).numColumns(2).create());
-//        group.setLayoutData(GridDataFactory.fillDefaults().create());
-//        group.setText("Labels in Open dialogs");
-//        Button showTypeParameters = new Button(group, SWT.CHECK);
-//        showTypeParameters.setText("Show type parameters");
-//        showTypeParameters.setLayoutData(GridDataFactory.fillDefaults().create());
-//        Button showParameters = new Button(group, SWT.CHECK);
-//        showParameters.setText("Show parameters with types");
-//        showParameters.setLayoutData(GridDataFactory.fillDefaults().create());
+        types = new BooleanFieldEditor(TYPES_IN_DIALOGS, 
+                "Display return types", 
+                getFieldEditorParent(group));
+        types.load();
+        addField(types);
     }
     
     @Override

@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImag
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
@@ -318,7 +319,8 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                     StyledString label = 
                             getQualifiedDescriptionFor(d,
                                     prefs.getBoolean(TYPE_PARAMS_IN_DIALOGS),
-                                    prefs.getBoolean(PARAMS_IN_DIALOGS));
+                                    prefs.getBoolean(PARAMS_IN_DIALOGS),
+                                    prefs.getBoolean(TYPES_IN_DIALOGS));
                     if (nameOccursMultipleTimes(d)) {
                         label.append(" - ", PACKAGE_STYLER)
                              .append(getPackageLabel(d), PACKAGE_STYLER)
@@ -577,10 +579,15 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
             contentProvider.add(dwp, itemsFilter);
             nameOccurs(dec);
             if (includeMembers && dec instanceof ClassOrInterface) {
-                for (Declaration member: 
+                try {
+                    for (Declaration member: 
                         new ArrayList<Declaration>(dec.getMembers())) {
-                    fillDeclarationAndMembers(contentProvider, 
-                            itemsFilter, project, module, member);
+                        fillDeclarationAndMembers(contentProvider, 
+                                itemsFilter, project, module, member);
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }

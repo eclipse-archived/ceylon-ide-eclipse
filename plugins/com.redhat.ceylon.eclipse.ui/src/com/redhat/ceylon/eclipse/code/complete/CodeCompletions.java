@@ -317,11 +317,12 @@ public class CodeCompletions {
     }
     
     public static StyledString getQualifiedDescriptionFor(Declaration d) {
-        return getQualifiedDescriptionFor(d, true, true);
+        return getQualifiedDescriptionFor(d, true, true, 
+                EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES));
     }
     
     public static StyledString getQualifiedDescriptionFor(Declaration d, 
-            boolean typeParameters, boolean parameters) {
+            boolean typeParameters, boolean parameters, boolean types) {
         StyledString result = new StyledString();
         if (d!=null) {
             appendDeclarationDescription(d, result);
@@ -336,7 +337,7 @@ public class CodeCompletions {
             if (typeParameters) appendTypeParameters(d, result, true);
             if (parameters) appendParametersDescription(d, result);
             if (d instanceof TypedDeclaration) {
-                if (EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES)) {
+                if (types) {
                     TypedDeclaration td = (TypedDeclaration) d;
                     if (!td.isParameter() && 
                             !td.isDynamicallyTyped() &&
