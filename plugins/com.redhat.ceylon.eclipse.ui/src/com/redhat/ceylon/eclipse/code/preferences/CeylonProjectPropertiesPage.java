@@ -99,7 +99,7 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
     
     void addControls(final Composite parent) {
         Label desc = new Label(parent, SWT.LEFT | SWT.WRAP);
-        desc.setText("The Ceylon builder compiles Ceylon source contained in the project");
+        desc.setText("The Ceylon builder compiles Ceylon source contained in the project.");
 
         enableBuilderButton = new Button(parent, SWT.PUSH);
         enableBuilderButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
