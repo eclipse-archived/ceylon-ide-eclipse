@@ -123,8 +123,8 @@ public abstract class FiltersPreferencePage
     public void init(IWorkbench workbench) {}
     
     private void createFilterPreferences(Composite parent) {
-        Composite container = SWTFactory.createComposite(parent, 
-                parent.getFont(), 2, 1, GridData.FILL_BOTH, 0, 0);
+        Composite container = SWTFactory.createGroup(parent, 
+                "Filtering", 2, 1, GridData.FILL_BOTH);
         
 //        fUseStepFiltersButton = SWTFactory.createCheckButton(container, 
 //                DebugUIMessages.JavaStepFilterPreferencePage__Use_step_filters, 
@@ -138,7 +138,6 @@ public abstract class FiltersPreferencePage
 //        );
 
         SWTFactory.createLabel(container, getLabelText(), 2);
-        SWTFactory.createLabel(container, "Defined filters:", 2);
         fTableViewer = CheckboxTableViewer.newCheckList(container, 
                 SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
         fTableViewer.getTable().setFont(container.getFont());
@@ -168,6 +167,7 @@ public abstract class FiltersPreferencePage
         
         createStepFilterButtons(container);
 
+        SWTFactory.createLabel(container, "Unchecked filters are disabled.", 2);
 //        setPageEnablement(fUseStepFiltersButton.getSelection());
     }
 

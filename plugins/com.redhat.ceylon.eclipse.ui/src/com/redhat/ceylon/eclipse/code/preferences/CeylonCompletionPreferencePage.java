@@ -81,7 +81,7 @@ public class CeylonCompletionPreferencePage
     
     @Override
     protected String getLabelText() {
-        return "Filtered packages and declarations to exclude from completion proposal lists.";
+        return "Filtered packages and declarations are excluded from completion proposal lists.";
     }
     
     @Override

@@ -110,14 +110,12 @@ public class CeylonStepFilterPreferencePage
     public CeylonStepFilterPreferencePage() {
         super();
         setPreferenceStore(EditorUtil.getPreferences());
-        setTitle(DebugUIMessages.JavaStepFilterPreferencePage_title); 
-        setDescription(DebugUIMessages.JavaStepFilterPreferencePage_description); 
+        setDescription("Preferences relating to debugging Ceylon programs."); 
     }
 
     @Override
     protected Control createContents(Composite parent) {
 //        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.JAVA_STEP_FILTER_PREFERENCE_PAGE);
-    //The main composite
         
         Link debugLink = new Link(parent, 0);
         debugLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
@@ -131,11 +129,8 @@ public class CeylonStepFilterPreferencePage
             }
         });
         
-        Composite composite = SWTFactory.createComposite(parent, 
-                parent.getFont(), 1, 1, GridData.FILL_BOTH, 0, 0);
-        createStepFilterPreferences(composite);
+        return createStepFilterPreferences(parent);
         
-        return composite;   
     }
 
     public void init(IWorkbench workbench) {}
@@ -152,12 +147,14 @@ public class CeylonStepFilterPreferencePage
     
     /**
      * Create a group to contain the step filter related widgetry
+     * @return 
      */
-    private void createStepFilterPreferences(Composite parent) {
-        Composite container = SWTFactory.createComposite(parent, 
-                parent.getFont(), 2, 1, GridData.FILL_BOTH, 0, 0);
+    private Control createStepFilterPreferences(Composite parent) {
+        Composite container = SWTFactory.createGroup(parent, 
+                "Step filtering", 2, 1, GridData.FILL_HORIZONTAL);
+        
         fUseStepFiltersButton = SWTFactory.createCheckButton(container, 
-                DebugUIMessages.JavaStepFilterPreferencePage__Use_step_filters, 
+                "&Enable step filtering", 
                 null, getPreferenceStore().getBoolean(USE_STEP_FILTERS), 2);
         fUseStepFiltersButton.addSelectionListener(new SelectionListener() {
                 public void widgetSelected(SelectionEvent e) {
@@ -166,7 +163,9 @@ public class CeylonStepFilterPreferencePage
                 public void widgetDefaultSelected(SelectionEvent e) {}
             }
         );
-        SWTFactory.createLabel(container, DebugUIMessages.JavaStepFilterPreferencePage_Defined_step_fi_lters__8, 2);
+        
+        SWTFactory.createLabel(container, "Code in filtered packages and classes will be skipped by the debugger.", 2);
+        
         fTableViewer = CheckboxTableViewer.newCheckList(container, 
                 SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
         fTableViewer.getTable().setFont(container.getFont());
@@ -200,7 +199,11 @@ public class CeylonStepFilterPreferencePage
         createStepFilterButtons(container);
         createStepFilterCheckboxes(container);
 
+        SWTFactory.createLabel(container, "Unchecked filters are disabled.", 2);
+        
         setPageEnablement(fUseStepFiltersButton.getSelection());
+        
+        return container;
     }
     
     /**
@@ -273,8 +276,8 @@ public class CeylonStepFilterPreferencePage
         initializeDialogUnits(container);
         // button container
         Composite buttonContainer = new Composite(container, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_VERTICAL);
-        buttonContainer.setLayoutData(gd);
+        GridData gd1 = new GridData(GridData.FILL_VERTICAL);
+        buttonContainer.setLayoutData(gd1);
         GridLayout buttonLayout = new GridLayout();
         buttonLayout.numColumns = 1;
         buttonLayout.marginHeight = 0;
@@ -323,12 +326,12 @@ public class CeylonStepFilterPreferencePage
         });
         fRemoveFilterButton.setEnabled(false);
         
-        Label separator= new Label(buttonContainer, SWT.NONE);
+        Label separator = new Label(buttonContainer, SWT.NONE);
         separator.setVisible(false);
-        gd = new GridData();
-        gd.horizontalAlignment= GridData.FILL;
-        gd.verticalAlignment= GridData.BEGINNING;
-        gd.heightHint= 4;
+        GridData gd = new GridData();
+        gd.horizontalAlignment = GridData.FILL;
+        gd.verticalAlignment = GridData.BEGINNING;
+        gd.heightHint = 4;
         separator.setLayoutData(gd);
     //Select All button
         fSelectAllButton = createPushButton(buttonContainer, 

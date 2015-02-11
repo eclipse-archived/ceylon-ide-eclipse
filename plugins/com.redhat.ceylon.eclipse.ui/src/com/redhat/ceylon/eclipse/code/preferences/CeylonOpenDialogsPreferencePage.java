@@ -43,7 +43,7 @@ public class CeylonOpenDialogsPreferencePage
     
     @Override
     protected void createFieldEditors() {
-        Group group = createGroup(2, "Labels in 'Open' dialogs");
+        Group group = createGroup(2, "Labels");
         typeParams = new BooleanFieldEditor(TYPE_PARAMS_IN_DIALOGS, 
                 "Display type parameters", 
                 getFieldEditorParent(group));
@@ -67,7 +67,7 @@ public class CeylonOpenDialogsPreferencePage
     
     @Override
     protected String getLabelText() {
-        return "Filtered packages and declarations to exclude from 'Open' dialogs.";
+        return "Filtered packages and declarations are excluded from 'Open' dialogs.";
     }
     
     @Override
