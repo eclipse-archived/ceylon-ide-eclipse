@@ -18,6 +18,10 @@ import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDispl
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -27,6 +31,8 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -37,7 +43,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
@@ -325,14 +333,17 @@ public class TestRunViewPart extends ViewPart {
 
     }
 
-    private class RelaunchAction extends Action {
+    private class RelaunchAction extends Action implements IMenuCreator {
+        
+        private Menu dropdownMenu;
 
         public RelaunchAction() {
-            super(relaunchLabel);
+            super(relaunchLabel, AS_DROP_DOWN_MENU);
             setDescription(relaunchLabel);
             setToolTipText(relaunchLabel);
             setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(RELAUNCH));
             setEnabled(false);
+            setMenuCreator(this);
         }
 
         @Override
@@ -353,6 +364,71 @@ public class TestRunViewPart extends ViewPart {
             }
         }
 
+        @Override
+        public Menu getMenu(Control parent) {
+            if( dropdownMenu != null ) {
+                dropdownMenu.dispose();
+            }
+            
+            dropdownMenu = new Menu(parent.getShell(), SWT.POP_UP|SWT.NONE);
+            
+            TestRunContainer testRunContainer = CeylonTestPlugin.getDefault().getModel();
+            List<TestRun> testRuns = testRunContainer.getTestRuns();
+            Set<String> testRunNames = new HashSet<String>();
+            for(TestRun testRun : testRuns) {
+                if( !testRunNames.contains(testRun.getRunName()) ) {
+                    testRunNames.add(testRun.getRunName());
+                    addActionToMenu(dropdownMenu, new RelaunchMenuAction(testRun));
+                }
+            }
+            
+            return dropdownMenu;
+        }
+        
+        private void addActionToMenu(Menu parent, Action action) {
+            ActionContributionItem item = new ActionContributionItem(action);
+            item.fill(parent, -1);
+        }
+
+        @Override
+        public Menu getMenu(Menu parent) {
+            return null;
+        }
+        
+        @Override
+        public void dispose() {
+            if( dropdownMenu != null ) {
+                dropdownMenu.dispose();
+                dropdownMenu = null;
+            }
+        }
+
+    }
+    
+    private class RelaunchMenuAction extends Action {
+
+        private final TestRun testRun;
+
+        public RelaunchMenuAction(TestRun testRun) {
+            super(testRun.getRunName());
+            setDescription(testRun.getRunName());
+            setToolTipText(testRun.getRunName());
+            this.testRun = testRun;
+        }
+        
+        @Override
+        public void run() {
+            ILaunch launch = testRun.getLaunch();
+            if( launch == null )
+                return;
+
+            ILaunchConfiguration launchConfiguration = launch.getLaunchConfiguration();
+            if( launchConfiguration == null )
+                return;
+
+            DebugUITools.launch(launchConfiguration, launch.getLaunchMode());
+        }
+        
     }
 
     private class StopAction extends Action {
