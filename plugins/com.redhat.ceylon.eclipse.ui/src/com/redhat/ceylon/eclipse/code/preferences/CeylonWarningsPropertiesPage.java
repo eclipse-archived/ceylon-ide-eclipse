@@ -4,8 +4,10 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressed
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -30,34 +32,19 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
     public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.warnings";
     
     private boolean showCompilerWarnings = true;
-    private Boolean offlineOption = null;
     private EnumSet<Warning> suppressedWarnings = null;
-
+    private List<Button> warningTypeButtons = new ArrayList<Button>();
     private Button showWarnings;
     
     private IResourceChangeListener encodingListener;
+
+    private Composite warningOptions;
     
     @Override
     public boolean performOk() {
-        store();
-        return true;
-    }
-    
-    @Override
-    protected void performDefaults() {
-        suppressedWarnings = null;
-        showWarnings.setSelection(true);
-        offlineOption = null;
-        super.performDefaults();
-    }
-    
-    private void store() {
         IProject project = getSelectedProject();
         if (CeylonNature.isEnabled(project)) {
             CeylonProjectConfig config = CeylonProjectConfig.get(project);
-            if (offlineOption!=null) {
-                config.setProjectOffline(offlineOption);
-            }
             if (suppressedWarnings.isEmpty()) {
                 config.setProjectSuppressWarnings(null);
             }
@@ -66,8 +53,21 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
             }
             config.save();
         }
+        return true;
     }
-
+    
+    @Override
+    protected void performDefaults() {
+        suppressedWarnings = EnumSet.noneOf(Warning.class);
+        showWarnings.setSelection(true);
+        warningOptions.setEnabled(true);;
+        for (Button b: warningTypeButtons) {
+            b.setEnabled(true);
+            b.setSelection(true);
+        }
+        super.performDefaults();
+    }
+    
     private IProject getSelectedProject() {
         return (IProject) getElement().getAdapter(IProject.class);
     }
@@ -101,26 +101,12 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
         b.setText(description);
         b.addSelectionListener(new OptionListener(b, type));
         b.setSelection(!suppressedWarnings.containsAll(Arrays.asList(type)));
-        b.setEnabled(CeylonNature.isEnabled(getSelectedProject()));
-        showWarnings.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                b.setSelection(showWarnings.getSelection());
-            }
-        });
-//        enableBuilderButton.addSelectionListener(new SelectionAdapter() {
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                b.setEnabled(true);
-//            }
-//        });
+        b.setEnabled(showCompilerWarnings && 
+                CeylonNature.isEnabled(getSelectedProject()));
+        warningTypeButtons.add(b);
     }
     
     void addControls(final Composite parent) {
-        
-//        Composite composite = new Composite(parent, SWT.NONE);
-//        composite.setLayoutData(GridDataFactory.swtDefaults().grab(true, false).create());
-//        composite.setLayout(GridLayoutFactory.fillDefaults().create());
         
         boolean builderEnabled = CeylonNature.isEnabled(getSelectedProject());
         
@@ -138,7 +124,7 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
         
         suppressedWarnings = getSuppressedWarnings(getSelectedProject());
         
-        final Composite warningOptions = new Composite(warningsGroup, SWT.NONE);
+        warningOptions = new Composite(warningsGroup, SWT.NONE);
         warningOptions.setLayout(GridLayoutFactory.swtDefaults().equalWidth(true).numColumns(2).create());
         warningOptions.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
         
@@ -177,9 +163,6 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
                 "Compiler annotations", 
                 Warning.compilerAnnotation);
         warningOptions.setEnabled(showCompilerWarnings && builderEnabled);
-        warningsGroup.setVisible(showCompilerWarnings && builderEnabled);
-//        warningOptions.setVisible(showCompilerWarnings);
-//        ((GridData) warningOptions.getLayoutData()).exclude = !showCompilerWarnings;
         
         showWarnings.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -189,9 +172,10 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
                         EnumSet.noneOf(Warning.class) : 
                         EnumSet.allOf(Warning.class);
                 warningOptions.setEnabled(showCompilerWarnings);
-                warningsGroup.setVisible(showCompilerWarnings);
-//                ((GridData)warningOptions.getLayoutData()).exclude = !showCompilerWarnings;
-//                parent.layout();
+                for (Button b: warningTypeButtons) {
+                    b.setEnabled(showCompilerWarnings);
+                    b.setSelection(showCompilerWarnings);
+                }
             }
         });
 
