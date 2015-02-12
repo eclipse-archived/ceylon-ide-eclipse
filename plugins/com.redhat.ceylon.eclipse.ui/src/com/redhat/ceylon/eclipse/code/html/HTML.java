@@ -28,7 +28,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 
-import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
+import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;

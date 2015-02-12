@@ -13,7 +13,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcherExtension;
 
-import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
+import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.util.Nodes;
 

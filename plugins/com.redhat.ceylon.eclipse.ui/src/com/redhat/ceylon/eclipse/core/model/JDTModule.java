@@ -67,7 +67,7 @@ import com.redhat.ceylon.cmr.api.RepositoryException;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.api.VisibilityType;
 import com.redhat.ceylon.cmr.impl.JDKRepository;
-import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
+import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;

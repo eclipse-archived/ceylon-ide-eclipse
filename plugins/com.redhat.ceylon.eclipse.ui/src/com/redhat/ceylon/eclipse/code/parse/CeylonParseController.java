@@ -46,7 +46,7 @@ import org.eclipse.jface.text.IDocument;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
-import com.redhat.ceylon.compiler.java.tools.NewlineFixingStringStream;
+import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
