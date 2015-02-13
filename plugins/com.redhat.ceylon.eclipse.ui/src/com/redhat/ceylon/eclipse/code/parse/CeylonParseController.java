@@ -255,7 +255,6 @@ public class CeylonParseController {
                             useTypechecker(phasedUnit, new Runnable() {
                                 @Override
                                 public void run() {
-                                    phasedUnit.analyseTypes();
                                     if (showWarnings(p)) {
                                         phasedUnit.analyseUsage();
                                     }
@@ -640,6 +639,10 @@ public class CeylonParseController {
         }
         for (PhasedUnit pu: dependencies) {
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+        }
+        for (PhasedUnit pu: dependencies) {
+            pu.analyseTypes(); //TODO: Needed to have the right values in the Value.trans field (set in Expression visitor)
+                                // which in turn is important for debugging !
         }
         
         return tc;

@@ -900,6 +900,8 @@ public class JDTModule extends LazyModule {
                     phasedUnit.scanDeclarations();
                     phasedUnit.scanTypeDeclarations();
                     phasedUnit.validateRefinement();
+                    phasedUnit.analyseTypes(); // Needed to have the right values in the Value.trans field (set in ExpressionVisitor)
+                    // in the case of specifier statements for refined members
                 }
             } catch (Exception e) {
                 e.printStackTrace();

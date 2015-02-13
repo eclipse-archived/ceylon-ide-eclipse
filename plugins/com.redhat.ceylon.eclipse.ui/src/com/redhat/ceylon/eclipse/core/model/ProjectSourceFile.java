@@ -94,6 +94,7 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
                     lastPhasedUnit.scanDeclarations();
                     lastPhasedUnit.scanTypeDeclarations();
                     lastPhasedUnit.validateRefinement();
+                    lastPhasedUnit.analyseTypes();
                     lastPhasedUnit.analyseFlow();
                     UnknownTypeCollector utc = new UnknownTypeCollector();
                     lastPhasedUnit.getCompilationUnit().visit(utc);

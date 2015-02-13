@@ -1692,6 +1692,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         for (PhasedUnit pu: dependencies) {
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
         }
+        for (PhasedUnit pu: dependencies) {
+            pu.analyseTypes(); // Needed to have the right values in the Value.trans field (set in Expression visitor)
+                                // which in turn is important for debugging !
+        }
         
         // Then typecheck the changed source of this project
         
@@ -1904,6 +1908,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 
         for (PhasedUnit pu: dependencies) {
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+        }
+
+        for (PhasedUnit pu: dependencies) {
+            pu.analyseTypes(); // Needed to have the right values in the Value.trans field (set in Expression visitor)
+                                // which in turn is important for debugging !
         }
 
         Module languageModule = loader.getLanguageModule();
