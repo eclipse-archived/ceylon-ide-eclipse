@@ -31,6 +31,7 @@ import com.redhat.ceylon.compiler.java.runtime.metamodel.Metamodel;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationListener;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationRunner;
+import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonPresentationContext.PresentationType;
 
 public class CeylonJDIModelPresentation extends JDIModelPresentation {
     private static final String ceylonStringTypeName = ceylon.language.String.class.getName();
@@ -38,7 +39,7 @@ public class CeylonJDIModelPresentation extends JDIModelPresentation {
 
     @Override
     public String getValueText(IJavaValue value) throws DebugException {
-        if (!CeylonPresentationContext.isCeylonContext(value)) {
+        if (!CeylonPresentationContext.isCeylonContext(value, PresentationType.LABEL)) {
             return super.getValueText(value);
         }
 
@@ -213,7 +214,7 @@ public class CeylonJDIModelPresentation extends JDIModelPresentation {
     
     @Override
     public String getVariableText(IJavaVariable var) {
-        boolean isCeylonContext = CeylonPresentationContext.isCeylonContext(var);
+        boolean isCeylonContext = CeylonPresentationContext.isCeylonContext(var, PresentationType.LABEL);
         String varLabel= DebugUIMessages.JDIModelPresentation_unknown_name__1; 
         try {
             varLabel= var.getName();

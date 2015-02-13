@@ -19,6 +19,7 @@ import org.eclipse.jdt.debug.core.IJavaClassType;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
+import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 
@@ -136,39 +137,67 @@ public class DebugUtils {
         return project == null ? null : getJavaMethod(frame, project);
     }
 
-    public static PhasedUnit getPhasedUnit(IJavaStackFrame frame,
+    public static PhasedUnit getPhasedUnit(IJavaObject object,
             IJavaProject project) {
         try {
-            PhasedUnits projectPhasedUnits = CeylonBuilder
-                    .getProjectPhasedUnits(project.getProject());
-            if (projectPhasedUnits != null) {
-                PhasedUnit phasedUnit = null;
-                phasedUnit = projectPhasedUnits
-                        .getPhasedUnitFromRelativePath(frame.getSourcePath());
-                if (phasedUnit != null) {
-                    return phasedUnit;
-                }
-            }
-            for (Module module : CeylonBuilder
-                    .getProjectExternalModules(project.getProject())) {
-                if (module instanceof JDTModule) {
-                    JDTModule jdtModule = (JDTModule) module;
-                    if (jdtModule.isCeylonArchive()) {
-                        PhasedUnit phasedUnit = jdtModule
-                                .getPhasedUnitFromRelativePath(frame
-                                        .getSourcePath());
-                        if (phasedUnit != null) {
-                            if (phasedUnit instanceof CrossProjectPhasedUnit) {
-                                phasedUnit = ((CrossProjectPhasedUnit) phasedUnit)
-                                        .getOriginalProjectPhasedUnit();
-                            }
-                            return phasedUnit;
+            IJavaType javaType = object.getJavaType();
+            if (javaType instanceof IJavaClassType) {
+                IJavaClassType javaClassType = (IJavaClassType) javaType;
+                String[] sourcePaths = javaClassType.getSourcePaths(null);
+                if (sourcePaths != null) {
+                    for (String sourcePath : sourcePaths) {
+                        PhasedUnit pu = getPhasedUnit(sourcePath, project);
+                        if (pu != null) {
+                            return pu;
                         }
                     }
                 }
             }
+            
         } catch (DebugException e) {
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static PhasedUnit getPhasedUnit(IJavaStackFrame frame,
+            IJavaProject project) {
+        try {
+            return getPhasedUnit(frame.getSourcePath(), project);
+        } catch (DebugException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static PhasedUnit getPhasedUnit(String sourcePath,
+            IJavaProject project) {
+        PhasedUnits projectPhasedUnits = CeylonBuilder
+                .getProjectPhasedUnits(project.getProject());
+        if (projectPhasedUnits != null) {
+            PhasedUnit phasedUnit = null;
+            phasedUnit = projectPhasedUnits
+                    .getPhasedUnitFromRelativePath(sourcePath);
+            if (phasedUnit != null) {
+                return phasedUnit;
+            }
+        }
+        for (Module module : CeylonBuilder
+                .getProjectExternalModules(project.getProject())) {
+            if (module instanceof JDTModule) {
+                JDTModule jdtModule = (JDTModule) module;
+                if (jdtModule.isCeylonArchive()) {
+                    PhasedUnit phasedUnit = jdtModule
+                            .getPhasedUnitFromRelativePath(sourcePath);
+                    if (phasedUnit != null) {
+                        if (phasedUnit instanceof CrossProjectPhasedUnit) {
+                            phasedUnit = ((CrossProjectPhasedUnit) phasedUnit)
+                                    .getOriginalProjectPhasedUnit();
+                        }
+                        return phasedUnit;
+                    }
+                }
+            }
         }
         return null;
     }
@@ -200,12 +229,13 @@ public class DebugUtils {
             // Not a Ceylon debug target
             return null;
         }
-        IJavaStackFrame frame = getFrame();
-        if (frame != null) {
-            IType type = getJavaType(object, project);
-            PhasedUnit unit = getPhasedUnit(frame, project);
-            if (type != null && unit != null) {
-                return JavaSearch.toCeylonDeclaration(type, Arrays.asList(unit));
+
+        IType type = getJavaType(object, project);
+        PhasedUnit unit = getPhasedUnit(object, project);
+        if (type != null) {
+            if (unit != null) {
+                Declaration result = JavaSearch.toCeylonDeclaration(type, Arrays.asList(unit));
+                return result;
             }
         }
         return null;

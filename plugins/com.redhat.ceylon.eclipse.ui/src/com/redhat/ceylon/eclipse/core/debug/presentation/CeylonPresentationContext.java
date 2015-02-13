@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.internal.core.LaunchManager;
+import org.eclipse.debug.internal.ui.viewers.model.provisional.ILabelUpdate;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationContext;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IViewerUpdate;
 import org.eclipse.debug.ui.DebugUITools;
@@ -152,7 +153,7 @@ class CeylonPresentationContext implements IPresentationContext {
         return false;
     }
 
-    static boolean isCeylonContext(IJavaValue value) {
+    static boolean isCeylonContext(IJavaValue value, PresentationType presentationType) {
         IAdaptable debugContext = DebugUITools.getDebugContext();
         if (! (debugContext instanceof IJavaStackFrame)) {
             return false;
@@ -160,10 +161,11 @@ class CeylonPresentationContext implements IPresentationContext {
         
         return CeylonPresentationContext.isCeylonContext(
                 (IJavaStackFrame) debugContext,
-                value);
+                value,
+                presentationType);
     }
 
-    static boolean isCeylonContext(IJavaVariable var) {
+    static boolean isCeylonContext(IJavaVariable var, PresentationType presentationType) {
         IAdaptable debugContext = DebugUITools.getDebugContext();
         if (! (debugContext instanceof IJavaStackFrame)) {
             return false;
@@ -179,54 +181,63 @@ class CeylonPresentationContext implements IPresentationContext {
         }
         return CeylonPresentationContext.isCeylonContext(
                 (IJavaStackFrame) debugContext,
-                value);
+                value,
+                presentationType);
     }
 
     static boolean isCeylonContext(IViewerUpdate viewerUpdate) {
         return isCeylonContext(
                 getStackFrame(viewerUpdate), 
-                viewerUpdate.getElement());
+                viewerUpdate.getElement(),
+                viewerUpdate instanceof ILabelUpdate ? PresentationType.LABEL : PresentationType.CHILDREN);
     }
     
-    static boolean isCeylonContext(IJavaStackFrame stackFrame, Object element) {
+    public static enum PresentationType {
+        LABEL,
+        CHILDREN
+    }
+    
+    static boolean isCeylonContext(IJavaStackFrame stackFrame, Object element, PresentationType presentationType) {
         if (stackFrame == null || ! DebugUtils.isCeylonFrame(stackFrame)) {
             // We are suspended in a Java file => adopt the Java presentations
             return false;
         }
         
-        IJavaReferenceType type;
-        try {
-            type = getReferenceType(element);
-            if (type != null) {
-                // If the current model element has a Class (variable in the Variables View for example), 
-                // Analyze the Class to know whether we use the Java or the Ceylon presentation
-                if (isInCeylonFile(type)) {
-                    return true;
-                }
-                String typeName = type.getName();
-                if (typeName != null) {
-                    if (isKnownAsCeylon(typeName)) {
+        if (presentationType.equals(PresentationType.CHILDREN)) {
+            IJavaReferenceType type;
+            try {
+                type = getReferenceType(element);
+                if (type != null) {
+                    // If the current model element has a Class (variable in the Variables View for example), 
+                    // Analyze the Class to know whether we use the Java or the Ceylon presentation
+                    if (isInCeylonFile(type)) {
                         return true;
                     }
+                    String typeName = type.getName();
+                    if (typeName != null) {
+                        if (isKnownAsCeylon(typeName)) {
+                            return true;
+                        }
 
-                    if (isKnownAsJava(typeName)) {
-                        return false;
+                        if (isKnownAsJava(typeName)) {
+                            return false;
+                        }
                     }
-                }
 
-                // We are in a Ceylon stackframe, this class is defined in Java, 
-                // and we don't know if it is a Ceylon class
-                // => look at the Ceylon annotation
-                IDebugTarget dt = type.getDebugTarget();
-                if (dt instanceof CeylonJDIDebugTarget) {
-                    CeylonJDIDebugTarget target = (CeylonJDIDebugTarget) dt;
-                    return target.isAnnotationPresent((IJavaReferenceType) type, Ceylon.class, 5000);
+                    // We are in a Ceylon stackframe, this class is defined in Java, 
+                    // and we don't know if it is a Ceylon class
+                    // => look at the Ceylon annotation
+                    IDebugTarget dt = type.getDebugTarget();
+                    if (dt instanceof CeylonJDIDebugTarget) {
+                        CeylonJDIDebugTarget target = (CeylonJDIDebugTarget) dt;
+                        return target.isAnnotationPresent((IJavaReferenceType) type, Ceylon.class, 5000);
+                    }
+                    return false;
                 }
+            } catch (DebugException e) {
+                e.printStackTrace();
                 return false;
             }
-        } catch (DebugException e) {
-            e.printStackTrace();
-            return false;
         }
         return true;
     }
