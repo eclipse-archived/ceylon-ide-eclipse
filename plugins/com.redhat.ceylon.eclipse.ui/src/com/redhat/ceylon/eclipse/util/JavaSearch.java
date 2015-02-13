@@ -299,13 +299,13 @@ public class JavaSearch {
                      name.startsWith("set")) {
                 name = Character.toLowerCase(name.charAt(3)) + 
                         name.substring(4);
-                if (name.endsWith(Suffix.$priv$.name())) {
-                    name = name.substring(0, name.length() - Suffix.$priv$.name().length());
-                }
             } else if (name.equals("toString")) {
                name = "string";
             } else if (name.equals("hashCode")) {
                 name = "hash";
+            }
+            if (name.endsWith(Suffix.$priv$.name())) {
+                name = name.substring(0, name.length() - Suffix.$priv$.name().length());
             }
         } else if (dec instanceof IType) {
             IType type = (IType) dec;
