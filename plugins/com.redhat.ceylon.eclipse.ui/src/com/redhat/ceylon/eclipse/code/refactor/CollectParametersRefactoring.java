@@ -28,6 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -311,7 +312,19 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             }
             builder.append("class ").append(newName).append("(");
             for (Tree.Parameter p: parameters) {
-                builder.append("shared ").append(toString(p)).append(", ");
+                boolean addShared = true;
+                if (p instanceof Tree.ParameterDeclaration) {
+                    Tree.TypedDeclaration ptd = 
+                            ((Tree.ParameterDeclaration) p).getTypedDeclaration();
+                    if (Util.hasAnnotation(ptd.getAnnotationList(), 
+                            "shared", ptd.getUnit())) {
+                        addShared = false;
+                    }
+                }
+                if (addShared) {
+                    builder.append("shared ");
+                }
+                builder.append(toString(p)).append(", ");
             }
             if (builder.toString().endsWith(", ")) {
                 builder.setLength(builder.length()-2);
