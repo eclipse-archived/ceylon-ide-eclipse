@@ -151,7 +151,9 @@ public class LinkedModeCompletionProposal
                 i<document.getLength(); 
                 i++) {
             char ch = document.getChar(i);
-            if (Character.isJavaIdentifierPart(ch)) {
+            if (Character.isJavaIdentifierPart(ch) 
+                    || ch=='<' || ch=='>' 
+                    || ch=='[' || ch==']') {
                 lastWasWs = false;
                 length++;
             }
