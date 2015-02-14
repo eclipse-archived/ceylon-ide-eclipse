@@ -84,6 +84,7 @@ public class CeylonRefactoringPreferencePage
         linkedModeRename.load();
         addField(linkedModeRename);
         final Composite parent = getFieldEditorParent(group);
+        parent.setLayoutData(GridDataFactory.swtDefaults().indent(10, 0).create());
         linkedModeRenameSelect = new BooleanFieldEditor(LINKED_MODE_RENAME_SELECT, 
                 "Fully select renamed identifier", 
                 parent);
