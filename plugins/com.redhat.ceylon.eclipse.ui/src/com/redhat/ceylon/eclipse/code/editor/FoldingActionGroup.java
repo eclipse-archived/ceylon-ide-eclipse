@@ -32,6 +32,7 @@ import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class FoldingActionGroup extends ActionGroup {
@@ -162,7 +163,7 @@ public class FoldingActionGroup extends ActionGroup {
                 }
             }
         };
-        fCollapseComments.setActionDefinitionId("com.redhat.ceylon.eclipse.ui.editor.folding.collapseComments");
+        fCollapseComments.setActionDefinitionId(CeylonPlugin.PLUGIN_ID + ".editor.folding.collapseComments");
         editor.setAction("FoldingCollapseComments", fCollapseComments);
         
         fCollapseImports= new FoldingAction(getResourceBundle(), "Projection.CollapseImports.") {
@@ -183,7 +184,7 @@ public class FoldingActionGroup extends ActionGroup {
                 }
             }
         };
-        fCollapseImports.setActionDefinitionId("com.redhat.ceylon.eclipse.ui.editor.folding.collapseImports");
+        fCollapseImports.setActionDefinitionId(CeylonPlugin.PLUGIN_ID + ".editor.folding.collapseImports");
         editor.setAction("FoldingCollapseImports", fCollapseImports);
     }
     

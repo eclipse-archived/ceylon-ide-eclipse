@@ -60,6 +60,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.dialogs.SelectionDialog;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 /**
@@ -70,7 +71,7 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 public class CeylonStepFilterPreferencePage 
         extends PreferencePage implements IWorkbenchPreferencePage {
     
-    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.debug.filters";
+    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.debug.filters";
     
     /**
      * Content provider for the table.  Content consists of instances of StepFilter.

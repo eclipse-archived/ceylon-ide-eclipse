@@ -11,6 +11,8 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
 /**
  * The preference page for Ceylon open dialog filtering
  */
@@ -18,7 +20,7 @@ public class CeylonOpenDialogsPreferencePage
         extends FiltersPreferencePage 
         implements IWorkbenchPreferencePage {
     
-    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.open.filters";
+    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.open.filters";
     
     private BooleanFieldEditor typeParams;
     private BooleanFieldEditor params;

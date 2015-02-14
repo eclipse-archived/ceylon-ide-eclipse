@@ -36,7 +36,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonBuildPathsPropertiesPage extends PropertyPage implements IStatusChangeListener {
     
-    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.paths";
+    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.paths";
 
     private static final String PAGE_SETTINGS = "BuildPathsPropertyPage";
     private static final String INDEX = "pageIndex";

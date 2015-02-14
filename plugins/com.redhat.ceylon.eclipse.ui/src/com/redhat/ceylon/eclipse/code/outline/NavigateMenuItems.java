@@ -67,7 +67,7 @@ public class NavigateMenuItems extends CompoundContributionItem {
                         "Last Edit Lo&cation", enabled, EDIT),
                 new DynamicMenuItem("org.eclipse.ui.edit.text.goto.line", 
                         "&Go to Line...", true),
-                new DynamicMenuItem("com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence", 
+                new DynamicMenuItem(CeylonPlugin.PLUGIN_ID + ".editor.gotoMatchingFence", 
                         "Go to &Matching Bracket", true)
         };
     }

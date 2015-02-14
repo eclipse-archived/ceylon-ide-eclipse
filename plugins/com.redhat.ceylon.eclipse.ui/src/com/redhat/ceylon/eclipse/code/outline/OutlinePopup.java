@@ -239,7 +239,7 @@ public class OutlinePopup extends TreeViewPopup {
     
     @Override
     protected String getId() {
-        return "com.redhat.ceylon.eclipse.ui.QuickOutline";
+        return CeylonPlugin.PLUGIN_ID + ".QuickOutline";
     }
 
     @Override

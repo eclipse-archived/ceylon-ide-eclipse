@@ -273,7 +273,7 @@ public class HierarchyPopup extends TreeViewPopup {
     
     @Override
     protected String getId() {
-        return "com.redhat.ceylon.eclipse.ui.QuickHierarchy";
+        return CeylonPlugin.PLUGIN_ID + ".QuickHierarchy";
     }
 
     @Override

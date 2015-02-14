@@ -14,10 +14,11 @@ import org.eclipse.ui.dialogs.PropertyPage;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonRepoPropertiesPage extends PropertyPage {
     
-    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.repos";
+    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.repos";
 
     private CeylonRepoConfigBlock block;
 

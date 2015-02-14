@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 //import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 
@@ -30,7 +31,7 @@ public class CeylonCompletionPreferencePage
         extends FiltersPreferencePage 
         implements IWorkbenchPreferencePage {
     
-    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.completion";
+    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.completion";
     
     BooleanFieldEditor autoInsert;
     BooleanFieldEditor autoInsertPrefix;

@@ -22,13 +22,14 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.editors.text.EditorsUI;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSaveActionsPreferencePage 
         extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
     
-    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.save";
+    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.save";
     
     BooleanFieldEditor normalizeWs;
     BooleanFieldEditor normalizeNl;

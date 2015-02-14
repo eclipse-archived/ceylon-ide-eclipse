@@ -393,7 +393,7 @@ final class PeekDefinitionPopup extends PopupDialog
 
     @Override
     protected IDialogSettings getDialogSettings() {
-        String sectionName= "com.redhat.ceylon.eclipse.ui.PeekDefinition";
+        String sectionName = CeylonPlugin.PLUGIN_ID + ".PeekDefinition";
         IDialogSettings dialogSettings = CeylonPlugin.getInstance()
                 .getDialogSettings();
         IDialogSettings settings= dialogSettings.getSection(sectionName);

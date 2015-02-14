@@ -26,6 +26,8 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.navigator.IExtensionStateConstants;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
 /**
  *
  * This filter is only applicable to instances of the Common Navigator.
@@ -34,8 +36,8 @@ import org.eclipse.jdt.internal.ui.navigator.IExtensionStateConstants;
  */
 public abstract class NonEssentialElementsFilter extends ViewerFilter {
 
-	private static final String CEYLON_EXTENSION_ID = "com.redhat.ceylon.eclipse.ui.ceylonContent"; //$NON-NLS-1$
-	private static final String JAVA_EXTENSION_ID = "org.eclipse.jdt.java.ui.javaContent"; //$NON-NLS-1$
+	private static final String CEYLON_EXTENSION_ID = CeylonPlugin.PLUGIN_ID + ".ceylonContent";
+	private static final String JAVA_EXTENSION_ID = "org.eclipse.jdt.java.ui.javaContent";
 
 	private boolean isStateModelInitialized = false;
 	private IExtensionStateModel fStateModel = null;

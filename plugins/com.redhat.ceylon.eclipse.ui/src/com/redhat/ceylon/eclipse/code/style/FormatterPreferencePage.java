@@ -7,12 +7,14 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
 /*
  * The page to configure the Ceylon code formatter profiles.
  */
 public class FormatterPreferencePage extends StylePage {
 
-    public static final String ID = "com.redhat.ceylon.eclipse.ui.preferences.style.formatter";
+    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.style.formatter";
 
     public FormatterPreferencePage() {
         setTitle("Code Formatter");

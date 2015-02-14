@@ -889,7 +889,7 @@ public final class ReferencesPopup extends PopupDialog
     
     @Override
     protected IDialogSettings getDialogSettings() {
-        String sectionName = "com.redhat.ceylon.eclipse.ui.FindReferences";
+        String sectionName = CeylonPlugin.PLUGIN_ID + ".FindReferences";
         IDialogSettings dialogSettings = CeylonPlugin.getInstance()
                 .getDialogSettings();
         IDialogSettings settings = dialogSettings.getSection(sectionName);

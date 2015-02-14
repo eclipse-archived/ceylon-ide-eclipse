@@ -52,6 +52,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonNavigatorContentProvider implements
         IPipelinedTreeContentProvider2, ICeylonModelListener {
@@ -472,9 +473,9 @@ public class CeylonNavigatorContentProvider implements
         	String filterId = descriptor.getId();
         	if (filterService.isActive(filterId)) {
         		if (filterId.equals("org.eclipse.jdt.java.ui.filters.HideEmptyPackages")) {
-        			filtersToActivate.add("com.redhat.ceylon.eclipse.ui.navigator.filters.HideEmptyPackages");
+        			filtersToActivate.add(CeylonPlugin.PLUGIN_ID + ".navigator.filters.HideEmptyPackages");
         		} else if (filterId.equals("org.eclipse.jdt.java.ui.filters.HideEmptyInnerPackages")) {
-        			filtersToActivate.add("com.redhat.ceylon.eclipse.ui.navigator.filters.HideEmptyInnerPackages");
+        			filtersToActivate.add(CeylonPlugin.PLUGIN_ID + ".navigator.filters.HideEmptyInnerPackages");
         		} else {
         			filtersToActivate.add(filterId);
         		}

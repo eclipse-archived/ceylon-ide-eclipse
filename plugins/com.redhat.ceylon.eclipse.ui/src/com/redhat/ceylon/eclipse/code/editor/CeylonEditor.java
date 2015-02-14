@@ -158,6 +158,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 /**
@@ -909,10 +910,10 @@ public class CeylonEditor extends TextEditor {
     private IHandlerActivation fNavigateQuickAccessHandlerActivation;
     private IHandlerService fHandlerService;
 
-    public static final String REFACTOR_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.refactorQuickMenu";
-    public static final String NAVIGATE_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.navigateQuickMenu";
-    public static final String FIND_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.findQuickMenu";
-    public static final String SOURCE_MENU_ID = "com.redhat.ceylon.eclipse.ui.menu.sourceQuickMenu";
+    public static final String REFACTOR_MENU_ID = CeylonPlugin.PLUGIN_ID + ".menu.refactorQuickMenu";
+    public static final String NAVIGATE_MENU_ID = CeylonPlugin.PLUGIN_ID + ".menu.navigateQuickMenu";
+    public static final String FIND_MENU_ID = CeylonPlugin.PLUGIN_ID + ".menu.findQuickMenu";
+    public static final String SOURCE_MENU_ID = CeylonPlugin.PLUGIN_ID + ".menu.sourceQuickMenu";
     
     private class NavigateQuickAccessAction extends QuickMenuAction {
         public NavigateQuickAccessAction() {
