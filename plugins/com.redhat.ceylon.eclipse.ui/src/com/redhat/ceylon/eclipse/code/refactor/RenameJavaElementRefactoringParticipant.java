@@ -36,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.DocLinks;
 
@@ -45,15 +46,18 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
 
     protected boolean initialize(Object element) {
         javaDeclaration = (IMember) element;
-        //TODO:
-//        RefactoringProcessor processor = getProcessor();
-//        if (processor instanceof RenamePackageProcessor) {
-//            ((RenamePackageProcessor) processor).getUpdateTextualMatches();
-//        }
         IProject project = 
                 javaDeclaration.getJavaProject().getProject();
-        return getArguments().getUpdateReferences() && 
-                getProjectTypeChecker(project)!=null;
+        try {
+            if (!project.hasNature(CeylonNature.NATURE_ID)) {
+                return false;
+            }
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return getArguments().getUpdateReferences();
     }
 
     public String getName() {
@@ -66,6 +70,7 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
     }
 
     public Change createChange(IProgressMonitor pm) throws CoreException {
+        //TODO: don't ignore ((RenamePackageProcessor) getProcessor()).getUpdateTextualMatches()
         try {
             final IProject project = 
                     javaDeclaration.getJavaProject().getProject();

@@ -32,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 
 public class RenamePackageRefactoringParticipant extends RenameParticipant {
@@ -43,27 +44,36 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
     @Override
     protected boolean initialize(Object element) {
+        //Note: When getRenameSubpackages() is true, this participant is
+        //      called multiple times, once for each subpackage. This is,
+        //      naturally, a massive PITA.
         javaPackageFragment = (IPackageFragment) element;
-        //final String newName = getArguments().getNewName();
+        IProject project = 
+                javaPackageFragment.getJavaProject().getProject();
+        try {
+            if (!project.hasNature(CeylonNature.NATURE_ID)) {
+                return false;
+            }
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+            return false;
+        }
         RefactoringProcessor processor = getProcessor();
         if (processor instanceof RenamePackageProcessor) {
             RenamePackageProcessor renamePackageProcessor = 
                     (RenamePackageProcessor) processor;
-            String patterns = renamePackageProcessor.getFilePatterns();
-            if (renamePackageProcessor.getUpdateQualifiedNames() &&
-                    (patterns.equals("*") || patterns.contains("*.ceylon"))) {
-                return false;
-            }
-            //TODO: don't ignore ((RenamePackageProcessor) processor).getUpdateReferences()
-            //TODO: don't ignore ((RenamePackageProcessor) processor).getUpdateTextualMatches()
-            //TODO: don't ignore ((RenamePackageProcessor) processor).getRenameSubpackages()
+            String patterns = 
+                    renamePackageProcessor.getFilePatterns();
+            boolean messingWithCeylonFiles =
+                    renamePackageProcessor.getUpdateQualifiedNames() && 
+                    (patterns.equals("*") || patterns.contains("*.ceylon"));
+            return !messingWithCeylonFiles;
         }
         else {
+            //can't happen, I assume
             return false;
         }
-        IProject project = 
-                javaPackageFragment.getJavaProject().getProject();
-        return getProjectTypeChecker(project) != null;
     }
 
     @Override
@@ -86,6 +96,8 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
     @Override
     public Change createPreChange(IProgressMonitor pm) 
             throws CoreException {
+        //TODO: don't ignore ((RenamePackageProcessor) getProcessor()).getUpdateTextualMatches()
+        //TODO: don't ignore ((RenamePackageProcessor) processor).getUpdateReferences()
         try {
             final String newName = 
                     getArguments().getNewName();
@@ -117,7 +129,7 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                         super.visit(that);
                         String packageName = packageName(that);
                         if (packageName!=null && 
-                                packageName.equals(oldName)) { //TODO: should it be packageName.startsWith(oldName)??
+                                packageName.equals(oldName)) {
                             Region region = packageRegion(that);
                             edits.add(new ReplaceEdit(region.getOffset(), 
                                     region.getLength(), newName));

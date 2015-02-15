@@ -45,6 +45,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpressi
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -62,6 +63,15 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
     @Override
     protected boolean initialize(Object element) {
         file = (IFile) element;
+        try {
+            if (!file.getProject().hasNature(CeylonNature.NATURE_ID)) {
+                return false;
+            }
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+            return false;
+        }
         RefactoringProcessor processor = getProcessor();
         if (processor instanceof MoveProcessor) {
             MoveProcessor moveProcessor = (MoveProcessor) processor;
@@ -77,8 +87,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                     movingFiles.add(r);
                 }
             }
-            return getProjectTypeChecker(file.getProject())!=null &&
-                    file.getFileExtension()!=null &&
+            return file.getFileExtension()!=null &&
                         (file.getFileExtension().equals("ceylon") ||
                          file.getFileExtension().equals("java"));
         }
