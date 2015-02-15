@@ -1079,6 +1079,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     Nodes.findNode(rootNode, location.getOffset(), 
                             location.getOffset()+location.getLength()));
             if (st==null) return;
+            if (!(st instanceof Tree.Declaration)) {
+                st = Nodes.findDeclaration(rootNode, st);
+            }
             IFile file = EditorUtil.getFile(editor.getEditorInput());
             IDocument doc = context.getSourceViewer().getDocument();
             TextFileChange change = 
