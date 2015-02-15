@@ -468,6 +468,9 @@ public class Nodes {
         else if (node instanceof Tree.Outer) {
             return ((Tree.Outer) node).getDeclarationModel();
         }
+        else if (node instanceof Tree.Return) {
+            return ((Tree.Return) node).getDeclaration();
+        }
         else if (node instanceof Tree.DocLink) {
             DocLink docLink = (Tree.DocLink) node;
             List<Declaration> qualified = docLink.getQualified();

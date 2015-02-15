@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencingProjects;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.CLASS_AND_INTERFACE;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
@@ -103,7 +104,9 @@ public class RenameRefactoring extends AbstractRefactoring {
 
     public RenameRefactoring(IEditorPart editor) {
         super(editor);
-        if (rootNode!=null) {
+        if (rootNode!=null && 
+                (getIdentifyingNode(node) instanceof Tree.Identifier ||
+                node instanceof Tree.DocLink)) {
             Referenceable refDec = 
                     getReferencedExplicitDeclaration(node, rootNode);
             if (refDec instanceof Declaration) {

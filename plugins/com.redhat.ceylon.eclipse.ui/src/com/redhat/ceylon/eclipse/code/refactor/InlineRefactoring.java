@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createFatalErrorStatus;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
@@ -65,7 +66,8 @@ public class InlineRefactoring extends AbstractRefactoring {
     }
     
     boolean isReference() {
-        return !(node instanceof Tree.Declaration);
+        return !(node instanceof Tree.Declaration) &&
+                getIdentifyingNode(node) instanceof Tree.Identifier;
     }
     
     @Override
