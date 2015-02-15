@@ -241,8 +241,10 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             final List<Change> changes, PhasedUnit movedPhasedUnit, 
             final List<Declaration> declarations) {
         if (!getArguments().getUpdateReferences()) return;
-        for (PhasedUnit phasedUnit: getProjectTypeChecker(project)
-                .getPhasedUnits().getPhasedUnits()) {
+        TypeChecker tc = getProjectTypeChecker(project);
+        if (tc==null) return;
+        for (PhasedUnit phasedUnit: 
+                tc.getPhasedUnits().getPhasedUnits()) {
             if (phasedUnit==movedPhasedUnit ||
                     phasedUnit.getUnit() instanceof ProjectSourceFile &&
                     movingFiles.contains(((ProjectSourceFile) phasedUnit.getUnit()).getFileResource())) {
