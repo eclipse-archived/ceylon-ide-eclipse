@@ -167,6 +167,27 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
         }
         super.visit(that);
     }
+    
+    @Override
+    public void visit(Tree.ElseClause that) {
+        Tree.Variable var = that.getVariable();
+        if (var!=null) {
+            TypedDeclaration od = var.getDeclarationModel().getOriginalDeclaration();
+            if (od!=null && od.equals(declaration)) {
+                Referenceable d = declaration;
+                declaration = var.getDeclarationModel();
+                if (that.getBlock()!=null) {
+                    that.getBlock().visit(this);
+                }
+                if (that.getExpression()!=null) {
+                    that.getExpression().visit(this);
+                }
+                declaration = d;
+                return;
+            }
+        }
+        super.visit(that);
+    }
 
     @Override
     public void visit(Tree.WhileClause that) {
