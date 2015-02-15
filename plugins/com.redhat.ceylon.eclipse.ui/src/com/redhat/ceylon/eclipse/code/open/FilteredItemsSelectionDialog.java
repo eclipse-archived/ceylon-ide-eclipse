@@ -51,6 +51,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.LegacyActionTools;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ContentViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -171,6 +173,7 @@ public abstract class FilteredItemsSelectionDialog extends
     private TableViewer list;
 
     private DetailsContentViewer details;
+    private DetailsContentViewer moreDetails;
 
     /**
      * It is a duplicate of a field in the CLabel class in DetailsContentViewer.
@@ -178,6 +181,7 @@ public abstract class FilteredItemsSelectionDialog extends
      * could be called before content area is created.
      */
     private ILabelProvider detailsLabelProvider;
+    private ILabelProvider moreDetailsLabelProvider;
 
     private ItemsListLabelProvider itemsListLabelProvider;
 
@@ -230,6 +234,8 @@ public abstract class FilteredItemsSelectionDialog extends
     private boolean refreshWithLastSelection = false;
 
     private IHandlerActivation showViewHandler;
+
+    private ViewForm statusArea;
 
     /**
      * Creates a new instance of the class.
@@ -345,11 +351,25 @@ public abstract class FilteredItemsSelectionDialog extends
         }
     }
 
+    public void setMoreDetailsLabelProvider(ILabelProvider detailsLabelProvider) {
+        this.moreDetailsLabelProvider = detailsLabelProvider;
+        if (moreDetails != null) {
+            moreDetails.setLabelProvider(detailsLabelProvider);
+        }
+    }
+
     private ILabelProvider getDetailsLabelProvider() {
         if (detailsLabelProvider == null) {
             detailsLabelProvider = new LabelProvider();
         }
         return detailsLabelProvider;
+    }
+
+    private ILabelProvider getMoreDetailsLabelProvider() {
+        if (moreDetailsLabelProvider == null) {
+            moreDetailsLabelProvider = new LabelProvider();
+        }
+        return moreDetailsLabelProvider;
     }
 
     /*
@@ -381,7 +401,7 @@ public abstract class FilteredItemsSelectionDialog extends
             toggleStatusLineAction.setChecked(toggleStatusLine);
         }
 
-        details.setVisible(toggleStatusLine);
+        setStatusAreaVisible(toggleStatusLine);
 
         String setting = settings.get(HISTORY_SETTINGS);
         if (setting != null) {
@@ -809,12 +829,27 @@ public abstract class FilteredItemsSelectionDialog extends
         });
 
         createExtendedContentArea(content);
-
-        details = new DetailsContentViewer(content, SWT.BORDER | SWT.FLAT);
-        details.setVisible(toggleStatusLineAction==null ||
+        
+        statusArea = new ViewForm(content, SWT.BORDER | SWT.FLAT);
+        statusArea.setEnabled(false);
+        GridData gd1 = new GridData(GridData.FILL_HORIZONTAL);
+        gd1.horizontalSpan = 2;
+        statusArea.setLayoutData(gd1);
+        Composite group = new Composite(statusArea, SWT.NONE);
+        statusArea.setContent(group);
+        group.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
+        group.setLayoutData(GridDataFactory.fillDefaults().create());
+        
+        details = new DetailsContentViewer(group, /*SWT.BORDER |*/ SWT.FLAT);
+        moreDetails = new DetailsContentViewer(group, /*SWT.BORDER |*/ SWT.FLAT);
+        setStatusAreaVisible(toggleStatusLineAction==null ||
                 toggleStatusLineAction.isChecked());
+        
         details.setContentProvider(new NullContentProvider());
         details.setLabelProvider(getDetailsLabelProvider());
+        
+        moreDetails.setContentProvider(new NullContentProvider());
+        moreDetails.setLabelProvider(getMoreDetailsLabelProvider());
 
         applyDialogFont(content);
 
@@ -840,6 +875,19 @@ public abstract class FilteredItemsSelectionDialog extends
     }
 
     /**
+     * Shows/hides the content viewer.
+     * 
+     * @param visible
+     *            if the content viewer should be visible.
+     */
+    public void setStatusAreaVisible(boolean visible) {
+        statusArea.setVisible(visible);
+        GridData gd = (GridData) statusArea.getLayoutData();
+        gd.exclude = !visible;
+        statusArea.getParent().layout();
+    }
+
+    /**
      * This method is a hook for subclasses to override default dialog behavior.
      * The <code>handleDoubleClick()</code> method handles double clicks on
      * the list of filtered elements.
@@ -861,11 +909,15 @@ public abstract class FilteredItemsSelectionDialog extends
         switch (selection.size()) {
         case 0:
             details.setInput(null);
+            moreDetails.setInput(null);
             break;
         case 1:
-            details.setInput(selection.getFirstElement());
+            Object firstElement = selection.getFirstElement();
+            details.setInput(firstElement);
+            moreDetails.setInput(firstElement);
             break;
         default:
+            moreDetails.setInput(null);
             details
                     .setInput(NLS
                             .bind(
@@ -1368,7 +1420,7 @@ public abstract class FilteredItemsSelectionDialog extends
 
         @Override
         public void run() {
-            details.setVisible(isChecked());
+            setStatusAreaVisible(isChecked());
         }
     }
 
@@ -3189,7 +3241,7 @@ public abstract class FilteredItemsSelectionDialog extends
          * label. The <code>ViewForm</code> is used because
          * <code>CLabel</code> displays shadow when border is present.
          */
-        private ViewForm viewForm;
+//        private ViewForm viewForm;
 
         /**
          * Constructs a new instance of this class given its parent and a style
@@ -3201,27 +3253,15 @@ public abstract class FilteredItemsSelectionDialog extends
          *            SWT style bits
          */
         public DetailsContentViewer(Composite parent, int style) {
-            viewForm = new ViewForm(parent, style);
+//            viewForm = new ViewForm(parent, style);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
-            viewForm.setLayoutData(gd);
-            label = new CLabel(viewForm, SWT.FLAT);
+//            viewForm.setLayoutData(gd);
+            label = new CLabel(parent, SWT.FLAT);
             label.setFont(parent.getFont());
-            viewForm.setContent(label);
+            label.setLayoutData(gd);
+//            viewForm.setContent(label);
             hookControl(label);
-        }
-
-        /**
-         * Shows/hides the content viewer.
-         * 
-         * @param visible
-         *            if the content viewer should be visible.
-         */
-        public void setVisible(boolean visible) {
-            viewForm.setVisible(visible);
-            GridData gd = (GridData) viewForm.getLayoutData();
-            gd.exclude = !visible;
-            viewForm.getParent().layout();
         }
 
         /*

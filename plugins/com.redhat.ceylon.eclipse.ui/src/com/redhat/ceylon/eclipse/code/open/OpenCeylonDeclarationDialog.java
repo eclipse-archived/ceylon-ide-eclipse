@@ -6,6 +6,7 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVers
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
@@ -220,7 +221,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
                 try {
-                    return getPackageLabel(d) + " - " + getLocation(dwp);
+                    return getPackageLabel(d) /*+ " - " + getLocation(dwp)*/;
                 }
                 catch (Exception e) {
                     System.err.println(d.getName());
@@ -240,6 +241,55 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         public Image getImage(Object element) {
             if (element instanceof DeclarationWithProject) {
                 return CeylonLabelProvider.PACKAGE;
+            }
+            else {
+                return null;
+            }
+        }
+    }
+
+    static class MoreDetailsLabelProvider implements ILabelProvider {
+        @Override
+        public void removeListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+        
+        @Override
+        public void dispose() {}
+        
+        @Override
+        public void addListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public String getText(Object element) {
+            if (element instanceof DeclarationWithProject) {
+                DeclarationWithProject dwp = 
+                        (DeclarationWithProject) element;
+                Declaration d = dwp.getDeclaration();
+                try {
+                    return getModuleLabel(d) + " - " + getLocation(dwp);
+                }
+                catch (Exception e) {
+                    System.err.println(d.getName());
+                    e.printStackTrace();
+                    return "";
+                }
+            }
+            else if (element instanceof String) {
+                return (String) element;
+            }
+            else {
+                return "";
+            }
+        }
+
+        @Override
+        public Image getImage(Object element) {
+            if (element instanceof DeclarationWithProject) {
+                return CeylonLabelProvider.MODULE;
             }
             else {
                 return null;
@@ -432,6 +482,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         setSelectionHistory(new TypeSelectionHistory());
         setListLabelProvider(new LabelProvider());
         setDetailsLabelProvider(new DetailsLabelProvider());
+        setMoreDetailsLabelProvider(new MoreDetailsLabelProvider());
         setListSelectionLabelDecorator(new SelectionLabelDecorator());
     }
     
