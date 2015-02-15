@@ -54,11 +54,16 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                     (patterns.equals("*") || patterns.contains("*.ceylon"))) {
                 return false;
             }
+            //TODO: don't ignore ((RenamePackageProcessor) processor).getUpdateReferences()
+            //TODO: don't ignore ((RenamePackageProcessor) processor).getUpdateTextualMatches()
+            //TODO: don't ignore ((RenamePackageProcessor) processor).getRenameSubpackages()
         }
         else {
             return false;
         }
-        return getProjectTypeChecker(javaPackageFragment.getJavaProject().getProject())!=null;
+        IProject project = 
+                javaPackageFragment.getJavaProject().getProject();
+        return getProjectTypeChecker(project) != null;
     }
 
     @Override
@@ -82,16 +87,22 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
     public Change createPreChange(IProgressMonitor pm) 
             throws CoreException {
         try {
-            final String newName = getArguments().getNewName();
-            final String oldName = javaPackageFragment.getElementName();
-            final IProject project = javaPackageFragment.getJavaProject().getProject();
+            final String newName = 
+                    getArguments().getNewName();
+            final String oldName = 
+                    javaPackageFragment.getElementName();
+            final IProject project = 
+                    javaPackageFragment.getJavaProject().getProject();
 
-            final List<Change> changes = new ArrayList<Change>();
+            final List<Change> changes = 
+                    new ArrayList<Change>();
             TypeChecker tc = getProjectTypeChecker(project);
             if (tc==null) return null;
-            for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
+            for (PhasedUnit phasedUnit: 
+                tc.getPhasedUnits().getPhasedUnits()) {
 
-                final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
+                final List<ReplaceEdit> edits = 
+                        new ArrayList<ReplaceEdit>();
                 phasedUnit.getCompilationUnit().visit(new Visitor() {
                     @Override
                     public void visit(ImportPath that) {

@@ -45,8 +45,15 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
 
     protected boolean initialize(Object element) {
         javaDeclaration = (IMember) element;
+        //TODO:
+//        RefactoringProcessor processor = getProcessor();
+//        if (processor instanceof RenamePackageProcessor) {
+//            ((RenamePackageProcessor) processor).getUpdateTextualMatches();
+//        }
+        IProject project = 
+                javaDeclaration.getJavaProject().getProject();
         return getArguments().getUpdateReferences() && 
-                getProjectTypeChecker(javaDeclaration.getJavaProject().getProject())!=null;
+                getProjectTypeChecker(project)!=null;
     }
 
     public String getName() {
@@ -60,46 +67,60 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
 
     public Change createChange(IProgressMonitor pm) throws CoreException {
         try {
-            final IProject project = javaDeclaration.getJavaProject().getProject();
-            final String newName = getArguments().getNewName();
-            final String oldName = javaDeclaration.getElementName();
+            final IProject project = 
+                    javaDeclaration.getJavaProject().getProject();
+            final String newName = 
+                    getArguments().getNewName();
+            final String oldName = 
+                    javaDeclaration.getElementName();
 
-            final HashMap<IFile,Change> changes= new HashMap<IFile,Change>();
+            final HashMap<IFile,Change> changes = 
+                    new HashMap<IFile,Change>();
             TypeChecker tc = getProjectTypeChecker(project);
             if (tc==null) return null;
-            for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
-                final List<ReplaceEdit> edits = new ArrayList<ReplaceEdit>();
-                Tree.CompilationUnit cu = phasedUnit.getCompilationUnit();
+            for (PhasedUnit phasedUnit: 
+                tc.getPhasedUnits().getPhasedUnits()) {
+                final List<ReplaceEdit> edits = 
+                        new ArrayList<ReplaceEdit>();
+                Tree.CompilationUnit cu = 
+                        phasedUnit.getCompilationUnit();
                 cu.visit(new Visitor() {
                     @Override
                     public void visit(ImportMemberOrType that) {
                         super.visit(that);
-                        visitIt(that.getIdentifier(), that.getDeclarationModel());
+                        visitIt(that.getIdentifier(), 
+                                that.getDeclarationModel());
                     }
                     @Override
                     public void visit(QualifiedMemberOrTypeExpression that) {
                         super.visit(that);
-                        visitIt(that.getIdentifier(), that.getDeclaration());
+                        visitIt(that.getIdentifier(), 
+                                that.getDeclaration());
                     }
                     @Override
                     public void visit(BaseMemberOrTypeExpression that) {
                         super.visit(that);
-                        visitIt(that.getIdentifier(), that.getDeclaration());
+                        visitIt(that.getIdentifier(), 
+                                that.getDeclaration());
                     }
                     @Override
                     public void visit(BaseType that) {
                         super.visit(that);
-                        visitIt(that.getIdentifier(), that.getDeclarationModel());
+                        visitIt(that.getIdentifier(), 
+                                that.getDeclarationModel());
                     }
                     @Override
                     public void visit(QualifiedType that) {
                         super.visit(that);
-                        visitIt(that.getIdentifier(), that.getDeclarationModel());
+                        visitIt(that.getIdentifier(), 
+                                that.getDeclarationModel());
                     }
-                    protected void visitIt(Tree.Identifier id, Declaration dec) {
+                    protected void visitIt(Tree.Identifier id, 
+                            Declaration dec) {
                         visitIt(id.getText(), id.getStartIndex(), dec);
                     }
-                    protected void visitIt(String name, int offset, Declaration dec) {
+                    protected void visitIt(String name, int offset, 
+                            Declaration dec) {
                         if (dec!=null && 
                                 dec.getQualifiedNameString()
                                     .equals(getQualifiedName(javaDeclaration)) &&
@@ -125,10 +146,12 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                     public void visit(DocLink that) {
                         super.visit(that);
                         Declaration base = that.getBase();
-                        List<Declaration> qualified = that.getQualified();
+                        List<Declaration> qualified = 
+                                that.getQualified();
                         if (base!=null) {
                             Region region = nameRegion(that, 0);
-                            visitIt(DocLinks.name(that, 0), region.getOffset(), base);
+                            visitIt(DocLinks.name(that, 0), 
+                                    region.getOffset(), base);
                             if (qualified!=null) {
                                 for (int i=0; i<qualified.size(); i++) {
                                     visitIt(DocLinks.name(that, i+1), 
@@ -141,8 +164,11 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                 });
                 if (!edits.isEmpty()) {
                     try {
-                        IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
-                        TextFileChange change= new TextFileChange(file.getName(), file);
+                        IFileVirtualFile unitFile = 
+                                (IFileVirtualFile) phasedUnit.getUnitFile();
+                        IFile file = unitFile.getFile();
+                        TextFileChange change = 
+                                new TextFileChange(file.getName(), file);
                         change.setEdit(new MultiTextEdit());
                         changes.put(file, change);
                         for (ReplaceEdit edit: edits) {
@@ -158,8 +184,10 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
             if (changes.isEmpty())
                 return null;
 
-            CompositeChange result= new CompositeChange("Ceylon source changes");
-            for (Iterator<Change> iter= changes.values().iterator(); iter.hasNext();) {
+            CompositeChange result = 
+                    new CompositeChange("Ceylon source changes");
+            for (Iterator<Change> iter = changes.values().iterator(); 
+                    iter.hasNext();) {
                 result.add((Change) iter.next());
             }
             return result;
