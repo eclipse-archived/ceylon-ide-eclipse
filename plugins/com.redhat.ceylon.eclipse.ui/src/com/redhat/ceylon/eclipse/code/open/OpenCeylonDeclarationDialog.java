@@ -70,6 +70,10 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     
+    private static final String SHOW_SELECTION_MODULE = "showSelectionModule";
+
+    private static final String SHOW_SELECTION_PACKAGE = "showSelectionPackage";
+
     private static final String SETTINGS_ID = 
             CeylonPlugin.PLUGIN_ID + ".openDeclarationDialog";
     
@@ -77,6 +81,72 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     
     private int filterVersion = 0;
     
+    private boolean showSelectionPackage = true;
+    private boolean showSelectionModule = true;
+    
+    private TogglePackageAction togglePackageAction;
+    private ToggleModuleAction toggleModuleAction; 
+    
+    private class TogglePackageAction extends Action {
+
+        /**
+         * Creates a new instance of the class.
+         */
+        public TogglePackageAction() {
+            super(
+                    "Show Selection Package",
+                    IAction.AS_CHECK_BOX);
+        }
+
+        @Override
+        public void run() {
+            showSelectionPackage = !showSelectionPackage;
+            refresh();
+        }
+    }
+
+    private class ToggleModuleAction extends Action {
+
+        /**
+         * Creates a new instance of the class.
+         */
+        public ToggleModuleAction() {
+            super(
+                    "Show Selection Module",
+                    IAction.AS_CHECK_BOX);
+        }
+
+        @Override
+        public void run() {
+            showSelectionModule = !showSelectionModule;
+            refresh();
+        }
+    }
+    
+    protected void restoreDialog(IDialogSettings settings) {
+        super.restoreDialog(settings);
+        
+        if (settings.get(SHOW_SELECTION_PACKAGE)!=null) {
+            showSelectionModule = settings.getBoolean(SHOW_SELECTION_PACKAGE);
+        }
+        if (settings.get(SHOW_SELECTION_MODULE)!=null) {
+            showSelectionModule = settings.getBoolean(SHOW_SELECTION_MODULE);
+        }
+        
+        if (togglePackageAction!=null) {
+            togglePackageAction.setChecked(showSelectionPackage);
+        }
+        if (toggleModuleAction!=null) {
+            toggleModuleAction.setChecked(showSelectionModule);
+        }
+    }
+    
+    protected void storeDialog(IDialogSettings settings) {
+        super.storeDialog(settings);
+        settings.put(SHOW_SELECTION_MODULE, showSelectionModule);
+        settings.put(SHOW_SELECTION_PACKAGE, showSelectionPackage);
+    }
+
     private final class Filter extends ItemsFilter {
         boolean members = includeMembers;
         int version = filterVersion;
@@ -181,8 +251,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 Declaration d = dwp.getDeclaration();
                 try {
                     if (!nameOccursMultipleTimes(d)) {
-                        text += " - " + getPackageLabel(d) + 
-                                " - " + getModule(dwp);
+                        if (showSelectionPackage) {
+                            text += " - " + getPackageLabel(d);
+                        }
+                        if (showSelectionModule) {
+                            text += " - " + getModule(dwp);
+                        }
                     }
                 }
                 catch (Exception e) {
@@ -854,7 +928,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         };
         action.setChecked(includeMembers);
         menuManager.add(action);
+        menuManager.add(new Separator());
         super.fillViewMenu(menuManager);
+        togglePackageAction = new TogglePackageAction();
+        toggleModuleAction = new ToggleModuleAction();
+        menuManager.add(togglePackageAction);
+        menuManager.add(toggleModuleAction);
         menuManager.add(new Separator());
         action = 
                 new Action("Configure Filters and Labels...") {
