@@ -143,9 +143,10 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 updateRefsToMovedJavaFile(project, newName, oldName, changes);
             }
             else {
+                TypeChecker tc = getProjectTypeChecker(project);
+                if (tc==null) return null;
                 PhasedUnit movedPhasedUnit = 
-                        getProjectTypeChecker(project)
-                            .getPhasedUnitFromRelativePath(movedRelFilePath);
+                        tc.getPhasedUnitFromRelativePath(movedRelFilePath);
                 if (movedPhasedUnit==null) {
                     return null;
                 }
