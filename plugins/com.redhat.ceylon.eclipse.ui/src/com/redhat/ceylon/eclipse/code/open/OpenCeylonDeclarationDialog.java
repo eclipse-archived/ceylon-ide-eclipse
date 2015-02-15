@@ -71,13 +71,14 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     
     private static final String SHOW_SELECTION_MODULE = "showSelectionModule";
-
     private static final String SHOW_SELECTION_PACKAGE = "showSelectionPackage";
+    private static final String EXCLUDE_DEPRECATED = "excludeDeprecated";
 
     private static final String SETTINGS_ID = 
             CeylonPlugin.PLUGIN_ID + ".openDeclarationDialog";
     
     private boolean includeMembers;
+    private boolean excludeDeprecated;
     
     private int filterVersion = 0;
     
@@ -85,19 +86,25 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     private boolean showSelectionModule = true;
     
     private TogglePackageAction togglePackageAction;
-    private ToggleModuleAction toggleModuleAction; 
+    private ToggleModuleAction toggleModuleAction;
+    private ToggleExcludeDeprecatedAction toggleExcludeDeprecatedAction;
     
-    private class TogglePackageAction extends Action {
-
-        /**
-         * Creates a new instance of the class.
-         */
-        public TogglePackageAction() {
-            super(
-                    "Show Selection Package",
-                    IAction.AS_CHECK_BOX);
+    private class ToggleExcludeDeprecatedAction extends Action {
+        ToggleExcludeDeprecatedAction() {
+            super("Exclude Deprecated Declarations", IAction.AS_CHECK_BOX);
         }
+        @Override
+        public void run() {
+            excludeDeprecated=!excludeDeprecated;
+            filterVersion++;
+            applyFilter();
+        }
+    }
 
+    private class TogglePackageAction extends Action {
+        private TogglePackageAction() {
+            super("Show Selection Package", IAction.AS_CHECK_BOX);
+        }
         @Override
         public void run() {
             showSelectionPackage = !showSelectionPackage;
@@ -106,16 +113,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private class ToggleModuleAction extends Action {
-
-        /**
-         * Creates a new instance of the class.
-         */
-        public ToggleModuleAction() {
-            super(
-                    "Show Selection Module",
-                    IAction.AS_CHECK_BOX);
+        private ToggleModuleAction() {
+            super("Show Selection Module", IAction.AS_CHECK_BOX);
         }
-
         @Override
         public void run() {
             showSelectionModule = !showSelectionModule;
@@ -127,10 +127,13 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         super.restoreDialog(settings);
         
         if (settings.get(SHOW_SELECTION_PACKAGE)!=null) {
-            showSelectionModule = settings.getBoolean(SHOW_SELECTION_PACKAGE);
+            showSelectionPackage = settings.getBoolean(SHOW_SELECTION_PACKAGE);
         }
         if (settings.get(SHOW_SELECTION_MODULE)!=null) {
             showSelectionModule = settings.getBoolean(SHOW_SELECTION_MODULE);
+        }
+        if (settings.get(EXCLUDE_DEPRECATED)!=null) {
+            excludeDeprecated = settings.getBoolean(EXCLUDE_DEPRECATED);
         }
         
         if (togglePackageAction!=null) {
@@ -139,22 +142,30 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         if (toggleModuleAction!=null) {
             toggleModuleAction.setChecked(showSelectionModule);
         }
+        if (toggleExcludeDeprecatedAction!=null) {
+            toggleExcludeDeprecatedAction.setChecked(excludeDeprecated);
+        }
     }
     
     protected void storeDialog(IDialogSettings settings) {
         super.storeDialog(settings);
         settings.put(SHOW_SELECTION_MODULE, showSelectionModule);
         settings.put(SHOW_SELECTION_PACKAGE, showSelectionPackage);
+        settings.put(EXCLUDE_DEPRECATED, excludeDeprecated);
     }
 
     private final class Filter extends ItemsFilter {
         boolean members = includeMembers;
+        boolean filterDeprecated = excludeDeprecated;
         int version = filterVersion;
         
         @Override
         public boolean matchItem(Object item) {
             Declaration declaration = 
                     ((DeclarationWithProject) item).getDeclaration();
+            if (filterDeprecated && declaration.isDeprecated()) {
+                return false;
+            }
             String pattern = getPattern();
             int loc = pattern.indexOf('.');
             if (loc<0) {
@@ -761,6 +772,9 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     private String[] filters; { initFilters(); }
 
     private boolean isFiltered(Declaration declaration) {
+        if (excludeDeprecated && declaration.isDeprecated()) {
+            return true;
+        }
         if (filters.length>0) {
             String name = declaration.getQualifiedNameString();
             for (String filter: filters) {
@@ -917,7 +931,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     
     @Override
     protected void fillViewMenu(IMenuManager menuManager) {
-        Action action = 
+        Action includeMembersAction = 
                 new Action("Include Member Declarations", 
                         IAction.AS_CHECK_BOX) {
             @Override
@@ -926,16 +940,25 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 applyFilter();
             }
         };
-        action.setChecked(includeMembers);
-        menuManager.add(action);
+        includeMembersAction.setChecked(includeMembers);
+        menuManager.add(includeMembersAction);
+        
+        toggleExcludeDeprecatedAction = new ToggleExcludeDeprecatedAction();
+        toggleExcludeDeprecatedAction.setChecked(excludeDeprecated);
+        menuManager.add(toggleExcludeDeprecatedAction);
+        
         menuManager.add(new Separator());
+        
         super.fillViewMenu(menuManager);
+        
         togglePackageAction = new TogglePackageAction();
         toggleModuleAction = new ToggleModuleAction();
         menuManager.add(togglePackageAction);
         menuManager.add(toggleModuleAction);
+        
         menuManager.add(new Separator());
-        action = 
+        
+        Action configureAction = 
                 new Action("Configure Filters and Labels...") {
             @Override
             public void run() {
@@ -948,7 +971,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                 applyFilter();
             }
         };
-        menuManager.add(action);
+        menuManager.add(configureAction);
     }
 
     public static boolean isMatchingGlob(String filter, String name) {
