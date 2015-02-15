@@ -16,6 +16,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -64,6 +65,27 @@ class RemoveAnnotionProposal extends CorrectionProposal {
                     "Make Non" + annotation,  
                     (Declaration) dec, proposals, project);
         }
+    }
+
+    static void addMakeContainerNonfinalProposal(Collection<ICompletionProposal> proposals, 
+            IProject project, Node node) {
+        Declaration dec;
+        if (node instanceof Tree.Declaration) {
+            Scope container = 
+                    ((Tree.Declaration) node).getDeclarationModel().getContainer();
+            if (container instanceof Declaration) {
+                dec = (Declaration) container;
+            }
+            else {
+                return;
+            }
+        }
+        else {
+            dec = (Declaration) node.getScope();
+        }
+        addRemoveAnnotationProposal(node, 
+                "final", "Make Nonfinal", 
+                dec, proposals, project);
     }
 
     static void addRemoveAnnotationProposal(Node node, String annotation, String desc,

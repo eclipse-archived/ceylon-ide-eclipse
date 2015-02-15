@@ -79,6 +79,7 @@ import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirP
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
+import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addMakeContainerNonfinalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addRemoveAnnotationDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addRemoveAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
@@ -557,7 +558,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 1303:
         case 1313:
+        case 1320:
+            addRemoveAnnotationDecProposal(proposals, "formal", project, node);
             addRemoveAnnotationDecProposal(proposals, "default", project, node);
+            break;
+        case 1350:
+            addRemoveAnnotationDecProposal(proposals, "default", project, node);
+            addMakeContainerNonfinalProposal(proposals, project, node);
             break;
         case 1400:
         case 1401:
@@ -569,13 +576,25 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         	addInitializerProposals(proposals, file, rootNode, node);
         	break;
         case 1500:
+        case 1501:
             addRemoveAnnotationDecProposal(proposals, "variable", project, node);
             break;
         case 1600:
             addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
             break;
         case 1700:
-            addTypeParameterProposal(file, rootNode, proposals, node);
+            addRemoveAnnotationDecProposal(proposals, "final", project, node);
+            break;
+        case 1800:
+        case 1801:
+            addRemoveAnnotationDecProposal(proposals, "sealed", project, node);
+            break;
+        case 1900:
+            addRemoveAnnotationDecProposal(proposals, "late", project, node);
+            break;
+        case 1950:
+        case 1951:
+            addRemoveAnnotationDecProposal(proposals, "annotation", project, node);
             break;
         case 2000:
             addCreateParameterProposals(rootNode, node, problem, proposals, 
@@ -591,6 +610,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 2101:
             addEllipsisToSequenceParameterProposal(rootNode, node, proposals, file);            
+            break;
+        case 2500:
+            addTypeParameterProposal(file, rootNode, proposals, node);
             break;
         case 3000:
             addAssignToLocalProposal(rootNode, proposals, node, offset);
