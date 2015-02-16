@@ -56,9 +56,12 @@ public final class CeylonHierarchyContentProvider
     private boolean veryAbstractType;
     
     private String description;
+
+    private String label;
     
-    CeylonHierarchyContentProvider(IWorkbenchPartSite site) {
+    CeylonHierarchyContentProvider(IWorkbenchPartSite site, String label) {
         this.site = site;
+        this.label = label;
     }
     
     Declaration getDeclaration(IProject project) {
@@ -455,11 +458,11 @@ public final class CeylonHierarchyContentProvider
         if (isShowingRefinements()) {
             switch (getMode()) {
             case HIERARCHY:
-                return "Quick Hierarchy - refinement hierarchy of " + description;
+                return label + " - refinement hierarchy of " + description;
             case SUPERTYPES:
-                return "Quick Hierarchy - generalizations of " + description;
+                return label + " - generalizations of " + description;
             case SUBTYPES:
-                return "Quick Hierarchy - refinements of " + description;
+                return label + " - refinements of " + description;
             default:
                 throw new RuntimeException();
             }
@@ -467,11 +470,11 @@ public final class CeylonHierarchyContentProvider
         else {
             switch (getMode()) {
             case HIERARCHY:
-                return "Quick Hierarchy - type hierarchy of " + description;
+                return label + " - type hierarchy of " + description;
             case SUPERTYPES:
-                return "Quick Hierarchy - supertypes of " + description;
+                return label + " - supertypes of " + description;
             case SUBTYPES:
-                return "Quick Hierarchy - subtypes of " + description;
+                return label + " - subtypes of " + description;
             default:
                 throw new RuntimeException();
             }

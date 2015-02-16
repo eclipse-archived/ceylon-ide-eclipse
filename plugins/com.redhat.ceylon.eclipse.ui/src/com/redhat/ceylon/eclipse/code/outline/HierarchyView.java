@@ -320,7 +320,8 @@ public class HierarchyView extends ViewPart {
         viewForm.setContent(tree);
         treeViewer = new TreeViewer(tree);
         contentProvider = 
-                new CeylonHierarchyContentProvider(getSite());
+                new CeylonHierarchyContentProvider(getSite(), 
+                        "Hierarchy");
         labelProvider = 
                 new CeylonHierarchyLabelProvider() {
             @Override

@@ -118,7 +118,8 @@ public class HierarchyPopup extends TreeViewPopup {
         gd.heightHint= tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
         final TreeViewer treeViewer = new TreeViewer(tree);
-        contentProvider = new CeylonHierarchyContentProvider(editor.getSite());
+        contentProvider = new CeylonHierarchyContentProvider(editor.getSite(),
+                "Quick Hierarchy");
         labelProvider = new CeylonHierarchyLabelProvider() {
             @Override
             String getViewInterfacesShortcut() {
