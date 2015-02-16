@@ -6,11 +6,11 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-public class OpenCeylonDeclarationHandler extends AbstractHandler {
+public class OpenDeclarationInHierarchyHandler extends AbstractHandler {
     
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        new OpenDeclarationAction(getCurrentEditor()).run();
+        new OpenDeclarationInHierarchyAction(getCurrentEditor()).run();
         return null;
     }
         

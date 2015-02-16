@@ -68,7 +68,7 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
-public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
+public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     private static final String SHOW_SELECTION_MODULE = "showSelectionModule";
     private static final String SHOW_SELECTION_PACKAGE = "showSelectionPackage";
@@ -566,7 +566,7 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         }
      }
     
-    public OpenCeylonDeclarationDialog(boolean multi, Shell shell) {
+    public OpenDeclarationDialog(boolean multi, Shell shell) {
         super(shell, multi);
         //this.editor = editor;
         setSelectionHistory(new TypeSelectionHistory());

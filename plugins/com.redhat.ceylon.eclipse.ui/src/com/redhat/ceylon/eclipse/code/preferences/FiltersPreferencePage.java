@@ -51,7 +51,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.open.DeclarationWithProject;
-import com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationDialog;
+import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -297,8 +297,8 @@ public abstract class FiltersPreferencePage
     }
     
     private void addDeclaration() {
-        OpenCeylonDeclarationDialog dialog = 
-                new OpenCeylonDeclarationDialog(true, getShell()) {
+        OpenDeclarationDialog dialog = 
+                new OpenDeclarationDialog(true, getShell()) {
             private static final String SETTINGS_ID = 
                     CeylonPlugin.PLUGIN_ID + ".addDeclarationFilterDialog";            
             @Override

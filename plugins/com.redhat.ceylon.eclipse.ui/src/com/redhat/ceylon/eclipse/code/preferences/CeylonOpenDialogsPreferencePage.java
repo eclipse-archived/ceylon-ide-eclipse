@@ -27,7 +27,7 @@ public class CeylonOpenDialogsPreferencePage
     private BooleanFieldEditor types;
     
     public CeylonOpenDialogsPreferencePage() {
-        setDescription("Preferences applying to the 'Open Ceylon Declaration' and 'Open in Type Hierarchy View' dialogs."); 
+        setDescription("Preferences applying to the 'Open Declaration' and 'Open in Type Hierarchy View' dialogs."); 
     }
     
     @Override

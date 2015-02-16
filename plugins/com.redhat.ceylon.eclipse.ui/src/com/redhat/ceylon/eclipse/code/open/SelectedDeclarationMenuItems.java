@@ -44,7 +44,7 @@ public class SelectedDeclarationMenuItems extends CompoundContributionItem {
         boolean refinedEnabled = new OpenRefinedDeclarationHandler().isEnabled();
         return new IContributionItem[] {
                 new DynamicMenuItem(PLUGIN_ID + ".action.openSelectedDeclaration", 
-                        "Go to Selected &Declaration",
+                        "Go to Selected Declaration",
                         selectedEnabled, GOTO_IMAGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.openRefinedDeclaration", 
                         "Go to Refined Declaration", //TODO: mnemonic!

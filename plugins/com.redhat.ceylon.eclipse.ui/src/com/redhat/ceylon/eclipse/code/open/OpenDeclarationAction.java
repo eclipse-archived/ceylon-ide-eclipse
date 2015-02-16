@@ -22,7 +22,7 @@ public class OpenDeclarationAction extends Action {
     private final IEditorPart editor;
     
     public OpenDeclarationAction(IEditorPart editor) {
-        this("Open Ceylon Declaration...", editor);
+        this("Open Declaration...", editor);
     }
     
     public OpenDeclarationAction(String text, IEditorPart editor) {
@@ -35,9 +35,9 @@ public class OpenDeclarationAction extends Action {
     @Override
     public void run() {
         Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
-        OpenCeylonDeclarationDialog dialog = 
-                new OpenCeylonDeclarationDialog(true, shell);
-        dialog.setTitle("Open Ceylon Declaration");
+        OpenDeclarationDialog dialog = 
+                new OpenDeclarationDialog(true, shell);
+        dialog.setTitle("Open Declaration");
         dialog.setMessage("Type part of a name, with wildcard *, or camel hump matching, \nand then select one or more declarations to open in editor:");
         if (editor instanceof ITextEditor) {
             dialog.setInitialPattern(getSelectionText((ITextEditor) editor));

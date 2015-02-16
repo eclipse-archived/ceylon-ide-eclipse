@@ -607,7 +607,7 @@
             id="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Open toplevel declaration"
-            name="Open Ceylon Declaration"/>
+            name="Open Declaration"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.openDeclarationInHierarchy"
             categoryId="com.redhat.ceylon.eclipse.ui"
@@ -880,10 +880,10 @@
             class="com.redhat.ceylon.eclipse.code.open.OpenRefinedDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openRefinedDeclaration"/>
       <handler
-            class="com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationHandler"
+            class="com.redhat.ceylon.eclipse.code.open.OpenDeclarationHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"/>
       <handler
-            class="com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationInHierarchyHandler"
+            class="com.redhat.ceylon.eclipse.code.open.OpenDeclarationInHierarchyHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclarationInHierarchy"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.search.OpenCeylonSearchPageAction"
@@ -1007,7 +1007,7 @@
    <extension
          point="org.eclipse.ui.bindings">
          
-      <!-- Open Ceylon Declaration + Open Type popups -->
+      <!-- Open Declaration + Open Type popups -->
       <key
             sequence="M1+M2+T"
             commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
@@ -1378,7 +1378,7 @@
                   icon="icons/openrsrc.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openResource"/>
             <command
-                  label="Open Ce&amp;ylon Declaration..." 
+                  label="Open &amp;Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
@@ -1422,10 +1422,10 @@
                   tooltip="Open Resource"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.openResource"/>
             <command
-                  label="Open Ceylon Declaration..." 
+                  label="Open Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
                   icon="icons/opentype.gif"
-                  tooltip="Open Ceylon Declaration"
+                  tooltip="Open Declaration"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.openDeclaration"/>
             <command
                   label="Show Repository Explorer..." 

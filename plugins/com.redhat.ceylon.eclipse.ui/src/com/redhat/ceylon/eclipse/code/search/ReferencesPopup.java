@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
-import static com.redhat.ceylon.eclipse.code.open.OpenCeylonDeclarationDialog.isMatchingGlob;
+import static com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog.isMatchingGlob;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
