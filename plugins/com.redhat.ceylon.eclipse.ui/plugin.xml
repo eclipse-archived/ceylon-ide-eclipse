@@ -1841,7 +1841,7 @@
    <extension point="org.eclipse.ui.propertyPages">
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences"
-           name="Ceylon Configuration"
+           name="Ceylon Build"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonProjectPropertiesPage">
          <enabledWhen>
             <adapt type="org.eclipse.core.resources.IProject"/>
@@ -1850,7 +1850,7 @@
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences.warnings"
            category="com.redhat.ceylon.eclipse.ui.preferences"
-           name="Compilation Warnings"
+           name="Warnings"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonWarningsPropertiesPage">
          <enabledWhen>
              <adapt type="org.eclipse.core.resources.IProject">
@@ -1908,8 +1908,7 @@
        </page>
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences.style.formatter"
-           name="Code Formatter"
-           category="com.redhat.ceylon.eclipse.ui.preferences"
+           name="Ceylon Code Formatter"
            class="com.redhat.ceylon.eclipse.code.style.FormatterPreferencePage">
          <enabledWhen>
              <adapt type="org.eclipse.core.resources.IProject">

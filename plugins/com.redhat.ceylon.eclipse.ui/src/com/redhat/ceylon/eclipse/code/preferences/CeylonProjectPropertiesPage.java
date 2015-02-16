@@ -299,7 +299,7 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
         });
         
         Link warningsPageLink = new Link(parent, 0);
-        warningsPageLink.setText("See '<a>Compilation Warnings</a>' to enable or disable warnings.");
+        warningsPageLink.setText("See '<a>Warnings</a>' to enable or disable warnings.");
         warningsPageLink.addSelectionListener(new SelectionAdapter() {
           @Override
           public void widgetSelected(SelectionEvent e) {
