@@ -84,6 +84,8 @@ import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.ViewForm;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.ModifyEvent;
@@ -683,10 +685,10 @@ public abstract class FilteredItemsSelectionDialog extends
      * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
      */
     @Override
-    protected Control createDialogArea(Composite parent) {
-        Composite dialogArea = (Composite) super.createDialogArea(parent);
+    protected Control createDialogArea(final Composite parent) {
+        final Composite dialogArea = (Composite) super.createDialogArea(parent);
 
-        Composite content = new Composite(dialogArea, SWT.NONE);
+        final Composite content = new Composite(dialogArea, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         content.setLayoutData(gd);
 
@@ -850,7 +852,14 @@ public abstract class FilteredItemsSelectionDialog extends
         
         moreDetails.setContentProvider(new NullContentProvider());
         moreDetails.setLabelProvider(getMoreDetailsLabelProvider());
-
+        
+        statusArea.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                content.layout();
+            }
+        });
+        
         applyDialogFont(content);
 
         restoreDialog(getDialogSettings());
