@@ -810,17 +810,23 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private boolean includeDeclaration(JDTModule module, Declaration dec) {
-        boolean visibleFromSourceModules;
-        if (dec.isToplevel()) {
-            visibleFromSourceModules = 
-                    dec.isShared() || module.isProjectModule();
-        } else {
-            visibleFromSourceModules = 
-                    includeMembers && dec.isShared();
+        try {
+            boolean visibleFromSourceModules;
+            if (dec.isToplevel()) {
+                visibleFromSourceModules = 
+                        dec.isShared() || module.isProjectModule();
+            } else {
+                visibleFromSourceModules = 
+                        includeMembers && dec.isShared();
+            }
+            return visibleFromSourceModules && 
+                    isPresentable(dec) && 
+                    !isFiltered(dec);
         }
-        return visibleFromSourceModules && 
-                isPresentable(dec) && 
-                !isFiltered(dec);
+        catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     
     private int estimateWork(IProgressMonitor monitor) {
