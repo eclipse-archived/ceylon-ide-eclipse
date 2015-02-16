@@ -80,7 +80,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
                     importType(decs, infType, rootNode);
                     int il = applyImports(change, decs, rootNode, document);
                     String typeName = 
-                            infType.getProducedTypeName(rootNode.getUnit());
+                            infType.getProducedTypeNameInSource(rootNode.getUnit());
                     change.addEdit(new ReplaceEdit(offset, length, typeName));
                     change.perform(new NullProgressMonitor());
                     offset += il;

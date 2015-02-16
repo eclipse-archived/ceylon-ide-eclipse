@@ -803,7 +803,7 @@ public class Nodes {
                     ProducedType type = 
                             p.getParameterModel().getType();
                     if (!isTypeUnknown(type)) {
-                        result.append(type.getProducedTypeName(unit))
+                        result.append(type.getProducedTypeNameInSource(unit))
                               .append(" ");
                     }
                 }

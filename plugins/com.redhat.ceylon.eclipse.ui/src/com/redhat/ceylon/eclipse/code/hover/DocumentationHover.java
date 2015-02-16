@@ -1516,7 +1516,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static ProducedTypeNamePrinter printer(boolean abbreviate) { 
-        return new ProducedTypeNamePrinter(abbreviate, true, false, true) {
+        return new ProducedTypeNamePrinter(abbreviate, true, false, true, false) {
             @Override
             protected String getSimpleDeclarationName(Declaration declaration, Unit unit) {
                 return "<a " + HTML.link(declaration) + ">" + 

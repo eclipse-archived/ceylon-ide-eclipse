@@ -51,7 +51,7 @@ public class ChangeRefiningTypeProposal {
                         rd.getProducedReference(supertype, 
                                 Collections.<ProducedType>emptyList());
                 ProducedType t = pr.getType();
-                String type = t.getProducedTypeName(decNode.getUnit());
+                String type = t.getProducedTypeNameInSource(decNode.getUnit());
                 TextFileChange change = 
                         new TextFileChange("Change Type", file);
                 int offset = node.getStartIndex();
@@ -127,7 +127,7 @@ public class ChangeRefiningTypeProposal {
                         change.addEdit(new ReplaceEdit(p.getStartIndex(), 
                                 p.getStopIndex()-p.getStartIndex()+1, 
                                 //TODO: better handling for callable parameters
-                                pt.getProducedTypeName(unit) + " " + rdp.getName()));
+                                pt.getProducedTypeNameInSource(unit) + " " + rdp.getName()));
                     }
                 }
             }

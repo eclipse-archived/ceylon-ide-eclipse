@@ -543,7 +543,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 }
                 else {
                     params.append(node.getUnit().denotableType(bme.getTypeModel())
-                            .getProducedTypeName(node.getUnit()));
+                            .getProducedTypeNameInSource(node.getUnit()));
                 }
                 params.append(" ").append(bme.getIdentifier().getText());
                 args.append(bme.getIdentifier().getText());
@@ -579,7 +579,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                         else {
                             constraints.append("&");
                         }
-                        constraints.append(pt.getProducedTypeName(node.getUnit()));
+                        constraints.append(pt.getProducedTypeNameInSource(node.getUnit()));
                     }
                 }
             }
@@ -602,7 +602,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 il = 0;
             }
             else if (explicitType || dec.isToplevel()) {
-                type = returnType.getProducedTypeName(node.getUnit());
+                type = returnType.getProducedTypeNameInSource(node.getUnit());
                 HashSet<Declaration> decs = new HashSet<Declaration>();
                 importType(decs, returnType, rootNode);
                 il = applyImports(tfc, decs, rootNode, doc);
@@ -712,7 +712,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     }
                     else {
                         params += unit.denotableType(bme.getTypeModel())
-                                .getProducedTypeName(node.getUnit());
+                                .getProducedTypeNameInSource(node.getUnit());
                     }
                     params += " " + bme.getIdentifier().getText() + ", ";
                     args += bme.getIdentifier().getText() + ", ";
@@ -738,7 +738,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     constraints += extraIndent + getDefaultIndent() + 
                             "given " + t.getName() + " satisfies ";
                     for (ProducedType pt: t.getSatisfiedTypes()) {
-                        constraints += pt.getProducedTypeName(node.getUnit()) + "&";
+                        constraints += pt.getProducedTypeNameInSource(node.getUnit()) + "&";
                     }
                     constraints = constraints.substring(0, constraints.length()-1);
                 }
@@ -768,7 +768,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 content = "dynamic";
             }
             else if (explicitType||dec.isToplevel()) {
-                content = returnType.getProducedTypeName(node.getUnit());
+                content = returnType.getProducedTypeNameInSource(node.getUnit());
                 HashSet<Declaration> already = new HashSet<Declaration>();
                 importType(already, returnType, rootNode);
                 il = applyImports(tfc, already, rootNode, doc);
@@ -786,7 +786,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 !(result instanceof Tree.Declaration) &&
                 !resultDeclaration.isVariable()) { //TODO: wrong condition, check if initialized!
             content += extraIndent +
-                resultDeclaration.getType().getProducedTypeName(unit) +
+                resultDeclaration.getType().getProducedTypeNameInSource(unit) +
                 " " + resultDeclaration.getName() + ";";
         }
         Tree.Statement last = statements.isEmpty() ?
@@ -823,7 +823,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             if (result instanceof Tree.AttributeDeclaration) {
                 if (resultDeclaration.isShared()) {
                     modifs = "shared " + 
-                            returnType.getProducedTypeName(node.getUnit()) + 
+                            returnType.getProducedTypeNameInSource(node.getUnit()) + 
                             " ";
                 }
                 else {

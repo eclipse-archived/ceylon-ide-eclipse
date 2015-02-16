@@ -47,7 +47,7 @@ public class SpecifyTypeArgumentsProposal extends CorrectionProposal {
                 if (builder.length()!=1) {
                     builder.append(",");
                 }
-                builder.append(arg.getProducedTypeName(node.getUnit()));
+                builder.append(arg.getProducedTypeNameInSource(node.getUnit()));
             }
             builder.append(">");
             TextFileChange change = new TextFileChange("Specify Explicit Type Arguments", file);

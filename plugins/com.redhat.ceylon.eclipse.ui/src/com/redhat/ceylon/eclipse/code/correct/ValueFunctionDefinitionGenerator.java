@@ -131,7 +131,7 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
                     def.append("function");
                 }
                 else {
-                    def.append(returnType.getProducedTypeName(unit));
+                    def.append(returnType.getProducedTypeNameInSource(unit));
                 }
             }
             def.append(" ")
@@ -165,7 +165,7 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
                     def.append("value");
                 }
                 else {
-                    def.append(returnType.getProducedTypeName(unit));
+                    def.append(returnType.getProducedTypeNameInSource(unit));
                 }
             }
             def.append(" ")

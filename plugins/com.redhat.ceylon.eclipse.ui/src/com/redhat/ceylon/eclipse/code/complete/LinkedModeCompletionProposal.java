@@ -106,14 +106,25 @@ public class LinkedModeCompletionProposal
     private final Image image;
     private final int offset;
     private int position;
+    private String description;
     
-    private LinkedModeCompletionProposal(int offset, String text, 
-            int position) {
-        this(offset, text, position, null);
+    private LinkedModeCompletionProposal(String name,
+            int offset, int position) {
+        this(name, offset, name, position, null);
     }
     
-    private LinkedModeCompletionProposal(int offset, String text, 
-            int position, Image image) {
+    private LinkedModeCompletionProposal(ProducedType type,
+            Unit unit, int offset, int position) {
+        this(type.getProducedTypeName(unit), 
+                offset, 
+                type.getProducedTypeNameInSource(unit), 
+                position, 
+                getImageForDeclaration(type.getDeclaration()));
+    }
+    
+    private LinkedModeCompletionProposal(String description,
+            int offset, String text, int position, Image image) {
+        this.description = description;
         this.text=text;
         this.position = position;
         this.image = image;
@@ -153,7 +164,8 @@ public class LinkedModeCompletionProposal
             char ch = document.getChar(i);
             if (Character.isJavaIdentifierPart(ch) 
                     || ch=='<' || ch=='>' 
-                    || ch=='[' || ch==']') {
+                    || ch=='[' || ch==']' 
+                    || ch=='.' || ch=='\\') {
                 lastWasWs = false;
                 length++;
             }
@@ -172,7 +184,7 @@ public class LinkedModeCompletionProposal
     }
     
     public String getDisplayString() {
-        return text;
+        return description;
     }
     
     @Override
@@ -229,7 +241,7 @@ public class LinkedModeCompletionProposal
         Set<String> proposedNames = new HashSet<String>();
         if (defaultName!=null) {
             LinkedModeCompletionProposal nameProposal = 
-                    new LinkedModeCompletionProposal(offset, defaultName, seq);
+                    new LinkedModeCompletionProposal(defaultName, offset, seq);
             nameProposals.add(nameProposal);
             proposedNames.add(defaultName);
         }
@@ -237,7 +249,7 @@ public class LinkedModeCompletionProposal
             if (proposedNames.add(name)) {
                 if (defaultName==null || !defaultName.equals(name)) {
                     LinkedModeCompletionProposal nameProposal = 
-                            new LinkedModeCompletionProposal(offset, name, seq);
+                            new LinkedModeCompletionProposal(name, offset, seq);
                     nameProposals.add(nameProposal);
                 }
             }
@@ -274,30 +286,25 @@ public class LinkedModeCompletionProposal
         int i=0;
         if (includeValue) {
             typeProposals[i++] =
-                    new LinkedModeCompletionProposal(offset, kind, 0, 
+                    new LinkedModeCompletionProposal(kind, offset, kind, 0, 
                             getDecoratedImage(CEYLON_LITERAL, 0, false));
         }
         if (td instanceof UnionType || 
             td instanceof IntersectionType) {
-            String typeName = 
-                    type.getProducedTypeName(unit);
             typeProposals[i++] = 
-                    new LinkedModeCompletionProposal(offset, typeName, 0, 
-                            getImageForDeclaration(td));
+                    new LinkedModeCompletionProposal(type, unit, offset, 0);
         }
         for (int j=supertypes.size()-1; j>=0; j--) {
             ProducedType supertype = 
                     type.getSupertype(supertypes.get(j));
-            String typeName = 
-                    supertype.getProducedTypeName(unit);
             typeProposals[i++] = 
-                    new LinkedModeCompletionProposal(offset, typeName, 0, 
-                            getImageForDeclaration(supertype.getDeclaration()));
+                    new LinkedModeCompletionProposal(supertype, unit, offset, 0);
         }
         return typeProposals;
     }
 
-    public static ICompletionProposal[] getCaseTypeProposals(int offset, Unit unit, ProducedType type) {
+    public static ICompletionProposal[] getCaseTypeProposals(int offset, 
+            Unit unit, ProducedType type) {
         if (type==null) {
             return new ICompletionProposal[0];
         }
@@ -309,11 +316,8 @@ public class LinkedModeCompletionProposal
                 new ICompletionProposal[caseTypes.size()];
         for (int i=0; i<caseTypes.size(); i++) {
             ProducedType ct = caseTypes.get(i);
-            String typeName = 
-                    ct.getProducedTypeName(unit);
             typeProposals[i] = 
-                    new LinkedModeCompletionProposal(offset, typeName, 0, 
-                            getImageForDeclaration(ct.getDeclaration()));
+                    new LinkedModeCompletionProposal(ct, unit, offset, 0);
         }
         return typeProposals;
     }

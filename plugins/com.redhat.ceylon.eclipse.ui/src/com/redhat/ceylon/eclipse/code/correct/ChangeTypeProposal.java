@@ -40,10 +40,10 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 class ChangeTypeProposal extends CorrectionProposal {
 
     ChangeTypeProposal(ProblemLocation problem, 
-            String name, String type, int offset,
+            String name, String type, int offset, int len,
             TextFileChange change) {
         super("Change type of "+ name + " to '" + type + "'", 
-                change, new Region(offset, type.length()));
+                change, new Region(offset, len));
     }
         
     static void addChangeTypeProposal(Node node, ProblemLocation problem, 
@@ -58,13 +58,15 @@ class ChangeTypeProposal extends CorrectionProposal {
         TextFileChange change =  new TextFileChange("Change Type", file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = EditorUtil.getDocument(change);
-        String typeName = newType.getProducedTypeName(cu.getUnit());
         int offset = node.getStartIndex();
         int length = node.getStopIndex()-offset+1;
         HashSet<Declaration> decs = new HashSet<Declaration>();
         importType(decs, newType, cu);
         int il=applyImports(change, decs, cu, doc);
-        change.addEdit(new ReplaceEdit(offset, length, typeName));
+        String newTypeName = 
+                newType.getProducedTypeNameInSource(cu.getUnit());
+        change.addEdit(new ReplaceEdit(offset, length, 
+                newTypeName));
         String name;
         if (dec.isParameter()) {
             name = "parameter '" + dec.getName() + "' of '" + 
@@ -78,7 +80,8 @@ class ChangeTypeProposal extends CorrectionProposal {
             name = "'" + dec.getName() + "'";
         }
         proposals.add(new ChangeTypeProposal(problem, name, 
-                typeName, offset+il, change));
+                newType.getProducedTypeName(cu.getUnit()), 
+                offset+il, newTypeName.length(), change));
     }
     
     static void addChangeTypeArgProposals(Tree.CompilationUnit cu, Node node, 

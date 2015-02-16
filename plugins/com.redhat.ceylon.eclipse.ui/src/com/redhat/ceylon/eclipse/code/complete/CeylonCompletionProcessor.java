@@ -924,7 +924,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             else {
                 text.append(", ");
             }
-            text.append(paramType.getProducedTypeName(unit))
+            text.append(paramType.getProducedTypeNameInSource(unit))
                 .append(" ")
                 .append(c++);
         }

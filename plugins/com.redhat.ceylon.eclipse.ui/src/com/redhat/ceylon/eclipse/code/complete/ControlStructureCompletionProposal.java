@@ -121,20 +121,24 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                         !v.isVariable()) {
                     StringBuilder body = new StringBuilder();
                     String indent = getIndent(node, doc);
+                    Unit unit = node.getUnit();
                     for (ProducedType pt: v.getType().getCaseTypes()) {
                         body.append(indent).append("case (");
-                        if (!pt.getDeclaration().isAnonymous()) {
-                            body.append("is ");
+                        if (pt.getDeclaration().isAnonymous()) {
+                            body.append(pt.getDeclaration().getName(unit));
                         }
-                        body.append(pt.getProducedTypeName(node.getUnit()))
-                            .append(") {}")
+                        else {
+                            body.append("is ")
+                                .append(pt.getProducedTypeNameInSource(unit));
+                        }
+                        body.append(") {}")
                             .append(getDefaultLineDelimiter(doc));
                     }
                     body.append(indent);
-                    Unit unit = cpc.getRootNode().getUnit();
+                    Unit u = cpc.getRootNode().getUnit();
                     result.add(new ControlStructureCompletionProposal(offset, prefix, 
-                            "switch (" + getDescriptionFor(d, unit) + ")", 
-                            "switch (" + getTextFor(d, unit) + ")" + 
+                            "switch (" + getDescriptionFor(d, u) + ")", 
+                            "switch (" + getTextFor(d, u) + ")" + 
                                     getDefaultLineDelimiter(doc) + body, 
                             d, cpc));
                 }

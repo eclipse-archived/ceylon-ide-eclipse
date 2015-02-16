@@ -139,7 +139,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 il=0;
             }
             else {
-                explicitType = infType.getProducedTypeName();
+                explicitType = infType.getProducedTypeNameInSource(decNode.getUnit());
                 HashSet<Declaration> decs = new HashSet<Declaration>();
                 importType(decs, infType, cu);
                 il=applyImports(change, decs, cu, doc);

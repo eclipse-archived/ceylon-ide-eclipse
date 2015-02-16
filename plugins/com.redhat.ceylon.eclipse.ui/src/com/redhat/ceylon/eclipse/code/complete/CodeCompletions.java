@@ -233,7 +233,7 @@ public class CodeCompletions {
                             result.append("&");
                         }
                         result.append(st.substitute(pr.getTypeArguments())
-                                .getProducedTypeName(unit));
+                                .getProducedTypeNameInSource(unit));
                     }
                 }
             }
@@ -434,7 +434,7 @@ public class CodeCompletions {
                     }
                     else {
                         ProducedType pt = typedParameter.getType();
-                        if (descriptionOnly && paramTypes && !isTypeUnknown(pt)) {
+                        if (paramTypes && !isTypeUnknown(pt)) {
                             if (p.isSequenced()) {
                                 pt = unit.getSequentialElementType(pt);
                             }
@@ -516,7 +516,8 @@ public class CodeCompletions {
                         }
                         else {
                             if (paramTypes && !isTypeUnknown(p.getType())) {
-                                result.append(p.getType().getProducedTypeName(unit)).append(" ");
+                                String ptn = p.getType().getProducedTypeName(unit);
+                                result.append(ptn).append(" ");
                             }
                             else {
                                 result.append("function ");
@@ -546,8 +547,9 @@ public class CodeCompletions {
 //                            result.append(" ");
                         }
                         else {
-                            if (descriptionOnly && paramTypes && !isTypeUnknown(p.getType())) {
-                                result.append(p.getType().getProducedTypeName(unit)).append(" ");
+                            if (paramTypes && !isTypeUnknown(p.getType())) {
+                                String ptn = p.getType().getProducedTypeName(unit);
+                                result.append(ptn).append(" ");
                             }
                             result.append(name)
                                 .append(" = ")
@@ -728,7 +730,9 @@ public class CodeCompletions {
             if (type==null) {
                 type = new UnknownType(unit).getType();
             }
-            String typeName = type.getProducedTypeName(unit);
+            String typeName = descriptionOnly ? 
+                    type.getProducedTypeName(unit) :
+                    type.getProducedTypeNameInSource(unit);
             if (td.isDynamicallyTyped()) {
                 result.append("dynamic");
             }

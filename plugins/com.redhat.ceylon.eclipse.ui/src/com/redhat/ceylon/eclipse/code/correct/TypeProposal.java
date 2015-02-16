@@ -41,11 +41,14 @@ class TypeProposal implements ICompletionProposal,
     private final String text;
     private final Tree.CompilationUnit rootNode;
     private Point selection;
+    private String description;
 
     private TypeProposal(int offset, ProducedType type,
-            String text, Tree.CompilationUnit rootNode) {
+            String text, String desc, 
+            Tree.CompilationUnit rootNode) {
         this.type = type;
         this.offset = offset;
+        this.description = desc;
         this.rootNode = rootNode;
         this.text = text;
     }
@@ -123,7 +126,7 @@ class TypeProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        return text;
+        return description;
     }
 
     @Override
@@ -162,22 +165,24 @@ class TypeProposal implements ICompletionProposal,
         int i=0;
         if (kind!=null) {
             proposals[i++] =
-                    new TypeProposal(offset, null, kind, rootNode);
+                    new TypeProposal(offset, null, kind, kind, rootNode);
         }
         if (td instanceof UnionType || 
                 td instanceof IntersectionType) {
-            String typename = 
-                    infType.getProducedTypeName(rootNode.getUnit());
             proposals[i++] = 
-                    new TypeProposal(offset, infType, typename, rootNode);
+                    new TypeProposal(offset, infType, 
+                            infType.getProducedTypeNameInSource(rootNode.getUnit()), 
+                            infType.getProducedTypeName(rootNode.getUnit()), 
+                            rootNode);
         }
         for (int j=supertypes.size()-1; j>=0; j--) {
             ProducedType type = 
                     infType.getSupertype(supertypes.get(j));
-            String typename = 
-                    type.getProducedTypeName(rootNode.getUnit());
             proposals[i++] = 
-                    new TypeProposal(offset, type, typename, rootNode);
+                    new TypeProposal(offset, type, 
+                            type.getProducedTypeNameInSource(rootNode.getUnit()), 
+                            type.getProducedTypeName(rootNode.getUnit()), 
+                            rootNode);
         }
         return new ProposalPosition(document, offset, length, 
                 0, proposals);

@@ -40,7 +40,7 @@ class VerboseRefinementProposal extends CorrectionProposal {
                     HashSet<Declaration> decs = new HashSet<Declaration>();
                     ImportProposals.importType(decs, t, cu);
                     applyImports(change, decs, cu, EditorUtil.getDocument(change));
-                    String type = t.getProducedTypeName(unit);
+                    String type = t.getProducedTypeNameInSource(unit);
                     change.addEdit(new InsertEdit(statement.getStartIndex(), 
                             "shared actual " + type + " "));
                     proposals.add(new VerboseRefinementProposal(change));

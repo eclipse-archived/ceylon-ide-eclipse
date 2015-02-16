@@ -100,7 +100,7 @@ RegularCompilationUnitDelta buildCompilationUnitDeltas(PhasedUnit referencePhase
     return builder.buildDelta();
 }
 
-object producedTypeNamePrinter extends ProducedTypeNamePrinter(true, true, true, true) {
+object producedTypeNamePrinter extends ProducedTypeNamePrinter(true, true, true, true, false) {
     printQualifier() => true;
     printFullyQualified() => true;
 }
