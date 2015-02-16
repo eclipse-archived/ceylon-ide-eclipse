@@ -775,6 +775,12 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
         if (excludeDeprecated && declaration.isDeprecated()) {
             return true;
         }
+        if (declaration.isAnnotation() &&
+                declaration.getName().contains("__")) {
+            //actually what we should really do is filter
+            //out all constructors for Java annotations
+            return true;
+        }
         if (filters.length>0) {
             String name = declaration.getQualifiedNameString();
             for (String filter: filters) {
