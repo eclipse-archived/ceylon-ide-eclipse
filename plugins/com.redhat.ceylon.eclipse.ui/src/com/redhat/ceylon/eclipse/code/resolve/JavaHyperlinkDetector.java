@@ -19,6 +19,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -159,6 +160,9 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
     public static IJavaElement getJavaElement(Declaration dec)
             throws JavaModelException {
+        if (dec instanceof Method && dec.isAnnotation()) {
+            dec = ((Method) dec).getTypeDeclaration();
+        }
         if (dec.getUnit() instanceof IJavaModelAware) {
             return ((IJavaModelAware) dec.getUnit()).toJavaElement(dec);
         }
