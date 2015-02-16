@@ -51,7 +51,8 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
         if (declaration instanceof Constructor) {
             Constructor constructor = (Constructor) declaration;
             ClassOrInterface c = constructor.getExtendedTypeDeclaration();
-            if (c.getName().equals(constructor.getName())) {
+            if (c!=null && 
+                    c.getName().equals(constructor.getName())) {
                 //default constructor
                 declaration = c;
             }
