@@ -510,11 +510,16 @@ public class OpenCeylonDeclarationDialog extends FilteredItemsSelectionDialog {
                         if (filename.equals(unitFileName) && 
                                 pname.equals(packageName)) {
                             for (Declaration dec: unit.getDeclarations()) {
-                                if (isPresentable(dec) && 
-                                        isNamed(qualifiedName, dec)) {
-                                    if (isFiltered(dec)) return null;
-                                    return new DeclarationWithProject(dec, 
-                                            project, version, path);
+                                try {
+                                    if (isPresentable(dec) && 
+                                            isNamed(qualifiedName, dec)) {
+                                        if (isFiltered(dec)) return null;
+                                        return new DeclarationWithProject(dec, 
+                                                project, version, path);
+                                    }
+                                }
+                                catch (Exception e) {
+                                    e.printStackTrace();
                                 }
                             }
                         }
