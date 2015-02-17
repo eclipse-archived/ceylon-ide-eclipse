@@ -48,8 +48,6 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.PreferencesUtil;
@@ -575,11 +573,6 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         setDetailsLabelProvider(new DetailsLabelProvider());
         setMoreDetailsLabelProvider(new MoreDetailsLabelProvider());
         setListSelectionLabelDecorator(new SelectionLabelDecorator());
-    }
-    
-    @Override
-    protected Control createExtendedContentArea(Composite parent) {
-        return null;
     }
     
     @Override

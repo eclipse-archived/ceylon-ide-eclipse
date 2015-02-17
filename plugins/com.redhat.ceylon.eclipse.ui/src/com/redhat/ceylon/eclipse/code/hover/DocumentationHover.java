@@ -1237,7 +1237,7 @@ public class DocumentationHover extends SourceInfoHover {
                 dec = val;
             }
         }
-        Unit unit = cpc.getRootNode().getUnit();
+        Unit unit = cpc==null ? null : cpc.getRootNode().getUnit();
         StringBuilder buffer = new StringBuilder();
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addMainDescription(buffer, dec, node, pr, cpc, unit);
@@ -1606,7 +1606,7 @@ public class DocumentationHover extends SourceInfoHover {
                     buffer);
         }
         else {
-            appendJavadoc(dec, cpc.getProject(), buffer, node);
+            appendJavadoc(dec, cpc==null ? null : cpc.getProject(), buffer, node);
         }
         return hasDoc;
     }
