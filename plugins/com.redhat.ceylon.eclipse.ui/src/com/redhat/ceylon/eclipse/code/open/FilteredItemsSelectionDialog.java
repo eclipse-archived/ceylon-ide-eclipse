@@ -1459,11 +1459,9 @@ public abstract class FilteredItemsSelectionDialog extends
             if (monitor.isCanceled())
                 return new Status(IStatus.OK, WorkbenchPlugin.PI_WORKBENCH,
                         IStatus.OK, EMPTY_STRING, null);
-
-            if (FilteredItemsSelectionDialog.this != null) {
-                FilteredItemsSelectionDialog.this.refresh();
-            }
-
+            
+            FilteredItemsSelectionDialog.this.refresh();
+            
             return new Status(IStatus.OK, PlatformUI.PLUGIN_ID, IStatus.OK,
                     EMPTY_STRING, null);
         }
