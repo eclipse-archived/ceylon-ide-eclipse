@@ -667,7 +667,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             ItemsFilter itemsFilter, IProgressMonitor monitor) 
                     throws CoreException {
         usedNames.clear();
-        monitor.beginTask("filtering", estimateWork(monitor));
+        monitor.beginTask("Filtering", estimateWork(monitor));
         Set<String> searchedArchives = new HashSet<String>();
         Collection<IProject> projects = getProjects();
         for (IProject project: projects) {
@@ -677,6 +677,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     typeChecker.getPhasedUnits().getPhasedUnits();
             fill(contentProvider, itemsFilter, project, units);
             monitor.worked(1);
+            if (monitor.isCanceled()) break;
             Modules modules = typeChecker.getContext().getModules();
             for (Module m: modules.getListOfModules()) {
                 if (!m.isJava() || includeJava()) {
@@ -685,17 +686,19 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                         if (searchedArchives.add(uniqueIdentifier(module))) {
                             fill(contentProvider, itemsFilter, project, module);
                             monitor.worked(1);
+                            if (monitor.isCanceled()) break;
                         }
                     }
                 }
             }
         }
+        monitor.done();
     }
 
     private void fill(AbstractContentProvider contentProvider,
             ItemsFilter itemsFilter, IProject project, 
             JDTModule module) {
-        for (Package pack: 
+        for (Package pack:
                 new ArrayList<Package>(module.getPackages())) {
             if (!isFiltered(pack)) {
                 for (Declaration dec: pack.getMembers()) {

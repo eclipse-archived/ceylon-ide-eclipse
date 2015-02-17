@@ -2240,18 +2240,13 @@ public abstract class FilteredItemsSelectionDialog extends
                     && lastCompletedFilter.isSubFilter(this.itemsFilter)) {
 
                 int length = lastCompletedResult.size() / 500;
-                monitor
-                        .beginTask(
-                                WorkbenchMessages.FilteredItemsSelectionDialog_cacheSearchJob_taskName,
-                                length);
+                monitor.beginTask("Searching in cache", length);
 
                 for (int pos = 0; pos < lastCompletedResult.size(); pos++) {
-
                     Object item = lastCompletedResult.get(pos);
                     if (monitor.isCanceled())
                         break;
                     contentProvider.add(item, itemsFilter);
-
                     if ((pos % 500) == 0) {
                         monitor.worked(1);
                     }
@@ -2264,12 +2259,8 @@ public abstract class FilteredItemsSelectionDialog extends
 
                 SubProgressMonitor subMonitor = null;
                 if (monitor != null) {
-                    monitor
-                            .beginTask(
-                                    WorkbenchMessages.FilteredItemsSelectionDialog_searchJob_taskName,
-                                    100);
+                    monitor.beginTask("Searching", 100);
                     subMonitor = new SubProgressMonitor(monitor, 95);
-
                 }
 
                 fillContentProvider(contentProvider, itemsFilter, subMonitor);
