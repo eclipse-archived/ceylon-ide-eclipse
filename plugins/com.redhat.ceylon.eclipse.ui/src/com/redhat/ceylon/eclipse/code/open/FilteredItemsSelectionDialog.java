@@ -1048,16 +1048,6 @@ public abstract class FilteredItemsSelectionDialog extends
     }
 
     /**
-     * Updates the progress label.
-     * 
-     * @deprecated
-     */
-    @Deprecated
-    public void updateProgressLabel() {
-        scheduleProgressMessageRefresh();
-    }
-
-    /**
      * Notifies the content provider - fires filtering of content provider
      * elements. During the filtering, a separator between history and workspace
      * matches is added.
