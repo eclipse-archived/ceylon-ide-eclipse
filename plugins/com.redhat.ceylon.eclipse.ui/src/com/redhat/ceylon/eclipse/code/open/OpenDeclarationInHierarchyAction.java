@@ -31,9 +31,9 @@ public class OpenDeclarationInHierarchyAction extends Action {
     public void run() {
         Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
         OpenDeclarationDialog dialog = 
-                new OpenDeclarationDialog(false, shell);
-        dialog.setTitle("Open in Type Hierarchy View");
-        dialog.setMessage("Type part of a name, with wildcard *, or camel hump matching, \nand then select a declaration to open in hierarchy view:");
+                new OpenDeclarationDialog(false, shell, "Open in Type Hierarchy View",
+                        "&Type part of a name, with wildcard *, or a camel hump pattern:",
+                        "&Select a declaration to open in hierarchy view:");
         if (editor instanceof ITextEditor) {
             dialog.setInitialPattern(getSelectionText((ITextEditor) editor));
         }

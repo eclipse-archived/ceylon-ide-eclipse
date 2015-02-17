@@ -298,7 +298,10 @@ public abstract class FiltersPreferencePage
     
     private void addDeclaration() {
         OpenDeclarationDialog dialog = 
-                new OpenDeclarationDialog(true, getShell()) {
+                new OpenDeclarationDialog(true, getShell(),
+                        "Add Declaration to Filters",
+                        "&Type part of a name, with wildcard *, or a camel hump pattern:",
+                        "&Select one or more declarations to exclude:") {
             private static final String SETTINGS_ID = 
                     CeylonPlugin.PLUGIN_ID + ".addDeclarationFilterDialog";            
             @Override
@@ -328,8 +331,6 @@ public abstract class FiltersPreferencePage
             @Override
             protected void fillViewMenu(IMenuManager menuManager) {}
         };
-        dialog.setTitle("Add Declaration to Filters");
-        dialog.setMessage("&Select a declaration to exclude:");
         if (dialog.open() == IDialogConstants.OK_ID) {
             Object[] types = dialog.getResult();
             for (int i=0; i<types.length; i++) {

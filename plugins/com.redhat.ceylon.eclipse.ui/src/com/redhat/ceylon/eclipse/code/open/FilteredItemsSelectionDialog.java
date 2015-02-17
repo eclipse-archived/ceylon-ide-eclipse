@@ -238,6 +238,9 @@ public abstract class FilteredItemsSelectionDialog extends
     private IHandlerActivation showViewHandler;
 
     private ViewForm statusArea;
+    
+    private final String filterLabelText;
+    private final String listLabelText;
 
     /**
      * Creates a new instance of the class.
@@ -248,29 +251,20 @@ public abstract class FilteredItemsSelectionDialog extends
      *            indicates whether dialog allows to select more than one
      *            position in its list of items
      */
-    public FilteredItemsSelectionDialog(Shell shell, boolean multi) {
+    public FilteredItemsSelectionDialog(Shell shell, boolean multi,
+            String filterLabelText, String listLabelText) {
         super(shell);
         this.multi = multi;
+        this.filterLabelText = filterLabelText;
+        this.listLabelText = listLabelText;
         filterHistoryJob = new FilterHistoryJob();
         filterJob = new FilterJob();
         contentProvider = new ContentProvider();
         refreshCacheJob = new RefreshCacheJob();
-        itemsListSeparator = new ItemsListSeparator(
-                WorkbenchMessages.FilteredItemsSelectionDialog_separatorLabel);
+        itemsListSeparator = new ItemsListSeparator("Workspace matches");
         selectionMode = NONE;
     }
-
-    /**
-     * Creates a new instance of the class. Created dialog won't allow to select
-     * more than one item.
-     * 
-     * @param shell
-     *            shell to parent the dialog on
-     */
-    public FilteredItemsSelectionDialog(Shell shell) {
-        this(shell, false);
-    }
-
+    
     /**
      * Adds viewer filter to the dialog items list.
      * 
@@ -498,9 +492,7 @@ public abstract class FilteredItemsSelectionDialog extends
         header.setLayout(layout);
 
         Label headerLabel = new Label(header, SWT.NONE);
-        headerLabel.setText((getMessage() != null && getMessage().trim()
-                .length() > 0) ? getMessage()
-                : WorkbenchMessages.FilteredItemsSelectionDialog_patternLabel);
+        headerLabel.setText(filterLabelText);
         headerLabel.addTraverseListener(new TraverseListener() {
             @Override
             public void keyTraversed(TraverseEvent e) {
@@ -527,17 +519,12 @@ public abstract class FilteredItemsSelectionDialog extends
      */
     private Label createLabels(Composite parent) {
         Composite labels = new Composite(parent, SWT.NONE);
-
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        layout.marginWidth = 0;
-        layout.marginHeight = 0;
-        labels.setLayout(layout);
-
+        labels.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        labels.setLayout(GridLayoutFactory.fillDefaults().equalWidth(false).numColumns(2).margins(0, 0).create());
+        
         Label listLabel = new Label(labels, SWT.NONE);
-        listLabel
-                .setText(WorkbenchMessages.FilteredItemsSelectionDialog_listLabel);
-
+        listLabel.setText(listLabelText);
+        listLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         listLabel.addTraverseListener(new TraverseListener() {
             @Override
             public void keyTraversed(TraverseEvent e) {
@@ -546,15 +533,11 @@ public abstract class FilteredItemsSelectionDialog extends
                     list.getTable().setFocus();
                 }
             }
-        });
-
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        listLabel.setLayoutData(gd);
+        });        
 
         progressLabel = new Label(labels, SWT.RIGHT);
-        progressLabel.setLayoutData(gd);
-
-        labels.setLayoutData(gd);
+        progressLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        
         return listLabel;
     }
 
@@ -1526,9 +1509,11 @@ public abstract class FilteredItemsSelectionDialog extends
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
 
-            if (!progressLabel.isDisposed())
+            if (!progressLabel.isDisposed()) {
                 progressLabel.setText(progressMonitor != null ? progressMonitor
                         .getMessage() : EMPTY_STRING);
+                progressLabel.getParent().layout();
+            }
 
             if (progressMonitor == null || progressMonitor.isDone()) {
                 return new Status(IStatus.CANCEL, PlatformUI.PLUGIN_ID,

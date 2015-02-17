@@ -566,9 +566,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
      }
     
-    public OpenDeclarationDialog(boolean multi, Shell shell) {
-        super(shell, multi);
-        //this.editor = editor;
+    public OpenDeclarationDialog(boolean multi, Shell shell, String title, 
+            String filterLabelText, String listLabelText) {
+        super(shell, multi, filterLabelText, listLabelText);
+        setTitle(title);
         setSelectionHistory(new TypeSelectionHistory());
         setListLabelProvider(new LabelProvider());
         setDetailsLabelProvider(new DetailsLabelProvider());
