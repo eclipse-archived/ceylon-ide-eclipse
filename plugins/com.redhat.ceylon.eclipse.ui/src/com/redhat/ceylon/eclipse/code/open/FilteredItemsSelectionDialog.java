@@ -16,6 +16,8 @@ package com.redhat.ceylon.eclipse.code.open;
  *  Simon Muschel <smuschel@gmx.de> - bug 258493
  *******************************************************************************/
 
+import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -53,6 +55,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ContentViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -82,7 +85,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -98,6 +103,7 @@ import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -693,10 +699,12 @@ public abstract class FilteredItemsSelectionDialog extends
         });
         gd = new GridData(GridData.FILL_HORIZONTAL);
         pattern.setLayoutData(gd);
-
+        
         final Label listLabel = createLabels(content);
 
-        list = new TableViewer(content, (multi ? SWT.MULTI : SWT.SINGLE)
+        SashForm sash = new SashForm(content, SWT.HORIZONTAL | SWT.SMOOTH);
+        sash.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).span(4, 1).create());
+        list = new TableViewer(sash, (multi ? SWT.MULTI : SWT.SINGLE)
                 | SWT.BORDER | SWT.V_SCROLL | SWT.VIRTUAL);
         list.getTable().getAccessible().addAccessibleListener(
                 new AccessibleAdapter() {
@@ -714,9 +722,28 @@ public abstract class FilteredItemsSelectionDialog extends
         list.setItemCount(contentProvider.getNumberOfElements());
         gd = new GridData(GridData.FILL_BOTH);
         applyDialogFont(list.getTable());
-        gd.heightHint= list.getTable().getItemHeight() * 15;
+        gd.heightHint = list.getTable().getItemHeight() * 15;
         list.getTable().setLayoutData(gd);
-
+        sash.setLayoutData(gd);
+        
+//        ViewForm composite = new ViewForm(sash, SWT.NONE);
+//        composite.setLayout(GridLayoutFactory.fillDefaults().create());
+//        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Browser browser = new Browser(sash, SWT.NONE);
+//        composite.setContent(browser);
+        browser.setJavascriptEnabled(false);
+        Display display = getShell().getDisplay();
+        Color fg = display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
+        Color bg = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+        browser.setForeground(fg);
+        browser.setBackground(bg);
+//        composite.setForeground(fg);
+//        composite.setBackground(bg);
+        FontData fontData = JFaceResources.getFontRegistry()
+                .getFontData(APPEARANCE_JAVADOC_FONT)[0];
+        browser.setFont(new Font(Display.getDefault(), fontData));
+        browser.setLayoutData(new GridData(GridData.FILL_BOTH));
+        
         createPopupMenu();
 
         pattern.addModifyListener(new ModifyListener() {
@@ -910,11 +937,7 @@ public abstract class FilteredItemsSelectionDialog extends
             break;
         default:
             moreDetails.setInput(null);
-            details
-                    .setInput(NLS
-                            .bind(
-                                    WorkbenchMessages.FilteredItemsSelectionDialog_nItemsSelected,
-                                    new Integer(selection.size())));
+            details.setInput(selection.size() + " items selected");
             break;
         }
 

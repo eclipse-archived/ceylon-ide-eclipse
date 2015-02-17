@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
-import static com.redhat.ceylon.compiler.typechecker.model.Util.isNamed;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
@@ -512,10 +511,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                             for (Declaration dec: unit.getDeclarations()) {
                                 try {
                                     if (isPresentable(dec) && 
-                                            isNamed(qualifiedName, dec)) {
-                                        if (isFiltered(dec)) return null;
-                                        return new DeclarationWithProject(dec, 
-                                                project, version, path);
+                                            qualifiedName.equals(dec.getQualifiedNameString())) {
+                                        return isFiltered(dec) ? null :
+                                            new DeclarationWithProject(dec, 
+                                                    project, version, path);
                                     }
                                 }
                                 catch (Exception e) {
@@ -530,17 +529,18 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                             .getContext().getModules();
                     for (Module module: modules.getListOfModules()) {
                         if (module.isJava() || //TODO: is this correct
-                                packageName.startsWith(module.getNameAsString()));
-                        for (Package pkg: module.getAllPackages()) { 
-                            if (pkg.getQualifiedNameString().equals(packageName)) {
-                                for (Declaration dec: pkg.getMembers()) {
-                                    if (isPresentable(dec) && 
-                                            isNamed(qualifiedName, dec)) {
-                                        if (isFiltered(dec)) return null;
-                                        return new DeclarationWithProject(dec, 
-                                                project, version, path);
+                                packageName.startsWith(module.getNameAsString())) {
+                            for (Package pkg: module.getAllPackages()) { 
+                                if (pkg.getQualifiedNameString().equals(packageName)) {
+                                    for (Declaration dec: pkg.getMembers()) {
+                                        if (isPresentable(dec) && 
+                                                qualifiedName.equals(dec.getQualifiedNameString())) {
+                                            return isFiltered(dec) ? null :
+                                                new DeclarationWithProject(dec, 
+                                                        project, version, path);
+                                        }
+                                        //TODO: members!
                                     }
-                                    //TODO: members!
                                 }
                             }
                         }
@@ -941,7 +941,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     boolean isPresentable(Declaration d) {
         String name = d.getName();
-        return name!=null && !d.isAnonymous() && 
+        return name!=null && 
+                !d.isAnonymous() && 
                 !isOverloadedVersion(d);
     }
     
