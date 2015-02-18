@@ -844,42 +844,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         fListeners.remove(listener);
     }
     
-    public static String getLabel(Package packageModel) {
-        String name = packageModel.getQualifiedNameString();
-        if (name.isEmpty()) {
-            return "(default package)";
-        }
-        return name;
-    }
-    
-    public static String getLabel(Module moduleModel) {
-        String name = moduleModel.getNameAsString();
-        if (name.isEmpty() || 
-                name.equals(Module.DEFAULT_MODULE_NAME)) {
-            return "(default module)";
-        }
-        return name;
-    }
-    
-    public static String getPackageLabel(Node decl) {
-        return decl.getUnit()==null ? "(unknown package)" : 
-            getLabel(decl.getUnit().getPackage());
-    }
-    
-    public static String getModuleLabel(Node decl) {
-        return decl.getUnit()==null ? "(unknown module)" : 
-            getLabel(decl.getUnit().getPackage().getModule());
-    }
-    
-    public static String getModuleLabel(Declaration decl) {
-        return decl.getUnit()==null ? "(unknown module)" : 
-            getLabel(decl.getUnit().getPackage().getModule());
-    }
-    
-    public static String getPackageLabel(Declaration decl) {
-        return getLabel(decl.getUnit().getPackage());
-    }
-    
     @Override
     public void update(ViewerCell cell) {
         Object element = cell.getElement();
@@ -1139,6 +1103,44 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return getMaxProblemMarkerSeverity(res, depth, acceptAllMarkers);
     }
 
+    //TODO: none of these really belong here:
+    
+    public static String getLabel(Package packageModel) {
+        String name = packageModel.getQualifiedNameString();
+        if (name.isEmpty()) {
+            return "(default package)";
+        }
+        return name;
+    }
+    
+    public static String getLabel(Module moduleModel) {
+        String name = moduleModel.getNameAsString();
+        if (name.isEmpty() || 
+                name.equals(Module.DEFAULT_MODULE_NAME)) {
+            return "(default module)";
+        }
+        return name;
+    }
+    
+    public static String getPackageLabel(Node decl) {
+        return decl.getUnit()==null ? "(unknown package)" : 
+            getLabel(decl.getUnit().getPackage());
+    }
+    
+    public static String getModuleLabel(Node decl) {
+        return decl.getUnit()==null ? "(unknown module)" : 
+            getLabel(decl.getUnit().getPackage().getModule());
+    }
+    
+    public static String getModuleLabel(Declaration decl) {
+        return decl.getUnit()==null ? "(unknown module)" : 
+            getLabel(decl.getUnit().getPackage().getModule());
+    }
+    
+    public static String getPackageLabel(Declaration decl) {
+        return getLabel(decl.getUnit().getPackage());
+    }
+    
     private static String getRefinementIconKey(Declaration dec) {
         if (dec.isParameter()) {
             return CEYLON_ARGUMENT;

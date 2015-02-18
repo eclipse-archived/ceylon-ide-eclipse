@@ -22,9 +22,12 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.ui.search.JavaSearchEditorOpener;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -33,14 +36,41 @@ import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     
     private CeylonStructuredContentProvider contentProvider;
+    
+    private IPropertyChangeListener propertyChangeListener;
+    
+    @Override
+    public void init(IPageSite site) {
+        super.init(site);
+        propertyChangeListener = new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                getViewer().refresh();
+            }
+        };
+        EditorUtil.getPreferences().addPropertyChangeListener(propertyChangeListener);
+    }
+    
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (propertyChangeListener!=null) {
+            EditorUtil.getPreferences().removePropertyChangeListener(propertyChangeListener);
+            propertyChangeListener = null;
+        }
+    }
     
     public CeylonSearchResultPage() {
         super(FLAG_LAYOUT_FLAT|FLAG_LAYOUT_TREE);
@@ -238,6 +268,24 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         mgr.add(submenu);
     }
     
+    @Override
+    public void makeContributions(IMenuManager menuManager,
+            IToolBarManager toolBarManager, IStatusLineManager statusLineManager) {
+        super.makeContributions(menuManager, toolBarManager, statusLineManager);
+        Action configureAction = 
+                new Action("Configure Labels...") {
+            @Override
+            public void run() {
+                PreferencesUtil.createPreferenceDialogOn(
+                        getSite().getShell(), 
+                        CeylonPreferencePage.ID, 
+                        new String[] {CeylonPreferencePage.ID}, 
+                        null).open();
+            }
+        };
+        menuManager.add(configureAction);
+    }
+    
     private class GroupAction extends Action {
         private int fGrouping;
 
@@ -264,7 +312,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     }
 
     private class LayoutAction extends Action {
-        private int fLayout;
+        private int layout;
 
         public LayoutAction(String label, String tooltip, 
                 String imageKey, int layout) {
@@ -273,13 +321,13 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             setImageDescriptor(CeylonPlugin.getInstance()
                     .getImageRegistry()
                     .getDescriptor(imageKey));
-            fLayout = layout;
+            this.layout = layout;
         }
 
         @Override
         public void run() {
-            setLayout(fLayout);
-            setChecked(getLayout()==fLayout);
+            setLayout(layout);
+            setChecked(getLayout()==layout);
         }
     }
 

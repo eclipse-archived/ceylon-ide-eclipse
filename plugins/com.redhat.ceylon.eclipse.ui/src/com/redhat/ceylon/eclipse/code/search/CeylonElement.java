@@ -1,18 +1,25 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getNodeDecorationAttributes;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StyledString;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyNode;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonElement {
     
@@ -22,6 +29,7 @@ public class CeylonElement {
     private String imageKey;
     private String packageLabel;
     private StyledString label;
+    private CeylonHierarchyNode proxy;
     private int decorations;
     private int startOffset;
     private int endOffset;
@@ -49,6 +57,10 @@ public class CeylonElement {
         //TODO: this winds up caching error decorations,
         //      so it's not really very good
         decorations = getNodeDecorationAttributes(node);
+        
+        if (node instanceof Tree.Declaration) {
+            proxy = new CeylonHierarchyNode(((Tree.Declaration) node).getDeclarationModel());
+        }
         
         if (node instanceof Tree.Declaration) {
             Declaration dec = ((Tree.Declaration) node).getDeclarationModel();
@@ -85,7 +97,17 @@ public class CeylonElement {
     }
     
     public StyledString getLabel() {
-        return label;
+        if (proxy==null) {
+            return label;
+        }
+        else {
+            IPreferenceStore prefs = EditorUtil.getPreferences();
+            return getQualifiedDescriptionFor(
+                    proxy.getDeclaration(null), 
+                    prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
+                    prefs.getBoolean(PARAMS_IN_OUTLINES),
+                    prefs.getBoolean(RETURN_TYPES_IN_OUTLINES));
+        }
     }
     
     public int getDecorations() {

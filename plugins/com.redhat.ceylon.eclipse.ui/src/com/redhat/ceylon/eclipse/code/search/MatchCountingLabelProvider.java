@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static org.eclipse.search.ui.text.AbstractTextSearchViewPage.FLAG_LAYOUT_FLAT;
+
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 
@@ -11,6 +13,11 @@ final class MatchCountingLabelProvider extends SearchResultsLabelProvider {
 
     MatchCountingLabelProvider(AbstractTextSearchViewPage page) {
         this.page = page;
+    }
+    
+    @Override
+    boolean appendLocationInfo() {
+        return page.getLayout()==FLAG_LAYOUT_FLAT;
     }
 
     @Override

@@ -44,7 +44,7 @@ public class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
     private final List<CeylonHierarchyNode> children = 
             new ArrayList<CeylonHierarchyNode>();
     
-    CeylonHierarchyNode(Declaration declaration) {
+    public CeylonHierarchyNode(Declaration declaration) {
         this.name = declaration.getName();
         this.qualifiedName = declaration.getQualifiedNameString();
         //TODO: persist the signature somehow, to handle overloads
