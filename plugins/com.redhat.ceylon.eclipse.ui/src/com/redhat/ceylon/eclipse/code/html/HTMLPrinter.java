@@ -4,16 +4,13 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 
+import org.eclipse.jface.text.DefaultInformationControl;
+import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTError;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.jface.util.Util;
-import org.eclipse.jface.text.DefaultInformationControl;
 
 /**
  * Provides a set of convenience methods for creating HTML pages.
@@ -22,8 +19,8 @@ import org.eclipse.jface.text.DefaultInformationControl;
  */
 public class HTMLPrinter {
 
-    private static RGB BG_COLOR_RGB= new RGB(255, 255, 225); // RGB value of info bg color on WindowsXP
-    private static RGB FG_COLOR_RGB= new RGB(0, 0, 0); // RGB value of info fg color on WindowsXP
+//    private static RGB BG_COLOR_RGB= new RGB(255, 255, 225); // RGB value of info bg color on WindowsXP
+//    private static RGB FG_COLOR_RGB= new RGB(0, 0, 0); // RGB value of info fg color on WindowsXP
     
     private static final String UNIT; // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=155993
     static {
@@ -31,42 +28,42 @@ public class HTMLPrinter {
     }
 
 
-    static {
-        final Display display= Display.getDefault();
-        if (display != null && !display.isDisposed()) {
-            try {
-                display.asyncExec(new Runnable() {
-                    /*
-                     * @see java.lang.Runnable#run()
-                     */
-                    public void run() {
-                        cacheColors(display);
-                        installColorUpdater(display);
-                    }
-                });
-            } catch (SWTError err) {
-                // see https://bugs.eclipse.org/bugs/show_bug.cgi?id=45294
-                if (err.code != SWT.ERROR_DEVICE_DISPOSED)
-                    throw err;
-            }
-        }
-    }
+//    static {
+//        final Display display= Display.getDefault();
+//        if (display != null && !display.isDisposed()) {
+//            try {
+//                display.asyncExec(new Runnable() {
+//                    /*
+//                     * @see java.lang.Runnable#run()
+//                     */
+//                    public void run() {
+//                        cacheColors(display);
+//                        installColorUpdater(display);
+//                    }
+//                });
+//            } catch (SWTError err) {
+//                // see https://bugs.eclipse.org/bugs/show_bug.cgi?id=45294
+//                if (err.code != SWT.ERROR_DEVICE_DISPOSED)
+//                    throw err;
+//            }
+//        }
+//    }
 
     private HTMLPrinter() {
     }
 
-    private static void cacheColors(Display display) {
-        BG_COLOR_RGB= display.getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
-        FG_COLOR_RGB= display.getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
-    }
-    
-    private static void installColorUpdater(final Display display) {
-        display.addListener(SWT.Settings, new Listener() {
-            public void handleEvent(Event event) {
-                cacheColors(display);
-            }
-        });
-    }
+//    private static void cacheColors(Display display) {
+//        BG_COLOR_RGB= display.getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
+//        FG_COLOR_RGB= display.getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
+//    }
+//    
+//    private static void installColorUpdater(final Display display) {
+//        display.addListener(SWT.Settings, new Listener() {
+//            public void handleEvent(Event event) {
+//                cacheColors(display);
+//            }
+//        });
+//    }
     
     private static String replace(String text, char c, String s) {
 
@@ -148,9 +145,9 @@ public class HTMLPrinter {
 
     public static void insertPageProlog(StringBuilder buffer, int position, RGB fgRGB, RGB bgRGB, String styleSheet) {
         if (fgRGB == null)
-            fgRGB= FG_COLOR_RGB;
+            fgRGB= fg();
         if (bgRGB == null)
-            bgRGB= BG_COLOR_RGB;
+            bgRGB= bg();
 
         StringBuilder pageProlog= new StringBuilder(300);
 
@@ -163,12 +160,26 @@ public class HTMLPrinter {
         buffer.insert(position,  pageProlog.toString());
     }
 
+    protected static RGB bg() {
+        return Display.getDefault().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
+    }
+
+    protected static RGB fg() {
+        return Display.getDefault().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
+    }
+
     private static void appendColors(StringBuilder pageProlog, RGB fgRGB, RGB bgRGB) {
-        pageProlog.append("<body text=\""); //$NON-NLS-1$
-        appendColor(pageProlog, fgRGB);
-        pageProlog.append("\" bgcolor=\""); //$NON-NLS-1$
-        appendColor(pageProlog, bgRGB);
-        pageProlog.append("\">"); //$NON-NLS-1$
+        pageProlog.append("<body");
+        if (fgRGB!=null) {
+            pageProlog.append(" text=\""); //$NON-NLS-1$
+            appendColor(pageProlog, fgRGB);
+        }
+        if (bgRGB!=null) {
+            pageProlog.append("\" bgcolor=\""); //$NON-NLS-1$
+            appendColor(pageProlog, bgRGB);
+            pageProlog.append("\"");
+        }
+        pageProlog.append(">"); //$NON-NLS-1$
     }
     
     public static String toHex(Color color) {
@@ -225,10 +236,10 @@ public class HTMLPrinter {
         
         // workaround for https://bugs.eclipse.org/318243
         StringBuilder fg= new StringBuilder();
-        appendColor(fg, FG_COLOR_RGB);
+        appendColor(fg, fg());
         styleSheet= styleSheet.replaceAll("InfoText", fg.toString()); //$NON-NLS-1$
         StringBuilder bg= new StringBuilder();
-        appendColor(bg, BG_COLOR_RGB);
+        appendColor(bg, bg());
         styleSheet= styleSheet.replaceAll("InfoBackground", bg.toString()); //$NON-NLS-1$
 
         buffer.append("<head><style CHARSET=\"ISO-8859-1\" TYPE=\"text/css\">"); //$NON-NLS-1$
@@ -252,7 +263,7 @@ public class HTMLPrinter {
     public static void insertPageProlog(StringBuilder buffer, int position) {
         StringBuilder pageProlog= new StringBuilder(60);
         pageProlog.append("<html>"); //$NON-NLS-1$
-        appendColors(pageProlog, FG_COLOR_RGB, BG_COLOR_RGB);
+        appendColors(pageProlog, fg(), bg());
         buffer.insert(position,  pageProlog.toString());
     }
 
@@ -260,7 +271,7 @@ public class HTMLPrinter {
         StringBuilder pageProlog= new StringBuilder(300);
         pageProlog.append("<html>"); //$NON-NLS-1$
         appendStyleSheetURL(pageProlog, styleSheetURL);
-        appendColors(pageProlog, FG_COLOR_RGB, BG_COLOR_RGB);
+        appendColors(pageProlog, fg(), bg());
         buffer.insert(position,  pageProlog.toString());
     }
 
