@@ -51,9 +51,13 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.debug.core.IJavaObject;
+import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
@@ -123,6 +127,8 @@ import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
+import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
+import com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -1299,7 +1305,6 @@ public class DocumentationHover extends SourceInfoHover {
                 (dec.isDeprecated() ? "</s>":"") + 
                 "</span></tt>", 
                 20, 4);
-        
     }
 
     private static void addClassMembersInfo(Declaration dec,
@@ -1613,6 +1618,7 @@ public class DocumentationHover extends SourceInfoHover {
 
     private static void addContainerInfo(Declaration dec, Node node,
             StringBuilder buffer) {
+        Unit unit = node==null ? null : node.getUnit();
         buffer.append("<p>");
         if (dec.isParameter()) {
             Declaration pd = 
@@ -1649,7 +1655,6 @@ public class DocumentationHover extends SourceInfoHover {
                 ClassOrInterface outer = (ClassOrInterface) dec.getContainer();
                 ProducedType qt = getQualifyingType(node, outer);
                 if (qt!=null) {
-                    Unit unit = node==null ? null : node.getUnit();
                     String desc;
                     if (dec instanceof Constructor) {
                         if (dec.getName().equals(outer.getName())) {
@@ -1935,7 +1940,38 @@ public class DocumentationHover extends SourceInfoHover {
                 dec instanceof Method) {
             description += getInitialValueDescription(dec, cpc);
         }
-        return HTML.highlightLine(description);
+        
+        String result = HTML.highlightLine(description);
+        
+        if (dec instanceof TypeParameter && unit != null) {
+            StringBuilder buffer = new StringBuilder();
+            
+            TypeParameter typeParameter = (TypeParameter) dec;
+            JDIStackFrame stackFrame = DebugUtils.getFrame();
+            ProducedType producedType = null;
+            if (stackFrame != null) {
+                try {
+                    IJavaVariable typeDescriptor = CeylonDebugHover.jdiVariableForTypeParameter(stackFrame.getJavaDebugTarget(), stackFrame, typeParameter);
+                    if (typeDescriptor != null) {
+                        IJavaObject jdiProducedType = DebugUtils.getJdiProducedType(typeDescriptor.getValue());
+                        producedType = DebugUtils.toModelProducedType(jdiProducedType);
+                    }
+                } catch (DebugException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            if (producedType != null) {
+                buffer.append("<i> ( = ")
+                .append("<tt>")
+                .append(producedTypeLink(producedType, unit))
+                .append("</tt>");
+                buffer.append(" )</i>");
+                result += buffer.toString();
+            }
+        }
+        
+        return result;
     }
 
     private static void appendJavadoc(Declaration model, IProject project,

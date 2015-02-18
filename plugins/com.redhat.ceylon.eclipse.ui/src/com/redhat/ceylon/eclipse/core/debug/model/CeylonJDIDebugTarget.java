@@ -257,7 +257,7 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
             notifyAll();
         }
         
-        synchronized IJavaValue waitForResult(long timeout) {
+        synchronized public IJavaValue waitForResult(long timeout) {
             if (!finished) {
                 try {
                     wait(timeout);

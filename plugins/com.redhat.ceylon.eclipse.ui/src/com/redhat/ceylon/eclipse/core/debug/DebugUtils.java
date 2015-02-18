@@ -1,14 +1,19 @@
 package com.redhat.ceylon.eclipse.core.debug;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.core.model.IDebugTarget;
+import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
@@ -16,24 +21,42 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.debug.core.IJavaClassType;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
+import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
+import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
+import org.eclipse.jdt.debug.core.IJavaValue;
+import org.eclipse.jdt.internal.debug.core.model.JDIClassType;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
+import org.eclipse.jdt.internal.debug.core.model.JDINullValue;
+import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.codegen.Naming.Suffix;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
 import com.redhat.ceylon.compiler.java.language.LazyIterable;
+import com.redhat.ceylon.compiler.java.runtime.metamodel.Metamodel;
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
+import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.LazyProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
+import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationListener;
+import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationRunner;
+import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationWaiter;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
@@ -207,7 +230,7 @@ public class DebugUtils {
         return project == null ? null : getPhasedUnit(frame, project);
     }
 
-    public static Declaration getCeylonDeclaration(
+    public static Declaration getSourceDeclaration(
             IJavaStackFrame frame) {
         IJavaProject project = getProject(frame);
         if (project == null) {
@@ -222,7 +245,7 @@ public class DebugUtils {
         return null;
     }
 
-    public static Declaration getCeylonDeclaration(
+    public static Declaration getSourceDeclaration(
             IJavaObject object) {
         IJavaProject project = getProject(object);
         if (project == null) {
@@ -241,6 +264,327 @@ public class DebugUtils {
         return null;
     }
 
+    public static Declaration getDeclaration(
+            IJavaObject object) {
+        Declaration declaration = getSourceDeclaration(object);
+        if (declaration == null) {
+            try {
+                declaration = getModelDeclaration(object);
+            } catch (DebugException e) {
+                e.printStackTrace();
+            }
+        }
+        return declaration;
+    }
+    
+    private interface ProducedTypeAction<ReturnType extends IJavaValue> {
+        ReturnType doOnProducedType(IJavaObject producedType, 
+                IJavaThread innerThread, 
+                IProgressMonitor monitor) throws DebugException;
+    }
+    
+    public static JDIClassType getMetaModelClass(JDIDebugTarget debugTarget) {
+        IJavaType[] types = null;
+        try {
+            types = debugTarget.getJavaTypes(Metamodel.class.getName());
+        } catch (DebugException e) {
+            e.printStackTrace();
+        }
+        if (types != null && types.length > 0) {
+            return (JDIClassType) types[0];
+        }
+        return null;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static <ReturnType extends IJavaValue> ReturnType doOnJdiProducedType(IValue value, final ProducedTypeAction<ReturnType> postAction) {
+        if (value instanceof JDINullValue) {
+            return null;
+        }
+        if (value instanceof JDIObjectValue) {
+            try {
+                final IJavaReferenceType type = (IJavaReferenceType)((JDIObjectValue)value).getJavaType();
+                final String typeName = type.getName();
+                if (typeName.endsWith("$impl")) {
+                    IJavaFieldVariable thisField = ((JDIObjectValue) value).getField("$this", 0);
+                    value = null;
+                    if (thisField != null) {
+                        IValue fieldValue = thisField.getValue();
+                        if (fieldValue instanceof IJavaObject && 
+                                !(fieldValue instanceof JDINullValue)) {
+                            value = fieldValue;
+                        }
+                    }
+                }
+                if (value != null) {
+                    final IJavaValue javaValue = (IJavaValue) value;
+                    final JDIDebugTarget debugTarget = ((JDIObjectValue) value).getJavaDebugTarget();
+                    if (debugTarget instanceof CeylonJDIDebugTarget) {
+                        IJavaValue reifiedTypeInfo = ((CeylonJDIDebugTarget) debugTarget).getEvaluationResult(new EvaluationRunner() {
+                            @Override
+                            public void run(IJavaThread innerThread, IProgressMonitor monitor,
+                                    EvaluationListener listener) throws DebugException {
+
+                                IJavaValue producedType = null;
+                                IJavaValue typeDescriptor = null;
+                                if (typeName.contains("ProducedType")) {
+                                    try {
+                                        Class<?> producedTypeClass = ProducedType.class.getClassLoader().loadClass(javaValue.getReferenceTypeName());
+                                        if (producedTypeClass != null &&
+                                                ProducedType.class.isAssignableFrom(producedTypeClass)) {
+                                            producedType = javaValue;
+                                        }
+                                    } catch (ClassNotFoundException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else if (typeName.contains("TypeDescriptor")) {
+                                    try {
+                                        Class<?> typeDescriptorClass = TypeDescriptor.class.getClassLoader().loadClass(javaValue.getReferenceTypeName());
+                                        if (typeDescriptorClass != null &&
+                                                TypeDescriptor.class.isAssignableFrom(typeDescriptorClass)) {
+                                            typeDescriptor = javaValue;
+                                        }
+                                    } catch (ClassNotFoundException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                if (producedType == null) {
+                                    JDIClassType metamodelType = getMetaModelClass(((JDIObjectValue) javaValue).getJavaDebugTarget());
+                                    if (metamodelType != null) {
+                                        if (typeDescriptor == null) {
+                                            typeDescriptor = metamodelType.sendMessage("getTypeDescriptor", "(Ljava/lang/Object;)Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;", new IJavaValue[] {javaValue}, innerThread);
+                                            
+                                        }
+                                        if (typeDescriptor instanceof IJavaObject && ! (typeDescriptor instanceof JDINullValue)) {
+                                            producedType = metamodelType.sendMessage("getProducedType", "(Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;)Lcom/redhat/ceylon/compiler/typechecker/model/ProducedType;", new IJavaValue[] {typeDescriptor}, innerThread);
+                                        }
+                                    }
+                                }
+
+                                if (producedType instanceof IJavaObject) {
+                                    listener.finished(postAction.doOnProducedType((IJavaObject)producedType, innerThread, monitor));
+                                } else {
+                                    listener.finished(null);
+                                }
+                            }
+                        }, 5000);
+                        return (ReturnType)reifiedTypeInfo;
+                    }
+                }
+            } catch (DebugException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+    
+    public static String getProducedTypeName(IValue value) throws DebugException {
+        IJavaValue reifiedTypeNameValue = doOnJdiProducedType(value, new ProducedTypeAction<IJavaValue>() {
+            @Override
+            public IJavaValue doOnProducedType(IJavaObject producedType,
+                    IJavaThread innerThread, IProgressMonitor monitor)
+            throws DebugException {
+                if (producedType instanceof IJavaObject && ! (producedType instanceof JDINullValue)) {
+                    IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("getProducedTypeName", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lcom/redhat/ceylon/compiler/typechecker/model/ProducedType;");
+                    return producedTypeName;
+                }
+                return null;
+            }
+        });
+        
+        if (reifiedTypeNameValue instanceof JDIObjectValue  && !(reifiedTypeNameValue instanceof JDINullValue)) {
+            String reifiedTypeName;
+            reifiedTypeName = reifiedTypeNameValue.getValueString();
+            return reifiedTypeName;
+        }
+        
+        return null;
+    }
+    
+    public static IJavaObject getJdiProducedType(IValue value) throws DebugException {
+        return doOnJdiProducedType(value, new ProducedTypeAction<IJavaObject>() {
+            @Override
+            public IJavaObject doOnProducedType(IJavaObject producedType,
+                    IJavaThread innerThread, IProgressMonitor monitor)
+            throws DebugException {
+                return producedType;
+            }
+        });
+    }
+    
+
+    public static Declaration getModelDeclaration(IJavaObject jdiObject) throws DebugException {
+        return getModelDeclaration(jdiObject, null);
+    }   
+    
+    private static Declaration getModelDeclaration(IJavaObject jdiObject, IJavaThread evaluationThread) throws DebugException {
+        IJavaObject jdiDeclaration = getJdiDeclaration(jdiObject);
+
+        if (! (jdiDeclaration instanceof JDIObjectValue)) {
+            return null;
+        }
+
+        final CeylonJDIDebugTarget debugTarget = (CeylonJDIDebugTarget)((JDIObjectValue) jdiDeclaration).getJavaDebugTarget();
+        return toModelDeclaration(evaluationThread, debugTarget, jdiDeclaration);
+    }
+    
+    public static ProducedType getModelProducedType(IJavaObject jdiObject) throws DebugException {
+        return getModelProducedType(jdiObject, null);
+    }   
+    
+    private static ProducedType getModelProducedType(IJavaObject jdiObject, IJavaThread evaluationThread) throws DebugException {
+        IJavaObject jdiProducedType = getJdiProducedType(jdiObject);
+
+        if (! (jdiProducedType instanceof JDIObjectValue)) {
+            return null;
+        }
+
+        return toModelProducedType(jdiProducedType, evaluationThread);
+    }
+
+    
+    public static ProducedType toModelProducedType(IJavaObject jdiProducedType) throws DebugException {
+        return toModelProducedType(jdiProducedType, null);
+    }   
+    
+    private static ProducedType toModelProducedType(IJavaObject jdiProducedType, IJavaThread evaluationThread) throws DebugException {
+        if (! (jdiProducedType instanceof JDIObjectValue)) {
+            return null;
+        }
+
+        final CeylonJDIDebugTarget debugTarget = (CeylonJDIDebugTarget)((JDIObjectValue) jdiProducedType).getJavaDebugTarget();
+
+        final IJavaObject jdiDeclaration = toJdiDeclaration(jdiProducedType);
+        
+        Declaration declaration = toModelDeclaration(evaluationThread,
+                debugTarget, jdiDeclaration);
+        if (declaration instanceof TypeDeclaration) {
+            Unit unit = declaration.getUnit();
+            final TypeDeclaration typeDeclaration = (TypeDeclaration) declaration;
+            final List<TypeParameter> typeParameters = typeDeclaration.getTypeParameters();
+            final List<ProducedType> typeArguments = new ArrayList<>(typeParameters.size());
+            ProducedTypeAction<IJavaValue> produceTypeAction = new ProducedTypeAction<IJavaValue>() {
+                @Override
+                public IJavaValue doOnProducedType(IJavaObject producedType,
+                        IJavaThread innerThread, IProgressMonitor monitor)
+                        throws DebugException {
+                    IJavaObject producedTypeList = (IJavaObject) producedType.sendMessage("getTypeArgumentList", "()Ljava/util/List;", new IJavaValue[] {}, innerThread, null);
+                    if (producedTypeList instanceof IJavaObject) {
+                        IJavaValue size = ((IJavaObject)producedTypeList).sendMessage("size", "()I", new IJavaValue[] {}, innerThread, null);
+                        if (size instanceof IJavaPrimitiveValue) {
+                            final int intSize = ((IJavaPrimitiveValue)size).getIntValue();
+                            if (intSize != typeParameters.size()) {
+                                return debugTarget.newValue(false);
+                            }
+                            int i;
+                            for (i = 0; i<intSize; i++) {
+                                IJavaValue childTypeValue = ((IJavaObject)producedTypeList).sendMessage("get", "(I)Ljava/lang/Object;", new IJavaValue[] {debugTarget.newValue(i)}, innerThread, null);
+                                if (childTypeValue instanceof IJavaObject) {
+                                    ProducedType childType = toModelProducedType((IJavaObject)childTypeValue, innerThread);
+                                    if (childType == null) {
+                                        break;
+                                    }
+                                    typeArguments.add(childType);
+                                }
+                            }
+                            if (i == intSize) {
+                                return debugTarget.newValue(true);
+                            }
+                        }
+                    }
+                    return debugTarget.newValue(false);
+                }
+            };
+            IJavaValue result = null;
+            if (evaluationThread == null) {
+                result = doOnJdiProducedType(jdiProducedType, produceTypeAction);
+            } else {
+                result = produceTypeAction.doOnProducedType(jdiProducedType, evaluationThread, null);
+            }
+            if (result instanceof IJavaPrimitiveValue &&
+                    ((IJavaPrimitiveValue) result).getBooleanValue()) {
+                final Map<TypeParameter, ProducedType> typeArgumentMap = new HashMap<>();
+                for (int i = 0; i< typeParameters.size(); i++) {
+                    typeArgumentMap.put(typeParameters.get(i), typeArguments.get(i));
+                }
+                return new LazyProducedType(unit) {
+
+                    @Override
+                    public Map<TypeParameter, ProducedType> initTypeArguments() {
+                        return typeArgumentMap;
+                    }
+
+                    @Override
+                    public TypeDeclaration initDeclaration() {
+                        return typeDeclaration;
+                    }
+                    
+                };
+            }
+        }
+        return null;
+    }
+
+    public static Declaration toModelDeclaration(IJavaThread evaluationThread,
+            final CeylonJDIDebugTarget debugTarget,
+            final IJavaObject jdiDeclaration) throws DebugException {
+        if (jdiDeclaration == null) {
+            return null;
+        }
+        
+        EvaluationRunner runner = new EvaluationRunner() {
+            @Override
+            public void run(IJavaThread innerThread, IProgressMonitor monitor,
+                    EvaluationListener listener) throws DebugException {
+                IJavaValue qualifiedStringValue = jdiDeclaration.sendMessage("getQualifiedNameString", "()Ljava/lang/String;", new IJavaValue[0], innerThread, "Lcom/redhat/ceylon/compiler/typechecker/model/Declaration;");
+                listener.finished(qualifiedStringValue);
+            }
+        };
+        
+        IJavaValue nameFieldValue = null;
+        if (evaluationThread == null) {
+            nameFieldValue = debugTarget.getEvaluationResult(runner, 5000);
+        } else {
+            EvaluationWaiter waiter = new EvaluationWaiter();
+            runner.run(evaluationThread, null, waiter);
+            nameFieldValue = waiter.waitForResult(5000);
+        }
+        
+
+        IJavaProject javaProject = DebugUtils.getProject(jdiDeclaration);
+        JDTModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(javaProject.getProject());
+        String qualifiedName = nameFieldValue.getValueString();
+        String[] qualifiedNameParts = qualifiedName.split("::");
+        Declaration declaration = null;
+        if (qualifiedNameParts.length > 1) {
+            String packageName = modelLoader.getPackageNameForQualifiedClassName(qualifiedNameParts[0], qualifiedName);
+            Module module = modelLoader.lookupModuleByPackageName(packageName);
+            declaration = modelLoader.convertToDeclaration(module, qualifiedName.replace("::",  "."), DeclarationType.TYPE);
+        }
+        return declaration;
+    }
+    
+    
+    public static IJavaObject toJdiDeclaration(IJavaObject jdiProducedType) throws DebugException {
+        if (jdiProducedType != null) {
+            IJavaFieldVariable fieldVariable = jdiProducedType.getField("declaration", true);
+            if (fieldVariable != null) {
+                IValue declValue = fieldVariable.getValue();
+                if (declValue instanceof IJavaObject) {
+                    return (IJavaObject) declValue;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static IJavaObject getJdiDeclaration(IValue value) throws DebugException {
+        IJavaObject jdiProducedType = getJdiProducedType(value);
+        return toJdiDeclaration(jdiProducedType);
+    }
+    
+    
     public static boolean isCeylonFrame(IJavaStackFrame frame) {
         try {
             if (frame.getSourceName() != null

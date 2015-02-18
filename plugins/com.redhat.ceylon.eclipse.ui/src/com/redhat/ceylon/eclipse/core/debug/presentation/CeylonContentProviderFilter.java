@@ -2,9 +2,11 @@ package com.redhat.ceylon.eclipse.core.debug.presentation;
 
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.debug.core.DebugException;
@@ -14,15 +16,20 @@ import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationCont
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jdt.internal.debug.core.logicalstructures.JDIPlaceholderVariable;
+import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.jdt.internal.debug.core.model.JDIFieldVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDILocalVariable;
+import org.eclipse.jdt.internal.debug.core.model.JDIValue;
 
+import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.language.VariableBox;
+import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
 
 public class CeylonContentProviderFilter {
     public static Object[] filterVariables(Object[] variables, IPresentationContext context) throws DebugException {
-        List<Object> keep = new ArrayList<Object>(variables.length);
+        List<Object> keep = new LinkedList<Object>();
         Set<String> localVariableCeylonNames = new HashSet<>();
+        Map<String, JDIValue> typeParameters = new HashMap<String, JDIValue>();
         
         for (int i = 0; i < variables.length; i++) {
             boolean filter = false;
@@ -30,11 +37,33 @@ public class CeylonContentProviderFilter {
                 IJavaVariable variable = (IJavaVariable) variables[i];
                 boolean isLocalVariable = variable instanceof JDILocalVariable;
                 do {
+                    String name = variable.getName();
+                    if (name.startsWith(Naming.Prefix.$reified$.toString())) {
+                        String typeParameterName = name.substring(Naming.Prefix.$reified$.toString().length());
+                        JDIDebugTarget debugTarget = (JDIDebugTarget) variable.getDebugTarget();
+                        IJavaValue value = (IJavaValue) variable.getValue();
+                        String reifiedTypeName = DebugUtils.getProducedTypeName(value);
+                        if (reifiedTypeName != null) {
+                            typeParameters.put(typeParameterName, new JDIValue(debugTarget, debugTarget.getVM().mirrorOf(reifiedTypeName)) {
+                                IVariable[] variables = new IVariable[0];
+                                @Override
+                                public boolean hasVariables()
+                                        throws DebugException {
+                                    return false;
+                                }
+                                @Override
+                                public IVariable[] getVariables()
+                                        throws DebugException {
+                                    return variables;
+                                }
+                            });
+                        }
+                    }
                     if (variable.isSynthetic()) {
                         filter = true;
                         break;
                     }
-                    String fixedName = fixVariableName(variable.getName(), 
+                    String fixedName = fixVariableName(name, 
                             isLocalVariable, false);
                     if (fixedName.contains("$")){
                         filter = true;
@@ -62,6 +91,11 @@ public class CeylonContentProviderFilter {
                 keep.set(i, replacedVariable);
             }
         }
+        if (! typeParameters.isEmpty()) {
+            JDIPlaceholderVariable typeParametersNode = new JDIPlaceholderVariable("Type Parameters", new JDITypeParameterNodeValue(typeParameters));
+            keep.add(typeParametersNode);
+        }
+        
         return keep.toArray(new Object[keep.size()]);
     }
 
