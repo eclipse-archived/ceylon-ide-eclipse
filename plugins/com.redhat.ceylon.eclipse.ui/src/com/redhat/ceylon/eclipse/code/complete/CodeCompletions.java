@@ -725,7 +725,13 @@ public class CodeCompletions {
                 type = pr.getType();
             }
             if (isSequenced && type!=null) {
-                type = unit.getIteratedType(type);
+//                type = unit.getIteratedType(type);
+                //TODO: nasty workaround because unit can be null
+                //      in docs for Open dialogs
+                List<ProducedType> args = type.getTypeArgumentList();
+                if (args.size()>0) {
+                    type = args.get(0);
+                }
             }
             if (type==null) {
                 type = new UnknownType(unit).getType();
