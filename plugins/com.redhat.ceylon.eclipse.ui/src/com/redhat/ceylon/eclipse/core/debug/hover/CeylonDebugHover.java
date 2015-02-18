@@ -419,7 +419,9 @@ public class CeylonDebugHover extends SourceInfoHover {
                                                         new IJavaValue[0], innerThread, false));
                                     }
                                 }, 5000);
-                                return new JDIPlaceholderVariable(searchedDeclaration.getName(), result);
+                                if (result != null) {
+                                    return new JDIPlaceholderVariable(searchedDeclaration.getName(), result);
+                                }
                             }
                         }
                     } catch (DebugException e) {
@@ -427,7 +429,6 @@ public class CeylonDebugHover extends SourceInfoHover {
                     }
                 }
             }
-
 
             // Simple fields
             return findCeylonField(currentClassScope, searchedDeclaration.getName());
