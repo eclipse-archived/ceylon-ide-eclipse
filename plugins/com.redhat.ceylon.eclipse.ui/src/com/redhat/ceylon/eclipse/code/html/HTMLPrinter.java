@@ -161,11 +161,23 @@ public class HTMLPrinter {
     }
 
     protected static RGB bg() {
-        return Display.getDefault().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
+        return getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+    }
+
+    protected static RGB getSystemColor(final int systemColor) {
+        final RGB[] rgb = new RGB[1];
+        Display.getDefault().syncExec(new Runnable() {
+            
+            @Override
+            public void run() {
+                rgb[0] = Display.getDefault().getSystemColor(systemColor).getRGB();
+            }
+        }); 
+        return rgb[0];
     }
 
     protected static RGB fg() {
-        return Display.getDefault().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
+        return getSystemColor(SWT.COLOR_INFO_FOREGROUND);
     }
 
     private static void appendColors(StringBuilder pageProlog, RGB fgRGB, RGB bgRGB) {
