@@ -12,6 +12,7 @@ import static org.eclipse.jdt.core.Signature.getSignatureSimpleName;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
@@ -29,7 +30,6 @@ import org.eclipse.swt.graphics.Image;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -140,7 +140,12 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             catch (Exception e) {
                 e.printStackTrace();
             }
-            styledString.append(' ').append(name, ID_STYLER);
+            styledString.append(' ');
+            IJavaElement parent = je.getParent();
+            if (parent instanceof IType) {
+                styledString.append(parent.getElementName(), TYPE_ID_STYLER).append('.');
+            }
+            styledString.append(name, ID_STYLER);
             if (prefs.getBoolean(PARAMS_IN_OUTLINES)) {
                 try {
                     styledString.append('(');
@@ -227,9 +232,9 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             IJavaElement pkg = ((IJavaElement) je.getOpenable()).getParent();
             styledString.append(" - ", PACKAGE_STYLER)
                         .append(pkg.getElementName(), PACKAGE_STYLER);
-            IFile file = (IFile) je.getResource();
-            if (file!=null) {
-                styledString.append(" - " + file.getFullPath().toString(), COUNTER_STYLER);
+            IPath path = je.getPath();
+            if (path!=null) {
+                styledString.append(" - " + path.toOSString(), COUNTER_STYLER);
             }
         }
         return styledString;
