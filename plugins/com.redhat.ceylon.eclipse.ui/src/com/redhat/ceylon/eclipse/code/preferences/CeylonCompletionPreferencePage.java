@@ -7,7 +7,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT_PREFIX;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_PARAMETER_TYPES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INACTIVE_COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE;
@@ -89,7 +89,7 @@ public class CeylonCompletionPreferencePage
     protected void createFieldEditors() {
         
         final Composite group1 = createGroup(1, "General");
-        displayParameterTypes = new BooleanFieldEditor(DISPLAY_PARAMETER_TYPES, 
+        displayParameterTypes = new BooleanFieldEditor(PARAMETER_TYPES_IN_COMPLETIONS, 
                 "Display parameter types in completion proposals", 
                 getFieldEditorParent(group1));
         displayParameterTypes.load();

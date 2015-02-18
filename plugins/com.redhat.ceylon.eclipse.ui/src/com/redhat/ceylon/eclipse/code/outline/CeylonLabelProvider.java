@@ -4,7 +4,9 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_RETURN_TYPES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
@@ -491,7 +493,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     private static void appendPostfixType(Tree.TypedDeclaration td,
             StyledString label) {
-        if (EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES)) {
+        if (EditorUtil.getPreferences().getBoolean(RETURN_TYPES_IN_OUTLINES)) {
             Tree.Type type = td.getType();
             if (type!=null && 
                     !(type instanceof Tree.DynamicModifier) &&
@@ -771,52 +773,56 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     private static void parameters(Tree.ParameterList pl, StyledString label) {
-        if (pl==null ||
-                pl.getParameters().isEmpty()) {
-            label.append("()");
-        }
-        else {
-            label.append("(");
-            int len = pl.getParameters().size(), i=0;
-            for (Tree.Parameter p: pl.getParameters()) {
-                if (p!=null) {
-                    if (p instanceof Tree.ParameterDeclaration) {
-                        Tree.TypedDeclaration td = 
-                                ((Tree.ParameterDeclaration) p).getTypedDeclaration();
-                        label.append(type(td.getType(), td))
+        if (EditorUtil.getPreferences().getBoolean(PARAMS_IN_OUTLINES)) {
+            if (pl==null ||
+                    pl.getParameters().isEmpty()) {
+                label.append("()");
+            }
+            else {
+                label.append("(");
+                int len = pl.getParameters().size(), i=0;
+                for (Tree.Parameter p: pl.getParameters()) {
+                    if (p!=null) {
+                        if (p instanceof Tree.ParameterDeclaration) {
+                            Tree.TypedDeclaration td = 
+                                    ((Tree.ParameterDeclaration) p).getTypedDeclaration();
+                            label.append(type(td.getType(), td))
                             .append(" ")
                             .append(name(td.getIdentifier()), ID_STYLER);
-                        if (p instanceof Tree.FunctionalParameterDeclaration) {
-                            for (Tree.ParameterList ipl: 
-                                ((Tree.MethodDeclaration) td).getParameterLists()) {
-                                parameters(ipl, label);
+                            if (p instanceof Tree.FunctionalParameterDeclaration) {
+                                for (Tree.ParameterList ipl: 
+                                    ((Tree.MethodDeclaration) td).getParameterLists()) {
+                                    parameters(ipl, label);
+                                }
                             }
                         }
+                        else if (p instanceof Tree.InitializerParameter) {
+                            Tree.Identifier id = ((Tree.InitializerParameter) p).getIdentifier();
+                            label.append(name(id), ID_STYLER);
+                        }
                     }
-                    else if (p instanceof Tree.InitializerParameter) {
-                        Tree.Identifier id = ((Tree.InitializerParameter) p).getIdentifier();
-                        label.append(name(id), ID_STYLER);
-                    }
+                    if (++i<len) label.append(", ");
                 }
-                if (++i<len) label.append(", ");
+                label.append(")");
             }
-            label.append(")");
         }
     }
     
     private static void parameters(Tree.TypeParameterList tpl, StyledString label) {
-        if (tpl!=null &&
-                !tpl.getTypeParameterDeclarations().isEmpty()) {
-            label.append("<");
-            int len = tpl.getTypeParameterDeclarations().size(), i=0;
-            for (Tree.TypeParameterDeclaration p: tpl.getTypeParameterDeclarations()) {
-                if (p.getTypeVariance()!=null) {
-                    label.append(p.getTypeVariance().getText(), KW_STYLER).append(" "); 
+        if (EditorUtil.getPreferences().getBoolean(TYPE_PARAMS_IN_OUTLINES)) {
+            if (tpl!=null &&
+                    !tpl.getTypeParameterDeclarations().isEmpty()) {
+                label.append("<");
+                int len = tpl.getTypeParameterDeclarations().size(), i=0;
+                for (Tree.TypeParameterDeclaration p: tpl.getTypeParameterDeclarations()) {
+                    if (p.getTypeVariance()!=null) {
+                        label.append(p.getTypeVariance().getText(), KW_STYLER).append(" "); 
+                    }
+                    label.append(name(p.getIdentifier()), TYPE_STYLER);
+                    if (++i<len) label.append(", ");
                 }
-                label.append(name(p.getIdentifier()), TYPE_STYLER);
-                if (++i<len) label.append(", ");
+                label.append(">");
             }
-            label.append(">");
         }
     }
     

@@ -4,7 +4,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INACTIVE_OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPES_IN_DIALOGS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_DIALOGS;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
@@ -60,7 +60,7 @@ public class CeylonOpenDialogsPreferencePage
                 getFieldEditorParent(group));
         params.load();
         addField(params);
-        types = new BooleanFieldEditor(TYPES_IN_DIALOGS, 
+        types = new BooleanFieldEditor(RETURN_TYPES_IN_DIALOGS, 
                 "Display return types", 
                 getFieldEditorParent(group));
         types.load();

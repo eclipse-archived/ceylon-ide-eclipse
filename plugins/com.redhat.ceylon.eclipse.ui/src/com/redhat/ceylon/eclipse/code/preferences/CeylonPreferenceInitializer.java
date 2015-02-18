@@ -28,8 +28,10 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String PASTE_CORRECT_INDENTATION = "pasteCorrectIndentation";
     public static final String PASTE_ESCAPE_QUOTED = "pasteEscapeQuoted";
     public static final String PASTE_IMPORTS = "pasteImports";
-    public static final String DISPLAY_RETURN_TYPES = "displayReturnTypes";
-    public static final String DISPLAY_PARAMETER_TYPES = "displayParameterTypes";
+    public static final String RETURN_TYPES_IN_OUTLINES = "displayReturnTypes";
+    public static final String PARAMS_IN_OUTLINES = "displayParameters";
+    public static final String TYPE_PARAMS_IN_OUTLINES = "displayTypeParameters";
+    public static final String PARAMETER_TYPES_IN_COMPLETIONS = "displayParameterTypes";
     public static final String CLOSE_PARENS = "closeParens";
     public static final String CLOSE_BRACKETS = "closeBrackets";
     public static final String CLOSE_ANGLES = "closeAngles";
@@ -49,7 +51,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String DEFAULT_RESOURCE_FOLDER = "defaultResourceFolder";
     public static final String PARAMS_IN_DIALOGS = "paramsInDialogs";
     public static final String TYPE_PARAMS_IN_DIALOGS = "typeParamsInDialogs";
-    public static final String TYPES_IN_DIALOGS = "typesInDialogs";
+    public static final String RETURN_TYPES_IN_DIALOGS = "typesInDialogs";
 
     public CeylonPreferenceInitializer() {}
 
@@ -70,8 +72,10 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PASTE_CORRECT_INDENTATION, true);
         store.setDefault(PASTE_ESCAPE_QUOTED, true);
         store.setDefault(PASTE_IMPORTS, true);
-        store.setDefault(DISPLAY_RETURN_TYPES, false);
-        store.setDefault(DISPLAY_PARAMETER_TYPES, true);
+        store.setDefault(RETURN_TYPES_IN_OUTLINES, false);
+        store.setDefault(TYPE_PARAMS_IN_OUTLINES, true);
+        store.setDefault(PARAMS_IN_OUTLINES, true);
+        store.setDefault(PARAMETER_TYPES_IN_COMPLETIONS, true);
         store.setDefault(NORMALIZE_WS, false);
         store.setDefault(NORMALIZE_NL, false);
         store.setDefault(STRIP_TRAILING_WS, false);
@@ -91,6 +95,6 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DEFAULT_PROJECT_TYPE, "jvm");
         store.setDefault(TYPE_PARAMS_IN_DIALOGS, true);
         store.setDefault(PARAMS_IN_DIALOGS, true);
-        store.setDefault(TYPES_IN_DIALOGS, false);
+        store.setDefault(RETURN_TYPES_IN_DIALOGS, false);
    }
 }

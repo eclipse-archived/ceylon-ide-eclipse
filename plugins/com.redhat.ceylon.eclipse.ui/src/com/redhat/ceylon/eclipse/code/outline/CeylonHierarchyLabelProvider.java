@@ -3,9 +3,13 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MULTIPLE_TYPES_IMAGE;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -14,6 +18,7 @@ import org.eclipse.swt.custom.StyleRange;
 
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 abstract class CeylonHierarchyLabelProvider extends
@@ -38,7 +43,11 @@ abstract class CeylonHierarchyLabelProvider extends
         if (d==null) {
         	return new StyledString();
         }
-        StyledString result = getQualifiedDescriptionFor(d);
+        IPreferenceStore prefs = EditorUtil.getPreferences();
+        StyledString result = getQualifiedDescriptionFor(d, 
+                prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
+                prefs.getBoolean(PARAMS_IN_OUTLINES),
+                prefs.getBoolean(RETURN_TYPES_IN_OUTLINES));
         /*if (d.isClassOrInterfaceMember()) {
             Declaration container = (Declaration) d.getContainer();
             result.append(" in ")

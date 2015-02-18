@@ -3,8 +3,8 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_PARAMETER_TYPES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_RETURN_TYPES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
@@ -318,7 +318,7 @@ public class CodeCompletions {
     
     public static StyledString getQualifiedDescriptionFor(Declaration d) {
         return getQualifiedDescriptionFor(d, true, true, 
-                EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES));
+                EditorUtil.getPreferences().getBoolean(RETURN_TYPES_IN_OUTLINES));
     }
     
     public static StyledString getQualifiedDescriptionFor(Declaration d, 
@@ -365,7 +365,7 @@ public class CodeCompletions {
             appendTypeParameters(d, result, true);
             appendParametersDescription(d, result);
             if (d instanceof TypedDeclaration) {
-                if (EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES)) {
+                if (EditorUtil.getPreferences().getBoolean(RETURN_TYPES_IN_OUTLINES)) {
                     TypedDeclaration td = (TypedDeclaration) d;
                     if (!td.isParameter() && 
                             !td.isDynamicallyTyped() &&
@@ -411,7 +411,7 @@ public class CodeCompletions {
             }
             else {
                 boolean paramTypes = descriptionOnly && 
-                        EditorUtil.getPreferences().getBoolean(DISPLAY_PARAMETER_TYPES);
+                        EditorUtil.getPreferences().getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                 result.append("(");
                 for (Parameter p: params) {
                     ProducedTypedReference typedParameter = 
@@ -504,7 +504,7 @@ public class CodeCompletions {
             }
             else {
                 boolean paramTypes = descriptionOnly && 
-                        EditorUtil.getPreferences().getBoolean(DISPLAY_PARAMETER_TYPES);
+                        EditorUtil.getPreferences().getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                 result.append(" { ");
                 for (Parameter p: params) {
                     String name = descriptionOnly ? 

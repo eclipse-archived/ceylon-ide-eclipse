@@ -9,7 +9,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModu
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPES_IN_DIALOGS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
@@ -79,8 +79,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     private int filterVersion = 0;
     
-    private boolean showSelectionPackage = true;
-    private boolean showSelectionModule = true;
+    private boolean showSelectionPackage;
+    private boolean showSelectionModule;
     
     private TogglePackageAction togglePackageAction;
     private ToggleModuleAction toggleModuleAction;
@@ -452,7 +452,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                             getQualifiedDescriptionFor(d,
                                     prefs.getBoolean(TYPE_PARAMS_IN_DIALOGS),
                                     prefs.getBoolean(PARAMS_IN_DIALOGS),
-                                    prefs.getBoolean(TYPES_IN_DIALOGS));
+                                    prefs.getBoolean(RETURN_TYPES_IN_DIALOGS));
                     if (nameOccursMultipleTimes(d)) {
                         label.append(" - ", PACKAGE_STYLER)
                              .append(getPackageLabel(d), PACKAGE_STYLER)

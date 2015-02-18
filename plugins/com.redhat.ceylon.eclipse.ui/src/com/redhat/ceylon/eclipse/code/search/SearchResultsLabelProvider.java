@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_RETURN_TYPES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
@@ -139,7 +139,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             catch (Exception e) {
                 e.printStackTrace();
             }
-            if (EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES)) {
+            if (EditorUtil.getPreferences().getBoolean(RETURN_TYPES_IN_OUTLINES)) {
                 try {
                     String returnType = ((IMethod) je).getReturnType();
                     styledString.append(" ∊ ");
@@ -163,7 +163,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                 e.printStackTrace();
             }*/
             styledString.append(' ').append(name, ID_STYLER);
-            if (EditorUtil.getPreferences().getBoolean(DISPLAY_RETURN_TYPES)) {
+            if (EditorUtil.getPreferences().getBoolean(RETURN_TYPES_IN_OUTLINES)) {
                 try {
                     String type = ((IField) je).getTypeSignature();
                     styledString.append(" ∊ ");

@@ -3,7 +3,9 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DISPLAY_RETURN_TYPES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
@@ -24,6 +26,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonStepFilterPreferencePage;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonPreferencePage extends FieldEditorPreferencePage 
@@ -33,7 +36,11 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
     private StringFieldEditor resourceFolder;
     private RadioGroupFieldEditor projectType;
     private BooleanFieldEditor displayOutlineTypes;
-
+    private BooleanFieldEditor displayOutlineParameters;
+    private BooleanFieldEditor displayOutlineTypeParameters;
+    
+    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences";
+    
     public CeylonPreferencePage() {
         super(GRID);
         setDescription("Preferences relating to Ceylon development.");
@@ -164,11 +171,21 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
     @Override
     protected void createFieldEditors() {
         final Composite outlines = createGroup(1, "Outlines");
-        displayOutlineTypes = new BooleanFieldEditor(DISPLAY_RETURN_TYPES, 
+        displayOutlineTypes = new BooleanFieldEditor(RETURN_TYPES_IN_OUTLINES, 
                 "Display return types in outlines", 
                 getFieldEditorParent(outlines));
         displayOutlineTypes.load();
         addField(displayOutlineTypes);
+        displayOutlineTypeParameters = new BooleanFieldEditor(TYPE_PARAMS_IN_OUTLINES, 
+                "Display type parameters in outlines", 
+                getFieldEditorParent(outlines));
+        displayOutlineTypeParameters.load();
+        addField(displayOutlineTypeParameters);
+        displayOutlineParameters = new BooleanFieldEditor(PARAMS_IN_OUTLINES, 
+                "Display parameters in outlines", 
+                getFieldEditorParent(outlines));
+        displayOutlineParameters.load();
+        addField(displayOutlineParameters);
         
         final Composite group = createGroup(1, "Defaults for new Ceylon projects");
         projectType = new RadioGroupFieldEditor(DEFAULT_PROJECT_TYPE, 
@@ -197,6 +214,9 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         projectType.loadDefault();
         sourceFolder.loadDefault();
         resourceFolder.loadDefault();
+        displayOutlineTypes.loadDefault();
+        displayOutlineParameters.loadDefault();
+        displayOutlineTypeParameters.loadDefault();
     }
     
     @Override
@@ -205,7 +225,8 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         sourceFolder.store();
         resourceFolder.store();
         displayOutlineTypes.store();
-        displayOutlineTypes.store();
+        displayOutlineParameters.store();
+        displayOutlineTypeParameters.store();
         return true;
     }
 

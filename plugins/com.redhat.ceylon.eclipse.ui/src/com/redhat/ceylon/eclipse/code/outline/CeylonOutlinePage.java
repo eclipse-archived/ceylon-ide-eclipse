@@ -32,6 +32,8 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DecoratingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DecorationContext;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -50,6 +52,8 @@ import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
@@ -63,6 +67,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -88,6 +93,20 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private CeylonSourceViewer sourceViewer;
     
     private volatile boolean suspend = false;
+    
+    private IPropertyChangeListener propertyChangeListener;
+    
+    @Override
+    public void init(IPageSite site) {
+        super.init(site);
+        propertyChangeListener = new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                getTreeViewer().refresh();
+            }
+        };
+        EditorUtil.getPreferences().addPropertyChangeListener(propertyChangeListener);
+    }
     
     public CeylonOutlinePage(CeylonParseController parseController,
             CeylonSourceViewer sourceViewer) {
@@ -181,6 +200,18 @@ public class CeylonOutlinePage extends ContentOutlinePage
         toolBarManager.add(new CollapseAllAction(treeViewer));
         toolBarManager.add(new LexicalSortingAction());
         toolBarManager.add(new HideNonSharedAction());
+        Action configureAction = 
+                new Action("Configure Labels...") {
+            @Override
+            public void run() {
+                PreferencesUtil.createPreferenceDialogOn(
+                        getSite().getShell(), 
+                        CeylonPreferencePage.ID, 
+                        new String[] {CeylonPreferencePage.ID}, 
+                        null).open();
+            }
+        };
+        menuManager.add(configureAction);
     }
     
     @Override
@@ -189,6 +220,10 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (labelProvider!=null) {
             labelProvider.dispose();
             labelProvider = null;
+        }
+        if (propertyChangeListener!=null) {
+            EditorUtil.getPreferences().removePropertyChangeListener(propertyChangeListener);
+            propertyChangeListener = null;
         }
         sourceViewer.getTextWidget().removeCaretListener(this);
         sourceViewer = null;

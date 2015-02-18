@@ -42,9 +42,11 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class OutlinePopup extends TreeViewPopup {
@@ -298,6 +300,20 @@ public class OutlinePopup extends TreeViewPopup {
         if (hideNonSharedAction != null) {
             viewMenu.add(hideNonSharedAction);
         }
+        viewMenu.add(new Separator());
+        Action configureAction = 
+                new Action("Configure Labels...") {
+            @Override
+            public void run() {
+                PreferencesUtil.createPreferenceDialogOn(
+                        getShell(), 
+                        CeylonPreferencePage.ID, 
+                        new String[] {CeylonPreferencePage.ID}, 
+                        null).open();
+                getTreeViewer().refresh();
+            }
+        };
+        viewMenu.add(configureAction);
     }
 
     @Override

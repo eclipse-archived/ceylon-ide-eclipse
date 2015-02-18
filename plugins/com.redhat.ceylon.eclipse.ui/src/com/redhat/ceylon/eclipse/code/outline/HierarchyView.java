@@ -29,6 +29,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -65,6 +67,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
@@ -79,6 +82,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class HierarchyView extends ViewPart {
 
@@ -101,14 +105,17 @@ public class HierarchyView extends ViewPart {
     private TableViewer tableViewer;
     
     private ModeAction hierarchyAction =
-            new ModeAction("Hierarchy", "Switch to hierarchy mode", 
+            new ModeAction("Hierarchy", 
+                    "Switch to hierarchy mode", 
                     CEYLON_HIER, HIERARCHY);
     private ModeAction supertypesAction = 
-            new ModeAction("Supertypes", "Switch to supertypes mode", 
+            new ModeAction("Supertypes", 
+                    "Switch to supertypes mode", 
                     CEYLON_SUP, SUPERTYPES);
     private ModeAction subtypesAction =
-            new ModeAction("Subtypes", "Switch to subtypes mode", 
-                            CEYLON_SUB, SUBTYPES);
+            new ModeAction("Subtypes", 
+                    "Switch to subtypes mode", 
+                    CEYLON_SUB, SUBTYPES);
     
     private IProject project;
     
@@ -116,6 +123,30 @@ public class HierarchyView extends ViewPart {
     
     private boolean showInherited;
     private ViewForm viewForm;
+    
+    private IPropertyChangeListener propertyChangeListener;
+    
+    @Override
+    public void init(IViewSite site) throws PartInitException {
+        super.init(site);
+        propertyChangeListener = new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                treeViewer.refresh();
+                tableViewer.refresh();
+            }
+        };
+        EditorUtil.getPreferences().addPropertyChangeListener(propertyChangeListener);
+    }
+    
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (propertyChangeListener!=null) {
+            EditorUtil.getPreferences().removePropertyChangeListener(propertyChangeListener);
+            propertyChangeListener = null;
+        }
+    }
     
     void toggle() {
         showInherited=!showInherited;
