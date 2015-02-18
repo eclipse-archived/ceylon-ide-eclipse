@@ -309,6 +309,10 @@ public abstract class FiltersPreferencePage
                 return "";
             }
             @Override
+            public boolean defaultDocArea() {
+                return false;
+            }
+            @Override
             protected IDialogSettings getDialogSettings() {
                 IDialogSettings settings = CeylonPlugin.getInstance().getDialogSettings();
                 IDialogSettings section = settings.getSection(SETTINGS_ID);

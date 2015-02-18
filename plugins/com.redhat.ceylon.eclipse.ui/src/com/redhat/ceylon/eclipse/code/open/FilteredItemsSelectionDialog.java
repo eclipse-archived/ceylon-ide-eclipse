@@ -390,6 +390,14 @@ public abstract class FilteredItemsSelectionDialog extends
         super.create();
         pattern.setFocus();
     }
+    
+    public boolean defaultStatusArea() {
+        return true;
+    }
+
+    public boolean defaultDocArea() {
+        return true;
+    }
 
     /**
      * Restores dialog using persisted settings. The default implementation
@@ -399,7 +407,7 @@ public abstract class FilteredItemsSelectionDialog extends
      *            settings used to restore dialog
      */
     protected void restoreDialog(IDialogSettings settings) {
-        boolean toggleStatusLine = true;
+        boolean toggleStatusLine = defaultStatusArea();
 
         if (settings.get(SHOW_STATUS_LINE) != null) {
             toggleStatusLine = settings.getBoolean(SHOW_STATUS_LINE);
@@ -411,7 +419,7 @@ public abstract class FilteredItemsSelectionDialog extends
 
         setStatusAreaVisible(toggleStatusLine);
 
-        boolean toggleDocArea = true;
+        boolean toggleDocArea = defaultDocArea();
         
         if (settings.get(SHOW_DOC_AREA) != null) {
             toggleDocArea = settings.getBoolean(SHOW_DOC_AREA);
@@ -471,12 +479,8 @@ public abstract class FilteredItemsSelectionDialog extends
      *            settings used to store dialog
      */
     protected void storeDialog(IDialogSettings settings) {
-        settings.put(SHOW_STATUS_LINE, 
-                toggleStatusLineAction==null ||
-                toggleStatusLineAction.isChecked());
-        settings.put(SHOW_DOC_AREA, 
-                toggleDocAction==null ||
-                toggleDocAction.isChecked());
+        settings.put(SHOW_STATUS_LINE, statusArea.isVisible());
+        settings.put(SHOW_DOC_AREA, browser.isVisible());
 
         XMLMemento memento = XMLMemento.createWriteRoot(HISTORY_SETTINGS);
         this.contentProvider.saveHistory(memento);
@@ -1054,8 +1058,8 @@ public abstract class FilteredItemsSelectionDialog extends
         IDialogSettings section = settings.getSection(DIALOG_BOUNDS_SETTINGS);
         if (section == null) {
             section = settings.addNewSection(DIALOG_BOUNDS_SETTINGS);
-            section.put(DIALOG_HEIGHT, 500);
-            section.put(DIALOG_WIDTH, 600);
+            section.put(DIALOG_HEIGHT, 450);
+            section.put(DIALOG_WIDTH, 750);
         }
         return section;
     }
@@ -1672,7 +1676,8 @@ public abstract class FilteredItemsSelectionDialog extends
             this.provider = provider;
             this.selectionDecorator = selectionDecorator;
 
-            setOwnerDrawEnabled(showColoredLabels() && provider instanceof IStyledLabelProvider);
+            setOwnerDrawEnabled(showColoredLabels() && 
+                    provider instanceof IStyledLabelProvider);
 
             provider.addListener(this);
 
@@ -1727,7 +1732,8 @@ public abstract class FilteredItemsSelectionDialog extends
                 provider.addListener(this);
             }
 
-            setOwnerDrawEnabled(showColoredLabels() && provider instanceof IStyledLabelProvider);
+            setOwnerDrawEnabled(showColoredLabels() && 
+                    provider instanceof IStyledLabelProvider);
         }
 
         private Image getImage(Object element) {
@@ -1827,7 +1833,7 @@ public abstract class FilteredItemsSelectionDialog extends
 
             StringBuffer result = new StringBuffer();
             result.append(dashes);
-            result.append(" " + separatorLabel + " "); //$NON-NLS-1$//$NON-NLS-2$
+            result.append(" " + separatorLabel + " ");
             result.append(dashes);
             return result.toString().trim();
         }
