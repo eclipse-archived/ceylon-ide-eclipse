@@ -30,6 +30,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -200,7 +201,13 @@ public class CeylonOutlinePage extends ContentOutlinePage
         toolBarManager.add(new CollapseAllAction(treeViewer));
         toolBarManager.add(new LexicalSortingAction());
         toolBarManager.add(new HideNonSharedAction());
-        Action configureAction = 
+        menuManager.add(new ExpandAllAction());
+        menuManager.add(new CollapseAllAction(treeViewer));
+        menuManager.add(new Separator());
+        menuManager.add(new LexicalSortingAction());
+        menuManager.add(new HideNonSharedAction());
+        menuManager.add(new Separator());
+        Action configureAction =
                 new Action("Configure Labels...") {
             @Override
             public void run() {
