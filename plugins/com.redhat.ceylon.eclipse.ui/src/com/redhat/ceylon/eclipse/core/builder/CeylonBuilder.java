@@ -3849,10 +3849,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static String getCeylonSystemRepo(IProject project) {
+        String defaultRepo = "${ceylon.repo}";
+        if (project.isAccessible()) {
+            return defaultRepo;
+        }
+        
         String systemRepo = (String) getBuilderArgs(project).get("systemRepo");
         if (systemRepo == null || systemRepo.isEmpty()) {
-            systemRepo = "${ceylon.repo}";
+            return defaultRepo;
         }
+        
         return systemRepo;
     }
     
