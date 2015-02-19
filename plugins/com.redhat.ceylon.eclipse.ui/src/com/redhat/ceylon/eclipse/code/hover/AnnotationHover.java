@@ -50,16 +50,17 @@ public class AnnotationHover
     /**
      * Creates the "enriched" control.
      */
-    private static final class PresenterControlCreator 
+    private final class PresenterControlCreator 
             extends AbstractReusableInformationControlCreator {
+
         @Override
         public IInformationControl doCreateInformationControl(Shell parent) {
             ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
             AnnotationInformationControl control = 
                     new AnnotationInformationControl(parent, tbm);
             ConfigureAnnotationsAction configAnnotations = 
-                    new ConfigureAnnotationsAction(null, control);
-            configAnnotations.setEnabled(true); 
+                    new ConfigureAnnotationsAction(control);
+            configAnnotations.setEnabled(true);
             //TODO: add a listener which sets the annotation type
             //      onto the ConfigureAnnotationsAction
             tbm.add(configAnnotations);
@@ -104,19 +105,17 @@ public class AnnotationHover
      * Action to configure the annotation preferences.
      *
      */
-    static final class ConfigureAnnotationsAction extends Action {
+    class ConfigureAnnotationsAction extends Action {
 
-        private final Annotation fAnnotation;
-        private final IInformationControl fInfoControl;
+        private final AnnotationInformationControl fInfoControl;
         
-        public ConfigureAnnotationsAction(Annotation annotation, IInformationControl infoControl) {
-            fAnnotation = annotation;
+        public ConfigureAnnotationsAction(AnnotationInformationControl infoControl) {
             fInfoControl = infoControl;
-            setText("Configure Annotation Preferences");
+            setText("Configure Annotation Appearance");
             ImageRegistry imageRegistry = getInstance().getImageRegistry();
             setImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN));
             setDisabledImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN_DIS));
-            setToolTipText("Configure Annotation Preferences");
+            setToolTipText("Configure Annotation Appearance");
         }
 
         @Override
@@ -124,8 +123,14 @@ public class AnnotationHover
             Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
 
             Object data = null;
-            if (fAnnotation!=null) {
-                AnnotationPreference preference = getAnnotationPreference(fAnnotation);
+            Map<Annotation, Position> annotationPositions = 
+                    fInfoControl.getAnnotationInfo().getAnnotationPositions();
+            if (annotationPositions!=null &&
+                    !annotationPositions.isEmpty()) {
+                Annotation annotation = 
+                        annotationPositions.keySet().iterator().next();
+                AnnotationPreference preference = 
+                        getAnnotationPreference(annotation);
                 if (preference != null) {
                     data = preference.getPreferenceLabel();
                 }

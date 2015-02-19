@@ -95,7 +95,7 @@ class AnnotationInformationControl extends AbstractInformationControl
         return fInput != null;
     }
 
-    private AnnotationInfo getAnnotationInfo() {
+    AnnotationInfo getAnnotationInfo() {
         return fInput;
     }
 
