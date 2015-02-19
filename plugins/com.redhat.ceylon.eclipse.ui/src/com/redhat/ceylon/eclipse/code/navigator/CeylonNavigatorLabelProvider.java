@@ -53,8 +53,7 @@ public class CeylonNavigatorLabelProvider extends
         if (element instanceof ExternalModuleNode) {
             ExternalModuleNode externalModule = (ExternalModuleNode) element;
             JDTModule jdtModule = externalModule.getModule();
-            JDTModule mod = ((ExternalModuleNode) element).getModule();
-			String name = super.getStyledText(mod).toString();
+			String name = jdtModule == null ? externalModule.getSignature() : super.getStyledText(jdtModule).toString();
 			StyledString moduleText = new StyledString(name);
             if (jdtModule != null) {
                 moduleText.append(" - " + jdtModule.getVersion(), QUALIFIER_STYLER);

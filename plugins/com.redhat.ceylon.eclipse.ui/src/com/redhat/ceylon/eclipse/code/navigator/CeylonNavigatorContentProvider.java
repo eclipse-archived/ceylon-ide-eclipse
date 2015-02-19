@@ -85,9 +85,9 @@ public class CeylonNavigatorContentProvider implements
                             IPackageFragmentRoot pfr = (IPackageFragmentRoot) entry;
                             for (RepositoryNode rn : repositories.values()) {
                                 for (ExternalModuleNode emn : rn.getModules()) {
-                                    if (emn.getModule() != null &&
-                                    		emn.getModule()
-                                            .getPackageFragmentRoots()
+                                    JDTModule module = emn.getModule();
+                                    if (module != null &&
+                                            module.getPackageFragmentRoots()
                                             .contains(pfr)) {
                                         emn.getBinaryArchives().add(pfr);
                                     }
@@ -257,10 +257,12 @@ public class CeylonNavigatorContentProvider implements
                 Map<String, RepositoryNode> repositories = getProjectRepositoryNodes(project);
                 for (RepositoryNode rn : repositories.values()) {
                     for (ExternalModuleNode emn : rn.getModules()) {
-                        if (emn.getModule()
-                                .getPackageFragmentRoots()
-                                .contains(pfr)) {
-                            return rn;
+                        JDTModule module = emn.getModule();
+                        if (module != null) {
+                            if (module.getPackageFragmentRoots()
+                                    .contains(pfr)) {
+                                return rn;
+                            }
                         }
                     }
                 }

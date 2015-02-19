@@ -14,6 +14,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
+@SuppressWarnings("restriction")
 public class ExternalModuleNode implements ModuleNode {
     private RepositoryNode repositoryNode;
     private List<IPackageFragmentRoot> binaryArchives = new ArrayList<>();
@@ -30,7 +31,8 @@ public class ExternalModuleNode implements ModuleNode {
 
     public CeylonArchiveFileStore getSourceArchive() {
         JDTModule module = getModule();
-        if (module.isCeylonArchive()) {
+        if (module != null 
+                && module.isCeylonArchive()) {
             String sourcePathString = module.getSourceArchivePath();
             if (sourcePathString != null) {
                 IFolder sourceArchive = getExternalSourceArchiveManager().getSourceArchive(Path.fromOSString(sourcePathString));
@@ -82,6 +84,11 @@ public class ExternalModuleNode implements ModuleNode {
         return true;
     }
 
+    /*
+     * Since this method retrieves the JDTModule lazily, the result might be
+     * null if a Ceylon build is being processed.
+     * 
+     */
     @Override
     public JDTModule getModule() {
         for (JDTModule module : CeylonBuilder.getProjectExternalModules(repositoryNode.project)) {
@@ -90,5 +97,10 @@ public class ExternalModuleNode implements ModuleNode {
             }
         }
         return null;
+    }
+
+    @Override
+    public String getSignature() {
+        return moduleSignature;
     }
 }

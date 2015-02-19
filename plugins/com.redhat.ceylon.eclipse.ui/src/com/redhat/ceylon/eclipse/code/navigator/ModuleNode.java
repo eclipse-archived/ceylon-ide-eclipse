@@ -4,4 +4,5 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
 public interface ModuleNode {
     JDTModule getModule();
+    String getSignature();
 }

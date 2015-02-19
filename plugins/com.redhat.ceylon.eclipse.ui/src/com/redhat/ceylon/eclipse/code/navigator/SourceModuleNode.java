@@ -126,4 +126,9 @@ public class SourceModuleNode extends PackageFragment implements ModuleNode {
     public JDTModule getModule() {
         return moduleFromSignatureAndProject(moduleSignature, getProject());
     }
+
+    @Override
+    public String getSignature() {
+        return moduleSignature;
+    }
 }
