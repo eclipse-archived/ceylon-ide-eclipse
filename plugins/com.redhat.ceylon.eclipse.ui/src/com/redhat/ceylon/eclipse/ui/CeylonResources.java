@@ -81,7 +81,8 @@ public interface CeylonResources {
     public static final String CEYLON_WARN = "ceylon_warn";
     
     public static final String CONFIG_ANN_DIS = "config_ann_dis";
-    public static final String CONFIG_ANN = "config_ann_dis";
+    public static final String CONFIG_ANN = "config_ann";
+    public static final String CONFIG_WARNINGS = "config_warnings";
     public static final String GOTO = "goto";
     public static final String HIERARCHY = "hierarchy";
     
@@ -160,6 +161,7 @@ public interface CeylonResources {
     public static final Image PROJECT = imageRegistry.get(CEYLON_PROJECT);
     public static final Image MINOR_CHANGE = imageRegistry.get(CEYLON_CORRECTION);
     public static final Image SUPPRESS_WARNING = imageRegistry.get(CEYLON_SUPPRESS_WARNINGS);
+    public static final Image CONFIG_WARNING = imageRegistry.get(CONFIG_WARNINGS);
     public static final Image CHANGE = imageRegistry.get(CEYLON_CHANGE);
     public static final Image COMPOSITE_CHANGE = imageRegistry.get(CEYLON_COMPOSITE_CHANGE);
     public static final Image RENAME = imageRegistry.get(CEYLON_RENAME);

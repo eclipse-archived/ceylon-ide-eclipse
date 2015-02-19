@@ -73,7 +73,10 @@ import org.eclipse.swt.widgets.ToolBar;
  *
  * @since 3.4
  */
-public abstract class AbstractInformationControl implements IInformationControl, IInformationControlExtension, IInformationControlExtension3, IInformationControlExtension4, IInformationControlExtension5 {
+public abstract class AbstractInformationControl 
+    implements IInformationControl, IInformationControlExtension, 
+               IInformationControlExtension3, IInformationControlExtension4, 
+               IInformationControlExtension5 {
 
     /** The information control's shell. */
     private final Shell fShell;
@@ -173,9 +176,8 @@ public abstract class AbstractInformationControl implements IInformationControl,
      * @param statusFieldText the text to be used in the status field or <code>null</code> to hide the status field
      * @param toolBarManager the manager or <code>null</code> if toolbar is not desired
      *
-     * @deprecated clients should use one of the public constructors
      */
-    AbstractInformationControl(Shell parentShell, int shellStyle, final String statusFieldText, final ToolBarManager toolBarManager) {
+    private AbstractInformationControl(Shell parentShell, int shellStyle, final String statusFieldText, final ToolBarManager toolBarManager) {
         Assert.isTrue(statusFieldText == null || toolBarManager == null);
         fResizeHandleSize= -1;
         fToolBarManager= toolBarManager;

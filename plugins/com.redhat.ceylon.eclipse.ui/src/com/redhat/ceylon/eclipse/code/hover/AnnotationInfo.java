@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -19,7 +17,6 @@ import com.redhat.ceylon.eclipse.code.correct.CeylonCorrectionProcessor;
 import com.redhat.ceylon.eclipse.code.correct.ProblemLocation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.hover.AnnotationHover.ConfigureAnnotationsAction;
 
 /**
  * An annotation info contains information about an {@link Annotation}
@@ -116,17 +113,6 @@ class AnnotationInfo {
                 position.getLength());
         return new CeylonCorrectionProcessor(markerAnnotation.getMarker())
                 .computeQuickAssistProposals(context);
-    }
-
-    /**
-     * Adds actions to the given toolbar.
-     *
-     * @param manager the toolbar manager to add actions to
-     * @param infoControl the information control
-     */
-    void fillToolBar(ToolBarManager manager, IInformationControl infoControl) {
-        Annotation first = annotationPositions.keySet().iterator().next();
-        manager.add(new ConfigureAnnotationsAction(first, infoControl));
     }
 
     Map<Annotation,Position> getAnnotationPositions() {

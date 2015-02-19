@@ -19,9 +19,6 @@ import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IInformationControlExtension4;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextHover;
-import org.eclipse.jface.text.ITextHoverExtension;
-import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
@@ -47,8 +44,8 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
  *
  */
 public class AnnotationHover 
-        implements ITextHover, ITextHoverExtension, ITextHoverExtension2, 
-                   IAnnotationHover, IAnnotationHoverExtension {
+        extends SourceInfoHover
+        implements IAnnotationHover, IAnnotationHoverExtension {
 
     /**
      * Creates the "enriched" control.
@@ -57,8 +54,17 @@ public class AnnotationHover
             extends AbstractReusableInformationControlCreator {
         @Override
         public IInformationControl doCreateInformationControl(Shell parent) {
-            return new AnnotationInformationControl(parent, 
-                    new ToolBarManager(SWT.FLAT));
+            ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
+            AnnotationInformationControl control = 
+                    new AnnotationInformationControl(parent, tbm);
+            ConfigureAnnotationsAction configAnnotations = 
+                    new ConfigureAnnotationsAction(null, control);
+            configAnnotations.setEnabled(true); 
+            //TODO: add a listener which sets the annotation type
+            //      onto the ConfigureAnnotationsAction
+            tbm.add(configAnnotations);
+            tbm.update(true);
+            return control;
         }
     }
 
@@ -102,11 +108,11 @@ public class AnnotationHover
 
         private final Annotation fAnnotation;
         private final IInformationControl fInfoControl;
-
+        
         public ConfigureAnnotationsAction(Annotation annotation, IInformationControl infoControl) {
-            super();
             fAnnotation = annotation;
             fInfoControl = infoControl;
+            setText("Configure Annotation Preferences");
             ImageRegistry imageRegistry = getInstance().getImageRegistry();
             setImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN));
             setDisabledImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN_DIS));
@@ -117,15 +123,14 @@ public class AnnotationHover
         public void run() {
             Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
 
-            Object data;
-            AnnotationPreference preference = getAnnotationPreference(fAnnotation);
-            if (preference != null) {
-                data = preference.getPreferenceLabel();
+            Object data = null;
+            if (fAnnotation!=null) {
+                AnnotationPreference preference = getAnnotationPreference(fAnnotation);
+                if (preference != null) {
+                    data = preference.getPreferenceLabel();
+                }
             }
-            else {
-                data = null;
-            }
-
+            
             fInfoControl.dispose(); //FIXME: should have protocol to hide, rather than dispose
             createPreferenceDialogOn(shell, 
                     "org.eclipse.ui.editors.preferencePages.Annotations", 
@@ -144,6 +149,7 @@ public class AnnotationHover
     private final boolean rulerHover;
     
     public AnnotationHover(CeylonEditor editor, boolean rulerHover) {
+        super(editor);
         this.editor = editor;
         this.rulerHover = rulerHover;
     }

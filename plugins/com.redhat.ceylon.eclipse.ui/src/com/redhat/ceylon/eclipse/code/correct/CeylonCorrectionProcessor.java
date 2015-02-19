@@ -95,6 +95,7 @@ import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAlia
 import static com.redhat.ceylon.eclipse.code.correct.VerboseRefinementProposal.addVerboseRefinementProposal;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_WARNING;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
@@ -124,6 +125,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
 import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
@@ -133,11 +135,14 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMarkerResolution;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
@@ -153,6 +158,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonWarningsPropertiesPage;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -1139,6 +1145,41 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 @Override
                 public StyledString getStyledDisplayString() {
                     return ss;
+                }
+            });
+            proposals.add(new ICompletionProposal() {
+                @Override
+                public Point getSelection(IDocument document) {
+                    return null;
+                }
+                
+                @Override
+                public Image getImage() {
+                    return CONFIG_WARNING;
+                }
+                
+                @Override
+                public String getDisplayString() {
+                    return "Configure compiler warnings";
+                }
+                
+                @Override
+                public IContextInformation getContextInformation() {
+                    return null;
+                }
+                
+                @Override
+                public String getAdditionalProposalInfo() {
+                    return null;
+                }
+                
+                @Override
+                public void apply(IDocument document) {
+                    PreferencesUtil.createPropertyDialogOn(editor.getSite().getShell(), 
+                            editor.getParseController().getProject(), //TODO: is this correct? 
+                            CeylonWarningsPropertiesPage.ID, 
+                            new String[] { CeylonWarningsPropertiesPage.ID }, 
+                            null).open();
                 }
             });
         }

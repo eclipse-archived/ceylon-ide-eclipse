@@ -354,7 +354,8 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
                         (String) null);
             }
             catch(org.eclipse.swt.SWTError x){
-                return new DefaultInformationControl(parent, "Press 'F2' for focus", 
+                return new DefaultInformationControl(parent, 
+                        "Press 'F2' for focus", 
                         new HTMLTextPresenter(true));
             }
         }

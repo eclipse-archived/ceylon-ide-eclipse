@@ -156,24 +156,10 @@ class AnnotationInformationControl extends AbstractInformationControl
     }
 
     /**
-     * Fills the toolbar actions, if a toolbar is available. This
-     * is called after the input has been set.
-     */
-    protected void fillToolbar() {
-        ToolBarManager toolBarManager = getToolBarManager();
-        if (toolBarManager != null) {
-            fInput.fillToolBar(toolBarManager, this);
-            toolBarManager.update(true);
-        }
-    }
-
-    /**
      * Create content of the hover. This is called after
      * the input has been set.
      */
     protected void deferredCreateContent() {
-        fillToolbar();
-
         createAnnotationInformation(fParent);
         setColorAndFont(fParent, fParent.getForeground(), 
                 fParent.getBackground(), 

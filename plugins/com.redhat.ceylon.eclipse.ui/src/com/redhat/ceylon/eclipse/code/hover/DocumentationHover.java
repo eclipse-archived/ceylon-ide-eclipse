@@ -356,10 +356,13 @@ public class DocumentationHover extends SourceInfoHover {
      * Action that opens the current hover input element.
      */
     final class OpenDeclarationAction extends Action {
+        
         private final BrowserInformationControl fInfoControl;
+        
         public OpenDeclarationAction(BrowserInformationControl infoControl) {
             fInfoControl = infoControl;
             setText("Open Declaration");
+            setToolTipText("Open Declaration");
             setLocalImageDescriptors(this, "goto_input.gif");
         }
         @Override
@@ -386,7 +389,7 @@ public class DocumentationHover extends SourceInfoHover {
 
     private  IInformationControlCreator getInformationPresenterControlCreator() {
         if (fPresenterControlCreator == null)
-            fPresenterControlCreator= new PresenterControlCreator(this);
+            fPresenterControlCreator = new PresenterControlCreator(this);
         return fPresenterControlCreator;
     }
 
@@ -398,7 +401,7 @@ public class DocumentationHover extends SourceInfoHover {
     public IInformationControlCreator getHoverControlCreator(
             String statusLineMessage) {
         if (fHoverControlCreator == null) {
-            fHoverControlCreator= new HoverControlCreator(this, 
+            fHoverControlCreator = new HoverControlCreator(this, 
                     getInformationPresenterControlCreator(), 
                     statusLineMessage);
         }
@@ -2197,19 +2200,23 @@ public class DocumentationHover extends SourceInfoHover {
         public IInformationControl doCreateInformationControl(Shell parent) {
             if (isAvailable(parent)) {
                 ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
-                BrowserInformationControl control = new BrowserInformationControl(parent, 
-                        APPEARANCE_JAVADOC_FONT, tbm);
+                BrowserInformationControl control = 
+                        new BrowserInformationControl(parent, 
+                                APPEARANCE_JAVADOC_FONT, tbm);
 
-                final BackAction backAction = new BackAction(control);
+                final BackAction backAction = 
+                        new BackAction(control);
                 backAction.setEnabled(false);
                 tbm.add(backAction);
-                final ForwardAction forwardAction = new ForwardAction(control);
+                final ForwardAction forwardAction = 
+                        new ForwardAction(control);
                 tbm.add(forwardAction);
                 forwardAction.setEnabled(false);
 
                 //final ShowInJavadocViewAction showInJavadocViewAction= new ShowInJavadocViewAction(iControl);
                 //tbm.add(showInJavadocViewAction);
-                final OpenDeclarationAction openDeclarationAction = new OpenDeclarationAction(control);
+                final OpenDeclarationAction openDeclarationAction = 
+                        new OpenDeclarationAction(control);
                 tbm.add(openDeclarationAction);
 
 //                final SimpleSelectionProvider selectionProvider = new SimpleSelectionProvider();
