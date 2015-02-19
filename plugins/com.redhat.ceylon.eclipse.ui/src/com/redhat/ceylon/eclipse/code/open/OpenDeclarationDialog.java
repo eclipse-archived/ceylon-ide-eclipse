@@ -102,6 +102,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private class TogglePackageAction extends Action {
         private TogglePackageAction() {
             super("Show Selection Package", IAction.AS_CHECK_BOX);
+            setImageDescriptor(CeylonPlugin.getInstance()
+                    .getImageRegistry().getDescriptor(CeylonResources.CEYLON_PACKAGE));
         }
         @Override
         public void run() {
@@ -113,6 +115,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private class ToggleModuleAction extends Action {
         private ToggleModuleAction() {
             super("Show Selection Module", IAction.AS_CHECK_BOX);
+            setImageDescriptor(CeylonPlugin.getInstance()
+                    .getImageRegistry().getDescriptor(CeylonResources.CEYLON_MODULE));
         }
         @Override
         public void run() {

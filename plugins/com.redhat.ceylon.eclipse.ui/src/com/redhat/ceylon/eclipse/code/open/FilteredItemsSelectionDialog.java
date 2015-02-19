@@ -143,6 +143,8 @@ import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTML;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 /**
  * Shows a list of items to the user with a text entry field for a string
@@ -1453,6 +1455,8 @@ public abstract class FilteredItemsSelectionDialog extends
     private class ToggleDocAreaAction extends Action {
         public ToggleDocAreaAction() {
             super("Show &Documentation", IAction.AS_CHECK_BOX);
+            setImageDescriptor(CeylonPlugin.getInstance()
+                    .getImageRegistry().getDescriptor(CeylonResources.SHOW_DOC));
         }
         @Override
         public void run() {
