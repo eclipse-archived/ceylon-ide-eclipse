@@ -271,7 +271,9 @@ class CeylonSearchResultTreeContentProvider implements
             child instanceof IImportDeclaration) {
             IJavaElement javaElement = (IJavaElement) child;
             IFile file = (IFile) javaElement.getResource();
-            //there is never a Unit for a .java file
+            //there is never a Unit for a .java file, since
+            //I can't figure out any way to navigate to the
+            //Java source file
             if (file == null) {
                 if (level==LEVEL_FILE) {
                     return null;

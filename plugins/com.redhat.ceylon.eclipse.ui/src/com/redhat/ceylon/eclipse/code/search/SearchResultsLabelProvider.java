@@ -9,10 +9,10 @@ import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleJavaType;
 import static org.eclipse.jdt.core.Signature.getSignatureSimpleName;
+import static org.eclipse.jdt.internal.core.util.Util.concatWith;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
@@ -22,7 +22,10 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.compiler.env.IBinaryType;
+import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
+import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
@@ -91,7 +94,12 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                 path = ((JDTModule) element).getSourceArchivePath();
             }
             else if (element instanceof JarPackageFragmentRoot) {
-                path = ((IPackageFragmentRoot) element).getPath().toOSString();
+                try {
+                    path = ((IPackageFragmentRoot) element).getSourceAttachmentPath().toOSString();
+                }
+                catch (JavaModelException e) {
+                    e.printStackTrace();
+                }
             }
             if (path!=null) {
                 styledString.append(" - " + path, COUNTER_STYLER);
@@ -229,12 +237,27 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             styledString.append(name, TYPE_ID_STYLER);
         }
         if (appendLocationInfo()) {
-            IJavaElement pkg = ((IJavaElement) je.getOpenable()).getParent();
+            IPackageFragment pkg = (IPackageFragment) je.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
             styledString.append(" - ", PACKAGE_STYLER)
                         .append(pkg.getElementName(), PACKAGE_STYLER);
-            IPath path = je.getPath();
-            if (path!=null) {
-                styledString.append(" - " + path.toOSString(), COUNTER_STYLER);
+            try {
+                IType type = (IType) je.getAncestor(IJavaElement.TYPE);
+                IPackageFragmentRoot root = (IPackageFragmentRoot) je.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                IBinaryType info = (IBinaryType) ((BinaryType) type).getElementInfo();
+                info.getSourceName();
+                String simpleSourceFileName = ((BinaryType) type).getSourceFileName(info);
+                PackageFragment pkgFrag = (PackageFragment) type.getPackageFragment();
+                String rootPath = root.getSourceAttachmentPath().toPortableString();
+                if (root.getSourceAttachmentRootPath()!=null) {
+                    rootPath += root.getSourceAttachmentRootPath().toPortableString() + '/';
+                }
+                String path = rootPath + '/' + concatWith(pkgFrag.names, simpleSourceFileName, '/');
+                styledString.append(" - " + path, COUNTER_STYLER);
+//                new SourceMapper(root.getSourceAttachmentPath(), root.getSourceAttachmentRootPath()==null ? null : root.getSourceAttachmentRootPath().toString(), null)
+//                .findSource(t, info);
+            }
+            catch (JavaModelException e) {
+                e.printStackTrace();
             }
         }
         return styledString;
