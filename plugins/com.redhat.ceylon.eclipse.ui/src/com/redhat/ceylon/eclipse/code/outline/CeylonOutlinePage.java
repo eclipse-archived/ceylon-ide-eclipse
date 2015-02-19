@@ -198,15 +198,19 @@ public class CeylonOutlinePage extends ContentOutlinePage
                 treeViewer);
         Control control = treeViewer.getControl();
         control.setMenu(contextMenu.createContextMenu(control));
-        toolBarManager.add(new ExpandAllAction());
-        toolBarManager.add(new CollapseAllAction(treeViewer));
-        toolBarManager.add(new LexicalSortingAction());
-        toolBarManager.add(new HideNonSharedAction());
-        menuManager.add(new ExpandAllAction());
-        menuManager.add(new CollapseAllAction(treeViewer));
+        ExpandAllAction expandAction = new ExpandAllAction();
+        CollapseAllAction collapseAllAction = new CollapseAllAction(treeViewer);
+        LexicalSortingAction sortAction = new LexicalSortingAction();
+        HideNonSharedAction hideAction = new HideNonSharedAction();
+        toolBarManager.add(expandAction);
+        toolBarManager.add(collapseAllAction);
+        toolBarManager.add(sortAction);
+        toolBarManager.add(hideAction);
+        menuManager.add(expandAction);
+        menuManager.add(collapseAllAction);
         menuManager.add(new Separator());
-        menuManager.add(new LexicalSortingAction());
-        menuManager.add(new HideNonSharedAction());
+        menuManager.add(sortAction);
+        menuManager.add(hideAction);
         menuManager.add(new Separator());
         Action configureAction =
                 new Action("Configure Labels...", 
