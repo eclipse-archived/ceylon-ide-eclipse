@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FULL_LOC_SEARCH_RESULTS;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FILE;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FOLDER;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_MODULE;
@@ -14,6 +15,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PROJECT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.UNIT_MODE;
+import static org.eclipse.jface.action.IAction.AS_CHECK_BOX;
 import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
 
 import org.eclipse.core.resources.IFile;
@@ -26,8 +28,10 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -257,20 +261,27 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         super.fillContextMenu(mgr);
         MenuManager submenu = new MenuManager("Find");
         submenu.setActionDefinitionId(CeylonEditor.FIND_MENU_ID);
-        submenu.add(new FindReferencesAction(this, 
-                this.getViewer().getSelection()));
-        submenu.add(new FindAssignmentsAction(this, 
-                this.getViewer().getSelection()));
-        submenu.add(new FindSubtypesAction(this, 
-                this.getViewer().getSelection()));
-        submenu.add(new FindRefinementsAction(this, 
-                this.getViewer().getSelection()));
+        ISelection selection = getViewer().getSelection();
+        submenu.add(new FindReferencesAction(this, selection));
+        submenu.add(new FindAssignmentsAction(this, selection));
+        submenu.add(new FindSubtypesAction(this, selection));
+        submenu.add(new FindRefinementsAction(this, selection));
         mgr.add(submenu);
     }
     
     @Override
     public void makeContributions(IMenuManager menuManager,
             IToolBarManager toolBarManager, IStatusLineManager statusLineManager) {
+        final IPreferenceStore prefs = EditorUtil.getPreferences();
+        Action showLocAction = new Action("Show Full Paths", AS_CHECK_BOX) {
+            @Override
+            public void run() {
+                prefs.setValue(FULL_LOC_SEARCH_RESULTS, isChecked());
+                getViewer().refresh();
+            }
+        };
+        showLocAction.setChecked(prefs.getBoolean(FULL_LOC_SEARCH_RESULTS));
+        menuManager.add(showLocAction);
         super.makeContributions(menuManager, toolBarManager, statusLineManager);
         Action configureAction = 
                 new Action("Configure Labels...") {

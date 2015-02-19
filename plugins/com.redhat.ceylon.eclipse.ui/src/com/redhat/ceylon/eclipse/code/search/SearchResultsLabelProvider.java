@@ -89,20 +89,22 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                 element instanceof IPackageFragmentRoot) {
             StyledString styledString = 
                     new StyledString(super.getStyledText(element).toString());
-            String path = null;
-            if (element instanceof JDTModule) {
-                path = ((JDTModule) element).getSourceArchivePath();
-            }
-            else if (element instanceof JarPackageFragmentRoot) {
-                try {
-                    path = ((IPackageFragmentRoot) element).getSourceAttachmentPath().toOSString();
+            if (appendSourceLocation()) {
+                String path = null;
+                if (element instanceof JDTModule) {
+                    path = ((JDTModule) element).getSourceArchivePath();
                 }
-                catch (JavaModelException e) {
-                    e.printStackTrace();
+                else if (element instanceof JarPackageFragmentRoot) {
+                    try {
+                        path = ((IPackageFragmentRoot) element).getSourceAttachmentPath().toOSString();
+                    }
+                    catch (JavaModelException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-            if (path!=null) {
-                styledString.append(" - " + path, COUNTER_STYLER);
+                if (path!=null) {
+                    styledString.append(" - " + path, COUNTER_STYLER);
+                }
             }
             return styledString;
         }
@@ -111,20 +113,26 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         }
     }
     
-    boolean appendLocationInfo() {
+    boolean appendMatchPackage() {
+        return true;
+    }
+    
+    boolean appendSourceLocation() {
         return true;
     }
     
     private StyledString getStyledLabelForSearchResult(CeylonElement ce) {
         StyledString styledString = new StyledString();
         IFile file = ce.getFile();
-        String path = file==null ? 
-                ce.getVirtualFile().getPath() : 
-                file.getFullPath().toString();
         styledString.append(ce.getLabel());
-        if (appendLocationInfo()) {
-            styledString.append(" - " + ce.getPackageLabel(), PACKAGE_STYLER)
-                        .append(" - " + path, COUNTER_STYLER);
+        if (appendMatchPackage()) {
+            styledString.append(" - " + ce.getPackageLabel(), PACKAGE_STYLER);
+            if (appendSourceLocation()) {
+                String path = file==null ? 
+                        ce.getVirtualFile().getPath() : 
+                        file.getFullPath().toString();
+                styledString.append(" - " + path, COUNTER_STYLER);
+            }
         }
         return styledString;
     }
@@ -236,28 +244,30 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             }
             styledString.append(name, TYPE_ID_STYLER);
         }
-        if (appendLocationInfo()) {
+        if (appendMatchPackage()) {
             IPackageFragment pkg = (IPackageFragment) je.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
             styledString.append(" - ", PACKAGE_STYLER)
                         .append(pkg.getElementName(), PACKAGE_STYLER);
-            try {
-                IType type = (IType) je.getAncestor(IJavaElement.TYPE);
-                IPackageFragmentRoot root = (IPackageFragmentRoot) je.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
-                IBinaryType info = (IBinaryType) ((BinaryType) type).getElementInfo();
-                info.getSourceName();
-                String simpleSourceFileName = ((BinaryType) type).getSourceFileName(info);
-                PackageFragment pkgFrag = (PackageFragment) type.getPackageFragment();
-                String rootPath = root.getSourceAttachmentPath().toPortableString();
-                if (root.getSourceAttachmentRootPath()!=null) {
-                    rootPath += root.getSourceAttachmentRootPath().toPortableString() + '/';
+            if (appendSourceLocation()) {
+                try {
+                    IType type = (IType) je.getAncestor(IJavaElement.TYPE);
+                    IPackageFragmentRoot root = (IPackageFragmentRoot) je.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                    IBinaryType info = (IBinaryType) ((BinaryType) type).getElementInfo();
+                    info.getSourceName();
+                    String simpleSourceFileName = ((BinaryType) type).getSourceFileName(info);
+                    PackageFragment pkgFrag = (PackageFragment) type.getPackageFragment();
+                    String rootPath = root.getSourceAttachmentPath().toPortableString();
+                    if (root.getSourceAttachmentRootPath()!=null) {
+                        rootPath += root.getSourceAttachmentRootPath().toPortableString() + '/';
+                    }
+                    String path = rootPath + '/' + concatWith(pkgFrag.names, simpleSourceFileName, '/');
+                    styledString.append(" - " + path, COUNTER_STYLER);
+                    //                new SourceMapper(root.getSourceAttachmentPath(), root.getSourceAttachmentRootPath()==null ? null : root.getSourceAttachmentRootPath().toString(), null)
+                    //                .findSource(t, info);
                 }
-                String path = rootPath + '/' + concatWith(pkgFrag.names, simpleSourceFileName, '/');
-                styledString.append(" - " + path, COUNTER_STYLER);
-//                new SourceMapper(root.getSourceAttachmentPath(), root.getSourceAttachmentRootPath()==null ? null : root.getSourceAttachmentRootPath().toString(), null)
-//                .findSource(t, info);
-            }
-            catch (JavaModelException e) {
-                e.printStackTrace();
+                catch (JavaModelException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return styledString;
