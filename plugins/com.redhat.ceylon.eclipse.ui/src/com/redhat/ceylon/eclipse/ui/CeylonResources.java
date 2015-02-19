@@ -83,6 +83,7 @@ public interface CeylonResources {
     public static final String CONFIG_ANN_DIS = "config_ann_dis";
     public static final String CONFIG_ANN = "config_ann";
     public static final String CONFIG_WARNINGS = "config_warnings";
+    public static final String CONFIG_LABELS = "config_labels";
     public static final String GOTO = "goto";
     public static final String HIERARCHY = "hierarchy";
     

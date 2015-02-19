@@ -63,6 +63,7 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
@@ -974,7 +975,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         menuManager.add(new Separator());
         
         Action configureAction = 
-                new Action("Configure Filters and Labels...") {
+                new Action("Configure Filters and Labels...",
+                        CeylonPlugin.getInstance().getImageRegistry()
+                        .getDescriptor(CeylonResources.CONFIG_LABELS)) {
             @Override
             public void run() {
                 PreferencesUtil.createPreferenceDialogOn(getShell(), 

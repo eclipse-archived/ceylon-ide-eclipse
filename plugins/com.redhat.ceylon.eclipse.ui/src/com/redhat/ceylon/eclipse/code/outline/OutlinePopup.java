@@ -48,6 +48,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class OutlinePopup extends TreeViewPopup {
     
@@ -302,7 +303,9 @@ public class OutlinePopup extends TreeViewPopup {
         }
         viewMenu.add(new Separator());
         Action configureAction = 
-                new Action("Configure Labels...") {
+                new Action("Configure Labels...", 
+                        CeylonPlugin.getInstance().getImageRegistry()
+                        .getDescriptor(CeylonResources.CONFIG_LABELS)) {
             @Override
             public void run() {
                 PreferencesUtil.createPreferenceDialogOn(

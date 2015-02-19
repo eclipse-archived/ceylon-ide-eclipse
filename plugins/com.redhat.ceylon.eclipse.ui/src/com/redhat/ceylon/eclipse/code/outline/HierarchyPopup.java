@@ -48,6 +48,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
@@ -353,7 +354,9 @@ public class HierarchyPopup extends TreeViewPopup {
         super.fillViewMenu(viewMenu);
         viewMenu.add(new Separator());
         Action configureAction = 
-                new Action("Configure Labels...") {
+                new Action("Configure Labels...", 
+                        CeylonPlugin.getInstance().getImageRegistry()
+                        .getDescriptor(CeylonResources.CONFIG_LABELS)) {
             @Override
             public void run() {
                 PreferencesUtil.createPreferenceDialogOn(

@@ -47,6 +47,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
@@ -284,7 +285,9 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         menuManager.add(showLocAction);
         super.makeContributions(menuManager, toolBarManager, statusLineManager);
         Action configureAction = 
-                new Action("Configure Labels...") {
+                new Action("Configure Labels...", 
+                        CeylonPlugin.getInstance().getImageRegistry()
+                        .getDescriptor(CeylonResources.CONFIG_LABELS)) {
             @Override
             public void run() {
                 PreferencesUtil.createPreferenceDialogOn(
