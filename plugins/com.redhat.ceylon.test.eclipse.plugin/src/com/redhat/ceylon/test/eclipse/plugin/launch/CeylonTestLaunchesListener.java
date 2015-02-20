@@ -82,6 +82,9 @@ public class CeylonTestLaunchesListener implements ILaunchesListener2 {
         int port = Integer.parseInt(portAttribute);
         TestEventListener.startListenerThread(launch, port);
         
+        TestRunContainer testRunContainer = CeylonTestPlugin.getDefault().getModel();
+        TestRun testRun = testRunContainer.getOrCreateTestRun(launch);        
+        
         trackedLaunches.remove(launch);
     }
     

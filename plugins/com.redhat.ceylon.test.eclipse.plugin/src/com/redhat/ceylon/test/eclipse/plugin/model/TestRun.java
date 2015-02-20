@@ -25,7 +25,7 @@ public class TestRun {
     private TestElement root;
     private List<TestElement> atomicTests = new ArrayList<TestElement>();
     private Map<String, List<TestElement>> testsByPackages = new LinkedHashMap<String, List<TestElement>>();
-    private boolean isRunning;
+    private boolean isRunning = true;
     private boolean isFinished;
     private boolean isInterrupted;
     private boolean isPinned;
