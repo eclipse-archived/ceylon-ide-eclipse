@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterText;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 
 import java.util.Collection;
@@ -31,7 +32,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ChangeRefiningTypeProposal {
@@ -57,11 +57,15 @@ public class ChangeRefiningTypeProposal {
                                 Collections.<ProducedType>emptyList());
                 ProducedType t = pr.getType();
                 String type = t.getProducedTypeNameInSource(decNode.getUnit());
+                Set<Declaration> declarations = new HashSet<Declaration>();
+                importType(declarations, t, cu);
                 TextFileChange change = 
                         new TextFileChange("Change Type", file);
                 int offset = node.getStartIndex();
                 int length = node.getStopIndex()-offset+1;
-                change.setEdit(new ReplaceEdit(offset, length, type));
+                change.setEdit(new MultiTextEdit());
+                applyImports(change, declarations, cu, getDocument(change));
+                change.addEdit(new ReplaceEdit(offset, length, type));
                 proposals.add(new CorrectionProposal("Change type to '" + type + "'", 
                         change, new Region(offset, length)));
             }
@@ -156,8 +160,7 @@ public class ChangeRefiningTypeProposal {
                         params.get(params.size()-1).getStopIndex()+1;
                 change.addEdit(new InsertEdit(offset, buf.toString()));
             }
-            applyImports(change, declarations, cu, 
-                    EditorUtil.getDocument(change));
+            applyImports(change, declarations, cu, getDocument(change));
             if (change.getEdit().hasChildren()) {
                 proposals.add(new CorrectionProposal("Fix refining parameter list", 
                         change, new Region(list.getStartIndex()+1, 0)));
