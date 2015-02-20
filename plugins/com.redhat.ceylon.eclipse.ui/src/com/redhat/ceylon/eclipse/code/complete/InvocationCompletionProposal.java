@@ -222,9 +222,11 @@ class InvocationCompletionProposal extends CompletionProposal {
         private final int index;
         private final boolean basic;
         private final Declaration dec;
+        private Declaration qualifier;
         
-        NestedCompletionProposal(Declaration dec, int loc, 
-                int index, boolean basic, String op) {
+        NestedCompletionProposal(Declaration dec, Declaration qualifier, 
+                int loc, int index, boolean basic, String op) {
+            this.qualifier = qualifier;
             this.op = op;
             this.loc = loc;
             this.index = index;
@@ -321,8 +323,11 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
 
         private String getText(boolean description) {
-            StringBuilder sb = new StringBuilder()
-                    .append(op).append(dec.getName(getUnit()));
+            StringBuilder sb = new StringBuilder().append(op);
+            if (qualifier!=null) {
+                sb.append(qualifier.getName(getUnit())).append('.');
+            }
+            sb.append(dec.getName(getUnit()));
             if (dec instanceof Functional && !basic) {
                 appendPositionalArgs(dec, getUnit(), sb, 
                         false, description);
@@ -388,15 +393,26 @@ class InvocationCompletionProposal extends CompletionProposal {
                                     ",;", "", true)+1;
                     String content = 
                             document.get(offset, currentOffset-offset);
+                    int fat = content.indexOf("=>");
+                    if (fat>0) {
+                        content = content.substring(fat+2);
+                    }
                     int eq = content.indexOf("=");
                     if (eq>0) {
                         content = content.substring(eq+1);
                     }
                     String filter = content.trim().toLowerCase();
-                    String decName = dec.getName(getUnit());
-                    if ((op+decName).toLowerCase().startsWith(filter) ||
-                            decName.toLowerCase().startsWith(filter)) {
+                    String decName = dec.getName(getUnit()).toLowerCase();
+                    if ((op+decName).startsWith(filter) ||
+                            decName.startsWith(filter)) {
                         return true;
+                    }
+                    if (qualifier!=null) {
+                        String qualName = qualifier.getName(getUnit()).toLowerCase();
+                        if ((op+qualName+'.'+decName).startsWith(filter) ||
+                                (qualName+'.'+decName).startsWith(filter)) {
+                            return true;
+                        }
                     }
                 }
                 catch (BadLocationException e) {
@@ -788,8 +804,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         if (p.getModel().isDynamicallyTyped()) {
             return;
         }
-        ProducedType type = producedReference.getTypedParameter(p)
-                .getType();
+        ProducedType type = 
+                producedReference.getTypedParameter(p).getType();
         if (type==null) return;
         Unit unit = getUnit();
         List<DeclarationWithProximity> proposals = 
@@ -797,51 +813,64 @@ class InvocationCompletionProposal extends CompletionProposal {
         for (DeclarationWithProximity dwp: proposals) {
             if (dwp.getProximity()<=1) {
                 addValueArgumentProposal(p, loc, props, index, last,
-                        type, unit, dwp);
+                        type, unit, dwp, null);
             }
         }
         addLiteralProposals(loc, props, index, type, unit);
         for (DeclarationWithProximity dwp: proposals) {
             if (dwp.getProximity()>1) {
                 addValueArgumentProposal(p, loc, props, index, last,
-                        type, unit, dwp);
+                        type, unit, dwp, null);
             }
         }
     }
 
     private void addValueArgumentProposal(Parameter p, final int loc,
             List<ICompletionProposal> props, int index, boolean last,
-            ProducedType type, Unit unit, DeclarationWithProximity dwp) {
-        if (dwp.isUnimported()) {
+            ProducedType type, Unit unit, DeclarationWithProximity dwp,
+            DeclarationWithProximity qualifier) {
+        if (qualifier==null && dwp.isUnimported()) {
             return;
         }
         TypeDeclaration td = type.getDeclaration();
         Declaration d = dwp.getDeclaration();
+        String pname = d.getUnit().getPackage().getNameAsString();
+        boolean isInLanguageModule = qualifier==null &&
+                pname.equals(Module.LANGUAGE_MODULE_NAME);
+        Declaration qdec = qualifier==null ? 
+                null : qualifier.getDeclaration();
         if (d instanceof Value) {
             Value value = (Value) d;
-            if (d.getUnit().getPackage().getNameAsString()
-                    .equals(Module.LANGUAGE_MODULE_NAME)) {
+            if (isInLanguageModule) {
                 if (isIgnoredLanguageModuleValue(value)) {
                     return;
                 }
             }
             ProducedType vt = value.getType();
-            if (vt!=null && !vt.isNothing() &&
-                ((td instanceof TypeParameter) && 
-                    isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
-                        vt.isSubtypeOf(type))) {
-                boolean isIterArg = namedInvocation && last && 
-                        unit.isIterableParameterType(type);
-                boolean isVarArg = p.isSequenced() && positionalInvocation;
-                props.add(new NestedCompletionProposal(d, 
-                loc, index, false, isIterArg || isVarArg ? "*" : ""));
+            if (vt!=null && !vt.isNothing()) {
+                if (vt.isSubtypeOf(type) ||
+                        (td instanceof TypeParameter) && 
+                        isInBounds(((TypeParameter) td).getSatisfiedTypes(), vt)) {
+                    boolean isIterArg = namedInvocation && last && 
+                            unit.isIterableParameterType(type);
+                    boolean isVarArg = p.isSequenced() && positionalInvocation;
+                    props.add(new NestedCompletionProposal(d, qdec,
+                            loc, index, false, isIterArg || isVarArg ? "*" : ""));
+                }
+                if (qualifier==null) {
+                    Collection<DeclarationWithProximity> members = 
+                            ((Value) d).getTypeDeclaration()
+                            .getMatchingMemberDeclarations(unit, scope, "", 0).values();
+                    for (DeclarationWithProximity mwp: members) {
+                        addValueArgumentProposal(p, loc, props, index, last, type, unit, mwp, dwp);
+                    }
+                }
             }
         }
         if (d instanceof Method) {
             if (!d.isAnnotation()) {
                 Method method = (Method) d;
-                if (d.getUnit().getPackage().getNameAsString()
-                        .equals(Module.LANGUAGE_MODULE_NAME)) {
+                if (isInLanguageModule) {
                     if (isIgnoredLanguageModuleMethod(method)) {
                         return;
                     }
@@ -849,12 +878,12 @@ class InvocationCompletionProposal extends CompletionProposal {
                 ProducedType mt = method.getType();
                 if (mt!=null && !mt.isNothing() &&
                         ((td instanceof TypeParameter) && 
-                                isInBounds(((TypeParameter)td).getSatisfiedTypes(), mt) || 
+                                isInBounds(((TypeParameter) td).getSatisfiedTypes(), mt) || 
                                 mt.isSubtypeOf(type))) {
                     boolean isIterArg = namedInvocation && last && 
                             unit.isIterableParameterType(type);
                     boolean isVarArg = p.isSequenced() && positionalInvocation;
-                    props.add(new NestedCompletionProposal(d, 
+                    props.add(new NestedCompletionProposal(d, qdec,
                             loc, index, false, isIterArg || isVarArg ? "*" : ""));
                 }
             }
@@ -862,8 +891,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         if (d instanceof Class) {
             Class clazz = (Class) d;
             if (!clazz.isAbstract() && !d.isAnnotation()) {
-                if (d.getUnit().getPackage().getNameAsString()
-                        .equals(Module.LANGUAGE_MODULE_NAME)) {
+                if (isInLanguageModule) {
                     if (isIgnoredLanguageModuleClass(clazz)) {
                         return;
                     }
@@ -871,14 +899,14 @@ class InvocationCompletionProposal extends CompletionProposal {
                 ProducedType ct = clazz.getType();
                 if (ct!=null && !ct.isNothing() &&
                         ((td instanceof TypeParameter) && 
-                                isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
+                                isInBounds(((TypeParameter) td).getSatisfiedTypes(), ct) || 
                                 ct.getDeclaration().equals(type.getDeclaration()) ||
                                 ct.isSubtypeOf(type))) {
                     boolean isIterArg = namedInvocation && last && 
                             unit.isIterableParameterType(type);
                     boolean isVarArg = p.isSequenced() && positionalInvocation;
-                    props.add(new NestedCompletionProposal(d, loc, index, false, 
-                            isIterArg || isVarArg ? "*" : ""));
+                    props.add(new NestedCompletionProposal(d, qdec, 
+                            loc, index, false, isIterArg || isVarArg ? "*" : ""));
                 }
             }
         }
@@ -937,8 +965,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                         }
                     }
                     if (isInBounds(tp.getSatisfiedTypes(), t)) {
-                        props.add(new NestedCompletionProposal(d, loc, index, 
-                                true, ""));
+                        props.add(new NestedCompletionProposal(d, null,
+                                loc, index, true, ""));
                     }
                 }
             }
