@@ -24,9 +24,12 @@ import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -54,12 +57,15 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Table;
@@ -100,6 +106,28 @@ public class HierarchyView extends ViewPart {
     private CeylonHierarchyContentProvider contentProvider;
     private MembersLabelProvider membersLabelProvider;
     private MembersContentProvider membersContentProvider;
+    
+    private static class History {
+        private IProject project;
+        private CeylonHierarchyNode proxy;
+        private History(HierarchyInput input) {
+            this.project = input.project;
+            this.proxy = new CeylonHierarchyNode(input.declaration);
+        }
+        private Declaration declaration() {
+            return proxy.getDeclaration(project);
+        }
+    }
+    
+    private List<History> history = 
+            new ArrayList<History>();
+    
+    private void addToHistory(HierarchyInput input) {
+        history.add(0, new History(input));
+        if (history.size()>10) {
+            history.remove(10);
+        }
+    }
     
     private TreeViewer treeViewer;
     private TableViewer tableViewer;
@@ -152,6 +180,91 @@ public class HierarchyView extends ViewPart {
         showInherited=!showInherited;
     }
     
+    final class HistoryAction extends Action implements IMenuCreator {
+        private Menu menu;
+        
+        HistoryAction() {
+            super(null, AS_DROP_DOWN_MENU);
+            setMenuCreator(this);
+            setToolTipText("Previous Type Hierarchies");
+            JavaPluginImages.setLocalImageDescriptors(this, "history_list.gif");
+        }
+        
+        @Override
+        public void runWithEvent(Event event) {
+            if (history.size()>1) {
+                History h = history.remove(1);
+                Declaration declaration = h.declaration();
+                IProject project = h.project;
+                HierarchyView.this.project = project;
+                title.setImage(getImageForDeclaration(declaration));
+                title.setText(getName(declaration));
+                tableViewer.setInput(declaration);
+                treeViewer.setInput(new HierarchyInput(declaration, project));
+                HierarchyView.this.setDescription(declaration);
+                history.add(0, h);
+            }
+        }
+
+        private String getName(Declaration declaration) {
+            String name = declaration.getName();
+            return declaration.isClassOrInterfaceMember() ?
+                    ((Declaration) declaration.getContainer()).getName() + '.' + name
+                    : name;
+        }
+        
+        @Override
+        public Menu getMenu(Menu parent) {
+            return null;
+        }
+        
+        @Override
+        public Menu getMenu(Control parent) {
+            if (menu!=null) menu.dispose();
+            menu = new Menu(parent);
+            for (final History h: history) {
+                final MenuItem item = new MenuItem(menu, SWT.PUSH);
+                final Declaration declaration = h.declaration();
+                if (declaration!=null) {
+                    final Image image =
+                            getImageForDeclaration(declaration);
+                    final IProject project = h.project;
+                    item.setText(getName(declaration));
+                    item.setImage(image);
+                    item.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            HierarchyView.this.project = project;
+                            title.setImage(item.getImage());
+                            title.setText(item.getText());
+                            tableViewer.setInput(declaration);
+                            treeViewer.setInput(new HierarchyInput(declaration, project));
+                            HierarchyView.this.setDescription(declaration);
+                            history.remove(h);
+                            history.add(0, h);
+                        }
+                    });
+                }
+            }
+            new MenuItem(menu, SWT.SEPARATOR);
+            MenuItem clear = new MenuItem(menu, SWT.PUSH);
+            clear.setText("Clear History");
+            clear.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    history.clear();
+                }
+            });
+            return menu;
+        }
+        
+        @Override
+        public void dispose() {
+            if (menu!=null) menu.dispose();
+        }
+        
+    }
+
     private final class MemberSorter extends ViewerSorter {
         private boolean sortByType;
         @Override
@@ -458,6 +571,7 @@ public class HierarchyView extends ViewPart {
         tbm.add(supertypesAction);
         tbm.add(subtypesAction);
         updateActions(contentProvider.getMode());
+        tbm.add(new HistoryAction());
     }
 
     private void createTreeMenu(final Tree tree) {
@@ -476,7 +590,9 @@ public class HierarchyView extends ViewPart {
                     CeylonHierarchyNode node = 
                             (CeylonHierarchyNode) firstElement;
                     Declaration declaration = node.getDeclaration(project);
-                    treeViewer.setInput(new HierarchyInput(declaration, project));
+                    HierarchyInput input = new HierarchyInput(declaration, project);
+                    addToHistory(input);
+                    treeViewer.setInput(input);
                     setDescription(declaration);
                 }
             }
@@ -519,7 +635,9 @@ public class HierarchyView extends ViewPart {
                 Object firstElement = selection.getFirstElement();
                 if (firstElement instanceof Declaration) {
                     Declaration declaration = (Declaration) firstElement;
-                    treeViewer.setInput(new HierarchyInput(declaration, project));
+                    HierarchyInput input = new HierarchyInput(declaration, project);
+                    addToHistory(input);
+                    treeViewer.setInput(input);
                     setDescription(declaration);
                 }
             }
@@ -589,7 +707,9 @@ public class HierarchyView extends ViewPart {
             title.setImage(getImageForDeclaration(dec));
             title.setText(dec.getName());
             tableViewer.setInput(dec);
-            treeViewer.setInput(new HierarchyInput(dec, project));
+            HierarchyInput input = new HierarchyInput(dec, project);
+            addToHistory(input);
+            treeViewer.setInput(input);
             setDescription(dec);
         }
     }
