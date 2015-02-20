@@ -16,6 +16,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_INHERITED;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
@@ -30,8 +31,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
@@ -76,6 +81,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.part.ViewPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -86,21 +92,22 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class HierarchyView extends ViewPart {
 
+    private static final ImageRegistry imageRegistry = 
+            CeylonPlugin.getInstance().getImageRegistry();
     private static final Image GOTO_IMAGE = 
-            CeylonPlugin.getInstance()
-                    .getImageRegistry().get(GOTO);
+            imageRegistry.get(GOTO);
     private static final Image INHERITED_IMAGE = 
-            CeylonPlugin.getInstance()
-                    .getImageRegistry().get(CEYLON_INHERITED);
+            imageRegistry.get(CEYLON_INHERITED);
     private static final Image SORT_IMAGE = 
-            CeylonPlugin.getInstance()
-                    .getImageRegistry().get(TYPE_MODE);
+            imageRegistry.get(TYPE_MODE);
     
     private CeylonHierarchyLabelProvider labelProvider;
     private CeylonHierarchyContentProvider contentProvider;
@@ -453,6 +460,46 @@ public class HierarchyView extends ViewPart {
         
         createTreeMenu(createTree(sash));
         createTableMenu(createTable(sash));
+        
+        IActionBars actionBars = getViewSite().getActionBars();
+        IMenuManager menuManager = actionBars.getMenuManager();
+        menuManager.add(new ExpandAllAction());
+        Action configureAction =
+        new Action("Configure Labels...", 
+                CeylonPlugin.getInstance().getImageRegistry()
+                .getDescriptor(CeylonResources.CONFIG_LABELS)) {
+            @Override
+            public void run() {
+                PreferencesUtil.createPreferenceDialogOn(
+                        getSite().getShell(), 
+                        CeylonPreferencePage.ID, 
+                        new String[] {CeylonPreferencePage.ID}, 
+                        null).open();
+            }
+        };
+        menuManager.add(new Separator());
+        menuManager.add(configureAction);
+    }
+
+    private class ExpandAllAction extends Action {
+
+        private ExpandAllAction() {
+            super("Expand All");
+            setToolTipText("Expand All");
+            
+            ImageDescriptor desc = imageRegistry
+                    .getDescriptor(EXPAND_ALL);
+            setHoverImageDescriptor(desc);
+            setImageDescriptor(desc);
+        }
+
+        @Override
+        public void run() {
+            if (treeViewer != null) {
+                treeViewer.expandAll();
+            }
+        }
+        
     }
 
     private Tree createTree(SashForm sash) {
@@ -566,12 +613,13 @@ public class HierarchyView extends ViewPart {
         return tableViewer.getTable();
     }
 
-    private void createMainToolBar(IToolBarManager tbm) {
-        tbm.add(hierarchyAction);
-        tbm.add(supertypesAction);
-        tbm.add(subtypesAction);
+    private void createMainToolBar(IToolBarManager toolBarManager) {
+        toolBarManager.add(hierarchyAction);
+        toolBarManager.add(supertypesAction);
+        toolBarManager.add(subtypesAction);
         updateActions(contentProvider.getMode());
-        tbm.add(new HistoryAction());
+        toolBarManager.add(new ExpandAllAction());
+        toolBarManager.add(new HistoryAction());
     }
 
     private void createTreeMenu(final Tree tree) {
