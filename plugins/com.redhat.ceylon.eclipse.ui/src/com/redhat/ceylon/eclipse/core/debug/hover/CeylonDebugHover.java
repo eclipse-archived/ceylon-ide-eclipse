@@ -598,7 +598,11 @@ public class CeylonDebugHover extends SourceInfoHover {
         }
 
         if (primaryJdiObject == null) {
-            return null;
+            if (primaryJdiValue instanceof IJavaObject) {
+                primaryJdiObject = (IJavaObject) primaryJdiValue;
+            } else {
+                return null;
+            }
         }
         
         Declaration primaryObjectClassDeclaration = DebugUtils.getModelDeclaration(primaryJdiObject);
