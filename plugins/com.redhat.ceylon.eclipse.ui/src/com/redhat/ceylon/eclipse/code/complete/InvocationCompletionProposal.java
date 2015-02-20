@@ -27,6 +27,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImag
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
@@ -242,7 +243,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             //text may have changed, since the proposal was
             //instantiated).
             try {
-                IRegion li = document.getLineInformationOfOffset(loc);
+                IRegion li = 
+                        document.getLineInformationOfOffset(loc);
                 int endOfLine = li.getOffset() + li.getLength();
                 int startOfArgs = getFirstPosition();
                 int offset = findCharCount(index, document, 
@@ -282,19 +284,25 @@ class InvocationCompletionProposal extends CompletionProposal {
                 e.printStackTrace();
             }
             //adding imports drops us out of linked mode :(
+            //not needed anyway because we never propose
+            //unimported stuff, so no big deal
             /*try {
-                DocumentChange tc = new DocumentChange("imports", document);
+                DocumentChange tc = 
+                        new DocumentChange("imports", document);
                 tc.setEdit(new MultiTextEdit());
-                HashSet<Declaration> decs = new HashSet<Declaration>();
-                CompilationUnit cu = cpc.getRootNode();
-                importDeclaration(decs, d, cu);
-                if (d instanceof Functional) {
-                    List<ParameterList> pls = ((Functional) d).getParameterLists();
+                HashSet<Declaration> decs = 
+                        new HashSet<Declaration>();
+                Tree.CompilationUnit cu = cpc.getRootNode();
+                importDeclaration(decs, dec, cu);
+                if (dec instanceof Functional) {
+                    List<ParameterList> pls = 
+                            ((Functional) dec).getParameterLists();
                     if (!pls.isEmpty()) {
                         for (Parameter p: pls.get(0).getParameters()) {
                             MethodOrValue pm = p.getModel();
                             if (pm instanceof Method) {
-                                for (ParameterList ppl: ((Method) pm).getParameterLists()) {
+                                for (ParameterList ppl: 
+                                        ((Method) pm).getParameterLists()) {
                                     for (Parameter pp: ppl.getParameters()) {
                                         importSignatureTypes(pp.getModel(), cu, decs);
                                     }
@@ -335,7 +343,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         @Override
         public StyledString getStyledDisplayString() {
             StyledString result = new StyledString();
-            Highlights.styleProposal(result, getDisplayString(), false);
+            Highlights.styleProposal(result, 
+                    getDisplayString(), false);
             return result;
         }
 
@@ -369,13 +378,16 @@ class InvocationCompletionProposal extends CompletionProposal {
             }
             else {
                 try {
-                    IRegion li = document.getLineInformationOfOffset(loc);
+                    IRegion li = 
+                            document.getLineInformationOfOffset(loc);
                     int endOfLine = li.getOffset() + li.getLength();
                     int startOfArgs = getFirstPosition();
-                    int offset = findCharCount(index, document, 
-                            loc+startOfArgs, endOfLine, 
-                            ",;", "", true)+1;
-                    String content = document.get(offset, currentOffset - offset);
+                    int offset = 
+                            findCharCount(index, document, 
+                                    loc+startOfArgs, endOfLine, 
+                                    ",;", "", true)+1;
+                    String content = 
+                            document.get(offset, currentOffset-offset);
                     int eq = content.indexOf("=");
                     if (eq>0) {
                         content = content.substring(eq+1);
@@ -420,12 +432,14 @@ class InvocationCompletionProposal extends CompletionProposal {
             //text may have changed, since the proposal was
             //instantiated).
             try {
-                IRegion li = document.getLineInformationOfOffset(loc);
+                IRegion li = 
+                        document.getLineInformationOfOffset(loc);
                 int endOfLine = li.getOffset() + li.getLength();
                 int startOfArgs = getFirstPosition();
-                int offset = findCharCount(index, document, 
-                        loc+startOfArgs, endOfLine, 
-                        ",;", "", true)+1;
+                int offset = 
+                        findCharCount(index, document, 
+                                loc+startOfArgs, endOfLine, 
+                                ",;", "", true)+1;
                 if (offset>0 && document.getChar(offset)==' ') {
                     offset++;
                 }
@@ -454,40 +468,12 @@ class InvocationCompletionProposal extends CompletionProposal {
                 if (document.getChar(nextOffset)=='}') {
                     str += " ";
                 }
-                document.replace(offset, nextOffset-offset, str);
+                document.replace(offset, 
+                        nextOffset-offset, str);
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
             }
-            //adding imports drops us out of linked mode :(
-            /*try {
-                DocumentChange tc = new DocumentChange("imports", document);
-                tc.setEdit(new MultiTextEdit());
-                HashSet<Declaration> decs = new HashSet<Declaration>();
-                CompilationUnit cu = cpc.getRootNode();
-                importDeclaration(decs, d, cu);
-                if (d instanceof Functional) {
-                    List<ParameterList> pls = ((Functional) d).getParameterLists();
-                    if (!pls.isEmpty()) {
-                        for (Parameter p: pls.get(0).getParameters()) {
-                            MethodOrValue pm = p.getModel();
-                            if (pm instanceof Method) {
-                                for (ParameterList ppl: ((Method) pm).getParameterLists()) {
-                                    for (Parameter pp: ppl.getParameters()) {
-                                        importSignatureTypes(pp.getModel(), cu, decs);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                }
-                applyImports(tc, decs, cu, document);
-                tc.perform(new NullProgressMonitor());
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }*/
         }
         
         
@@ -531,13 +517,15 @@ class InvocationCompletionProposal extends CompletionProposal {
             }
             else {
                 try {
-                    IRegion li = document.getLineInformationOfOffset(loc);
+                    IRegion li = 
+                            document.getLineInformationOfOffset(loc);
                     int endOfLine = li.getOffset() + li.getLength();
                     int startOfArgs = getFirstPosition();
                     int offset = findCharCount(index, document, 
                             loc+startOfArgs, endOfLine, 
                             ",;", "", true)+1;
-                    String content = document.get(offset, currentOffset - offset);
+                    String content = 
+                            document.get(offset, currentOffset-offset);
                     int eq = content.indexOf("=");
                     if (eq>0) {
                         content = content.substring(eq+1);
@@ -782,8 +770,9 @@ class InvocationCompletionProposal extends CompletionProposal {
                 param++; 
             }
             if (seq>0) {
-                LinkedMode.installLinkedMode((CeylonEditor) EditorUtil.getCurrentEditor(), 
-                        document, linkedModeModel, this, new LinkedMode.NullExitPolicy(),
+                LinkedMode.installLinkedMode((CeylonEditor) getCurrentEditor(), 
+                        document, linkedModeModel, this, 
+                        new LinkedMode.NullExitPolicy(),
                         seq, loc+text.length());
             }
 
