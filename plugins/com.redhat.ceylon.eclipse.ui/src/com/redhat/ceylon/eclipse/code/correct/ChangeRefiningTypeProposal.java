@@ -1,11 +1,15 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterText;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.Region;
@@ -27,13 +31,14 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ChangeRefiningTypeProposal {
 
     static void addChangeRefiningTypeProposal(IFile file,
-            Tree.CompilationUnit cu, Collection<ICompletionProposal> proposals,
+            Tree.CompilationUnit cu, 
+            Collection<ICompletionProposal> proposals,
             Node node) {
         Tree.Declaration decNode = findDeclaration(cu, node);
         if (decNode instanceof Tree.TypedDeclaration) {
@@ -64,7 +69,8 @@ public class ChangeRefiningTypeProposal {
     }
 
     static void addChangeRefiningParametersProposal(IFile file,
-            CompilationUnit cu, Collection<ICompletionProposal> proposals,
+            Tree.CompilationUnit cu, 
+            Collection<ICompletionProposal> proposals,
             Node node) {
         Tree.Declaration decNode = 
                 (Tree.Declaration) Nodes.findStatement(cu, node);
@@ -106,6 +112,7 @@ public class ChangeRefiningTypeProposal {
                     new TextFileChange("Fix Refining Parameter List", file);
             change.setEdit(new MultiTextEdit());
             Unit unit = decNode.getUnit();
+            Set<Declaration> declarations = new HashSet<Declaration>();
             for (int i=0; i<params.size(); i++) {
                 Tree.Parameter p = params.get(i);
                 if (rdpl.size()<=i) {
@@ -128,23 +135,29 @@ public class ChangeRefiningTypeProposal {
                                 p.getStopIndex()-p.getStartIndex()+1, 
                                 //TODO: better handling for callable parameters
                                 pt.getProducedTypeNameInSource(unit) + " " + rdp.getName()));
+                        importType(declarations, pt, cu);
                     }
                 }
             }
             if (rdpl.size()>params.size()) {
                 StringBuilder buf = new StringBuilder();
                 for (int i=params.size(); i<rdpl.size(); i++) {
-                    Parameter p = rdpl.get(i);
+                    Parameter rdp = rdpl.get(i);
                     if (i>0) {
                         buf.append(", ");
                     }
-                    appendParameterText(buf, pr, p, unit);
+                    appendParameterText(buf, pr, rdp, unit);
+                    ProducedType pt = 
+                            pr.getTypedParameter(rdp).getFullType();
+                    importType(declarations, pt, cu);
                 }
                 Integer offset = params.isEmpty() ? 
                         list.getStartIndex()+1 : 
                         params.get(params.size()-1).getStopIndex()+1;
                 change.addEdit(new InsertEdit(offset, buf.toString()));
             }
+            applyImports(change, declarations, cu, 
+                    EditorUtil.getDocument(change));
             if (change.getEdit().hasChildren()) {
                 proposals.add(new CorrectionProposal("Fix refining parameter list", 
                         change, new Region(list.getStartIndex()+1, 0)));
