@@ -5,13 +5,15 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT_PREFIX;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CHAIN_LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INACTIVE_COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
@@ -38,7 +40,8 @@ public class CeylonCompletionPreferencePage
     BoolFieldEditor autoActivation;
     RadioGroupFieldEditor completion;
     RadioGroupFieldEditor inexactMatches;
-    BooleanFieldEditor linkedMode;
+    BoolFieldEditor linkedMode;
+    BooleanFieldEditor linkedModeChain;
     ScaleFieldEditor autoActivationDelay;
     RadioGroupFieldEditor autoActivationChars;
     BooleanFieldEditor displayParameterTypes;
@@ -57,6 +60,7 @@ public class CeylonCompletionPreferencePage
         completion.store();
         inexactMatches.store();
         linkedMode.store();
+        linkedModeChain.store();
         displayParameterTypes.store();
         return true;
     }
@@ -72,6 +76,7 @@ public class CeylonCompletionPreferencePage
         completion.loadDefault();
         inexactMatches.loadDefault();
         linkedMode.loadDefault();
+        linkedModeChain.loadDefault();
         displayParameterTypes.loadDefault();
     }
     
@@ -110,11 +115,26 @@ public class CeylonCompletionPreferencePage
         completion.load();
         addField(completion);
         new Label(group1, SWT.NONE).setText("   Press 'Ctrl' when selecting a proposal to toggle");
-        linkedMode = new BooleanFieldEditor(LINKED_MODE, 
+        linkedMode = new BoolFieldEditor(LINKED_MODE_ARGUMENTS, 
                 "Use linked mode to complete argument lists", 
                 getFieldEditorParent(group1));
         linkedMode.load();
         addField(linkedMode);
+        final Composite parent = getFieldEditorParent(group1);
+        parent.setLayoutData(GridDataFactory.swtDefaults().indent(10, 0).create());
+        linkedModeChain = new BooleanFieldEditor(CHAIN_LINKED_MODE_ARGUMENTS, 
+                "Propose chain completions for arguments", parent);
+        linkedModeChain.load();
+        addField(linkedModeChain);
+        linkedModeChain.setEnabled(
+                getPreferenceStore().getBoolean(LINKED_MODE_ARGUMENTS), 
+                parent);
+        linkedMode.setListener(new Listener() {
+            @Override
+            public void valueChanged(boolean oldValue, boolean newValue) {
+                linkedModeChain.setEnabled(newValue, parent);
+            }
+        });
         
         final Composite group3 = createGroup(1, "Proposal auto-insertion");
         autoInsert = new BooleanFieldEditor(AUTO_INSERT, 

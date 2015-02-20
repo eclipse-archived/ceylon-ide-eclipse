@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
@@ -114,7 +114,7 @@ public class ModuleCompletions {
         public void apply(IDocument document) {
             super.apply(document);
             if (withBody && //module.getVersions().size()>1 && //TODO: put this back in when sure it works
-                    EditorUtil.getPreferences().getBoolean(LINKED_MODE)) {
+                    EditorUtil.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
                 final LinkedModeModel linkedModeModel = new LinkedModeModel();
                 final Point selection = getSelection(document);
                 List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
@@ -249,7 +249,7 @@ public class ModuleCompletions {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
-                        if (EditorUtil.getPreferences().getBoolean(LINKED_MODE)) {
+                        if (EditorUtil.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
                             result.add(new ModuleProposal(offset, prefix, len, 
                                     getModuleString(withBody, name, 
                                             module.getLastVersion().getVersion()), 

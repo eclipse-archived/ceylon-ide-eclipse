@@ -24,8 +24,9 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDecla
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CHAIN_LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
@@ -622,7 +623,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         catch (Exception e) {
             e.printStackTrace();
         }
-        if (EditorUtil.getPreferences().getBoolean(LINKED_MODE)) {
+        if (EditorUtil.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
             activeLinkedMode(document);
         }
     }
@@ -857,7 +858,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                     props.add(new NestedCompletionProposal(d, qdec,
                             loc, index, false, isIterArg || isVarArg ? "*" : ""));
                 }
-                if (qualifier==null) {
+                if (qualifier==null && 
+                        EditorUtil.getPreferences().getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
                     Collection<DeclarationWithProximity> members = 
                             ((Value) d).getTypeDeclaration()
                             .getMatchingMemberDeclarations(unit, scope, "", 0).values();

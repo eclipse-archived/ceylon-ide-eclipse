@@ -21,7 +21,8 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String OPEN_FILTERS = "openFilters";
     public static final String INACTIVE_OPEN_FILTERS = "inactiveOpenFilters";
     public static final String INEXACT_MATCHES = "inexactMatches";
-    public static final String LINKED_MODE = "linkedModeCompletion";
+    public static final String LINKED_MODE_ARGUMENTS = "linkedModeCompletion";
+    public static final String CHAIN_LINKED_MODE_ARGUMENTS = "linkedModeChainCompletion";
     public static final String LINKED_MODE_RENAME = "linkedModeRename";
     public static final String LINKED_MODE_RENAME_SELECT = "linkedModeRenameSelect";
     public static final String LINKED_MODE_EXTRACT = "linkedModeExtract";
@@ -66,7 +67,8 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(AUTO_ACTIVATION_CHARS, ".");
         store.setDefault(COMPLETION, "insert");
         store.setDefault(INEXACT_MATCHES, "positional");
-        store.setDefault(LINKED_MODE, true);
+        store.setDefault(LINKED_MODE_ARGUMENTS, true);
+        store.setDefault(CHAIN_LINKED_MODE_ARGUMENTS, false);
         store.setDefault(LINKED_MODE_RENAME, true);
         store.setDefault(LINKED_MODE_RENAME_SELECT, true);
         store.setDefault(LINKED_MODE_EXTRACT, true);
