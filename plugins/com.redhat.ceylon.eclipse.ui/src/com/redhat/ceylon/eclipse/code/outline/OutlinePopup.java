@@ -105,6 +105,7 @@ public class OutlinePopup extends TreeViewPopup {
             if (triggersBinding(e, getCommandBinding())) {
                 mode = !mode;
                 modeButton.setSelection(mode);
+                updateStatusFieldText();
                 getTreeViewer().refresh();
                 getTreeViewer().expandToLevel(getDefaultLevel());
                 e.doit=false;
@@ -398,7 +399,8 @@ public class OutlinePopup extends TreeViewPopup {
     protected String getStatusFieldText() {
         TriggerSequence binding = getCommandBinding();
         if (binding==null) return "";
-        return binding.format() + " to show inherited members of classes and interfaces";
+        String action = mode ? " to hide " : " to show ";
+        return binding.format() + action + "inherited members of classes and interfaces";
     }
     
     @Override
