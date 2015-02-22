@@ -76,12 +76,14 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private static final String SHOW_SELECTION_MODULE = "showSelectionModule";
     private static final String SHOW_SELECTION_PACKAGE = "showSelectionPackage";
     private static final String EXCLUDE_DEPRECATED = "excludeDeprecated";
+    private static final String EXCLUDE_JDK = "excludeJDK";
 
     private static final String SETTINGS_ID = 
             CeylonPlugin.PLUGIN_ID + ".openDeclarationDialog";
     
     private boolean includeMembers;
     private boolean excludeDeprecated;
+    private boolean excludeJDK;
     
     private int filterVersion = 0;
     
@@ -91,14 +93,27 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private TogglePackageAction togglePackageAction;
     private ToggleModuleAction toggleModuleAction;
     private ToggleExcludeDeprecatedAction toggleExcludeDeprecatedAction;
+    private ToggleExcludeJDKAction toggleExcludeJDKAction;
     
     private class ToggleExcludeDeprecatedAction extends Action {
         ToggleExcludeDeprecatedAction() {
-            super("Exclude Deprecated Declarations", IAction.AS_CHECK_BOX);
+            super("Exclude Deprecated Declarations", AS_CHECK_BOX);
         }
         @Override
         public void run() {
             excludeDeprecated=!excludeDeprecated;
+            filterVersion++;
+            applyFilter();
+        }
+    }
+
+    private class ToggleExcludeJDKAction extends Action {
+        ToggleExcludeJDKAction() {
+            super("Exclude Java SDK", AS_CHECK_BOX);
+        }
+        @Override
+        public void run() {
+            excludeJDK=!excludeJDK;
             filterVersion++;
             applyFilter();
         }
@@ -142,6 +157,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (settings.get(EXCLUDE_DEPRECATED)!=null) {
             excludeDeprecated = settings.getBoolean(EXCLUDE_DEPRECATED);
         }
+        if (settings.get(EXCLUDE_JDK)!=null) {
+            excludeJDK = settings.getBoolean(EXCLUDE_JDK);
+        }
         
         if (togglePackageAction!=null) {
             togglePackageAction.setChecked(showSelectionPackage);
@@ -152,6 +170,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (toggleExcludeDeprecatedAction!=null) {
             toggleExcludeDeprecatedAction.setChecked(excludeDeprecated);
         }
+        if (toggleExcludeJDKAction!=null) {
+            toggleExcludeJDKAction.setChecked(excludeJDK);
+        }
     }
     
     protected void storeDialog(IDialogSettings settings) {
@@ -159,17 +180,27 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         settings.put(SHOW_SELECTION_MODULE, showSelectionModule);
         settings.put(SHOW_SELECTION_PACKAGE, showSelectionPackage);
         settings.put(EXCLUDE_DEPRECATED, excludeDeprecated);
+        settings.put(EXCLUDE_JDK, excludeJDK);
     }
 
     private final class Filter extends ItemsFilter {
         boolean members = includeMembers;
         boolean filterDeprecated = excludeDeprecated;
+        boolean filterJDK = excludeJDK;
         int version = filterVersion;
         
         @Override
         public boolean matchItem(Object item) {
+            DeclarationWithProject dwp = 
+                    (DeclarationWithProject) item;
             Declaration declaration = 
-                    ((DeclarationWithProject) item).getDeclaration();
+                    dwp.getDeclaration();
+            Module module = declaration.getUnit().getPackage().getModule();
+            if (filterJDK && 
+                    module instanceof JDTModule &&
+                    ((JDTModule) module).isJDKModule()) {
+                return false;
+            }
             if (filterDeprecated && declaration.isDeprecated()) {
                 return false;
             }
@@ -734,7 +765,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 if (!m.isJava() || includeJava()) {
                     if (m instanceof JDTModule) {
                         JDTModule module = (JDTModule) m;
-                        if (searchedArchives.add(uniqueIdentifier(module))) {
+                        if ((!excludeJDK || !module.isJDKModule()) &&
+                                searchedArchives.add(uniqueIdentifier(module))) {
                             fill(contentProvider, itemsFilter, project, module);
                             monitor.worked(1);
                             if (monitor.isCanceled()) break;
@@ -875,7 +907,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             if (dec.isToplevel()) {
                 visibleFromSourceModules = 
                         dec.isShared() || module.isProjectModule();
-            } else {
+            }
+            else {
                 visibleFromSourceModules = 
                         includeMembers && dec.isShared();
             }
@@ -999,7 +1032,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     @Override
     public String getElementName(Object item) {
-        return ((DeclarationWithProject) item).getDeclaration().getName();
+        return ((DeclarationWithProject) item).getDeclaration()
+                .getQualifiedNameString();
     }
     
     @Override
@@ -1019,6 +1053,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         toggleExcludeDeprecatedAction = new ToggleExcludeDeprecatedAction();
         toggleExcludeDeprecatedAction.setChecked(excludeDeprecated);
         menuManager.add(toggleExcludeDeprecatedAction);
+        
+        toggleExcludeJDKAction = new ToggleExcludeJDKAction();
+        toggleExcludeJDKAction.setChecked(excludeJDK);
+        menuManager.add(toggleExcludeJDKAction);
         
         menuManager.add(new Separator());
         
