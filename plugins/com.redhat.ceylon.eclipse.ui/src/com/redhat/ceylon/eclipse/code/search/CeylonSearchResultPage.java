@@ -209,10 +209,10 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 UNIT_MODE, LEVEL_FILE);
         
         fLayoutTreeAction= new LayoutAction("Tree", 
-                "Tree Layout", 
+                "Show as Tree", 
                 TREE_MODE, FLAG_LAYOUT_TREE);
-        fLayoutFlatAction= new LayoutAction("Float", 
-                "Flat Layout", 
+        fLayoutFlatAction= new LayoutAction("Flat", 
+                "Show as List", 
                 FLAT_MODE, FLAG_LAYOUT_FLAT);
     }
     
@@ -234,8 +234,8 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     protected void fillToolbar(IToolBarManager tbm) {
         super.fillToolbar(tbm);
         tbm.appendToGroup(GROUP_VIEWER_SETUP, new Separator(GROUP_LAYOUT));
-        tbm.appendToGroup(GROUP_LAYOUT, fLayoutTreeAction);
         tbm.appendToGroup(GROUP_LAYOUT, fLayoutFlatAction);
+        tbm.appendToGroup(GROUP_LAYOUT, fLayoutTreeAction);
         updateLayoutActions();
         if (getLayout()!= FLAG_LAYOUT_FLAT) {
             tbm.appendToGroup(GROUP_VIEWER_SETUP, new Separator(GROUP_GROUPING));

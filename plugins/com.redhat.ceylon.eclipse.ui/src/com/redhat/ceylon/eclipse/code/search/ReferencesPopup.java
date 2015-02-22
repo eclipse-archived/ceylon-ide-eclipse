@@ -4,11 +4,13 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog.isMatchingGlob;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_IMPORT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static java.util.Collections.emptySet;
+import static org.eclipse.jface.action.IAction.AS_CHECK_BOX;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +20,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -96,22 +101,17 @@ public final class ReferencesPopup extends PopupDialog
         implements IInformationControl, IInformationControlExtension2,
                    IInformationControlExtension3 {
     
-    private static final ImageRegistry imageRegistry = CeylonPlugin.getInstance().getImageRegistry();
-    private static final Image REFS_IMAGE = imageRegistry.get(CEYLON_REFS);
-    private static final Image DECS_IMAGE = imageRegistry.get(CEYLON_DECS);
+    private static final ImageRegistry imageRegistry = 
+            CeylonPlugin.getInstance().getImageRegistry();
+    private static final Image REFS_IMAGE = 
+            imageRegistry.get(CEYLON_REFS);
+    private static final Image DECS_IMAGE = 
+            imageRegistry.get(CEYLON_DECS);
 
     public class ChangeLayoutListener implements SelectionListener {
         @Override
         public void widgetSelected(SelectionEvent e) {
-            treeLayout = !treeLayout;
-            viewer = treeLayout ? treeViewer : tableViewer;
-            treeViewer.getTree().setVisible(treeLayout);
-            tableViewer.getTable().setVisible(!treeLayout);
-            ((GridData)treeViewer.getControl().getLayoutData()).exclude=!treeLayout;
-            ((GridData)tableViewer.getControl().getLayoutData()).exclude=treeLayout;
-            viewer.getControl().getParent().layout(/*true*/);
-            setInput(null);
-            getDialogSettings().put("treeLayout", treeLayout);
+            switchLayout();
         }
 
         @Override
@@ -427,17 +427,22 @@ public final class ReferencesPopup extends PopupDialog
         return null;
     }
 
+    private void switchMatchesInImports() {
+        includeImports = !includeImports;
+        setInput(null);
+        getDialogSettings().put("includeImports", includeImports);
+    }
+    
     private void createImportsButton(ToolBar toolBar) {
-        ToolItem button = new ToolItem(toolBar, SWT.CHECK);
-        button.setImage(CeylonLabelProvider.IMPORT);
-        button.setToolTipText("Show Matches in Import Statements");
-        button.setSelection(includeImports);
-        button.addSelectionListener(new SelectionListener() {
+        importsButton = new ToolItem(toolBar, SWT.CHECK);
+        importsButton.setImage(CeylonLabelProvider.IMPORT);
+        importsButton.setToolTipText("Show Matches in Import Statements");
+        importsButton.setSelection(includeImports);
+        importsButton.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                includeImports = !includeImports;
-                setInput(null);
-                getDialogSettings().put("includeImports", includeImports);
+                switchMatchesInImports();
+                if (importsAction!=null) importsAction.setChecked(importsButton.getSelection());
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -445,38 +450,38 @@ public final class ReferencesPopup extends PopupDialog
     }
 
     private void createModeButtons(ToolBar toolBar) {
-        button1 = new ToolItem(toolBar, SWT.CHECK);
-        button1.setImage(REFS_IMAGE);
-        button1.setToolTipText("Show References");
-        button2 = new ToolItem(toolBar, SWT.CHECK);
-        button2.setImage(DECS_IMAGE);
-        button2.setToolTipText("Show Refinements/Subtypes");
+        refsButton = new ToolItem(toolBar, SWT.CHECK);
+        refsButton.setImage(REFS_IMAGE);
+        refsButton.setToolTipText("Show References");
+        subsButton = new ToolItem(toolBar, SWT.CHECK);
+        subsButton.setImage(DECS_IMAGE);
+        subsButton.setToolTipText("Show Refinements/Subtypes");
         updateButtonSelection();
-        button1.addSelectionListener(new SelectionListener() {
+        refsButton.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (button1.getSelection()) {
+                if (refsButton.getSelection()) {
                     showingRefinements = false;
                     setInput(null);
-                    button2.setSelection(false);
+                    subsButton.setSelection(false);
                 }
                 else {
-                    button1.setSelection(true);
+                    refsButton.setSelection(true);
                 }
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-        button2.addSelectionListener(new SelectionListener() {
+        subsButton.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (button2.getSelection()) {
+                if (subsButton.getSelection()) {
                     showingRefinements = true;
                     setInput(null);
-                    button1.setSelection(false);
+                    refsButton.setSelection(false);
                 }
                 else {
-                    button2.setSelection(true);
+                    subsButton.setSelection(true);
                 }
             }
             @Override
@@ -485,40 +490,48 @@ public final class ReferencesPopup extends PopupDialog
     }
     
     private void updateButtonSelection() {
-        button2.setSelection(showingRefinements);
-        button1.setSelection(!showingRefinements);
+        subsButton.setSelection(showingRefinements);
+        refsButton.setSelection(!showingRefinements);
     }
     
     private void createLayoutButtons(ToolBar toolBar) {
-        final ToolItem button1 = new ToolItem(toolBar, SWT.CHECK);
-        button1.setImage(imageRegistry.get(FLAT_MODE));
-        button1.setToolTipText("Flat Layout");
-        button1.setSelection(!treeLayout);
-        final ToolItem button2 = new ToolItem(toolBar, SWT.CHECK);
-        button2.setImage(imageRegistry.get(TREE_MODE));
-        button2.setToolTipText("Tree Layout");
-        button2.setSelection(treeLayout);
-        button1.addSelectionListener(new ChangeLayoutListener() {
+        flatLayoutButton = new ToolItem(toolBar, SWT.CHECK);
+        flatLayoutButton.setImage(imageRegistry.get(FLAT_MODE));
+        flatLayoutButton.setToolTipText("Show as List");
+        flatLayoutButton.setSelection(!treeLayout);
+        treeLayoutButton = new ToolItem(toolBar, SWT.CHECK);
+        treeLayoutButton.setImage(imageRegistry.get(TREE_MODE));
+        treeLayoutButton.setToolTipText("Show as Tree");
+        treeLayoutButton.setSelection(treeLayout);
+        flatLayoutButton.addSelectionListener(new ChangeLayoutListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (button1.getSelection()) {
+                if (flatLayoutButton.getSelection()) {
                     super.widgetSelected(e);
-                    button2.setSelection(false);
+                    treeLayoutButton.setSelection(false);
+                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(false);
+                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(true);
                 }
                 else {
-                    button1.setSelection(true);
+                    treeLayoutButton.setSelection(true);
+                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(true);
+                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(false);
                 }
             }
         });
-        button2.addSelectionListener(new ChangeLayoutListener() {
+        treeLayoutButton.addSelectionListener(new ChangeLayoutListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (button2.getSelection()) {
+                if (treeLayoutButton.getSelection()) {
                     super.widgetSelected(e);
-                    button1.setSelection(false);
+                    flatLayoutButton.setSelection(false);
+                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(false);
+                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(true);
                 }
                 else {
-                    button2.setSelection(true);
+                    flatLayoutButton.setSelection(true);
+                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(true);
+                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(false);
                 }
             }
         });
@@ -708,8 +721,14 @@ public final class ReferencesPopup extends PopupDialog
     private TreeViewer treeViewer;
     private TableViewer tableViewer;
     private Label icon;
-    private ToolItem button1;
-    private ToolItem button2;
+    private ToolItem refsButton;
+    private ToolItem subsButton;
+    private ToolItem flatLayoutButton;
+    private ToolItem treeLayoutButton;
+    private LayoutAction flatLayoutAction;
+    private LayoutAction treeLayoutAction;
+    private ToolItem importsButton;
+    private Action importsAction;
     
     @Override
     public void setInput(Object input) {
@@ -853,7 +872,8 @@ public final class ReferencesPopup extends PopupDialog
             firstElem = ((TableViewer) viewer).getElementAt(0);
         }
         else {
-            org.eclipse.swt.widgets.Tree tree = ((TreeViewer) viewer).getTree();
+            org.eclipse.swt.widgets.Tree tree = 
+                    ((TreeViewer) viewer).getTree();
             if (tree.getItemCount()>0) {
                 firstElem = tree.getItem(0).getData();
             }
@@ -889,13 +909,92 @@ public final class ReferencesPopup extends PopupDialog
     
     @Override
     protected IDialogSettings getDialogSettings() {
-        String sectionName = CeylonPlugin.PLUGIN_ID + ".FindReferences";
-        IDialogSettings dialogSettings = CeylonPlugin.getInstance()
-                .getDialogSettings();
-        IDialogSettings settings = dialogSettings.getSection(sectionName);
+        String sectionName = 
+                CeylonPlugin.PLUGIN_ID + ".FindReferences";
+        IDialogSettings dialogSettings = 
+                CeylonPlugin.getInstance().getDialogSettings();
+        IDialogSettings settings = 
+                dialogSettings.getSection(sectionName);
         if (settings == null)
-            settings= dialogSettings.addNewSection(sectionName);
+            settings = dialogSettings.addNewSection(sectionName);
         return settings;
+    }
+    
+    class LayoutAction extends Action {
+        LayoutAction(String name, String image) {
+            super(name, AS_CHECK_BOX);
+            setImageDescriptor(imageRegistry.getDescriptor(image));
+        }
+        @Override
+        public void run() {
+            switchLayout();
+        }
+    }
+    
+    @Override
+    protected void fillDialogMenu(IMenuManager dialogMenu) {
+        flatLayoutAction = new LayoutAction("Show as List", FLAT_MODE) {
+            @Override
+            public void run() {
+                super.run();
+                if (isChecked()) {
+                    treeLayoutAction.setChecked(false);
+                    treeLayoutButton.setSelection(false);
+                    flatLayoutButton.setSelection(true);
+                }
+                else {
+                    treeLayoutAction.setChecked(true);
+                    treeLayoutButton.setSelection(true);
+                    flatLayoutButton.setSelection(false);
+                }
+            }
+        };
+        flatLayoutAction.setChecked(true);
+        treeLayoutAction = new LayoutAction("Show as Tree", TREE_MODE) {
+            @Override
+            public void run() {
+                super.run();
+                if (isChecked()) {
+                    flatLayoutAction.setChecked(false);
+                    flatLayoutButton.setSelection(false);
+                    treeLayoutButton.setSelection(true);
+                }
+                else {
+                    flatLayoutAction.setChecked(true);
+                    flatLayoutButton.setSelection(true);
+                    treeLayoutButton.setSelection(false);
+                }
+            }
+        };
+        dialogMenu.add(flatLayoutAction);
+        dialogMenu.add(treeLayoutAction);
+        dialogMenu.add(new Separator());
+        importsAction = new Action("Show Matches in Imports", AS_CHECK_BOX) {
+            {
+                setImageDescriptor(imageRegistry.getDescriptor(CEYLON_IMPORT));
+            }
+            @Override
+            public void run() {
+                switchMatchesInImports();
+                importsButton.setSelection(isChecked());
+            }
+        };
+        importsAction.setChecked(includeImports);
+        dialogMenu.add(importsAction);
+        dialogMenu.add(new Separator());
+        super.fillDialogMenu(dialogMenu);
+    }
+
+    private void switchLayout() {
+        treeLayout = !treeLayout;
+        viewer = treeLayout ? treeViewer : tableViewer;
+        treeViewer.getTree().setVisible(treeLayout);
+        tableViewer.getTable().setVisible(!treeLayout);
+        ((GridData)treeViewer.getControl().getLayoutData()).exclude=!treeLayout;
+        ((GridData)tableViewer.getControl().getLayoutData()).exclude=treeLayout;
+        viewer.getControl().getParent().layout(/*true*/);
+        setInput(null);
+        getDialogSettings().put("treeLayout", treeLayout);
     }
 
 }
