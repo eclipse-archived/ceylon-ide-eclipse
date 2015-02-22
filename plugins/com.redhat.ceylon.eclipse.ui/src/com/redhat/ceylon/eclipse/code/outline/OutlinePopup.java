@@ -23,6 +23,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.triggersBinding;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 
 import org.eclipse.jface.action.Action;
@@ -329,7 +330,7 @@ public class OutlinePopup extends TreeViewPopup {
                                 }
                             }
                             if (!lexicalSortingAction.isChecked()) {
-                                list.sort(new Comparator<Declaration>() {
+                                Collections.sort(list, new Comparator<Declaration>() {
                                     public int compare(Declaration x, Declaration y) {
                                         return x.getContainer().getQualifiedNameString()
                                                 .compareTo(y.getContainer().getQualifiedNameString());
