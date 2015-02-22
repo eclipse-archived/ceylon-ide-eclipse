@@ -36,8 +36,11 @@ public class CeylonOutlineBuilder extends Visitor {
                 !(that instanceof Tree.Variable/* && 
                         ((Tree.Variable) that).getType() instanceof SyntheticVariable*/)) {
             if (that instanceof Tree.AnyAttribute) {
-                TypedDeclaration att = ((Tree.AnyAttribute)that).getDeclarationModel();
-                if (att==null || !att.isShared() && !att.isToplevel() &&
+                TypedDeclaration att = 
+                        ((Tree.AnyAttribute) that).getDeclarationModel();
+                if (att==null || 
+                        !att.isShared() && 
+                        !att.isToplevel() &&
                         !(att.getContainer() instanceof ClassOrInterface)) {
                     return;
                 }
@@ -99,12 +102,14 @@ public class CeylonOutlineBuilder extends Visitor {
         }
     }
     
-    private Stack<CeylonOutlineNode> itemStack = new Stack<CeylonOutlineNode>();
+    private Stack<CeylonOutlineNode> itemStack = 
+            new Stack<CeylonOutlineNode>();
     
     public final CeylonOutlineNode buildTree(CeylonParseController cpc) {
         if (cpc==null) return null;
-        IFile file = cpc.getProject()==null || cpc.getPath()==null ? null :
-                cpc.getProject().getFile(cpc.getPath());
+        IFile file = cpc.getProject()==null || 
+                cpc.getPath()==null ? null :
+                    cpc.getProject().getFile(cpc.getPath());
         Tree.CompilationUnit rootNode = cpc.getRootNode();
         if (rootNode==null || 
             rootNode.getUnit()==null || 
@@ -112,7 +117,8 @@ public class CeylonOutlineBuilder extends Visitor {
             return null;
         }
         if (rootNode.getUnit() instanceof CeylonUnit) {
-            PhasedUnit phasedUnit = ((CeylonUnit) rootNode.getUnit()).getPhasedUnit();
+            PhasedUnit phasedUnit = 
+                    ((CeylonUnit) rootNode.getUnit()).getPhasedUnit();
             if (phasedUnit == null || ! phasedUnit.isFullyTyped()) {
                 return null;
             }
@@ -134,7 +140,8 @@ public class CeylonOutlineBuilder extends Visitor {
                 !unit.getFilename().equals("module.ceylon") &&
                 !unit.getFilename().equals("package.ceylon")) { //it looks a bit funny to have two nodes representing the package
                 PackageNode packageNode = new PackageNode();
-                packageNode.setPackageName(unit.getPackage().getQualifiedNameString());
+                String pname = unit.getPackage().getQualifiedNameString();
+                packageNode.setPackageName(pname);
                 createSubItem(packageNode, PACKAGE_CATEGORY, 
                         file==null ? null : file.getParent());
             }
@@ -160,9 +167,11 @@ public class CeylonOutlineBuilder extends Visitor {
         return createSubItem(n, category, null);
     }
 
-    private CeylonOutlineNode createSubItem(Node n, int category, IResource file) {
+    private CeylonOutlineNode createSubItem(Node n, int category, 
+            IResource file) {
         CeylonOutlineNode parent = itemStack.peek();
-        CeylonOutlineNode treeNode = new CeylonOutlineNode(n, parent, category, file);
+        CeylonOutlineNode treeNode = 
+                new CeylonOutlineNode(n, parent, category, file);
         parent.addChild(treeNode);
         return treeNode;
     }

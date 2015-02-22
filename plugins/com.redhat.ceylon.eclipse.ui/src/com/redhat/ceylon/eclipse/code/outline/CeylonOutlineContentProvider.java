@@ -19,12 +19,14 @@ public class CeylonOutlineContentProvider
         implements ITreeContentProvider {
 
     @Override
-    public Object[] getChildren(Object element) { // left here as a placeholder for the commented-out code below
-        return ((CeylonOutlineNode) element).getChildren().toArray();
+    public Object[] getChildren(Object element) {
+        CeylonOutlineNode node = (CeylonOutlineNode) element;
+        return node.getChildren().toArray();
     }
 
     @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
+    public void inputChanged(Viewer viewer, 
+            Object oldInput, Object newInput) {}
 
     @Override
     public void dispose() {}
