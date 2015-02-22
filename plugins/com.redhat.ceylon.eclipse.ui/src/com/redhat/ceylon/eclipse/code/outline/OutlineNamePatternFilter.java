@@ -9,6 +9,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Text;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+
 /**
  * The NamePatternFilter selects the elements which
  * match the given string patterns.
@@ -36,32 +38,44 @@ class OutlineNamePatternFilter extends ViewerFilter {
             return true;
 
         return hasUnfilteredChild(treeViewer, element);*/
-        TreeViewer treeViewer= (TreeViewer) viewer;
+        TreeViewer treeViewer = (TreeViewer) viewer;
+        String name = null;
         if (element instanceof CeylonOutlineNode) {
-            String name = ((CeylonOutlineNode) element).getName();
-            if (name==null) {
-                return false;
+            name = ((CeylonOutlineNode) element).getName();
+        }
+        else if (element instanceof Declaration) {
+            name = ((Declaration) element).getName();
+        }
+        else {
+            return true;
+        }
+        if (name==null) {
+            return false;
+        }
+        else {
+            String filter = filterText.getText();
+            if (filter.contains("*")) {
+                return isMatchingGlob(filter, name) ||
+                        hasUnfilteredChild(treeViewer, element);
             }
             else {
-                String filter = filterText.getText();
-                if (filter.contains("*")) {
-                    return isMatchingGlob(filter, name) ||
-                            hasUnfilteredChild(treeViewer, element);
-                }
-                else {
-                    return isNameMatching(filter, name) ||
-                            hasUnfilteredChild(treeViewer, element);
-                }
+                return isNameMatching(filter, name) ||
+                        hasUnfilteredChild(treeViewer, element);
             }
         }
-        return true;
     }
 
     private boolean hasUnfilteredChild(TreeViewer viewer, Object element) {
-        Object[] children=  ((ITreeContentProvider) viewer.getContentProvider()).getChildren(element);
-        for (int i= 0; i < children.length; i++)
-            if (select(viewer, element, children[i]))
-                return true;
+        ITreeContentProvider cp = 
+                (ITreeContentProvider) viewer.getContentProvider();
+        Object[] children = cp.getChildren(element);
+        if (children!=null) {
+            for (int i=0; i<children.length; i++) {
+                if (select(viewer, element, children[i])) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 }

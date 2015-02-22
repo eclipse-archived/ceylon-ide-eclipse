@@ -39,7 +39,7 @@ public class CeylonOutlineContentProvider
     
     @Override
     public Object getParent(Object element) {
-        return ((CeylonOutlineNode) element).getParent();    
+        return ((CeylonOutlineNode) element).getParent();
     }
 
     @Override

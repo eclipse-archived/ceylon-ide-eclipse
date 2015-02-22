@@ -104,7 +104,7 @@ public class HierarchyView extends ViewPart {
             CeylonPlugin.getInstance().getImageRegistry();
     private static final Image GOTO_IMAGE = 
             imageRegistry.get(GOTO);
-    private static final Image INHERITED_IMAGE = 
+    static final Image INHERITED_IMAGE = 
             imageRegistry.get(CEYLON_INHERITED);
     private static final Image SORT_IMAGE = 
             imageRegistry.get(TYPE_MODE);
