@@ -16,8 +16,6 @@ package com.redhat.ceylon.eclipse.code.open;
  *  Simon Muschel <smuschel@gmx.de> - bug 258493
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
-import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 
 import java.io.IOException;
@@ -61,6 +59,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ContentViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -72,7 +71,6 @@ import org.eclipse.jface.viewers.ILazyContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -141,8 +139,6 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.statushandlers.StatusManager;
 
-import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
-import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
@@ -190,6 +186,7 @@ public abstract class FilteredItemsSelectionDialog extends
 
     private DetailsContentViewer details;
     private DetailsContentViewer moreDetails;
+    private DetailsContentViewer evenMoreDetails;
 
     /**
      * It is a duplicate of a field in the CLabel class in DetailsContentViewer.
@@ -198,6 +195,7 @@ public abstract class FilteredItemsSelectionDialog extends
      */
     private ILabelProvider detailsLabelProvider;
     private ILabelProvider moreDetailsLabelProvider;
+    private ILabelProvider evenMoreDetailsLabelProvider;
 
     private ItemsListLabelProvider itemsListLabelProvider;
 
@@ -257,7 +255,7 @@ public abstract class FilteredItemsSelectionDialog extends
     private final String filterLabelText;
     private final String listLabelText;
 
-    private Browser         browser;
+    private Browser browser;
 
     private SashForm sash;
 
@@ -284,6 +282,19 @@ public abstract class FilteredItemsSelectionDialog extends
         selectionMode = NONE;
     }
     
+    protected void initLabelProviders(ILabelProvider listLabelProvider,
+            ILabelDecorator listSelectionLabelDecorator,
+            ILabelProvider detailsLabelProvider, 
+            ILabelProvider moreDetailsLabelProvider,
+            ILabelProvider evenMoreDetailsLabelProvider) {
+        itemsListLabelProvider = 
+                new ItemsListLabelProvider(listLabelProvider, 
+                        listSelectionLabelDecorator);
+        this.detailsLabelProvider = detailsLabelProvider;
+        this.moreDetailsLabelProvider = moreDetailsLabelProvider;
+        this.evenMoreDetailsLabelProvider = evenMoreDetailsLabelProvider;
+    }
+    
     /**
      * Adds viewer filter to the dialog items list.
      * 
@@ -293,100 +304,7 @@ public abstract class FilteredItemsSelectionDialog extends
     protected void addListFilter(ViewerFilter filter) {
         contentProvider.addFilter(filter);
     }
-
-    /**
-     * Sets a new label provider for items in the list. If the label provider
-     * also implements {@link
-     * org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider
-     * .IStyledLabelProvider}, the style text labels provided by it will be used
-     * provided that the corresponding preference is set.
-     * 
-     * @see IWorkbenchPreferenceConstants#USE_COLORED_LABELS
-     * 
-     * @param listLabelProvider
-     *      the label provider for items in the list
-     */
-    public void setListLabelProvider(ILabelProvider listLabelProvider) {
-        getItemsListLabelProvider().setProvider(listLabelProvider);
-    }
-
-    /**
-     * Returns the label decorator for selected items in the list.
-     * 
-     * @return the label decorator for selected items in the list
-     */
-    private ILabelDecorator getListSelectionLabelDecorator() {
-        return getItemsListLabelProvider().getSelectionDecorator();
-    }
-
-    /**
-     * Sets the label decorator for selected items in the list.
-     * 
-     * @param listSelectionLabelDecorator
-     *            the label decorator for selected items in the list
-     */
-    public void setListSelectionLabelDecorator(
-            ILabelDecorator listSelectionLabelDecorator) {
-        getItemsListLabelProvider().setSelectionDecorator(
-                listSelectionLabelDecorator);
-    }
-
-    /**
-     * Returns the item list label provider.
-     * 
-     * @return the item list label provider
-     */
-    private ItemsListLabelProvider getItemsListLabelProvider() {
-        if (itemsListLabelProvider == null) {
-            itemsListLabelProvider = new ItemsListLabelProvider(
-                    new LabelProvider(), null);
-        }
-        return itemsListLabelProvider;
-    }
-
-    /**
-     * Sets label provider for the details field.
-     * 
-     * For a single selection, the element sent to
-     * {@link ILabelProvider#getImage(Object)} and
-     * {@link ILabelProvider#getText(Object)} is the selected object, for
-     * multiple selection a {@link String} with amount of selected items is the
-     * element.
-     * 
-     * @see #getSelectedItems() getSelectedItems() can be used to retrieve
-     *      selected items and get the items count.
-     * 
-     * @param detailsLabelProvider
-     *            the label provider for the details field
-     */
-    public void setDetailsLabelProvider(ILabelProvider detailsLabelProvider) {
-        this.detailsLabelProvider = detailsLabelProvider;
-        if (details != null) {
-            details.setLabelProvider(detailsLabelProvider);
-        }
-    }
-
-    public void setMoreDetailsLabelProvider(ILabelProvider detailsLabelProvider) {
-        this.moreDetailsLabelProvider = detailsLabelProvider;
-        if (moreDetails != null) {
-            moreDetails.setLabelProvider(detailsLabelProvider);
-        }
-    }
-
-    private ILabelProvider getDetailsLabelProvider() {
-        if (detailsLabelProvider == null) {
-            detailsLabelProvider = new LabelProvider();
-        }
-        return detailsLabelProvider;
-    }
-
-    private ILabelProvider getMoreDetailsLabelProvider() {
-        if (moreDetailsLabelProvider == null) {
-            moreDetailsLabelProvider = new LabelProvider();
-        }
-        return moreDetailsLabelProvider;
-    }
-
+    
     @Override
     public void create() {
         super.create();
@@ -718,7 +636,7 @@ public abstract class FilteredItemsSelectionDialog extends
                     }
                 });
         list.setContentProvider(contentProvider);
-        list.setLabelProvider(getItemsListLabelProvider());
+        list.setLabelProvider(itemsListLabelProvider);
         list.setInput(new Object[0]);
         list.setItemCount(contentProvider.getNumberOfElements());
         applyDialogFont(list.getTable());
@@ -737,7 +655,7 @@ public abstract class FilteredItemsSelectionDialog extends
                 .getFontData(APPEARANCE_JAVADOC_FONT)[0];
         browser.setFont(new Font(Display.getDefault(), fontData));
         browser.setLayoutData(new GridData(GridData.FILL_BOTH));
-        browser.setText(emptyDoc);
+        refreshBrowserContent(browser, null);
         
         createPopupMenu();
 
@@ -838,7 +756,7 @@ public abstract class FilteredItemsSelectionDialog extends
             }
         });
         
-        createStatusArea(composite);
+        createStatusArea(content);
         
         applyDialogFont(content);
 
@@ -871,39 +789,42 @@ public abstract class FilteredItemsSelectionDialog extends
         pattern.getAccessible().addAccessibleListener(new AccessibleAdapter() {
             @Override
             public void getName(AccessibleEvent e) {
-                e.result = LegacyActionTools.removeMnemonics(headerLabel
-                        .getText());
+                e.result = LegacyActionTools.removeMnemonics(headerLabel.getText());
             }
         });
         gd = new GridData(GridData.FILL_HORIZONTAL);
         pattern.setLayoutData(gd);
     }
 
-    protected void createStatusArea(final Composite content) {
-        statusArea = new ViewForm(content, SWT.BORDER | SWT.FLAT);
+    protected void createStatusArea(final Composite parent) {
+        statusArea = new ViewForm(parent, SWT.BORDER | SWT.FLAT);
         statusArea.setEnabled(false);
-        GridData gd1 = new GridData(GridData.FILL_HORIZONTAL);
-        gd1.horizontalSpan = 2;
-        statusArea.setLayoutData(gd1);
-        Composite group = new Composite(statusArea, SWT.NONE);
-        statusArea.setContent(group);
-        group.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
-        group.setLayoutData(GridDataFactory.fillDefaults().create());
+        statusArea.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
+        final Composite content = new Composite(statusArea, SWT.NONE);
+        content.setLayout(GridLayoutFactory.fillDefaults().numColumns(3).equalWidth(false).spacing(0, 0).create());
+        content.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        statusArea.setContent(content);
         
-        details = new DetailsContentViewer(group, /*SWT.BORDER |*/ SWT.FLAT);
-        moreDetails = new DetailsContentViewer(group, /*SWT.BORDER |*/ SWT.FLAT);
+        details = new DetailsContentViewer(content, /*SWT.BORDER |*/ SWT.FLAT);
+        moreDetails = new DetailsContentViewer(content, /*SWT.BORDER |*/ SWT.FLAT);
+        evenMoreDetails = new DetailsContentViewer(content, /*SWT.BORDER |*/ SWT.FLAT);
+        
         setStatusAreaVisible(toggleStatusLineAction==null ||
                 toggleStatusLineAction.isChecked());
         
         details.setContentProvider(new NullContentProvider());
-        details.setLabelProvider(getDetailsLabelProvider());
+        details.setLabelProvider(detailsLabelProvider);
         
         moreDetails.setContentProvider(new NullContentProvider());
-        moreDetails.setLabelProvider(getMoreDetailsLabelProvider());
+        moreDetails.setLabelProvider(moreDetailsLabelProvider);
+        
+        evenMoreDetails.setContentProvider(new NullContentProvider());
+        evenMoreDetails.setLabelProvider(evenMoreDetailsLabelProvider);
         
         statusArea.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
+                parent.layout();
                 content.layout();
             }
         });
@@ -920,6 +841,7 @@ public abstract class FilteredItemsSelectionDialog extends
         GridData gd = (GridData) statusArea.getLayoutData();
         gd.exclude = !visible;
         statusArea.getParent().layout();
+        ((Composite) statusArea.getContent()).layout();
     }
 
     public void setDocAreaVisible(boolean visible) {
@@ -945,34 +867,28 @@ public abstract class FilteredItemsSelectionDialog extends
      */
     private void refreshDetails() {
         StructuredSelection selection = getSelectedItems();
-
         switch (selection.size()) {
         case 0:
             details.setInput(null);
             moreDetails.setInput(null);
+            evenMoreDetails.setInput(null);
             break;
         case 1:
             Object firstElement = selection.getFirstElement();
             details.setInput(firstElement);
             moreDetails.setInput(firstElement);
+            evenMoreDetails.setInput(firstElement);
             break;
         default:
             moreDetails.setInput(null);
+            evenMoreDetails.setInput(null);
             details.setInput(selection.size() + " items selected");
             break;
         }
-
+        statusArea.getParent().layout();
+        ((Composite) statusArea.getContent()).layout();
     }
 
-    
-    private static final String emptyDoc;
-    static {
-        StringBuilder buffer = new StringBuilder();
-        insertPageProlog(buffer, 0, HTML.getStyleSheet());
-        buffer.append("<i>Select a declaration to see its documentation here.</i>");
-        addPageEpilog(buffer);
-        emptyDoc = buffer.toString();
-    }
     
     /**
      * Handle selection in the items list by updating labels of selected and
@@ -994,7 +910,7 @@ public abstract class FilteredItemsSelectionDialog extends
                     IStatus.ERROR, EMPTY_STRING, null);
 
             if (lastSelection != null
-                    && getListSelectionLabelDecorator() != null) {
+                    /*&& getListSelectionLabelDecorator() != null*/) {
                 list.update(lastSelection, null);
             }
 
@@ -1031,28 +947,22 @@ public abstract class FilteredItemsSelectionDialog extends
             }
 
             if (lastSelection != null
-                    && getListSelectionLabelDecorator() != null) {
+                    /*&& getListSelectionLabelDecorator() != null*/) {
                 list.update(lastSelection, null);
             }
 
-            if (getListSelectionLabelDecorator() != null) {
+//            if (getListSelectionLabelDecorator() != null) {
                 list.update(currentSelection, null);
-            }
+//            }
         }
         
-        if (currentSelection!=null &&
-                currentSelection.length==1 &&
-                currentSelection[0] instanceof DeclarationWithProject) {
-            browser.setText(DocumentationHover.getDocumentationFor(null, 
-                    ((DeclarationWithProject) currentSelection[0]).getDeclaration()));
-        }
-        else {
-            browser.setText(emptyDoc);
-        }
+        refreshBrowserContent(browser, currentSelection);
         
         refreshDetails();
         updateStatus(status);
     }
+
+    protected void refreshBrowserContent(Browser browser, Object[] currentSelection) {}
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
@@ -1689,57 +1599,7 @@ public abstract class FilteredItemsSelectionDialog extends
                 selectionDecorator.addListener(this);
             }
         }
-
-        /**
-         * Sets new selection decorator.
-         * 
-         * @param newSelectionDecorator
-         *            new label decorator for selected items in the list
-         */
-        public void setSelectionDecorator(ILabelDecorator newSelectionDecorator) {
-            if (selectionDecorator != null) {
-                selectionDecorator.removeListener(this);
-                selectionDecorator.dispose();
-            }
-
-            selectionDecorator = newSelectionDecorator;
-
-            if (selectionDecorator != null) {
-                selectionDecorator.addListener(this);
-            }
-        }
-
-        /**
-         * Gets selection decorator.
-         * 
-         * @return the label decorator for selected items in the list
-         */
-        public ILabelDecorator getSelectionDecorator() {
-            return selectionDecorator;
-        }
-
-        /**
-         * Sets new label provider.
-         * 
-         * @param newProvider
-         *            new label provider for items in the list, not
-         *            <code>null</code>
-         */
-        public void setProvider(ILabelProvider newProvider) {
-            Assert.isNotNull(newProvider);
-            provider.removeListener(this);
-            provider.dispose();
-
-            provider = newProvider;
-
-            if (provider != null) {
-                provider.addListener(this);
-            }
-
-            setOwnerDrawEnabled(showColoredLabels() && 
-                    provider instanceof IStyledLabelProvider);
-        }
-
+        
         private Image getImage(Object element) {
             if (element instanceof ItemsListSeparator) {
                 return WorkbenchImages
@@ -3144,12 +3004,12 @@ public abstract class FilteredItemsSelectionDialog extends
          */
         public DetailsContentViewer(Composite parent, int style) {
 //            viewForm = new ViewForm(parent, style);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
+//            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+//            gd.horizontalSpan = 1;
 //            viewForm.setLayoutData(gd);
             label = new CLabel(parent, SWT.FLAT);
             label.setFont(parent.getFont());
-            label.setLayoutData(gd);
+            label.setLayoutData(GridDataFactory.fillDefaults().create());
 //            viewForm.setContent(label);
             hookControl(label);
         }

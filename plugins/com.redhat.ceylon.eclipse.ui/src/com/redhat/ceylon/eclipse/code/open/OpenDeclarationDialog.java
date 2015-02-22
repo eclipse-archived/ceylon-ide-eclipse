@@ -4,6 +4,8 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
+import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
@@ -46,6 +48,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
@@ -59,6 +62,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
+import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
@@ -357,7 +362,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                         (DeclarationWithProject) element;
                 Declaration d = dwp.getDeclaration();
                 try {
-                    return getModuleLabel(d) + " - " + getLocation(dwp);
+                    return getModuleLabel(d)/* + " - " + getLocation(dwp)*/;
                 }
                 catch (Exception e) {
                     System.err.println(d.getName());
@@ -377,6 +382,55 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         public Image getImage(Object element) {
             if (element instanceof DeclarationWithProject) {
                 return CeylonLabelProvider.MODULE;
+            }
+            else {
+                return null;
+            }
+        }
+    }
+
+    static class EvenMoreDetailsLabelProvider implements ILabelProvider {
+        @Override
+        public void removeListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+        
+        @Override
+        public void dispose() {}
+        
+        @Override
+        public void addListener(ILabelProviderListener listener) {}
+        
+        @Override
+        public String getText(Object element) {
+            if (element instanceof DeclarationWithProject) {
+                DeclarationWithProject dwp = 
+                        (DeclarationWithProject) element;
+                Declaration d = dwp.getDeclaration();
+                try {
+                    return getLocation(dwp);
+                }
+                catch (Exception e) {
+                    System.err.println(d.getName());
+                    e.printStackTrace();
+                    return "";
+                }
+            }
+            else if (element instanceof String) {
+                return (String) element;
+            }
+            else {
+                return "";
+            }
+        }
+
+        @Override
+        public Image getImage(Object element) {
+            if (element instanceof DeclarationWithProject) {
+                return CeylonLabelProvider.REPO;
             }
             else {
                 return null;
@@ -573,11 +627,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             String filterLabelText, String listLabelText) {
         super(shell, multi, filterLabelText, listLabelText);
         setTitle(title);
+        initLabelProviders(new LabelProvider(), new SelectionLabelDecorator(),
+                new DetailsLabelProvider(), new MoreDetailsLabelProvider(),
+                new EvenMoreDetailsLabelProvider());
         setSelectionHistory(new TypeSelectionHistory());
-        setListLabelProvider(new LabelProvider());
-        setDetailsLabelProvider(new DetailsLabelProvider());
-        setMoreDetailsLabelProvider(new MoreDetailsLabelProvider());
-        setListSelectionLabelDecorator(new SelectionLabelDecorator());
     }
     
     @Override
@@ -994,6 +1047,28 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             }
         };
         menuManager.add(configureAction);
+    }
+
+    protected static final String emptyDoc;
+    static {
+        StringBuilder buffer = new StringBuilder();
+        insertPageProlog(buffer, 0, HTML.getStyleSheet());
+        buffer.append("<i>Select a declaration to see its documentation here.</i>");
+        addPageEpilog(buffer);
+        emptyDoc = buffer.toString();
+    }
+    
+    @Override
+    protected void refreshBrowserContent(Browser browser, Object[] selection) {
+        if (selection!=null &&
+                selection.length==1 &&
+                        selection[0] instanceof DeclarationWithProject) {
+            browser.setText(DocumentationHover.getDocumentationFor(null, 
+                    ((DeclarationWithProject) selection[0]).getDeclaration()));
+        }
+        else {
+            browser.setText(emptyDoc);
+        }
     }
 
     public static boolean isMatchingGlob(String filter, String name) {
