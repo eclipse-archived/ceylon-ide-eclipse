@@ -14,7 +14,10 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getNodeDecorationAttributes;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.lang.System.identityHashCode;
 
 import java.util.ArrayList;
@@ -47,7 +50,8 @@ public class CeylonOutlineNode implements IAdaptable {
     public static final int IMPORT_LIST_CATEGORY = -1;
     public static final int DEFAULT_CATEGORY = 0;
 
-    private final List<CeylonOutlineNode> children = new ArrayList<CeylonOutlineNode>();
+    private final List<CeylonOutlineNode> children = 
+            new ArrayList<CeylonOutlineNode>();
 
     private CeylonOutlineNode parent;
 
@@ -94,25 +98,18 @@ public class CeylonOutlineNode implements IAdaptable {
         id = createIdentifier(treeNode);
         declaration = treeNode instanceof Tree.Declaration;
         if (declaration) {
-            Declaration model = ((Tree.Declaration) treeNode).getDeclarationModel();
+            Declaration model = 
+                    ((Tree.Declaration) treeNode).getDeclarationModel();
             if (model!=null) {
                 shared = model.isShared();
             }
-            Tree.Identifier identifier = ((Tree.Declaration) treeNode).getIdentifier();
+            Tree.Identifier identifier = 
+                    ((Tree.Declaration) treeNode).getIdentifier();
             name = identifier==null ? null : identifier.getText();
         }
         else if (treeNode instanceof Tree.SpecifierStatement) {
-            Tree.Term bme = ((Tree.SpecifierStatement) treeNode).getBaseMemberExpression();
-            Tree.Identifier id;
-            if (bme instanceof Tree.BaseMemberExpression) { 
-                id = ((Tree.BaseMemberExpression) bme).getIdentifier();
-            }
-            else if (bme instanceof Tree.ParameterizedExpression) {
-                id = ((Tree.BaseMemberExpression) ((Tree.ParameterizedExpression) bme).getPrimary()).getIdentifier();
-            }
-            else {
-                 throw new RuntimeException("unexpected node type");
-            }
+            Tree.Identifier id = 
+                    getIdentifier((Tree.SpecifierStatement) treeNode);
             name = id==null ? null : id.getText();
             shared = false;
         }
@@ -133,7 +130,22 @@ public class CeylonOutlineNode implements IAdaptable {
         }
         label = getStyledLabelForNode(treeNode);
         imageKey = getImageKeyForNode(treeNode);
-        decorations = CeylonLabelProvider.getNodeDecorationAttributes(treeNode);
+        decorations = getNodeDecorationAttributes(treeNode);
+    }
+
+    private Tree.Identifier getIdentifier(Tree.SpecifierStatement treeNode) {
+        Tree.Term t = ((Tree.SpecifierStatement) treeNode).getBaseMemberExpression();
+        if (t instanceof Tree.BaseMemberExpression) { 
+            Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
+            return bme.getIdentifier();
+        }
+        else if (t instanceof Tree.ParameterizedExpression) {
+            Tree.ParameterizedExpression pe = (Tree.ParameterizedExpression) t;
+            return ((Tree.BaseMemberExpression) pe.getPrimary()).getIdentifier();
+        }
+        else {
+             throw new RuntimeException("unexpected node type");
+        }
     }
 
     void addChild(CeylonOutlineNode child) {   
@@ -186,13 +198,14 @@ public class CeylonOutlineNode implements IAdaptable {
     
     public StyledString getLabel() {
         if (category==DEFAULT_CATEGORY && declaration) {
-            IEditorPart currentEditor = EditorUtil.getCurrentEditor();
+            IEditorPart currentEditor = getCurrentEditor();
             if (currentEditor instanceof CeylonEditor) {
-                CeylonEditor ce = (CeylonEditor) currentEditor;
+                CeylonEditor ce = 
+                        (CeylonEditor) currentEditor;
                 CompilationUnit rootNode = 
                         ce.getParseController().getRootNode();
                 if (rootNode!=null) {
-                    Node node = Nodes.findNode(rootNode, startOffset);
+                    Node node = findNode(rootNode, startOffset);
                     if (node!=null && 
                             node.getStartIndex()==realStartOffset && 
                             node.getStopIndex()+1==realEndOffset) {
@@ -209,9 +222,11 @@ public class CeylonOutlineNode implements IAdaptable {
             IEditorPart currentEditor = EditorUtil.getCurrentEditor();
             if (currentEditor instanceof CeylonEditor) {
                 CeylonEditor ce = (CeylonEditor) currentEditor;
-                Node node = Nodes.findNode(ce.getParseController().getRootNode(), startOffset);
+                Tree.CompilationUnit rootNode = 
+                        ce.getParseController().getRootNode();
+                Node node = findNode(rootNode, startOffset);
                 if (node!=null) {
-                    return CeylonLabelProvider.getNodeDecorationAttributes(node);
+                    return getNodeDecorationAttributes(node);
                 }
             }
         }
@@ -256,9 +271,16 @@ public class CeylonOutlineNode implements IAdaptable {
                 }
                 return "@root:" + path; 
             case PACKAGE_CATEGORY:
-                return treeNode instanceof PackageNode ?
-                        "@package:" + ((PackageNode)treeNode).getPackageName() :
-                        "@module:" + ((ModuleNode)treeNode).getModuleName();
+                if (treeNode instanceof PackageNode) {
+                    String packageName = 
+                            ((PackageNode) treeNode).getPackageName();
+                    return "@package:" + packageName;
+                }
+                else {
+                    String moduleName = 
+                            ((ModuleNode) treeNode).getModuleName();
+                    return "@module:" + moduleName;
+                }
             case UNIT_CATEGORY:
                 return "@unit:" + treeNode.getUnit().getFilename();
             case IMPORT_LIST_CATEGORY:
@@ -266,11 +288,13 @@ public class CeylonOutlineNode implements IAdaptable {
             case DEFAULT_CATEGORY:
             default:
                 if (treeNode instanceof Tree.Import) {
-                    return "@import:" + 
-                            pathToName(((Tree.Import) treeNode).getImportPath(), treeNode);
+                    Tree.ImportPath packageName = 
+                            ((Tree.Import) treeNode).getImportPath();
+                    return "@import:" + pathToName(packageName, treeNode);
                 }
                 else if (treeNode instanceof Tree.Declaration) {
-                    Tree.Identifier id = ((Tree.Declaration) treeNode).getIdentifier();
+                    Tree.Identifier id = 
+                            ((Tree.Declaration) treeNode).getIdentifier();
                     String name = id==null ? 
                             String.valueOf(identityHashCode(treeNode)) : 
                             id.getText();
@@ -282,29 +306,23 @@ public class CeylonOutlineNode implements IAdaptable {
                     }
                 }
                 else if (treeNode instanceof Tree.ImportModule) {
-                    return "@importmodule:" + 
-                            pathToName(((Tree.ImportModule) treeNode).getImportPath(), treeNode);
+                    Tree.ImportPath moduleName = 
+                            ((Tree.ImportModule) treeNode).getImportPath();
+                    return "@importmodule:" + pathToName(moduleName, treeNode);
                 }
                 else if (treeNode instanceof Tree.ModuleDescriptor) {
-                    return "@moduledescriptor:" + 
-                            pathToName(((Tree.ModuleDescriptor) treeNode).getImportPath(), treeNode);
+                    Tree.ImportPath moduleName = 
+                            ((Tree.ModuleDescriptor) treeNode).getImportPath();
+                    return "@moduledescriptor:" + pathToName(moduleName, treeNode);
                 }
                 else if (treeNode instanceof Tree.PackageDescriptor) {
-                    return "@packagedescriptor:" + 
-                            pathToName(((Tree.PackageDescriptor) treeNode).getImportPath(), treeNode);
+                    Tree.ImportPath packageName = 
+                            ((Tree.PackageDescriptor) treeNode).getImportPath();
+                    return "@packagedescriptor:" + pathToName(packageName, treeNode);
                 }
                 else if (treeNode instanceof Tree.SpecifierStatement) {
-                    Tree.Term bme = ((Tree.SpecifierStatement) treeNode).getBaseMemberExpression();
-                    Tree.Identifier id;
-                    if (bme instanceof Tree.BaseMemberExpression) { 
-                        id = ((Tree.BaseMemberExpression) bme).getIdentifier();
-                    }
-                    else if (bme instanceof Tree.ParameterizedExpression) {
-                        id = ((Tree.BaseMemberExpression) ((Tree.ParameterizedExpression) bme).getPrimary()).getIdentifier();
-                    }
-                    else {
-                         throw new RuntimeException("unexpected node type");
-                    }
+                    Tree.Identifier id = 
+                            getIdentifier((Tree.SpecifierStatement) treeNode);
                     String name = id==null ? 
                             String.valueOf(identityHashCode(treeNode)) : 
                             id.getText();
@@ -326,7 +344,8 @@ public class CeylonOutlineNode implements IAdaptable {
         }
     }
     
-    private static String pathToName(Tree.ImportPath importPath, Node treeNode) {
+    private static String pathToName(Tree.ImportPath importPath, 
+            Node treeNode) {
         return importPath==null ? 
                 String.valueOf(identityHashCode(treeNode)) : 
                     formatPath(importPath.getIdentifiers());

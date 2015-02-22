@@ -219,7 +219,7 @@ public class OutlinePopup extends TreeViewPopup {
 
     @Override
     protected TreeViewer createTreeViewer(Composite parent) {
-        Tree tree= new Tree(parent, SWT.SINGLE);
+        Tree tree = new Tree(parent, SWT.SINGLE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
