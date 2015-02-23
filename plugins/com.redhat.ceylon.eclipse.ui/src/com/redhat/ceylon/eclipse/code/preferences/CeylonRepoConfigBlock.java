@@ -182,7 +182,7 @@ public class CeylonRepoConfigBlock {
 
         systemRepoText = new Text(composite, SWT.SINGLE | SWT.BORDER);
         systemRepoText.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).create());
-        systemRepoText.setMessage("Default System Repository");
+        systemRepoText.setMessage("IDE System Modules");
         systemRepoText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
