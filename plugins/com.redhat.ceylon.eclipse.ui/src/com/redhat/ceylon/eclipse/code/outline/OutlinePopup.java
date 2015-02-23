@@ -62,6 +62,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassOrInterface;
@@ -223,7 +224,8 @@ public class OutlinePopup extends TreeViewPopup {
 
     private static final ViewerFilter filter = new ViewerFilter() {
         @Override
-        public boolean select(Viewer viewer, Object parentElement, Object element) {
+        public boolean select(Viewer viewer, 
+                Object parentElement, Object element) {
             if (element instanceof CeylonOutlineNode) {
                 CeylonOutlineNode node = (CeylonOutlineNode) element;
                 return node.isShared();
@@ -323,11 +325,13 @@ public class OutlinePopup extends TreeViewPopup {
                                     ((ClassOrInterface) treeNode).getDeclarationModel();
                             ArrayList<Declaration> list = new ArrayList<Declaration>();
                             for (DeclarationWithProximity dwp:
-                                    ci.getMatchingMemberDeclarations(rootNode.getUnit(), 
-                                            ci, "", 0).values()) {
+                                ci.getMatchingMemberDeclarations(rootNode.getUnit(), 
+                                        ci, "", 0).values()) {
                                 Declaration dec = dwp.getDeclaration();
-                                if (includeParameters || !dec.isParameter()) {
-                                    list.add(dec);
+                                if (!(dec instanceof TypeParameter)) {
+                                    if (includeParameters || !dec.isParameter()) {
+                                        list.add(dec);
+                                    }
                                 }
                             }
                             if (!lexicalSortingAction.isChecked()) {
