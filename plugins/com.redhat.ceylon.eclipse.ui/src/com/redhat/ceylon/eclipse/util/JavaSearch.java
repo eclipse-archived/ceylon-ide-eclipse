@@ -49,6 +49,7 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.core.JavaElement;
 import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
+import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.codegen.Naming.Suffix;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -554,7 +555,10 @@ public class JavaSearch {
                             && isCeylon(parentType)) {
                         return toCeylonDeclarationElement(parentType);
                     }
-                    if (methodName.equals("$call$")) {
+                    if (methodName.equals(Naming.Unfix.$call$.name()) ||
+                            methodName.equals(Naming.Unfix.$calltyped$.name()) ||
+                            methodName.equals(Naming.Unfix.$callvariadic$.name()) ||
+                            methodName.startsWith(Naming.Prefix.$default$.name())) {
                         return toCeylonDeclarationElement(parentType);
                     }
                     if (methodName.equals("$evaluate$")) {
