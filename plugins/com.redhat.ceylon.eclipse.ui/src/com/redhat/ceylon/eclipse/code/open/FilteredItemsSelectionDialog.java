@@ -680,11 +680,18 @@ public abstract class FilteredItemsSelectionDialog extends
         });
 
         list.addSelectionChangedListener(new ISelectionChangedListener() {
+            boolean first = true;
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 StructuredSelection selection = (StructuredSelection) event
                         .getSelection();
                 handleSelected(selection);
+                //we need to re-layout the status area *only* the 
+                //very first time an icon is displayed!
+                if (first && selection!=null && !selection.isEmpty()) {
+                    statusArea.getParent().layout();
+                    first = false;
+                }
             }
         });
 
@@ -776,7 +783,7 @@ public abstract class FilteredItemsSelectionDialog extends
 
         // apply filter even if pattern is empty (display history)
         applyFilter();
-
+        
         return dialogArea;
     }
 
@@ -884,7 +891,6 @@ public abstract class FilteredItemsSelectionDialog extends
             details.setInput(selection.size() + " items selected");
             break;
         }
-        statusArea.getParent().layout();
         ((Composite) statusArea.getContent()).layout();
     }
 
