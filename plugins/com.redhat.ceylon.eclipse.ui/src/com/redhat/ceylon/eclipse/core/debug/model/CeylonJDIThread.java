@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.core.debug.model;
 
 import java.util.List;
 
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
@@ -89,14 +91,45 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return topStackFrame;
     }
     
+    Location steppingThroughLocation = null;
+    
     @Override
     protected StepIntoHandler newStepIntoHandler() {
         return new StepIntoHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method, getDebugTarget());
+                return DebugUtils.isMethodFiltered(method);
+            }
+            
+            @Override
+            protected boolean locationShouldBeFiltered(Location location) throws DebugException {
+                boolean shouldBeFiltered = super.locationShouldBeFiltered(location);
+                
+                if (DebugUtils.isMethodToStepThrough(location.method())) {
+                    steppingThroughLocation = location;
+                } else {
+                    if (!shouldBeFiltered) {
+                        steppingThroughLocation = null;
+                    }
+                }
+                return shouldBeFiltered;
+            }
+            
+            @Override
+            protected void createSecondaryStepRequest() throws DebugException {
+                if (steppingThroughLocation != null) {
+                    ISchedulingRule rule = getThreadRule();
+                    try {
+                        Job.getJobManager().beginRule(rule, null);
+                        setOriginalStepStackDepth(getUnderlyingFrameCount());
+                    } finally {
+                        Job.getJobManager().endRule(rule);
+                    }
+                }
+                super.createSecondaryStepRequest();
             }
         };
+        
     }
 
     @Override
@@ -104,7 +137,13 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return new StepOverHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method, getDebugTarget());
+                return DebugUtils.isMethodFiltered(method);
+            }
+
+            @Override
+            protected boolean locationShouldBeFiltered(Location location) throws DebugException {
+                boolean shouldBeFiltered = super.locationShouldBeFiltered(location);
+                return shouldBeFiltered;
             }
         };
     }
@@ -114,8 +153,23 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return new StepReturnHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return super.locationIsFiltered(method) || DebugUtils.isMethodFilteredForCeylon(method, getDebugTarget());
+                return DebugUtils.isMethodFiltered(method);
             }
         };
+    }
+    
+    
+    protected boolean shouldDoStepReturn() throws DebugException {
+        return super.shouldDoStepReturn();
+    }
+
+    protected void setOriginalStepLocation(Location location) {
+        super.setOriginalStepLocation(location);
+    }
+
+    protected boolean shouldDoExtraStepInto(Location location)
+            throws DebugException {
+        final boolean shouldDoExtraStepInto = super.shouldDoExtraStepInto(location);
+        return shouldDoExtraStepInto;
     }
 }
