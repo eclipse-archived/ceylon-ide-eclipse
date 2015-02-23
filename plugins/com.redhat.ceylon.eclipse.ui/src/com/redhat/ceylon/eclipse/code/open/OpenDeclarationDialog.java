@@ -19,7 +19,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -440,11 +439,11 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             if (element instanceof DeclarationWithProject) {
                 DeclarationWithProject dwp = 
                         (DeclarationWithProject) element;
-                Declaration d = dwp.getDeclaration();
                 try {
                     return getLocation(dwp);
                 }
                 catch (Exception e) {
+                    Declaration d = dwp.getDeclaration();
                     System.err.println(d.getName());
                     e.printStackTrace();
                     return "";
@@ -461,7 +460,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public Image getImage(Object element) {
             if (element instanceof DeclarationWithProject) {
-                return CeylonLabelProvider.REPO;
+                DeclarationWithProject dwp = 
+                        (DeclarationWithProject) element;
+                return getLocationImage(dwp);
             }
             else {
                 return null;
@@ -965,6 +966,29 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         return sb.toString();
     }
+    
+    private static Image getLocationImage(DeclarationWithProject dwp) {
+        Module module = dwp.getDeclaration().getUnit()
+                .getPackage().getModule();
+        if (module instanceof JDTModule) {
+            JDTModule m = (JDTModule) module;
+            if (m.isProjectModule()) {
+                IProject project = dwp.getProject();
+                if (project.isOpen()) {
+                    return CeylonLabelProvider.FILE;
+                }
+                else {
+                    return CeylonLabelProvider.PROJECT;
+                }
+            }
+            else {
+                return CeylonLabelProvider.REPO;
+            }
+        }
+        else {
+            return null;
+        }
+    }
 
     private static String getLocation(DeclarationWithProject dwp) {
         Module module = dwp.getDeclaration().getUnit()
@@ -972,6 +996,24 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (module instanceof JDTModule) {
             JDTModule m = (JDTModule) module;
             if (m.isProjectModule()) {
+                IProject project = dwp.getProject();
+                if (project.isOpen()) {
+                    IResource r = project.findMember(dwp.getPath());
+                    if (r!=null) {
+                        return r.getFullPath().toPortableString();
+                    }
+                }
+                //if the project is closed or for some other reason
+                //findMember() returns null, just abbreviate to the 
+                //project path
+                return dwp.getProject().getFullPath().toPortableString();
+            }
+            String displayString = m.getRepositoryDisplayString();
+            if (CeylonPlugin.getInstance().getCeylonRepository().getPath().equals(displayString)) {
+                displayString = "Ceylon IDE";
+            }
+            return displayString;
+            /*if (m.isProjectModule()) {
                 IProject project = dwp.getProject();
                 IResource r = project.isOpen() ?
                         project.findMember(dwp.getPath()) : null;
@@ -995,7 +1037,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     return "Ceylon IDE system repository";
                 }
                 return path;
-            }
+            }*/
         }
         else {
             return null;

@@ -66,8 +66,6 @@ import com.redhat.ceylon.cmr.api.Repository;
 import com.redhat.ceylon.cmr.api.RepositoryException;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.api.VisibilityType;
-import com.redhat.ceylon.cmr.impl.JDKRepository;
-import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
@@ -84,6 +82,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
@@ -273,7 +272,7 @@ public class JDTModule extends LazyModule {
     
     public String getRepositoryDisplayString() {
         if (isJDKModule()) {
-            return JDKRepository.JDK_REPOSITORY_DISPLAY_STRING;                    
+            return "Java SDK";                    
         }
         return repositoryDisplayString;
     }
