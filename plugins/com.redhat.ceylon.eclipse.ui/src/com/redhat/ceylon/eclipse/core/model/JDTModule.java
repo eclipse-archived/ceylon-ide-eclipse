@@ -272,7 +272,7 @@ public class JDTModule extends LazyModule {
     
     public String getRepositoryDisplayString() {
         if (isJDKModule()) {
-            return "Java SDK";                    
+            return "Java SE Modules";                    
         }
         return repositoryDisplayString;
     }

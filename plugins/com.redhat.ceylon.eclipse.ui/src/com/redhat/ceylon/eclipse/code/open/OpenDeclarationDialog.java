@@ -1010,7 +1010,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             }
             String displayString = m.getRepositoryDisplayString();
             if (CeylonPlugin.getInstance().getCeylonRepository().getPath().equals(displayString)) {
-                displayString = "Ceylon IDE";
+                displayString = "IDE System Modules";
             }
             return displayString;
             /*if (m.isProjectModule()) {

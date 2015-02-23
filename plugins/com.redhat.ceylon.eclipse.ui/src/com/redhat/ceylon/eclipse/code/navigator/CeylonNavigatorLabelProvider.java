@@ -38,6 +38,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class CeylonNavigatorLabelProvider extends
         CeylonLabelProvider implements ICommonLabelProvider {
@@ -56,7 +57,7 @@ public class CeylonNavigatorLabelProvider extends
 			String name = jdtModule == null ? externalModule.getSignature() : super.getStyledText(jdtModule).toString();
 			StyledString moduleText = new StyledString(name);
             if (jdtModule != null) {
-                moduleText.append(" - " + jdtModule.getVersion(), QUALIFIER_STYLER);
+                moduleText.append(" \"" + jdtModule.getVersion() + "\"", Highlights.VERSION_STYLER);
             }
             return moduleText;
         }
@@ -120,10 +121,10 @@ public class CeylonNavigatorLabelProvider extends
             stringToDisplay = "Herd Modules";
         }
         if (stringToDisplay == null && JDKRepository.JDK_REPOSITORY_DISPLAY_STRING.equals(displayString)) {
-            stringToDisplay = "JDK Modules";
+            stringToDisplay = "Java SE Modules";
         }
         if (stringToDisplay == null && CeylonBuilder.getInterpolatedCeylonSystemRepo(repoNode.project).equals(displayString)) {
-            stringToDisplay = "System Modules";
+            stringToDisplay = "IDE System Modules";
         }
         if (stringToDisplay == null && CeylonBuilder.getCeylonModulesOutputDirectory(repoNode.project).getAbsolutePath().equals(displayString)) {
             stringToDisplay = "Output Modules";
@@ -132,7 +133,7 @@ public class CeylonNavigatorLabelProvider extends
             stringToDisplay = "Cached Modules";
         }
         if (stringToDisplay == null && CeylonProjectConfig.get(repoNode.project).getMergedRepositories().getUserRepoDir().getAbsolutePath().equals(displayString)) {
-            stringToDisplay = "User Modules";
+            stringToDisplay = "Imported Modules";
         }
         if (stringToDisplay == null) {
             try {

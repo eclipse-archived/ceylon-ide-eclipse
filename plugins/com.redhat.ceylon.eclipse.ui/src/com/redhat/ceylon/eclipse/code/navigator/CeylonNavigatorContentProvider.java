@@ -44,6 +44,7 @@ import org.eclipse.ui.navigator.PipelinedViewerUpdate;
 import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.cmr.impl.JDKRepository;
 import com.redhat.ceylon.cmr.impl.NodeUtils;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
@@ -216,7 +217,10 @@ public class CeylonNavigatorContentProvider implements
                 continue;
             }
             String repoDisplayString = externalModule.getRepositoryDisplayString();
-            if (repositories.containsKey(repoDisplayString)) {
+            if (externalModule.isJDKModule()) {
+                repositories.get(JDKRepository.JDK_REPOSITORY_DISPLAY_STRING).addModule(externalModule);
+            }
+            else if (repositories.containsKey(repoDisplayString)) {
                 repositories.get(repoDisplayString).addModule(externalModule);
             } else {
                 unknownRepositoryNode.addModule(externalModule);

@@ -29,7 +29,7 @@ final class ModuleSelectionLabelProvider extends
     public String getText(Object element) {
         if (element instanceof ModuleNode) {
             ModuleNode md = (ModuleNode) element;
-            return md.getName() + " : " + md.getLastVersion().getVersion();
+            return md.getName() + " \"" + md.getLastVersion().getVersion() + "\"";
         }
         else if (element instanceof ModuleVersionNode) {
             return ((ModuleVersionNode) element).getVersion();
