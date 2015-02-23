@@ -62,7 +62,7 @@ public class CeylonCompletionPreferencePage
         linkedMode.store();
         linkedModeChain.store();
         displayParameterTypes.store();
-        return true;
+        return super.performOk();
     }
     
     @Override
