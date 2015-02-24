@@ -887,7 +887,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         try {
             String typeName = type.getProducedTypeName();
             StringTokenizer tokens = 
-                    new StringTokenizer(typeName,"|&?[]{}*+=-<>(), ",true);
+                    new StringTokenizer(typeName,"|&?[]{}*+=-<>(),. ",true);
             while (tokens.hasMoreTokens()) {
                 String token = tokens.nextToken();
                 if (Character.isLetter(token.charAt(0))) {
