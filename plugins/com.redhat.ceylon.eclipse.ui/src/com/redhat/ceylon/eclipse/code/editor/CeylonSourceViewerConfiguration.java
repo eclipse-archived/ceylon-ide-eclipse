@@ -353,7 +353,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
                         APPEARANCE_JAVADOC_FONT, 
                         (String) null);
             }
-            catch(org.eclipse.swt.SWTError x){
+            catch (org.eclipse.swt.SWTError x) {
                 return new DefaultInformationControl(parent, 
                         "Press 'F2' for focus", 
                         new HTMLTextPresenter(true));

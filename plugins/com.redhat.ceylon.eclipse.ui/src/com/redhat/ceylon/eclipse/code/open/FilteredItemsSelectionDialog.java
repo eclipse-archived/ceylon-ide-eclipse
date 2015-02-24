@@ -81,6 +81,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
 import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
@@ -664,7 +665,7 @@ public abstract class FilteredItemsSelectionDialog extends
             browser.setFont(font);
             browser.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
-        catch (Exception e) {
+        catch (SWTError e) {
             styledText = new StyledText(sash, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.BORDER);
             styledText.setForeground(fg);
             styledText.setBackground(bg);
