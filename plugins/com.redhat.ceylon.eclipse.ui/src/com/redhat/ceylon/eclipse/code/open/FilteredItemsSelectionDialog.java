@@ -388,6 +388,7 @@ public abstract class FilteredItemsSelectionDialog extends
         if (contextMenuManager != null)
             contextMenuManager.dispose();
         storeDialog(getDialogSettings());
+        browser.close();
         return super.close();
     }
 
