@@ -17,6 +17,7 @@ package com.redhat.ceylon.eclipse.code.open;
  *******************************************************************************/
 
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
+import static org.eclipse.jface.resource.JFaceResources.getFontRegistry;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -55,7 +56,6 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ContentViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -87,6 +87,7 @@ import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -255,6 +256,7 @@ public abstract class FilteredItemsSelectionDialog extends
     private final String listLabelText;
 
     private Browser browser;
+    private StyledText styledText;
 
     private SashForm sash;
 
@@ -388,7 +390,7 @@ public abstract class FilteredItemsSelectionDialog extends
         if (contextMenuManager != null)
             contextMenuManager.dispose();
         storeDialog(getDialogSettings());
-        browser.close();
+        if (browser!=null) browser.close();
         return super.close();
     }
 
@@ -399,8 +401,11 @@ public abstract class FilteredItemsSelectionDialog extends
      *            settings used to store dialog
      */
     protected void storeDialog(IDialogSettings settings) {
-        settings.put(SHOW_STATUS_LINE, statusArea.isVisible());
-        settings.put(SHOW_DOC_AREA, browser.isVisible());
+        settings.put(SHOW_STATUS_LINE, 
+                statusArea.isVisible());
+        settings.put(SHOW_DOC_AREA, 
+                browser!=null && browser.isVisible() ||
+                styledText!=null && styledText.isVisible());
 
         XMLMemento memento = XMLMemento.createWriteRoot(HISTORY_SETTINGS);
         this.contentProvider.saveHistory(memento);
@@ -430,6 +435,7 @@ public abstract class FilteredItemsSelectionDialog extends
      */
     private Label createHeader(Composite parent) {
         Composite header = new Composite(parent, SWT.NONE);
+        header.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         GridLayout layout = new GridLayout();
         layout.numColumns = 2;
@@ -448,12 +454,10 @@ public abstract class FilteredItemsSelectionDialog extends
                 }
             }
         });
-
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        headerLabel.setLayoutData(gd);
+        headerLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         createViewMenu(header);
-        header.setLayoutData(gd);
+        
         return headerLabel;
     }
 
@@ -644,18 +648,34 @@ public abstract class FilteredItemsSelectionDialog extends
         gd.heightHint = list.getTable().getItemHeight() * 15;
         list.getTable().setLayoutData(gd);
         
-        browser = new Browser(sash, SWT.BORDER);
-        browser.setJavascriptEnabled(false);
         Display display = getShell().getDisplay();
         Color fg = display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
         Color bg = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
-        browser.setForeground(fg);
-        browser.setBackground(bg);
-        FontData fontData = JFaceResources.getFontRegistry()
-                .getFontData(APPEARANCE_JAVADOC_FONT)[0];
-        browser.setFont(new Font(Display.getDefault(), fontData));
-        browser.setLayoutData(new GridData(GridData.FILL_BOTH));
-        refreshBrowserContent(browser, null);
+        try {
+//            if (true) throw new Exception();
+            browser = new Browser(sash, SWT.BORDER);
+            browser.setJavascriptEnabled(false);
+            browser.setForeground(fg);
+            browser.setBackground(bg);
+            FontData fontData = 
+                    getFontRegistry()
+                        .getFontData(APPEARANCE_JAVADOC_FONT)[0];
+            browser.setFont(new Font(Display.getDefault(), fontData));
+            browser.setLayoutData(new GridData(GridData.FILL_BOTH));
+        }
+        catch (Exception e) {
+            styledText = new StyledText(sash, SWT.BORDER);
+            styledText.setForeground(fg);
+            styledText.setBackground(bg);
+            styledText.setLayoutData(new GridData(GridData.FILL_BOTH));
+            styledText.addControlListener(new ControlAdapter() {
+                @Override
+                public void controlResized(ControlEvent e) {
+                    refreshBrowserContent(browser, styledText, currentSelection);
+                }
+            });
+        }
+        refreshBrowserContent(browser, styledText, null);
         
         createPopupMenu();
 
@@ -852,7 +872,8 @@ public abstract class FilteredItemsSelectionDialog extends
     }
 
     public void setDocAreaVisible(boolean visible) {
-        browser.setVisible(visible);
+        if (browser!=null) browser.setVisible(visible);
+        if (styledText!=null) styledText.setVisible(true);
         sash.setWeights(visible ? new int[] {3,2} : new int[] {1,0});
     }
 
@@ -962,13 +983,14 @@ public abstract class FilteredItemsSelectionDialog extends
 //            }
         }
         
-        refreshBrowserContent(browser, currentSelection);
+        refreshBrowserContent(browser, styledText, currentSelection);
         
         refreshDetails();
         updateStatus(status);
     }
 
-    protected void refreshBrowserContent(Browser browser, Object[] currentSelection) {}
+    protected void refreshBrowserContent(Browser browser, StyledText styledText, 
+            Object[] currentSelection) {}
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {

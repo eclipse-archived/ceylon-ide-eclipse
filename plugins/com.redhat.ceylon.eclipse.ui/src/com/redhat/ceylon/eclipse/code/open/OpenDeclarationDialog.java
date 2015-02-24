@@ -40,6 +40,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -49,7 +50,9 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.PreferencesUtil;
@@ -63,6 +66,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTML;
+import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
@@ -93,6 +97,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private ToggleModuleAction toggleModuleAction;
     private ToggleExcludeDeprecatedAction toggleExcludeDeprecatedAction;
     private ToggleExcludeJDKAction toggleExcludeJDKAction;
+    
+    private TextPresentation presentation;
     
     private class ToggleExcludeDeprecatedAction extends Action {
         ToggleExcludeDeprecatedAction() {
@@ -1113,6 +1119,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     protected static final String emptyDoc;
+    
     static {
         StringBuilder buffer = new StringBuilder();
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
@@ -1122,15 +1129,42 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
     
     @Override
-    protected void refreshBrowserContent(Browser browser, Object[] selection) {
-        if (selection!=null &&
-                selection.length==1 &&
-                        selection[0] instanceof DeclarationWithProject) {
-            browser.setText(DocumentationHover.getDocumentationFor(null, 
-                    ((DeclarationWithProject) selection[0]).getDeclaration()));
+    protected void refreshBrowserContent(Browser browser, StyledText styledText,
+            Object[] selection) {
+        try {
+            if (selection!=null &&
+                    selection.length==1 &&
+                    selection[0] instanceof DeclarationWithProject) {
+                Declaration declaration = 
+                        ((DeclarationWithProject) selection[0]).getDeclaration();
+                showDoc(browser, styledText, 
+                        DocumentationHover.getDocumentationFor(null, declaration));
+            }
+            else {
+                showDoc(browser, styledText, emptyDoc);
+            }
         }
-        else {
-            browser.setText(emptyDoc);
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showDoc(Browser browser, StyledText styledText, String text) {
+        if (browser!=null) {
+            browser.setText(text);
+        }
+        if (styledText!=null) {
+            if (presentation==null) {
+                presentation = new TextPresentation();
+            }
+            presentation.clear();
+            Rectangle area = styledText.getClientArea();
+            String content = 
+                    new HTMLTextPresenter()
+                        .updatePresentation(styledText, text, 
+                                presentation, area.width, area.height);
+            styledText.setText(content);
+            TextPresentation.applyTextPresentation(presentation, styledText);
         }
     }
 
