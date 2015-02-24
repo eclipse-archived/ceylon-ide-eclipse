@@ -651,23 +651,25 @@ public abstract class FilteredItemsSelectionDialog extends
         Display display = getShell().getDisplay();
         Color fg = display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
         Color bg = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+        FontData fontData = 
+                getFontRegistry()
+                    .getFontData(APPEARANCE_JAVADOC_FONT)[0];
+        Font font = new Font(Display.getDefault(), fontData);
         try {
 //            if (true) throw new Exception();
             browser = new Browser(sash, SWT.BORDER);
             browser.setJavascriptEnabled(false);
             browser.setForeground(fg);
             browser.setBackground(bg);
-            FontData fontData = 
-                    getFontRegistry()
-                        .getFontData(APPEARANCE_JAVADOC_FONT)[0];
-            browser.setFont(new Font(Display.getDefault(), fontData));
+            browser.setFont(font);
             browser.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
         catch (Exception e) {
-            styledText = new StyledText(sash, SWT.BORDER);
+            styledText = new StyledText(sash, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.BORDER);
             styledText.setForeground(fg);
             styledText.setBackground(bg);
             styledText.setLayoutData(new GridData(GridData.FILL_BOTH));
+            styledText.setFont(font);
             styledText.addControlListener(new ControlAdapter() {
                 @Override
                 public void controlResized(ControlEvent e) {

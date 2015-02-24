@@ -98,7 +98,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private ToggleExcludeDeprecatedAction toggleExcludeDeprecatedAction;
     private ToggleExcludeJDKAction toggleExcludeJDKAction;
     
-    private TextPresentation presentation;
+    private TextPresentation presentation = new TextPresentation();
     
     private class ToggleExcludeDeprecatedAction extends Action {
         ToggleExcludeDeprecatedAction() {
@@ -1154,15 +1154,12 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             browser.setText(text);
         }
         if (styledText!=null) {
-            if (presentation==null) {
-                presentation = new TextPresentation();
-            }
             presentation.clear();
             Rectangle area = styledText.getClientArea();
             String content = 
-                    new HTMLTextPresenter()
+                    new HTMLTextPresenter() //TODO: should be new HTMLTextPresenter(false) but that's crashing SWT for some reason
                         .updatePresentation(styledText, text, 
-                                presentation, area.width, area.height);
+                                presentation, area.width-2, Integer.MAX_VALUE);
             styledText.setText(content);
             TextPresentation.applyTextPresentation(presentation, styledText);
         }
