@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifi
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MULTIPLE_TYPES_IMAGE;
@@ -47,6 +48,7 @@ abstract class CeylonHierarchyLabelProvider extends
         StyledString result = getQualifiedDescriptionFor(d, 
                 prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
                 prefs.getBoolean(PARAMS_IN_OUTLINES),
+                prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
                 prefs.getBoolean(RETURN_TYPES_IN_OUTLINES));
         /*if (d.isClassOrInterfaceMember()) {
             Declaration container = (Declaration) d.getContainer();

@@ -2282,8 +2282,10 @@ public class DocumentationHover extends SourceInfoHover {
         @Override
         public IInformationControl doCreateInformationControl(Shell parent) {
             if (enrichedControlCreator!=null && isAvailable(parent)) {
-                BrowserInformationControl control = new BrowserInformationControl(parent, 
-                        APPEARANCE_JAVADOC_FONT, statusLineMessage) {
+                BrowserInformationControl control = 
+                        new BrowserInformationControl(parent, 
+                                APPEARANCE_JAVADOC_FONT, 
+                                statusLineMessage) {
                     @Override
                     public IInformationControlCreator getInformationPresenterControlCreator() {
                         return enrichedControlCreator;

@@ -1956,13 +1956,13 @@
        </keywordReference>
        </page>
        <page
-           id="com.redhat.ceylon.eclipse.ui.preferences.open.filters"
+           id="com.redhat.ceylon.eclipse.ui.preferences.open"
            name="Open Dialogs"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage"
            category="com.redhat.ceylon.eclipse.ui.preferences">
        <keywordReference id="org.eclipse.ui.editors.general"/>
        <keywordReference
-             id="com.redhat.ceylon.eclipse.ui.keywords.open.filters">
+             id="com.redhat.ceylon.eclipse.ui.keywords.open">
        </keywordReference>
        </page>
        <page
@@ -1999,7 +1999,7 @@
          id="com.redhat.ceylon.eclipse.ui.keywords.completion"/>
    <keyword
          label="open declaration filters"
-         id="com.redhat.ceylon.eclipse.ui.keywords.open.filters"/>
+         id="com.redhat.ceylon.eclipse.ui.keywords.open"/>
    <keyword
          label="save actions imports format"
          id="com.redhat.ceylon.eclipse.ui.keywords.save"/>

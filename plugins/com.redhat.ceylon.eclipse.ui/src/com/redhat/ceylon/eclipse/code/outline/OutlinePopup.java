@@ -14,6 +14,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
@@ -368,6 +369,7 @@ public class OutlinePopup extends TreeViewPopup {
                     return getQualifiedDescriptionFor((Declaration) element,
                             prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
                             prefs.getBoolean(PARAMS_IN_OUTLINES),
+                            prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
                             prefs.getBoolean(RETURN_TYPES_IN_OUTLINES));
                 }
                 else {

@@ -5,6 +5,7 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.hasAnnotation;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.getRefinedDeclaration;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
@@ -40,6 +41,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.IDecoration;
@@ -747,8 +749,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             ProducedType tm = type.getTypeModel();
             if (tm!=null && !isTypeUnknown(tm)) {
                 if (type instanceof Tree.SequencedType) {
-                    Tree.SequencedType st = (Tree.SequencedType) type;
-                    ProducedType itm = type.getUnit().getIteratedType(tm);
+                    Tree.SequencedType st = 
+                            (Tree.SequencedType) type;
+                    ProducedType itm = 
+                            type.getUnit().getIteratedType(tm);
                     if (itm!=null) {
                         appendTypeName(result, itm);
                         result.append(st.getAtLeastOne()?"+":"*");
@@ -759,8 +763,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return result;
             }
         }
-        return result.append(node instanceof Tree.AnyMethod ? "function" : "value", 
-                KW_STYLER);
+        return result.append(node instanceof Tree.AnyMethod ? 
+                "function" : "value", KW_STYLER);
     }
     
     private static String name(Tree.Identifier id) {
@@ -773,7 +777,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     private static void parameters(Tree.ParameterList pl, StyledString label) {
-        if (EditorUtil.getPreferences().getBoolean(PARAMS_IN_OUTLINES)) {
+        IPreferenceStore prefs = EditorUtil.getPreferences();
+        boolean names = prefs.getBoolean(PARAMS_IN_OUTLINES);
+        boolean types = prefs.getBoolean(PARAM_TYPES_IN_OUTLINES);
+        if (names || types) {
             if (pl==null ||
                     pl.getParameters().isEmpty()) {
                 label.append("()");
@@ -784,21 +791,38 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 for (Tree.Parameter p: pl.getParameters()) {
                     if (p!=null) {
                         if (p instanceof Tree.ParameterDeclaration) {
+                            Tree.ParameterDeclaration pd = 
+                                    (Tree.ParameterDeclaration) p;
                             Tree.TypedDeclaration td = 
-                                    ((Tree.ParameterDeclaration) p).getTypedDeclaration();
-                            label.append(type(td.getType(), td))
-                            .append(" ")
-                            .append(name(td.getIdentifier()), ID_STYLER);
-                            if (p instanceof Tree.FunctionalParameterDeclaration) {
-                                for (Tree.ParameterList ipl: 
-                                    ((Tree.MethodDeclaration) td).getParameterLists()) {
-                                    parameters(ipl, label);
+                                    pd.getTypedDeclaration();
+                            if (types) {
+                                label.append(type(td.getType(), td));
+                            }
+                            if (names && types) label.append(' ');
+                            if (names) {
+                                label.append(name(td.getIdentifier()), ID_STYLER);
+                                if (p instanceof Tree.FunctionalParameterDeclaration) {
+                                    for (Tree.ParameterList ipl: 
+                                        ((Tree.MethodDeclaration) td).getParameterLists()) {
+                                        parameters(ipl, label);
+                                    }
                                 }
                             }
                         }
                         else if (p instanceof Tree.InitializerParameter) {
-                            Tree.Identifier id = ((Tree.InitializerParameter) p).getIdentifier();
-                            label.append(name(id), ID_STYLER);
+                            Tree.InitializerParameter ip = 
+                                    (Tree.InitializerParameter) p;
+                            if (p.getParameterModel()!=null &&
+                                    p.getParameterModel().getType()!=null) {
+                                if (types) {
+                                    appendTypeName(label, 
+                                            p.getParameterModel().getType());
+                                }
+                                if (types && names) label.append(' ');
+                            }
+                            if (names) {
+                                label.append(name(ip.getIdentifier()), ID_STYLER);
+                            }
                         }
                     }
                     if (++i<len) label.append(", ");

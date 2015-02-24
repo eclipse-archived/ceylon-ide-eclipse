@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
@@ -11,6 +10,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModu
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -510,25 +510,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public String getText(Object element) {
-            if (element instanceof DeclarationWithProject) {
-                DeclarationWithProject dwp = 
-                        (DeclarationWithProject) element;
-                Declaration d = dwp.getDeclaration();
-                try {
-                    IPreferenceStore prefs = EditorUtil.getPreferences();
-                    return getLabelDescriptionFor(d,
-                            prefs.getBoolean(TYPE_PARAMS_IN_DIALOGS),
-                            prefs.getBoolean(PARAMS_IN_DIALOGS));
-                }
-                catch (Exception e) {
-                    System.err.println(d.getName());
-                    e.printStackTrace();
-                    return d.getName();
-                }
-            }
-            else {
-                return "";
-            }
+            return getStyledText(element).getString();
         }
 
         @Override
@@ -543,6 +525,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                             getQualifiedDescriptionFor(d,
                                     prefs.getBoolean(TYPE_PARAMS_IN_DIALOGS),
                                     prefs.getBoolean(PARAMS_IN_DIALOGS),
+                                    prefs.getBoolean(PARAM_TYPES_IN_DIALOGS),
                                     prefs.getBoolean(RETURN_TYPES_IN_DIALOGS));
                     if (nameOccursMultipleTimes(d)) {
                         label.append(" - ", PACKAGE_STYLER)

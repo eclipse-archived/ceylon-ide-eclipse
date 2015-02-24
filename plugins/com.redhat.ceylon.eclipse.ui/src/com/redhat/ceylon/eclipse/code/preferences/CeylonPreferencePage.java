@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
@@ -37,6 +38,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
     private RadioGroupFieldEditor projectType;
     private BooleanFieldEditor displayOutlineTypes;
     private BooleanFieldEditor displayOutlineParameters;
+    private BooleanFieldEditor displayOutlineParameterTypes;
     private BooleanFieldEditor displayOutlineTypeParameters;
     
     public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences";
@@ -170,19 +172,24 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
 
     @Override
     protected void createFieldEditors() {
-        final Composite outlines = createGroup(1, "Outlines");
+        final Composite outlines = createGroup(2, "Outline and Hierarchy Labels");
         displayOutlineTypes = new BooleanFieldEditor(RETURN_TYPES_IN_OUTLINES, 
-                "Display return types in outlines", 
+                "Display return types", 
                 getFieldEditorParent(outlines));
         displayOutlineTypes.load();
         addField(displayOutlineTypes);
         displayOutlineTypeParameters = new BooleanFieldEditor(TYPE_PARAMS_IN_OUTLINES, 
-                "Display type parameters in outlines", 
+                "Display type parameters", 
                 getFieldEditorParent(outlines));
         displayOutlineTypeParameters.load();
         addField(displayOutlineTypeParameters);
+        displayOutlineParameterTypes = new BooleanFieldEditor(PARAM_TYPES_IN_OUTLINES, 
+                "Display parameter types", 
+                getFieldEditorParent(outlines));
+        displayOutlineParameterTypes.load();
+        addField(displayOutlineParameterTypes);
         displayOutlineParameters = new BooleanFieldEditor(PARAMS_IN_OUTLINES, 
-                "Display parameters in outlines", 
+                "Display parameter names ", 
                 getFieldEditorParent(outlines));
         displayOutlineParameters.load();
         addField(displayOutlineParameters);
@@ -217,6 +224,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         displayOutlineTypes.loadDefault();
         displayOutlineParameters.loadDefault();
         displayOutlineTypeParameters.loadDefault();
+        displayOutlineParameterTypes.loadDefault();
     }
     
     @Override
@@ -227,6 +235,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         displayOutlineTypes.store();
         displayOutlineParameters.store();
         displayOutlineTypeParameters.store();
+        displayOutlineParameterTypes.store();
         return true;
     }
 

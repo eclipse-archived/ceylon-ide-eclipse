@@ -317,15 +317,17 @@ public class CodeCompletions {
     }
     
     public static StyledString getQualifiedDescriptionFor(Declaration d) {
-        return getQualifiedDescriptionFor(d, true, true, 
+        return getQualifiedDescriptionFor(d, true, true, true,
                 EditorUtil.getPreferences().getBoolean(RETURN_TYPES_IN_OUTLINES));
     }
     
     public static StyledString getQualifiedDescriptionFor(Declaration d, 
-            boolean typeParameters, boolean parameters, boolean types) {
+            boolean typeParameters, boolean parameters, boolean parameterTypes, 
+            boolean types) {
         StyledString result = new StyledString();
         if (d!=null) {
             appendDeclarationDescription(d, result);
+            result.append(' ');
             if (d.isClassOrInterfaceMember()) {
                 Declaration ci = (Declaration) d.getContainer();
                 result.append(ci.getName(), Highlights.TYPE_ID_STYLER).append('.');
@@ -334,8 +336,12 @@ public class CodeCompletions {
             else {
                 appendDeclarationName(d, result);
             }
-            if (typeParameters) appendTypeParameters(d, result, true);
-            if (parameters) appendParametersDescription(d, result);
+            if (typeParameters) {
+                appendTypeParameters(d, result, true);
+            }
+            if (parameters||parameterTypes) {
+                appendParametersDescription(d, result, parameters, parameterTypes);
+            }
             if (d instanceof TypedDeclaration) {
                 if (types) {
                     TypedDeclaration td = (TypedDeclaration) d;
@@ -361,9 +367,10 @@ public class CodeCompletions {
         if (d!=null) {
             appendDeclarationAnnotations(d, result);
             appendDeclarationDescription(d, result);
+            result.append(' ');
             appendDeclarationName(d, result);
             appendTypeParameters(d, result, true);
-            appendParametersDescription(d, result);
+            appendParametersDescription(d, result, true, true);
             if (d instanceof TypedDeclaration) {
                 if (EditorUtil.getPreferences().getBoolean(RETURN_TYPES_IN_OUTLINES)) {
                     TypedDeclaration td = (TypedDeclaration) d;
@@ -864,7 +871,6 @@ public class CodeCompletions {
         else if (d instanceof Setter) {
             result.append("assign", Highlights.KW_STYLER);
         }
-        result.append(" ");
     }
 
     private static void appendMemberName(Declaration d, StyledString result) {
@@ -1180,7 +1186,8 @@ public class CodeCompletions {
         }
     }
     
-    private static void appendParametersDescription(Declaration d, StyledString result) {
+    private static void appendParametersDescription(Declaration d, StyledString result,
+            boolean names, boolean types) {
         if (d instanceof Functional) {
             List<ParameterList> plists = ((Functional) d).getParameterLists();
             if (plists!=null) {
@@ -1190,15 +1197,25 @@ public class CodeCompletions {
                     }
                     else {
                         result.append("(");
-                        int len = params.getParameters().size(), i=0;
+                        int len = params.getParameters().size(); 
+                        int i=0;
                         for (Parameter p: params.getParameters()) {
                             if (p.getModel()==null) {
-                                result.append(p.getName());
+                                if (names) {
+                                    result.append(p.getName());
+                                }
                             }
                             else {
-                                appendDeclarationDescription(p.getModel(), result);
-                                appendDeclarationName(p.getModel(), result);
-                                appendParametersDescription(p.getModel(), result);
+                                if (types) {
+                                    appendDeclarationDescription(p.getModel(), result);
+                                }
+                                if (names && types) {
+                                    result.append(' ');
+                                }
+                                if (names) {
+                                    appendDeclarationName(p.getModel(), result);
+                                }
+                                appendParametersDescription(p.getModel(), result, names, types);
                                 /*result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
                                     .append(" ").append(p.getName(), ID_STYLER);
                                 if (p instanceof FunctionalParameter) {

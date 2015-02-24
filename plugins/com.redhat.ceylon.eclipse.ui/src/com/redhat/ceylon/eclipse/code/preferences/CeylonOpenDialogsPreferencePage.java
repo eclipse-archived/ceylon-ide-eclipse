@@ -4,6 +4,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INACTIVE_OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_DIALOGS;
 
@@ -20,9 +21,10 @@ public class CeylonOpenDialogsPreferencePage
         extends FiltersPreferencePage 
         implements IWorkbenchPreferencePage {
     
-    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.open.filters";
+    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.open";
     
     private BooleanFieldEditor typeParams;
+    private BooleanFieldEditor paramTypes;
     private BooleanFieldEditor params;
     private BooleanFieldEditor types;
     
@@ -32,6 +34,7 @@ public class CeylonOpenDialogsPreferencePage
     
     @Override
     public boolean performOk() {
+        paramTypes.store();
         params.store();
         typeParams.store();
         types.store();
@@ -41,6 +44,7 @@ public class CeylonOpenDialogsPreferencePage
     
     @Override
     protected void performDefaults() {
+        paramTypes.loadDefault();
         params.loadDefault();
         typeParams.loadDefault();
         types.loadDefault();
@@ -50,21 +54,26 @@ public class CeylonOpenDialogsPreferencePage
     @Override
     protected void createFieldEditors() {
         Group group = createGroup(2, "Labels");
-        typeParams = new BooleanFieldEditor(TYPE_PARAMS_IN_DIALOGS, 
-                "Display type parameters", 
-                getFieldEditorParent(group));
-        typeParams.load();
-        addField(typeParams);
-        params = new BooleanFieldEditor(PARAMS_IN_DIALOGS, 
-                "Display parameters with types", 
-                getFieldEditorParent(group));
-        params.load();
-        addField(params);
         types = new BooleanFieldEditor(RETURN_TYPES_IN_DIALOGS, 
                 "Display return types", 
                 getFieldEditorParent(group));
         types.load();
         addField(types);
+        typeParams = new BooleanFieldEditor(TYPE_PARAMS_IN_DIALOGS, 
+                "Display type parameters", 
+                getFieldEditorParent(group));
+        typeParams.load();
+        addField(typeParams);
+        paramTypes = new BooleanFieldEditor(PARAM_TYPES_IN_DIALOGS, 
+                "Display parameter types", 
+                getFieldEditorParent(group));
+        paramTypes.load();
+        addField(paramTypes);
+        params = new BooleanFieldEditor(PARAMS_IN_DIALOGS, 
+                "Display parameter names", 
+                getFieldEditorParent(group));
+        params.load();
+        addField(params);
     }
     
     @Override

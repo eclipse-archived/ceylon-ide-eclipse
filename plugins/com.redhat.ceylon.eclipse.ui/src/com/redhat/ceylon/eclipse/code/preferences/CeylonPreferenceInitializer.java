@@ -31,6 +31,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String PASTE_IMPORTS = "pasteImports";
     public static final String RETURN_TYPES_IN_OUTLINES = "displayReturnTypes";
     public static final String PARAMS_IN_OUTLINES = "displayParameters";
+    public static final String PARAM_TYPES_IN_OUTLINES = "displayParameterTypes";
     public static final String TYPE_PARAMS_IN_OUTLINES = "displayTypeParameters";
     public static final String PARAMETER_TYPES_IN_COMPLETIONS = "displayParameterTypes";
     public static final String CLOSE_PARENS = "closeParens";
@@ -51,6 +52,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String DEFAULT_SOURCE_FOLDER = "defaultSourceFolder";
     public static final String DEFAULT_RESOURCE_FOLDER = "defaultResourceFolder";
     public static final String PARAMS_IN_DIALOGS = "paramsInDialogs";
+    public static final String PARAM_TYPES_IN_DIALOGS = "paramTypesInDialogs";
     public static final String TYPE_PARAMS_IN_DIALOGS = "typeParamsInDialogs";
     public static final String RETURN_TYPES_IN_DIALOGS = "typesInDialogs";
     public static final String FULL_LOC_SEARCH_RESULTS = "fullLocationInSearchResults";
@@ -77,7 +79,8 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PASTE_IMPORTS, true);
         store.setDefault(RETURN_TYPES_IN_OUTLINES, false);
         store.setDefault(TYPE_PARAMS_IN_OUTLINES, true);
-        store.setDefault(PARAMS_IN_OUTLINES, true);
+        store.setDefault(PARAMS_IN_OUTLINES, false);
+        store.setDefault(PARAM_TYPES_IN_OUTLINES, true);
         store.setDefault(PARAMETER_TYPES_IN_COMPLETIONS, true);
         store.setDefault(NORMALIZE_WS, false);
         store.setDefault(NORMALIZE_NL, false);
@@ -97,7 +100,8 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DEFAULT_RESOURCE_FOLDER, DEFAULT_RESOURCE_DIR);
         store.setDefault(DEFAULT_PROJECT_TYPE, "jvm");
         store.setDefault(TYPE_PARAMS_IN_DIALOGS, true);
-        store.setDefault(PARAMS_IN_DIALOGS, true);
+        store.setDefault(PARAMS_IN_DIALOGS, false);
+        store.setDefault(PARAM_TYPES_IN_DIALOGS, true);
         store.setDefault(RETURN_TYPES_IN_DIALOGS, false);
         store.setDefault(FULL_LOC_SEARCH_RESULTS, true);
    }

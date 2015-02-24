@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
@@ -159,10 +160,13 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             styledString.append(' ');
             IJavaElement parent = je.getParent();
             if (parent instanceof IType) {
-                styledString.append(parent.getElementName(), TYPE_ID_STYLER).append('.');
+                styledString.append(parent.getElementName(), TYPE_ID_STYLER)
+                            .append('.');
             }
             styledString.append(name, ID_STYLER);
-            if (prefs.getBoolean(PARAMS_IN_OUTLINES)) {
+            boolean names = prefs.getBoolean(PARAMS_IN_OUTLINES);
+            boolean types = prefs.getBoolean(PARAM_TYPES_IN_OUTLINES);
+            if (names || types) {
                 try {
                     styledString.append('(');
                     String[] parameterTypes = ((IMethod) je).getParameterTypes();
@@ -175,10 +179,16 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         else {
                             styledString.append(", ");
                         }
-                        styleJavaType(styledString, 
-                                getSignatureSimpleName(parameterTypes[i]));
-                        styledString.append(' ')
-                        .append(parameterNames[i], ID_STYLER);
+                        if (types) {
+                            styleJavaType(styledString, 
+                                    getSignatureSimpleName(parameterTypes[i]));
+                        }
+                        if (types&&names) {
+                            styledString.append(' ');
+                        }
+                        if (names) {
+                            styledString.append(parameterNames[i], ID_STYLER);
+                        }
                     }
                     styledString.append(')');
                 }
