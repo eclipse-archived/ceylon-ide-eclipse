@@ -90,9 +90,9 @@ public abstract class TreeViewPopup extends PopupDialog
         return popupLayoutFactory;
     }
     
-    protected CeylonEditor editor;
+//    protected CeylonEditor editor;
     
-    protected Text filterText;
+    private Text filterText;
     
     private TreeViewer treeViewer;
     
@@ -129,7 +129,7 @@ public abstract class TreeViewPopup extends PopupDialog
     public TreeViewPopup(Shell parent, int shellStyle,
             String invokingCommandId, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true, true, null, null);
-        this.editor = editor;
+//        this.editor = editor;
         if (invokingCommandId != null) {
             commandBinding = EditorUtil.getCommandBinding(invokingCommandId);
         }

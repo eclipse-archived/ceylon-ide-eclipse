@@ -91,9 +91,11 @@ public class HierarchyPopup extends TreeViewPopup {
     private ToolItem button1;
     private ToolItem button2;
     private ToolItem button3;
+    private final CeylonEditor editor;
     
     public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle) {
         super(shell, shellStyle, PLUGIN_ID + ".editor.hierarchy", editor);
+        this.editor = editor;
         hierarchyBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
                 ".action.showInHierarchyView");
         setInfoText(getStatusFieldText());
@@ -143,7 +145,7 @@ public class HierarchyPopup extends TreeViewPopup {
         };
         treeViewer.setContentProvider(contentProvider);
         treeViewer.setLabelProvider(labelProvider);
-        treeViewer.addFilter(new HierarchyNamePatternFilter(filterText));
+        treeViewer.addFilter(new HierarchyNamePatternFilter(getFilterText()));
         treeViewer.setAutoExpandLevel(getDefaultLevel());
         tree.addKeyListener(new ChangeViewListener());
 //        treeViewer.setUseHashlookup(false);

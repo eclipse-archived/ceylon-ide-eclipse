@@ -13,6 +13,7 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
@@ -26,6 +27,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.triggersBinding;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -63,11 +65,13 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ObjectDefinition;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -241,6 +245,8 @@ public class OutlinePopup extends TreeViewPopup {
     };
 
     private ToolItem modeButton;
+
+    private final CeylonEditor editor;
     
     private class HideNonSharedAction extends Action {
         private TreeViewer treeViewer;
@@ -287,6 +293,7 @@ public class OutlinePopup extends TreeViewPopup {
     
     public OutlinePopup(CeylonEditor editor, Shell shell, int shellStyle) {
         super(shell, shellStyle, PLUGIN_ID + ".editor.showOutline", editor);
+        this.editor = editor;
         setTitleText("Quick Outline - " + editor.getEditorInput().getName());
     }
 
@@ -321,33 +328,46 @@ public class OutlinePopup extends TreeViewPopup {
                         Node treeNode = 
                                 Nodes.findNode(rootNode, 
                                         node.getStartOffset());
+                        TypeDeclaration typedec;
                         if (treeNode instanceof ClassOrInterface) {
-                            com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface ci = 
-                                    ((ClassOrInterface) treeNode).getDeclarationModel();
-                            ArrayList<Declaration> list = new ArrayList<Declaration>();
-                            for (DeclarationWithProximity dwp:
-                                ci.getMatchingMemberDeclarations(rootNode.getUnit(), 
-                                        ci, "", 0).values()) {
-                                Declaration dec = dwp.getDeclaration();
+                            typedec = ((ClassOrInterface) treeNode).getDeclarationModel();
+                        }
+                        else if (treeNode instanceof ObjectDefinition) {
+                            typedec = ((ObjectDefinition) treeNode).getDeclarationModel().getTypeDeclaration();
+                        }
+                        else {
+                            return super.getChildren(element);
+                        }
+                        List<Declaration> list = new ArrayList<Declaration>();
+                        String filter = getFilterText().getText();
+                        for (int i=0; i<filter.length(); i++) {
+                            char ch = filter.charAt(i);
+                            if (ch=='*' ||
+                                    i>0 && Character.isUpperCase(ch)) {
+                                filter = filter.substring(0, i);
+                                break;
+                            }
+                        }
+                        for (DeclarationWithProximity dwp:
+                            typedec.getMatchingMemberDeclarations(rootNode.getUnit(), 
+                                    typedec, filter, 0).values()) {
+                            for (Declaration dec: overloads(dwp.getDeclaration())) {
                                 if (!(dec instanceof TypeParameter)) {
                                     if (includeParameters || !dec.isParameter()) {
                                         list.add(dec);
                                     }
                                 }
                             }
-                            if (!lexicalSortingAction.isChecked()) {
-                                Collections.sort(list, new Comparator<Declaration>() {
-                                    public int compare(Declaration x, Declaration y) {
-                                        return x.getContainer().getQualifiedNameString()
-                                                .compareTo(y.getContainer().getQualifiedNameString());
-                                    }
-                                });
-                            }
-                            return list.toArray();
                         }
-                        else {
-                            return super.getChildren(element);
+                        if (!lexicalSortingAction.isChecked()) {
+                            Collections.sort(list, new Comparator<Declaration>() {
+                                public int compare(Declaration x, Declaration y) {
+                                    return x.getContainer().getQualifiedNameString()
+                                            .compareTo(y.getContainer().getQualifiedNameString());
+                                }
+                            });
                         }
+                        return list.toArray();
                     }
                     else {
                         return super.getChildren(element);
@@ -390,7 +410,7 @@ public class OutlinePopup extends TreeViewPopup {
             }
         };
         treeViewer.setLabelProvider(labelProvider);
-        treeViewer.addFilter(new OutlineNamePatternFilter(filterText));
+        treeViewer.addFilter(new OutlineNamePatternFilter(getFilterText()));
         //    fSortByDefiningTypeAction= new SortByDefiningTypeAction(treeViewer);
         //    fShowOnlyMainTypeAction= new ShowOnlyMainTypeAction(treeViewer);
         treeViewer.setContentProvider(outlineContentProvider);
