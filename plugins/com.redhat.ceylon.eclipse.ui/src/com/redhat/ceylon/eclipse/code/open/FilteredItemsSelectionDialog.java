@@ -151,7 +151,7 @@ public abstract class FilteredItemsSelectionDialog extends
         SelectionStatusDialog {
 
     private static final Image MENU_IMAGE = JFaceResources.getImage(PopupDialog.POPUP_IMG_MENU);
-    private static final Image DOC_IMAGE = CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.SHOW_DOC);
+//    private static final Image DOC_IMAGE = CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.SHOW_DOC);
     private static final Image SEP_IMAGE = WorkbenchImages.getImage(IWorkbenchGraphicConstants.IMG_OBJ_SEPARATOR);
 
     protected static final String DIALOG_BOUNDS_SETTINGS = "DialogBoundsSettings";

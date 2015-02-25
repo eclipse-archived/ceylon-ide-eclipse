@@ -42,7 +42,7 @@ public class DocBrowser {
     private String text;
     private boolean visible;
 
-    private ProgressListener listener;
+    private ProgressListener progressListener;
     
     public boolean isVisible() {
         return visible;
@@ -65,8 +65,8 @@ public class DocBrowser {
                 internalSetText(text);
             }
         }
-        if (listener!=null && styledText!=null) {
-            listener.completed(new ProgressEvent(styledText));
+        if (progressListener!=null && styledText!=null) {
+            progressListener.completed(new ProgressEvent(styledText));
         }
     }
     
@@ -93,7 +93,7 @@ public class DocBrowser {
         FontData fontData = 
                 getFontRegistry()
                     .getFontData(APPEARANCE_JAVADOC_FONT)[0];
-        Font font = new Font(Display.getDefault(), fontData);
+        Font font = new Font(display, fontData);
         if (isAvailable(parent)) {
             browser = new Browser(parent, style);
             browser.setJavascriptEnabled(false);
@@ -106,7 +106,7 @@ public class DocBrowser {
             browser.addOpenWindowListener(new OpenWindowListener() {
                 @Override
                 public void open(WindowEvent event) {
-                    event.required = true; // Cancel opening of new windows
+                    event.required = true; //Cancel opening of new windows
                 }
             });
         }
@@ -174,7 +174,7 @@ public class DocBrowser {
     }
 
     public void setProgressListener(ProgressListener listener) {
-        this.listener = listener;
+        this.progressListener = listener;
         if (browser!=null) browser.addProgressListener(listener);
     }
 
