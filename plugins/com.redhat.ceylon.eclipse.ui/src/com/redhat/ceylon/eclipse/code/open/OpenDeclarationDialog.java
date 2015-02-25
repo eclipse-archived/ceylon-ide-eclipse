@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.open;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
@@ -54,6 +55,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
@@ -64,11 +66,18 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
+import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
+import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
+import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
+import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -1222,5 +1231,54 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         });
         
     }*/
+    
+    @Override
+    void handleLink(String location, Browser browser) {
+        Referenceable target = null;
+        IEditorPart currentEditor = EditorUtil.getCurrentEditor();
+        if (currentEditor instanceof CeylonEditor) {
+            CeylonEditor editor = (CeylonEditor) currentEditor;
+            target = getLinkedModel(editor, location);
+            if (location.startsWith("dec:")) {
+                if (target!=null) {
+                    Navigation.gotoDeclaration(target, editor);
+                    close();
+                }
+            }
+            else if (location.startsWith("ref:")) {
+                new FindReferencesAction(editor, (Declaration) target).run();
+                close();
+            }
+            else if (location.startsWith("sub:")) {
+                new FindSubtypesAction(editor, (Declaration) target).run();
+                close();
+            }
+            else if (location.startsWith("act:")) {
+                new FindRefinementsAction(editor, (Declaration) target).run();
+                close();
+            }
+            else if (location.startsWith("ass:")) {
+                new FindAssignmentsAction(editor, (Declaration) target).run();
+                close();
+            }
+        }
+        if (location.startsWith("doc:")) {
+            if (target==null) {
+                target = getLinkedModel(location);
+            }
+            if (target instanceof Declaration) {
+                String text = DocumentationHover.getDocumentationFor(null, (Declaration) target);
+                if (text!=null) browser.setText(text);
+            }
+            if (target instanceof Package) {
+                String text = DocumentationHover.getDocumentationFor(null, (Package) target);
+                if (text!=null) browser.setText(text);
+            }
+            if (target instanceof Module) {
+                String text = DocumentationHover.getDocumentationFor(null, (Module) target);
+                if (text!=null) browser.setText(text);
+            }
+        }
+    }
     
 }

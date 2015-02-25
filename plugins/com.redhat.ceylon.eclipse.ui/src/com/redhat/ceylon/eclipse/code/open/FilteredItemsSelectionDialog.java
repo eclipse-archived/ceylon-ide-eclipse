@@ -88,6 +88,8 @@ import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
@@ -366,20 +368,19 @@ public abstract class FilteredItemsSelectionDialog extends
         String setting = settings.get(HISTORY_SETTINGS);
         if (setting != null) {
             try {
-                IMemento memento = XMLMemento.createReadRoot(new StringReader(
-                        setting));
+                IMemento memento = 
+                        XMLMemento.createReadRoot(new StringReader(setting));
                 this.contentProvider.loadHistory(memento);
-            } catch (WorkbenchException e) {
+            }
+            catch (WorkbenchException e) {
                 // Simply don't restore the settings
                 StatusManager
                         .getManager()
-                        .handle(
-                                new Status(
-                                        IStatus.ERROR,
-                                        PlatformUI.PLUGIN_ID,
-                                        IStatus.ERROR,
-                                        WorkbenchMessages.FilteredItemsSelectionDialog_restoreError,
-                                        e));
+                        .handle(new Status(IStatus.ERROR,
+                                PlatformUI.PLUGIN_ID,
+                                IStatus.ERROR,
+                                WorkbenchMessages.FilteredItemsSelectionDialog_restoreError,
+                                e));
             }
         }
     }
@@ -695,6 +696,14 @@ public abstract class FilteredItemsSelectionDialog extends
             browser.setBackground(bg);
             browser.setFont(font);
             browser.setLayoutData(new GridData(GridData.FILL_BOTH));
+            browser.addLocationListener(new LocationListener() {
+                @Override
+                public void changing(LocationEvent event) {
+                    handleLink(event.location, browser);
+                }
+                @Override
+                public void changed(LocationEvent event) {}
+            });
         }
         else {
             styledText = new StyledText(sash, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.BORDER);
@@ -3194,5 +3203,7 @@ public abstract class FilteredItemsSelectionDialog extends
     public Text getPatternControl() {
         return pattern;
     }
+
+    void handleLink(String location, Browser browser) {}
 
 }

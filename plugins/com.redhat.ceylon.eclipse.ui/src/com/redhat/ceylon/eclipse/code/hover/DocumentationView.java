@@ -188,7 +188,7 @@ public class DocumentationView extends ViewPart {
             Referenceable target = getLinkedModel(editor, location);
             new FindAssignmentsAction(editor, (Declaration) target).run();
         }
-        else if (location.startsWith("stp:")) {
+        /*else if (location.startsWith("stp:")) {
             CompilationUnit rn = editor.getParseController().getRootNode();
             Node node = Nodes.findNode(rn, Integer.parseInt(location.substring(4)));
             for (SpecifyTypeProposal stp: SpecifyTypeProposal.createProposals(rn, node, editor)) {
@@ -201,7 +201,7 @@ public class DocumentationView extends ViewPart {
         }
         else if (location.startsWith("exf:")) {
             new ExtractFunctionProposal(editor).apply(editor.getParseController().getDocument());
-        }
+        }*/
     }
     
     @Override

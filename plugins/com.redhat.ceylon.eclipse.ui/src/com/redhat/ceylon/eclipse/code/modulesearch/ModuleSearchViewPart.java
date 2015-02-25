@@ -601,7 +601,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
         docBrowser.addLocationListener(new LocationAdapter() {
             @Override
             public void changing(LocationEvent e) {
-                if ( e.location.startsWith("module:") ) {
+                if (e.location.startsWith("module:")) {
                     e.doit = false;
                     
                     String[] split = e.location.split(":");

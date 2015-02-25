@@ -24,6 +24,7 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
 import static com.redhat.ceylon.eclipse.util.Highlights.NUMBERS;
@@ -158,7 +159,7 @@ public class DocumentationHover extends SourceInfoHover {
             
             //necessary for windows environment (fix for blank page)
             //somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
-            if (!"about:blank".equals(location)) {
+            if (!"about:blank".equals(location) && !location.startsWith("http:")) {
                 event.doit= false;
             }
             
@@ -419,7 +420,28 @@ public class DocumentationHover extends SourceInfoHover {
         else if (location.equals("doc:ceylon.language:ceylon.language:Nothing")) {
             return editor.getParseController().getRootNode().getUnit().getNothingDeclaration();
         }
-        TypeChecker tc = editor.getParseController().getTypeChecker();
+        return getLinkedModel(location, 
+                editor.getParseController().getTypeChecker());
+    }
+    
+    public static Referenceable getLinkedModel(String location) {
+        if (location==null) {
+            return null;
+        }
+//        else if (location.equals("doc:ceylon.language:ceylon.language:Nothing")) {
+//            return editor.getParseController().getRootNode().getUnit().getNothingDeclaration();
+        //        }
+        for (TypeChecker tc: getTypeCheckers()) {
+            Referenceable linkedModel = 
+                    getLinkedModel(location, tc);
+            if (linkedModel!=null) {
+                return linkedModel;
+            }
+        }
+        return null;
+    }
+
+    public static Referenceable getLinkedModel(String location, TypeChecker tc) {
         String[] bits = location.split(":");
         JDTModelLoader modelLoader = getModelLoader(tc);
         String moduleName = bits[1];
@@ -1119,7 +1141,7 @@ public class DocumentationHover extends SourceInfoHover {
         return "module " + name + " \"" + version + "\"";
     }
 
-    private static String getDocumentationFor(CeylonParseController cpc, 
+    public static String getDocumentationFor(CeylonParseController cpc, 
             Module mod) {
         StringBuilder buffer = new StringBuilder();
         addMainModuleDescription(mod, buffer);
