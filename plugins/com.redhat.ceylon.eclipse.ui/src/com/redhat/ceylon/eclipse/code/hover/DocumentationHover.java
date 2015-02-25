@@ -12,7 +12,6 @@ package com.redhat.ceylon.eclipse.code.hover;
  *     Genady Beryozkin <eclipse@genady.org> - [hovering] tooltip for constant string does not show constant value - https://bugs.eclipse.org/bugs/show_bug.cgi?id=85382
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl.isAvailable;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDocDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.isVariable;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitialValueDescription;
@@ -64,7 +63,6 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
-import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
@@ -138,9 +136,9 @@ import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 
 public class DocumentationHover extends SourceInfoHover {
     
-    private static final String smallerSize = "90%";
-    private static final String annotationSize = "85%";
-    private static final String largerSize = "103%";
+    public static final String smallerSize = "90%";
+    public static final String annotationSize = "85%";
+    public static final String largerSize = "103%";
     
     public DocumentationHover(CeylonEditor editor) {
         super(editor);

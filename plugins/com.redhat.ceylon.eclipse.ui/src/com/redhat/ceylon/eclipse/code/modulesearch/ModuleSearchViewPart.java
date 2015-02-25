@@ -81,6 +81,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.hover.CeylonBlockEmitter;
+import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
@@ -770,9 +771,9 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
             HTML.addImageAndLabel(docBuilder, null, 
                     HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
                     16, 16, 
-                    "<tt style='font-size:102%'>" + 
+                    "<tt><span style='font-size:"+ DocumentationHover.largerSize + "%'>" + 
                     HTML.highlightLine(description(versionNode)) +
-                    "</tt>", 
+                    "</span></tt>", 
                     20, 4);
 //            docBuilder.append("<br/>");
             
@@ -781,27 +782,28 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
                 if( versionNode.getDoc() == null || versionNode.getDoc().isEmpty() ) {
                     docBuilder.append("<p>");
                     docBuilder.append("<i>Module does not have documentation.</i>");
+                    docBuilder.append("</p>");
                 } else {
                     docBuilder.append(markdown(versionNode.getDoc()));
                 }
                 
                 if (versionNode.getAuthors() != null && !versionNode.getAuthors().isEmpty()) {
-                    docBuilder.append("<p>");
-                    docBuilder.append("<b>Authors: </b>");
+                    docBuilder.append("<p><i>By: ");
                     docBuilder.append(versionNode.getAuthorsCommaSeparated());
+                    docBuilder.append("</i></p>");
                 }
                 
                 if( versionNode.getLicense() != null && !versionNode.getLicense().isEmpty() ) {
-                    docBuilder.append("<p>");
-                    docBuilder.append("<b>License: </b>");
+                    docBuilder.append("<p><i>License: ");
                     docBuilder.append(versionNode.getLicense());
+                    docBuilder.append("</i></p>");
                 }
                 
             } else {
-                docBuilder.append("<p>");
-                docBuilder.append("<i>Click here to <a href='module:" + 
-                        versionNode.getModule().getName() + ":" + versionNode.getVersion() + 
-                        "'>fetch documentation</a></i> for this module version.");
+                docBuilder.append("<p><i>Click here to <a href='module:");
+                docBuilder.append(versionNode.getModule().getName() + ":" + versionNode.getVersion());
+                docBuilder.append("'>fetch documentation</a></i> for this module version.");
+                docBuilder.append("</p>");
             }
         }
         

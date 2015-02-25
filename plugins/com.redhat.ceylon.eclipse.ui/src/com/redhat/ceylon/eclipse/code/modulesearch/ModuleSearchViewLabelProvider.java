@@ -28,12 +28,12 @@ public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
         styledText.append(lastVersion.getVersion(), Highlights.VERSION_STYLER);
         styledText.append("\"", Highlights.VERSION_STYLER);
     
-        if (lastVersion.getAuthors() != null && !lastVersion.getAuthors().isEmpty()) {
-            styledText.append(" (by ", StyledString.QUALIFIER_STYLER);
-            styledText.append(lastVersion.getAuthorsCommaSeparated(), StyledString.QUALIFIER_STYLER);
-            styledText.append(")", StyledString.QUALIFIER_STYLER);
-        }
-    
+//        if (lastVersion.getAuthors() != null && !lastVersion.getAuthors().isEmpty()) {
+//            styledText.append(" (by ", StyledString.QUALIFIER_STYLER);
+//            styledText.append(lastVersion.getAuthorsCommaSeparated(), StyledString.QUALIFIER_STYLER);
+//            styledText.append(")", StyledString.QUALIFIER_STYLER);
+//        }
+//    
         cell.setText(styledText.toString());
         cell.setStyleRanges(styledText.getStyleRanges());
         cell.setImage(CeylonLabelProvider.MODULE);
