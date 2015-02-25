@@ -362,6 +362,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(EXPAND_ALL, image("expandall.gif"));
         reg.put(PAGING, image("paging.gif"));
         reg.put(SHOW_DOC, image("show_doc.gif"));
+        reg.put(SHOW_MEMBERS, image("members.gif"));
         reg.put(REPOSITORIES, image("repositories.gif"));
         reg.put(RUNTIME_OBJ, image("runtime_obj.gif"));
         reg.put(CEYLON_LOCAL_NAME, image("localvariable_obj.gif"));

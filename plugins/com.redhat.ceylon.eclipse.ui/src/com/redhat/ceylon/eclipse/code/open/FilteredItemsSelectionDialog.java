@@ -54,8 +54,11 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.LegacyActionTools;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.PopupDialog;
+import org.eclipse.jface.internal.text.html.BrowserInformationControl;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ContentViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -81,7 +84,6 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTError;
 import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
@@ -152,6 +154,10 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 public abstract class FilteredItemsSelectionDialog extends
         SelectionStatusDialog {
 
+    private static final Image MENU_IMAGE = JFaceResources.getImage(PopupDialog.POPUP_IMG_MENU);
+    private static final Image DOC_IMAGE = CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.SHOW_DOC);
+    private static final Image SEP_IMAGE = WorkbenchImages.getImage(IWorkbenchGraphicConstants.IMG_OBJ_SEPARATOR);
+
     protected static final String DIALOG_BOUNDS_SETTINGS = "DialogBoundsSettings";
 
     private static final String SHOW_STATUS_LINE = "ShowStatusLine";
@@ -208,7 +214,8 @@ public abstract class FilteredItemsSelectionDialog extends
 
     private ToolBar toolBar;
 
-    private ToolItem toolItem;
+    private ToolItem menuToolItem;
+    private ToolItem toggleDocToolItem;
 
     private Label progressLabel;
 
@@ -318,7 +325,7 @@ public abstract class FilteredItemsSelectionDialog extends
     }
 
     public boolean defaultDocArea() {
-        return true;
+        return browser!=null;
     }
 
     /**
@@ -349,6 +356,9 @@ public abstract class FilteredItemsSelectionDialog extends
         
         if (toggleDocAction!=null) {
             toggleDocAction.setChecked(toggleDocArea);
+        }
+        if (toggleDocToolItem!=null) {
+            toggleDocToolItem.setSelection(toggleDocArea);
         }
 
         setDocAreaVisible(toggleDocArea);
@@ -439,7 +449,7 @@ public abstract class FilteredItemsSelectionDialog extends
         header.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
+        layout.numColumns = 3;
         layout.marginWidth = 0;
         layout.marginHeight = 0;
         header.setLayout(layout);
@@ -457,10 +467,33 @@ public abstract class FilteredItemsSelectionDialog extends
         });
         headerLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        /*ToolBar toolBar = new ToolBar(header, SWT.FLAT);
+        GridData data = new GridData();
+        data.horizontalAlignment = GridData.END;
+        toolBar.setLayoutData(data);
+        
+        createToolBar(toolBar);*/
+        
         createViewMenu(header);
         
         return headerLabel;
     }
+
+    /*protected void createToolBar(ToolBar toolBar) {        
+        toggleDocToolItem = new ToolItem(toolBar, SWT.CHECK, 0);
+        toggleDocToolItem.setImage(DOC_IMAGE);
+        toggleDocToolItem.setToolTipText("Show/Hide Documentation");
+        toggleDocToolItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean selection = toggleDocToolItem.getSelection();
+                setDocAreaVisible(selection);
+                if (toggleDocAction!=null) {
+                    toggleDocAction.setChecked(selection);
+                }
+            }
+        });
+    }*/
 
     /**
      * Create the labels for the list and the progress. Return the list label.
@@ -491,11 +524,20 @@ public abstract class FilteredItemsSelectionDialog extends
         
         return listLabel;
     }
-
+    
     private void createViewMenu(Composite parent) {
         toolBar = new ToolBar(parent, SWT.FLAT);
-        toolItem = new ToolItem(toolBar, SWT.PUSH, 0);
-
+        
+        menuToolItem = new ToolItem(toolBar, SWT.PUSH, 0);
+        menuToolItem.setImage(MENU_IMAGE);
+        menuToolItem.setToolTipText("Menu");
+        menuToolItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showViewMenu();
+            }
+        });
+        
         GridData data = new GridData();
         data.horizontalAlignment = GridData.END;
         toolBar.setLayoutData(data);
@@ -507,22 +549,11 @@ public abstract class FilteredItemsSelectionDialog extends
             }
         });
 
-        toolItem.setImage(WorkbenchImages
-                .getImage(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU));
-        toolItem
-                .setToolTipText(WorkbenchMessages.FilteredItemsSelectionDialog_menu);
-        toolItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                showViewMenu();
-            }
-        });
-
         menuManager = new MenuManager();
 
         fillViewMenu(menuManager);
         toolBar.setVisible(!menuManager.isEmpty());
-
+        
         IHandlerService service = (IHandlerService) PlatformUI.getWorkbench()
                 .getService(IHandlerService.class);
         IHandler handler = new AbstractHandler() {
@@ -552,7 +583,7 @@ public abstract class FilteredItemsSelectionDialog extends
 
     private void showViewMenu() {
         Menu menu = menuManager.createContextMenu(getShell());
-        Rectangle bounds = toolItem.getBounds();
+        Rectangle bounds = menuToolItem.getBounds();
         Point topLeft = new Point(bounds.x, bounds.y + bounds.height);
         topLeft = toolBar.toDisplay(topLeft);
         menu.setLocation(topLeft.x, topLeft.y);
@@ -589,8 +620,8 @@ public abstract class FilteredItemsSelectionDialog extends
 
     private void createPopupMenu() {
         removeHistoryItemAction = new RemoveHistoryItemAction();
-        removeHistoryActionContributionItem = new ActionContributionItem(
-                removeHistoryItemAction);
+        removeHistoryActionContributionItem = 
+                new ActionContributionItem(removeHistoryItemAction);
 
         contextMenuManager = new MenuManager();
         contextMenuManager.setRemoveAllWhenShown(true);
@@ -608,7 +639,8 @@ public abstract class FilteredItemsSelectionDialog extends
 
     @Override
     protected Control createDialogArea(final Composite parent) {
-        final Composite dialogArea = (Composite) super.createDialogArea(parent);
+        final Composite dialogArea = 
+                (Composite) super.createDialogArea(parent);
 
         final Composite content = new Composite(dialogArea, SWT.NONE);
         content.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -656,8 +688,7 @@ public abstract class FilteredItemsSelectionDialog extends
                 getFontRegistry()
                     .getFontData(APPEARANCE_JAVADOC_FONT)[0];
         Font font = new Font(Display.getDefault(), fontData);
-        try {
-//            if (true) throw new Exception();
+        if (BrowserInformationControl.isAvailable(sash)) {
             browser = new Browser(sash, SWT.BORDER);
             browser.setJavascriptEnabled(false);
             browser.setForeground(fg);
@@ -665,7 +696,7 @@ public abstract class FilteredItemsSelectionDialog extends
             browser.setFont(font);
             browser.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
-        catch (SWTError e) {
+        else {
             styledText = new StyledText(sash, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.BORDER);
             styledText.setForeground(fg);
             styledText.setBackground(bg);
@@ -1401,7 +1432,11 @@ public abstract class FilteredItemsSelectionDialog extends
         }
         @Override
         public void run() {
-            setDocAreaVisible(isChecked());
+            boolean checked = isChecked();
+            setDocAreaVisible(checked);
+            if (toggleDocToolItem!=null) {
+                toggleDocToolItem.setSelection(checked);
+            }
         }
     }
 
@@ -1476,10 +1511,8 @@ public abstract class FilteredItemsSelectionDialog extends
          * Creates a new instance of the class.
          */
         public RefreshProgressMessageJob() {
-            super(
-                    FilteredItemsSelectionDialog.this.getParentShell()
-                            .getDisplay(),
-                    WorkbenchMessages.FilteredItemsSelectionDialog_progressRefreshJob);
+            super(FilteredItemsSelectionDialog.this.getParentShell().getDisplay(),
+                  WorkbenchMessages.FilteredItemsSelectionDialog_progressRefreshJob);
             setSystem(true);
         }
 
@@ -1535,8 +1568,7 @@ public abstract class FilteredItemsSelectionDialog extends
          * Creates a new instance of the class.
          */
         public RefreshCacheJob() {
-            super(
-                    WorkbenchMessages.FilteredItemsSelectionDialog_cacheRefreshJob);
+            super(WorkbenchMessages.FilteredItemsSelectionDialog_cacheRefreshJob);
             setSystem(true);
         }
 
@@ -1582,15 +1614,12 @@ public abstract class FilteredItemsSelectionDialog extends
     private class RemoveHistoryItemAction extends Action {
 
         public RemoveHistoryItemAction() {
-            super(
-                    WorkbenchMessages.FilteredItemsSelectionDialog_removeItemsFromHistoryAction);
+            super(WorkbenchMessages.FilteredItemsSelectionDialog_removeItemsFromHistoryAction);
         }
 
         @Override
         public void run() {
-            List selectedElements = ((StructuredSelection) list.getSelection())
-                    .toList();
-            removeSelectedItems(selectedElements);
+            removeSelectedItems(((StructuredSelection) list.getSelection()).toList());
         }
     }
 
@@ -1600,6 +1629,7 @@ public abstract class FilteredItemsSelectionDialog extends
 
     private class ItemsListLabelProvider extends StyledCellLabelProvider
             implements ILabelProviderListener {
+
         private ILabelProvider provider;
 
         private ILabelDecorator selectionDecorator;
@@ -1633,8 +1663,7 @@ public abstract class FilteredItemsSelectionDialog extends
         
         private Image getImage(Object element) {
             if (element instanceof ItemsListSeparator) {
-                return WorkbenchImages
-                        .getImage(IWorkbenchGraphicConstants.IMG_OBJ_SEPARATOR);
+                return SEP_IMAGE;
             }
 
             return provider.getImage(element);
@@ -1707,8 +1736,7 @@ public abstract class FilteredItemsSelectionDialog extends
 
             int borderWidth = list.getTable().computeTrim(0, 0, 0, 0).width;
 
-            int imageWidth = WorkbenchImages.getImage(
-                    IWorkbenchGraphicConstants.IMG_OBJ_SEPARATOR).getBounds().width;
+            int imageWidth = SEP_IMAGE.getBounds().width;
 
             int width = rect.width - borderWidth - imageWidth;
 

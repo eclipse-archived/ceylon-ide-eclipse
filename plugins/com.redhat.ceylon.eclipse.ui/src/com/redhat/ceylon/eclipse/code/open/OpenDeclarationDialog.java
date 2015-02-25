@@ -54,6 +54,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
@@ -81,6 +82,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private static final String EXCLUDE_DEPRECATED = "excludeDeprecated";
     private static final String EXCLUDE_JDK = "excludeJDK";
 
+    private static final Image MEMBERS_IMAGE = 
+            CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.SHOW_MEMBERS);
+    
     private static final String SETTINGS_ID = 
             CeylonPlugin.PLUGIN_ID + ".openDeclarationDialog";
     
@@ -98,8 +102,27 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private ToggleExcludeDeprecatedAction toggleExcludeDeprecatedAction;
     private ToggleExcludeJDKAction toggleExcludeJDKAction;
     
+    private ToolItem toggleMembersToolItem;
+    private ToggleMembersAction toggleMembersAction;
+    
     private TextPresentation presentation = new TextPresentation();
     
+    private final class ToggleMembersAction extends Action {
+        private ToggleMembersAction() {
+            super("Include Member Declarations", IAction.AS_CHECK_BOX);
+            setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.SHOW_MEMBERS));
+        }
+
+        @Override
+        public void run() {
+            includeMembers=!includeMembers;
+            applyFilter();
+            if (toggleMembersToolItem!=null) {
+                toggleMembersToolItem.setSelection(includeMembers);
+            }
+        }
+    }
+
     private class ToggleExcludeDeprecatedAction extends Action {
         ToggleExcludeDeprecatedAction() {
             super("Exclude Deprecated Declarations", AS_CHECK_BOX);
@@ -1069,17 +1092,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     @Override
     protected void fillViewMenu(IMenuManager menuManager) {
-        Action includeMembersAction = 
-                new Action("Include Member Declarations", 
-                        IAction.AS_CHECK_BOX) {
-            @Override
-            public void run() {
-                includeMembers=!includeMembers;
-                applyFilter();
-            }
-        };
-        includeMembersAction.setChecked(includeMembers);
-        menuManager.add(includeMembersAction);
+        toggleMembersAction = new ToggleMembersAction();
+        toggleMembersAction.setChecked(includeMembers);
+        menuManager.add(toggleMembersAction);
         
         toggleExcludeDeprecatedAction = new ToggleExcludeDeprecatedAction();
         toggleExcludeDeprecatedAction.setChecked(excludeDeprecated);
@@ -1181,5 +1196,25 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         return true;
     }
+    
+    /*@Override
+    protected void createToolBar(ToolBar toolBar) {
+        super.createToolBar(toolBar);
+        
+        toggleMembersToolItem = new ToolItem(toolBar, SWT.CHECK, 0);
+        toggleMembersToolItem.setImage(MEMBERS_IMAGE);
+        toggleMembersToolItem.setToolTipText("Show/Hide Members");
+        toggleMembersToolItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                includeMembers=!includeMembers;
+                applyFilter();
+                if (toggleMembersAction!=null) {
+                    toggleMembersAction.setChecked(includeMembers);
+                }
+            }
+        });
+        
+    }*/
     
 }

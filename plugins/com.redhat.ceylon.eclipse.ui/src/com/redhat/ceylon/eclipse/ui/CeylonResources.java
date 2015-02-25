@@ -103,6 +103,7 @@ public interface CeylonResources {
     public static final String EXPAND_ALL = "expandall";
     public static final String PAGING = "paging";
     public static final String SHOW_DOC = "show_doc";
+    public static final String SHOW_MEMBERS = "show_members";
     public static final String REPOSITORIES = "repositories";
     public static final String RUNTIME_OBJ = "runtime_obj";
     public static final String MULTIPLE_TYPES = "ceylon_types";
