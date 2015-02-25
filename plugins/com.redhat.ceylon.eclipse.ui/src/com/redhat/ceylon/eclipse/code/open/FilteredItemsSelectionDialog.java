@@ -3191,7 +3191,7 @@ public abstract class FilteredItemsSelectionDialog extends
      * @return Control or <code>null</code> if the pattern control has not
      *         been created.
      */
-    public Control getPatternControl() {
+    public Text getPatternControl() {
         return pattern;
     }
 
