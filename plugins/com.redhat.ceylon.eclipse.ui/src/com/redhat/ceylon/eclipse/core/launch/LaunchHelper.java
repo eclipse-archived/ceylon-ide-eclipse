@@ -25,8 +25,11 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
@@ -38,7 +41,13 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.eclipse.code.open.DeclarationWithProject;
+import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 /**
@@ -333,16 +342,92 @@ public class LaunchHelper {
     }
 
     static Declaration chooseDeclaration(final List<Declaration> decls) {
-        FilteredItemsSelectionDialog sd = 
-                new CeylonTopLevelSelectionDialog(EditorUtil.getShell(), 
-                        false, decls);
+        OpenDeclarationDialog sd = 
+                new OpenDeclarationDialog(false, false, 
+                        EditorUtil.getShell(), 
+                        "Ceylon Launcher",
+                        "&Type part of a name, with wildcard *, or a camel hump pattern:",
+                        "&Select a function to run:") {
+            private static final String SETTINGS_ID = 
+                    CeylonPlugin.PLUGIN_ID + ".selectRunnableDialog";            
+            @Override
+            protected String getFilterListAsString() {
+                return "";
+            }
+            @Override
+            public boolean defaultDocArea() {
+                return false;
+            }
+            @Override
+            protected IDialogSettings getDialogSettings() {
+                IDialogSettings settings = CeylonPlugin.getInstance().getDialogSettings();
+                IDialogSettings section = settings.getSection(SETTINGS_ID);
+                if (section == null) {
+                    section = settings.addNewSection(SETTINGS_ID);
+                }
+                return section;
+            }
+            @Override
+            protected IDialogSettings getDialogBoundsSettings() {
+                IDialogSettings settings = getDialogSettings();
+                IDialogSettings section = settings.getSection(DIALOG_BOUNDS_SETTINGS);
+                if (section == null) {
+                    section = settings.addNewSection(DIALOG_BOUNDS_SETTINGS);
+                    section.put(DIALOG_HEIGHT, 500);
+                    section.put(DIALOG_WIDTH, 400);
+                }
+                return section;
+            }
+            @Override
+            protected void fillViewMenu(IMenuManager menuManager) {}
+            @Override
+            protected ItemsFilter createFilter() {
+                return new Filter() {
+                    @Override
+                    public String getPattern() {
+                        String pattern = super.getPattern(); 
+                        return pattern.isEmpty() ? "**" : pattern;
+                    }
+                };
+            }
+            @Override
+            protected void fillContentProvider(
+                    AbstractContentProvider contentProvider,
+                    ItemsFilter itemsFilter,
+                    IProgressMonitor monitor)
+                    throws CoreException {
+                for (int i=0; i<decls.size(); i++) {
+                    Declaration decl = decls.get(i);
+                    Unit unit = decl.getUnit();
+                    String path;
+                    IProject project;
+                    if (unit instanceof ProjectSourceFile) {
+                        ProjectSourceFile projectSourceFile = (ProjectSourceFile) unit;
+                        path = projectSourceFile.getSourceFullPath();
+                        project = projectSourceFile.getProjectResource();
+                    }
+                    else if (unit instanceof EditedSourceFile) {
+                        EditedSourceFile editedSourceFile = (EditedSourceFile) unit;
+                        path = editedSourceFile.getSourceFullPath();
+                        project = editedSourceFile.getProjectResource();
+                    }
+                    else {
+                        continue;
+                    }
+                    String version = decl.getUnit().getPackage().getModule().getVersion();
+                    DeclarationWithProject dwp = 
+                            new DeclarationWithProject(decl, project, version, path);
+                    contentProvider.add(dwp, itemsFilter);
+                }
+            }
+        };
 
         if (sd.open() == Window.OK) {
-            return (Declaration)sd.getFirstResult();
+            return ((DeclarationWithProject) sd.getFirstResult()).getDeclaration();
         }
         return null;
     }
-
+    
     static Module chooseModule(String projectName, boolean includeDefault) {
         return chooseModule(getProjectFromName(projectName), includeDefault);
     }

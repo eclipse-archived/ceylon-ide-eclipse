@@ -222,7 +222,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         settings.put(EXCLUDE_JDK, excludeJDK);
     }
 
-    private final class Filter extends ItemsFilter {
+    public class Filter extends ItemsFilter {
         boolean members = includeMembers;
         boolean filterDeprecated = excludeDeprecated;
         boolean filterJDK = excludeJDK;
@@ -678,14 +678,17 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
      }
     
-    public OpenDeclarationDialog(boolean multi, Shell shell, String title, 
+    public OpenDeclarationDialog(boolean multi, boolean history, 
+            Shell shell, String title, 
             String filterLabelText, String listLabelText) {
         super(shell, multi, filterLabelText, listLabelText);
         setTitle(title);
         initLabelProviders(new LabelProvider(), new SelectionLabelDecorator(),
                 new DetailsLabelProvider(), new MoreDetailsLabelProvider(),
                 new EvenMoreDetailsLabelProvider());
-        setSelectionHistory(new TypeSelectionHistory());
+        if (history) {
+            setSelectionHistory(new TypeSelectionHistory());
+        }
     }
     
     @Override

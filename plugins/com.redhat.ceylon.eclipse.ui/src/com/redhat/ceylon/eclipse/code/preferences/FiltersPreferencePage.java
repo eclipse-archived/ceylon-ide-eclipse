@@ -298,7 +298,7 @@ public abstract class FiltersPreferencePage
     
     private void addDeclaration() {
         OpenDeclarationDialog dialog = 
-                new OpenDeclarationDialog(true, getShell(),
+                new OpenDeclarationDialog(true, false, getShell(),
                         "Add Declaration to Filters",
                         "&Type part of a name, with wildcard *, or a camel hump pattern:",
                         "&Select one or more declarations to exclude:") {

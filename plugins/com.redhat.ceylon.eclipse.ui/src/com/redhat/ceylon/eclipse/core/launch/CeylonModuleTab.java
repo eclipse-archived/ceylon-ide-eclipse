@@ -115,8 +115,9 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
      */
     protected void handleSearchButtonSelected() {
         
-        Declaration d = LaunchHelper.chooseDeclaration(LaunchHelper.getDeclarationsForModule(
-                fProjText.getText(), fModuleText.getText()));
+        Declaration d = LaunchHelper.chooseDeclaration(
+                LaunchHelper.getDeclarationsForModule(
+                        fProjText.getText(), fModuleText.getText()));
         
         if (d != null) {
             fTopLevelText.setText(LaunchHelper.getTopLevelDisplayName(d));

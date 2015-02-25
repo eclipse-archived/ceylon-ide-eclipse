@@ -9,7 +9,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 @Deprecated
 public class DeclarationWithProject {
     
-    DeclarationWithProject(Declaration dec, 
+    public DeclarationWithProject(Declaration dec, 
             IProject project, String version,
             String path) {
         this.dec = dec;

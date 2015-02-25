@@ -36,7 +36,8 @@ public class OpenDeclarationAction extends Action {
     public void run() {
         Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
         OpenDeclarationDialog dialog = 
-                new OpenDeclarationDialog(true, shell, "Open Declaration",
+                new OpenDeclarationDialog(true, true, shell, 
+                        "Open Declaration",
                         "&Type part of a name, with wildcard *, or a camel hump pattern, with . to display members:",
                         "&Select one or more declarations to open in editors:");
         if (editor instanceof ITextEditor) {

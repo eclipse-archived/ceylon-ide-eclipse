@@ -832,7 +832,7 @@ public abstract class FilteredItemsSelectionDialog extends
     }
 
     protected void createStatusArea(final Composite parent) {
-        statusArea = new ViewForm(parent, SWT.BORDER | SWT.FLAT);
+        statusArea = new ViewForm(parent, SWT.FLAT);
         statusArea.setEnabled(false);
         statusArea.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
         final Composite content = new Composite(statusArea, SWT.NONE);
