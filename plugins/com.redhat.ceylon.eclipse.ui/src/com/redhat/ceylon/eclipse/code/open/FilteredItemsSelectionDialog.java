@@ -16,9 +16,6 @@ package com.redhat.ceylon.eclipse.code.open;
  *  Simon Muschel <smuschel@gmx.de> - bug 258493
  *******************************************************************************/
 
-import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
-import static org.eclipse.jface.resource.JFaceResources.getFontRegistry;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -55,7 +52,6 @@ import org.eclipse.jface.action.LegacyActionTools;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
-import org.eclipse.jface.internal.text.html.BrowserInformationControl;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.JFaceResources;
@@ -87,12 +83,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -108,7 +102,6 @@ import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -146,6 +139,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.DocBrowser;
 
 /**
  * Shows a list of items to the user with a text entry field for a string
@@ -265,8 +259,7 @@ public abstract class FilteredItemsSelectionDialog extends
     private final String filterLabelText;
     private final String listLabelText;
 
-    private Browser browser;
-    private StyledText styledText;
+    private DocBrowser browser;
 
     private SashForm sash;
 
@@ -416,8 +409,7 @@ public abstract class FilteredItemsSelectionDialog extends
         settings.put(SHOW_STATUS_LINE, 
                 statusArea.isVisible());
         settings.put(SHOW_DOC_AREA, 
-                browser!=null && browser.isVisible() ||
-                styledText!=null && styledText.isVisible());
+                browser!=null && browser.isVisible());
 
         XMLMemento memento = XMLMemento.createWriteRoot(HISTORY_SETTINGS);
         this.contentProvider.saveHistory(memento);
@@ -682,43 +674,16 @@ public abstract class FilteredItemsSelectionDialog extends
         gd.heightHint = list.getTable().getItemHeight() * 15;
         list.getTable().setLayoutData(gd);
         
-        Display display = getShell().getDisplay();
-        Color fg = display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
-        Color bg = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
-        FontData fontData = 
-                getFontRegistry()
-                    .getFontData(APPEARANCE_JAVADOC_FONT)[0];
-        Font font = new Font(Display.getDefault(), fontData);
-        if (BrowserInformationControl.isAvailable(sash)) {
-            browser = new Browser(sash, SWT.BORDER);
-            browser.setJavascriptEnabled(false);
-            browser.setForeground(fg);
-            browser.setBackground(bg);
-            browser.setFont(font);
-            browser.setLayoutData(new GridData(GridData.FILL_BOTH));
-            browser.addLocationListener(new LocationListener() {
-                @Override
-                public void changing(LocationEvent event) {
-                    handleLink(event.location, browser);
-                }
-                @Override
-                public void changed(LocationEvent event) {}
-            });
-        }
-        else {
-            styledText = new StyledText(sash, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.BORDER);
-            styledText.setForeground(fg);
-            styledText.setBackground(bg);
-            styledText.setLayoutData(new GridData(GridData.FILL_BOTH));
-            styledText.setFont(font);
-            styledText.addControlListener(new ControlAdapter() {
-                @Override
-                public void controlResized(ControlEvent e) {
-                    refreshBrowserContent(browser, styledText, currentSelection);
-                }
-            });
-        }
-        refreshBrowserContent(browser, styledText, null);
+        browser = new DocBrowser(sash, SWT.BORDER);
+        browser.addLocationListener(new LocationListener() {
+            @Override
+            public void changing(LocationEvent event) {
+                handleLink(event.location, browser);
+            }
+            @Override
+            public void changed(LocationEvent event) {}
+        });
+        refreshBrowserContent(browser, null);
         
         createPopupMenu();
 
@@ -916,7 +881,6 @@ public abstract class FilteredItemsSelectionDialog extends
 
     public void setDocAreaVisible(boolean visible) {
         if (browser!=null) browser.setVisible(visible);
-        if (styledText!=null) styledText.setVisible(true);
         sash.setWeights(visible ? new int[] {3,2} : new int[] {1,0});
     }
 
@@ -1026,13 +990,13 @@ public abstract class FilteredItemsSelectionDialog extends
 //            }
         }
         
-        refreshBrowserContent(browser, styledText, currentSelection);
+        refreshBrowserContent(browser, currentSelection);
         
         refreshDetails();
         updateStatus(status);
     }
 
-    protected void refreshBrowserContent(Browser browser, StyledText styledText, 
+    protected void refreshBrowserContent(DocBrowser browser, 
             Object[] currentSelection) {}
 
     @Override
@@ -3204,6 +3168,6 @@ public abstract class FilteredItemsSelectionDialog extends
         return pattern;
     }
 
-    void handleLink(String location, Browser browser) {}
+    void handleLink(String location, DocBrowser browser) {}
 
 }

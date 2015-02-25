@@ -26,15 +26,16 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.osgi.framework.Bundle;
 
-import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Escaping;
@@ -72,19 +73,25 @@ public class HTML {
         final Font hoverFont = CeylonEditor.getHoverFont();
         final FontData monospaceFontData = editorFont.getFontData()[0];
         final FontData textFontData = hoverFont.getFontData()[0];
-        Display.getDefault().syncExec(new Runnable() {
+        final Display display = Display.getDefault();
+        display.syncExec(new Runnable() {
             @Override
             public void run() {
-                GC gc = new GC(Display.getDefault().getActiveShell());
-                Font font = gc.getFont();
-                gc.setFont(hoverFont);
-                int hoverFontHeight = gc.getFontMetrics().getAscent();
-                gc.setFont(editorFont);
-                int monospaceFontHeight = gc.getFontMetrics().getAscent();
-                gc.setFont(font);
-                int ratio = 100 * monospaceFontData.getHeight() * hoverFontHeight 
-                        / monospaceFontHeight / textFontData.getHeight();
-                monospaceSize.append(ratio).append("%");
+                Shell activeShell=display.getActiveShell();
+                //TODO: how can we make sure this is never called
+                //      without a Shell at startup time
+                if (activeShell!=null) {
+                    GC gc = new GC(activeShell);
+                    Font font = gc.getFont();
+                    gc.setFont(hoverFont);
+                    int hoverFontHeight = gc.getFontMetrics().getAscent();
+                    gc.setFont(editorFont);
+                    int monospaceFontHeight = gc.getFontMetrics().getAscent();
+                    gc.setFont(font);
+                    int ratio = 100 * monospaceFontData.getHeight() * hoverFontHeight 
+                            / monospaceFontHeight / textFontData.getHeight();
+                    monospaceSize.append(ratio).append("%");
+                }
             }
         });
         return HTMLPrinter.convertTopLevelFont(fgStyleSheet, textFontData)

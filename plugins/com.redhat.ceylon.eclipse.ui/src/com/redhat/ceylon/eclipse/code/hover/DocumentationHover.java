@@ -281,7 +281,7 @@ public class DocumentationHover extends SourceInfoHover {
         public void update() {
             BrowserInput current= fInfoControl.getInput();
             if (current != null && current.getPrevious() != null) {
-                BrowserInput previous= current.getPrevious();
+                BrowserInput previous = current.getPrevious();
                 setToolTipText("Back to " + previous.getInputName());
                 setEnabled(true);
             } else {
@@ -298,7 +298,7 @@ public class DocumentationHover extends SourceInfoHover {
         private final BrowserInformationControl fInfoControl;
 
         public ForwardAction(BrowserInformationControl infoControl) {
-            fInfoControl= infoControl;
+            fInfoControl = infoControl;
             setText("Forward");
             ISharedImages images= getWorkbench().getSharedImages();
             setImageDescriptor(images.getImageDescriptor(IMG_TOOL_FORWARD));
@@ -309,14 +309,14 @@ public class DocumentationHover extends SourceInfoHover {
 
         @Override
         public void run() {
-            BrowserInput next= (BrowserInput) fInfoControl.getInput().getNext();
+            BrowserInput next = (BrowserInput) fInfoControl.getInput().getNext();
             if (next != null) {
                 fInfoControl.setInput(next);
             }
         }
 
         public void update() {
-            BrowserInput current= fInfoControl.getInput();
+            BrowserInput current = fInfoControl.getInput();
             if (current != null && current.getNext() != null) {
                 setToolTipText("Forward to " + current.getNext().getInputName());
                 setEnabled(true);
@@ -2220,7 +2220,7 @@ public class DocumentationHover extends SourceInfoHover {
         
         @Override
         public IInformationControl doCreateInformationControl(Shell parent) {
-            if (isAvailable(parent)) {
+//            if (isAvailable(parent)) {
                 ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
                 BrowserInformationControl control = 
                         new BrowserInformationControl(parent, 
@@ -2279,10 +2279,10 @@ public class DocumentationHover extends SourceInfoHover {
                 docHover.addLinkListener(control);
                 return control;
 
-            } 
-            else {
-                return new DefaultInformationControl(parent, true);
-            }
+//            } 
+//            else {
+//                return new DefaultInformationControl(parent, true);
+//            }
         }
         
     }
@@ -2303,7 +2303,7 @@ public class DocumentationHover extends SourceInfoHover {
         
         @Override
         public IInformationControl doCreateInformationControl(Shell parent) {
-            if (enrichedControlCreator!=null && isAvailable(parent)) {
+//            if (enrichedControlCreator!=null && isAvailable(parent)) {
                 BrowserInformationControl control = 
                         new BrowserInformationControl(parent, 
                                 APPEARANCE_JAVADOC_FONT, 
@@ -2317,10 +2317,10 @@ public class DocumentationHover extends SourceInfoHover {
                     docHover.addLinkListener(control);
                 }
                 return control;
-            } 
-            else {
-                return new DefaultInformationControl(parent, statusLineMessage);
-            }
+//            } 
+//            else {
+//                return new DefaultInformationControl(parent, statusLineMessage);
+//            }
         }
         
     }

@@ -42,7 +42,6 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.custom.SashForm;
@@ -91,6 +90,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 
@@ -440,8 +440,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
     private Link searchInfo;
     private SashForm sashForm;
     private TreeViewer moduleTreeViewer;
-    private Browser docBrowser;
-    private static String docStyleSheet = HTML.getStyleSheet();
+    private DocBrowser docBrowser;
     private static RGB docForegroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
     private static RGB docBackgroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
     private List<String> queryHistory = new ArrayList<String>();
@@ -595,7 +594,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
     }
 
     private void initDocBrowser() {
-        docBrowser = new Browser(sashForm, SWT.NONE);
+        docBrowser = new DocBrowser(sashForm, SWT.NONE);
         docBrowser.setMenu(new Menu(parent.getShell(), SWT.NONE));
         
         docBrowser.addLocationListener(new LocationAdapter() {
@@ -765,7 +764,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
 
     public static String getModuleDoc(ModuleVersionNode versionNode) {
         StringBuilder docBuilder = new StringBuilder();
-        HTMLPrinter.insertPageProlog(docBuilder, 0, docForegroundColor, docBackgroundColor, docStyleSheet);
+        HTMLPrinter.insertPageProlog(docBuilder, 0, docForegroundColor, docBackgroundColor, HTML.getStyleSheet());
 
         if (versionNode != null) {
             HTML.addImageAndLabel(docBuilder, null, 

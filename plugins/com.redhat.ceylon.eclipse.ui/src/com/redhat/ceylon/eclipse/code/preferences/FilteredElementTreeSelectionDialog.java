@@ -7,7 +7,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -20,6 +19,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.dialogs.SearchPattern;
+
+import com.redhat.ceylon.eclipse.util.DocBrowser;
 
 public abstract class FilteredElementTreeSelectionDialog extends
         ElementTreeSelectionDialog {
@@ -103,7 +104,7 @@ public abstract class FilteredElementTreeSelectionDialog extends
         layout.marginWidth=0;
         layout.marginHeight=0;
         composite.setLayout(layout);
-        final Browser browser = new Browser(composite, SWT.NONE);
+        final DocBrowser browser = new DocBrowser(composite, SWT.NONE);
         sashForm.setWeights(new int[] {3, 1});
         sashForm.setLayoutData(gridData);
         getTreeViewer().addSelectionChangedListener(new ISelectionChangedListener() {
@@ -112,7 +113,6 @@ public abstract class FilteredElementTreeSelectionDialog extends
                 browser.setText(getDoc());
             }
         });
-        browser.setLayoutData(gridData);
         return result;
     }
 

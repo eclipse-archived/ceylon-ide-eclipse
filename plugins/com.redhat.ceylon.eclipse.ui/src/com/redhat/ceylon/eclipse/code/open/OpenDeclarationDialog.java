@@ -41,7 +41,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -49,11 +48,8 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
@@ -71,7 +67,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTML;
-import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
@@ -81,6 +76,7 @@ import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
@@ -113,7 +109,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 //    private ToolItem toggleMembersToolItem;
 //    private ToggleMembersAction toggleMembersAction;
     
-    private TextPresentation presentation = new TextPresentation();
+    protected String emptyDoc;
     
     @Override
     protected void applyFilter() {
@@ -1148,18 +1144,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         menuManager.add(configureAction);
     }
 
-    protected static final String emptyDoc;
-    
-    static {
-        StringBuilder buffer = new StringBuilder();
-        insertPageProlog(buffer, 0, HTML.getStyleSheet());
-        buffer.append("<i>Select a declaration to see its documentation here.</i>");
-        addPageEpilog(buffer);
-        emptyDoc = buffer.toString();
-    }
-    
     @Override
-    protected void refreshBrowserContent(Browser browser, StyledText styledText,
+    protected void refreshBrowserContent(DocBrowser browser,
             Object[] selection) {
         try {
             if (selection!=null &&
@@ -1167,31 +1153,21 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     selection[0] instanceof DeclarationWithProject) {
                 Declaration declaration = 
                         ((DeclarationWithProject) selection[0]).getDeclaration();
-                showDoc(browser, styledText, 
-                        DocumentationHover.getDocumentationFor(null, declaration));
+                browser.setText(DocumentationHover.getDocumentationFor(null, declaration));
             }
             else {
-                showDoc(browser, styledText, emptyDoc);
+                if (emptyDoc==null) {
+                    StringBuilder buffer = new StringBuilder();
+                    insertPageProlog(buffer, 0, HTML.getStyleSheet());
+                    buffer.append("<i>Select a declaration to see its documentation here.</i>");
+                    addPageEpilog(buffer);
+                    emptyDoc = buffer.toString();
+                }
+                browser.setText(emptyDoc);
             }
         }
         catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private void showDoc(Browser browser, StyledText styledText, String text) {
-        if (browser!=null) {
-            browser.setText(text);
-        }
-        if (styledText!=null) {
-            presentation.clear();
-            Rectangle area = styledText.getClientArea();
-            String content = 
-                    new HTMLTextPresenter() //TODO: should be new HTMLTextPresenter(false) but that's crashing SWT for some reason
-                        .updatePresentation(styledText, text, 
-                                presentation, area.width-2, Integer.MAX_VALUE);
-            styledText.setText(content);
-            TextPresentation.applyTextPresentation(presentation, styledText);
         }
     }
 
@@ -1233,7 +1209,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }*/
     
     @Override
-    void handleLink(String location, Browser browser) {
+    void handleLink(String location, DocBrowser browser) {
         Referenceable target = null;
         IEditorPart currentEditor = EditorUtil.getCurrentEditor();
         if (currentEditor instanceof CeylonEditor) {

@@ -27,10 +27,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.browser.OpenWindowListener;
 import org.eclipse.swt.browser.ProgressAdapter;
 import org.eclipse.swt.browser.ProgressEvent;
-import org.eclipse.swt.browser.WindowEvent;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -48,6 +46,7 @@ import org.eclipse.swt.widgets.Slider;
 import com.redhat.ceylon.eclipse.code.hover.AbstractInformationControl;
 import com.redhat.ceylon.eclipse.code.html.HTML2TextReader;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
+import com.redhat.ceylon.eclipse.util.DocBrowser;
 
 
 /**
@@ -130,7 +129,7 @@ public class BrowserInformationControl extends AbstractInformationControl
     private static Point fgScrollBarSize;
 
     /** The control's browser widget */
-    private Browser fBrowser;
+    private DocBrowser fBrowser;
 
     /** Tells whether the browser has content */
     private boolean fBrowserHasContent;
@@ -217,25 +216,12 @@ public class BrowserInformationControl extends AbstractInformationControl
 
     @Override
     protected void createContent(Composite parent) {
-        fBrowser= new Browser(parent, SWT.NONE);
-        fBrowser.setJavascriptEnabled(false);
+        fBrowser= new DocBrowser(parent, SWT.NONE);
 
-        Display display= getShell().getDisplay();
-        fBrowser.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-        fBrowser.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-        //fBrowser.setBackground(color);
-
-        fBrowser.addProgressListener(new ProgressAdapter() {
+        fBrowser.setProgressListener(new ProgressAdapter() {
             @Override
             public void completed(ProgressEvent event) {
                 fCompleted= true;
-            }
-        });
-
-        fBrowser.addOpenWindowListener(new OpenWindowListener() {
-            @Override
-            public void open(WindowEvent event) {
-                event.required= true; // Cancel opening of new windows
             }
         });
 
@@ -598,7 +584,7 @@ public class BrowserInformationControl extends AbstractInformationControl
         if (fSymbolicFontName == null)
             return null;
 
-        GC gc= new GC(fBrowser);
+        GC gc= new GC(fBrowser.getDrawable());
         Font font= fSymbolicFontName == null ? JFaceResources.getDialogFont() : JFaceResources.getFont(fSymbolicFontName);
         gc.setFont(font);
         int width= gc.getFontMetrics().getAverageCharWidth();

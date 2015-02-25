@@ -348,16 +348,16 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
             implements IInformationControlCreator {
         @Override
         public IInformationControl createInformationControl(Shell parent) {
-            try {
+//            try {
                 return new BrowserInformationControl(parent, 
                         APPEARANCE_JAVADOC_FONT, 
                         (String) null);
-            }
-            catch (org.eclipse.swt.SWTError x) {
-                return new DefaultInformationControl(parent, 
-                        "Press 'F2' for focus", 
-                        new HTMLTextPresenter(true));
-            }
+//            }
+//            catch (org.eclipse.swt.SWTError x) {
+//                return new DefaultInformationControl(parent, 
+//                        "Press 'F2' for focus", 
+//                        new HTMLTextPresenter(true));
+//            }
         }
     }
     

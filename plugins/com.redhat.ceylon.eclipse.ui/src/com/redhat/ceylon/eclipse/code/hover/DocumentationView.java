@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverIn
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
-import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
@@ -14,23 +13,17 @@ import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.browser.VisibilityWindowListener;
 import org.eclipse.swt.browser.WindowEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IEditorPart;
@@ -39,12 +32,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
-import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
-import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
-import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.html.HTML;
@@ -54,8 +42,8 @@ import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class DocumentationView extends ViewPart {
     
@@ -72,7 +60,7 @@ public class DocumentationView extends ViewPart {
         instance = this;
     }
     
-    private Browser control;
+    private DocBrowser control;
     private CeylonEditor editor;
     private CeylonBrowserInput info;
     private BackAction back;
@@ -91,18 +79,7 @@ public class DocumentationView extends ViewPart {
         openDeclarationAction = new OpenDeclarationAction();
         tbm.add(openDeclarationAction);
         openDeclarationAction.setEnabled(false);
-        control = new Browser(parent, SWT.NONE); 
-        control.setJavascriptEnabled(false);
-        Display display = getSite().getShell().getDisplay();
-        Color fg = display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
-        Color bg = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
-        control.setForeground(fg);
-        control.setBackground(bg);
-        parent.setForeground(fg);
-        parent.setBackground(bg);
-        FontData fontData = JFaceResources.getFontRegistry()
-                .getFontData(APPEARANCE_JAVADOC_FONT)[0];
-        control.setFont(new Font(Display.getDefault(), fontData));
+        control = new DocBrowser(parent, SWT.NONE); 
         control.addLocationListener(new LocationListener() {
             @Override
             public void changing(LocationEvent event) {
@@ -110,7 +87,7 @@ public class DocumentationView extends ViewPart {
                 
                 //necessary for windows environment (fix for blank page)
                 //somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
-                if (!"about:blank".equals(location)) {
+                if (!"about:blank".equals(location) && !location.startsWith("http:")) {
                     event.doit = false;
                 }
                 
