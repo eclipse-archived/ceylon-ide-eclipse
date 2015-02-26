@@ -731,8 +731,12 @@ public class DebugUtils {
                 return true;
             } else if (declaringType instanceof ClassType) {
                 ClassType superClassType = ((ClassType) declaringType).superclass();
-                if (superClassType != null && ABSTRACT_CALLABLE.equals(superClassType.name())) {
-                    return true;
+                if (superClassType != null) {
+                    if (ABSTRACT_CALLABLE.equals(superClassType.name())) {
+                        return true;
+                    } else if (LAZY_ITERABLE.equals(superClassType.name())) {
+                        return true;
+                    }
                 }
             }
          }
