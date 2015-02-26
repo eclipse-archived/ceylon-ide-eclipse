@@ -51,10 +51,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.LegacyActionTools;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ContentViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -150,7 +148,7 @@ import com.redhat.ceylon.eclipse.util.DocBrowser;
 public abstract class FilteredItemsSelectionDialog extends
         SelectionStatusDialog {
 
-    private static final Image MENU_IMAGE = JFaceResources.getImage(PopupDialog.POPUP_IMG_MENU);
+    private static final Image MENU_IMAGE = WorkbenchImages.getImage(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU);
 //    private static final Image DOC_IMAGE = CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.SHOW_DOC);
     private static final Image SEP_IMAGE = WorkbenchImages.getImage(IWorkbenchGraphicConstants.IMG_OBJ_SEPARATOR);
 
