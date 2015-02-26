@@ -315,12 +315,8 @@ public abstract class FilteredItemsSelectionDialog extends
         pattern.setFocus();
     }
     
-    public boolean defaultStatusArea() {
+    public boolean enableDocArea() {
         return true;
-    }
-
-    public boolean defaultDocArea() {
-        return browser!=null;
     }
 
     /**
@@ -331,7 +327,7 @@ public abstract class FilteredItemsSelectionDialog extends
      *            settings used to restore dialog
      */
     protected void restoreDialog(IDialogSettings settings) {
-        boolean toggleStatusLine = defaultStatusArea();
+        boolean toggleStatusLine = true;
 
         if (settings.get(SHOW_STATUS_LINE) != null) {
             toggleStatusLine = settings.getBoolean(SHOW_STATUS_LINE);
@@ -343,20 +339,22 @@ public abstract class FilteredItemsSelectionDialog extends
 
         setStatusAreaVisible(toggleStatusLine);
 
-        boolean toggleDocArea = defaultDocArea();
-        
-        if (settings.get(SHOW_DOC_AREA) != null) {
-            toggleDocArea = settings.getBoolean(SHOW_DOC_AREA);
-        }
-        
-        if (toggleDocAction!=null) {
-            toggleDocAction.setChecked(toggleDocArea);
-        }
-        if (toggleDocToolItem!=null) {
-            toggleDocToolItem.setSelection(toggleDocArea);
-        }
+        if (enableDocArea()) {
+            boolean toggleDocArea = true;
 
-        setDocAreaVisible(toggleDocArea);
+            if (settings.get(SHOW_DOC_AREA) != null) {
+                toggleDocArea = settings.getBoolean(SHOW_DOC_AREA);
+            }
+
+            if (toggleDocAction!=null) {
+                toggleDocAction.setChecked(toggleDocArea);
+            }
+            if (toggleDocToolItem!=null) {
+                toggleDocToolItem.setSelection(toggleDocArea);
+            }
+
+            setDocAreaVisible(toggleDocArea);
+        }
 
         String setting = settings.get(HISTORY_SETTINGS);
         if (setting != null) {
@@ -395,7 +393,9 @@ public abstract class FilteredItemsSelectionDialog extends
         if (contextMenuManager != null)
             contextMenuManager.dispose();
         storeDialog(getDialogSettings());
-        if (browser!=null) browser.close();
+        if (enableDocArea()) {
+            browser.close();
+        }
         return super.close();
     }
 
@@ -408,8 +408,11 @@ public abstract class FilteredItemsSelectionDialog extends
     protected void storeDialog(IDialogSettings settings) {
         settings.put(SHOW_STATUS_LINE, 
                 statusArea.isVisible());
-        settings.put(SHOW_DOC_AREA, 
-                browser!=null && browser.isVisible());
+        
+        if (enableDocArea()) {
+            settings.put(SHOW_DOC_AREA, 
+                    browser!=null && browser.isVisible());
+        }
 
         XMLMemento memento = XMLMemento.createWriteRoot(HISTORY_SETTINGS);
         this.contentProvider.saveHistory(memento);
@@ -569,9 +572,12 @@ public abstract class FilteredItemsSelectionDialog extends
      */
     protected void fillViewMenu(IMenuManager menuManager) {
         toggleStatusLineAction = new ToggleStatusLineAction();
-        toggleDocAction = new ToggleDocAreaAction();
         menuManager.add(toggleStatusLineAction);
-        menuManager.add(toggleDocAction);
+        
+        if (enableDocArea()) {
+            toggleDocAction = new ToggleDocAreaAction();
+            menuManager.add(toggleDocAction);
+        }
     }
 
     private void showViewMenu() {
@@ -674,21 +680,22 @@ public abstract class FilteredItemsSelectionDialog extends
         gd.heightHint = list.getTable().getItemHeight() * 15;
         list.getTable().setLayoutData(gd);
         
-        browser = new DocBrowser(sash, SWT.BORDER);
-        browser.addLocationListener(new LocationListener() {
-            @Override
-            public void changing(LocationEvent event) {
-                handleLink(event.location, browser);
-            }
-            @Override
-            public void changed(LocationEvent event) {}
-        });
-        refreshBrowserContent(browser, null);
+        if (enableDocArea()) {
+            browser = new DocBrowser(sash, SWT.BORDER);
+            browser.addLocationListener(new LocationListener() {
+                @Override
+                public void changing(LocationEvent event) {
+                    handleLink(event.location, browser);
+                }
+                @Override
+                public void changed(LocationEvent event) {}
+            });
+            refreshBrowserContent(browser, null);
+            setDocAreaVisible(toggleDocAction==null ||
+                    toggleDocAction.isChecked());            
+        }
         
         createPopupMenu();
-
-        setDocAreaVisible(toggleDocAction==null ||
-                toggleDocAction.isChecked());
         
         pattern.addModifyListener(new ModifyListener() {
             @Override
@@ -839,22 +846,27 @@ public abstract class FilteredItemsSelectionDialog extends
         content.setLayout(GridLayoutFactory.fillDefaults().numColumns(3).equalWidth(false).spacing(0, 0).create());
         content.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
         statusArea.setContent(content);
-        
-        details = new DetailsContentViewer(content, /*SWT.BORDER |*/ SWT.FLAT);
-        moreDetails = new DetailsContentViewer(content, /*SWT.BORDER |*/ SWT.FLAT);
-        evenMoreDetails = new DetailsContentViewer(content, /*SWT.BORDER |*/ SWT.FLAT);
-        
+                
         setStatusAreaVisible(toggleStatusLineAction==null ||
                 toggleStatusLineAction.isChecked());
         
-        details.setContentProvider(new NullContentProvider());
-        details.setLabelProvider(detailsLabelProvider);
+        if (detailsLabelProvider!=null) {
+            details = new DetailsContentViewer(content, /*SWT.BORDER |*/ SWT.FLAT);
+            details.setContentProvider(new NullContentProvider());
+            details.setLabelProvider(detailsLabelProvider);
+        }
+
+        if (moreDetailsLabelProvider!=null) {
+            moreDetails = new DetailsContentViewer(content, /*SWT.BORDER |*/ SWT.FLAT);
+            moreDetails.setContentProvider(new NullContentProvider());
+            moreDetails.setLabelProvider(moreDetailsLabelProvider);
+        }
         
-        moreDetails.setContentProvider(new NullContentProvider());
-        moreDetails.setLabelProvider(moreDetailsLabelProvider);
-        
-        evenMoreDetails.setContentProvider(new NullContentProvider());
-        evenMoreDetails.setLabelProvider(evenMoreDetailsLabelProvider);
+        if (evenMoreDetailsLabelProvider!=null) {
+            evenMoreDetails = new DetailsContentViewer(content, /*SWT.BORDER |*/ SWT.FLAT);
+            evenMoreDetails.setContentProvider(new NullContentProvider());
+            evenMoreDetails.setLabelProvider(evenMoreDetailsLabelProvider);
+        }
         
         statusArea.addControlListener(new ControlAdapter() {
             @Override
@@ -880,7 +892,7 @@ public abstract class FilteredItemsSelectionDialog extends
     }
 
     public void setDocAreaVisible(boolean visible) {
-        if (browser!=null) browser.setVisible(visible);
+        browser.setVisible(visible);
         sash.setWeights(visible ? new int[] {3,2} : new int[] {1,0});
     }
 
@@ -904,20 +916,20 @@ public abstract class FilteredItemsSelectionDialog extends
         StructuredSelection selection = getSelectedItems();
         switch (selection.size()) {
         case 0:
-            details.setInput(null);
-            moreDetails.setInput(null);
-            evenMoreDetails.setInput(null);
+            if (details!=null) details.setInput(null);
+            if (moreDetails!=null) moreDetails.setInput(null);
+            if (evenMoreDetails!=null) evenMoreDetails.setInput(null);
             break;
         case 1:
             Object firstElement = selection.getFirstElement();
-            details.setInput(firstElement);
-            moreDetails.setInput(firstElement);
-            evenMoreDetails.setInput(firstElement);
+            if (details!=null) details.setInput(firstElement);
+            if (moreDetails!=null) moreDetails.setInput(firstElement);
+            if (evenMoreDetails!=null) evenMoreDetails.setInput(firstElement);
             break;
         default:
-            moreDetails.setInput(null);
-            evenMoreDetails.setInput(null);
-            details.setInput(selection.size() + " items selected");
+            if (details!=null) details.setInput(selection.size() + " items selected");
+            if (moreDetails!=null) moreDetails.setInput(null);
+            if (evenMoreDetails!=null) evenMoreDetails.setInput(null);
             break;
         }
         ((Composite) statusArea.getContent()).layout();
@@ -990,7 +1002,9 @@ public abstract class FilteredItemsSelectionDialog extends
 //            }
         }
         
-        refreshBrowserContent(browser, currentSelection);
+        if (enableDocArea()) {
+            refreshBrowserContent(browser, currentSelection);
+        }
         
         refreshDetails();
         updateStatus(status);

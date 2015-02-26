@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
+
 import java.util.Comparator;
 import java.util.Set;
 
@@ -7,54 +9,67 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
-import org.eclipse.jdt.ui.ISharedImages;
-import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.code.open.FilteredItemsSelectionDialog;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     
-    public class ModuleLabelProvider implements ILabelProvider {
-
-        @Override
-        public void addListener(ILabelProviderListener arg0) {}
-
-        @Override
-        public void dispose() {
-        }
-
+    class ModuleLabelProvider 
+            extends StyledCellLabelProvider 
+            implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, 
+                       ILabelProvider {
+        
         @Override
         public boolean isLabelProperty(Object arg0, String arg1) {
             return false;
         }
-
-        @Override
-        public void removeListener(ILabelProviderListener arg0) {}
         
         @Override
         public Image getImage(Object element) {
-            return JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_JAR_WITH_SOURCE);
+            return CeylonLabelProvider.MODULE;
+        }
+        
+        @Override
+        public void update(ViewerCell cell) {
+            cell.setImage(getImage(cell.getElement()));
+            StyledString styledText = getStyledText(cell.getElement());
+            cell.setText(styledText.getString());
+            cell.setStyleRanges(styledText.getStyleRanges());
+            super.update(cell);
+        }
+        
+        @Override
+        public StyledString getStyledText(Object element) {
+            if (element instanceof Module) {
+                Module module = (Module) element;
+                if (module.isDefault()) {
+                    return new StyledString("(default module)");
+                } else {
+                    return new StyledString(module.getNameAsString())
+                        .append(" \"" + module.getVersion() + "\"", 
+                                VERSION_STYLER);
+                }
+            }
+            return new StyledString();
         }
 
         @Override
-        public String getText(Object mod) {
-            if (mod instanceof Module) {
-                if (((Module) mod).isDefault()) {
-                    return Module.DEFAULT_MODULE_NAME;
-                } else {
-                    return LaunchHelper.getFullModuleName((Module) mod);
-                }
-            }
-            return null;
+        public String getText(Object element) {
+            return getStyledText(element).getString();
         }
         
     }
@@ -62,45 +77,65 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     class ModuleDetailsLabelProvider extends ModuleLabelProvider {
         @Override
         public Image getImage(Object element) {
-            return super.getImage(element);
+            if (element instanceof JDTModule) {
+                JDTModule module = (JDTModule) element;
+                if (module.isProjectModule()) {
+                    return CeylonLabelProvider.PROJECT;
+                }
+                else {
+                    return CeylonLabelProvider.REPO;
+                }
+            }
+            else {
+                return null;
+            }
         }
 
         @Override
-        public String getText(Object mod) {
-            return super.getText(mod);
+        public String getText(Object element) {
+            if (element instanceof JDTModule) {
+                final JDTModule module = (JDTModule) element;
+                if (module.isProjectModule()) {
+                    return ((ProjectSourceFile) module.getUnit()).getProjectResource().getName();
+                }
+                else {
+                    return module.getRepositoryDisplayString();
+                }
+            }
+            return "";
         }
         
     }
 
     class ModuleItemsFilter extends ItemsFilter {
+        @Override
         public boolean isConsistentItem(Object item) {
             return item instanceof Module;
         }
-        
+        @Override
         public boolean matchItem(Object item) {
-            if(!(item instanceof Module) || !modules.contains((Module)item)) {
-                return false;
+            if (item instanceof Module) {
+                return matches(((Module) item).getNameAsString());
             }
-            return matches(item.toString());
+            return false;
+        }
+        @Override
+        public String getPattern() {
+            String pattern = super.getPattern(); 
+            return pattern.isEmpty() ? "**" : pattern;
         }
     }
  
     
     Set<Module> modules;
 
-    public CeylonModuleSelectionDialog(Shell shell, Set<Module> modules, String title) {
-        super(shell, false);
-        setTitle(title);
+    public CeylonModuleSelectionDialog(Shell shell, Set<Module> modules) {
+        super(shell, false, 
+                "&Type part of a name with wildcard *:", 
+                "&Choose a module to run:");
+        setTitle("Ceylon Launcher");
         this.modules = modules;
-        setListLabelProvider(new ModuleLabelProvider());
-        setMessage(title);
-        setInitialPattern("**"); //$NON-NLS-1$
-        setDetailsLabelProvider(new ModuleDetailsLabelProvider());
-    }
-
-    @Override
-    protected Control createExtendedContentArea(Composite parent) {
-        return null;
+        initLabelProviders(new ModuleLabelProvider(), null, new ModuleDetailsLabelProvider(), null, null);
     }
 
     @Override
@@ -116,11 +151,6 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
                 contentProvider.add(entry, filter);
             }
         }
-    }
-
-    @Override
-    protected IDialogSettings getDialogSettings() {
-        return JDIDebugUIPlugin.getDefault().getDialogSettings();
     }
 
     @Override
@@ -145,6 +175,35 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
             }
         };
     }
+    
+    private static final String SETTINGS_ID = 
+            CeylonPlugin.PLUGIN_ID + ".addDeclarationFilterDialog";            
+    @Override
+    public boolean enableDocArea() {
+        return false;
+    }
+    @Override
+    protected IDialogSettings getDialogSettings() {
+        IDialogSettings settings = CeylonPlugin.getInstance().getDialogSettings();
+        IDialogSettings section = settings.getSection(SETTINGS_ID);
+        if (section == null) {
+            section = settings.addNewSection(SETTINGS_ID);
+        }
+        return section;
+    }
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        IDialogSettings settings = getDialogSettings();
+        IDialogSettings section = settings.getSection(DIALOG_BOUNDS_SETTINGS);
+        if (section == null) {
+            section = settings.addNewSection(DIALOG_BOUNDS_SETTINGS);
+            section.put(DIALOG_HEIGHT, 500);
+            section.put(DIALOG_WIDTH, 400);
+        }
+        return section;
+    }
+    @Override
+    protected void fillViewMenu(IMenuManager menuManager) {}
 
     @Override
     protected IStatus validateItem(Object mod) {

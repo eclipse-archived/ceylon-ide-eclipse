@@ -32,7 +32,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
-import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -355,7 +354,7 @@ public class LaunchHelper {
                 return "";
             }
             @Override
-            public boolean defaultDocArea() {
+            public boolean enableDocArea() {
                 return false;
             }
             @Override
@@ -428,21 +427,10 @@ public class LaunchHelper {
         return null;
     }
     
-    static Module chooseModule(String projectName, boolean includeDefault) {
-        return chooseModule(getProjectFromName(projectName), includeDefault);
-    }
-    
     static Module chooseModule(IProject project, boolean includeDefault) {
-
-        if (getDefaultOrOnlyModule(project, includeDefault) != null) {
-            return getDefaultOrOnlyModule(project, includeDefault);
-        }
-        
-        Set<Module> modules = getModules(project, true);
-        
-        FilteredItemsSelectionDialog cmsd = 
+        CeylonModuleSelectionDialog cmsd = 
                 new CeylonModuleSelectionDialog(EditorUtil.getShell(), 
-                        modules, "Choose Ceylon Module"); 
+                        getModules(project, true)); 
         if (cmsd.open() == Window.OK) {
             return (Module)cmsd.getFirstResult();
         }

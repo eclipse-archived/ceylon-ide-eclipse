@@ -510,15 +510,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
-    class LabelProvider extends StyledCellLabelProvider 
+    class LabelProvider 
+            extends StyledCellLabelProvider 
             implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, 
                        ILabelProvider {
-        
-        @Override
-        public void addListener(ILabelProviderListener listener) {}
-        
-        @Override
-        public void dispose() {}
         
         @Override
         public boolean isLabelProperty(Object element, String property) {

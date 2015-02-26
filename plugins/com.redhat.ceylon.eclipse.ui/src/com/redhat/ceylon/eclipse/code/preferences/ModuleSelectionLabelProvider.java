@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.REPO;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.VERSION;
 import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
 
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -15,7 +16,9 @@ import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 
 final class ModuleSelectionLabelProvider
-        extends StyledCellLabelProvider  implements ILabelProvider {
+        extends StyledCellLabelProvider 
+        implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, 
+                   ILabelProvider {
     
     @Override
     public void update(ViewerCell cell) {
@@ -58,7 +61,7 @@ final class ModuleSelectionLabelProvider
         if (element instanceof ModuleNode) {
             ModuleNode md = (ModuleNode) element;
             return new StyledString(md.getName())
-            .append(" \"" + md.getLastVersion().getVersion() + "\"", 
+                .append(" \"" + md.getLastVersion().getVersion() + "\"", 
                     VERSION_STYLER);
         }
         else if (element instanceof ModuleVersionNode) {

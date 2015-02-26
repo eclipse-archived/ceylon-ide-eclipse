@@ -309,7 +309,7 @@ public abstract class FiltersPreferencePage
                 return "";
             }
             @Override
-            public boolean defaultDocArea() {
+            public boolean enableDocArea() {
                 return false;
             }
             @Override

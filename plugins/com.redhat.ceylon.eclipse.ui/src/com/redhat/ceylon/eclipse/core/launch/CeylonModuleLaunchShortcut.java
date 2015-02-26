@@ -201,8 +201,11 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                         ((IAdaptable)object).getAdapter(IResource.class);
                 if (resource != null) {
                     if (resource instanceof IProject) {
-                        Module mod = 
-                                LaunchHelper.chooseModule((IProject)resource, true);
+                        final IProject project = (IProject)resource;
+                        Module mod = LaunchHelper.getDefaultOrOnlyModule(project, true);
+                        if (mod == null) {
+                            mod = LaunchHelper.chooseModule(project, true);
+                        }
                         if (mod != null) {
                             launchModule(mod, resource, mode);
                             return; // do not look at other parts of the selection

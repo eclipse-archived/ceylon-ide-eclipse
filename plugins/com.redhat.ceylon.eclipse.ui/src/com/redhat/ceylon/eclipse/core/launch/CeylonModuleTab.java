@@ -25,8 +25,6 @@ import org.eclipse.jdt.internal.debug.ui.actions.ControlAccessibleListener;
 import org.eclipse.jdt.internal.debug.ui.launcher.AbstractJavaMainTab;
 import org.eclipse.jdt.internal.debug.ui.launcher.LauncherMessages;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
-import org.eclipse.jdt.ui.ISharedImages;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -42,6 +40,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 
 /**
@@ -66,13 +65,13 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
         createVerticalSpacer(comp, 1);
         createModuleEditor(comp, "Module:");
         createVerticalSpacer(comp, 1);
-        createDeclarationEditor(comp, "Top level method or class:");
+        createDeclarationEditor(comp, "Runnable function or class (must be toplevel and shared, with no parameters):");
         setControl(comp);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
     }
 
     public Image getImage() {
-        return JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_JAR);
+        return CeylonLabelProvider.MODULE;
     }
     
     public String getName() {
@@ -92,7 +91,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
      * Show a dialog that lists all modules in project
      */
     protected void handleModuleSearchButtonSelected() {
-        Module mod = LaunchHelper.chooseModule(this.fProjText.getText(), true);
+        Module mod = LaunchHelper.chooseModule(LaunchHelper.getProjectFromName(this.fProjText.getText()), true);
         if (mod != null) {
             if (mod.isDefault()) {
                 fModuleText.setText(Module.DEFAULT_MODULE_NAME);
