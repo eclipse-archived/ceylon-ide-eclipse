@@ -227,10 +227,10 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
         @Override
         public Image getImage(Object element) {
             if (element instanceof Declaration) {
-                return CeylonLabelProvider.getImageForDeclaration((Declaration) element);
+                return getImageForDeclaration((Declaration) element);
             }
             else if (element instanceof MethodWithContainer) {
-                return CeylonLabelProvider.getImageForDeclaration(((MethodWithContainer) element).getMethod());
+                return getImageForDeclaration(((MethodWithContainer) element).getMethod());
             }
             return super.getImage(element);
         }

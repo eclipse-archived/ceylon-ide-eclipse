@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 
 import java.util.Comparator;
@@ -26,7 +27,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -162,7 +162,7 @@ class LabelProvider extends StyledCellLabelProvider
     @Override
     public Image getImage(Object element) {
         Declaration d = (Declaration) element;
-        return d==null ? null : CeylonLabelProvider.getImageForDeclaration(d);
+        return d==null ? null : getImageForDeclaration(d);
     }
 
     @Override
