@@ -1126,10 +1126,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     static int getMaxProblemMarkerSeverity(IResource res, int depth) {
         return getMaxProblemMarkerSeverity(res, depth, acceptAllMarkers);
     }
-
-    //TODO: none of these really belong here:
     
-    public static String getPackageLabel(Package packageModel) {
+    private static String getPackageLabel(Package packageModel) {
         String name = packageModel.getQualifiedNameString();
         if (name.isEmpty()) {
             return "(default package)";
@@ -1137,7 +1135,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return name;
     }
     
-    public static String getModuleLabel(Module moduleModel) {
+    private static String getModuleLabel(Module moduleModel) {
         String name = moduleModel.getNameAsString();
         if (name.isEmpty() || 
                 name.equals(Module.DEFAULT_MODULE_NAME)) {

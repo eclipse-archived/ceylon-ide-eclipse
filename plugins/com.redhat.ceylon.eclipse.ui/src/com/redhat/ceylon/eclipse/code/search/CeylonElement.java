@@ -15,9 +15,9 @@ import org.eclipse.jface.viewers.StyledString;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
@@ -54,9 +54,14 @@ public class CeylonElement {
         //onto a hard ref to the container node
         imageKey = getImageKeyForNode(node);
         label = getStyledLabelForNode(node);
-        packageLabel = node.getUnit()==null ? 
-                "(unknown package)" : 
-                CeylonLabelProvider.getPackageLabel(node.getUnit().getPackage());
+        if (node.getUnit()==null) {
+            packageLabel = "(unknown package)";
+        }
+        else {
+            Package pack = node.getUnit().getPackage();
+            String name = pack.getQualifiedNameString();
+            packageLabel = name.isEmpty() ? "(default package)" : name;
+        }
         //TODO: this winds up caching error decorations,
         //      so it's not really very good
         decorations = getNodeDecorationAttributes(node);

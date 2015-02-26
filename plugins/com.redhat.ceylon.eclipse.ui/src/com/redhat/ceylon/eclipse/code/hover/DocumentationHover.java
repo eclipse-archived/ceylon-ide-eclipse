@@ -20,8 +20,6 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
@@ -1044,10 +1042,10 @@ public class DocumentationHover extends SourceInfoHover {
             buffer.append(((Declaration) model).getName());
         }
         else if (model instanceof Package) {
-            buffer.append(getPackageLabel((Package) model)); 
+            buffer.append(((Package) model).getQualifiedNameString()); 
         }
         else if (model instanceof Module) {
-            buffer.append(getModuleLabel((Module) model)); 
+            buffer.append(((Module) model).getNameAsString());
         }
         buffer.append("</a></tt>");
     }
@@ -1106,7 +1104,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
     
     private static String description(Package pack) {
-        return "package " + getPackageLabel(pack);
+        return "package " + pack.getNameAsString();
     }
     
     public static String getDocumentationFor(ModuleDetails mod, String version, 
@@ -1245,7 +1243,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static String description(Module mod) {
-        return "module " + getModuleLabel(mod) + " \"" + mod.getVersion() + "\"";
+        return "module " + mod.getNameAsString() + " \"" + mod.getVersion() + "\"";
     }
 
     public static String getDocumentationFor(CeylonParseController cpc, 

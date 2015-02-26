@@ -253,12 +253,9 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
                 } else {
                     styledText = new StyledString(declaration.getName());
                 }
-            } else if (element instanceof Package) {
+            } else if (element instanceof Package || element instanceof Module) {
                 // default package color from CeylonLabelProvider is gray, we want black
-                styledText = new StyledString(getPackageLabel((Package) element));
-            } else if (element instanceof Module) {
-                // default package color from CeylonLabelProvider is gray, we want black
-                styledText = new StyledString(getModuleLabel((Module) element));
+                styledText = new StyledString(super.getStyledText(element).getString());
             } else {
                 styledText = super.getStyledText(element); 
             }
