@@ -2518,7 +2518,7 @@
            id="com.redhat.ceylon.eclipse.ui.outline.launchActions">
          <action
                label="Debug As Ceylon JavaScript Application"
-               class="com.redhat.ceylon.eclipse.code.outline.DebugAsJsAction"
+               class="com.redhat.ceylon.eclipse.core.launch.DebugAsJsAction"
                enablesFor="1"
                icon="icons/start_application.gif"
                id="debugAsJs"
@@ -2532,7 +2532,7 @@
            id="com.redhat.ceylon.eclipse.ui.outline.launchActions">
          <action
                label="Debug As Ceylon Java Application"
-               class="com.redhat.ceylon.eclipse.code.outline.DebugAsJavaAction"
+               class="com.redhat.ceylon.eclipse.core.launch.DebugAsJavaAction"
                enablesFor="1"
                icon="icons/start_application.gif"
                id="debugAsJava"
@@ -2547,7 +2547,7 @@
            id="com.redhat.ceylon.eclipse.ui.outline.launchActions">
          <action
                label="Run As Ceylon JavaScript Application"
-               class="com.redhat.ceylon.eclipse.code.outline.RunAsJsAction"
+               class="com.redhat.ceylon.eclipse.core.launch.RunAsJsAction"
                enablesFor="1"
                icon="icons/start_application.gif"
                id="runAsJs"
@@ -2561,7 +2561,7 @@
            id="com.redhat.ceylon.eclipse.ui.outline.launchActions">
          <action
                label="Run As Ceylon Java Application"
-               class="com.redhat.ceylon.eclipse.code.outline.RunAsJavaAction"
+               class="com.redhat.ceylon.eclipse.core.launch.RunAsJavaAction"
                enablesFor="1"
                icon="icons/start_application.gif"
                id="runAsJava"

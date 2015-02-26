@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 
@@ -17,8 +17,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.launch.CeylonModuleLaunchShortcut;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 public abstract class RunAction extends Action implements IObjectActionDelegate {

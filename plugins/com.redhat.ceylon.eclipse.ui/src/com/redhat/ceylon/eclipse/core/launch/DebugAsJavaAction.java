@@ -1,8 +1,6 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package com.redhat.ceylon.eclipse.core.launch;
 
 import org.eclipse.debug.core.ILaunchManager;
-
-import com.redhat.ceylon.eclipse.core.launch.CeylonJavaModuleShortcut;
 
 public class DebugAsJavaAction extends RunAction {
     
