@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.debug.core.IEvaluationRunnable;
+import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaClassObject;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
@@ -30,7 +31,6 @@ import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaThreadGroup;
-import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
@@ -179,36 +179,8 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
         return project;
     }
     
-
-    private Cache jdiAnnotationClassCache = new Cache(10);
     private Cache jdiAnnotationParameterSignatureCache = new Cache(10);
     private static final Object NULL_ENTRY = new Object();
-    
-    private IJavaClassObject getAnnotationClassJdiObject(
-            final Class<? extends Annotation> annotationClass) throws DebugException {
-        IJavaClassObject annotationClassObject = null;
-        synchronized (jdiAnnotationClassCache) {
-            Cache.Entry entry = jdiAnnotationClassCache.getEntry(annotationClass);
-            if (entry == null) {
-                IJavaType[] jts = getJavaTypes(annotationClass.getName());
-                if (jts.length > 0) {
-                    if (jts[0] instanceof IJavaReferenceType) {
-                        annotationClassObject = ((IJavaReferenceType) jts[0])
-                                .getClassObject();
-                    }
-                }
-                if (annotationClassObject != null) {
-                    jdiAnnotationClassCache.addEntry(annotationClass, annotationClassObject);
-                } else {
-                    jdiAnnotationClassCache.addEntry(annotationClass, NULL_ENTRY);
-                }
-            } else {
-                Object cached = entry.getCached();
-                annotationClassObject = cached ==  NULL_ENTRY ? null : (IJavaClassObject) cached;
-            }
-        }
-        return annotationClassObject;
-    }
     
     private String getAnnotationParameterSignature(
             final Class<? extends Annotation> annotationClass, String parameter) throws DebugException {
@@ -243,8 +215,8 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
     }
 
     
-    private static final String getAnnotationMethodSignature = "(Ljava/lang/Class;)Ljava/lang/annotation/Annotation;";
-    private static final String getAnnotationMethodName = "getAnnotation";
+    private static final String getAnnotationsMethodSignature = "()[Ljava/lang/annotation/Annotation;";
+    private static final String getAnnotationsMethodName = "getAnnotations";
     
     public static class EvaluationWaiter implements EvaluationListener { 
         boolean finished = false;
@@ -350,52 +322,58 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
     
     public void evaluateAnnotation(IJavaReferenceType valueType, final Class<? extends Annotation> annotationClass, final String parameter, final EvaluationListener listener) {
         
-        IJavaClassObject annotationClassObject = null;
-        
         try {
-            annotationClassObject = getAnnotationClassJdiObject(
-                    annotationClass);
+            final IJavaClassObject theClassObject = valueType.getClassObject();
 
-            if (annotationClassObject != null) {
-                final IJavaClassObject ceylonAnnotationClass = annotationClassObject;
-                final IJavaClassObject theClassObject = valueType.getClassObject();
-
-                EvaluationRunner runner = new EvaluationRunner() {
-                    public void run(
-                            IJavaThread innerThread,
-                            IProgressMonitor monitor,
-                            EvaluationListener listener) throws DebugException {
-                        IJavaValue result = theClassObject.sendMessage(
-                                getAnnotationMethodName,
-                                getAnnotationMethodSignature,
-                                new IJavaValue[] { ceylonAnnotationClass },
-                                innerThread,
-                                (String) null);
-                        if (parameter == null) {
-                            listener.finished(result);
-                        } else {
-                            if (result instanceof JDINullValue) {
-                                listener.finished(null);
-                            } else {
-                                IJavaObject annotationObject = (IJavaObject)result;
-                                result = null;
-                                String annotationParameterMethodSignature = getAnnotationParameterSignature(annotationClass, parameter);
-                                if (annotationParameterMethodSignature != null) {
-                                    result = ((IJavaObject) annotationObject).sendMessage(
-                                            parameter,
-                                            annotationParameterMethodSignature,
-                                            new IJavaValue[] { },
-                                            innerThread,
-                                            (String) null);
+            EvaluationRunner runner = new EvaluationRunner() {
+                public void run(
+                        IJavaThread innerThread,
+                        IProgressMonitor monitor,
+                        EvaluationListener listener) throws DebugException {
+                    IJavaValue result = null;
+                    IJavaValue annotations = theClassObject.sendMessage(
+                            getAnnotationsMethodName,
+                            getAnnotationsMethodSignature,
+                            new IJavaValue[0],
+                            innerThread,
+                            (String) null);
+                    if (annotations instanceof IJavaArray) {
+                        IJavaValue[] annotationValues = ((IJavaArray)annotations).getValues();
+                        for (IJavaValue annotationValue : annotationValues) {
+                            IJavaValue annotationClassValue = ((IJavaObject)annotationValue).sendMessage("annotationType", "()Ljava/lang/Class;", new IJavaValue[0], innerThread, null);
+                            if (annotationClassValue instanceof IJavaObject && ! (annotationClassValue instanceof JDINullValue)) {
+                                IJavaValue annotationClassName = ((IJavaObject)annotationClassValue).sendMessage("getName", "()Ljava/lang/String;", new IJavaValue[0], innerThread, null);
+                                if (annotationClassName != null && annotationClassName.getValueString().equals(annotationClass.getName())) {
+                                    result = annotationValue;
+                                    break;
                                 }
-                                listener.finished(result);
                             }
                         }
                     }
-                };
-                
-                evaluate(runner, listener);
-            }
+                    if (parameter == null) {
+                        listener.finished(result);
+                    } else {
+                        if (result instanceof JDINullValue) {
+                            listener.finished(null);
+                        } else {
+                            IJavaObject annotationObject = (IJavaObject)result;
+                            result = null;
+                            String annotationParameterMethodSignature = getAnnotationParameterSignature(annotationClass, parameter);
+                            if (annotationParameterMethodSignature != null) {
+                                result = ((IJavaObject) annotationObject).sendMessage(
+                                        parameter,
+                                        annotationParameterMethodSignature,
+                                        new IJavaValue[] { },
+                                        innerThread,
+                                        (String) null);
+                            }
+                            listener.finished(result);
+                        }
+                    }
+                }
+            };
+            
+            evaluate(runner, listener);
         } catch (DebugException e) {
             e.printStackTrace();
         }
