@@ -41,7 +41,7 @@ import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class ResourceListLabelProvider extends LabelProvider {
 
@@ -343,9 +343,9 @@ public class ResourceListLabelProvider extends LabelProvider {
 //            case IClasspathEntry.CPE_SOURCE:
                 if (cpentry.getPath().segmentCount() == 1) {
 //                    return fProjectImage;
-                    return CeylonLabelProvider.PROJECT;
+                    return CeylonResources.PROJECT;
                 } else {
-                    return CeylonLabelProvider.FOLDER;
+                    return CeylonResources.FOLDER;
 //                    return fSharedImages.getImageDescriptor(ISharedImages.IMG_OBJS_PACKFRAG_ROOT);
                 }
 //            case IClasspathEntry.CPE_LIBRARY:

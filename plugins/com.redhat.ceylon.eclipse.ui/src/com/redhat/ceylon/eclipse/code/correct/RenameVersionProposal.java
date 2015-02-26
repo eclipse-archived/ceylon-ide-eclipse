@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.RENAME;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.RENAME;
 
 import java.util.Collection;
 

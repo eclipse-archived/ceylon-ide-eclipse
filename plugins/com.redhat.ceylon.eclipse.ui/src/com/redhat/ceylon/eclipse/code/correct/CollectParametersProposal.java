@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.COMPOSITE_CHANGE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.COMPOSITE_CHANGE;
 
 import java.util.Collection;
 

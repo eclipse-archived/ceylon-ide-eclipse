@@ -28,6 +28,7 @@ import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 final class ImportSelectionDialog extends
@@ -137,7 +138,7 @@ class DetailsLabelProvider implements ILabelProvider {
 
     @Override
     public Image getImage(Object element) {
-        return CeylonLabelProvider.PACKAGE;
+        return CeylonResources.PACKAGE;
     }
 }
 

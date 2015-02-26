@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 
@@ -92,13 +92,13 @@ public class CeylonTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
                 Image image = null;
                 if (entry.isValid()) {
                     switch(entry.getType()) {
-                    case PROJECT: image = CeylonLabelProvider.PROJECT; break;
-                    case MODULE: image = CeylonLabelProvider.MODULE; break;
-                    case PACKAGE: image = CeylonLabelProvider.PACKAGE; break;
-                    case CLASS: image = CeylonLabelProvider.CLASS; break;
-                    case CLASS_LOCAL: image = CeylonLabelProvider.LOCAL_CLASS; break;
-                    case METHOD: image = CeylonLabelProvider.METHOD; break;
-                    case METHOD_LOCAL: image = CeylonLabelProvider.LOCAL_METHOD; break;
+                    case PROJECT: image = CeylonResources.PROJECT; break;
+                    case MODULE: image = CeylonResources.MODULE; break;
+                    case PACKAGE: image = CeylonResources.PACKAGE; break;
+                    case CLASS: image = CeylonResources.CLASS; break;
+                    case CLASS_LOCAL: image = CeylonResources.LOCAL_CLASS; break;
+                    case METHOD: image = CeylonResources.METHOD; break;
+                    case METHOD_LOCAL: image = CeylonResources.LOCAL_METHOD; break;
                     }
                 } else {
                     image = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);

@@ -4,7 +4,7 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
@@ -36,7 +36,7 @@ public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
 //    
         cell.setText(styledText.toString());
         cell.setStyleRanges(styledText.getStyleRanges());
-        cell.setImage(CeylonLabelProvider.MODULE);
+        cell.setImage(CeylonResources.MODULE);
     }
 
     private void updateVersionNode(ViewerCell cell, ModuleVersionNode versionNode) {
@@ -46,7 +46,7 @@ public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
         styledText.append("\"", Highlights.VERSION_STYLER);
         cell.setText(styledText.toString());
         cell.setStyleRanges(styledText.getStyleRanges());
-        cell.setImage(CeylonLabelProvider.VERSION);
+        cell.setImage(CeylonResources.VERSION);
     }
 
 }

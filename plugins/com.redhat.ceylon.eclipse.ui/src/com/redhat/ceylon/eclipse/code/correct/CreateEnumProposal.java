@@ -22,7 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -54,7 +54,7 @@ class CreateEnumProposal extends CorrectionProposal {
                                     arguments(cd.getParameterList()) + " {}", 
                                 "class '"+ brokenName + parameters(cd.getTypeParameterList()) +
                                 parameters(cd.getParameterList()) + "'", 
-                                CeylonLabelProvider.CLASS, cu, cd);
+                                CeylonResources.CLASS, cu, cd);
                     }
                     if (cd.getCaseTypes().getBaseMemberExpressions().contains(node)) {
                         addCreateEnumProposal(proposals, project, 

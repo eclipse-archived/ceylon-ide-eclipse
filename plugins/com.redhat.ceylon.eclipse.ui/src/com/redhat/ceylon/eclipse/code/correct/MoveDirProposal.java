@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
 
 import java.util.Collection;
 

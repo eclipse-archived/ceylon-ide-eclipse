@@ -1033,19 +1033,19 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             
             int result = 0;
             if (model.isDeprecated()) {
-                result |= CeylonLabelProvider.DEPRECATED;
+                result |= DEPRECATED;
             }
             if (model.isFormal()) {
-                result |= CeylonLabelProvider.FORMAL;
+                result |= FORMAL;
             }
             if (model.isAnnotation()) {
-                result |= CeylonLabelProvider.ANNOTATION;
+                result |= ANNOTATION;
             }
             if ((model instanceof Value) && ((Value) model).isVariable()) {
-                result |= CeylonLabelProvider.VARIABLE;
+                result |= VARIABLE;
             }
             if (model instanceof Class && ((Class) model).isAbstract()) {
-                result |= CeylonLabelProvider.ABSTRACT;
+                result |= ABSTRACT;
             }
     //        if (model instanceof Class && ((Class) model).isFinal()) {
             //            result |= FINAL;
@@ -1053,16 +1053,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             if (model instanceof TypeDeclaration) {
                 TypeDeclaration td = (TypeDeclaration) model;
                 if(td.getCaseTypeDeclarations()!=null) {
-                    result |= CeylonLabelProvider.ENUM;
+                    result |= ENUM;
                 }
                 if (td.isAlias()) {
-                    result |= CeylonLabelProvider.ALIAS;
+                    result |= ALIAS;
                 }
             }
             if (model.isActual()) {
                 Declaration refined = getRefinedDeclaration(model);
                 if (refined!=null) {
-                    result |= refined.isFormal() ? CeylonLabelProvider.IMPLEMENTS : CeylonLabelProvider.REFINES;
+                    result |= refined.isFormal() ? IMPLEMENTS : REFINES;
                 }
             }
             return result;

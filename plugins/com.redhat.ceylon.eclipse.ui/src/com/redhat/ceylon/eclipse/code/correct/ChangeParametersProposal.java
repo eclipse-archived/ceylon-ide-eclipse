@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.REORDER;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.REORDER;
 
 import java.util.Collection;
 

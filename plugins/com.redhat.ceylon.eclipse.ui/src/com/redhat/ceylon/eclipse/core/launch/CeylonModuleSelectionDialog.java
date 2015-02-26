@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.open.FilteredItemsSelectionDialog;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
@@ -44,7 +43,7 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public Image getImage(Object element) {
-            return CeylonLabelProvider.MODULE;
+            return CeylonResources.MODULE;
         }
         
         @Override

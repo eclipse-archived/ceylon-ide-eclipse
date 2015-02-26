@@ -67,7 +67,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTML;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
@@ -402,7 +401,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public Image getImage(Object element) {
             if (element instanceof DeclarationWithProject) {
-                return CeylonLabelProvider.PACKAGE;
+                return CeylonResources.PACKAGE;
             }
             else {
                 return null;
@@ -451,7 +450,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public Image getImage(Object element) {
             if (element instanceof DeclarationWithProject) {
-                return CeylonLabelProvider.MODULE;
+                return CeylonResources.MODULE;
             }
             else {
                 return null;
@@ -996,14 +995,14 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             if (m.isProjectModule()) {
                 IProject project = dwp.getProject();
                 if (project.isOpen()) {
-                    return CeylonLabelProvider.FILE;
+                    return CeylonResources.FILE;
                 }
                 else {
-                    return CeylonLabelProvider.PROJECT;
+                    return CeylonResources.PROJECT;
                 }
             }
             else {
-                return CeylonLabelProvider.REPO;
+                return CeylonResources.REPO;
             }
         }
         else {

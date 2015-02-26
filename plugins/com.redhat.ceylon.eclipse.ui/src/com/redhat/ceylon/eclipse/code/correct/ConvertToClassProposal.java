@@ -24,8 +24,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ObjectDefinition;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 class ConvertToClassProposal extends AbstractLinkedMode implements ICompletionProposal {
 
@@ -45,8 +45,8 @@ class ConvertToClassProposal extends AbstractLinkedMode implements ICompletionPr
     @Override
     public Image getImage() {
         return node.getDeclarationModel().isShared() ? 
-                CeylonLabelProvider.CLASS : 
-                CeylonLabelProvider.LOCAL_CLASS;
+                CeylonResources.CLASS : 
+                CeylonResources.LOCAL_CLASS;
     }
 
     @Override

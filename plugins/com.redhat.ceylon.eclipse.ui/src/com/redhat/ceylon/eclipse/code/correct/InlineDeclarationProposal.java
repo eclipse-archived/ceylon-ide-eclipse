@@ -11,8 +11,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.InlineRefactoringAction;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 class InlineDeclarationProposal implements ICompletionProposal,
@@ -31,7 +31,7 @@ class InlineDeclarationProposal implements ICompletionProposal,
 
     @Override
     public Image getImage() {
-        return CeylonLabelProvider.COMPOSITE_CHANGE;
+        return CeylonResources.COMPOSITE_CHANGE;
     }
 
     @Override

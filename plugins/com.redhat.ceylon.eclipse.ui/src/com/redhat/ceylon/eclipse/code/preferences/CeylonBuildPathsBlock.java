@@ -127,8 +127,8 @@ import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.CeylonConfigFinder;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonBuildPathsBlock {
@@ -655,7 +655,7 @@ public class CeylonBuildPathsBlock {
 
         item= new TabItem(folder, SWT.NONE);
         item.setText("Resources");
-        item.setImage(CeylonLabelProvider.FOLDER);
+        item.setImage(CeylonResources.FOLDER);
         fResourceContainerPage = new ResourceContainerWorkbookPage(fResourcePathList, fJavaBuildPathDialogField);
         item.setData(fResourceContainerPage);
         item.setControl(fResourceContainerPage.getControl(folder));

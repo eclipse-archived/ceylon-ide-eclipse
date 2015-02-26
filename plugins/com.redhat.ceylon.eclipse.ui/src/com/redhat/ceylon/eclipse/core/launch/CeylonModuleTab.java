@@ -40,8 +40,8 @@ import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 /**
  * A launch configuration tab that displays and edits Ceylon project and
@@ -71,7 +71,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
     }
 
     public Image getImage() {
-        return CeylonLabelProvider.MODULE;
+        return CeylonResources.MODULE;
     }
     
     public String getName() {

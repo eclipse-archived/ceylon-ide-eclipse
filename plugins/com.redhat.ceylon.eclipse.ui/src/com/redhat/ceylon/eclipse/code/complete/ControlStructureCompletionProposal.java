@@ -19,8 +19,8 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 class ControlStructureCompletionProposal extends CompletionProposal {
     
@@ -152,7 +152,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
     private ControlStructureCompletionProposal(int offset, String prefix, 
             String desc, String text, Declaration dec, 
             CeylonParseController cpc) {
-        super(offset, prefix, CeylonLabelProvider.MINOR_CHANGE, 
+        super(offset, prefix, CeylonResources.MINOR_CHANGE, 
                 desc, text);
         this.cpc = cpc;
         this.declaration = dec;

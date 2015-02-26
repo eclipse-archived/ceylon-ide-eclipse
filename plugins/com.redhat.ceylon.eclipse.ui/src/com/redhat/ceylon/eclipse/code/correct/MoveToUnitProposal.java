@@ -12,8 +12,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.refactor.MoveToUnitRefactoringAction;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 class MoveToUnitProposal implements ICompletionProposal {
 
@@ -32,7 +32,7 @@ class MoveToUnitProposal implements ICompletionProposal {
 
     @Override
     public Image getImage() {
-        return CeylonLabelProvider.MOVE;
+        return CeylonResources.MOVE;
     }
 
     @Override

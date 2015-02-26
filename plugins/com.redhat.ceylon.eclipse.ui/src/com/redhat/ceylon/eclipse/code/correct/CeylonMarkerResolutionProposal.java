@@ -11,7 +11,7 @@ package com.redhat.ceylon.eclipse.code.correct;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.MINOR_CHANGE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;

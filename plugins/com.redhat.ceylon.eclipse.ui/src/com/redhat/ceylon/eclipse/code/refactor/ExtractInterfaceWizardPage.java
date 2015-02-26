@@ -71,10 +71,10 @@ public class ExtractInterfaceWizardPage extends UserInputWizardPage {
         tableLabel.setEnabled(extractableMembers.length > 0);
         tableLabel.setLayoutData(GridDataFactory.swtDefaults().span(2, 1).create());
 
-        createExtracableMembersTable(page);
+        createExtractableMembersTable(page);
     }
 
-    private void createExtracableMembersTable(Composite page) {
+    private void createExtractableMembersTable(Composite page) {
         Composite composite = new Composite(page, SWT.NONE);
         composite.setLayout(GridLayoutFactory.swtDefaults().numColumns(2).margins(0, 0).create());
         composite.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).span(2, 1).hint(SWT.DEFAULT, convertHeightInCharsToPixels(12)).create());

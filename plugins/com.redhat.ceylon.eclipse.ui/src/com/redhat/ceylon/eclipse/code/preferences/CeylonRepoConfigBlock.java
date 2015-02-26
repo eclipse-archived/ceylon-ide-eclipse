@@ -44,10 +44,10 @@ import org.eclipse.ui.views.navigator.ResourceComparator;
 
 import com.redhat.ceylon.common.config.CeylonConfigFinder;
 import com.redhat.ceylon.common.config.Repositories;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class CeylonRepoConfigBlock {
 
@@ -567,7 +567,7 @@ public class CeylonRepoConfigBlock {
         
         TableItem tableItem = new TableItem(lookupRepoTable, SWT.NONE, index);
         tableItem.setText(repo);
-        tableItem.setImage(CeylonLabelProvider.REPO);
+        tableItem.setImage(CeylonResources.REPO);
         lookupRepoTable.setSelection(index);
 
         validate();
@@ -579,7 +579,7 @@ public class CeylonRepoConfigBlock {
             for (String repo : repos) {
                 TableItem tableItem = new TableItem(lookupRepoTable, SWT.NONE);
                 tableItem.setText(repo);
-                tableItem.setImage(CeylonLabelProvider.REPO);
+                tableItem.setImage(CeylonResources.REPO);
                 if (isGlobalRepo) {
                     tableItem.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_FOREGROUND));
                 }

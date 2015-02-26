@@ -33,9 +33,9 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.select.ProjectSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 
@@ -429,7 +429,7 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
                 TableItem item = new TableItem(modules, SWT.NONE);
                 item.setText(module.getNameAsString());
                 item.setText(1, module.getVersion());
-                item.setImage(CeylonLabelProvider.MODULE);
+                item.setImage(CeylonResources.MODULE);
                 item.setChecked(true);
             }
             

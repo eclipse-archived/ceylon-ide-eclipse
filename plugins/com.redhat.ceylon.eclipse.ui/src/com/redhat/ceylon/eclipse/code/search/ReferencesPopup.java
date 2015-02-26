@@ -86,11 +86,11 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.TreeNodeLabelProvider;
 import com.redhat.ceylon.eclipse.code.outline.TreeViewMouseListener;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
@@ -435,7 +435,7 @@ public final class ReferencesPopup extends PopupDialog
     
     private void createImportsButton(ToolBar toolBar) {
         importsButton = new ToolItem(toolBar, SWT.CHECK);
-        importsButton.setImage(CeylonLabelProvider.IMPORT);
+        importsButton.setImage(CeylonResources.IMPORT);
         importsButton.setToolTipText("Show Matches in Import Statements");
         importsButton.setSelection(includeImports);
         importsButton.addSelectionListener(new SelectionListener() {

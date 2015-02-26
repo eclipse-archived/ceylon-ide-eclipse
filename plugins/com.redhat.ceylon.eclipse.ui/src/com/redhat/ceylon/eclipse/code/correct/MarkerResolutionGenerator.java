@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.openInEditor;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CEYLON_CONFIG_NOT_IN_SYNC_MARKER;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 
@@ -25,10 +25,10 @@ import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonEncodingSynchronizer;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class MarkerResolutionGenerator 
         implements IMarkerResolutionGenerator, IMarkerResolutionGenerator2 {
@@ -82,7 +82,7 @@ public class MarkerResolutionGenerator
 
         @Override
         public Image getImage() {
-            return CeylonLabelProvider.MINOR_CHANGE;
+            return CeylonResources.MINOR_CHANGE;
         }
     }
 
