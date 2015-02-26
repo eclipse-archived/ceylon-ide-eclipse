@@ -404,7 +404,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(PREV_ANN, image("prev_nav.gif"));
         reg.put(SORT_ALPHA, image("alphab_sort_co.gif"));
         
-        reg.put(HISTORY, image("history_list.gif"));
+        reg.put(HISTORY, image("history.gif"));
         
         reg.put(CEYLON_LITERAL, image("correction_change.gif"));
     }
