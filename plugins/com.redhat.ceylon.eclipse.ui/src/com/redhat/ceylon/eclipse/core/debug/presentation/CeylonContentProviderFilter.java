@@ -109,7 +109,7 @@ public class CeylonContentProviderFilter {
             throws DebugException {
         Type replacedVariable = element;
         if (element instanceof IJavaVariable) {
-            if (VariableBox.class.getName().equals(((IJavaVariable) element).getJavaType().getName())) {
+            if (VariableBox.class.getName().equals(((IJavaVariable) element).getReferenceTypeName())) {
                 IJavaValue value = (IJavaValue) ((IJavaVariable) element).getValue();
                 IVariable[] children = value.getVariables();
                 if (children.length > 0) {
