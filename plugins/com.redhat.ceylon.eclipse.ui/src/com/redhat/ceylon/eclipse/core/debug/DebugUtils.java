@@ -14,6 +14,7 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IValue;
+import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
@@ -302,25 +303,31 @@ public class DebugUtils {
             return null;
         }
         if (value instanceof JDIObjectValue) {
+            JDIObjectValue objectValue = (JDIObjectValue) value;
             try {
-                final IJavaReferenceType type = (IJavaReferenceType)((JDIObjectValue)value).getJavaType();
+                final IJavaReferenceType type = (IJavaReferenceType) objectValue.getJavaType();
                 final String typeName = type.getName();
                 if (typeName.endsWith("$impl")) {
-                    IJavaFieldVariable thisField = ((JDIObjectValue) value).getField("$this", 0);
+                    IJavaFieldVariable thisField = objectValue.getField("$this", 0);
                     value = null;
                     if (thisField != null) {
                         IValue fieldValue = thisField.getValue();
-                        if (fieldValue instanceof IJavaObject && 
+                        if (fieldValue instanceof JDIObjectValue && 
                                 !(fieldValue instanceof JDINullValue)) {
                             value = fieldValue;
+                            objectValue = (JDIObjectValue) value;
                         }
                     }
                 }
+                
                 if (value != null) {
-                    final IJavaValue javaValue = (IJavaValue) value;
-                    final JDIDebugTarget debugTarget = ((JDIObjectValue) value).getJavaDebugTarget();
+                    final JDIObjectValue javaValue = objectValue;
+                    final JDIDebugTarget debugTarget = objectValue.getJavaDebugTarget();
                     if (debugTarget instanceof CeylonJDIDebugTarget) {
-                        IJavaValue reifiedTypeInfo = ((CeylonJDIDebugTarget) debugTarget).getEvaluationResult(new EvaluationRunner() {
+                        CeylonJDIDebugTarget ceylonDebugTarget = (CeylonJDIDebugTarget) debugTarget;
+                        final boolean isMethod = ceylonDebugTarget.isAnnotationPresent(type, com.redhat.ceylon.compiler.java.metadata.Method.class, 5000);
+                        
+                        IJavaValue reifiedTypeInfo = ceylonDebugTarget.getEvaluationResult(new EvaluationRunner() {
                             @Override
                             public void run(IJavaThread innerThread, IProgressMonitor monitor,
                                     EvaluationListener listener) throws DebugException {
@@ -350,11 +357,33 @@ public class DebugUtils {
                                 }
 
                                 if (producedType == null) {
-                                    JDIClassType metamodelType = getMetaModelClass(((JDIObjectValue) javaValue).getJavaDebugTarget());
+                                    JDIClassType metamodelType = getMetaModelClass(javaValue.getJavaDebugTarget());
                                     if (metamodelType != null) {
                                         if (typeDescriptor == null) {
-                                            typeDescriptor = metamodelType.sendMessage("getTypeDescriptor", "(Ljava/lang/Object;)Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;", new IJavaValue[] {javaValue}, innerThread);
-                                            
+                                            boolean cancelTypeDescriptorRetrieval = false;
+                                            for(IVariable v : javaValue.getVariables()) {
+                                                if (v.getName().startsWith(Naming.Prefix.$reified$.name())) {
+                                                    IValue reifiedTypeValue = v.getValue();
+                                                    if (reifiedTypeValue == null || reifiedTypeValue instanceof JDINullValue) {
+                                                        // The reified type arguments are not fully set,
+                                                        // we are probably at the first line of the constructor.
+                                                        // => Don't try to retrieve the produced type.
+                                                        cancelTypeDescriptorRetrieval = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            if (! cancelTypeDescriptorRetrieval) {
+                                                try {
+                                                    typeDescriptor = javaValue.sendMessage("$getType$", "()Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;", new IJavaValue[0], innerThread, null);
+                                                } catch(DebugException de) {
+                                                    // the value surely doesn't implement ReifiedType
+                                                    if (! isMethod) {
+                                                        // Don't call getTypeDescriptor for objects that are in fact local Ceylon methods. It would trigger an exception 
+                                                        typeDescriptor = metamodelType.sendMessage("getTypeDescriptor", "(Ljava/lang/Object;)Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;", new IJavaValue[] {javaValue}, innerThread);
+                                                    }
+                                                }
+                                            }
                                         }
                                         if (typeDescriptor instanceof IJavaObject && ! (typeDescriptor instanceof JDINullValue)) {
                                             producedType = metamodelType.sendMessage("getProducedType", "(Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;)Lcom/redhat/ceylon/compiler/typechecker/model/ProducedType;", new IJavaValue[] {typeDescriptor}, innerThread);
