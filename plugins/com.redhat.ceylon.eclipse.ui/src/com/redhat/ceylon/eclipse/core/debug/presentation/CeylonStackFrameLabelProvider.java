@@ -11,7 +11,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.ILabelUpdate;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationContext;
-import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 import org.eclipse.jdt.internal.debug.ui.variables.JavaStackFrameLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
@@ -28,16 +27,18 @@ public class CeylonStackFrameLabelProvider extends JavaStackFrameLabelProvider {
     }
     private String updateExistingLabel(TreePath elementPath, String existingLabel, IPresentationContext context) {
         Object element = elementPath.getLastSegment();
-        if (element instanceof IJavaStackFrame) {
-            IJavaStackFrame frame = (IJavaStackFrame) element;
+        if (element instanceof JDIStackFrame) {
+            JDIStackFrame frame = (JDIStackFrame) element;
             if (isCeylonContext(context)) {
-                CeylonDebugLabelUpdater updater = getUpdater(frame);
-                if (updater != null) {
-                    Matcher matcher = updater.matches(existingLabel);
-                    if (matcher != null) {
-                        Declaration declaration = getSourceDeclaration(frame);
-                        if (declaration != null) {
-                            return updater.updateLabel(matcher, declaration);
+                if (! isInternalCeylonMethod(frame.getUnderlyingMethod())) {
+                    CeylonDebugLabelUpdater updater = getUpdater(frame);
+                    if (updater != null) {
+                        Matcher matcher = updater.matches(existingLabel);
+                        if (matcher != null) {
+                            Declaration declaration = getSourceDeclaration(frame);
+                            if (declaration != null) {
+                                return updater.updateLabel(matcher, declaration);
+                            }
                         }
                     }
                 }
