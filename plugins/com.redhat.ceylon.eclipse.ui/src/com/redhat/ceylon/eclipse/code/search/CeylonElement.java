@@ -56,7 +56,7 @@ public class CeylonElement {
         label = getStyledLabelForNode(node);
         packageLabel = node.getUnit()==null ? 
                 "(unknown package)" : 
-                CeylonLabelProvider.getLabel(node.getUnit().getPackage());
+                CeylonLabelProvider.getPackageLabel(node.getUnit().getPackage());
         //TODO: this winds up caching error decorations,
         //      so it's not really very good
         decorations = getNodeDecorationAttributes(node);

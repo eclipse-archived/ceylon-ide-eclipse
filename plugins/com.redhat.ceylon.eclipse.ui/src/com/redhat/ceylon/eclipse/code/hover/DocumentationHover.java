@@ -20,7 +20,8 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getLabel;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.getJavaElement;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
@@ -1037,16 +1038,16 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
 
-    private static void appendLink(StringBuilder buffer, Referenceable dec) {
-        buffer.append("<tt><a ").append(HTML.link(dec)).append(">");
-        if (dec instanceof Declaration) {
-            buffer.append(((Declaration) dec).getName());
+    private static void appendLink(StringBuilder buffer, Referenceable model) {
+        buffer.append("<tt><a ").append(HTML.link(model)).append(">");
+        if (model instanceof Declaration) {
+            buffer.append(((Declaration) model).getName());
         }
-        else if (dec instanceof Package) {
-            buffer.append(getLabel((Package)dec)); 
+        else if (model instanceof Package) {
+            buffer.append(getPackageLabel((Package) model)); 
         }
-        else if (dec instanceof Module) {
-            buffer.append(getLabel((Module)dec)); 
+        else if (model instanceof Module) {
+            buffer.append(getModuleLabel((Module) model)); 
         }
         buffer.append("</a></tt>");
     }
@@ -1105,7 +1106,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
     
     private static String description(Package pack) {
-        return "package " + getLabel(pack);
+        return "package " + getPackageLabel(pack);
     }
     
     public static String getDocumentationFor(ModuleDetails mod, String version, 
@@ -1244,7 +1245,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static String description(Module mod) {
-        return "module " + getLabel(mod) + " \"" + mod.getVersion() + "\"";
+        return "module " + getModuleLabel(mod) + " \"" + mod.getVersion() + "\"";
     }
 
     public static String getDocumentationFor(CeylonParseController cpc, 

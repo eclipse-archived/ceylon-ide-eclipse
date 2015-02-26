@@ -470,11 +470,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 .append(((IImportDeclaration) element).getElementName(), PACKAGE_STYLER);
         }
         else if (element instanceof Package) {
-            return new StyledString(getLabel((Package) element), 
+            return new StyledString(getPackageLabel((Package) element), 
             		PACKAGE_STYLER);
         }
         else if (element instanceof Module) {
-            return new StyledString(getLabel((Module) element), 
+            return new StyledString(getModuleLabel((Module) element), 
             		PACKAGE_STYLER);
         }
         else if (element instanceof Unit) {
@@ -1129,7 +1129,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
 
     //TODO: none of these really belong here:
     
-    public static String getLabel(Package packageModel) {
+    public static String getPackageLabel(Package packageModel) {
         String name = packageModel.getQualifiedNameString();
         if (name.isEmpty()) {
             return "(default package)";
@@ -1137,7 +1137,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return name;
     }
     
-    public static String getLabel(Module moduleModel) {
+    public static String getModuleLabel(Module moduleModel) {
         String name = moduleModel.getNameAsString();
         if (name.isEmpty() || 
                 name.equals(Module.DEFAULT_MODULE_NAME)) {
@@ -1148,12 +1148,12 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     public static String getModuleLabel(Declaration decl) {
         return decl.getUnit()==null ? "(unknown module)" : 
-            getLabel(decl.getUnit().getPackage().getModule());
+            getModuleLabel(decl.getUnit().getPackage().getModule());
     }
     
     public static String getPackageLabel(Declaration decl) {
         return decl.getUnit()==null ? "(unknown package)" : 
-            getLabel(decl.getUnit().getPackage());
+            getPackageLabel(decl.getUnit().getPackage());
     }
     
     private static String getRefinementIconKey(Declaration dec) {
