@@ -24,6 +24,8 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -80,9 +82,8 @@ public class CeylonTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
     private void createTestViewer() {
         testViewer = new TableViewer(testGroup, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 
-        TableViewerColumn tableViewerColumn = new TableViewerColumn(testViewer, SWT.NONE);
+        final TableViewerColumn tableViewerColumn = new TableViewerColumn(testViewer, SWT.NONE);
         tableViewerColumn.getColumn().setText(CeylonTestMessages.configTabTestColumnLabel);
-        tableViewerColumn.getColumn().setWidth(1);
         tableViewerColumn.setLabelProvider(new StyledCellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
@@ -140,6 +141,12 @@ public class CeylonTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 updateButtonState();
+            }
+        });
+        testViewer.getTable().addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                tableViewerColumn.getColumn().setWidth(testViewer.getTable().getClientArea().width);
             }
         });
     }
