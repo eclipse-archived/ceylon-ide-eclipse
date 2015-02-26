@@ -103,6 +103,7 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.ModelProxy;
 
 public class HierarchyView extends ViewPart {
 
@@ -122,10 +123,10 @@ public class HierarchyView extends ViewPart {
     
     private static class History {
         private IProject project;
-        private CeylonHierarchyNode proxy;
+        private ModelProxy proxy;
         private History(HierarchyInput input) {
             this.project = input.project;
-            this.proxy = new CeylonHierarchyNode(input.declaration);
+            this.proxy = new ModelProxy(input.declaration);
         }
         private Declaration declaration() {
             return proxy.getDeclaration(project);
