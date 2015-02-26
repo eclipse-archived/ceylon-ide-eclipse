@@ -91,6 +91,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.open.OpenDeclarationInHierarchyAction;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
@@ -461,9 +462,15 @@ public class HierarchyView extends ViewPart {
         createTreeMenu(createTree(sash));
         createTableMenu(createTable(sash));
         
+        createViewMenu();
+    }
+
+    private void createViewMenu() {
         IActionBars actionBars = getViewSite().getActionBars();
         IMenuManager menuManager = actionBars.getMenuManager();
         menuManager.add(new ExpandAllAction());
+        menuManager.add(new Separator());
+        menuManager.add(new OpenDeclarationInHierarchyAction("Open Declaration...", null));
         Action configureAction =
         new Action("Configure Labels...", 
                 CeylonPlugin.getInstance().getImageRegistry()
