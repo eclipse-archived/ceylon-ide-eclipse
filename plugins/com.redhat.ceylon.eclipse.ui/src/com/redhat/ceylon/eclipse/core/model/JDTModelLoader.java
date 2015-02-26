@@ -794,7 +794,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
         JDTModelLoader modelLoader = getModelLoader(typeModel);
         if (modelLoader == null) {
-            throw new ModelResolutionException("The Model Loader corresponding the type '" + typeModel.getFullyQualifiedName() + "'");
+            throw new ModelResolutionException("The Model Loader corresponding the type '" + typeModel.getFullyQualifiedName() + "' was not available");
         }
         
         synchronized (modelLoader.lookupEnvironmentMutex) {
