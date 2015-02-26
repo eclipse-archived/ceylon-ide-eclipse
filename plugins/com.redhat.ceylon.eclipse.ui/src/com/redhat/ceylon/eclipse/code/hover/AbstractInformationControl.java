@@ -14,7 +14,6 @@ package com.redhat.ceylon.eclipse.code.hover;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.internal.text.revisions.Colors;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
@@ -39,6 +38,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -248,7 +248,8 @@ public abstract class AbstractInformationControl
         fStatusLabelFont= new Font(fStatusLabel.getDisplay(), fontDatas);
         fStatusLabel.setFont(fStatusLabelFont);
         
-        fStatusLabelForeground= new Color(fStatusLabel.getDisplay(), Colors.blend(background.getRGB(), foreground.getRGB(), 0.56f));
+        fStatusLabelForeground= new Color(fStatusLabel.getDisplay(), 
+                blend(background.getRGB(), foreground.getRGB(), 0.56f));
         setColor(fStatusLabel, fStatusLabelForeground, background);
         setColor(fStatusComposite, foreground, background);
     }
@@ -782,6 +783,30 @@ public abstract class AbstractInformationControl
         gc.dispose();
 
         return new Point(widthInChars * width, heightInChars * height);
+    }
+
+    /**
+     * Returns an RGB that lies between the given foreground and background
+     * colors using the given mixing factor. A <code>factor</code> of 1.0 will produce a
+     * color equal to <code>fg</code>, while a <code>factor</code> of 0.0 will produce one
+     * equal to <code>bg</code>.
+     * @param bg the background color
+     * @param fg the foreground color
+     * @param factor the mixing factor, must be in [0,&nbsp;1]
+     *
+     * @return the interpolated color
+     */
+    public static RGB blend(RGB bg, RGB fg, float factor) {
+        Assert.isLegal(bg != null);
+        Assert.isLegal(fg != null);
+        Assert.isLegal(factor >= 0f && factor <= 1f);
+
+        float complement= 1f - factor;
+        return new RGB(
+                (int) (complement * bg.red + factor * fg.red),
+                (int) (complement * bg.green + factor * fg.green),
+                (int) (complement * bg.blue + factor * fg.blue)
+        );
     }
 
 }
