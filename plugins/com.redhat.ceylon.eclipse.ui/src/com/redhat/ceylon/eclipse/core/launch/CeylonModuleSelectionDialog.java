@@ -23,7 +23,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.open.FilteredItemsSelectionDialog;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
@@ -96,7 +95,9 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
             if (element instanceof JDTModule) {
                 final JDTModule module = (JDTModule) element;
                 if (module.isProjectModule()) {
-                    return ((ProjectSourceFile) module.getUnit()).getProjectResource().getName();
+//                    final ProjectSourceFile unit = (ProjectSourceFile) module.getUnit();
+//                    return unit.getProjectResource().getName();
+                    return module.getModuleManager().getJavaProject().getProject().getName();
                 }
                 else {
                     return module.getRepositoryDisplayString();
