@@ -5,10 +5,12 @@ import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
 import java.util.Comparator;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
@@ -22,8 +24,11 @@ import org.eclipse.swt.widgets.Shell;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.open.FilteredItemsSelectionDialog;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     
@@ -73,16 +78,16 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
         
     }
     
-    class ModuleDetailsLabelProvider extends ModuleLabelProvider {
+    class ModuleRepoDetailsLabelProvider extends ModuleLabelProvider {
         @Override
         public Image getImage(Object element) {
             if (element instanceof JDTModule) {
                 JDTModule module = (JDTModule) element;
                 if (module.isProjectModule()) {
-                    return CeylonLabelProvider.PROJECT;
+                    return CeylonResources.PROJECT;
                 }
                 else {
-                    return CeylonLabelProvider.REPO;
+                    return CeylonResources.REPO;
                 }
             }
             else {
@@ -95,7 +100,7 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
             if (element instanceof JDTModule) {
                 final JDTModule module = (JDTModule) element;
                 if (module.isProjectModule()) {
-//                    final ProjectSourceFile unit = (ProjectSourceFile) module.getUnit();
+//                    ProjectSourceFile unit = (ProjectSourceFile) module.getUnit();
 //                    return unit.getProjectResource().getName();
                     return module.getModuleManager().getJavaProject().getProject().getName();
                 }
@@ -108,6 +113,41 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
         
     }
 
+    class ModuleSourceFolderLabelProvider extends ModuleLabelProvider {
+        @Override
+        public Image getImage(Object element) {
+            if (element instanceof JDTModule) {
+                JDTModule module = (JDTModule) element;
+                if (module.isProjectModule()) {
+                    if (!module.isDefaultModule()) {
+                        return CeylonResources.SOURCE_FOLDER;
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String getText(Object element) {
+            if (element instanceof JDTModule) {
+                final JDTModule module = (JDTModule) element;
+                if (module.isProjectModule()) {
+                    if (!module.isDefaultModule()) {
+                        IJavaProject project = module.getModuleManager().getJavaProject();
+                        ProjectSourceFile unit = (ProjectSourceFile) module.getUnit();
+                        for (IFolder folder: CeylonBuilder.getSourceFolders(project.getProject())) {
+                            if (folder.findMember(unit.getRelativePath())!=null) {
+                                return folder.getFullPath().toPortableString();
+                            }
+                        }
+                        return null;
+                    }
+                }
+            }
+            return "";
+        }
+        
+    }
     class ModuleItemsFilter extends ItemsFilter {
         @Override
         public boolean isConsistentItem(Object item) {
@@ -136,7 +176,7 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
                 "&Choose a module to run:");
         setTitle("Ceylon Launcher");
         this.modules = modules;
-        initLabelProviders(new ModuleLabelProvider(), null, new ModuleDetailsLabelProvider(), null, null);
+        initLabelProviders(new ModuleLabelProvider(), null, new ModuleRepoDetailsLabelProvider(), new ModuleSourceFolderLabelProvider(), null);
     }
 
     @Override

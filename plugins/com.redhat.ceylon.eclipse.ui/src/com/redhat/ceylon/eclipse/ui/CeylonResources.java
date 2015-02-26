@@ -155,6 +155,7 @@ public interface CeylonResources {
     public static final Image PARAMETER_METHOD = imageRegistry.get(CEYLON_PARAMETER_METHOD);
     public static final Image PACKAGE = imageRegistry.get(CEYLON_PACKAGE);
     public static final Image MODULE = imageRegistry.get(CEYLON_MODULE);
+    public static final Image SOURCE_FOLDER = imageRegistry.get(CEYLON_SOURCE_FOLDER);
     public static final Image SOURCE_ARCHIVE = imageRegistry.get(CEYLON_SOURCE_ARCHIVE);
     public static final Image BINARY_ARCHIVE = imageRegistry.get(CEYLON_BINARY_ARCHIVE);
     public static final Image VERSION = imageRegistry.get(MODULE_VERSION);
