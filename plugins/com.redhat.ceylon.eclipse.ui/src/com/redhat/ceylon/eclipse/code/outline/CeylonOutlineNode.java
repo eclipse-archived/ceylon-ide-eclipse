@@ -16,6 +16,8 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getNodeDecorationAttributes;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.lang.System.identityHashCode;
@@ -30,6 +32,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -44,6 +47,38 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonOutlineNode implements IAdaptable {
     
+    private static final class ActionFilter implements IActionFilter {
+        @Override
+        public boolean testAttribute(Object object, String name, String value) {
+            CeylonOutlineNode target = (CeylonOutlineNode) object;
+            boolean result = false;
+            if (target.runnable) {
+                if (name.equals("javaRunnable")) {
+                    IResource resource = target.getResource();
+                    result = resource!=null &&
+                            compileToJava(resource.getProject());
+                }
+                else if (name.equals("jsRunnable")) {
+                    IResource resource = target.getResource();
+                    result = resource!=null &&
+                            compileToJs(resource.getProject());
+                }
+                else {
+                    return false;
+                }
+            }
+            if (value.equals("true")) {
+                return result;
+            }
+            else if (value.equals("false")) {
+                return !result;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+
     public static final int ROOT_CATEGORY = -4;
     public static final int PACKAGE_CATEGORY = -3;
     public static final int UNIT_CATEGORY = -2;
@@ -68,6 +103,7 @@ public class CeylonOutlineNode implements IAdaptable {
     private String name;
     private int realStartOffset;
     private int realEndOffset;
+    private boolean runnable;
 
     CeylonOutlineNode(Node treeNode) {
         this(treeNode, DEFAULT_CATEGORY);
@@ -131,6 +167,21 @@ public class CeylonOutlineNode implements IAdaptable {
         label = getStyledLabelForNode(treeNode);
         imageKey = getImageKeyForNode(treeNode);
         decorations = getNodeDecorationAttributes(treeNode);
+        if (shared && treeNode instanceof Tree.AnyMethod) {
+            List<Tree.ParameterList> lists = 
+                    ((Tree.AnyMethod)treeNode).getParameterLists();
+            runnable = lists.size()==1 && 
+                    lists.get(0).getParameters().isEmpty();
+        }
+        else if (shared && treeNode instanceof Tree.AnyClass) {
+            Tree.ParameterList list = 
+                    ((Tree.AnyClass)treeNode).getParameterList();
+            runnable = list!=null && 
+                    list.getParameters().isEmpty();
+        }
+        else {
+            runnable = false;
+        }
     }
 
     private Tree.Identifier getIdentifier(Tree.SpecifierStatement treeNode) {
@@ -355,6 +406,18 @@ public class CeylonOutlineNode implements IAdaptable {
     public String toString() {
         return getIdentifier();
     }
+    
+    private IResource getResource() {
+        if (resource!=null) {
+            return resource;
+        }
+        else if (parent!=null) {
+            return parent.getResource();
+        }
+        else {
+            return null;
+        }
+    }
 
     @Override
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
@@ -365,6 +428,9 @@ public class CeylonOutlineNode implements IAdaptable {
         else if (adapter.equals(IJavaElement.class) && 
                 resource instanceof IFolder) {
             return JavaCore.create(resource);
+        }
+        else if (adapter.equals(IActionFilter.class)) {
+            return new ActionFilter();
         }
         else {
             return null;

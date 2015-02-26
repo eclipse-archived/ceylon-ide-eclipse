@@ -320,7 +320,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
      * @param resource - the associated Eclipse resource
      * @param mode
      */
-    private void launch(Declaration declarationToRun, 
+    public void launch(Declaration declarationToRun, 
             IResource resource, String mode) {
 
         ILaunchConfiguration config = 

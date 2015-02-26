@@ -276,7 +276,6 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         return configWorkingCopy.doSave();
     }
 
-    @SuppressWarnings("unchecked")
     private static ILaunchConfiguration findExistingLaunchConfig(ILaunchConfigurationType configType,
             List<CeylonTestLaunchConfigEntry> entries) throws CoreException {
         List<String> attributes = CeylonTestLaunchConfigEntry.buildLaunchConfigAttributes(entries);

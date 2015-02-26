@@ -2512,6 +2512,65 @@
                menubarPath="showIn"
                definitionId="com.redhat.ceylon.eclipse.ui.action.showInHierarchyView"/>
      </objectContribution>
+     
+     <objectContribution
+           objectClass="com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode"
+           id="com.redhat.ceylon.eclipse.ui.outline.launchActions">
+         <action
+               label="Debug As Ceylon JavaScript Application"
+               class="com.redhat.ceylon.eclipse.code.outline.DebugAsJsAction"
+               enablesFor="1"
+               icon="icons/start_application.gif"
+               id="debugAsJs"
+               menubarPath="additions"/>
+          <visibility>
+              <objectState name="jsRunnable" value="true"/>
+          </visibility>
+     </objectContribution>
+     <objectContribution
+           objectClass="com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode"
+           id="com.redhat.ceylon.eclipse.ui.outline.launchActions">
+         <action
+               label="Debug As Ceylon Java Application"
+               class="com.redhat.ceylon.eclipse.code.outline.DebugAsJavaAction"
+               enablesFor="1"
+               icon="icons/start_application.gif"
+               id="debugAsJava"
+               menubarPath="additions"/>
+          <visibility>
+              <objectState name="javaRunnable" value="true"/>
+          </visibility>
+     </objectContribution>
+     
+     <objectContribution
+           objectClass="com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode"
+           id="com.redhat.ceylon.eclipse.ui.outline.launchActions">
+         <action
+               label="Run As Ceylon JavaScript Application"
+               class="com.redhat.ceylon.eclipse.code.outline.RunAsJsAction"
+               enablesFor="1"
+               icon="icons/start_application.gif"
+               id="runAsJs"
+               menubarPath="additions"/>
+          <visibility>
+              <objectState name="jsRunnable" value="true"/>
+          </visibility>
+     </objectContribution>
+     <objectContribution
+           objectClass="com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode"
+           id="com.redhat.ceylon.eclipse.ui.outline.launchActions">
+         <action
+               label="Run As Ceylon Java Application"
+               class="com.redhat.ceylon.eclipse.code.outline.RunAsJavaAction"
+               enablesFor="1"
+               icon="icons/start_application.gif"
+               id="runAsJava"
+               menubarPath="additions"/>
+          <visibility>
+              <objectState name="javaRunnable" value="true"/>
+          </visibility>
+     </objectContribution>
+     
      <objectContribution
            objectClass="org.eclipse.core.resources.IProject"
            adaptable="true"
@@ -2561,6 +2620,7 @@
                overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenReceivingType">
          </action>
       </objectContribution>
+      
       <objectContribution
             objectClass="org.eclipse.jdt.debug.core.IJavaStackFrame"
             id="com.redhat.ceylon.eclipse.ui.DeclaringStackFrameActions">
@@ -2585,6 +2645,7 @@
                overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenDeclaringType">
          </action>
       </objectContribution>
+      
       <objectContribution
             objectClass="org.eclipse.jdt.debug.core.IJavaVariable"
             id="com.redhat.ceylon.eclipse.ui.FilteredJavaVariableActions">
@@ -2617,6 +2678,7 @@
                overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenVariableConcreteType">
          </action>
       </objectContribution>
+      
       <objectContribution
             objectClass="org.eclipse.jdt.debug.core.IJavaVariable"
             id="com.redhat.ceylon.eclipse.ui.FilteredJavaVariableActions">
