@@ -6,7 +6,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 
 //TODO: remove this class, because the information
 //      should now be available in the JDTModule
-@Deprecated
+//@Deprecated
 public class DeclarationWithProject {
     
     public DeclarationWithProject(Declaration dec, 

@@ -133,6 +133,8 @@ public interface CeylonResources {
     public static final String NEXT_ANN = "next_ann";
     public static final String PREV_ANN = "prev_ann";
     
+    public static final String HISTORY = "history";
+    
     public static final String SORT_ALPHA = "sort_alpha";
     
     public static final String CEYLON_LITERAL = "literal";

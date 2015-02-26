@@ -364,7 +364,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return getDecoratedImage(file, getImageKeyForFile(file), false);
     }
     
-    private static String getImageKeyForDeclaration(Declaration d) {
+    static String getImageKeyForDeclaration(Declaration d) {
         if (d==null) return null;
         boolean shared = d.isShared();
         if (d instanceof Class) {

@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledD
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUPERTYPES;
@@ -16,8 +17,10 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_INHERITED;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.HISTORY;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
@@ -30,9 +33,11 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -81,6 +86,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.part.ViewPart;
 
@@ -96,7 +102,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class HierarchyView extends ViewPart {
@@ -214,13 +219,6 @@ public class HierarchyView extends ViewPart {
             }
         }
 
-        private String getName(Declaration declaration) {
-            String name = declaration.getName();
-            return declaration.isClassOrInterfaceMember() ?
-                    ((Declaration) declaration.getContainer()).getName() + '.' + name
-                    : name;
-        }
-        
         @Override
         public Menu getMenu(Menu parent) {
             return null;
@@ -230,42 +228,10 @@ public class HierarchyView extends ViewPart {
         public Menu getMenu(Control parent) {
             if (menu!=null) menu.dispose();
             menu = new Menu(parent);
-            for (final History h: history) {
-                final MenuItem item = new MenuItem(menu, SWT.PUSH);
-                final Declaration declaration = h.declaration();
-                if (declaration!=null) {
-                    final Image image =
-                            getImageForDeclaration(declaration);
-                    final IProject project = h.project;
-                    item.setText(getName(declaration));
-                    item.setImage(image);
-                    item.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            HierarchyView.this.project = project;
-                            title.setImage(item.getImage());
-                            title.setText(item.getText());
-                            tableViewer.setInput(declaration);
-                            treeViewer.setInput(new HierarchyInput(declaration, project));
-                            HierarchyView.this.setDescription(declaration);
-                            history.remove(h);
-                            history.add(0, h);
-                        }
-                    });
-                }
-            }
-            new MenuItem(menu, SWT.SEPARATOR);
-            MenuItem clear = new MenuItem(menu, SWT.PUSH);
-            clear.setText("Clear History");
-            clear.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    history.clear();
-                }
-            });
+            populateHistoryMenu(menu);
             return menu;
         }
-        
+
         @Override
         public void dispose() {
             if (menu!=null) menu.dispose();
@@ -273,6 +239,80 @@ public class HierarchyView extends ViewPart {
         
     }
 
+    private String getName(Declaration declaration) {
+        String name = declaration.getName();
+        return declaration.isClassOrInterfaceMember() ?
+                ((Declaration) declaration.getContainer()).getName() + '.' + name
+                : name;
+    }
+    
+    private void populateHistoryMenu(Menu menu) {
+        for (final History h: history) {
+            final MenuItem item = new MenuItem(menu, SWT.PUSH);
+            final Declaration declaration = h.declaration();
+            if (declaration!=null) {
+                final Image image =
+                        getImageForDeclaration(declaration);
+                final IProject project = h.project;
+                item.setText(getName(declaration));
+                item.setImage(image);
+                item.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        HierarchyView.this.project = project;
+                        title.setImage(item.getImage());
+                        title.setText(item.getText());
+                        tableViewer.setInput(declaration);
+                        treeViewer.setInput(new HierarchyInput(declaration, project));
+                        HierarchyView.this.setDescription(declaration);
+                        history.remove(h);
+                        history.add(0, h);
+                    }
+                });
+            }
+        }
+        new MenuItem(menu, SWT.SEPARATOR);
+        MenuItem clear = new MenuItem(menu, SWT.PUSH);
+        clear.setText("Clear History");
+        clear.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                history.clear();
+            }
+        });
+    }
+    
+    private void populateHistoryMenu(MenuManager menu) {
+        for (final History h: history) {
+            final Declaration declaration = h.declaration();
+            if (declaration!=null) {
+                ImageDescriptor image =
+                        imageRegistry.getDescriptor(getImageKeyForDeclaration(declaration));
+                final IProject project = h.project;
+                menu.add(new Action(getName(declaration), image) {
+                    @Override
+                    public void run() {
+                        HierarchyView.this.project = project;
+                        title.setImage(getImageForDeclaration(declaration));
+                        title.setText(getName(declaration));
+                        tableViewer.setInput(declaration);
+                        treeViewer.setInput(new HierarchyInput(declaration, project));
+                        HierarchyView.this.setDescription(declaration);
+                        history.remove(h);
+                        history.add(0, h);
+                    }
+                });
+            }
+        }
+        menu.add(new Separator());
+        menu.add(new Action("Clear History") {
+            @Override
+            public void run() {
+                history.clear();
+            }
+        });
+    }
+    
     private final class MemberSorter extends ViewerSorter {
         private boolean sortByType;
         @Override
@@ -471,10 +511,10 @@ public class HierarchyView extends ViewPart {
         menuManager.add(new ExpandAllAction());
         menuManager.add(new Separator());
         menuManager.add(new OpenDeclarationInHierarchyAction("Open Declaration...", null));
+        menuManager.add(new HistoryMenu());
         Action configureAction =
         new Action("Configure Labels...", 
-                CeylonPlugin.getInstance().getImageRegistry()
-                .getDescriptor(CeylonResources.CONFIG_LABELS)) {
+                imageRegistry.getDescriptor(CONFIG_LABELS)) {
             @Override
             public void run() {
                 PreferencesUtil.createPreferenceDialogOn(
@@ -488,14 +528,26 @@ public class HierarchyView extends ViewPart {
         menuManager.add(configureAction);
     }
 
+    private final class HistoryMenu extends CompoundContributionItem {
+        @Override
+        protected IContributionItem[] getContributionItems() {
+            MenuManager historyMenu = 
+                    new MenuManager("History", 
+                            imageRegistry.getDescriptor(HISTORY), 
+                            "history");
+            populateHistoryMenu(historyMenu);
+            return new IContributionItem[] {historyMenu};
+        }
+    }
+
     private class ExpandAllAction extends Action {
 
         private ExpandAllAction() {
             super("Expand All");
             setToolTipText("Expand All");
             
-            ImageDescriptor desc = imageRegistry
-                    .getDescriptor(EXPAND_ALL);
+            ImageDescriptor desc = 
+                    imageRegistry.getDescriptor(EXPAND_ALL);
             setHoverImageDescriptor(desc);
             setImageDescriptor(desc);
         }
