@@ -17,23 +17,23 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyNode;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.ModelProxy;
 
 public class CeylonElement {
     
-    private VirtualFile file;
+    private VirtualFile file; //TODO: is this really the best thing to use nowadays?
     private String qualifiedName;
     private int line;
     private String imageKey;
     private String packageLabel;
     private StyledString label;
-    private CeylonHierarchyNode proxy;
     private int decorations;
     private int startOffset;
     private int endOffset;
+    private ModelProxy proxy;
     
     public CeylonElement(Node node, 
             VirtualFile file, int line) {
@@ -53,14 +53,16 @@ public class CeylonElement {
         //display the search result, without holding 
         //onto a hard ref to the container node
         imageKey = getImageKeyForNode(node);
-        packageLabel = CeylonLabelProvider.getPackageLabel(node);
         label = getStyledLabelForNode(node);
+        packageLabel = node.getUnit()==null ? 
+                "(unknown package)" : 
+                CeylonLabelProvider.getLabel(node.getUnit().getPackage());
         //TODO: this winds up caching error decorations,
         //      so it's not really very good
         decorations = getNodeDecorationAttributes(node);
         
         if (node instanceof Tree.Declaration) {
-            proxy = new CeylonHierarchyNode(((Tree.Declaration) node).getDeclarationModel());
+            proxy = new ModelProxy(((Tree.Declaration) node).getDeclarationModel());
         }
         
         if (node instanceof Tree.Declaration) {

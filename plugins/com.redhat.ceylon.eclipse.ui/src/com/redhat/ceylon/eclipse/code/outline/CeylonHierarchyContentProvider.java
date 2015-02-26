@@ -3,9 +3,8 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.getInterveningRefinements;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.getSignature;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isAbstraction;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyNode.getDeclarationInUnit;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonHierarchyNode.getTypeChecker;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
+import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -37,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.ModelProxy;
 
 public final class CeylonHierarchyContentProvider 
         implements ITreeContentProvider {
@@ -234,8 +234,9 @@ public final class CeylonHierarchyContentProvider
             
             Unit unit = declaration.getUnit();
             Module currentModule = unit.getPackage().getModule();
-            List<TypeChecker> tcs = getTypeChecker(project, 
-                    currentModule.getNameAsString());
+            List<TypeChecker> tcs = 
+                    ModelProxy.getTypeChecker(project, 
+                            currentModule.getNameAsString());
             Set<Module> allModules = new HashSet<Module>();
             for (TypeChecker tc: tcs) {
                 ModuleManager moduleManager = 
@@ -435,14 +436,14 @@ public final class CeylonHierarchyContentProvider
         private Declaration replaceWithCurrentEditorDeclaration(IEditorPart part, 
                 Package p, Declaration d) {
             if (part instanceof CeylonEditor && part.isDirty()) {
-                CompilationUnit rootNode = ((CeylonEditor) part).getParseController()
-                        .getRootNode();
-                if (rootNode!=null && 
-                        rootNode.getUnit()!=null) {
-                    Unit un = rootNode.getUnit();
-                    if (un.getPackage().equals(p)) {
+                CompilationUnit rootNode = 
+                        ((CeylonEditor) part).getParseController()
+                                .getRootNode();
+                if (rootNode!=null) {
+                    Unit unit = rootNode.getUnit();
+                    if (unit!=null && unit.getPackage().equals(p)) {
                         Declaration result = 
-                                getDeclarationInUnit(d.getQualifiedNameString(), un);
+                                getDeclarationInUnit(d.getQualifiedNameString(), unit);
                         if (result!=null) {
                             return result;
                         }

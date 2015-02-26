@@ -3199,7 +3199,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static Collection<TypeChecker> getTypeCheckers() {
         return typeCheckers.values();
     }
-
+    
     public static void removeProject(IProject project) {
         typeCheckers.remove(project);
         projectFiles.remove(project);
