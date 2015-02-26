@@ -233,7 +233,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return null;
     }
 
-    private boolean isModule(IPackageFragment element) {
+    private static boolean isModule(IPackageFragment element) {
         IFolder folder = (IFolder) element.getResource();
         if (folder!=null &&
                 folder.getFile("module.ceylon").exists()) {
