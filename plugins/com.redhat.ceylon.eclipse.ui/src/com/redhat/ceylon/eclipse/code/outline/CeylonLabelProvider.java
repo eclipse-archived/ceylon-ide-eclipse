@@ -139,7 +139,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         this.smallSize = smallSize;
     }
     
-    protected static Image getDecoratedImage(Object element, 
+    private static Image getDecoratedImage(Object element, 
             String key, boolean smallSize) {
         if (key==null) return null;
         return getDecoratedImage(key, 
@@ -233,7 +233,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         return null;
     }
 
-    public boolean isModule(IPackageFragment element) {
+    private boolean isModule(IPackageFragment element) {
         IFolder folder = (IFolder) element.getResource();
         if (folder!=null &&
                 folder.getFile("module.ceylon").exists()) {
