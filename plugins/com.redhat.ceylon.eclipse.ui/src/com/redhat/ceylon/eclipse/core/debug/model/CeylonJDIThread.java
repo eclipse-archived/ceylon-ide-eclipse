@@ -2,8 +2,6 @@ package com.redhat.ceylon.eclipse.core.debug.model;
 
 import java.util.List;
 
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
@@ -11,8 +9,10 @@ import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 import org.eclipse.jdt.internal.debug.core.model.PatchedForCeylonJDIThread;
 
 import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
+import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 
 public class CeylonJDIThread extends PatchedForCeylonJDIThread {
@@ -100,34 +100,6 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
             protected boolean locationIsFiltered(Method method) {
                 return DebugUtils.isMethodFiltered(method);
             }
-            
-            @Override
-            protected boolean locationShouldBeFiltered(Location location) throws DebugException {
-                boolean shouldBeFiltered = super.locationShouldBeFiltered(location);
-                
-                if (DebugUtils.isMethodToStepThrough(location.method())) {
-                    steppingThroughLocation = location;
-                } else {
-                    if (!shouldBeFiltered) {
-                        steppingThroughLocation = null;
-                    }
-                }
-                return shouldBeFiltered;
-            }
-            
-            @Override
-            protected void createSecondaryStepRequest() throws DebugException {
-                if (steppingThroughLocation != null) {
-                    ISchedulingRule rule = getThreadRule();
-                    try {
-                        Job.getJobManager().beginRule(rule, null);
-                        setOriginalStepStackDepth(getUnderlyingFrameCount());
-                    } finally {
-                        Job.getJobManager().endRule(rule);
-                    }
-                }
-                super.createSecondaryStepRequest();
-            }
         };
         
     }
@@ -138,12 +110,6 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
             @Override
             protected boolean locationIsFiltered(Method method) {
                 return DebugUtils.isMethodFiltered(method);
-            }
-
-            @Override
-            protected boolean locationShouldBeFiltered(Location location) throws DebugException {
-                boolean shouldBeFiltered = super.locationShouldBeFiltered(location);
-                return shouldBeFiltered;
             }
         };
     }
@@ -160,16 +126,18 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
     
     
     protected boolean shouldDoStepReturn() throws DebugException {
-        return super.shouldDoStepReturn();
-    }
-
-    protected void setOriginalStepLocation(Location location) {
-        super.setOriginalStepLocation(location);
-    }
-
-    protected boolean shouldDoExtraStepInto(Location location)
-            throws DebugException {
-        final boolean shouldDoExtraStepInto = super.shouldDoExtraStepInto(location);
-        return shouldDoExtraStepInto;
+        boolean shouldDoStepReturn = super.shouldDoStepReturn();
+        if (shouldDoStepReturn) {
+            try {
+                StackFrame previousFrame = getUnderlyingThread().frame(1);
+                if (DebugUtils.isMethodToStepThrough(previousFrame.location().method())) {
+                    return false;
+                }
+            } catch (IncompatibleThreadStateException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+        return false;
     }
 }
