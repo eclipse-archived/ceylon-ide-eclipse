@@ -1014,7 +1014,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         String name = d.getName();
         return name!=null && 
                 !d.isAnonymous() && 
-                !isOverloadedVersion(d);
+                (d.isToplevel() || !isOverloadedVersion(d));
     }
     
     @Override
