@@ -73,6 +73,7 @@ import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -593,6 +594,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             String projectName = element.getString("projectName");
             
             for (IProject project: getProjects()) {
+                
                 if (projectName!=null && 
                         project.getName().equals(projectName)) {
                     //search for a source file in the project
@@ -614,7 +616,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                             }
                         }
                     }
-                    //if we don't find it, search all dependent modules
+                }
+                else {
+                    //for archives, search all dependent modules
                     //this will find declarations in src archives
                     Modules modules = getProjectTypeChecker(project)
                             .getContext().getModules();
@@ -636,6 +640,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     }
                 }
             }
+            
             return null; 
         }
         
@@ -970,10 +975,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (module instanceof JDTModule) {
             JDTModule m = (JDTModule) module;
             if (m.isProjectModule()) {
-                ProjectSourceFile sourceFile = 
-                        (ProjectSourceFile) declaration.getUnit();
-                return sourceFile.getProjectResource().getFullPath().toPortableString() +
-                        '/' + sourceFile.getSourceFullPath();
+                IResourceAware sourceFile = 
+                        (IResourceAware) declaration.getUnit();
+                return sourceFile.getFileResource()
+                        .getFullPath().toPortableString();
             }
             String displayString = m.getRepositoryDisplayString();
             File repository = 

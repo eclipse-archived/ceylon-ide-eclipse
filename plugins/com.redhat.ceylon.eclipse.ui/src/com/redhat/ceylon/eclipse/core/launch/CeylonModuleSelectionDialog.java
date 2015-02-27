@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFolders;
 import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
 
 import java.util.Comparator;
@@ -23,7 +24,6 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.open.FilteredItemsSelectionDialog;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -134,7 +134,7 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
                     if (!module.isDefaultModule()) {
                         IJavaProject project = module.getModuleManager().getJavaProject();
                         ProjectSourceFile unit = (ProjectSourceFile) module.getUnit();
-                        for (IFolder folder: CeylonBuilder.getSourceFolders(project.getProject())) {
+                        for (IFolder folder: getSourceFolders(project.getProject())) {
                             if (folder.findMember(unit.getRelativePath())!=null) {
                                 return folder.getFullPath().toPortableString();
                             }
