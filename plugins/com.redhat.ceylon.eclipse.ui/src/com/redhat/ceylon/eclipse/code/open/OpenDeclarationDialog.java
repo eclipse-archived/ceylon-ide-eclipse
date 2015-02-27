@@ -745,11 +745,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         Set<String> searchedArchives = new HashSet<String>();
         Collection<IProject> projects = getProjects();
         for (IProject project: projects) {
-            TypeChecker typeChecker = 
-                    getProjectTypeChecker(project);
-            List<PhasedUnit> units = 
-                    typeChecker.getPhasedUnits().getPhasedUnits();
-            fill(contentProvider, itemsFilter, project, units);
+            TypeChecker typeChecker = getProjectTypeChecker(project);
+            fill(contentProvider, itemsFilter, 
+                    typeChecker.getPhasedUnits().getPhasedUnits());
             monitor.worked(1);
             if (monitor.isCanceled()) break;
             Modules modules = typeChecker.getContext().getModules();
@@ -758,7 +756,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     JDTModule module = (JDTModule) m;
                     if ((!excludeJDK || !module.isJDKModule()) &&
                             searchedArchives.add(uniqueIdentifier(module))) {
-                        fill(contentProvider, itemsFilter, project, module);
+                        fill(contentProvider, itemsFilter, module, monitor);
                         monitor.worked(1);
                         if (monitor.isCanceled()) break;
                     }
@@ -769,21 +767,23 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private void fill(AbstractContentProvider contentProvider,
-            ItemsFilter itemsFilter, IProject project, 
-            JDTModule module) {
+            ItemsFilter itemsFilter, JDTModule module, 
+            IProgressMonitor monitor) {
         for (Package pack: new ArrayList<Package>(module.getPackages())) {
             if (!isFiltered(pack)) {
                 for (Declaration dec: pack.getMembers()) {
                     fillDeclarationAndMembers(contentProvider, 
-                            itemsFilter, project, module, dec);
+                            itemsFilter, module, dec);
                 }
             }
+            monitor.worked(1);
+            if (monitor.isCanceled()) break;
         }
     }
 
     private void fillDeclarationAndMembers(
             AbstractContentProvider contentProvider, 
-            ItemsFilter itemsFilter, IProject project, 
+            ItemsFilter itemsFilter,
             JDTModule module, Declaration dec) {
         if (includeDeclaration(module, dec) &&
                 //watch out for dupes!
@@ -796,7 +796,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     for (Declaration member: 
                             new ArrayList<Declaration>(dec.getMembers())) {
                         fillDeclarationAndMembers(contentProvider, 
-                                itemsFilter, project, module, member);
+                                itemsFilter, module, member);
                     }
                 }
                 catch (Exception e) {
@@ -807,7 +807,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
     
     private void fill(AbstractContentProvider contentProvider,
-            ItemsFilter itemsFilter, IProject project, 
+            ItemsFilter itemsFilter, 
             List<? extends PhasedUnit> units) {
         for (PhasedUnit unit: units) {
             JDTModule jdtModule = 
@@ -916,8 +916,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             for (Module m: modules.getListOfModules()) {
                 if (m instanceof JDTModule) {
                     JDTModule module = (JDTModule) m;
-                    if (searchedArchives.add(uniqueIdentifier(module))) {
-                        work++;
+                    if ((!excludeJDK || !module.isJDKModule()) &&
+                            searchedArchives.add(uniqueIdentifier(module))) {
+                        work += 1 + m.getPackages().size();
                     }
                 }
             }
