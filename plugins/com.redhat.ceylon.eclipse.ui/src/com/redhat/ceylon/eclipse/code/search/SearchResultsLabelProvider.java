@@ -13,7 +13,6 @@ import static org.eclipse.jdt.core.Signature.getSignatureSimpleName;
 import static org.eclipse.jdt.internal.core.util.Util.concatWith;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
@@ -124,15 +123,12 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
     
     private StyledString getStyledLabelForSearchResult(CeylonElement ce) {
         StyledString styledString = new StyledString();
-        IFile file = ce.getFile();
+        
         styledString.append(ce.getLabel());
         if (appendMatchPackage()) {
             styledString.append(" - " + ce.getPackageLabel(), PACKAGE_STYLER);
             if (appendSourceLocation()) {
-                String path = file==null ? 
-                        ce.getVirtualFile().getPath() : 
-                        file.getFullPath().toString();
-                styledString.append(" - " + path, COUNTER_STYLER);
+                styledString.append(" - " + ce.getPathString(), COUNTER_STYLER);
             }
         }
         return styledString;

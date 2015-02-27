@@ -22,6 +22,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -32,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -65,6 +65,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
@@ -73,6 +74,7 @@ import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
@@ -229,10 +231,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public boolean matchItem(Object item) {
-            DeclarationWithProject dwp = 
-                    (DeclarationWithProject) item;
-            Declaration declaration = 
-                    dwp.getDeclaration();
+            Declaration declaration = (Declaration) item;
             Module module = declaration.getUnit().getPackage().getModule();
             if (filterJDK && 
                     module instanceof JDTModule &&
@@ -332,22 +331,20 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public String decorateText(String text, Object element) {
-            if (element instanceof DeclarationWithProject) {
-                DeclarationWithProject dwp = 
-                        (DeclarationWithProject) element;
-                Declaration d = dwp.getDeclaration();
+            if (element instanceof Declaration) {
+                Declaration dec = (Declaration) element;
                 try {
-                    if (!nameOccursMultipleTimes(d)) {
+                    if (!nameOccursMultipleTimes(dec)) {
                         if (showSelectionPackage) {
-                            text += " - " + getPackageLabel(d);
+                            text += " - " + getPackageLabel(dec);
                         }
                         if (showSelectionModule) {
-                            text += " - " + getModule(dwp);
+                            text += " - " + getModule(dec);
                         }
                     }
                 }
                 catch (Exception e) {
-                    System.err.println(d.getName());
+                    System.err.println(dec.getName());
                     e.printStackTrace();
                 }
             }
@@ -377,10 +374,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public String getText(Object element) {
-            if (element instanceof DeclarationWithProject) {
-                DeclarationWithProject dwp = 
-                        (DeclarationWithProject) element;
-                Declaration d = dwp.getDeclaration();
+            if (element instanceof Declaration) {
+                Declaration d = (Declaration) element;
                 try {
                     return getPackageLabel(d) /*+ " - " + getLocation(dwp)*/;
                 }
@@ -400,7 +395,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public Image getImage(Object element) {
-            if (element instanceof DeclarationWithProject) {
+            if (element instanceof Declaration) {
                 return CeylonResources.PACKAGE;
             }
             else {
@@ -426,10 +421,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public String getText(Object element) {
-            if (element instanceof DeclarationWithProject) {
-                DeclarationWithProject dwp = 
-                        (DeclarationWithProject) element;
-                Declaration d = dwp.getDeclaration();
+            if (element instanceof Declaration) {
+                Declaration d = (Declaration) element;
                 try {
                     return getModuleLabel(d)/* + " - " + getLocation(dwp)*/;
                 }
@@ -449,7 +442,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public Image getImage(Object element) {
-            if (element instanceof DeclarationWithProject) {
+            if (element instanceof Declaration) {
                 return CeylonResources.MODULE;
             }
             else {
@@ -475,15 +468,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public String getText(Object element) {
-            if (element instanceof DeclarationWithProject) {
-                DeclarationWithProject dwp = 
-                        (DeclarationWithProject) element;
+            if (element instanceof Declaration) {
+                Declaration dec = (Declaration) element;
                 try {
-                    return getLocation(dwp);
+                    return getLocation(dec);
                 }
                 catch (Exception e) {
-                    Declaration d = dwp.getDeclaration();
-                    System.err.println(d.getName());
+                    System.err.println(dec.getName());
                     e.printStackTrace();
                     return "";
                 }
@@ -498,10 +489,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public Image getImage(Object element) {
-            if (element instanceof DeclarationWithProject) {
-                DeclarationWithProject dwp = 
-                        (DeclarationWithProject) element;
-                return getLocationImage(dwp);
+            if (element instanceof Declaration) {
+                Declaration dec = 
+                        (Declaration) element;
+                return getLocationImage(dec);
             }
             else {
                 return null;
@@ -524,15 +515,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public Image getImage(Object element) {
-            if (element instanceof DeclarationWithProject) {
-                DeclarationWithProject dwp = 
-                        (DeclarationWithProject) element;
-                Declaration d = dwp.getDeclaration();
+            if (element instanceof Declaration) {
+                Declaration dec = (Declaration) element;
                 try {
-                    return getImageForDeclaration(d);
+                    return getImageForDeclaration(dec);
                 }
                 catch (Exception e) {
-                    System.err.println(d.getName());
+                    System.err.println(dec.getName());
                     e.printStackTrace();
                     return null;
                 }
@@ -549,30 +538,28 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public StyledString getStyledText(Object element) {
-            if (element instanceof DeclarationWithProject) {
-                DeclarationWithProject dwp = 
-                        (DeclarationWithProject) element;
-                Declaration d = dwp.getDeclaration();
+            if (element instanceof Declaration) {
+                Declaration dec = (Declaration) element;
                 try {
                     IPreferenceStore prefs = EditorUtil.getPreferences();
                     StyledString label = 
-                            getQualifiedDescriptionFor(d,
+                            getQualifiedDescriptionFor(dec,
                                     prefs.getBoolean(TYPE_PARAMS_IN_DIALOGS),
                                     prefs.getBoolean(PARAMS_IN_DIALOGS),
                                     prefs.getBoolean(PARAM_TYPES_IN_DIALOGS),
                                     prefs.getBoolean(RETURN_TYPES_IN_DIALOGS));
-                    if (nameOccursMultipleTimes(d)) {
+                    if (nameOccursMultipleTimes(dec)) {
                         label.append(" - ", PACKAGE_STYLER)
-                             .append(getPackageLabel(d), PACKAGE_STYLER)
+                             .append(getPackageLabel(dec), PACKAGE_STYLER)
                              .append(" - ", COUNTER_STYLER)
-                             .append(getModule(dwp), COUNTER_STYLER);
+                             .append(getModule(dec), COUNTER_STYLER);
                     }
                     return label;
                 }
                 catch (Exception e) {
-                    System.err.println(d.getName());
+                    System.err.println(dec.getName());
                     e.printStackTrace();
-                    return new StyledString(d.getName());
+                    return new StyledString(dec.getName());
                 }
             }
             else {
@@ -583,7 +570,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public void update(ViewerCell cell) {
             Object element = cell.getElement();
-            if (element instanceof DeclarationWithProject) {
+            if (element instanceof Declaration) {
                 StyledString styledText = getStyledText(element);
                 cell.setText(styledText.toString());
                 cell.setStyleRanges(styledText.getStyleRanges());
@@ -598,16 +585,16 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private class TypeSelectionHistory extends SelectionHistory {
+        
         protected Object restoreItemFromMemento(IMemento element) {
             String qualifiedName = element.getString("qualifiedName");
             String unitFileName = element.getString("unitFileName");
             String packageName = element.getString("packageName");
             String projectName = element.getString("projectName");
-            String version = element.getString("version");
-            String path = element.getString("path");
             
             for (IProject project: getProjects()) {
-                if (projectName==null || project.getName().equals(projectName)) {
+                if (projectName!=null && 
+                        project.getName().equals(projectName)) {
                     //search for a source file in the project
                     for (PhasedUnit unit: getUnits(project)) {
                         String filename = unit.getUnit().getFilename();
@@ -618,9 +605,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                                 try {
                                     if (isPresentable(dec) && 
                                             qualifiedName.equals(dec.getQualifiedNameString())) {
-                                        return isFiltered(dec) ? null :
-                                            new DeclarationWithProject(dec, 
-                                                    project, version, path);
+                                        return isFiltered(dec) ? null : dec;
                                     }
                                 }
                                 catch (Exception e) {
@@ -641,9 +626,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                                     for (Declaration dec: pkg.getMembers()) {
                                         if (isPresentable(dec) && 
                                                 qualifiedName.equals(dec.getQualifiedNameString())) {
-                                            return isFiltered(dec) ? null :
-                                                new DeclarationWithProject(dec, 
-                                                        project, version, path);
+                                            return isFiltered(dec) ? null : dec;
                                         }
                                         //TODO: members!
                                     }
@@ -655,21 +638,24 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             }
             return null; 
         }
+        
         protected void storeItemToMemento(Object item, IMemento element) {
-            DeclarationWithProject dwp = (DeclarationWithProject) item;
-            Declaration dec = dwp.getDeclaration();
+            Declaration dec = (Declaration) item;
+            Unit unit = dec.getUnit();
             element.putString("qualifiedName", 
                     dec.getQualifiedNameString());
             element.putString("unitFileName", 
-                    dec.getUnit().getFilename());
+                    unit.getFilename());
             element.putString("packageName", 
-                    dec.getUnit().getPackage().getQualifiedNameString());
-            IProject project = dwp.getProject();
-            element.putString("projectName", 
-                    project==null ? null : project.getName());
-            element.putString("path", dwp.getPath());
-            element.putString("version", dwp.getVersion());
+                    unit.getPackage().getQualifiedNameString());
+            if (unit instanceof ProjectSourceFile) {
+                ProjectSourceFile projectSourceFile = 
+                        (ProjectSourceFile) unit;
+                element.putString("projectName", 
+                        projectSourceFile.getProjectResource().getName());
+            }
         }
+        
      }
     
     public OpenDeclarationDialog(boolean multi, boolean history, 
@@ -710,29 +696,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         return new Comparator<Object>() {
             @Override
             public int compare(Object o1, Object o2) {
-                DeclarationWithProject dwp1 = 
-                        (DeclarationWithProject) o1;
-                DeclarationWithProject dwp2 = 
-                        (DeclarationWithProject) o2;
-                int dc = compareDeclarations(
-                        dwp1.getDeclaration(), 
-                        dwp2.getDeclaration());
-                if (dc!=0) {
-                    return dc;
-                }
-                else if (dwp1.getProject()==dwp2.getProject()) {
-                    return 0;
-                }
-                else if (dwp1.getProject()==null) {
-                    return 1;
-                }
-                else if (dwp2.getProject()==null) {
-                    return -1;
-                }
-                else {
-                    return dwp1.getProject().getName()
-                            .compareTo(dwp2.getProject().getName());
-                }
+                return compareDeclarations((Declaration) o1, 
+                        (Declaration) o2);
             }
             private int compareDeclarations(Declaration dec1, 
                     Declaration dec2) {
@@ -821,11 +786,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 //watch out for dupes!
                 (!module.isProjectModule() || 
                  !dec.getUnit().getFilename().endsWith("ceylon"))) {
-            //TODO: figure out the path!
-            DeclarationWithProject dwp = 
-                    new DeclarationWithProject(dec, project, 
-                            module.getVersion(), null);
-            contentProvider.add(dwp, itemsFilter);
+            contentProvider.add(dec, itemsFilter);
             nameOccurs(dec);
             if (includeMembers && dec instanceof ClassOrInterface) {
                 try {
@@ -850,12 +811,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     (JDTModule) unit.getPackage().getModule();
             for (Declaration dec: unit.getDeclarations()) {
                 if (includeDeclaration(jdtModule, dec)) {
-                    String version = jdtModule.getVersion();
-                    String path = unit.getUnitFile().getPath();
-                    DeclarationWithProject dwp = 
-                            new DeclarationWithProject(dec, 
-                                    project, version, path);
-                    contentProvider.add(dwp, itemsFilter);
+                    contentProvider.add(dec, itemsFilter);
                     nameOccurs(dec);
                 }
             }
@@ -974,8 +930,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         return true;
     }
     
-    private static String getModule(DeclarationWithProject dwp) {
-        Module module = dwp.getDeclaration().getUnit()
+    private static String getModule(Declaration dec) {
+        Module module = dec.getUnit()
                 .getPackage().getModule();
         StringBuilder sb = new StringBuilder();
         sb.append(module.getNameAsString());
@@ -987,19 +943,18 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         return sb.toString();
     }
     
-    private static Image getLocationImage(DeclarationWithProject dwp) {
-        Module module = dwp.getDeclaration().getUnit()
-                .getPackage().getModule();
+    private static Image getLocationImage(Declaration dwp) {
+        Module module = dwp.getUnit().getPackage().getModule();
         if (module instanceof JDTModule) {
             JDTModule m = (JDTModule) module;
             if (m.isProjectModule()) {
-                IProject project = dwp.getProject();
-                if (project.isOpen()) {
+//                IProject project = dwp.getProject();
+//                if (project.isOpen()) {
                     return CeylonResources.FILE;
-                }
-                else {
-                    return CeylonResources.PROJECT;
-                }
+//                }
+//                else {
+//                    return CeylonResources.PROJECT;
+//                }
             }
             else {
                 return CeylonResources.REPO;
@@ -1010,54 +965,23 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
-    private static String getLocation(DeclarationWithProject dwp) {
-        Module module = dwp.getDeclaration().getUnit()
-                .getPackage().getModule();
+    private static String getLocation(Declaration declaration) {
+        Module module = declaration.getUnit().getPackage().getModule();
         if (module instanceof JDTModule) {
             JDTModule m = (JDTModule) module;
             if (m.isProjectModule()) {
-                IProject project = dwp.getProject();
-                if (project.isOpen()) {
-                    IResource r = project.findMember(dwp.getPath());
-                    if (r!=null) {
-                        return r.getFullPath().toPortableString();
-                    }
-                }
-                //if the project is closed or for some other reason
-                //findMember() returns null, just abbreviate to the 
-                //project path
-                return dwp.getProject().getFullPath().toPortableString();
+                ProjectSourceFile sourceFile = 
+                        (ProjectSourceFile) declaration.getUnit();
+                return sourceFile.getProjectResource().getFullPath().toPortableString() +
+                        '/' + sourceFile.getSourceFullPath();
             }
             String displayString = m.getRepositoryDisplayString();
-            if (CeylonPlugin.getInstance().getCeylonRepository().getPath().equals(displayString)) {
+            File repository = 
+                    CeylonPlugin.getInstance().getCeylonRepository();
+            if (repository.getPath().equals(displayString)) {
                 displayString = "IDE System Modules";
             }
             return displayString;
-            /*if (m.isProjectModule()) {
-                IProject project = dwp.getProject();
-                IResource r = project.isOpen() ?
-                        project.findMember(dwp.getPath()) : null;
-                        //if the project is closed or for some other reason
-                        //findMember() returns null, just abbreviate to the 
-                        //project path
-                        if (r==null) r=project;
-                        return r.getFullPath().toPortableString();
-
-            }
-            else if (m.isJDKModule()) {
-                return "Java SDK";
-            }
-            else {
-                String path = m.getSourceArchivePath();
-                if (path==null) {
-                    path = m.getArtifact().getPath();
-                }
-                File repo = CeylonPlugin.getInstance().getCeylonRepository();
-                if (path.indexOf(repo.getPath())>=0) {
-                    return "Ceylon IDE system repository";
-                }
-                return path;
-            }*/
         }
         else {
             return null;
@@ -1094,8 +1018,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     @Override
     public String getElementName(Object item) {
-        return ((DeclarationWithProject) item).getDeclaration()
-                .getQualifiedNameString();
+        return ((Declaration) item).getQualifiedNameString();
     }
     
     @Override
@@ -1147,9 +1070,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         try {
             if (selection!=null &&
                     selection.length==1 &&
-                    selection[0] instanceof DeclarationWithProject) {
-                Declaration declaration = 
-                        ((DeclarationWithProject) selection[0]).getDeclaration();
+                    selection[0] instanceof Declaration) {
+                Declaration declaration = (Declaration) selection[0];
                 browser.setText(getDocumentationFor(null, declaration));
             }
             else {

@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
@@ -47,8 +48,7 @@ public class OpenDeclarationAction extends Action {
         Object[] types = dialog.getResult();
         if (types != null) { 
             for (int i=0; i<types.length; i++) {
-                DeclarationWithProject dwp = (DeclarationWithProject) types[i];
-                gotoDeclaration(dwp.getDeclaration());
+                gotoDeclaration((Declaration) types[i]);
             }
         }
     }

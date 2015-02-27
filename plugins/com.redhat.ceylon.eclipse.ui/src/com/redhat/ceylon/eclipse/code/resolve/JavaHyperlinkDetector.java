@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.getJavaElement;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
@@ -19,7 +20,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -153,33 +153,5 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                 }
             }
         }
-    }
-    
-    public static void gotoJavaNode(Declaration declaration) {
-        try {
-            IJavaElement element = getJavaElement(declaration);
-            if (element!=null) {
-                IEditorPart part = openInEditor(element, true);
-                if (part!=null) {
-                    revealInEditor(part, element);
-                }
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static IJavaElement getJavaElement(Declaration declaration)
-            throws JavaModelException {
-        if (declaration instanceof Method && declaration.isAnnotation()) {
-            declaration = ((Method) declaration).getTypeDeclaration();
-        }
-        if (declaration.getUnit() instanceof IJavaModelAware) {
-            final IJavaModelAware javaModelAware = 
-                    (IJavaModelAware) declaration.getUnit();
-            return javaModelAware.toJavaElement(declaration);
-        }
-        return null;
     }
 }

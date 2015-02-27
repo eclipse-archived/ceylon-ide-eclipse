@@ -53,7 +53,7 @@ public class NavigateMenuItems extends CompoundContributionItem {
     }
 
     private IContributionItem[] getItems(IEditorPart editor) {
-        boolean enabled= TextEditorPlugin.getDefault().getLastEditPosition() != null;
+        boolean lastEditEnabled = TextEditorPlugin.getDefault().getLastEditPosition() != null;
         IContributionItem[] items = new SelectedDeclarationMenuItems().getContributionItems();
         return new IContributionItem[] {
                 items[0], items[1], items[2], items[3], items[4], items[5], items[6],
@@ -64,7 +64,7 @@ public class NavigateMenuItems extends CompoundContributionItem {
                         "Pre&vious Annotation", true, PREV),
                 new Separator(),
                 new DynamicMenuItem("org.eclipse.ui.edit.text.gotoLastEditPosition", 
-                        "Last Edit Lo&cation", enabled, EDIT),
+                        "Last Edit Lo&cation", lastEditEnabled, EDIT),
                 new DynamicMenuItem("org.eclipse.ui.edit.text.goto.line", 
                         "&Go to Line...", true),
                 new DynamicMenuItem(CeylonPlugin.PLUGIN_ID + ".editor.gotoMatchingFence", 

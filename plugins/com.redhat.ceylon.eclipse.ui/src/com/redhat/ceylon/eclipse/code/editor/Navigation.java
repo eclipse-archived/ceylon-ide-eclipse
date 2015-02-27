@@ -1,12 +1,11 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
-import static org.eclipse.jdt.core.JavaCore.isJavaLikeFileName;
+import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
 
@@ -21,6 +20,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -32,6 +33,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -39,7 +41,9 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
+import com.redhat.ceylon.eclipse.core.model.JavaUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -47,21 +51,7 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 
 
 public class Navigation {
-            
-//    public static void gotoDeclaration(Referenceable model, 
-//          CeylonEditor editor) {
-//      if (model!=null) {
-//          Node refNode = getReferencedNode(model, 
-//                  editor.getParseController());
-//          if (refNode!=null) {
-//              gotoNode(refNode);
-//          }
-//          else if (model instanceof Declaration) {
-//              gotoJavaNode((Declaration) model);
-//          }
-//      }
-//    }
-//
+    
     public static void gotoDeclaration(Referenceable model) {
         if (model!=null) {
             Unit unit = model.getUnit();
@@ -73,17 +63,18 @@ public class Navigation {
                     gotoNode(node);
                 }
                 else if (ceylonUnit instanceof CeylonBinaryUnit) {
+                    //special case for Java source in ceylon.language!
                     CeylonBinaryUnit binaryUnit = 
                             (CeylonBinaryUnit) ceylonUnit;
                     String path = binaryUnit.getSourceRelativePath();
-                    if (isJavaLikeFileName(path)) {
+                    if (JavaCore.isJavaLikeFileName(path)) {
                         if (model instanceof Declaration) {
                             gotoJavaNode((Declaration) model);
                         }
                     }
                 }
             }
-            else if (model instanceof Declaration) {
+            else if (unit instanceof JavaUnit) {
                 gotoJavaNode((Declaration) model);
             }
         }
@@ -331,6 +322,34 @@ public class Navigation {
                 }
             }
         }
+    }
+
+    public static void gotoJavaNode(Declaration declaration) {
+        try {
+            IJavaElement element = getJavaElement(declaration);
+            if (element!=null) {
+                IEditorPart part = openInEditor(element, true);
+                if (part!=null) {
+                    revealInEditor(part, element);
+                }
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static IJavaElement getJavaElement(Declaration declaration)
+            throws JavaModelException {
+        if (declaration instanceof Method && declaration.isAnnotation()) {
+            declaration = ((Method) declaration).getTypeDeclaration();
+        }
+        if (declaration.getUnit() instanceof IJavaModelAware) {
+            final IJavaModelAware javaModelAware = 
+                    (IJavaModelAware) declaration.getUnit();
+            return javaModelAware.toJavaElement(declaration);
+        }
+        return null;
     }
 
 }

@@ -3,12 +3,11 @@ package com.redhat.ceylon.eclipse.code.outline;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IProject;
-
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 
-class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
+class CeylonHierarchyNode 
+        implements Comparable<CeylonHierarchyNode> {
     
     private final ModelProxy proxy;
     
@@ -23,8 +22,8 @@ class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
         proxy = new ModelProxy(declaration);
     }
     
-    public Declaration getDeclaration(IProject project) {
-        return proxy.getDeclaration(project);
+    public Declaration getDeclaration() {
+        return proxy.getDeclaration();
     }
 
     boolean isNonUnique() {
@@ -80,7 +79,8 @@ class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
 
     @Override
     public int compareTo(CeylonHierarchyNode node) {
-        if (node.proxy.getQualifiedName().equals(proxy.getQualifiedName())) {
+        if (node.proxy.getQualifiedName()
+                .equals(proxy.getQualifiedName())) {
             return 0;
         }
         else {
@@ -89,30 +89,10 @@ class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
                 return ct;
             }
             else {
-                return proxy.getQualifiedName().compareTo(node.proxy.getQualifiedName());
+                return proxy.getQualifiedName()
+                        .compareTo(node.proxy.getQualifiedName());
             }
         }
     }
-
-//    //TODO: review this code with David:
-//    void gotoHierarchyDeclaration(IProject project,
-//            //optional:
-//            CeylonParseController controller) {
-//        Declaration dec = getDeclaration(project);
-//        if (dec!=null) {
-//            //TODO: this is broken for Java declarations
-//            Tree.CompilationUnit cu = 
-//                    getCompilationUnit(dec, controller);
-//            if (cu!=null) {
-//                Node refNode = getReferencedNodeInUnit(dec, cu);
-//                if (refNode!=null) {
-//                    gotoNode(refNode);
-//                }
-//            }
-//            else {
-//                gotoJavaNode(dec);
-//            }
-//        }
-//    }
     
 }

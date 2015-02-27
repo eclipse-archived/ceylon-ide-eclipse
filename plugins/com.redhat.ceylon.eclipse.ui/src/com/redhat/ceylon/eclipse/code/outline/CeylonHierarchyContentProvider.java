@@ -36,6 +36,8 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.core.model.IProjectAware;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 
 public final class CeylonHierarchyContentProvider 
@@ -64,15 +66,14 @@ public final class CeylonHierarchyContentProvider
         this.label = label;
     }
     
-    Declaration getDeclaration(IProject project) {
-        return subtypesRoot.getDeclaration(project);
+    Declaration getDeclaration() {
+        return subtypesRoot.getDeclaration();
     }
 
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         if (newInput!=null && newInput!=oldInput) {
-            HierarchyInput rootNode = (HierarchyInput) newInput;
-            Declaration declaration = rootNode.declaration;
+            Declaration declaration = ((ModelProxy) newInput).getDeclaration();
             if (declaration instanceof TypedDeclaration) { 
                 TypedDeclaration td = (TypedDeclaration) declaration;
                 if (td.getTypeDeclaration().isAnonymous()) {
@@ -97,12 +98,11 @@ public final class CeylonHierarchyContentProvider
                 }
                 try {
                     site.getWorkbenchWindow().run(true, true, 
-                            new Runnable(rootNode.project, declaration));
+                            new Runnable(declaration));
                 } 
                 catch (Exception e) {
                     e.printStackTrace();
                 }
-                rootNode.declaration=null;//don't hang onto hard ref
             }
         }
     }
@@ -139,7 +139,7 @@ public final class CeylonHierarchyContentProvider
 
     @Override
     public CeylonHierarchyNode[] getChildren(Object parentElement) {
-        if (parentElement instanceof HierarchyInput) {
+        if (parentElement instanceof ModelProxy) {
             switch (mode) {
             case HIERARCHY:
                 return new CeylonHierarchyNode[] { hierarchyRoot };                    
@@ -178,7 +178,6 @@ public final class CeylonHierarchyContentProvider
     
     private class Runnable implements IRunnableWithProgress {
         
-        private final IProject project;
         private final Declaration declaration;
                 
         private final Map<Declaration, CeylonHierarchyNode> subtypesOfSupertypes = 
@@ -220,8 +219,7 @@ public final class CeylonHierarchyContentProvider
             return n;
         }
         
-        public Runnable(IProject project, Declaration declaration) {
-            this.project = project;
+        public Runnable(Declaration declaration) {
             this.declaration = declaration;
         }
         
@@ -234,6 +232,13 @@ public final class CeylonHierarchyContentProvider
             
             Unit unit = declaration.getUnit();
             Module currentModule = unit.getPackage().getModule();
+            IProject project = null;
+            if (unit instanceof IResourceAware) {
+                project = ((IResourceAware) unit).getProjectResource();
+            }
+            else if (unit instanceof IProjectAware) {
+                project = ((IProjectAware) unit).getProject();
+            }
             List<TypeChecker> tcs = 
                     ModelProxy.getTypeChecker(currentModule, project);
             Set<Module> allModules = new HashSet<Module>();

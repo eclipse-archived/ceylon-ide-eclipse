@@ -31,9 +31,9 @@ public abstract class CeylonOpenTypeAction extends OpenTypeAction {
             if (isHierarchy()) {
                 Declaration declaration = 
                         toCeylonDeclaration(project, javaElement);
-                if (declaration != null) {
+                if (declaration!=null) {
                     try {
-                        showHierarchyView().focusOn(project, declaration);
+                        showHierarchyView().focusOn(declaration);
                         return;
                     }
                     catch (PartInitException e) {

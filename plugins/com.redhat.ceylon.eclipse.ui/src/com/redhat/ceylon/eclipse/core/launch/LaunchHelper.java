@@ -40,12 +40,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.eclipse.code.open.DeclarationWithProject;
 import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -396,33 +392,13 @@ public class LaunchHelper {
                     IProgressMonitor monitor)
                     throws CoreException {
                 for (int i=0; i<decls.size(); i++) {
-                    Declaration decl = decls.get(i);
-                    Unit unit = decl.getUnit();
-                    String path;
-                    IProject project;
-                    if (unit instanceof ProjectSourceFile) {
-                        ProjectSourceFile projectSourceFile = (ProjectSourceFile) unit;
-                        path = projectSourceFile.getSourceFullPath();
-                        project = projectSourceFile.getProjectResource();
-                    }
-                    else if (unit instanceof EditedSourceFile) {
-                        EditedSourceFile editedSourceFile = (EditedSourceFile) unit;
-                        path = editedSourceFile.getSourceFullPath();
-                        project = editedSourceFile.getProjectResource();
-                    }
-                    else {
-                        continue;
-                    }
-                    String version = decl.getUnit().getPackage().getModule().getVersion();
-                    DeclarationWithProject dwp = 
-                            new DeclarationWithProject(decl, project, version, path);
-                    contentProvider.add(dwp, itemsFilter);
+                    contentProvider.add(decls.get(i), itemsFilter);
                 }
             }
         };
 
         if (sd.open() == Window.OK) {
-            return ((DeclarationWithProject) sd.getFirstResult()).getDeclaration();
+            return (Declaration) sd.getFirstResult();
         }
         return null;
     }

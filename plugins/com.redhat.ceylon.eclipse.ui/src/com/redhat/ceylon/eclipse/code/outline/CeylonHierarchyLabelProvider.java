@@ -9,7 +9,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MULTIPLE_TYPES_IMAGE;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
@@ -68,19 +67,18 @@ abstract class CeylonHierarchyLabelProvider extends
         return "";
     }
     
-    abstract IProject getProject();
+//    abstract IProject getProject();
     abstract boolean isShowingRefinements();
 
-    Declaration getDisplayedDeclaration(CeylonHierarchyNode n) {
-        Declaration d = n.getDeclaration(getProject());
-        if (d!=null && 
+    Declaration getDisplayedDeclaration(CeylonHierarchyNode node) {
+        Declaration declaration = node.getDeclaration();
+        if (declaration!=null && 
                 isShowingRefinements() && 
-                d.isClassOrInterfaceMember()) {
-            d = (ClassOrInterface) d.getContainer();
+                declaration.isClassOrInterfaceMember()) {
+            declaration = (ClassOrInterface) declaration.getContainer();
         }
-        return d;
+        return declaration;
     }
-
     
     @Override
     public void update(ViewerCell cell) {

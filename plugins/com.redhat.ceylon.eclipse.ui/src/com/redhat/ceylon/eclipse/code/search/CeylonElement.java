@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 
@@ -35,8 +36,7 @@ public class CeylonElement {
     private int endOffset;
     private ModelProxy proxy;
     
-    public CeylonElement(Node node, 
-            VirtualFile file, int line) {
+    public CeylonElement(Node node, VirtualFile file, int line) {
         //the file and line number, which get 
         //displayed in the search results page
         this.file = file;
@@ -111,7 +111,7 @@ public class CeylonElement {
         else {
             IPreferenceStore prefs = EditorUtil.getPreferences();
             return getQualifiedDescriptionFor(
-                    proxy.getDeclaration(null), 
+                    proxy.getDeclaration(), 
                     prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
                     prefs.getBoolean(PARAMS_IN_OUTLINES),
                     prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
@@ -137,6 +137,18 @@ public class CeylonElement {
         }
         else {
             return null;
+        }
+    }
+    
+    //for no good reason that I can see, ResourceVirtualFiles
+    //return a project-relative path from getPath()
+    public String getPathString() {
+        if (file instanceof ResourceVirtualFile) {
+            return ((ResourceVirtualFile) file).getResource()
+                    .getFullPath().toPortableString();
+        }
+        else {
+            return file.getPath();
         }
     }
     

@@ -13,7 +13,8 @@ public abstract class CeylonUnit extends IdeUnit {
     
     protected WeakReference<IdePhasedUnit> phasedUnitRef;
     
-    final protected <PhasedUnitType extends IdePhasedUnit> PhasedUnitType createPhasedUnitRef(PhasedUnitType phasedUnit) {
+    final protected <PhasedUnitType extends IdePhasedUnit> 
+    PhasedUnitType createPhasedUnitRef(PhasedUnitType phasedUnit) {
         phasedUnitRef = new WeakReference<IdePhasedUnit>(phasedUnit);
         return phasedUnit;
     }

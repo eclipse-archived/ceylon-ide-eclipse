@@ -50,7 +50,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
-import com.redhat.ceylon.eclipse.code.open.DeclarationWithProject;
 import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -338,9 +337,7 @@ public abstract class FiltersPreferencePage
         if (dialog.open() == IDialogConstants.OK_ID) {
             Object[] types = dialog.getResult();
             for (int i=0; i<types.length; i++) {
-                DeclarationWithProject dwp = 
-                        (DeclarationWithProject) types[i];
-                Declaration dec = dwp.getDeclaration();
+                Declaration dec = (Declaration) types[i];
                 String string = 
                         dec.getQualifiedNameString() +
                         declarationType(dec);

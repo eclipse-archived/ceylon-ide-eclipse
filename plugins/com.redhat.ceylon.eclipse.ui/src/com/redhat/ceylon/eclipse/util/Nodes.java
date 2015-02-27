@@ -384,14 +384,19 @@ public class Nodes {
      * in all relevant compilation units.
      */
     public static Node getReferencedNode(Referenceable model) {
-        Unit unit = model.getUnit();
-        if (unit instanceof CeylonUnit) {
-            CeylonUnit ceylonUnit = (CeylonUnit) unit;
-            return getReferencedNodeInUnit(model, 
-                    ceylonUnit.getCompilationUnit());
+        if (model==null) {
+            return null;
         }
         else {
-            return null;
+            Unit unit = model.getUnit();
+            if (unit instanceof CeylonUnit) {
+                CeylonUnit ceylonUnit = (CeylonUnit) unit;
+                return getReferencedNodeInUnit(model, 
+                        ceylonUnit.getCompilationUnit());
+            }
+            else {
+                return null;
+            }
         }
     }
 
@@ -507,71 +512,10 @@ public class Nodes {
             FindReferencedNodeVisitor visitor = 
                     new FindReferencedNodeVisitor(model);
             rootNode.visit(visitor);
-            //System.out.println("referenced node: " + visitor.getDeclarationNode());
             return visitor.getDeclarationNode();
         }
     }
     
-//    /**
-//     * Get the CompilationUnit in which the given model is 
-//     * defined, searching in all relevant CompilationUnits.
-//     */
-//    public static Tree.CompilationUnit getCompilationUnit(Referenceable model,
-//            /**optional**/ CeylonParseController controller) {
-//        if (model==null) {
-//            return null;
-//        }
-//        else {
-//            Tree.CompilationUnit root = 
-//                    controller==null ? 
-//                            null : controller.getRootNode();            
-//            if (root!=null && root.getUnit()!=null && 
-//                    root.getUnit().equals(model.getUnit())) {
-//                return root;
-//            }
-//            else {
-//                Unit unit = model.getUnit();
-//                PhasedUnit pu = null; 
-//                if (unit instanceof ProjectSourceFile) {
-//                    pu = ((ProjectSourceFile) unit).getPhasedUnit();
-//                    // Here pu should never be null !
-//                }
-//                if (unit instanceof EditedSourceFile) {
-//                    pu = ((EditedSourceFile) unit).getPhasedUnit();
-//                    // Here pu should never be null !
-//                }
-//                
-//                if (unit instanceof ICrossProjectReference) {
-//                    ProjectPhasedUnit requiredProjectPhasedUnit = 
-//                            ((ICrossProjectReference) unit).getOriginalPhasedUnit();
-//                    if (requiredProjectPhasedUnit != null 
-//                            && requiredProjectPhasedUnit.isFullyTyped()) {
-//                        pu = requiredProjectPhasedUnit;
-//                    }
-//                    else {
-//                        System.err.println("ABNORMAL : cross reference with a null original PhasedUnit !");
-//                        pu = ((ICrossProjectReference) unit).getPhasedUnit();
-//                    }
-//                }
-//                
-//                if (pu == null && (unit instanceof ExternalSourceFile || 
-//                        unit instanceof CeylonBinaryUnit)) {
-//                    pu = ((CeylonUnit) unit).getPhasedUnit();
-//                }
-//                
-//                // TODO : When using binary ceylon archives, add a case here with
-//                //        unit instanceof CeylonBinaryUnit
-//                //        And perform the same sort of thing as for ExternalSourceFile :
-//                //           -> return the associated source PhasedUnit if any 
-//                
-//                if (pu!=null) {
-//                    return pu.getCompilationUnit();
-//                }
-//                return null;
-//            }
-//        }
-//    }
-
     public static String toString(Node term, List<CommonToken> tokens) {
         Integer start = term.getStartIndex();
         int length = term.getStopIndex()-start+1;

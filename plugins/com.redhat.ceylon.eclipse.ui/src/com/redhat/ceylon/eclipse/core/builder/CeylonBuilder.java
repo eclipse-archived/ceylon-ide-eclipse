@@ -511,13 +511,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return rootFolderType == RootFolderType.RESOURCE;
     }
 
-    public static JDTModelLoader getModelLoader(TypeChecker tc) {
-        return (JDTModelLoader) ((JDTModuleManager) tc.getPhasedUnits()
-                .getModuleManager()).getModelLoader();
+    public static JDTModelLoader getModelLoader(TypeChecker typeChecker) {
+        JDTModuleManager moduleManager = (JDTModuleManager) 
+                typeChecker.getPhasedUnits().getModuleManager();
+        return (JDTModelLoader) moduleManager.getModelLoader();
     }
 
     public static JDTModelLoader getProjectModelLoader(IProject project) {
-        TypeChecker typeChecker = getProjectTypeChecker(project);
+        TypeChecker typeChecker = 
+                getProjectTypeChecker(project);
         if (typeChecker == null) {
             return null;
         }
@@ -525,7 +527,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static JDTModuleManager getProjectModuleManager(IProject project) {
-        JDTModelLoader modelLoader = getProjectModelLoader(project);
+        JDTModelLoader modelLoader = 
+                getProjectModelLoader(project);
         if (modelLoader == null) {
             return null;
         }

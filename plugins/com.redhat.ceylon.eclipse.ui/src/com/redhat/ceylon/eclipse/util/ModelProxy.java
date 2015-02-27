@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.util;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static java.util.Collections.singletonList;
 
 import java.lang.ref.SoftReference;
@@ -20,6 +21,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.model.IProjectAware;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 
 public class ModelProxy {
@@ -30,6 +33,7 @@ public class ModelProxy {
     private final String moduleName;
     private final String moduleVersion;
     private final String name;
+    private final IProject project;
     
     private final SoftReference<Declaration> declaration;
     
@@ -44,18 +48,28 @@ public class ModelProxy {
         this.moduleName = pack.getModule().getNameAsString();
         this.moduleVersion = pack.getModule().getVersion();
         this.declaration = new SoftReference<Declaration>(declaration);
+        if (unit instanceof IResourceAware) {
+            project = ((IResourceAware) unit).getProjectResource();
+        }
+        else if (unit instanceof IProjectAware) {
+            project = ((IProjectAware) unit).getProject();
+        }
+        else {
+            project = null;
+        }
     }
     
-    public Declaration getDeclaration(IProject project) {
-        Declaration dec = this.declaration.get();
+    public Declaration getDeclaration() {
+        Declaration dec = declaration.get();
         if (dec!=null) return dec;
+        
         //first handle the case of new declarations 
         //defined in a dirty editor, and local declarations
         //in an external source file
-        IEditorPart part = EditorUtil.getCurrentEditor();
-        if (part instanceof CeylonEditor /*&& part.isDirty()*/) {
-            final CeylonParseController controller =
-                    ((CeylonEditor) part).getParseController();
+        IEditorPart editor = getCurrentEditor();
+        if (editor instanceof CeylonEditor /*&& part.isDirty()*/) {
+            CeylonParseController controller =
+                    ((CeylonEditor) editor).getParseController();
             Tree.CompilationUnit rootNode = controller.getRootNode();
             if (rootNode!=null) {
                 Unit unit = rootNode.getUnit();
@@ -71,6 +85,7 @@ public class ModelProxy {
                 }
             }
         }
+        
         TypeChecker typeChecker = 
                 getTypeChecker(moduleName, moduleVersion, project).get(0);
         Package pack = getModelLoader(typeChecker)
@@ -89,6 +104,7 @@ public class ModelProxy {
         //because the filenames are wrong for the iterated 
         //units (.class instead of .ceylon), nor for Java
         //modules, apparently
+        //TODO: David has a better way!
         for (Declaration d: pack.getMembers()) {
             String qn = d.getQualifiedNameString();
             if (qn.equals(qualifiedName)) {
@@ -102,6 +118,7 @@ public class ModelProxy {
                 }
             }
         }
+        
         return null;
     }
 
@@ -147,7 +164,7 @@ public class ModelProxy {
                 project);
     }
     
-    static List<TypeChecker> getTypeChecker(String moduleName, String moduleVersion, 
+    private static List<TypeChecker> getTypeChecker(String moduleName, String moduleVersion, 
             /*optional*/ IProject project) {
         if (project==null) {
             List<TypeChecker> tcs = new ArrayList<TypeChecker>();

@@ -11,6 +11,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+
 public class OpenDeclarationInHierarchyAction extends Action {
     
     private final IEditorPart editor;
@@ -40,12 +42,9 @@ public class OpenDeclarationInHierarchyAction extends Action {
         }
         dialog.open();
         Object[] types = dialog.getResult();
-        if (types != null && types.length > 0) {
-            DeclarationWithProject dwp = 
-                    (DeclarationWithProject) types[0];
+        if (types!=null && types.length>0) {
             try {
-                showHierarchyView().focusOn(dwp.getProject(), 
-                        dwp.getDeclaration());
+                showHierarchyView().focusOn((Declaration) types[0]);
             }
             catch (PartInitException e) {
                 e.printStackTrace();

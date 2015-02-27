@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -27,7 +26,6 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
     
     private IWorkbenchPartSite site;
     protected Declaration declaration;
-    protected IProject project;
     private ContentOutline outlineView;
     
     @Override
@@ -43,7 +41,6 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
                 if (currentEditor instanceof CeylonEditor) {
                     CeylonParseController parseController = 
                             ((CeylonEditor) currentEditor).getParseController();
-                    project = parseController.getProject();
                     Tree.CompilationUnit rootNode = 
                             parseController.getRootNode();
                     if (rootNode!=null) {
@@ -58,7 +55,6 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
                     }
                 }
             }
-            project=null;
             declaration=null;
             action.setEnabled(false);
         }
@@ -82,7 +78,7 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
     public void run() {
         if (isValidSelection()) {
             try {
-                showHierarchyView().focusOn(project, declaration);
+                showHierarchyView().focusOn(declaration);
             }
             catch (PartInitException e) {
                 e.printStackTrace();
