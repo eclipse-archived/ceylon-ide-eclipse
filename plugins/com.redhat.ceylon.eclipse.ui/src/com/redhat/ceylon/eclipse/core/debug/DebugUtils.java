@@ -61,9 +61,11 @@ import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
+import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
@@ -647,6 +649,10 @@ public class DebugUtils {
         ReferenceType declaringType = location.declaringType();
         final String methodName = method.name();
 
+        if (declaringType.name().startsWith(CEYLON_BASE_PACKAGE) && ! method.isConstructor()) {
+            return true;
+        }
+
         if (methodName.equals(Naming.Unfix.$evaluate$.name())) {
             if (declaringType instanceof ClassType) {
                 ClassType classType = (ClassType) declaringType;
@@ -681,6 +687,28 @@ public class DebugUtils {
         }
 
         if (methodName.startsWith(Naming.Prefix.$default$.name())) {
+            return true;
+        }
+
+        boolean isDefaultArgumentMethod = false;
+        String[] parts = methodName.split("\\$");
+        if (parts.length == 2) {
+            List<Method> methodsWithTheSameName = method.declaringType().methodsByName(parts[0]);
+            if (methodsWithTheSameName != null) {
+                for (Method m : methodsWithTheSameName) {
+                    try {
+                        for (LocalVariable arg : m.arguments()) {
+                            if (parts[1].equals(arg.name())) {
+                                isDefaultArgumentMethod = true;
+                            }
+                        }
+                    } catch (AbsentInformationException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        if (isDefaultArgumentMethod) {
             return true;
         }
 
@@ -742,11 +770,11 @@ public class DebugUtils {
             return true;
         }
 
-        if (declaringTypeName.startsWith(CEYLON_BASE_PACKAGE)) {
+        if (declaringTypeName.equals(ABSTRACT_CALLABLE)) {
             return true;
         }
 
-        if (declaringTypeName.equals(ABSTRACT_CALLABLE)) {
+        if (declaringType.name().startsWith(CEYLON_BASE_PACKAGE) && method.isConstructor()) {
             return true;
         }
 
