@@ -33,6 +33,7 @@ import java.util.Set;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -279,6 +280,7 @@ public abstract class FilteredItemsSelectionDialog extends
         this.listLabelText = listLabelText;
         filterHistoryJob = new FilterHistoryJob();
         filterJob = new FilterJob();
+        filterJob.setRule(ResourcesPlugin.getWorkspace().getRoot()); //don't run while we're compiling
         contentProvider = new ContentProvider();
         refreshCacheJob = new RefreshCacheJob();
         itemsListSeparator = new ItemsListSeparator("Workspace matches");
