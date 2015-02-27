@@ -1512,7 +1512,9 @@ public abstract class FilteredItemsSelectionDialog extends
         public IStatus runInUIThread(IProgressMonitor monitor) {
 
             if (!progressBar.isDisposed()) {
-                if (progressMonitor==null) {
+                if (progressMonitor==null || 
+                        progressMonitor.isDone() || 
+                        progressMonitor.isCanceled()) {
                     progressBar.setVisible(false);
                     ((GridData)progressBar.getLayoutData()).exclude = true;
                 }
@@ -1533,7 +1535,7 @@ public abstract class FilteredItemsSelectionDialog extends
             }
 
             // Schedule cyclical with 500 milliseconds delay
-            schedule(500);
+            schedule(100);
 
             return new Status(IStatus.OK, PlatformUI.PLUGIN_ID, IStatus.OK,
                     EMPTY_STRING, null);
