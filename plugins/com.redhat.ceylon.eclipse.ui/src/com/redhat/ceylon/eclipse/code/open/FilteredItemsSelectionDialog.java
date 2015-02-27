@@ -112,6 +112,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
@@ -211,7 +212,7 @@ public abstract class FilteredItemsSelectionDialog extends
     private ToolItem menuToolItem;
     private ToolItem toggleDocToolItem;
 
-    private Label progressLabel;
+    private ProgressBar progressBar;
 
     private ToggleStatusLineAction toggleStatusLineAction;
     private ToggleDocAreaAction toggleDocAction;
@@ -513,8 +514,11 @@ public abstract class FilteredItemsSelectionDialog extends
             }
         });        
 
-        progressLabel = new Label(labels, SWT.RIGHT);
-        progressLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        progressBar = new ProgressBar(labels, SWT.RIGHT | SWT.SMOOTH);
+        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+        gridData.exclude = true;
+        progressBar.setLayoutData(gridData);
+        progressBar.setVisible(false);
         
         return listLabel;
     }
@@ -692,9 +696,6 @@ public abstract class FilteredItemsSelectionDialog extends
             setDocAreaVisible(toggleDocAction==null ||
                     toggleDocAction.isChecked());            
         }
-        else {
-            setDocAreaVisible(false);
-        }
         
         createPopupMenu();
         
@@ -840,7 +841,7 @@ public abstract class FilteredItemsSelectionDialog extends
     }
 
     protected void createStatusArea(final Composite parent) {
-        statusArea = new ViewForm(parent, SWT.FLAT);
+        statusArea = new ViewForm(parent, /*SWT.BORDER |*/ SWT.FLAT);
         statusArea.setEnabled(false);
         statusArea.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
         final Composite content = new Composite(statusArea, SWT.NONE);
@@ -1510,10 +1511,20 @@ public abstract class FilteredItemsSelectionDialog extends
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
 
-            if (!progressLabel.isDisposed()) {
-                progressLabel.setText(progressMonitor != null ? progressMonitor
-                        .getMessage() : EMPTY_STRING);
-                progressLabel.getParent().layout();
+            if (!progressBar.isDisposed()) {
+                if (progressMonitor==null) {
+                    progressBar.setVisible(false);
+                    ((GridData)progressBar.getLayoutData()).exclude = true;
+                }
+                else {
+                    progressBar.setMaximum(progressMonitor.totalWork*100);
+                    progressBar.setSelection((int) (progressMonitor.worked*100));
+                    progressBar.setVisible(true);
+                    ((GridData)progressBar.getLayoutData()).exclude = false;
+                }
+//                progressLabel.setText(progressMonitor != null ? progressMonitor
+//                        .getMessage() : EMPTY_STRING);
+                progressBar.getParent().layout();
             }
 
             if (progressMonitor == null || progressMonitor.isDone()) {
