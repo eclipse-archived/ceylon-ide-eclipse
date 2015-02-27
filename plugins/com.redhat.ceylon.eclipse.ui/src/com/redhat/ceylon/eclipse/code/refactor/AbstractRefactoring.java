@@ -86,12 +86,13 @@ abstract class AbstractRefactoring extends Refactoring {
     boolean inSameProject(Declaration declaration) {
         Unit unit = declaration.getUnit();
         if (unit instanceof IResourceAware) {
-            IProject proj = ((IResourceAware) unit).getProjectResource();
-            if (proj==null) {
+            IProject project = 
+                    ((IResourceAware) unit).getProjectResource();
+            if (project==null) {
                 return false;
             }
             else {
-                return proj.equals(project);
+                return project.equals(project);
             }
         }
         return false;
