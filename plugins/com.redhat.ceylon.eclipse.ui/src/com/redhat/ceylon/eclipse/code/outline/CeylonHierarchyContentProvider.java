@@ -235,8 +235,7 @@ public final class CeylonHierarchyContentProvider
             Unit unit = declaration.getUnit();
             Module currentModule = unit.getPackage().getModule();
             List<TypeChecker> tcs = 
-                    ModelProxy.getTypeChecker(project, 
-                            currentModule.getNameAsString());
+                    ModelProxy.getTypeChecker(currentModule, project);
             Set<Module> allModules = new HashSet<Module>();
             for (TypeChecker tc: tcs) {
                 ModuleManager moduleManager = 

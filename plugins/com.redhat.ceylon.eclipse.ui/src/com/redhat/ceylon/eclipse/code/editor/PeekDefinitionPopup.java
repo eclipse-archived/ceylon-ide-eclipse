@@ -6,6 +6,8 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 
 import java.util.StringTokenizer;
 
@@ -56,7 +58,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class PeekDefinitionPopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,
@@ -73,7 +74,7 @@ final class PeekDefinitionPopup extends PopupDialog
             if (EditorUtil.triggersBinding(e, getCommandBinding())) {
                 e.doit=false;
                 dispose();
-                gotoNode(referencedNode, pc.getProject());
+                gotoNode(referencedNode);
             }
         }
     }
@@ -81,7 +82,8 @@ final class PeekDefinitionPopup extends PopupDialog
     private ISourceViewer viewer;
     private final CeylonEditor editor;
     private Node referencedNode;
-    private CeylonParseController pc = new CeylonParseController();
+    private CeylonParseController parseController = 
+            new CeylonParseController();
     
     public ISourceViewer getViewer() {
         return viewer;
@@ -306,14 +308,17 @@ final class PeekDefinitionPopup extends PopupDialog
     
     @Override
     public void setInput(Object input) {
-        CeylonParseController epc = editor.getParseController();
+        CeylonParseController controller = 
+                editor.getParseController();
         IRegion r = editor.getSelection();
-        Node node = Nodes.findNode(epc.getRootNode(), r.getOffset(), 
-                r.getOffset()+r.getLength());
-        referencedNode = Nodes.getReferencedNode(node, epc);
+        Node node = 
+                findNode(controller.getRootNode(), 
+                    r.getOffset(), 
+                    r.getOffset()+r.getLength());
+        referencedNode = getReferencedNode(node);
         if (referencedNode==null) return;
-        IProject project = epc.getProject();
-		IPath path = getNodePath(referencedNode, project);
+        IProject project = controller.getProject();
+		IPath path = getNodePath(referencedNode);
         //CeylonParseController treats files with full paths subtly
         //differently to files with relative paths, so make the
         //path relative
@@ -323,8 +328,8 @@ final class PeekDefinitionPopup extends PopupDialog
             pathToCompare = path.makeRelativeTo(project.getLocation());
         }
         IDocument doc;
-        if (pathToCompare.equals(epc.getPath())) {
-            doc = epc.getDocument();
+        if (pathToCompare.equals(controller.getPath())) {
+            doc = controller.getDocument();
         }
         else {
             ei = getEditorInput(referencedNode.getUnit());
@@ -350,8 +355,8 @@ final class PeekDefinitionPopup extends PopupDialog
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        pc.initialize(path, project, null);
-        pc.parse(doc, new NullProgressMonitor(), null);
+        parseController.initialize(path, project, null);
+        parseController.parse(doc, new NullProgressMonitor(), null);
         /*try {
             int lines = doc.getLineOfOffset(refDec.getStopIndex())-
                         doc.getLineOfOffset(refDec.getStartIndex())+1;
@@ -388,7 +393,7 @@ final class PeekDefinitionPopup extends PopupDialog
     }
 
     public CeylonParseController getParseController() {
-        return pc;
+        return parseController;
     }
 
     @Override

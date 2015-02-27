@@ -1,19 +1,11 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
-import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getCompilationUnit;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 
 class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
@@ -102,24 +94,25 @@ class CeylonHierarchyNode implements Comparable<CeylonHierarchyNode>{
         }
     }
 
-    //TODO: review this code with David:
-    void gotoHierarchyDeclaration(IProject project,
-            //optional:
-            CeylonParseController cpc) {
-        Declaration dec = getDeclaration(project);
-        if (dec!=null) {
-            //TODO: this is broken for Java declarations
-            Tree.CompilationUnit cu = getCompilationUnit(dec, cpc);
-            if (cu!=null) {
-                Node refNode = getReferencedNode(dec, cu);
-                if (refNode!=null) {
-                    gotoNode(refNode, project);
-                }
-            }
-            else {
-                gotoJavaNode(dec);
-            }
-        }
-    }
+//    //TODO: review this code with David:
+//    void gotoHierarchyDeclaration(IProject project,
+//            //optional:
+//            CeylonParseController controller) {
+//        Declaration dec = getDeclaration(project);
+//        if (dec!=null) {
+//            //TODO: this is broken for Java declarations
+//            Tree.CompilationUnit cu = 
+//                    getCompilationUnit(dec, controller);
+//            if (cu!=null) {
+//                Node refNode = getReferencedNodeInUnit(dec, cu);
+//                if (refNode!=null) {
+//                    gotoNode(refNode);
+//                }
+//            }
+//            else {
+//                gotoJavaNode(dec);
+//            }
+//        }
+//    }
     
 }

@@ -48,7 +48,7 @@ public class OpenDeclarationAction extends Action {
         if (types != null) { 
             for (int i=0; i<types.length; i++) {
                 DeclarationWithProject dwp = (DeclarationWithProject) types[i];
-                gotoDeclaration(dwp.getDeclaration(), dwp.getProject(), editor);
+                gotoDeclaration(dwp.getDeclaration());
             }
         }
     }

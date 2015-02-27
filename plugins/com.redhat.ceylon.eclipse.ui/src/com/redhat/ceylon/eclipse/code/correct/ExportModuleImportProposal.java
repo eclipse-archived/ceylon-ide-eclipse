@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 
 import java.util.Collection;
 import java.util.List;
@@ -80,7 +80,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
             IProject project, Node node, Tree.CompilationUnit rootNode) {
         Unit unit = node.getUnit();
         if (node instanceof Tree.InitializerParameter) {
-            node = getReferencedNode(getReferencedModel(node), rootNode);
+            node = getReferencedNodeInUnit(getReferencedModel(node), rootNode);
         }
         if (node instanceof Tree.TypedDeclaration) {
             node = ((Tree.TypedDeclaration) node).getType();

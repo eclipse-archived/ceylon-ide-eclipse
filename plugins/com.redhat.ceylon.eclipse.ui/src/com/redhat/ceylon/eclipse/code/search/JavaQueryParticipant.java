@@ -148,7 +148,8 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                 //this is the case for Java decs
                 IType type = (IType) element.getAncestor(IJavaElement.TYPE);
                 String typeQualifiedName = getJavaQualifiedName(type);
-                String ceylonMemberName = type!=element ? getCeylonSimpleName((IMember)element) : null;
+                String ceylonMemberName = type!=element ? 
+                        getCeylonSimpleName((IMember)element) : null;
                 String typeName = type.getElementName();
                 if (!Character.isUpperCase(typeName.charAt(0))
                     && typeName.endsWith("_") 

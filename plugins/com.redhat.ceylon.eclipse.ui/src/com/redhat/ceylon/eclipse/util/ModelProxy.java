@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static java.util.Collections.singletonList;
 
 import java.lang.ref.SoftReference;
@@ -12,11 +14,13 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 
 public class ModelProxy {
     
@@ -24,6 +28,7 @@ public class ModelProxy {
     private final String unitName;
     private final String packageName;
     private final String moduleName;
+    private final String moduleVersion;
     private final String name;
     
     private final SoftReference<Declaration> declaration;
@@ -34,8 +39,10 @@ public class ModelProxy {
         //TODO: persist the signature somehow, to handle overloads
         Unit unit = declaration.getUnit();
         this.unitName = unit.getFilename();
-        this.packageName = unit.getPackage().getNameAsString();
-        this.moduleName = unit.getPackage().getModule().getNameAsString();
+        Package pack = unit.getPackage();
+        this.packageName = pack.getNameAsString();
+        this.moduleName = pack.getModule().getNameAsString();
+        this.moduleVersion = pack.getModule().getVersion();
         this.declaration = new SoftReference<Declaration>(declaration);
     }
     
@@ -47,22 +54,26 @@ public class ModelProxy {
         //in an external source file
         IEditorPart part = EditorUtil.getCurrentEditor();
         if (part instanceof CeylonEditor /*&& part.isDirty()*/) {
-            CompilationUnit rootNode = 
-                    ((CeylonEditor) part).getParseController()
-                            .getRootNode();
-            if (rootNode!=null && rootNode.getUnit()!=null) {
+            final CeylonParseController controller =
+                    ((CeylonEditor) part).getParseController();
+            Tree.CompilationUnit rootNode = controller.getRootNode();
+            if (rootNode!=null) {
                 Unit unit = rootNode.getUnit();
-                if (unit.getPackage().getNameAsString().equals(packageName)) {
-                    Declaration result = 
-                            getDeclarationInUnit(qualifiedName, unit);
-                    if (result!=null) {
-                        return result;
+                if (unit!=null) {
+                    String pname = unit.getPackage().getNameAsString();
+                    if (pname.equals(packageName)) {
+                        Declaration result = 
+                                getDeclarationInUnit(qualifiedName, unit);
+                        if (result!=null) {
+                            return result;
+                        }
                     }
                 }
             }
         }
-        TypeChecker tc = getTypeChecker(project, moduleName).get(0);
-        Package pack = getModelLoader(tc)
+        TypeChecker typeChecker = 
+                getTypeChecker(moduleName, moduleVersion, project).get(0);
+        Package pack = getModelLoader(typeChecker)
                 .getLoadedModule(moduleName)
                 .getPackage(packageName);
         for (Unit unit: pack.getUnits()) {
@@ -111,7 +122,8 @@ public class ModelProxy {
             return false;
         }
         else if (obj instanceof ModelProxy) {
-            return qualifiedName.equals(((ModelProxy) obj).qualifiedName);
+            ModelProxy proxy = (ModelProxy) obj;
+            return qualifiedName.equals(proxy.qualifiedName);
         }
         else {
             return false;
@@ -127,19 +139,29 @@ public class ModelProxy {
     public String toString() {
         return qualifiedName;
     }
-
-    public static List<TypeChecker> getTypeChecker(IProject project, String moduleName) {
+    
+    public static List<TypeChecker> getTypeChecker(Module module,
+            /*optional*/ IProject project) {
+        return getTypeChecker(module.getNameAsString(), 
+                module.getVersion(), 
+                project);
+    }
+    
+    static List<TypeChecker> getTypeChecker(String moduleName, String moduleVersion, 
+            /*optional*/ IProject project) {
         if (project==null) {
             List<TypeChecker> tcs = new ArrayList<TypeChecker>();
-            for (TypeChecker tc: CeylonBuilder.getTypeCheckers()) {
-                if (CeylonBuilder.getModelLoader(tc).getLoadedModule(moduleName)!=null) {
-                    tcs.add(tc);
+            for (TypeChecker typeChecker: getTypeCheckers()) {
+                JDTModelLoader modelLoader = getModelLoader(typeChecker);
+                Module module = modelLoader.getLoadedModule(moduleName);
+                if (module!=null && module.getVersion().equals(moduleVersion)) {
+                    tcs.add(typeChecker);
                 }
             }
             return tcs;
         }
         else {
-            return singletonList(CeylonBuilder.getProjectTypeChecker(project));
+            return singletonList(getProjectTypeChecker(project));
         }
     }
     

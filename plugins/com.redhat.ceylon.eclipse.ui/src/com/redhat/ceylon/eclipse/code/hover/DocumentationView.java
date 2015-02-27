@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDeclarationHover;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverInfo;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
@@ -137,7 +138,7 @@ public class DocumentationView extends ViewPart {
         if (location.startsWith("dec:")) {
             Referenceable target = getLinkedModel(editor, location);
             if (target!=null) {
-                Navigation.gotoDeclaration(target, editor);
+                Navigation.gotoDeclaration(target);
             }
         }
         else if (location.startsWith("doc:")) {
@@ -308,7 +309,7 @@ public class DocumentationView extends ViewPart {
         }
         @Override
         public void run() {
-            Navigation.gotoDeclaration(getLinkedModel(editor, info.getAddress()), editor);
+            gotoDeclaration(getLinkedModel(editor, info.getAddress()));
         }
     }
     

@@ -3,12 +3,9 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector.gotoJavaNode;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
-import static com.redhat.ceylon.eclipse.util.Nodes.getCompilationUnit;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 import static org.eclipse.jdt.core.JavaCore.isJavaLikeFileName;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
@@ -34,17 +31,14 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
-import com.redhat.ceylon.eclipse.core.model.IProjectAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -53,68 +47,82 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 
 
 public class Navigation {
-        
-    public static void gotoDeclaration(Declaration d, IProject project) {
-        gotoDeclaration(d, project, getCurrentEditor());
-    }
-    
-    public static void gotoDeclaration(Declaration d, IProject project, 
-            IEditorPart editor) {
-//        if (project!=null) {
-            if (project!=null && editor instanceof CeylonEditor) {
-                CeylonEditor ce = (CeylonEditor) editor;
-                CeylonParseController cpc = ce.getParseController();
-                IProject ep = cpc.getProject();
-                if (ep != null && ep.equals(project)) {
-                    Node node = getReferencedNode(d, getCompilationUnit(d, cpc));
-                    if (node != null) {
-                        gotoNode(node, project);
-                        return;
-                    }
-                }
-            }
-            if (d.getUnit() instanceof CeylonUnit) {
-                CeylonUnit ceylonUnit = (CeylonUnit) d.getUnit();
-                Node node = getReferencedNode(d, ceylonUnit.getCompilationUnit());
+            
+//    public static void gotoDeclaration(Referenceable model, 
+//          CeylonEditor editor) {
+//      if (model!=null) {
+//          Node refNode = getReferencedNode(model, 
+//                  editor.getParseController());
+//          if (refNode!=null) {
+//              gotoNode(refNode);
+//          }
+//          else if (model instanceof Declaration) {
+//              gotoJavaNode((Declaration) model);
+//          }
+//      }
+//    }
+//
+    public static void gotoDeclaration(Referenceable model) {
+        if (model!=null) {
+            Unit unit = model.getUnit();
+            if (unit instanceof CeylonUnit) {
+                CeylonUnit ceylonUnit = (CeylonUnit) unit;
+                Node node = getReferencedNodeInUnit(model, 
+                        ceylonUnit.getCompilationUnit());
                 if (node != null) {
-                    gotoNode(node, project);
+                    gotoNode(node);
                 }
                 else if (ceylonUnit instanceof CeylonBinaryUnit) {
-                    CeylonBinaryUnit binaryUnit = (CeylonBinaryUnit) ceylonUnit;
-                    if (isJavaLikeFileName(binaryUnit.getSourceRelativePath())) {
-                        gotoJavaNode(d);
+                    CeylonBinaryUnit binaryUnit = 
+                            (CeylonBinaryUnit) ceylonUnit;
+                    String path = binaryUnit.getSourceRelativePath();
+                    if (isJavaLikeFileName(path)) {
+                        if (model instanceof Declaration) {
+                            gotoJavaNode((Declaration) model);
+                        }
                     }
                 }
             }
-            else {
-                gotoJavaNode(d);
+            else if (model instanceof Declaration) {
+                gotoJavaNode((Declaration) model);
             }
-//        }
-//        else {
-//            //it's coming from the "unversioned" JDK module, which
-//            //we don't display multiple choices for, so just pick
-//            //the first available project
-//            gotoJavaNode(d);
-//        }
-    }
-    
-    public static void gotoDeclaration(IProject project, PhasedUnit pu,
-            Declaration declaration) {
-        IEditorInput editorInput = getEditorInput(pu.getUnit());
-        Node node = getReferencedNode(declaration, 
-                pu.getCompilationUnit());
-        try {
-            CeylonEditor editor = (CeylonEditor) 
-                    getActivePage().openEditor(editorInput, EDITOR_ID);
-            editor.selectAndReveal(getIdentifyingNode(node).getStartIndex(), 
-                    declaration.getName().length());
-        } 
-        catch (PartInitException e) {
-            e.printStackTrace();
         }
     }
     
-    public static void gotoNode(Node node, IProject project) {
+    public static void gotoCeylonDeclarationFromJava(IProject project, 
+            IJavaElement javaElement) {
+        Declaration declaration = 
+                toCeylonDeclaration(project, javaElement);
+//        if (declaration != null) {
+//            Unit u = declaration.getUnit();
+//            if (u instanceof CeylonUnit) {
+//                PhasedUnit pu = ((CeylonUnit) u).getPhasedUnit();
+//                if (pu != null) {
+//                    gotoDeclaration(pu, declaration);
+//                    return;
+//                }
+//            }
+            gotoDeclaration(declaration);
+//        }
+    }
+    
+//    private static void gotoDeclaration(PhasedUnit pu, Declaration declaration) {
+//        IEditorInput editorInput = 
+//                getEditorInput(pu.getUnit());
+//        Node node = getReferencedNode(declaration, 
+//                pu.getCompilationUnit());
+//        try {
+//            CeylonEditor editor = (CeylonEditor) 
+//                    getActivePage().openEditor(editorInput, EDITOR_ID);
+//            editor.selectAndReveal(getIdentifyingNode(node).getStartIndex(), 
+//                    declaration.getName().length());
+//        } 
+//        catch (PartInitException e) {
+//            e.printStackTrace();
+//        }
+//    }
+    
+    public static void gotoNode(Node node) {
         Unit unit = node.getUnit();
         int length = Nodes.getLength(node);
         int startOffset = Nodes.getStartOffset(node);
@@ -126,9 +134,7 @@ public class Navigation {
             }
         }
         
-        gotoLocation(getNodePath(node, project), 
-                startOffset, 
-                length);
+        gotoLocation(getNodePath(node), startOffset, length);
     }
 
 
@@ -140,14 +146,7 @@ public class Navigation {
                 return;
             }
         }
-
-        IPath path;
-        if (unit instanceof IProjectAware) {
-            path = getUnitPath(((IProjectAware) unit).getProject(), unit);
-        } else {
-            path = getUnitPath(null, unit);
-        }
-        gotoLocation(path, startOffset, length);
+        gotoLocation(getUnitPath(unit), startOffset, length);
     }
     
 
@@ -196,109 +195,31 @@ public class Navigation {
         }
     }
     
-//    public static boolean belongsToProject(Unit unit, IProject project) {
-//        if (project == null) {
-//            return false;
-//        }
-//        return (unit instanceof IResourceAware) &&
-//                project.equals(((IResourceAware)unit).getProjectResource());
-//    }
-
-    public static IPath getNodePath(Node node, IProject project) {
-        Unit unit = node.getUnit();
-        
-        return getUnitPath(project, unit);
+    public static IPath getNodePath(Node node) {
+        return getUnitPath(node.getUnit());
     }
 
-    public static IPath getUnitPath(IProject project, Unit unit) {
+    public static IPath getUnitPath(Unit unit) {
         if (unit instanceof IResourceAware) {
-            IFile fileResource = ((IResourceAware) unit).getFileResource();
+            IFile fileResource = 
+                    ((IResourceAware) unit).getFileResource();
             if (fileResource!=null) {
                 return fileResource.getLocation();
             }
-            else if (project!=null) {
-            	return project.getLocation().append(unit.getRelativePath());
+            else {
+            	return new Path(unit.getFullPath());
             }
         }
         
         if ((unit instanceof ExternalSourceFile ) ||
                 (unit instanceof CeylonBinaryUnit )) {
-            IdePhasedUnit externalPhasedUnit = ((CeylonUnit) unit).getPhasedUnit();
+            IdePhasedUnit externalPhasedUnit = 
+                    ((CeylonUnit) unit).getPhasedUnit();
             return new Path(externalPhasedUnit.getUnitFile().getPath());
         }
         
         return null;
     }
-
-    public static void gotoDeclaration(Referenceable model, 
-            CeylonEditor editor) {
-        gotoDeclaration(model, editor.getParseController());
-    }
-
-    public static void gotoDeclaration(Referenceable model,
-            CeylonParseController controller) {
-        if (model!=null) {
-            Node refNode = getReferencedNode(model, controller);
-            if (refNode!=null) {
-                gotoNode(refNode, controller.getProject());
-            }
-            else if (model instanceof Declaration) {
-                gotoJavaNode((Declaration) model);
-            }
-        }
-    }
-
-    /**
-     * Selects and reveals the given offset and length in the given editor part.
-     */
-    //private static void revealInEditor(IEditorPart editor, final int offset, final int length) {
-    //  if (editor instanceof ITextEditor) {
-    //      ((ITextEditor) editor).selectAndReveal(offset, length);
-    //      return;
-    //  }
-    //  // Support for non-text editor - try IGotoMarker interface
-    //  if (editor instanceof IGotoMarker) {
-    //      final IEditorInput input= editor.getEditorInput();
-    //      if (input instanceof IFileEditorInput) {
-    //          final IGotoMarker gotoMarkerTarget= (IGotoMarker) editor;
-    //          WorkspaceModifyOperation op= new WorkspaceModifyOperation() {
-    //              protected void execute(IProgressMonitor monitor) throws CoreException {
-    //                  IMarker marker= null;
-    //                  try {
-    //                      marker = ((IFileEditorInput) input).getFile().createMarker(IMarker.TEXT);
-    //                      String[] attributeNames = new String[] {IMarker.CHAR_START, IMarker.CHAR_END};
-    //                      Object[] values = new Object[] {offset, offset + length};
-    //                      marker.setAttributes(attributeNames, values);
-    //                      gotoMarkerTarget.gotoMarker(marker);
-    //                  } finally {
-    //                      if (marker!=null)
-    //                          marker.delete();
-    //                  }
-    //              }
-    //          };
-    //          try {
-    //              op.run(null);
-    //          } catch (InvocationTargetException ex) {
-    //              // reveal failed
-    //          } catch (InterruptedException e) {
-    //              Assert.isTrue(false, "this operation can not be canceled"); //$NON-NLS-1$
-    //          }
-    //      }
-    //      return;
-    //  }
-    //  /*
-    //   * Workaround: send out a text selection XXX: Needs to be improved, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=32214
-    //   */
-    //  if (editor != null && editor.getEditorSite().getSelectionProvider() != null) {
-    //      IEditorSite site= editor.getEditorSite();
-    //      if (site==null)
-    //          return;
-    //      ISelectionProvider provider= editor.getEditorSite().getSelectionProvider();
-    //      if (provider==null)
-    //          return;
-    //      provider.setSelection(new TextSelection(offset, length));
-    //  }
-    //}
     
     private static IEditorPart openInEditor(IFile file, boolean activate) 
             throws PartInitException {
@@ -313,14 +234,6 @@ public class Navigation {
         return null;
     }
 
-    /**
-     * Selects and reveals the given region in the given editor part.
-     */
-    //private static void revealInEditor(IEditorPart part, IRegion region) {
-    //  if (part!=null && region!=null)
-    //      revealInEditor(part, region.getOffset(), region.getLength());
-    //}
-    
     private static IEditorPart openInEditor(IEditorInput input, String editorID, boolean activate) 
             throws PartInitException {
         if (input!=null) {
@@ -388,23 +301,6 @@ public class Navigation {
         gotoLocation(file, offset, 0);
     }
 
-    /**
-     * Tests if a given input element is currently shown in an editor
-     * 
-     * @return the IEditorPart if shown, null if element is not open in an editor
-     */
-    //private static IEditorPart isOpenInEditor(Object inputElement) {
-    //  IEditorInput input= null;
-    //  input= getEditorInput(inputElement);
-    //  if (input!=null) {
-    //      IWorkbenchPage p= getWorkbench().getActiveWorkbenchWindow().getActivePage();
-    //      if (p!=null) {
-    //          return p.findEditor(input);
-    //      }
-    //  }
-    //  return null;
-    //}
-    
     private static void initializeHighlightRange(IEditorPart editorPart) {
         if (editorPart instanceof ITextEditor) {
             IAction toggleAction = 
@@ -437,18 +333,4 @@ public class Navigation {
         }
     }
 
-    public static void gotoCeylonDeclaration(IProject project, IJavaElement javaElement) {
-        Declaration d = toCeylonDeclaration(project, javaElement);
-        if (d != null) {
-            Unit u = d.getUnit();
-            if (u instanceof CeylonUnit) {
-                PhasedUnit pu = ((CeylonUnit) u).getPhasedUnit();
-                if (pu != null){
-                    gotoDeclaration(project, pu, d);
-                    return;
-                }
-            }
-            gotoDeclaration(d, project);
-        }
-    }
 }

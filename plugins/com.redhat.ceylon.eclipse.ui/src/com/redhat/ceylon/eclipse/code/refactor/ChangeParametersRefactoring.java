@@ -153,8 +153,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                         order.add(i);
                         defaulted.add(parameters.get(i).isDefaulted());
                     }
-                    Node decNode = getReferencedNode(refDec, 
-                            editor.getParseController());
+                    Node decNode = getReferencedNode(refDec);
                     Tree.ParameterList pl=null;
                     if (decNode instanceof Tree.AnyClass) {
                         Tree.AnyClass ac = 

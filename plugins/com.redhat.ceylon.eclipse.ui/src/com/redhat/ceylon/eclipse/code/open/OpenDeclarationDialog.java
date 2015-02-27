@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.code.open;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
@@ -64,8 +66,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
@@ -1150,7 +1150,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     selection[0] instanceof DeclarationWithProject) {
                 Declaration declaration = 
                         ((DeclarationWithProject) selection[0]).getDeclaration();
-                browser.setText(DocumentationHover.getDocumentationFor(null, declaration));
+                browser.setText(getDocumentationFor(null, declaration));
             }
             else {
                 if (emptyDoc==null) {
@@ -1208,31 +1208,30 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     @Override
     void handleLink(String location, DocBrowser browser) {
         Referenceable target = null;
+        CeylonEditor editor = null;
         IEditorPart currentEditor = EditorUtil.getCurrentEditor();
         if (currentEditor instanceof CeylonEditor) {
-            CeylonEditor editor = (CeylonEditor) currentEditor;
+            editor = (CeylonEditor) currentEditor;
             target = getLinkedModel(editor, location);
-            if (location.startsWith("dec:")) {
-                if (target!=null) {
-                    Navigation.gotoDeclaration(target, editor);
-                    close();
-                }
-            }
-            else if (location.startsWith("ref:")) {
+            if (location.startsWith("ref:")) {
                 new FindReferencesAction(editor, (Declaration) target).run();
                 close();
+                return;
             }
             else if (location.startsWith("sub:")) {
                 new FindSubtypesAction(editor, (Declaration) target).run();
                 close();
+                return;
             }
             else if (location.startsWith("act:")) {
                 new FindRefinementsAction(editor, (Declaration) target).run();
                 close();
+                return;
             }
             else if (location.startsWith("ass:")) {
                 new FindAssignmentsAction(editor, (Declaration) target).run();
                 close();
+                return;
             }
         }
         if (location.startsWith("doc:")) {
@@ -1240,16 +1239,26 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 target = getLinkedModel(location);
             }
             if (target instanceof Declaration) {
-                String text = DocumentationHover.getDocumentationFor(null, (Declaration) target);
+                String text = getDocumentationFor(null, (Declaration) target);
                 if (text!=null) browser.setText(text);
             }
             if (target instanceof Package) {
-                String text = DocumentationHover.getDocumentationFor(null, (Package) target);
+                String text = getDocumentationFor(null, (Package) target);
                 if (text!=null) browser.setText(text);
             }
             if (target instanceof Module) {
-                String text = DocumentationHover.getDocumentationFor(null, (Module) target);
+                String text = getDocumentationFor(null, (Module) target);
                 if (text!=null) browser.setText(text);
+            }
+        }
+        if (location.startsWith("dec:")) {
+            if (target==null) {
+                target = getLinkedModel(location);
+            }
+            if (target!=null) {
+                gotoDeclaration(target);
+                close();
+                return;
             }
         }
     }

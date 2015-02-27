@@ -228,17 +228,22 @@ public class CompletionUtil {
                 !name.equals("Boolean");
     }
 
-    public static String getInitialValueDescription(final Declaration dec, CeylonParseController cpc) {
+    public static String getInitialValueDescription(final Declaration dec, 
+            CeylonParseController cpc) {
         if (cpc!=null) {
-            Node refnode = Nodes.getReferencedNode(dec, cpc);
+            Node refnode = Nodes.getReferencedNode(dec);
             Tree.SpecifierOrInitializerExpression sie = null;
             String arrow = null;
             if (refnode instanceof Tree.AttributeDeclaration) {
-                sie = ((Tree.AttributeDeclaration) refnode).getSpecifierOrInitializerExpression();
+                Tree.AttributeDeclaration ad = 
+                        (Tree.AttributeDeclaration) refnode;
+                sie = ad.getSpecifierOrInitializerExpression();
                 arrow = " = ";
             }
             else if (refnode instanceof Tree.MethodDeclaration) {
-                sie = ((Tree.MethodDeclaration) refnode).getSpecifierExpression();
+                Tree.MethodDeclaration md =
+                        (Tree.MethodDeclaration) refnode;
+                sie = md.getSpecifierExpression();
                 arrow = " => ";
             }
             if (sie==null) {

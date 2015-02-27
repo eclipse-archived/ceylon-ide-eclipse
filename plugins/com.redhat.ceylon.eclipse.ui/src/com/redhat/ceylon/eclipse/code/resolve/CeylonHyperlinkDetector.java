@@ -16,10 +16,10 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
-    private CeylonParseController pc;
+    private CeylonParseController parseController;
     
     public CeylonHyperlinkDetector(CeylonParseController pc) {
-        this.pc = pc;
+        this.parseController = pc;
     }
 
     private final class CeylonNodeLink implements IHyperlink {
@@ -33,7 +33,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public void open() {
-            gotoNode(node, pc.getProject());
+            gotoNode(node);
         }
 
         @Override
@@ -56,18 +56,21 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, 
             boolean canShowMultipleHyperlinks) {
-        if (pc==null||pc.getRootNode()==null) {
+        if (parseController==null ||
+                parseController.getRootNode()==null) {
             return null;
         }
         else {
-            Node node = findNode(pc.getRootNode(), region.getOffset(), 
-                    region.getOffset()+region.getLength());
+            Node node = 
+                    findNode(parseController.getRootNode(), 
+                            region.getOffset(), 
+                            region.getOffset()+region.getLength());
             Node id = getIdentifyingNode(node);
             if (node==null) {
                 return null;
             }
             else {
-                Node r = getReferencedNode(node, pc);
+                Node r = getReferencedNode(node);
                 if (r==null) {
                     return null;
                 }

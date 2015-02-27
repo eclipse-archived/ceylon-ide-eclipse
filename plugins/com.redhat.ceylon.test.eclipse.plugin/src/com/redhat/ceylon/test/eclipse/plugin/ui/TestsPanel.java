@@ -361,10 +361,10 @@ public class TestsPanel extends Composite {
         if (project != null) {
             Object result = CeylonTestUtil.getPackageOrDeclaration(project, testElement.getQualifiedName());
             if (result instanceof Declaration) {
-                Navigation.gotoDeclaration((Declaration) result, project);
+                Navigation.gotoDeclaration((Declaration) result);
             }
             else if (result instanceof MethodWithContainer) {
-                Navigation.gotoDeclaration(((MethodWithContainer) result).getMethod(), project);
+                Navigation.gotoDeclaration(((MethodWithContainer) result).getMethod());
             }
         }
     }

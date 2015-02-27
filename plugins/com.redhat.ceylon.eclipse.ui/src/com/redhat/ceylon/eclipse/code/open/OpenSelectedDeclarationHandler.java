@@ -50,14 +50,15 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
     }
     
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(ExecutionEvent event) 
+            throws ExecutionException {
         IEditorPart editor = getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-            Node node = getSelectedNode(getSelection(ce));
-            Referenceable ref = getReferencedModel(node);
+            Node selectedNode = getSelectedNode(getSelection(ce));
+            Referenceable ref = getReferencedModel(selectedNode);
             if (ref!=null) {
-                gotoDeclaration(ref, ce);
+                gotoDeclaration(ref);
             }
         }
         return null;

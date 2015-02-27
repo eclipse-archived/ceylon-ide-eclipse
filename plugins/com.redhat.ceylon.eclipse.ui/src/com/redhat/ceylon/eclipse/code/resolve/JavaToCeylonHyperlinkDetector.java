@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoCeylonDeclarationFromJava;
 import static java.lang.Character.isJavaIdentifierPart;
 
 import org.eclipse.core.resources.IProject;
@@ -18,7 +19,6 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 
-import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 
@@ -40,7 +40,7 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
 
         @Override
         public void open() {
-            Navigation.gotoCeylonDeclaration(project, javaElement);
+            gotoCeylonDeclarationFromJava(project, javaElement);
         }
         
         @Override

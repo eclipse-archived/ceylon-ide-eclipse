@@ -116,6 +116,8 @@ public abstract class TreeViewPopup extends PopupDialog
         return commandBinding;
     }
     
+    private final CeylonEditor editor; //has to be defined here because it is used from create() called by super constructor!
+    
     /**
      * Creates a tree information control with the given shell as parent. The given
      * styles are applied to the shell and the tree widget.
@@ -129,7 +131,8 @@ public abstract class TreeViewPopup extends PopupDialog
     public TreeViewPopup(Shell parent, int shellStyle,
             String invokingCommandId, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true, true, null, null);
-//        this.editor = editor;
+        this.editor = editor; //has to be initialized here because it is used from create() called by super constructor!
+        
         if (invokingCommandId != null) {
             commandBinding = EditorUtil.getCommandBinding(invokingCommandId);
         }
@@ -687,6 +690,10 @@ public abstract class TreeViewPopup extends PopupDialog
     @Override
     public Rectangle computeTrim() {
         return getShell().computeTrim(0, 0, 0, 0);
+    }
+
+    protected CeylonEditor getEditor() {
+        return editor;
     }
 }
 

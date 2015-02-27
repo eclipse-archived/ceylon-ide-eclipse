@@ -26,7 +26,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
@@ -45,14 +44,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpressi
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
-import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
-import com.redhat.ceylon.eclipse.core.model.ICrossProjectReference;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 
 public class Nodes {
 
@@ -378,22 +370,35 @@ public class Nodes {
             return index==null?0:index+1;
         }
     }
-
-    public static Node getReferencedNode(Node node, 
-            CeylonParseController controller) {
-        return getReferencedNode(getReferencedModel(node), 
-                controller);
+    
+    /** 
+     * Get the Node referenced by the given Node, searching
+     * in all relevant compilation units.
+     */
+    public static Node getReferencedNode(Node node) {
+        return getReferencedNode(getReferencedModel(node));
     }
 
-    public static Node getReferencedNode(Referenceable dec, 
-            CeylonParseController controller) {
-        return getReferencedNode(dec, 
-                getCompilationUnit(dec, controller));
+    /** 
+     * Get the Node referenced by the given model, searching
+     * in all relevant compilation units.
+     */
+    public static Node getReferencedNode(Referenceable model) {
+        Unit unit = model.getUnit();
+        if (unit instanceof CeylonUnit) {
+            CeylonUnit ceylonUnit = (CeylonUnit) unit;
+            return getReferencedNodeInUnit(model, 
+                    ceylonUnit.getCompilationUnit());
+        }
+        else {
+            return null;
+        }
     }
 
     public static Referenceable getReferencedModel(Node node) {
         if (node instanceof Tree.ImportPath) {
-            return ((Tree.ImportPath) node).getModel();
+            Tree.ImportPath importPath = (Tree.ImportPath) node;
+            return importPath.getModel();
         }
         else if (node instanceof Tree.DocLink) {
             Tree.DocLink docLink = (Tree.DocLink) node;
@@ -406,7 +411,7 @@ public class Nodes {
                 }
             }
         }
-        Referenceable dec = getReferencedDeclaration((Node) node);
+        Referenceable dec = getReferencedDeclaration(node);
         if (dec instanceof MethodOrValue) {
             MethodOrValue mv = (MethodOrValue) dec;
             if (mv.isShortcutRefinement()) {
@@ -488,75 +493,84 @@ public class Nodes {
             return null;
         }
     }
-
-    public static Node getReferencedNode(Referenceable dec,
-            Tree.CompilationUnit compilationUnit) {
-        if (compilationUnit==null || dec==null) {
+    
+    /**
+     * Find the Node defining the given model within the
+     * given CompilationUnit.
+     */
+    public static Node getReferencedNodeInUnit(Referenceable model,
+            Tree.CompilationUnit rootNode) {
+        if (rootNode==null || model==null) {
             return null;
         }
         else {
             FindReferencedNodeVisitor visitor = 
-                    new FindReferencedNodeVisitor(dec);
-            compilationUnit.visit(visitor);
+                    new FindReferencedNodeVisitor(model);
+            rootNode.visit(visitor);
             //System.out.println("referenced node: " + visitor.getDeclarationNode());
             return visitor.getDeclarationNode();
         }
     }
-
-    public static Tree.CompilationUnit getCompilationUnit(Referenceable model,
-            CeylonParseController cpc) {
-        if (model==null) {
-            return null;
-        }
-        else {
-            Tree.CompilationUnit root = cpc==null ? 
-                    null : cpc.getRootNode();            
-            if (root!=null && root.getUnit()!=null && 
-                    root.getUnit().equals(model.getUnit())) {
-                return root;
-            }
-            else {
-                Unit unit = model.getUnit();
-                PhasedUnit pu = null; 
-                if (unit instanceof ProjectSourceFile) {
-                    pu = ((ProjectSourceFile) unit).getPhasedUnit();
-                    // Here pu should never be null !
-                }
-                if (unit instanceof EditedSourceFile) {
-                    pu = ((EditedSourceFile) unit).getPhasedUnit();
-                    // Here pu should never be null !
-                }
-                
-                if (unit instanceof ICrossProjectReference) {
-                    ProjectPhasedUnit requiredProjectPhasedUnit = 
-                            ((ICrossProjectReference) unit).getOriginalPhasedUnit();
-                    if (requiredProjectPhasedUnit != null 
-                            && requiredProjectPhasedUnit.isFullyTyped()) {
-                        pu = requiredProjectPhasedUnit;
-                    }
-                    else {
-                        System.err.println("ABNORMAL : cross reference with a null original PhasedUnit !");
-                        pu = ((ICrossProjectReference) unit).getPhasedUnit();
-                    }
-                }
-                
-                if (pu == null && (unit instanceof ExternalSourceFile || 
-                        unit instanceof CeylonBinaryUnit)) {
-                    pu = ((CeylonUnit)unit).getPhasedUnit();
-                }
-                
-                // TODO : When using binary ceylon archives, add a case here with
-                //        unit instanceof CeylonBinaryUnit
-                //        And perform the same sort of thing as for ExternalSourceFile :
-                //           -> return the associated source PhasedUnit if any 
-                
-                if (pu!=null) {
-                    return pu.getCompilationUnit();
-                }
-                return null;
-            }
-        }
-    }
+    
+//    /**
+//     * Get the CompilationUnit in which the given model is 
+//     * defined, searching in all relevant CompilationUnits.
+//     */
+//    public static Tree.CompilationUnit getCompilationUnit(Referenceable model,
+//            /**optional**/ CeylonParseController controller) {
+//        if (model==null) {
+//            return null;
+//        }
+//        else {
+//            Tree.CompilationUnit root = 
+//                    controller==null ? 
+//                            null : controller.getRootNode();            
+//            if (root!=null && root.getUnit()!=null && 
+//                    root.getUnit().equals(model.getUnit())) {
+//                return root;
+//            }
+//            else {
+//                Unit unit = model.getUnit();
+//                PhasedUnit pu = null; 
+//                if (unit instanceof ProjectSourceFile) {
+//                    pu = ((ProjectSourceFile) unit).getPhasedUnit();
+//                    // Here pu should never be null !
+//                }
+//                if (unit instanceof EditedSourceFile) {
+//                    pu = ((EditedSourceFile) unit).getPhasedUnit();
+//                    // Here pu should never be null !
+//                }
+//                
+//                if (unit instanceof ICrossProjectReference) {
+//                    ProjectPhasedUnit requiredProjectPhasedUnit = 
+//                            ((ICrossProjectReference) unit).getOriginalPhasedUnit();
+//                    if (requiredProjectPhasedUnit != null 
+//                            && requiredProjectPhasedUnit.isFullyTyped()) {
+//                        pu = requiredProjectPhasedUnit;
+//                    }
+//                    else {
+//                        System.err.println("ABNORMAL : cross reference with a null original PhasedUnit !");
+//                        pu = ((ICrossProjectReference) unit).getPhasedUnit();
+//                    }
+//                }
+//                
+//                if (pu == null && (unit instanceof ExternalSourceFile || 
+//                        unit instanceof CeylonBinaryUnit)) {
+//                    pu = ((CeylonUnit) unit).getPhasedUnit();
+//                }
+//                
+//                // TODO : When using binary ceylon archives, add a case here with
+//                //        unit instanceof CeylonBinaryUnit
+//                //        And perform the same sort of thing as for ExternalSourceFile :
+//                //           -> return the associated source PhasedUnit if any 
+//                
+//                if (pu!=null) {
+//                    return pu.getCompilationUnit();
+//                }
+//                return null;
+//            }
+//        }
+//    }
 
     public static String toString(Node term, List<CommonToken> tokens) {
         Integer start = term.getStartIndex();

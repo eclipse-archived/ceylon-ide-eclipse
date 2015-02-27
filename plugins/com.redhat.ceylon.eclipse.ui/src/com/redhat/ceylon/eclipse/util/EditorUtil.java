@@ -409,7 +409,7 @@ public class EditorUtil {
             }
         }
         
-        return getEditorInput(Navigation.getUnitPath(null, unit));
+        return getEditorInput(Navigation.getUnitPath(unit));
     }
     
     /**

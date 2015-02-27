@@ -449,7 +449,7 @@ public class HierarchyView extends ViewPart {
             gotoJavaNode(dec);
         }
         else {
-            gotoDeclaration(dec, project);
+            gotoDeclaration(dec);
         }
     }
     
@@ -609,9 +609,13 @@ public class HierarchyView extends ViewPart {
             public void doubleClick(DoubleClickEvent event) {
                 TreeSelection selection = 
                         (TreeSelection) event.getSelection();
-                CeylonHierarchyNode firstElement = 
-                        (CeylonHierarchyNode) selection.getFirstElement();
-                firstElement.gotoHierarchyDeclaration(project, null);
+                Object firstElement = selection.getFirstElement();
+                if (firstElement instanceof CeylonHierarchyNode) {
+                    CeylonHierarchyNode node = 
+                            (CeylonHierarchyNode) firstElement;
+//                    firstElement.gotoHierarchyDeclaration(project, null);
+                    gotoDeclaration(node.getDeclaration(project));
+                }
             }
         });
         return tree;

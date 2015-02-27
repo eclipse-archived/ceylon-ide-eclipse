@@ -14,6 +14,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
@@ -73,8 +74,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ObjectDefinition;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -182,7 +181,7 @@ public class OutlinePopup extends TreeViewPopup {
             }
             else if (e1 instanceof Declaration && 
                      e2 instanceof Declaration) {
-                Unit unit = editor.getParseController().getRootNode().getUnit();
+                Unit unit = getEditor().getParseController().getRootNode().getUnit();
                 return ((Declaration)e1).getName(unit)
                         .compareTo(((Declaration)e2).getName(unit));
             }
@@ -246,8 +245,6 @@ public class OutlinePopup extends TreeViewPopup {
 
     private ToolItem modeButton;
 
-    private final CeylonEditor editor;
-    
     private class HideNonSharedAction extends Action {
         private TreeViewer treeViewer;
 
@@ -293,7 +290,6 @@ public class OutlinePopup extends TreeViewPopup {
     
     public OutlinePopup(CeylonEditor editor, Shell shell, int shellStyle) {
         super(shell, shellStyle, PLUGIN_ID + ".editor.showOutline", editor);
-        this.editor = editor;
         setTitleText("Quick Outline - " + editor.getEditorInput().getName());
     }
 
@@ -324,7 +320,7 @@ public class OutlinePopup extends TreeViewPopup {
                                 !EditorUtil.getPreferences().getBoolean(PARAMS_IN_OUTLINES);
                         CeylonOutlineNode node = (CeylonOutlineNode) element;
                         CompilationUnit rootNode = 
-                                editor.getParseController().getRootNode();
+                                getEditor().getParseController().getRootNode();
                         Node treeNode = 
                                 Nodes.findNode(rootNode, 
                                         node.getStartOffset());
@@ -493,7 +489,7 @@ public class OutlinePopup extends TreeViewPopup {
     @Override
     public void setInput(Object information) {
         CeylonOutlineNode info = 
-                new CeylonOutlineBuilder().buildTree(editor.getParseController());
+                new CeylonOutlineBuilder().buildTree(getEditor().getParseController());
         inputChanged(info, info);
     }
 
@@ -534,19 +530,16 @@ public class OutlinePopup extends TreeViewPopup {
 
     @Override
     protected void gotoSelectedElement() {
-        CeylonParseController cpc = editor.getParseController();
-        if (cpc!=null) {
-            Object object = getSelectedElement();
-            if (object instanceof CeylonOutlineNode) {
-                dispose();
-                CeylonOutlineNode on = (CeylonOutlineNode) object;
-                editor.selectAndReveal(on.getStartOffset(), 
-                        on.getEndOffset()-on.getStartOffset());
-            }
-            else if (object instanceof Referenceable) {
-                dispose();
-                Navigation.gotoDeclaration((Referenceable) object, cpc);
-            }
+        Object object = getSelectedElement();
+        if (object instanceof CeylonOutlineNode) {
+            dispose();
+            CeylonOutlineNode on = (CeylonOutlineNode) object;
+            getEditor().selectAndReveal(on.getStartOffset(), 
+                    on.getEndOffset()-on.getStartOffset());
+        }
+        else if (object instanceof Referenceable) {
+            dispose();
+            gotoDeclaration((Referenceable) object);
         }
     }
 

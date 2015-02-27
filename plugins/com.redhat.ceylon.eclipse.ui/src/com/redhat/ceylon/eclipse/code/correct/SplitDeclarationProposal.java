@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -83,7 +83,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
             change.addEdit(new DeleteEdit(startOffset, idStartOffset-startOffset));
             change.addEdit(new DeleteEdit(idEndOffset, paramsEndOffset-idEndOffset));
             Node containerNode = (Tree.Declaration) 
-                    getReferencedNode((Declaration) dec.getContainer(), cu);
+                    getReferencedNodeInUnit((Declaration) dec.getContainer(), cu);
             Tree.Body body;
             if (containerNode instanceof Tree.ClassDefinition) {
                 body = ((Tree.ClassDefinition) containerNode).getClassBody();

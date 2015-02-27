@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUPERTYPES;
@@ -71,7 +72,7 @@ public class HierarchyPopup extends TreeViewPopup {
                 e.doit=false;
             }
             if (triggersBinding(e, hierarchyBinding)) {
-                IProject project = editor.getParseController().getProject();
+                IProject project = getEditor().getParseController().getProject();
                 try {
                     showHierarchyView().focusOn(project, 
                             contentProvider.getDeclaration(project));
@@ -91,11 +92,9 @@ public class HierarchyPopup extends TreeViewPopup {
     private ToolItem button1;
     private ToolItem button2;
     private ToolItem button3;
-    private final CeylonEditor editor;
     
     public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle) {
         super(shell, shellStyle, PLUGIN_ID + ".editor.hierarchy", editor);
-        this.editor = editor;
         hierarchyBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
                 ".action.showInHierarchyView");
         setInfoText(getStatusFieldText());
@@ -126,7 +125,7 @@ public class HierarchyPopup extends TreeViewPopup {
         gd.heightHint= tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
         final TreeViewer treeViewer = new TreeViewer(tree);
-        contentProvider = new CeylonHierarchyContentProvider(editor.getSite(),
+        contentProvider = new CeylonHierarchyContentProvider(getEditor().getSite(),
                 "Quick Hierarchy");
         labelProvider = new CeylonHierarchyLabelProvider() {
             @Override
@@ -136,7 +135,7 @@ public class HierarchyPopup extends TreeViewPopup {
             }
             @Override
             IProject getProject() {
-                return editor.getParseController().getProject();
+                return getEditor().getParseController().getProject();
             }
             @Override
             boolean isShowingRefinements() {
@@ -293,13 +292,13 @@ public class HierarchyPopup extends TreeViewPopup {
     }
     
     private HierarchyInput getInformation() {
-        Node selectedNode = editor.getSelectedNode();
+        Node selectedNode = getEditor().getSelectedNode();
         Referenceable declaration = 
                 getReferencedDeclaration(selectedNode);
         if (declaration==null) {
             FindContainerVisitor fcv = 
                     new FindContainerVisitor(selectedNode);
-            fcv.visit(editor.getParseController().getRootNode());
+            fcv.visit(getEditor().getParseController().getRootNode());
             Node node = fcv.getStatementOrArgument();
             if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
                 declaration = ((com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node).getDeclarationModel();
@@ -307,7 +306,7 @@ public class HierarchyPopup extends TreeViewPopup {
         }
         if (declaration instanceof Declaration) {
             return new HierarchyInput((Declaration) declaration, 
-                    editor.getParseController().getProject());
+                    getEditor().getParseController().getProject());
         }
         else {
             return null;
@@ -316,13 +315,15 @@ public class HierarchyPopup extends TreeViewPopup {
     
     @Override
     protected void gotoSelectedElement() {
-        CeylonParseController cpc = editor.getParseController();
+        CeylonParseController cpc = getEditor().getParseController();
         if (cpc!=null) {
-            Object object = getSelectedElement();
-            if (object instanceof CeylonHierarchyNode) {
+            Object selectedElement = getSelectedElement();
+            if (selectedElement instanceof CeylonHierarchyNode) {
                 dispose();
-                CeylonHierarchyNode hn = (CeylonHierarchyNode) object;
-                hn.gotoHierarchyDeclaration(cpc.getProject(), cpc);
+                CeylonHierarchyNode node = 
+                        (CeylonHierarchyNode) selectedElement;
+//                hn.gotoHierarchyDeclaration(cpc.getProject(), cpc);
+                gotoDeclaration(node.getDeclaration(cpc.getProject()));
             }
         }
     }

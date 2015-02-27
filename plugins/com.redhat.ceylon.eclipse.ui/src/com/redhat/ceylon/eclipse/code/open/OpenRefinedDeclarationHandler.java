@@ -42,9 +42,12 @@ public class OpenRefinedDeclarationHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (super.isEnabled() && editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-            Referenceable dec = getReferencedDeclaration(getSelectedNode(getSelection(ce)));
+            Node selectedNode = getSelectedNode(getSelection(ce));
+            Referenceable dec = getReferencedDeclaration(selectedNode);
             if (dec instanceof Declaration) {
-                return !((Declaration) dec).getRefinedDeclaration().equals(dec);
+                Declaration refinedDeclaration = 
+                        ((Declaration) dec).getRefinedDeclaration();
+                return !refinedDeclaration.equals(dec);
             }
             else {
                 return false;
@@ -60,10 +63,12 @@ public class OpenRefinedDeclarationHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-            Referenceable dec = getReferencedDeclaration(getSelectedNode(getSelection(ce)));
+            Node selectedNode = getSelectedNode(getSelection(ce));
+            Referenceable dec = getReferencedDeclaration(selectedNode);
             if (dec instanceof Declaration) {
-                Declaration refined = ((Declaration) dec).getRefinedDeclaration();
-                gotoDeclaration(refined, ce);
+                Declaration refinedDeclaration = 
+                        ((Declaration) dec).getRefinedDeclaration();
+                gotoDeclaration(refinedDeclaration);
             }
         }
         return null;

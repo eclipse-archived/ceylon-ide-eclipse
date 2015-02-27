@@ -82,8 +82,10 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
             return null;
         }
         else {
-            Node node = findNode(pc.getRootNode(), region.getOffset(), 
-                    region.getOffset()+region.getLength());
+            Node node = 
+                    findNode(pc.getRootNode(), 
+                            region.getOffset(), 
+                            region.getOffset()+region.getLength());
             if (node==null) {
                 return null;
             }
@@ -97,22 +99,32 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                     
                     if (!(declarationUnit instanceof IJavaModelAware)) {
                         if (declarationUnit instanceof ExternalSourceFile) {
-                            Declaration binaryDeclaration = ((ExternalSourceFile)declarationUnit).retrieveBinaryDeclaration(dec);
+                            final ExternalSourceFile externalSourceFile = 
+                                    (ExternalSourceFile)declarationUnit;
+                            Declaration binaryDeclaration = 
+                                    externalSourceFile.retrieveBinaryDeclaration(dec);
                             if (binaryDeclaration != null) {
                                 dec = binaryDeclaration;
                                 declarationUnit = binaryDeclaration.getUnit();
-                            } else {
+                            }
+                            else {
                                 return null;
                             }
-                        } else {
+                        }
+                        else {
                             return null;
                         }
-                    } else {
-                        jp = ((IJavaModelAware)declarationUnit).getTypeRoot().getJavaProject();
+                    }
+                    else {
+                        final IJavaModelAware havaModelAware = 
+                                (IJavaModelAware)declarationUnit;
+                        jp = havaModelAware.getTypeRoot().getJavaProject();
                     }
                     if (declarationUnit instanceof CeylonBinaryUnit) {
-                        CeylonBinaryUnit ceylonBinaryUnit = (CeylonBinaryUnit) declarationUnit;
-                        if (! JavaCore.isJavaLikeFileName(ceylonBinaryUnit.getSourceRelativePath())) {
+                        CeylonBinaryUnit ceylonBinaryUnit = 
+                                (CeylonBinaryUnit) declarationUnit;
+                        String path = ceylonBinaryUnit.getSourceRelativePath();
+                        if (! JavaCore.isJavaLikeFileName(path)) {
                             return null; 
                         }
                         jp = ceylonBinaryUnit.getTypeRoot().getJavaProject();
@@ -143,9 +155,9 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
         }
     }
     
-    public static void gotoJavaNode(Declaration dec) {
+    public static void gotoJavaNode(Declaration declaration) {
         try {
-            IJavaElement element = getJavaElement(dec);
+            IJavaElement element = getJavaElement(declaration);
             if (element!=null) {
                 IEditorPart part = openInEditor(element, true);
                 if (part!=null) {
@@ -158,13 +170,15 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
         }
     }
 
-    public static IJavaElement getJavaElement(Declaration dec)
+    public static IJavaElement getJavaElement(Declaration declaration)
             throws JavaModelException {
-        if (dec instanceof Method && dec.isAnnotation()) {
-            dec = ((Method) dec).getTypeDeclaration();
+        if (declaration instanceof Method && declaration.isAnnotation()) {
+            declaration = ((Method) declaration).getTypeDeclaration();
         }
-        if (dec.getUnit() instanceof IJavaModelAware) {
-            return ((IJavaModelAware) dec.getUnit()).toJavaElement(dec);
+        if (declaration.getUnit() instanceof IJavaModelAware) {
+            final IJavaModelAware javaModelAware = 
+                    (IJavaModelAware) declaration.getUnit();
+            return javaModelAware.toJavaElement(declaration);
         }
         return null;
     }

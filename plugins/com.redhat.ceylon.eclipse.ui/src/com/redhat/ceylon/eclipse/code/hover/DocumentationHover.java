@@ -201,7 +201,7 @@ public class DocumentationHover extends SourceInfoHover {
                 Referenceable target = getLinkedModel(editor, location);
                 if (target!=null) {
                     close(control); //FIXME: should have protocol to hide, rather than dispose
-                    gotoDeclaration(target, editor);
+                    gotoDeclaration(target);
                 }
             }
             else if (location.startsWith("doc:")) {
@@ -366,8 +366,10 @@ public class DocumentationHover extends SourceInfoHover {
         @Override
         public void run() {
             close(fInfoControl); //FIXME: should have protocol to hide, rather than dispose
-            CeylonBrowserInput input = (CeylonBrowserInput) fInfoControl.getInput();
-            gotoDeclaration(getLinkedModel(editor, input.getAddress()), editor);
+            CeylonBrowserInput input = (CeylonBrowserInput) 
+                    fInfoControl.getInput();
+            gotoDeclaration(getLinkedModel(editor, 
+                    input.getAddress()));
         }
     }
 
@@ -405,11 +407,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
         return fHoverControlCreator;
     }
-
-    void addLinkListener(final BrowserInformationControl control) {
-        control.addLocationListener(new CeylonLocationListener(control));
-    }
-
+    
     public static Referenceable getLinkedModel(CeylonEditor editor, String location) {
         if (location==null) {
             return null;
@@ -427,10 +425,10 @@ public class DocumentationHover extends SourceInfoHover {
         }
 //        else if (location.equals("doc:ceylon.language:ceylon.language:Nothing")) {
 //            return editor.getParseController().getRootNode().getUnit().getNothingDeclaration();
-        //        }
-        for (TypeChecker tc: getTypeCheckers()) {
+//        }
+        for (TypeChecker typeChecker: getTypeCheckers()) {
             Referenceable linkedModel = 
-                    getLinkedModel(location, tc);
+                    getLinkedModel(location, typeChecker);
             if (linkedModel!=null) {
                 return linkedModel;
             }
@@ -438,9 +436,10 @@ public class DocumentationHover extends SourceInfoHover {
         return null;
     }
 
-    public static Referenceable getLinkedModel(String location, TypeChecker tc) {
+    public static Referenceable getLinkedModel(String location, 
+            TypeChecker typeChecker) {
         String[] bits = location.split(":");
-        JDTModelLoader modelLoader = getModelLoader(tc);
+        JDTModelLoader modelLoader = getModelLoader(typeChecker);
         String moduleName = bits[1];
         Module module = modelLoader.getLoadedModule(moduleName);
         if (module==null || bits.length==2) {
@@ -453,13 +452,15 @@ public class DocumentationHover extends SourceInfoHover {
                 scope = (Scope) target;
             }
             else if (target instanceof TypedDeclaration) {
-                scope = ((TypedDeclaration) target).getType().getDeclaration();
+                TypedDeclaration td = (TypedDeclaration) target;
+                scope = td.getType().getDeclaration();
             }
             else {
                 return null;
             }
             if (scope instanceof Value) {
-                TypeDeclaration val = ((Value) scope).getTypeDeclaration();
+                Value v = (Value) scope;
+                TypeDeclaration val = v.getTypeDeclaration();
                 if (val.isAnonymous()) {
                     scope = val;
                 }
@@ -995,11 +996,11 @@ public class DocumentationHover extends SourceInfoHover {
         return null;
     }
 
-    public static String getDocumentationFor(CeylonParseController cpc, 
+    public static String getDocumentationFor(CeylonParseController controller, 
             Package pack) {
         StringBuilder buffer= new StringBuilder();
         addMainPackageDescription(pack, buffer);
-        addPackageDocumentation(cpc, pack, buffer);
+        addPackageDocumentation(controller, pack, buffer);
         addAdditionalPackageInfo(buffer, pack);
         addPackageMembers(buffer, pack);
         addPackageModuleInfo(pack, buffer);
@@ -1138,12 +1139,12 @@ public class DocumentationHover extends SourceInfoHover {
         return "module " + name + " \"" + version + "\"";
     }
 
-    public static String getDocumentationFor(CeylonParseController cpc, 
+    public static String getDocumentationFor(CeylonParseController controller, 
             Module mod) {
         StringBuilder buffer = new StringBuilder();
         addMainModuleDescription(mod, buffer);
         addAdditionalModuleInfo(buffer, mod);
-        addModuleDocumentation(cpc, mod, buffer);
+        addModuleDocumentation(controller, mod, buffer);
         addModuleMembers(buffer, mod);
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addPageEpilog(buffer);
@@ -1246,17 +1247,17 @@ public class DocumentationHover extends SourceInfoHover {
         return "module " + mod.getNameAsString() + " \"" + mod.getVersion() + "\"";
     }
 
-    public static String getDocumentationFor(CeylonParseController cpc, 
+    public static String getDocumentationFor(CeylonParseController controller, 
             Declaration dec) {
-        return getDocumentationFor(cpc, dec, null, null);
+        return getDocumentationFor(controller, dec, null, null);
     }
     
-    public static String getDocumentationFor(CeylonParseController cpc, 
+    public static String getDocumentationFor(CeylonParseController controller, 
             Declaration dec, ProducedReference pr) {
-        return getDocumentationFor(cpc, dec, null, pr);
+        return getDocumentationFor(controller, dec, null, pr);
     }
     
-    private static String getDocumentationFor(CeylonParseController cpc, 
+    private static String getDocumentationFor(CeylonParseController controller, 
             Declaration dec, Node node, ProducedReference pr) {
         if (dec==null) return null;
         if (dec instanceof Value) {
@@ -1265,16 +1266,17 @@ public class DocumentationHover extends SourceInfoHover {
                 dec = val;
             }
         }
-        Unit unit = cpc==null ? null : cpc.getRootNode().getUnit();
+        Unit unit = controller==null ? 
+                null : controller.getRootNode().getUnit();
         StringBuilder buffer = new StringBuilder();
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
-        addMainDescription(buffer, dec, node, pr, cpc, unit);
+        addMainDescription(buffer, dec, node, pr, controller, unit);
         boolean obj = addInheritanceInfo(dec, node, pr, buffer, unit);
         addContainerInfo(dec, node, buffer); //TODO: use the pr to get the qualifying type??
-        boolean hasDoc = addDoc(cpc, dec, node, buffer);
-        addRefinementInfo(cpc, dec, node, buffer, hasDoc, unit); //TODO: use the pr to get the qualifying type??
+        boolean hasDoc = addDoc(dec, node, buffer);
+        addRefinementInfo(dec, node, buffer, hasDoc, unit); //TODO: use the pr to get the qualifying type??
         addReturnType(dec, buffer, node, pr, obj, unit);
-        addParameters(cpc, dec, node, pr, buffer, unit);
+        addParameters(controller, dec, node, pr, buffer, unit);
         addClassMembersInfo(dec, buffer);
         addUnitInfo(dec, buffer);
         addPackageInfo(dec, buffer);
@@ -1388,8 +1390,8 @@ public class DocumentationHover extends SourceInfoHover {
         return obj;
     }
 
-    private static void addRefinementInfo(CeylonParseController cpc,
-            Declaration dec, Node node, StringBuilder buffer, 
+    private static void addRefinementInfo(Declaration dec, 
+            Node node, StringBuilder buffer, 
             boolean hasDoc, Unit unit) {
         Declaration rd = dec.getRefinedDeclaration();
         if (dec!=rd && rd!=null) {
@@ -1406,10 +1408,10 @@ public class DocumentationHover extends SourceInfoHover {
                     20, 2);
             buffer.append("</p>");
             if (!hasDoc) {
-                Tree.Declaration refnode2 = 
-                        (Tree.Declaration) getReferencedNode(rd, cpc);
-                if (refnode2!=null) {
-                    appendDocAnnotationContent(refnode2.getAnnotationList(), 
+                Tree.Declaration decNode = 
+                        (Tree.Declaration) getReferencedNode(rd);
+                if (decNode!=null) {
+                    appendDocAnnotationContent(decNode.getAnnotationList(), 
                             buffer, resolveScope(rd));
                 }
             }
@@ -1503,7 +1505,7 @@ public class DocumentationHover extends SourceInfoHover {
                         	     .append(HTML.highlightLine(getInitialValueDescription(model, cpc)))
                         	     .append("</tt>");
                             Tree.Declaration refNode = 
-                                    (Tree.Declaration) getReferencedNode(model, cpc);
+                                    (Tree.Declaration) getReferencedNode(model);
                             if (refNode!=null) {
                                 appendDocAnnotationContent(refNode.getAnnotationList(), 
                                         param, resolveScope(dec));
@@ -1615,10 +1617,10 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
 
-    private static boolean addDoc(CeylonParseController cpc, 
-            Declaration dec, Node node, StringBuilder buffer) {
+    private static boolean addDoc(Declaration dec, 
+            Node node, StringBuilder buffer) {
         boolean hasDoc = false;
-        Node rn = getReferencedNode(dec, cpc);
+        Node rn = getReferencedNode(dec);
         if (rn instanceof Tree.Declaration) {
             Tree.Declaration refnode = (Tree.Declaration) rn;
             appendDeprecatedAnnotationContent(refnode.getAnnotationList(), 
@@ -1633,7 +1635,7 @@ public class DocumentationHover extends SourceInfoHover {
                     buffer);
         }
         else {
-            appendJavadoc(dec, cpc==null ? null : cpc.getProject(), buffer, node);
+            appendJavadoc(dec, buffer);
         }
         return hasDoc;
     }
@@ -1996,8 +1998,8 @@ public class DocumentationHover extends SourceInfoHover {
         return result;
     }
 
-    private static void appendJavadoc(Declaration model, IProject project,
-            StringBuilder buffer, Node node) {
+    private static void appendJavadoc(Declaration model,
+            StringBuilder buffer) {
         try {
             appendJavadoc(getJavaElement(model), buffer);
         }
@@ -2273,7 +2275,7 @@ public class DocumentationHover extends SourceInfoHover {
 
                 tbm.update(true);
 
-                docHover.addLinkListener(control);
+                control.addLocationListener(new CeylonLocationListener(control));
                 return control;
 
 //            } 
@@ -2311,7 +2313,7 @@ public class DocumentationHover extends SourceInfoHover {
                     }
                 };
                 if (docHover!=null) {
-                    docHover.addLinkListener(control);
+                    control.addLocationListener(new CeylonLocationListener(control));
                 }
                 return control;
 //            } 

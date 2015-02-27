@@ -771,7 +771,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 if (!dec.isToplevel() && 
                     !dec.isClassOrInterfaceMember() &&
                     dec.getUnit().equals(node.getUnit())) {
-                    Node decNode = Nodes.getReferencedNode(dec, cpc.getRootNode());
+                    Node decNode = Nodes.getReferencedNodeInUnit(dec, cpc.getRootNode());
                     if (decNode!=null && offset<Nodes.getIdentifyingNode(decNode).getStartIndex()) {
                         continue;
                     }

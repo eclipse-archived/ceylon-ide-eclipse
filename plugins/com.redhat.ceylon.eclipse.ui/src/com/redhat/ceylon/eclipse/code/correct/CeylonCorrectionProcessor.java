@@ -104,7 +104,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findBinaryOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -670,7 +670,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         Tree.TypeConstraint tcn = (Tree.TypeConstraint) node;
         TypeParameter tp = tcn.getDeclarationModel();
         Tree.Declaration decNode = (Tree.Declaration) 
-                getReferencedNode(tp.getDeclaration(), rootNode);
+                getReferencedNodeInUnit(tp.getDeclaration(), rootNode);
         Tree.TypeParameterList tpl;
         if (decNode instanceof Tree.ClassOrInterface) {
             tpl = ((Tree.ClassOrInterface) decNode).getTypeParameterList();
