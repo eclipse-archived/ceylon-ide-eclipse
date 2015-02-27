@@ -873,12 +873,14 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     .split(",");
             for (String regex: regexes) {
                 regex = regex.trim();
-                filters.add(Pattern.compile(regex));
-                if (regex.endsWith("::*")) {
-                    regex = regex.substring(0, regex.length()-3);
-                }
-                if (!regex.contains("::")) {
-                    packageFilters.add(Pattern.compile(regex));
+                if (!regex.isEmpty()) {
+                    filters.add(Pattern.compile(regex));
+                    if (regex.endsWith("::*")) {
+                        regex = regex.substring(0, regex.length()-3);
+                    }
+                    if (!regex.contains("::")) {
+                        packageFilters.add(Pattern.compile(regex));
+                    }
                 }
             }
         } 

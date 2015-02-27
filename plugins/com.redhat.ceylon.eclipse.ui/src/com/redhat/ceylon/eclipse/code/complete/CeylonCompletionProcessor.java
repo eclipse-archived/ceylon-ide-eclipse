@@ -106,6 +106,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -397,19 +398,16 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
     
     private void filterProposals(Map<String, DeclarationWithProximity> proposals) {
-        String filtersString = EditorUtil.getPreferences()
-                .getString(COMPLETION_FILTERS);
-        String[] filters = getProposalFilters(filtersString);
-        if (filters.length>0) {
+        List<Pattern> filters = getProposalFilters();
+        if (!filters.isEmpty()) {
             Iterator<DeclarationWithProximity> iterator = 
                     proposals.values().iterator();
             while (iterator.hasNext()) {
                 DeclarationWithProximity dwp = iterator.next();
                 String name = dwp.getDeclaration()
                         .getQualifiedNameString();
-                for (String filter: filters) {
-                    String regex = filter.trim();
-                    if (!regex.isEmpty() && name.matches(regex)) {
+                for (Pattern filter: filters) {
+                    if (filter.matcher(name).matches()) {
                         iterator.remove();
                         continue;
                     }
@@ -418,17 +416,24 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
     }
 
-    private String[] getProposalFilters(String filtersString) {
-        if (!filtersString.trim().isEmpty()) { 
-            return filtersString
+    private List<Pattern> getProposalFilters() {
+        List<Pattern> filters = new ArrayList<Pattern>();
+        String filtersString = EditorUtil.getPreferences()
+                .getString(COMPLETION_FILTERS);
+        if (!filtersString.trim().isEmpty()) {
+            String[] regexes = filtersString
                     .replaceAll("\\(\\w+\\)", "")
                     .replace(".", "\\.")
                     .replace("*", ".*")
                     .split(",");
-        }
-        else {
-            return new String[0];
-        }
+            for (String regex: regexes) {
+                regex = regex.trim();
+                if (!regex.isEmpty()) {
+                    filters.add(Pattern.compile(regex));
+                }
+            }
+        } 
+        return filters;
     }
     
     private String getRealText(CommonToken token) {
