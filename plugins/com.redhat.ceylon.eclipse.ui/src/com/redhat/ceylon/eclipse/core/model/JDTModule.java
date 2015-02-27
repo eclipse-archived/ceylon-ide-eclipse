@@ -519,7 +519,8 @@ public class JDTModule extends LazyModule {
     public boolean isJDKModule() {
         synchronized (this) {
             if (moduleType == null) {
-                if (JDKUtils.isJDKModule(getNameAsString()) || JDKUtils.isOracleJDKModule(getNameAsString())) {
+                if (JDKUtils.isJDKModule(getNameAsString()) || 
+                    JDKUtils.isOracleJDKModule(getNameAsString())) {
                     moduleType = ModuleType.SDK_MODULE;
                 }
             }

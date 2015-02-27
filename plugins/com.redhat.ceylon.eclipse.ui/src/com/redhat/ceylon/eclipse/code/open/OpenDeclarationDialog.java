@@ -58,6 +58,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -88,6 +89,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private static final String SHOW_SELECTION_PACKAGE = "showSelectionPackage";
     private static final String EXCLUDE_DEPRECATED = "excludeDeprecated";
     private static final String EXCLUDE_JDK = "excludeJDK";
+    private static final String EXCLUDE_ORA_JDK = "excludeOracleJDK";
 
 //    private static final Image MEMBERS_IMAGE = 
 //            CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.SHOW_MEMBERS);
@@ -98,6 +100,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private boolean includeMembers;
     private boolean excludeDeprecated;
     private boolean excludeJDK;
+    private boolean excludeOracleJDK;
     
     private int filterVersion = 0;
     
@@ -108,6 +111,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private ToggleModuleAction toggleModuleAction;
     private ToggleExcludeDeprecatedAction toggleExcludeDeprecatedAction;
     private ToggleExcludeJDKAction toggleExcludeJDKAction;
+    private ToggleExcludeOracleJDKAction toggleExcludeOracleJDKAction;
     
 //    private ToolItem toggleMembersToolItem;
 //    private ToggleMembersAction toggleMembersAction;
@@ -161,6 +165,18 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
+    private class ToggleExcludeOracleJDKAction extends Action {
+        ToggleExcludeOracleJDKAction() {
+            super("Exclude Java SDK Internals", AS_CHECK_BOX);
+        }
+        @Override
+        public void run() {
+            excludeOracleJDK=!excludeOracleJDK;
+            filterVersion++;
+            applyFilter();
+        }
+    }
+
     private class TogglePackageAction extends Action {
         private TogglePackageAction() {
             super("Show Selection Package", IAction.AS_CHECK_BOX);
@@ -202,6 +218,12 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (settings.get(EXCLUDE_JDK)!=null) {
             excludeJDK = settings.getBoolean(EXCLUDE_JDK);
         }
+        if (settings.get(EXCLUDE_ORA_JDK)!=null) {
+            excludeOracleJDK = settings.getBoolean(EXCLUDE_ORA_JDK);
+        }
+        else {
+            excludeOracleJDK = true;
+        }
         
         if (togglePackageAction!=null) {
             togglePackageAction.setChecked(showSelectionPackage);
@@ -215,6 +237,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (toggleExcludeJDKAction!=null) {
             toggleExcludeJDKAction.setChecked(excludeJDK);
         }
+        if (toggleExcludeOracleJDKAction!=null) {
+            toggleExcludeOracleJDKAction.setChecked(excludeOracleJDK);
+        }
     }
     
     protected void storeDialog(IDialogSettings settings) {
@@ -223,12 +248,14 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         settings.put(SHOW_SELECTION_PACKAGE, showSelectionPackage);
         settings.put(EXCLUDE_DEPRECATED, excludeDeprecated);
         settings.put(EXCLUDE_JDK, excludeJDK);
+        settings.put(EXCLUDE_ORA_JDK, excludeOracleJDK);
     }
 
     public class Filter extends ItemsFilter {
         boolean members = includeMembers;
         boolean filterDeprecated = excludeDeprecated;
         boolean filterJDK = excludeJDK;
+        boolean filterOracleJDK = excludeOracleJDK;
         int version = filterVersion;
         
         @Override
@@ -237,7 +264,12 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Module module = declaration.getUnit().getPackage().getModule();
             if (filterJDK && 
                     module instanceof JDTModule &&
-                    ((JDTModule) module).isJDKModule()) {
+                    JDKUtils.isJDKModule(((JDTModule) module).getNameAsString())) {
+                return false;
+            }
+            if (filterOracleJDK && 
+                    module instanceof JDTModule &&
+                    JDKUtils.isOracleJDKModule(((JDTModule) module).getNameAsString())) {
                 return false;
             }
             if (filterDeprecated && declaration.isDeprecated()) {
@@ -754,7 +786,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             for (Module m: modules.getListOfModules()) {
                 if (m instanceof JDTModule) {
                     JDTModule module = (JDTModule) m;
-                    if ((!excludeJDK || !module.isJDKModule()) &&
+                    if ((!excludeJDK || !JDKUtils.isJDKModule(module.getNameAsString())) &&
+                        (!excludeOracleJDK || !JDKUtils.isOracleJDKModule(module.getNameAsString())) &&
                             searchedArchives.add(uniqueIdentifier(module))) {
                         fill(contentProvider, itemsFilter, module, monitor);
                         monitor.worked(1);
@@ -917,7 +950,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             for (Module m: modules.getListOfModules()) {
                 if (m instanceof JDTModule) {
                     JDTModule module = (JDTModule) m;
-                    if ((!excludeJDK || !module.isJDKModule()) &&
+                    if ((!excludeJDK || !JDKUtils.isJDKModule(module.getNameAsString())) &&
+                        (!excludeOracleJDK || !JDKUtils.isOracleJDKModule(module.getNameAsString())) &&
                             searchedArchives.add(uniqueIdentifier(module))) {
                         work += 1 + m.getPackages().size();
                     }
@@ -1037,6 +1071,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         toggleExcludeJDKAction = new ToggleExcludeJDKAction();
         toggleExcludeJDKAction.setChecked(excludeJDK);
         menuManager.add(toggleExcludeJDKAction);
+        
+        toggleExcludeOracleJDKAction = new ToggleExcludeOracleJDKAction();
+        toggleExcludeOracleJDKAction.setChecked(excludeOracleJDK);
+        menuManager.add(toggleExcludeOracleJDKAction);
         
         menuManager.add(new Separator());
         
