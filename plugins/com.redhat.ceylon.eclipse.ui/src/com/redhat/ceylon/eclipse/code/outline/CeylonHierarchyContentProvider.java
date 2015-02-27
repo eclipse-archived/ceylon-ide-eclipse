@@ -97,8 +97,8 @@ public final class CeylonHierarchyContentProvider
                     description = classOrInterface.getName() + '.' + description;
                 }
                 try {
-                    site.getWorkbenchWindow().run(true, true, 
-                            new Runnable(declaration));
+                    site.getWorkbenchWindow()
+                            .run(true, true, new Runnable(declaration));
                 } 
                 catch (Exception e) {
                     e.printStackTrace();

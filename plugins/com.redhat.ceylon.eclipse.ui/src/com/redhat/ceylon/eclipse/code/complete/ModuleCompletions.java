@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.cmr.api.JDKUtils;
+import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -241,11 +242,12 @@ public class ModuleCompletions {
             }
         }
         else {
-            final TypeChecker tc = cpc.getTypeChecker();
-            if (tc!=null) {
+            TypeChecker typeChecker = cpc.getTypeChecker();
+            if (typeChecker!=null) {
                 IProject project = cpc.getProject();
-                for (ModuleDetails module: 
-                        getModuleSearchResults(pfp, tc,project).getResults()) {
+                final ModuleSearchResult results = 
+                        getModuleSearchResults(pfp, typeChecker,project);
+                for (ModuleDetails module: results.getResults()) {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
