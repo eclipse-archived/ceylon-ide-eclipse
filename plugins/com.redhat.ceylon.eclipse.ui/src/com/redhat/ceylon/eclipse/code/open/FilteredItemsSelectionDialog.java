@@ -692,6 +692,9 @@ public abstract class FilteredItemsSelectionDialog extends
             setDocAreaVisible(toggleDocAction==null ||
                     toggleDocAction.isChecked());            
         }
+        else {
+            setDocAreaVisible(false);
+        }
         
         createPopupMenu();
         
@@ -892,6 +895,9 @@ public abstract class FilteredItemsSelectionDialog extends
     public void setDocAreaVisible(boolean visible) {
         browser.setVisible(visible);
         sash.setWeights(visible ? new int[] {3,2} : new int[] {1,0});
+        if (visible) {
+            refreshBrowserContent(browser, currentSelection);
+        }
     }
 
     /**

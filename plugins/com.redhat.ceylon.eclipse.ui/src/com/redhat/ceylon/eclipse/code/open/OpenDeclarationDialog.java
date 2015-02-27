@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -753,15 +754,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             if (monitor.isCanceled()) break;
             Modules modules = typeChecker.getContext().getModules();
             for (Module m: modules.getListOfModules()) {
-                if (!m.isJava() || includeJava()) {
-                    if (m instanceof JDTModule) {
-                        JDTModule module = (JDTModule) m;
-                        if ((!excludeJDK || !module.isJDKModule()) &&
-                                searchedArchives.add(uniqueIdentifier(module))) {
-                            fill(contentProvider, itemsFilter, project, module);
-                            monitor.worked(1);
-                            if (monitor.isCanceled()) break;
-                        }
+                if (m instanceof JDTModule) {
+                    JDTModule module = (JDTModule) m;
+                    if ((!excludeJDK || !module.isJDKModule()) &&
+                            searchedArchives.add(uniqueIdentifier(module))) {
+                        fill(contentProvider, itemsFilter, project, module);
+                        monitor.worked(1);
+                        if (monitor.isCanceled()) break;
                     }
                 }
             }
@@ -772,8 +771,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private void fill(AbstractContentProvider contentProvider,
             ItemsFilter itemsFilter, IProject project, 
             JDTModule module) {
-        for (Package pack:
-                new ArrayList<Package>(module.getPackages())) {
+        for (Package pack: new ArrayList<Package>(module.getPackages())) {
             if (!isFiltered(pack)) {
                 for (Declaration dec: pack.getMembers()) {
                     fillDeclarationAndMembers(contentProvider, 
@@ -796,7 +794,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             if (includeMembers && dec instanceof ClassOrInterface) {
                 try {
                     for (Declaration member: 
-                        new ArrayList<Declaration>(dec.getMembers())) {
+                            new ArrayList<Declaration>(dec.getMembers())) {
                         fillDeclarationAndMembers(contentProvider, 
                                 itemsFilter, project, module, member);
                     }
@@ -825,25 +823,32 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private void initFilters() {
+        filters = new ArrayList<Pattern>();
+        packageFilters = new ArrayList<Pattern>();
         String filtersString = getFilterListAsString();
-        if (!filtersString.trim().isEmpty()) { 
-            filters = filtersString
+        if (!filtersString.trim().isEmpty()) {
+            String[] regexes = filtersString
                     .replaceAll("\\(\\w+\\)", "")
                     .replace(".", "\\.")
                     .replace("*", ".*")
                     .split(",");
-        }
-        else {
-            filters = new String[0];
+            for (String regex: regexes) {
+                filters.add(Pattern.compile(regex));
+                if (regex.endsWith("::*")) {
+                    String pregex = regex.substring(0, regex.length()-3);
+                    packageFilters.add(Pattern.compile(pregex));
+                }
+            }
         }
     }
 
     protected String getFilterListAsString() {
-        return EditorUtil.getPreferences()
-                .getString(OPEN_FILTERS);
+        return EditorUtil.getPreferences().getString(OPEN_FILTERS);
     }
 
-    private String[] filters; { initFilters(); }
+    private List<Pattern> filters;
+    private List<Pattern> packageFilters;
+    { initFilters(); }
 
     private boolean isFiltered(Declaration declaration) {
         if (excludeDeprecated && declaration.isDeprecated()) {
@@ -855,11 +860,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             //out all constructors for Java annotations
             return true;
         }
-        if (filters.length>0) {
+        if (!filters.isEmpty()) {
             String name = declaration.getQualifiedNameString();
-            for (String filter: filters) {
-                String regex = filter.trim();
-                if (!regex.isEmpty() && name.matches(regex)) {
+            for (Pattern filter: filters) {
+                if (filter.matcher(name).matches()) {
                     return true;
                 }
             }
@@ -868,14 +872,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private boolean isFiltered(Package pack) {
-        if (filters.length>0) {
+        if (!packageFilters.isEmpty()) {
             String name = pack.getNameAsString();
-            for (String filter: filters) {
-                String regex = filter.trim();
-                if (regex.endsWith("::*")) {
-                    regex = regex.substring(0, regex.length()-3);
-                }
-                if (!regex.isEmpty() && name.matches(regex)) {
+            for (Pattern filter: filters) {
+                if (filter.matcher(name).matches()) {
                     return true;
                 }
             }
@@ -931,10 +931,6 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 module.getArtifact().getAbsolutePath();
     }
 
-    boolean includeJava() {
-        return true;
-    }
-    
     private static String getModule(Declaration dec) {
         Module module = dec.getUnit()
                 .getPackage().getModule();
@@ -1072,26 +1068,28 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     @Override
     protected void refreshBrowserContent(DocBrowser browser,
             Object[] selection) {
-        try {
-            if (selection!=null &&
-                    selection.length==1 &&
-                    selection[0] instanceof Declaration) {
-                Declaration declaration = (Declaration) selection[0];
-                browser.setText(getDocumentationFor(null, declaration));
-            }
-            else {
-                if (emptyDoc==null) {
-                    StringBuilder buffer = new StringBuilder();
-                    insertPageProlog(buffer, 0, HTML.getStyleSheet());
-                    buffer.append("<i>Select a declaration to see its documentation here.</i>");
-                    addPageEpilog(buffer);
-                    emptyDoc = buffer.toString();
+        if (browser.isVisible()) {
+            try {
+                if (selection!=null &&
+                        selection.length==1 &&
+                        selection[0] instanceof Declaration) {
+                    browser.setText(getDocumentationFor(null, 
+                            (Declaration) selection[0]));
                 }
-                browser.setText(emptyDoc);
+                else {
+                    if (emptyDoc==null) {
+                        StringBuilder buffer = new StringBuilder();
+                        insertPageProlog(buffer, 0, HTML.getStyleSheet());
+                        buffer.append("<i>Select a declaration to see its documentation here.</i>");
+                        addPageEpilog(buffer);
+                        emptyDoc = buffer.toString();
+                    }
+                    browser.setText(emptyDoc);
+                }
             }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
