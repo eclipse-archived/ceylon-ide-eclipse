@@ -822,7 +822,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
-    private void initFilters() {
+    protected String getFilterListAsString() {
+        return EditorUtil.getPreferences().getString(OPEN_FILTERS);
+    }
+
+    private List<Pattern> filters;
+    private List<Pattern> packageFilters;
+    { 
         filters = new ArrayList<Pattern>();
         packageFilters = new ArrayList<Pattern>();
         String filtersString = getFilterListAsString();
@@ -833,22 +839,17 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     .replace("*", ".*")
                     .split(",");
             for (String regex: regexes) {
+                regex = regex.trim();
                 filters.add(Pattern.compile(regex));
                 if (regex.endsWith("::*")) {
-                    String pregex = regex.substring(0, regex.length()-3);
-                    packageFilters.add(Pattern.compile(pregex));
+                    regex = regex.substring(0, regex.length()-3);
+                }
+                if (!regex.contains("::")) {
+                    packageFilters.add(Pattern.compile(regex));
                 }
             }
-        }
+        } 
     }
-
-    protected String getFilterListAsString() {
-        return EditorUtil.getPreferences().getString(OPEN_FILTERS);
-    }
-
-    private List<Pattern> filters;
-    private List<Pattern> packageFilters;
-    { initFilters(); }
 
     private boolean isFiltered(Declaration declaration) {
         if (excludeDeprecated && declaration.isDeprecated()) {
@@ -1015,7 +1016,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         String name = d.getName();
         return name!=null && 
                 !d.isAnonymous() && 
-                (d.isToplevel() || !isOverloadedVersion(d));
+                !isOverloadedVersion(d);
     }
     
     @Override
@@ -1058,7 +1059,23 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                         CeylonOpenDialogsPreferencePage.ID, 
                         new String[] {CeylonOpenDialogsPreferencePage.ID}, 
                         null).open();
-                initFilters();
+                filters = new ArrayList<Pattern>();
+                packageFilters = new ArrayList<Pattern>();
+                String filtersString = getFilterListAsString();
+                if (!filtersString.trim().isEmpty()) {
+                    String[] regexes = filtersString
+                            .replaceAll("\\(\\w+\\)", "")
+                            .replace(".", "\\.")
+                            .replace("*", ".*")
+                            .split(",");
+                    for (String regex: regexes) {
+                        filters.add(Pattern.compile(regex));
+                        if (regex.endsWith("::*")) {
+                            String pregex = regex.substring(0, regex.length()-3);
+                            packageFilters.add(Pattern.compile(pregex));
+                        }
+                    }
+                }
                 filterVersion++;
                 applyFilter();
             }
