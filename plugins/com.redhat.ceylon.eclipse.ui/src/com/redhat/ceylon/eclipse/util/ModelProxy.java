@@ -35,7 +35,7 @@ public class ModelProxy {
     private final String name;
     private final IProject project;
     
-    private final SoftReference<Declaration> declaration;
+    private SoftReference<Declaration> declaration;
     
     public ModelProxy(Declaration declaration) {
         this.name = declaration.getName();
@@ -79,6 +79,7 @@ public class ModelProxy {
                         Declaration result = 
                                 getDeclarationInUnit(qualifiedName, unit);
                         if (result!=null) {
+                            declaration = new SoftReference<Declaration>(result);
                             return result;
                         }
                     }
@@ -96,6 +97,7 @@ public class ModelProxy {
                 Declaration result = 
                         getDeclarationInUnit(qualifiedName, unit);
                 if (result!=null) {
+                    declaration = new SoftReference<Declaration>(result);
                     return result;
                 }
             }
@@ -108,11 +110,13 @@ public class ModelProxy {
         for (Declaration d: pack.getMembers()) {
             String qn = d.getQualifiedNameString();
             if (qn.equals(qualifiedName)) {
+                declaration = new SoftReference<Declaration>(d);
                 return d;
             }
             else if (qualifiedName.startsWith(qn)) {
                 for (Declaration m: d.getMembers()) {
                     if (m.getQualifiedNameString().equals(qualifiedName)) {
+                        declaration = new SoftReference<Declaration>(m);
                         return m;
                     }
                 }
