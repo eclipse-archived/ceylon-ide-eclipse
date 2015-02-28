@@ -719,10 +719,37 @@ public class HierarchyView extends ViewPart {
 
     private void createTreeMenu(final Tree tree) {
         Menu menu = new Menu(tree);
+        tree.setMenu(menu);
         MenuItem item = new MenuItem(menu, SWT.PUSH);
+        item.setText("Focus on Selected Type");
+//        item.setImage(getTitleImage());
+        item.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                StructuredSelection selection = 
+                        (StructuredSelection) treeViewer.getSelection();
+                Object firstElement = selection.getFirstElement();
+                if (firstElement instanceof CeylonHierarchyNode) {
+                    CeylonHierarchyNode node = (CeylonHierarchyNode) firstElement;
+                    Declaration declaration = node.getDeclaration();
+                    if (declaration.isClassOrInterfaceMember()) {
+                        declaration = (Declaration) declaration.getContainer();
+                    }
+                    ModelProxy input = new ModelProxy(declaration);
+                    setTreeInput(input);
+                    tableViewer.setInput(input);
+                    addToHistory(input);
+                    setDescription(declaration);
+                    title.setImage(getImageForDeclaration(declaration));
+                    title.setText(declaration.getName());
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        item = new MenuItem(menu, SWT.PUSH);
         item.setText("Focus on Selection");
         item.setImage(getTitleImage());
-        tree.setMenu(menu);
         item.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -745,7 +772,6 @@ public class HierarchyView extends ViewPart {
         item = new MenuItem(menu, SWT.PUSH);
         item.setText("Go to Selection");
         item.setImage(GOTO_IMAGE);
-        tree.setMenu(menu);
         item.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -765,10 +791,10 @@ public class HierarchyView extends ViewPart {
 
     private void createTableMenu(final Table table) {
         Menu menu = new Menu(table);
+        table.setMenu(menu);
         MenuItem item = new MenuItem(menu, SWT.PUSH);
         item.setText("Focus on Selection");
         item.setImage(getTitleImage());
-        table.setMenu(menu);
         item.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -792,7 +818,6 @@ public class HierarchyView extends ViewPart {
         item = new MenuItem(menu, SWT.PUSH);
         item.setText("Go to Selection");
         item.setImage(GOTO_IMAGE);
-        table.setMenu(menu);
         item.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
