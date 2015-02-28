@@ -40,6 +40,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAs
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeArgumentReferenceProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeReferenceProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningParametersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningTypeProposal;
@@ -461,7 +462,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addCreateParameterProposals(rootNode, node, problem, proposals, 
                     project, tc, file);
             if (tc!=null) {
-                addChangeReferenceProposals(rootNode, node, problem, proposals, file);
+                addChangeArgumentReferenceProposals(rootNode, node, problem, proposals, file);
             }
             break;
         case 200:
