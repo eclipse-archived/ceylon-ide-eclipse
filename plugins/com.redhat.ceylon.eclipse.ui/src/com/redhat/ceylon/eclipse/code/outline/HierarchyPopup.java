@@ -19,6 +19,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.bindings.TriggerSequence;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -54,6 +55,9 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 
 public class HierarchyPopup extends TreeViewPopup {
+    
+    private static final String EXCLUDE_ORACLE_JDK = "excludeOracleJDK";
+    private static final String EXCLUDE_JDK = "excludeJDK";
     
     private static final ImageRegistry imageRegistry = 
             CeylonPlugin.getInstance().getImageRegistry();
@@ -123,9 +127,13 @@ public class HierarchyPopup extends TreeViewPopup {
         gd.heightHint = tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
         final TreeViewer treeViewer = new TreeViewer(tree);
+        IDialogSettings dialogSettings = getDialogSettings();
         contentProvider = 
                 new CeylonHierarchyContentProvider(getEditor().getSite(),
-                        "Quick Hierarchy");
+                        "Quick Hierarchy",
+                        dialogSettings.getBoolean(EXCLUDE_JDK),
+                        dialogSettings.get(EXCLUDE_ORACLE_JDK)==null || 
+                        dialogSettings.getBoolean(EXCLUDE_ORACLE_JDK));
         labelProvider = new CeylonHierarchyLabelProvider() {
             @Override
             String getViewInterfacesShortcut() {
@@ -350,16 +358,21 @@ public class HierarchyPopup extends TreeViewPopup {
                 new Action("Exclude Java SDK", IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
-                contentProvider.setExcludeJDK(isChecked());
+                boolean checked = isChecked();
+                contentProvider.setExcludeJDK(checked);
+                getDialogSettings().put(EXCLUDE_JDK, checked);
                 update();
             }
         };
         javaSDKAction.setChecked(contentProvider.isExcludeJDK());
         viewMenu.add(javaSDKAction);
-        final Action oracleSDKAction = new Action("Exclude Java SDK Internals", IAction.AS_CHECK_BOX) {
+        final Action oracleSDKAction = 
+                new Action("Exclude Java SDK Internals", IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
-                contentProvider.setExcludeOracleJDK(isChecked());
+                boolean checked = isChecked();
+                contentProvider.setExcludeOracleJDK(checked);
+                getDialogSettings().put(EXCLUDE_ORACLE_JDK, checked);
                 update();
             }
         };

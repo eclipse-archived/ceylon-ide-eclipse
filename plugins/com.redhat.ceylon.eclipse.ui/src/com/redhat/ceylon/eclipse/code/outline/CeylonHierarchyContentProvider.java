@@ -64,9 +64,12 @@ public final class CeylonHierarchyContentProvider
 
     private String label;
     
-    CeylonHierarchyContentProvider(IWorkbenchPartSite site, String label) {
+    CeylonHierarchyContentProvider(IWorkbenchPartSite site, String label,
+            boolean excludeJDK, boolean excludeOracleJDK) {
         this.site = site;
         this.label = label;
+        this.excludeJDK = excludeJDK;
+        this.excludeOracleJDK = excludeOracleJDK;
     }
     
     Declaration getDeclaration() {

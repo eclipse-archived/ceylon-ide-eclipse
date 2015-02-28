@@ -39,6 +39,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -105,6 +106,9 @@ import com.redhat.ceylon.eclipse.util.ModelProxy;
 
 public class HierarchyView extends ViewPart {
 
+    private static final String EXCLUDE_JDK = "excludeJDKInHierarchy";
+    private static final String EXCLUDE_ORACLE_JDK = "excludeOracleJDKInHierarchy";
+    
     private static final ImageRegistry imageRegistry = 
             CeylonPlugin.getInstance().getImageRegistry();
     private static final Image GOTO_IMAGE = 
@@ -514,7 +518,9 @@ public class HierarchyView extends ViewPart {
                 new Action("Exclude Java SDK", IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
-                contentProvider.setExcludeJDK(isChecked());
+                boolean checked = isChecked();
+                contentProvider.setExcludeJDK(checked);
+                EditorUtil.getPreferences().setValue(EXCLUDE_JDK, checked);
                 update();
             }
         };
@@ -523,7 +529,9 @@ public class HierarchyView extends ViewPart {
         final Action oracleSDKAction = new Action("Exclude Java SDK Internals", IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
-                contentProvider.setExcludeOracleJDK(isChecked());
+                boolean checked = isChecked();
+                contentProvider.setExcludeOracleJDK(checked);
+                EditorUtil.getPreferences().setValue(EXCLUDE_ORACLE_JDK, checked);
                 update();
             }
         };
@@ -594,9 +602,13 @@ public class HierarchyView extends ViewPart {
         tree.setLayoutData(gd);
         viewForm.setContent(tree);
         treeViewer = new TreeViewer(tree);
+        IPreferenceStore preferences = EditorUtil.getPreferences();
+        preferences.setDefault(EXCLUDE_ORACLE_JDK, true);
         contentProvider = 
                 new CeylonHierarchyContentProvider(getSite(), 
-                        "Hierarchy");
+                        "Hierarchy",
+                        preferences.getBoolean(EXCLUDE_JDK),
+                        preferences.getBoolean(EXCLUDE_ORACLE_JDK));
         labelProvider = 
                 new CeylonHierarchyLabelProvider() {
             @Override
