@@ -482,6 +482,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addRemoveAnnotationProposal(node, "formal", proposals, project);
             break;
         case 400:
+        case 401:
             addMakeSharedProposal(proposals, project, node);
             break;
         case 500:
@@ -739,7 +740,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addConvertToPositionalArgumentsProposal(proposals, file, rootNode, 
                     editor, currentOffset);
             
-            final Tree.Statement statement = findStatement(rootNode, node);
+            Tree.Statement statement = findStatement(rootNode, node);
             Tree.Declaration declaration = findDeclaration(rootNode, node);
             Tree.NamedArgument argument = findArgument(rootNode, node);
             Tree.ImportMemberOrType imp = findImport(rootNode, node);
