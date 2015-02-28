@@ -21,6 +21,7 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -36,6 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
@@ -110,7 +112,6 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         }
     }
 
-    private List<String> arguments = new ArrayList<String>();
     private List<Integer> order = new ArrayList<Integer>();
     private List<Boolean> defaulted = new ArrayList<Boolean>();
     
@@ -118,6 +119,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     
     private final List<Parameter> parameters;
     
+    private Map<MethodOrValue,String> arguments = 
+            new HashMap<MethodOrValue,String>();
     private final Map<MethodOrValue,String> defaultArgs = 
             new HashMap<MethodOrValue,String>();
     private final Map<MethodOrValue,String> originalDefaultArgs = 
@@ -145,7 +148,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         return defaulted;
     }
     
-    public List<String> getArguments() {
+    public Map<MethodOrValue,String> getArguments() {
         return arguments;
     }
 
@@ -170,7 +173,6 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     for (int i=0; i<parameters.size(); i++) {
                         order.add(i);
                         defaulted.add(parameters.get(i).isDefaulted());
-                        arguments.add(null);
                     }
                     Node decNode = getReferencedNode(refDec);
                     Tree.ParameterList pl=null;
@@ -326,7 +328,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         if (declaration!=null) {
             int requiredParams=-1;
             for (int i=0; i<defaulted.size(); i++) {
-                Parameter p = parameters.get(order.get(i));
+                int index = order.get(i);
+                Parameter p = parameters.get(index);
                 if (!defaulted.get(i) || 
                         defaultHasChanged(p)) {
                     if (i>requiredParams) {
@@ -334,6 +337,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     }
                 }
             }
+            
             FindInvocationsVisitor fiv = 
                     new FindInvocationsVisitor(declaration);
             root.visit(fiv);
@@ -355,12 +359,35 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 Tree.PositionalArgument[] args = 
                         new Tree.PositionalArgument[len];
                 for (int i=0; i<pas.size(); i++) {
-                    args[order.indexOf(i)] = pas.get(i);
+                    PositionalArgument argument = pas.get(i);
+                    int index = order.indexOf(i);
+                    if (index>=0) {
+                        args[index] = argument;
+                    }
                 }
                 tfc.addEdit(reorderEdit(pal, args));
             }
+            
             for (Tree.NamedArgumentList nal: fiv.getNamedArgLists()) {
                 List<Tree.NamedArgument> nas = nal.getNamedArguments();
+                for (Tree.NamedArgument na: nas) {
+                    Parameter nap = na.getParameter();
+                    if (nap!=null) {
+                        boolean found = false;
+                        for (int i=0; i<defaulted.size(); i++) {
+                            int index = order.get(i);
+                            Parameter p = parameters.get(index);
+                            if (nap.getModel().equals(p.getModel())) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            tfc.addEdit(new DeleteEdit(na.getStartIndex(),
+                                    na.getStopIndex()-na.getStartIndex()+1));
+                        }
+                    }
+                }
                 for (int i=0; i<defaulted.size(); i++) {
                     int index = order.get(i);
                     Parameter p = parameters.get(index);
@@ -370,19 +397,20 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             Parameter nap = na.getParameter();
                             if (nap!=null &&
                                     nap.getModel().equals(p.getModel())) {
-                                found=true;
+                                found = true;
                                 break;
                             }
                         }
                         if (!found) {
                             String arg = getInlinedNamedArg(p, 
-                                    arguments.get(index));
+                                    arguments.get(p.getModel()));
                             tfc.addEdit(new InsertEdit(nal.getStopIndex(), 
                                     arg + "; "));
                         }
                     }
                 }
             }
+            
             FindRefinementsVisitor frv = 
                     new FindRefinementsVisitor(declaration);
             root.visit(frv);
@@ -422,19 +450,20 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     continue;
                 }
                 List<Tree.Parameter> ps = pl.getParameters();
-                int size = parameters.size();
+                int size = defaulted.size();
                 Tree.Parameter[] params = new Tree.Parameter[size];
                 boolean[] defaulted = new boolean[size];
-                for (int i=0; i<size; i++) {
+                for (int i=0; i<ps.size(); i++) {
                     int index = order.indexOf(i);
-                    if (i<ps.size()) {
+                    if (index>=0) {
                         params[index] = ps.get(i);
+                        defaulted[index] = 
+                                !actual && this.defaulted.get(index);
                     }
-                    defaulted[index] = 
-                            !actual && this.defaulted.get(index);
                 }
                 tfc.addEdit(reorderEdit(pl, params, defaulted));
             }
+            
             FindArgumentsVisitor fav = 
                     new FindArgumentsVisitor(declaration);
             root.visit(fav);
@@ -473,10 +502,16 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             String argString;
             if (elem==null) {
                 int index = order.get(i);
-                argString = getInlinedArg(parameters.get(index), 
-                        this.arguments.get(index));
+                Parameter p = parameters.get(index);
+                argString = getInlinedArg(p, 
+                        this.arguments.get(p.getModel()));
             }
             else {
+//                MethodOrValue model = 
+//                        elem.getParameter().getModel();
+//                if (removed.contains(model)) {
+//                    continue;
+//                }
                 argString = toString(elem);
             }
             sb.append(argString).append(", ");
@@ -493,7 +528,11 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         StringBuilder sb = new StringBuilder("(");
         for (int i=0; i<parameters.length; i++) {
             Tree.Parameter parameter = parameters[i];
-            sb.append(toString(parameter)).append(", ");
+            MethodOrValue model = 
+                    parameter.getParameterModel().getModel();
+//            if (!removed.contains(model)) {
+                sb.append(toString(parameter)).append(", ");
+//            }
         }
         sb.setLength(sb.length()-2);
         sb.append(")");
@@ -510,8 +549,9 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             Tree.Parameter parameter = parameters[i];
             String paramString;
             if (parameter==null) {
+                int index = order.get(i);
                 Parameter addedParameter = 
-                        this.parameters.get(order.get(i));
+                        this.parameters.get(index);
                 paramString = 
                         addedParameter.getType()
                             .getProducedTypeName(list.getUnit()) + 
@@ -522,6 +562,11 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 }
             }
             else {
+//                final MethodOrValue model = 
+//                        parameter.getParameterModel().getModel();
+//                if (removed.contains(model)) {
+//                    continue;
+//                }
                 paramString = toString(parameter);
                 //first remove the default arg
                 Node sie = getDefaultArgSpecifier(parameter);

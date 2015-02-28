@@ -90,8 +90,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         viewer.getTable().setHeaderVisible(true);
         viewer.getTable().setLinesVisible(true);
         GridData tgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
-        tgd.horizontalSpan=3;
-        tgd.verticalSpan=5;
+        tgd.horizontalSpan = 3;
+        tgd.verticalSpan = 6;
         tgd.grabExcessHorizontalSpace = true;
 //        gd.grabExcessVerticalSpace = true;
         tgd.heightHint = 100;
@@ -290,9 +290,13 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        Button addButton = new Button(composite, SWT.PUSH);
+        final Button addButton = new Button(composite, SWT.PUSH);
         addButton.setText("Add...");
         addButton.setLayoutData(bgd);
+        
+        final Button removeButton = new Button(composite, SWT.PUSH);
+        removeButton.setText("Remove");
+        removeButton.setLayoutData(bgd);
         
         new Label(composite, SWT.NONE);
 
@@ -308,6 +312,32 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     List<Boolean> defaultedList = refactoring.getDefaulted();
                     defaultedList.set(index, !defaultedList.get(index));
                     viewer.refresh();
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+        removeButton.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                int[] indices = viewer.getTable().getSelectionIndices();
+                int lastIndex = viewer.getTable().getItemCount()-1;
+                if (indices.length>0 && indices[0]<=lastIndex) {
+                    int index = indices[0];
+                    Parameter p = parameterModels.remove(index);
+                    refactoring.getDefaulted().remove(index);
+                    refactoring.getOrder().remove(index);
+                    viewer.remove(p);
+                    viewer.refresh();
+                    if (parameterModels.isEmpty()) {
+                        toggleButton.setEnabled(false);
+                        removeButton.setEnabled(false);
+                    }
+                    if (parameterModels.size()<2) {
+                        upButton.setEnabled(false);
+                        downButton.setEnabled(false);
+                    }
                 }
             }
             @Override
@@ -335,13 +365,14 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     p.setDefaulted(false);
                     p.setDeclaration((Declaration) scope);
                     model.setInitializerParameter(p);
+                    int index = parameterModels.size();
+                    int order = refactoring.getParameters().size();
                     parameterModels.add(p);
-                    int index = parameterModels.size()-1;
                     refactoring.getParameters().add(p);
                     refactoring.getDefaulted().add(false);
-                    refactoring.getArguments().add(arg);
+                    refactoring.getArguments().put(p.getModel(), arg);
                     refactoring.getDefaultArgs().put(model, arg);
-                    refactoring.getOrder().add(index, index);
+                    refactoring.getOrder().add(index, order);
                     viewer.add(p);
                     viewer.refresh();
                     viewer.getTable().select(index);
@@ -351,6 +382,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     }
                     if (index==0) {
                         toggleButton.setEnabled(true);
+                        removeButton.setEnabled(true);
                     }
                 }
             }
@@ -360,6 +392,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         
         if (parameterModels.isEmpty()) {
             toggleButton.setEnabled(false);
+            removeButton.setEnabled(false);
         }
         else {
             viewer.getTable().setSelection(0);
