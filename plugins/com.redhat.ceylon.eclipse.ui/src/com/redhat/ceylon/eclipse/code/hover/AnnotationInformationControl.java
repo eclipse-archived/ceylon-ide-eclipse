@@ -101,9 +101,11 @@ class AnnotationInformationControl extends AbstractInformationControl
 
     @Override
     public void setFocus() {
-        super.setFocus();
-        if (fFocusControl != null) {
-            fFocusControl.setFocus();
+        if (!getShell().isDisposed()) {
+            super.setFocus();
+            if (fFocusControl != null) {
+                fFocusControl.setFocus();
+            }
         }
     }
 
