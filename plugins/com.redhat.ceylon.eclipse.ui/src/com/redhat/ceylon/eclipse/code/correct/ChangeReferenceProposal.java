@@ -32,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.NamedArgumentList;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -130,8 +131,12 @@ class ChangeReferenceProposal extends CorrectionProposal
         String brokenName = getIdentifyingNode(node).getText();
         if (brokenName!=null && !brokenName.isEmpty()) {
             if (node instanceof Tree.NamedArgument) {
+                Scope scope = node.getScope();
+                if (!(scope instanceof NamedArgumentList)) {
+                    scope = scope.getScope(); //for declaration-style named args
+                }
                 NamedArgumentList namedArgumentList = 
-                        (NamedArgumentList) node.getScope();
+                        (NamedArgumentList) scope;
                 ParameterList parameterList = 
                         namedArgumentList.getParameterList();
                 if (parameterList!=null) {
