@@ -4,11 +4,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoade
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static java.util.Collections.singletonList;
 
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.ui.IEditorPart;
@@ -88,36 +85,38 @@ public class ModelProxy {
         }
         
         TypeChecker typeChecker = 
-                getTypeChecker(moduleName, moduleVersion, project).get(0);
-        Package pack = getModelLoader(typeChecker)
-                .getLoadedModule(moduleName)
-                .getPackage(packageName);
-        for (Unit unit: pack.getUnits()) {
-            if (unit.getFilename().equals(unitName)) {
-                Declaration result = 
-                        getDeclarationInUnit(qualifiedName, unit);
-                if (result!=null) {
-                    declaration = new SoftReference<Declaration>(result);
-                    return result;
+                getTypeChecker(moduleName, moduleVersion, project);
+        if (typeChecker!=null) {
+            Package pack = getModelLoader(typeChecker)
+                    .getLoadedModule(moduleName)
+                    .getPackage(packageName);
+            for (Unit unit: pack.getUnits()) {
+                if (unit.getFilename().equals(unitName)) {
+                    Declaration result = 
+                            getDeclarationInUnit(qualifiedName, unit);
+                    if (result!=null) {
+                        declaration = new SoftReference<Declaration>(result);
+                        return result;
+                    }
                 }
             }
-        }
-        //the above approach doesn't work for binary modules 
-        //because the filenames are wrong for the iterated 
-        //units (.class instead of .ceylon), nor for Java
-        //modules, apparently
-        //TODO: David has a better way!
-        for (Declaration d: pack.getMembers()) {
-            String qn = d.getQualifiedNameString();
-            if (qn.equals(qualifiedName)) {
-                declaration = new SoftReference<Declaration>(d);
-                return d;
-            }
-            else if (qualifiedName.startsWith(qn)) {
-                for (Declaration m: d.getMembers()) {
-                    if (m.getQualifiedNameString().equals(qualifiedName)) {
-                        declaration = new SoftReference<Declaration>(m);
-                        return m;
+            //the above approach doesn't work for binary modules 
+            //because the filenames are wrong for the iterated 
+            //units (.class instead of .ceylon), nor for Java
+            //modules, apparently
+            //TODO: David has a better way!
+            for (Declaration d: pack.getMembers()) {
+                String qn = d.getQualifiedNameString();
+                if (qn.equals(qualifiedName)) {
+                    declaration = new SoftReference<Declaration>(d);
+                    return d;
+                }
+                else if (qualifiedName.startsWith(qn)) {
+                    for (Declaration m: d.getMembers()) {
+                        if (m.getQualifiedNameString().equals(qualifiedName)) {
+                            declaration = new SoftReference<Declaration>(m);
+                            return m;
+                        }
                     }
                 }
             }
@@ -161,28 +160,20 @@ public class ModelProxy {
         return qualifiedName;
     }
     
-    public static List<TypeChecker> getTypeChecker(Module module,
-            /*optional*/ IProject project) {
-        return getTypeChecker(module.getNameAsString(), 
-                module.getVersion(), 
-                project);
-    }
-    
-    private static List<TypeChecker> getTypeChecker(String moduleName, String moduleVersion, 
+    private static TypeChecker getTypeChecker(String moduleName, String moduleVersion, 
             /*optional*/ IProject project) {
         if (project==null) {
-            List<TypeChecker> tcs = new ArrayList<TypeChecker>();
             for (TypeChecker typeChecker: getTypeCheckers()) {
                 JDTModelLoader modelLoader = getModelLoader(typeChecker);
                 Module module = modelLoader.getLoadedModule(moduleName);
                 if (module!=null && module.getVersion().equals(moduleVersion)) {
-                    tcs.add(typeChecker);
+                    return typeChecker;
                 }
             }
-            return tcs;
+            return null;
         }
         else {
-            return singletonList(getProjectTypeChecker(project));
+            return getProjectTypeChecker(project);
         }
     }
     

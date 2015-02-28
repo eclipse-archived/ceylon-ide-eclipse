@@ -4,6 +4,8 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.getInterveningRe
 import static com.redhat.ceylon.compiler.typechecker.model.Util.getSignature;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isAbstraction;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
 
 import java.lang.reflect.InvocationTargetException;
@@ -13,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -36,8 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.model.IProjectAware;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 
 public final class CeylonHierarchyContentProvider
@@ -315,33 +315,30 @@ public final class CeylonHierarchyContentProvider
             
             Unit unit = declaration.getUnit();
             Module currentModule = unit.getPackage().getModule();
-            IProject project = null;
-            if (unit instanceof IResourceAware) {
-                project = ((IResourceAware) unit).getProjectResource();
-            }
-            else if (unit instanceof IProjectAware) {
-                project = ((IProjectAware) unit).getProject();
-            }
-            List<TypeChecker> tcs = 
-                    ModelProxy.getTypeChecker(currentModule, project);
+            String name = currentModule.getNameAsString();
+            String version = currentModule.getVersion();
             Set<Module> allModules = new HashSet<Module>();
-            for (TypeChecker tc: tcs) {
-                ModuleManager moduleManager = 
-                        tc.getPhasedUnits().getModuleManager();
-                allModules.addAll(moduleManager.getCompiledModules());
-                allModules.add(currentModule);
+            allModules.add(currentModule);
+            for (TypeChecker typeChecker: getTypeCheckers()) {
+                JDTModelLoader modelLoader = getModelLoader(typeChecker);
+                Module module = modelLoader.getLoadedModule(name);
+                if (module!=null && module.getVersion().equals(version)) { //TODO: check this with David ... could we use JDTModule.getReferencingModules()?
+                    ModuleManager moduleManager = 
+                            typeChecker.getPhasedUnits().getModuleManager();
+                    allModules.addAll(moduleManager.getCompiledModules());
+                }
             }
             
             monitor.worked(10000);
             
             Set<Package> packages = new HashSet<Package>();
             int ams = allModules.size();
-            for (Module m: allModules) {
-                for (Package p: m.getAllPackages()) {
-                    String pmn = p.getModule().getNameAsString();
-                    if ((!excludeJDK || !JDKUtils.isJDKModule(pmn)) && 
-                            (!excludeOracleJDK || !JDKUtils.isOracleJDKModule(pmn))) {
-                        packages.add(p);
+            for (Module module: allModules) {
+                for (Package pack: module.getAllPackages()) {
+                    String packageModuleName = pack.getModule().getNameAsString();
+                    if ((!excludeJDK || !JDKUtils.isJDKModule(packageModuleName)) && 
+                            (!excludeOracleJDK || !JDKUtils.isOracleJDKModule(packageModuleName))) {
+                        packages.add(pack);
                     }
                 }
                 monitor.worked(10000/ams);
