@@ -507,11 +507,6 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                         this.arguments.get(p.getModel()));
             }
             else {
-//                MethodOrValue model = 
-//                        elem.getParameter().getModel();
-//                if (removed.contains(model)) {
-//                    continue;
-//                }
                 argString = toString(elem);
             }
             sb.append(argString).append(", ");
@@ -528,11 +523,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         StringBuilder sb = new StringBuilder("(");
         for (int i=0; i<parameters.length; i++) {
             Tree.Parameter parameter = parameters[i];
-            MethodOrValue model = 
-                    parameter.getParameterModel().getModel();
-//            if (!removed.contains(model)) {
-                sb.append(toString(parameter)).append(", ");
-//            }
+            sb.append(toString(parameter)).append(", ");
         }
         sb.setLength(sb.length()-2);
         sb.append(")");
@@ -562,11 +553,6 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 }
             }
             else {
-//                final MethodOrValue model = 
-//                        parameter.getParameterModel().getModel();
-//                if (removed.contains(model)) {
-//                    continue;
-//                }
                 paramString = toString(parameter);
                 //first remove the default arg
                 Node sie = getDefaultArgSpecifier(parameter);
