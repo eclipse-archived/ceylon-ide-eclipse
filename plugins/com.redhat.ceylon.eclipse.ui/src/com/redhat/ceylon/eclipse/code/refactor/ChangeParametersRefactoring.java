@@ -1,5 +1,9 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.getDefaultArgSpecifier;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
@@ -16,6 +20,7 @@ import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -408,12 +413,27 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                         }
                         if (!found) {
                             String arg = getInlinedNamedArg(p, 
-                                    arguments.get(p.getModel()));
-                            //TODO: fix the indenting when the
-                            //      named argument list is formatted
-                            //      over multiple lines!
-                            tfc.addEdit(new InsertEdit(nal.getStopIndex(), 
-                                    arg + "; "));
+                                    arguments.get(p.getModel())) + ';';
+                            int startOffset = nal.getStartIndex();
+                            int stopOffset = nal.getStopIndex();
+                            try {
+                                IDocument doc = getDocument(tfc);
+                                if (doc.getLineOfOffset(stopOffset)>doc.getLineOfOffset(startOffset)) {
+                                    arg = getDefaultIndent() + arg +
+                                            getDefaultLineDelimiter(doc) + 
+                                            getIndent(nal, doc);
+                                }
+                                else if (startOffset==stopOffset-1) {
+                                    arg = ' ' + arg + ' ';
+                                }
+                                else {
+                                    arg = arg + ' ';
+                                }
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            tfc.addEdit(new InsertEdit(stopOffset, arg));
                         }
                     }
                 }
