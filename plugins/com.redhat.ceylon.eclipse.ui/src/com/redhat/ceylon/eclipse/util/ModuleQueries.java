@@ -1,6 +1,11 @@
 package com.redhat.ceylon.eclipse.util;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
@@ -45,12 +50,43 @@ public class ModuleQueries {
         }
         return new ModuleVersionQuery(name, version, ModuleQuery.Type.CODE);
     }
+    
+    static class Runnable implements IRunnableWithProgress {
+        
+        private String prefix;
+        private TypeChecker typeChecker;
+        private IProject project;
+
+        ModuleSearchResult result;
+        
+        Runnable(String prefix, TypeChecker typeChecker, IProject project) {
+            this.prefix = prefix;
+            this.typeChecker = typeChecker;
+            this.project = project;
+        }
+        
+        @Override
+        public void run(IProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException {
+            monitor.beginTask("Querying module repositories...", IProgressMonitor.UNKNOWN);
+            ModuleQuery query = getModuleQuery(prefix, project);
+            query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+            result = typeChecker.getContext().getRepositoryManager().completeModules(query);
+            monitor.done();
+        }
+        
+    }
 
     public static ModuleSearchResult getModuleSearchResults(String prefix,
-            TypeChecker tc, IProject project) {
-        ModuleQuery query = getModuleQuery(prefix, project);
-        query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
-        return tc.getContext().getRepositoryManager().completeModules(query);
+            TypeChecker typeChecker, IProject project) {
+        Runnable runnable = new Runnable(prefix, typeChecker, project);
+        try {
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().run(true, true, runnable);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return runnable.result;
     }
 
 }

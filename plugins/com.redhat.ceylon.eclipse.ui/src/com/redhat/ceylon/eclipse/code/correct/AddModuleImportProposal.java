@@ -4,11 +4,14 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -16,6 +19,7 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
@@ -87,9 +91,46 @@ class AddModuleImportProposal implements ICompletionProposal,
     public StyledString getStyledDisplayString() {
         return Highlights.styleProposal(getDisplayString(), true);
     }
+    
+    static class Runnable implements IRunnableWithProgress {
+        private String pkg;
+        private Unit unit;
+        private IProject project;
+        private TypeChecker typeChecker;
+        private Collection<ICompletionProposal> proposals;
+        
+        Runnable(String pkg, Unit unit, IProject project,
+                TypeChecker typeChecker,
+                Collection<ICompletionProposal> proposals) {
+            this.pkg = pkg;
+            this.unit = unit;
+            this.project = project;
+            this.typeChecker = typeChecker;
+            this.proposals = proposals;
+        }
+        
+        @Override
+        public void run(IProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException {
+            monitor.beginTask("Querying module repositories...", IProgressMonitor.UNKNOWN);
+            ModuleQuery query = getModuleQuery("", project);
+            query.setMemberName(pkg);
+            query.setMemberSearchPackageOnly(true);
+            query.setMemberSearchExact(true);
+            query.setCount(1l);
+            query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+            ModuleSearchResult msr = typeChecker.getContext()
+                    .getRepositoryManager()
+                    .searchModules(query);
+            for (ModuleDetails md: msr.getResults()) {
+                proposals.add(new AddModuleImportProposal(project, unit, md));
+            }
+            monitor.done();
+        }
+    }
 
     static void addModuleImportProposals(Collection<ICompletionProposal> proposals, 
-            IProject project, TypeChecker tc, Node node) {
+            IProject project, TypeChecker typeChecker, Node node) {
         Unit unit = node.getUnit();
         if (unit.getPackage().getModule().isDefault()) {
             return;
@@ -108,16 +149,12 @@ class AddModuleImportProposal implements ICompletionProposal,
                 }
             }
         }
-        ModuleQuery query = getModuleQuery("", project);
-        query.setMemberName(formatPath(ids));
-        query.setMemberSearchPackageOnly(true);
-        query.setMemberSearchExact(true);
-        query.setCount(1l);
-        query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
-        ModuleSearchResult msr = tc.getContext().getRepositoryManager()
-                .searchModules(query);
-        for (ModuleDetails md: msr.getResults()) {
-            proposals.add(new AddModuleImportProposal(project, unit, md));
+        try {
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().run(true, true,
+                    new Runnable(pkg, unit, project, typeChecker, proposals));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
