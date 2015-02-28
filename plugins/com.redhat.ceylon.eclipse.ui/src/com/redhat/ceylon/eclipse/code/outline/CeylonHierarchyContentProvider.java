@@ -80,7 +80,7 @@ public final class CeylonHierarchyContentProvider
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         if (newInput!=null && newInput!=oldInput) {
-            Declaration declaration = ((ModelProxy) newInput).getDeclaration();
+            Declaration declaration = ((ModelProxy) newInput).get();
             if (declaration instanceof TypedDeclaration) { 
                 TypedDeclaration td = (TypedDeclaration) declaration;
                 if (td.getTypeDeclaration().isAnonymous()) {
@@ -482,8 +482,8 @@ public final class CeylonHierarchyContentProvider
                                     else if (declaration instanceof TypedDeclaration) {
                                         Declaration refinedDeclaration = declaration.getRefinedDeclaration();
                                         TypeDeclaration td = (TypeDeclaration) d;
-                                        Declaration dec = td.getDirectMember(declaration.getName(), 
-                                                signature, false);
+                                        Declaration dec = 
+                                                td.getDirectMember(declaration.getName(), signature, false);
                                         if (dec!=null && dec.getRefinedDeclaration()!=null &&
                                                 dec.getRefinedDeclaration().equals(refinedDeclaration)) {
                                             List<Declaration> refinements = 
@@ -495,8 +495,7 @@ public final class CeylonHierarchyContentProvider
                                             for (Declaration candidate: refinements) {
                                                 if (getInterveningRefinements(declaration.getName(), signature,
                                                         refinedDeclaration, td,
-                                                        (TypeDeclaration) candidate.getContainer())
-                                                                .size()==1) {
+                                                        (TypeDeclaration) candidate.getContainer()).size()==1) {
                                                     add(dec, candidate);
                                                 }
                                             }

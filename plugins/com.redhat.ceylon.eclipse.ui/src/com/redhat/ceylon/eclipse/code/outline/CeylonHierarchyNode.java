@@ -23,7 +23,7 @@ class CeylonHierarchyNode
     }
     
     public Declaration getDeclaration() {
-        return proxy.getDeclaration();
+        return proxy.get();
     }
 
     boolean isNonUnique() {
@@ -47,6 +47,9 @@ class CeylonHierarchyNode
     }
     
     void addChild(CeylonHierarchyNode child) {
+        if (child==this) {
+            return; 
+        }
         for (CeylonHierarchyNode c: children) {
             if (child.equals(c)) return;
         }

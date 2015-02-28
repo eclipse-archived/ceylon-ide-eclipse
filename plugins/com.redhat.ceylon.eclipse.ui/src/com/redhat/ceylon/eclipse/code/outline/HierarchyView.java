@@ -195,14 +195,14 @@ public class HierarchyView extends ViewPart {
         public void runWithEvent(Event event) {
             if (history.size()>1) {
                 ModelProxy h = history.remove(1);
-                Declaration declaration = h.getDeclaration();
+                Declaration declaration = h.get();
+                ModelProxy input = new ModelProxy(declaration);
+                setTreeInput(input);
+                tableViewer.setInput(input);
+                history.add(0, h);
+                HierarchyView.this.setDescription(declaration);
                 title.setImage(getImageForDeclaration(declaration));
                 title.setText(getName(declaration));
-                ModelProxy input = new ModelProxy(declaration);
-                tableViewer.setInput(input);
-                setTreeInput(input);
-                HierarchyView.this.setDescription(declaration);
-                history.add(0, h);
             }
         }
 
@@ -236,7 +236,7 @@ public class HierarchyView extends ViewPart {
     private void populateHistoryMenu(Menu menu) {
         for (final ModelProxy h: history) {
             final MenuItem item = new MenuItem(menu, SWT.PUSH);
-            final Declaration declaration = h.getDeclaration();
+            final Declaration declaration = h.get();
             if (declaration!=null) {
                 final Image image =
                         getImageForDeclaration(declaration);
@@ -245,14 +245,14 @@ public class HierarchyView extends ViewPart {
                 item.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        title.setImage(item.getImage());
-                        title.setText(item.getText());
                         ModelProxy input = new ModelProxy(declaration);
-                        tableViewer.setInput(input);
                         setTreeInput(input);
-                        HierarchyView.this.setDescription(declaration);
+                        tableViewer.setInput(input);
                         history.remove(h);
                         history.add(0, h);
+                        setDescription(declaration);
+                        title.setImage(item.getImage());
+                        title.setText(item.getText());
                     }
                 });
             }
@@ -270,21 +270,21 @@ public class HierarchyView extends ViewPart {
     
     private void populateHistoryMenu(MenuManager menu) {
         for (final ModelProxy h: history) {
-            final Declaration declaration = h.getDeclaration();
+            final Declaration declaration = h.get();
             if (declaration!=null) {
                 ImageDescriptor image =
                         imageRegistry.getDescriptor(getImageKeyForDeclaration(declaration));
                 menu.add(new Action(getName(declaration), image) {
                     @Override
                     public void run() {
-                        title.setImage(getImageForDeclaration(declaration));
-                        title.setText(getName(declaration));
                         ModelProxy input = new ModelProxy(declaration);
-                        tableViewer.setInput(input);
                         setTreeInput(input);
-                        HierarchyView.this.setDescription(declaration);
+                        tableViewer.setInput(input);
                         history.remove(h);
                         history.add(0, h);
+                        HierarchyView.this.setDescription(declaration);
+                        title.setImage(getImageForDeclaration(declaration));
+                        title.setText(getName(declaration));
                     }
                 });
             }
@@ -306,8 +306,8 @@ public class HierarchyView extends ViewPart {
                 ModelProxy p = (ModelProxy) x;
                 ModelProxy q = (ModelProxy) y;
                 int result = super.compare(viewer, 
-                        p.getDeclaration().getContainer(), 
-                        q.getDeclaration().getContainer());
+                        p.get().getContainer(), 
+                        q.get().getContainer());
                 if (result!=0) return result;
             }
             return super.compare(viewer, x, y);
@@ -330,7 +330,7 @@ public class HierarchyView extends ViewPart {
         @Override
         public Object[] getElements(Object inputElement) {
             if (inputElement instanceof ModelProxy) {
-                inputElement = ((ModelProxy) inputElement).getDeclaration();
+                inputElement = ((ModelProxy) inputElement).get();
             }
             if (inputElement instanceof TypeDeclaration) {
                 TypeDeclaration declaration = 
@@ -388,7 +388,7 @@ public class HierarchyView extends ViewPart {
         public Image getImage(Object element) {
             if (element instanceof ModelProxy) {
                 ModelProxy proxy = (ModelProxy) element;
-                return getImageForDeclaration(proxy.getDeclaration());
+                return getImageForDeclaration(proxy.get());
             }
             else {
                 return null;
@@ -399,7 +399,7 @@ public class HierarchyView extends ViewPart {
         public String getText(Object element) {
             if (element instanceof ModelProxy) {
                 ModelProxy proxy = (ModelProxy) element;
-                final Declaration dec = proxy.getDeclaration();
+                final Declaration dec = proxy.get();
                 String desc = getLabelDescriptionFor(dec);
                 Scope container = dec.getContainer();
                 if (showInherited && 
@@ -417,7 +417,7 @@ public class HierarchyView extends ViewPart {
         public StyledString getStyledText(Object element) {
             if (element instanceof ModelProxy) {
                 ModelProxy proxy = (ModelProxy) element;
-                Declaration dec = proxy.getDeclaration();
+                Declaration dec = proxy.get();
                 return showInherited ? 
                         getQualifiedDescriptionFor(dec) :
                         getStyledDescriptionFor(dec);
@@ -525,7 +525,8 @@ public class HierarchyView extends ViewPart {
         };
         javaSDKAction.setChecked(contentProvider.isExcludeJDK());
         menuManager.add(javaSDKAction);
-        final Action oracleSDKAction = new Action("Exclude Java SDK Internals", IAction.AS_CHECK_BOX) {
+        final Action oracleSDKAction = 
+                new Action("Exclude Java SDK Internals", IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
                 boolean checked = isChecked();
@@ -626,11 +627,11 @@ public class HierarchyView extends ViewPart {
                 CeylonHierarchyNode firstElement = 
                         (CeylonHierarchyNode) selection.getFirstElement();
                 if (firstElement!=null) {
-                    Declaration dec = firstElement.getDeclaration();
-                    if (dec!=null) {
-                        title.setImage(getImageForDeclaration(dec));
-                        title.setText(dec.getName());
-                        tableViewer.setInput(new ModelProxy(dec));
+                    Declaration declaration = firstElement.getDeclaration();
+                    if (declaration!=null) {
+                        tableViewer.setInput(new ModelProxy(declaration));
+                        title.setImage(getImageForDeclaration(declaration));
+                        title.setText(declaration.getName());
                     }
                 }
             }
@@ -701,7 +702,7 @@ public class HierarchyView extends ViewPart {
                         (StructuredSelection) event.getSelection();
                 ModelProxy firstElement = 
                         (ModelProxy) selection.getFirstElement();
-                gotoDeclaration(firstElement.getDeclaration());
+                gotoDeclaration(firstElement.get());
             }
         });
         return tableViewer.getTable();
@@ -733,8 +734,8 @@ public class HierarchyView extends ViewPart {
                             (CeylonHierarchyNode) firstElement;
                     Declaration declaration = node.getDeclaration();
                     ModelProxy input = new ModelProxy(declaration);
-                    addToHistory(input);
                     setTreeInput(input);
+                    addToHistory(input);
                     setDescription(declaration);
                 }
             }
@@ -774,12 +775,15 @@ public class HierarchyView extends ViewPart {
                 StructuredSelection selection = 
                         (StructuredSelection) tableViewer.getSelection();
                 Object firstElement = selection.getFirstElement();
-                if (firstElement instanceof Declaration) {
-                    Declaration declaration = (Declaration) firstElement;
-                    ModelProxy input = new ModelProxy(declaration);
-                    addToHistory(input);
+                if (firstElement instanceof ModelProxy) {
+                    ModelProxy input = (ModelProxy) firstElement;
                     setTreeInput(input);
+                    tableViewer.setInput(input);
+                    addToHistory(input);
+                    Declaration declaration = input.get();
                     setDescription(declaration);
+                    title.setImage(getImageForDeclaration(declaration));
+                    title.setText(declaration.getName());
                 }
             }
             @Override
@@ -795,8 +799,9 @@ public class HierarchyView extends ViewPart {
                 StructuredSelection selection = 
                         (StructuredSelection) tableViewer.getSelection();
                 Object firstElement = selection.getFirstElement();
-                if (firstElement instanceof Declaration) {
-                    gotoDeclaration((Declaration) firstElement);
+                if (firstElement instanceof ModelProxy) {
+                    ModelProxy proxy = (ModelProxy) firstElement;
+                    gotoDeclaration(proxy.get());
                 }
             }
             @Override
@@ -813,7 +818,7 @@ public class HierarchyView extends ViewPart {
     private void update() {
         ModelProxy input = (ModelProxy) tableViewer.getInput();
         if (input!=null) {
-            setDescription(input.getDeclaration());
+            setDescription(input.get());
         }
         treeViewer.getControl().setRedraw(false);
         // refresh viewer to re-filter
@@ -854,15 +859,15 @@ public class HierarchyView extends ViewPart {
         }
     }
 
-    public void focusOn(Declaration dec) {
-        if (dec!=null) {
-            title.setImage(getImageForDeclaration(dec));
-            title.setText(dec.getName());
-            ModelProxy input = new ModelProxy(dec);
-            tableViewer.setInput(input);
+    public void focusOn(Declaration declaration) {
+        if (declaration!=null) {
+            ModelProxy input = new ModelProxy(declaration);
             setTreeInput(input);
+            tableViewer.setInput(input);
             addToHistory(input);
-            setDescription(dec);
+            setDescription(declaration);
+            title.setImage(getImageForDeclaration(declaration));
+            title.setText(declaration.getName());
         }
     }
 

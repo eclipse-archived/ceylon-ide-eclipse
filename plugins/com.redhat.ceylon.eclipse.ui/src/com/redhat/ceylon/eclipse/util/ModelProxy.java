@@ -56,7 +56,7 @@ public class ModelProxy {
         }
     }
     
-    public Declaration getDeclaration() {
+    public Declaration get() {
         Declaration dec = declaration.get();
         if (dec!=null) return dec;
         

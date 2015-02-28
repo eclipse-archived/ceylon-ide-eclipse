@@ -111,7 +111,7 @@ public class CeylonElement {
         else {
             IPreferenceStore prefs = EditorUtil.getPreferences();
             return getQualifiedDescriptionFor(
-                    proxy.getDeclaration(), 
+                    proxy.get(), 
                     prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
                     prefs.getBoolean(PARAMS_IN_OUTLINES),
                     prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
