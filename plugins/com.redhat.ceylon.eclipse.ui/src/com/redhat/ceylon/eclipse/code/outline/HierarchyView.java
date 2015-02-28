@@ -17,7 +17,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_INHERITED;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HISTORY;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
@@ -508,8 +507,8 @@ public class HierarchyView extends ViewPart {
     private void createViewMenu() {
         IActionBars actionBars = getViewSite().getActionBars();
         IMenuManager menuManager = actionBars.getMenuManager();
-        menuManager.add(new ExpandAllAction());
-        menuManager.add(new Separator());
+//        menuManager.add(new ExpandAllAction());
+//        menuManager.add(new Separator());
         menuManager.add(new OpenDeclarationInHierarchyAction("Open Declaration...", null));
         menuManager.add(new HistoryMenu());
         
@@ -566,33 +565,33 @@ public class HierarchyView extends ViewPart {
         }
     }
 
-    private class ExpandAllAction extends Action {
-
-        private ExpandAllAction() {
-            super("Expand All");
-            setToolTipText("Expand All");
-            
-            ImageDescriptor desc = 
-                    imageRegistry.getDescriptor(EXPAND_ALL);
-            setHoverImageDescriptor(desc);
-            setImageDescriptor(desc);
-        }
-
-        @Override
-        public void run() {
-            if (treeViewer != null) {
-                treeViewer.getTree().setRedraw(false);
-                if (contentProvider.isVeryAbstractType()) {
-                    reveal();
-                }
-                else {
-                    treeViewer.expandAll();
-                }
-                treeViewer.getTree().setRedraw(true);
-            }
-        }
-        
-    }
+//    private class ExpandAllAction extends Action {
+//
+//        private ExpandAllAction() {
+//            super("Expand All");
+//            setToolTipText("Expand All");
+//            
+//            ImageDescriptor desc = 
+//                    imageRegistry.getDescriptor(EXPAND_ALL);
+//            setHoverImageDescriptor(desc);
+//            setImageDescriptor(desc);
+//        }
+//
+//        @Override
+//        public void run() {
+//            if (treeViewer != null) {
+//                treeViewer.getTree().setRedraw(false);
+//                if (contentProvider.isVeryAbstractType()) {
+//                    reveal();
+//                }
+//                else {
+//                    treeViewer.expandAll();
+//                }
+//                treeViewer.getTree().setRedraw(true);
+//            }
+//        }
+//        
+//    }
 
     private Tree createTree(SashForm sash) {
         viewForm = new ViewForm(sash, SWT.FLAT);
@@ -713,7 +712,7 @@ public class HierarchyView extends ViewPart {
         toolBarManager.add(supertypesAction);
         toolBarManager.add(subtypesAction);
         updateActions(contentProvider.getMode());
-        toolBarManager.add(new ExpandAllAction());
+//        toolBarManager.add(new ExpandAllAction());
         toolBarManager.add(new HistoryAction());
     }
 
