@@ -7,7 +7,6 @@ import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -35,9 +34,9 @@ public class OpenDeclarationAction extends Action {
     
     @Override
     public void run() {
-        Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
         OpenDeclarationDialog dialog = 
-                new OpenDeclarationDialog(true, true, shell, 
+                new OpenDeclarationDialog(true, true, 
+                        getWorkbench().getActiveWorkbenchWindow().getShell(), 
                         "Open Declaration",
                         "&Type part of a name, with wildcard *, or a camel hump pattern, with . to display members:",
                         "&Select one or more declarations to open in editors:");

@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelectionText;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -31,9 +30,9 @@ public class OpenDeclarationInHierarchyAction extends Action {
     
     @Override
     public void run() {
-        Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
         OpenDeclarationDialog dialog = 
-                new OpenDeclarationDialog(false, true, shell, 
+                new OpenDeclarationDialog(false, true, 
+                        getWorkbench().getActiveWorkbenchWindow().getShell(), 
                         "Open in Type Hierarchy View",
                         "&Type part of a name, with wildcard *, or a camel hump pattern, with . to display members:",
                         "&Select a declaration to open in hierarchy view:");

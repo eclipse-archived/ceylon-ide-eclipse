@@ -20,6 +20,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -34,6 +35,9 @@ import org.eclipse.swt.widgets.Label;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 
 public class ChangeParametersInputPage extends UserInputWizardPage {
     
@@ -87,7 +91,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         viewer.getTable().setLinesVisible(true);
         GridData tgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
         tgd.horizontalSpan=3;
-        tgd.verticalSpan=4;
+        tgd.verticalSpan=5;
         tgd.grabExcessHorizontalSpace = true;
 //        gd.grabExcessVerticalSpace = true;
         tgd.heightHint = 100;
@@ -238,7 +242,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         
         viewer.setInput(parameterModels);
         
-        Button upButton = new Button(composite, SWT.PUSH);
+        final Button upButton = new Button(composite, SWT.PUSH);
         upButton.setText("Up");
         GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
         bgd.grabExcessHorizontalSpace=false;
@@ -263,7 +267,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        Button downButton = new Button(composite, SWT.PUSH);
+        final Button downButton = new Button(composite, SWT.PUSH);
         downButton.setText("Down");
         downButton.setLayoutData(bgd);
         downButton.addSelectionListener(new SelectionListener() {
@@ -286,6 +290,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
+        Button addButton = new Button(composite, SWT.PUSH);
+        addButton.setText("Add...");
+        addButton.setLayoutData(bgd);
+        
         new Label(composite, SWT.NONE);
 
         final Button toggleButton = new Button(composite, SWT.PUSH);
@@ -300,6 +308,50 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     List<Boolean> defaultedList = refactoring.getDefaulted();
                     defaultedList.set(index, !defaultedList.get(index));
                     viewer.refresh();
+                }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+        
+        addButton.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                AddParameterDialog dialog = new AddParameterDialog(getShell(), 
+                        refactoring.node, refactoring.project);
+                if (dialog.open()==Window.OK) {
+                    String name = dialog.getName();
+                    ProducedType type = dialog.getType();
+                    String arg = dialog.getArgument();
+                    Value model = new Value();
+                    model.setType(type);
+                    model.setName(name);
+                    Scope scope = refactoring.node.getScope();
+                    model.setContainer(scope);
+                    model.setScope(scope);
+                    Parameter p = new Parameter();
+                    p.setModel(model);
+                    p.setName(name);
+                    p.setDefaulted(false);
+                    p.setDeclaration((Declaration) scope);
+                    model.setInitializerParameter(p);
+                    parameterModels.add(p);
+                    int index = parameterModels.size()-1;
+                    refactoring.getParameters().add(p);
+                    refactoring.getDefaulted().add(false);
+                    refactoring.getArguments().add(arg);
+                    refactoring.getDefaultArgs().put(model, arg);
+                    refactoring.getOrder().add(index, index);
+                    viewer.add(p);
+                    viewer.refresh();
+                    viewer.getTable().select(index);
+                    if (index==1) {
+                        upButton.setEnabled(true);
+                        downButton.setEnabled(true);
+                    }
+                    if (index==0) {
+                        toggleButton.setEnabled(true);
+                    }
                 }
             }
             @Override
