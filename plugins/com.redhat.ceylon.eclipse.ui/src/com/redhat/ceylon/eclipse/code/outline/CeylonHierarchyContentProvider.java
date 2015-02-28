@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,8 +39,9 @@ import com.redhat.ceylon.eclipse.core.model.IProjectAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 
-public final class CeylonHierarchyContentProvider 
+public final class CeylonHierarchyContentProvider
         implements ITreeContentProvider {
+//        implements ILazyTreeContentProvider {
     
     private final IWorkbenchPartSite site;
     
@@ -123,13 +123,16 @@ public final class CeylonHierarchyContentProvider
     public void dispose() {}
 
     @Override
-    public boolean hasChildren(Object element) {
-        return getChildren(element).length>0;
+    public Object getParent(Object element) {
+        if (element instanceof CeylonHierarchyNode) {
+            return ((CeylonHierarchyNode) element).getParent();
+        }
+        return null;
     }
 
     @Override
-    public Object getParent(Object element) {
-        return null;
+    public boolean hasChildren(Object element) {
+        return getChildren(element).length>0;
     }
 
     @Override
@@ -152,18 +155,67 @@ public final class CeylonHierarchyContentProvider
             }
         }
         else if (parentElement instanceof CeylonHierarchyNode) {
-            List<CeylonHierarchyNode> children = 
-                    ((CeylonHierarchyNode) parentElement).getChildren();
-            CeylonHierarchyNode[] array = 
-                    children.toArray(new CeylonHierarchyNode[children.size()]);
-            Arrays.sort(array);
-            return array;
+            return ((CeylonHierarchyNode) parentElement).getChildren();
         }
         else {
             return null;
         }
     }
 
+//    @Override
+//    public void updateElement(Object parent, int index) {
+//        if (recursive) return;
+//        CeylonHierarchyNode child;
+//        if (parent instanceof ModelProxy) {
+//            if (index>0) return;
+//            switch (mode) {
+//            case HIERARCHY:
+//                child = hierarchyRoot;
+//                break;
+//            case SUPERTYPES:
+//                child = supertypesRoot;
+//                break;
+//            case SUBTYPES:
+//                child = subtypesRoot;
+//                break;
+//            default:
+//                throw new RuntimeException();
+//            }
+//        }
+//        else if (parent instanceof CeylonHierarchyNode) {
+//            List<CeylonHierarchyNode> children = 
+//                    ((CeylonHierarchyNode) parent).getChildren();
+//            //TODO: wow, this is really expensive!
+//            CeylonHierarchyNode[] array = 
+//                    children.toArray(new CeylonHierarchyNode[children.size()]);
+//            Arrays.sort(array);
+//            if (index>=array.length) return;
+//            child = array[index];
+//        }
+//        else {
+//            return;
+//        }
+//        recursive = true;
+//        treeViewer.replace(parent, index, child);
+//        treeViewer.setChildCount(child, child.getChildren().size());
+//        recursive = false;
+//    }
+//
+//    @Override
+//    public void updateChildCount(Object element, int currentChildCount) {
+//        if (recursive) return;
+//        int count = 0;
+//        if (element instanceof ModelProxy) {
+//            count = 1;
+//        }
+//        else if (element instanceof CeylonHierarchyNode) {
+//            count = ((CeylonHierarchyNode) element).getChildren().size();
+//        }
+//        recursive = true;
+//        treeViewer.setChildCount(element, count);
+//        recursive = false;
+//    }
+    
     HierarchyMode getMode() {
         return mode;
     }
@@ -268,6 +320,7 @@ public final class CeylonHierarchyContentProvider
                     getSubtypePathNode(declaration));
 
             Declaration root = declaration;
+            depthInHierarchy = 0;
             if (declaration instanceof TypeDeclaration) {
                 TypeDeclaration dec = (TypeDeclaration) declaration;
                 while (dec!=null) {
@@ -373,7 +426,7 @@ public final class CeylonHierarchyContentProvider
             int ps = packages.size();
             for (Package p: packages) { //workaround CME
                 int ms = p.getMembers().size();
-                monitor.subTask("Building hierarchy - scanning " + p.getNameAsString());
+                monitor.subTask("scanning " + p.getNameAsString());
                 for (Unit u: p.getUnits()) {
                     try {
                         //TODO: unshared inner types get 
@@ -385,14 +438,16 @@ public final class CeylonHierarchyContentProvider
                                 try {
                                     if (declaration instanceof TypeDeclaration) {
                                         TypeDeclaration td = (TypeDeclaration) d;
-                                        ClassOrInterface etd = 
-                                                td.getExtendedTypeDeclaration();
-                                        if (etd!=null) {
-                                            add(td, etd);
-                                        }
-                                        for (TypeDeclaration std: 
-                                            td.getSatisfiedTypeDeclarations()) {
-                                            add(td, std);
+                                        if (!(td instanceof TypeParameter)) {
+                                            ClassOrInterface etd = 
+                                                    td.getExtendedTypeDeclaration();
+                                            if (etd!=null) {
+                                                add(td, etd);
+                                            }
+                                            for (TypeDeclaration std: 
+                                                td.getSatisfiedTypeDeclarations()) {
+                                                add(td, std);
+                                            }
                                         }
                                     }
                                     else if (declaration instanceof TypedDeclaration) {

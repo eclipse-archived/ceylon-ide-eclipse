@@ -689,7 +689,13 @@ public abstract class FilteredItemsSelectionDialog extends
             browser.addLocationListener(new LocationListener() {
                 @Override
                 public void changing(LocationEvent event) {
-                    handleLink(event.location, browser);
+                    String location = event.location;
+                    //necessary for windows environment (fix for blank page)
+                    //somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
+                    if (!"about:blank".equals(location) && !location.startsWith("http:")) {
+                        event.doit= false;
+                        handleLink(event.location, browser);
+                    }
                 }
                 @Override
                 public void changed(LocationEvent event) {}

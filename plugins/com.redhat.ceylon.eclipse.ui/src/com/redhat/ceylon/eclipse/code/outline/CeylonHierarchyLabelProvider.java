@@ -67,7 +67,6 @@ abstract class CeylonHierarchyLabelProvider extends
         return "";
     }
     
-//    abstract IProject getProject();
     abstract boolean isShowingRefinements();
 
     Declaration getDisplayedDeclaration(CeylonHierarchyNode node) {

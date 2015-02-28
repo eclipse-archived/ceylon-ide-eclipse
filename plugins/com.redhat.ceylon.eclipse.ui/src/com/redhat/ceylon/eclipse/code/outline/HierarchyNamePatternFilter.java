@@ -36,7 +36,7 @@ class HierarchyNamePatternFilter extends ViewerFilter {
             return true;
 
         return hasUnfilteredChild(treeViewer, element);*/
-        TreeViewer treeViewer= (TreeViewer) viewer;
+        TreeViewer treeViewer = (TreeViewer) viewer;
         if (element instanceof CeylonHierarchyNode) {
             String name = ((CeylonHierarchyNode) element).getName();
             if (name==null) {

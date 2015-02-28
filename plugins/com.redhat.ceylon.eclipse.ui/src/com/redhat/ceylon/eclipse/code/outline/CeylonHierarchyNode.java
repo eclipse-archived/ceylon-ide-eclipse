@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
@@ -14,9 +13,10 @@ class CeylonHierarchyNode
     private boolean nonUnique;
     private boolean multiple;
     
-    //private final CeylonHierarchyNode parent;
-    private final List<CeylonHierarchyNode> children = 
-            new ArrayList<CeylonHierarchyNode>();
+    private CeylonHierarchyNode parent;
+    
+    private CeylonHierarchyNode[] children = 
+            new CeylonHierarchyNode[0];
     
     public CeylonHierarchyNode(Declaration declaration) {
         proxy = new ModelProxy(declaration);
@@ -47,11 +47,25 @@ class CeylonHierarchyNode
     }
     
     void addChild(CeylonHierarchyNode child) {
-        if (!children.contains(child)) children.add(child);
+        for (CeylonHierarchyNode c: children) {
+            if (child.equals(c)) return;
+        }
+        int length = children.length;
+        CeylonHierarchyNode[] newChildren = 
+                new CeylonHierarchyNode[length+1]; 
+        System.arraycopy(children, 0, newChildren, 0, length);
+        newChildren[length] = child;
+        Arrays.sort(newChildren);
+        children = newChildren;
+        child.parent = this;
     }
     
-    public List<CeylonHierarchyNode> getChildren() {
+    public CeylonHierarchyNode[] getChildren() {
         return children;
+    }
+    
+    public CeylonHierarchyNode getParent() {
+        return parent;
     }
     
     @Override

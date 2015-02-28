@@ -157,10 +157,9 @@ public class DocumentationHover extends SourceInfoHover {
             //necessary for windows environment (fix for blank page)
             //somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
             if (!"about:blank".equals(location) && !location.startsWith("http:")) {
-                event.doit= false;
+                event.doit = false;
+                handleLink(location);
             }
-            
-            handleLink(location);
             
             /*else if (location.startsWith("javadoc:")) {
                 final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();

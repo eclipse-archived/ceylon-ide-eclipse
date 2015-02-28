@@ -1683,12 +1683,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
         }
         for (PhasedUnit pu: dependencies) {
-            monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
+            monitor.subTask("scanning declarations " + pu.getUnit().getFilename());
             pu.scanDeclarations();
             monitor.worked(1);
         }
         for (PhasedUnit pu: dependencies) {
-            monitor.subTask("- scanning type declarations " + pu.getUnit().getFilename());
+            monitor.subTask("scanning type declarations " + pu.getUnit().getFilename());
             pu.scanTypeDeclarations();
             monitor.worked(2);
         }
@@ -1791,7 +1791,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isDeclarationsScanned()) {
-                monitor.subTask("- scanning declarations " + phasedUnit.getUnit().getFilename());
+                monitor.subTask("scanning declarations " + phasedUnit.getUnit().getFilename());
                 phasedUnit.scanDeclarations();
             }
             monitor.worked(1);
@@ -1802,7 +1802,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isTypeDeclarationsScanned()) {
-                monitor.subTask("- scanning type declarations " + phasedUnit.getUnit().getFilename());
+                monitor.subTask("scanning type declarations " + phasedUnit.getUnit().getFilename());
                 phasedUnit.scanTypeDeclarations();
             }
             monitor.worked(2);
@@ -1820,7 +1820,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isFullyTyped()) {
-                monitor.subTask("- typechecking " + phasedUnit.getUnit().getFilename());
+                monitor.subTask("typechecking " + phasedUnit.getUnit().getFilename());
                 phasedUnit.analyseTypes();
                 if (showWarnings(project)) {
                     phasedUnit.analyseUsage();
@@ -1892,19 +1892,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 "Typechecking " + listOfUnits.size() + " source files of project " + 
                 project.getName(), dependencies.size()*5+listOfUnits.size()*6);
         
-        monitor.subTask("- typechecking source archives for project " 
+        monitor.subTask("typechecking source archives for project " 
                 + project.getName());
 
         JDTModelLoader loader = getModelLoader(typeChecker);
 //        loader.reset();
         
         for (PhasedUnit pu: dependencies) {
-            monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
+            monitor.subTask("scanning declarations " + pu.getUnit().getFilename());
             pu.scanDeclarations();
             monitor.worked(1);
         }
         for (PhasedUnit pu: dependencies) {
-            monitor.subTask("- scanning type declarations " + pu.getUnit().getFilename());
+            monitor.subTask("scanning type declarations " + pu.getUnit().getFilename());
             pu.scanTypeDeclarations();
             monitor.worked(2);
         }
@@ -1924,12 +1924,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         loader.loadPackage(languageModule, "ceylon.language.descriptor", true);
         loader.loadPackageDescriptors();
         
-        monitor.subTask("(typechecking source files for project " 
-                + project.getName() +")");
+        monitor.subTask("typechecking source files for project " 
+                + project.getName());
 
         for (PhasedUnit pu : listOfUnits) {
             if (! pu.isDeclarationsScanned()) {
-                monitor.subTask("- scanning declarations " + pu.getUnit().getFilename());
+                monitor.subTask("scanning declarations " + pu.getUnit().getFilename());
                 pu.validateTree();
                 pu.scanDeclarations();
                 monitor.worked(1);
@@ -1941,7 +1941,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         for (PhasedUnit pu : listOfUnits) {
             if (! pu.isTypeDeclarationsScanned()) {
-                monitor.subTask("- scanning types " + pu.getUnit().getFilename());
+                monitor.subTask("scanning types " + pu.getUnit().getFilename());
                 pu.scanTypeDeclarations();
                 monitor.worked(2);
             }
@@ -1960,7 +1960,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         for (PhasedUnit pu : listOfUnits) {
             if (! pu.isFullyTyped()) {
-                monitor.subTask("- typechecking " + pu.getUnit().getFilename());
+                monitor.subTask("typechecking " + pu.getUnit().getFilename());
                 pu.analyseTypes();
                 if (showWarnings(project)) {
                     pu.analyseUsage();
@@ -2026,7 +2026,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                 monitor.worked(1);
                 
-                monitor.subTask("- parsing source files for project " 
+                monitor.subTask("parsing source files for project " 
                             + project.getName());
 
                 if (monitor.isCanceled()) {
@@ -2052,7 +2052,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     throw new OperationCanceledException();
                 }
 
-                monitor.subTask("- determining module dependencies for " 
+                monitor.subTask("determining module dependencies for " 
                         + project.getName());
 
                 phasedUnits.visitModules();
@@ -2145,7 +2145,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         long numberOfModulesNotAlreadySearched = moduleValidator.numberOfModulesNotAlreadySearched();
                         validatorProgress.setWorkRemaining((int) (numberOfModulesNotAlreadySearched * 100
                                                                    / (numberOfModulesNotAlreadySearched + moduleValidator.numberOfModulesAlreadySearched())));
-                        validatorProgress.subTask(new StringBuilder("- resolving module ")
+                        validatorProgress.subTask(new StringBuilder("resolving module ")
                         .append(module.getSignature())
                         .toString());
                     }
@@ -2617,13 +2617,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (ta.getKind().equals(Kind.PARSE)) {
                     CompilationUnitTree cut = ta.getCompilationUnit();
                     if (cut != null && cut instanceof CeylonCompilationUnit) {
-                        monitor.subTask("- transforming " + name);
+                        monitor.subTask("transforming " + name);
                     } else {
-                        monitor.subTask("- parsing " + name);
+                        monitor.subTask("parsing " + name);
                     }
                 } 
                 if (ta.getKind().equals(Kind.ANALYZE)) {
-                    monitor.subTask("- generating bytecode for " + name);
+                    monitor.subTask("generating bytecode for " + name);
                 }
             }
             @Override

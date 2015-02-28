@@ -335,7 +335,9 @@ public abstract class TreeViewPopup extends PopupDialog
             return null;
         }
         else {
-            return ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
+            IStructuredSelection selection = 
+                    (IStructuredSelection) treeViewer.getSelection();
+            return selection.getFirstElement();
         }
     }
     
@@ -352,7 +354,7 @@ public abstract class TreeViewPopup extends PopupDialog
         /*if (selectedElement instanceof TreeItem)
             element= findElement(new TreeItem[] { (TreeItem)selectedElement });
         else*/
-            element= findElement(tree.getItems());
+            element = findElement(tree.getItems());
 
         if (element != null) {
             tree.setSelection(element);

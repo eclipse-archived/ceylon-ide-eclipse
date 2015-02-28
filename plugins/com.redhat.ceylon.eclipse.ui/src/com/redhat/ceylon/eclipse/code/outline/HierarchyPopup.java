@@ -50,6 +50,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.eclipse.util.ModelProxy;
 
 public class HierarchyPopup extends TreeViewPopup {
     
@@ -279,12 +280,12 @@ public class HierarchyPopup extends TreeViewPopup {
 
     @Override
     public void setInput(Object information) {
-        Declaration info = getInformation();
-        inputChanged(info, info);
+        ModelProxy input = new ModelProxy(getSelectedDeclaration());
+        inputChanged(input, input);
         updateTitle();
     }
     
-    private Declaration getInformation() {
+    private Declaration getSelectedDeclaration() {
         Node selectedNode = getEditor().getSelectedNode();
         Referenceable declaration = 
                 getReferencedDeclaration(selectedNode);

@@ -196,7 +196,7 @@ public class HierarchyView extends ViewPart {
                 title.setText(getName(declaration));
                 ModelProxy input = new ModelProxy(declaration);
                 tableViewer.setInput(input);
-                treeViewer.setInput(input);
+                setTreeInput(input);
                 HierarchyView.this.setDescription(declaration);
                 history.add(0, h);
             }
@@ -245,7 +245,7 @@ public class HierarchyView extends ViewPart {
                         title.setText(item.getText());
                         ModelProxy input = new ModelProxy(declaration);
                         tableViewer.setInput(input);
-                        treeViewer.setInput(input);
+                        setTreeInput(input);
                         HierarchyView.this.setDescription(declaration);
                         history.remove(h);
                         history.add(0, h);
@@ -277,7 +277,7 @@ public class HierarchyView extends ViewPart {
                         title.setText(getName(declaration));
                         ModelProxy input = new ModelProxy(declaration);
                         tableViewer.setInput(input);
-                        treeViewer.setInput(input);
+                        setTreeInput(input);
                         HierarchyView.this.setDescription(declaration);
                         history.remove(h);
                         history.add(0, h);
@@ -550,7 +550,14 @@ public class HierarchyView extends ViewPart {
         @Override
         public void run() {
             if (treeViewer != null) {
-                treeViewer.expandAll();
+                treeViewer.getTree().setRedraw(false);
+                if (contentProvider.isVeryAbstractType()) {
+                    reveal();
+                }
+                else {
+                    treeViewer.expandAll();
+                }
+                treeViewer.getTree().setRedraw(true);
             }
         }
         
@@ -576,7 +583,7 @@ public class HierarchyView extends ViewPart {
         };
         treeViewer.setContentProvider(contentProvider);
         treeViewer.setLabelProvider(labelProvider);
-        treeViewer.setAutoExpandLevel(getDefaultLevel());
+        treeViewer.setAutoExpandLevel(1);
         treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
@@ -693,7 +700,7 @@ public class HierarchyView extends ViewPart {
                     Declaration declaration = node.getDeclaration();
                     ModelProxy input = new ModelProxy(declaration);
                     addToHistory(input);
-                    treeViewer.setInput(input);
+                    setTreeInput(input);
                     setDescription(declaration);
                 }
             }
@@ -737,7 +744,7 @@ public class HierarchyView extends ViewPart {
                     Declaration declaration = (Declaration) firstElement;
                     ModelProxy input = new ModelProxy(declaration);
                     addToHistory(input);
-                    treeViewer.setInput(input);
+                    setTreeInput(input);
                     setDescription(declaration);
                 }
             }
@@ -762,10 +769,6 @@ public class HierarchyView extends ViewPart {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
     }
-
-    private int getDefaultLevel() {
-        return 4;
-    }
     
     private void updateActions(HierarchyMode mode) {
         hierarchyAction.setChecked(mode==HIERARCHY);
@@ -774,18 +777,31 @@ public class HierarchyView extends ViewPart {
     }
 
     private void update() {
-        setDescription((Declaration) tableViewer.getInput());
+        setDescription(((ModelProxy) tableViewer.getInput()).getDeclaration());
         treeViewer.getControl().setRedraw(false);
         // refresh viewer to re-filter
         treeViewer.refresh();
         reveal();
-        //fTreeViewer.expandAll();
 //        selectFirstMatch(); //TODO select the main declaration instead!
         treeViewer.getControl().setRedraw(true);
     }
     
     private void reveal() {
-        treeViewer.expandToLevel(getDefaultLevel());
+        if (contentProvider.isEmpty()) return;
+        int depth;
+        if (contentProvider.getMode()==HIERARCHY) {
+            depth = contentProvider.getDepthInHierarchy();
+        }
+        else {
+            depth = 1;
+        }
+        if (contentProvider.isVeryAbstractType()) {
+            depth+=1;
+        }
+        else {
+            depth+=2;
+        }
+        treeViewer.expandToLevel(depth);
     }
 
     @Override
@@ -807,10 +823,17 @@ public class HierarchyView extends ViewPart {
             title.setText(dec.getName());
             ModelProxy input = new ModelProxy(dec);
             tableViewer.setInput(input);
-            treeViewer.setInput(input);
+            setTreeInput(input);
             addToHistory(input);
             setDescription(dec);
         }
+    }
+
+    private void setTreeInput(ModelProxy input) {
+        treeViewer.getTree().setRedraw(false);
+        treeViewer.setInput(input);
+        reveal();
+        treeViewer.getTree().setRedraw(true);
     }
 
     private void setDescription(Declaration dec) {
