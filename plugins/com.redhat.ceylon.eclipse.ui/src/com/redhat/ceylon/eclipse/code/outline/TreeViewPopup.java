@@ -316,13 +316,15 @@ public abstract class TreeViewPopup extends PopupDialog
     }
 
     protected void update() {
-        treeViewer.getControl().setRedraw(false);
-        // refresh viewer to re-filter
-        treeViewer.refresh();
-        reveal();
-        //fTreeViewer.expandAll();
-        selectFirstMatch(); //TODO select the main declaration instead!
-        treeViewer.getControl().setRedraw(true);
+        if (!getShell().isDisposed()) {
+            treeViewer.getControl().setRedraw(false);
+            // refresh viewer to re-filter
+            treeViewer.refresh();
+            reveal();
+            //fTreeViewer.expandAll();
+            selectFirstMatch(); //TODO select the main declaration instead!
+            treeViewer.getControl().setRedraw(true);
+        }
     }
     
     /**
