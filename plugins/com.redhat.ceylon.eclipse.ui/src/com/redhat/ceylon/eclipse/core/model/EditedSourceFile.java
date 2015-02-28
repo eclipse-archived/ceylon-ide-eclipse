@@ -18,23 +18,27 @@ public class EditedSourceFile extends SourceFile implements IResourceAware {
     }
     
     public ProjectSourceFile getOriginalSourceFile() {
-        ProjectPhasedUnit originalPhasedUnit = getPhasedUnit().getOriginalPhasedUnit();
+        final EditedPhasedUnit pu = getPhasedUnit();
+        ProjectPhasedUnit originalPhasedUnit = pu==null ? null : pu.getOriginalPhasedUnit();
         return originalPhasedUnit == null ? null : (ProjectSourceFile) originalPhasedUnit.getUnit();
     }
     
     @Override
     public IProject getProjectResource() {
-        return getPhasedUnit().getProjectResource();
+        EditedPhasedUnit pu = getPhasedUnit();
+        return pu==null ? null : pu.getProjectResource();
     }
 
     
     @Override
     public IFile getFileResource() {
-        return getPhasedUnit().getSourceFileResource();
+        EditedPhasedUnit pu = getPhasedUnit();
+        return pu==null ? null : pu.getSourceFileResource();
     }
 
     @Override
     public IFolder getRootFolderResource() {
-        return getPhasedUnit().getSourceFolderResource();
+        EditedPhasedUnit pu = getPhasedUnit();
+        return pu==null ? null : pu.getSourceFolderResource();
     }
 }
