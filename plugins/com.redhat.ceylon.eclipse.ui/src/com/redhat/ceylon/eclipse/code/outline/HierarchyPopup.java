@@ -15,6 +15,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import java.util.StringTokenizer;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.bindings.TriggerSequence;
@@ -344,6 +345,27 @@ public class HierarchyPopup extends TreeViewPopup {
     @Override
     protected void fillViewMenu(IMenuManager viewMenu) {
         super.fillViewMenu(viewMenu);
+        viewMenu.add(new Separator());
+        final Action javaSDKAction = 
+                new Action("Exclude Java SDK", IAction.AS_CHECK_BOX) {
+            @Override
+            public void run() {
+                contentProvider.setExcludeJDK(isChecked());
+                update();
+            }
+        };
+        javaSDKAction.setChecked(contentProvider.isExcludeJDK());
+        viewMenu.add(javaSDKAction);
+        final Action oracleSDKAction = new Action("Exclude Java SDK Internals", IAction.AS_CHECK_BOX) {
+            @Override
+            public void run() {
+                contentProvider.setExcludeOracleJDK(isChecked());
+                update();
+            }
+        };
+        oracleSDKAction.setChecked(contentProvider.isExcludeOracleJDK());
+        viewMenu.add(oracleSDKAction);
+        
         viewMenu.add(new Separator());
         Action configureAction = 
                 new Action("Configure Labels...", 

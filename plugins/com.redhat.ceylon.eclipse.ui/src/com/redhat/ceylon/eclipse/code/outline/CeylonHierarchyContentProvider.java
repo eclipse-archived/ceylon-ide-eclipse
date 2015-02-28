@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 
+import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
@@ -53,6 +54,8 @@ public final class CeylonHierarchyContentProvider
     
     private boolean showingRefinements;
     private boolean empty;
+    private boolean excludeJDK;
+    private boolean excludeOracleJDK = true;
     
     private int depthInHierarchy;
     private boolean veryAbstractType;
@@ -96,14 +99,18 @@ public final class CeylonHierarchyContentProvider
                             (ClassOrInterface) declaration.getContainer();
                     description = classOrInterface.getName() + '.' + description;
                 }
-                try {
-                    site.getWorkbenchWindow()
-                            .run(true, true, new Runnable(declaration));
-                } 
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
+                rebuild(declaration);
             }
+        }
+    }
+
+    private void rebuild(Declaration declaration) {
+        try {
+            site.getWorkbenchWindow()
+                    .run(true, true, new Runnable(declaration));
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
@@ -224,6 +231,24 @@ public final class CeylonHierarchyContentProvider
         this.mode = mode;
     }
     
+    boolean isExcludeJDK() {
+        return excludeJDK;
+    }
+    
+    void setExcludeJDK(boolean excludeJDK) {
+        this.excludeJDK = excludeJDK;
+        rebuild(getDeclaration());
+    }
+    
+    boolean isExcludeOracleJDK() {
+        return excludeOracleJDK;
+    }
+    
+    void setExcludeOracleJDK(boolean excludeOracleJDK) {
+        this.excludeOracleJDK = excludeOracleJDK;
+        rebuild(getDeclaration());
+    }
+    
     int getDepthInHierarchy() {
         return depthInHierarchy;
     }
@@ -301,19 +326,20 @@ public final class CeylonHierarchyContentProvider
                 allModules.add(currentModule);
             }
             
-//            boolean isFromUnversionedModule = declaration.getUnit().getPackage()
-//                    .getModule().getVersion()==null;
-            
             monitor.worked(10000);
             
             Set<Package> packages = new HashSet<Package>();
             int ams = allModules.size();
             for (Module m: allModules) {
-//                if (m.getVersion()!=null || isFromUnversionedModule) {
-                    packages.addAll(m.getAllPackages());
-                    monitor.worked(10000/ams);
-                    if (monitor.isCanceled()) return;
-//                }
+                for (Package p: m.getAllPackages()) {
+                    String pmn = p.getModule().getNameAsString();
+                    if ((!excludeJDK || !JDKUtils.isJDKModule(pmn)) && 
+                            (!excludeOracleJDK || !JDKUtils.isOracleJDKModule(pmn))) {
+                        packages.add(p);
+                    }
+                }
+                monitor.worked(10000/ams);
+                if (monitor.isCanceled()) return;
             }
     
             subtypesOfAllTypes.put(declaration, 

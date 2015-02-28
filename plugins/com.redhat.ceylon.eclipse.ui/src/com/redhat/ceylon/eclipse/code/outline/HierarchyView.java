@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IMenuManager;
@@ -507,6 +508,29 @@ public class HierarchyView extends ViewPart {
         menuManager.add(new Separator());
         menuManager.add(new OpenDeclarationInHierarchyAction("Open Declaration...", null));
         menuManager.add(new HistoryMenu());
+        
+        menuManager.add(new Separator());
+        final Action javaSDKAction = 
+                new Action("Exclude Java SDK", IAction.AS_CHECK_BOX) {
+            @Override
+            public void run() {
+                contentProvider.setExcludeJDK(isChecked());
+                update();
+            }
+        };
+        javaSDKAction.setChecked(contentProvider.isExcludeJDK());
+        menuManager.add(javaSDKAction);
+        final Action oracleSDKAction = new Action("Exclude Java SDK Internals", IAction.AS_CHECK_BOX) {
+            @Override
+            public void run() {
+                contentProvider.setExcludeOracleJDK(isChecked());
+                update();
+            }
+        };
+        oracleSDKAction.setChecked(contentProvider.isExcludeOracleJDK());
+        menuManager.add(oracleSDKAction);
+        
+        menuManager.add(new Separator());
         Action configureAction =
         new Action("Configure Labels...", 
                 imageRegistry.getDescriptor(CONFIG_LABELS)) {
@@ -519,7 +543,6 @@ public class HierarchyView extends ViewPart {
                         null).open();
             }
         };
-        menuManager.add(new Separator());
         menuManager.add(configureAction);
     }
 
