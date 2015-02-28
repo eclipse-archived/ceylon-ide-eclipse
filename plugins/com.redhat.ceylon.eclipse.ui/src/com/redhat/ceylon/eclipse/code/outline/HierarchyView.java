@@ -800,7 +800,10 @@ public class HierarchyView extends ViewPart {
     }
 
     private void update() {
-        setDescription(((ModelProxy) tableViewer.getInput()).getDeclaration());
+        ModelProxy input = (ModelProxy) tableViewer.getInput();
+        if (input!=null) {
+            setDescription(input.getDeclaration());
+        }
         treeViewer.getControl().setRedraw(false);
         // refresh viewer to re-filter
         treeViewer.refresh();

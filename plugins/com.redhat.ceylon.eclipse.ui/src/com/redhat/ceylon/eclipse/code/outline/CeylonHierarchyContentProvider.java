@@ -70,7 +70,8 @@ public final class CeylonHierarchyContentProvider
     }
     
     Declaration getDeclaration() {
-        return subtypesRoot.getDeclaration();
+        return subtypesRoot==null ? null : 
+            subtypesRoot.getDeclaration();
     }
 
     @Override
@@ -105,12 +106,14 @@ public final class CeylonHierarchyContentProvider
     }
 
     private void rebuild(Declaration declaration) {
-        try {
-            site.getWorkbenchWindow()
-                    .run(true, true, new Runnable(declaration));
-        } 
-        catch (Exception e) {
-            e.printStackTrace();
+        if (declaration!=null) {
+            try {
+                site.getWorkbenchWindow()
+                .run(true, true, new Runnable(declaration));
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
     
