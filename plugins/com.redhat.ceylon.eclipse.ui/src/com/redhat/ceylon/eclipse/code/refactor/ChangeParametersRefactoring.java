@@ -370,6 +370,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             
             for (Tree.NamedArgumentList nal: fiv.getNamedArgLists()) {
                 List<Tree.NamedArgument> nas = nal.getNamedArguments();
+                Tree.NamedArgument last = null;
                 for (Tree.NamedArgument na: nas) {
                     Parameter nap = na.getParameter();
                     if (nap!=null) {
@@ -383,10 +384,14 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             }
                         }
                         if (!found) {
-                            tfc.addEdit(new DeleteEdit(na.getStartIndex(),
-                                    na.getStopIndex()-na.getStartIndex()+1));
+                            int start = last==null ? 
+                                    nal.getStartIndex()+1 : 
+                                    last.getStopIndex()+1;
+                            tfc.addEdit(new DeleteEdit(start,
+                                    na.getStopIndex()-start+1));
                         }
                     }
+                    last = na;
                 }
                 for (int i=0; i<defaulted.size(); i++) {
                     int index = order.get(i);
@@ -404,6 +409,9 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                         if (!found) {
                             String arg = getInlinedNamedArg(p, 
                                     arguments.get(p.getModel()));
+                            //TODO: fix the indenting when the
+                            //      named argument list is formatted
+                            //      over multiple lines!
                             tfc.addEdit(new InsertEdit(nal.getStopIndex(), 
                                     arg + "; "));
                         }
@@ -471,12 +479,13 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 Tree.ParameterList pl = 
                         decNode.getParameterLists().get(0);
                 List<Tree.Parameter> ps = pl.getParameters();
-                int size = ps.size();
-                Tree.Parameter[] params = 
-                        new Tree.Parameter[size];
-                for (int i=0; i<size; i++) {
+                int size = defaulted.size();
+                Tree.Parameter[] params = new Tree.Parameter[size];
+                for (int i=0; i<ps.size(); i++) {
                     int index = order.indexOf(i);
-                    params[index] = ps.get(i);
+                    if (index>=0) {
+                        params[index] = ps.get(i);
+                    }
                 }
                 tfc.addEdit(reorderEdit(pl, params));
             }
