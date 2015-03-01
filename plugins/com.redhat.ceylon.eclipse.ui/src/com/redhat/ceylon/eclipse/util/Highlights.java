@@ -275,9 +275,7 @@ public class Highlights  {
                         }
                     }
                     else {
-                        styleProposal(result, token, 
-                                qualifiedNameIsPath && 
-                                token.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$"));
+                        styleProposal(result, token, qualifiedNameIsPath);
                     }
                 }
             }

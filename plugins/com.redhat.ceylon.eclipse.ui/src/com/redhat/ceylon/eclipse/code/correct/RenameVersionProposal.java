@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.RENAME;
 
 import java.util.Collection;
@@ -62,8 +63,8 @@ class RenameVersionProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        return "Change version " + node.getVersion().getText() + 
-                " of module"; //TOOD: name of module
+        return "Change version '" + node.getVersion().getText() + 
+                "' of module '" + formatPath(node.getImportPath().getIdentifiers()) + "'";
     }
 
     @Override
