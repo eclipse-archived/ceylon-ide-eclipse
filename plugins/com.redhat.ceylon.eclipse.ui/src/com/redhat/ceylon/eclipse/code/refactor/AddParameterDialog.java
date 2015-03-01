@@ -72,6 +72,11 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         composite.setLayout(GridLayoutFactory.swtDefaults().numColumns(2).create());
         composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
         
+        Label typeLabel = new Label(composite, SWT.NONE);
+        typeLabel.setText("Type:");
+        final Text typeText = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        typeText.setText("Anything");
+
         Label nameLabel = new Label(composite, SWT.NONE);
         nameLabel.setText("Name:");
         final Text nameText = new Text(composite, SWT.SINGLE | SWT.BORDER);
@@ -79,11 +84,6 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         nameText.selectAll();
         nameText.setLayoutData(GridDataFactory.fillDefaults().hint(80, SWT.DEFAULT).create());
         
-        Label typeLabel = new Label(composite, SWT.NONE);
-        typeLabel.setText("Type:");
-        final Text typeText = new Text(composite, SWT.SINGLE | SWT.BORDER);
-        typeText.setText("Anything");
-
         Label valLabel = new Label(composite, SWT.NONE);
         valLabel.setText("Argument:");
         final Text argumentText = new Text(composite, SWT.SINGLE | SWT.BORDER);
