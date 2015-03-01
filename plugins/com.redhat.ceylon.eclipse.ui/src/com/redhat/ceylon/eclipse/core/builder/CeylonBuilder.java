@@ -70,6 +70,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.ProgressMonitorWrapper;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
@@ -87,6 +88,7 @@ import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.PackageFragment;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -739,7 +741,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             throws CoreException {
         final IProject project = getProject();
         final IJavaProject javaProject = JavaCore.create(project);
-        final SubMonitor monitor = SubMonitor.convert(mon, "Ceylon build of project " + project.getName(), 100);
+        final SubMonitor monitor = SubMonitor.convert(new ProgressMonitorWrapper(mon) {
+            @Override
+            public boolean isCanceled() {
+                return super.isCanceled() || 
+                        PlatformUI.getWorkbench().isClosing();
+            }
+        }, 
+        "Ceylon build of project " + project.getName(), 100);
         try {
             buildHook.startBuild(kind, args, project, getBuildConfig(), getContext(), monitor);
         } catch (CoreException e) {
