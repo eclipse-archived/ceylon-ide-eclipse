@@ -110,7 +110,8 @@ class AutoEdit extends Indents {
             }
 
             if (command.text!=null &&
-                    command.text.length()==1) {
+                    command.text.length()==1 &&
+                    command.length==0) {
                 closeOpening();
             }
         }
