@@ -902,7 +902,17 @@ class AutoEdit extends Indents {
     
     private boolean isBinaryOperator(CommonToken t) {
         if (t==null) return false;
-        int tt = t.getType(); 
+        int tt = t.getType();
+        //partial fix for #1253
+        /*if (tt==CeylonLexer.ELSE_CLAUSE ||
+            tt==CeylonLexer.THEN_CLAUSE) {
+            CommonToken nextToken = 
+                    getNextNonHiddenToken(t.getStopIndex(), 
+                            Integer.MAX_VALUE);
+            return nextToken!=null && 
+                    nextToken.getType()!=CeylonLexer.LBRACE &&
+                    nextToken.getType()!=CeylonLexer.IF_CLAUSE;
+        }*/
         return tt==CeylonLexer.SPECIFY ||
                 tt==CeylonLexer.COMPUTE ||
                 tt==CeylonLexer.NOT_EQUAL_OP ||
