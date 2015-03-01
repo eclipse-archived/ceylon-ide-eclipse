@@ -514,8 +514,8 @@ public final class ReferencesPopup extends PopupDialog
                 }
                 else {
                     treeLayoutButton.setSelection(true);
-                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(true);
-                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(false);
+                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(false);
+                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(true);
                 }
             }
         });
@@ -530,8 +530,8 @@ public final class ReferencesPopup extends PopupDialog
                 }
                 else {
                     flatLayoutButton.setSelection(true);
-                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(true);
-                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(false);
+                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(false);
+                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(true);
                 }
             }
         });
@@ -949,7 +949,7 @@ public final class ReferencesPopup extends PopupDialog
                 }
             }
         };
-        flatLayoutAction.setChecked(true);
+        flatLayoutAction.setChecked(!treeLayout);
         treeLayoutAction = new LayoutAction("Show as Tree", TREE_MODE) {
             @Override
             public void run() {
@@ -966,6 +966,7 @@ public final class ReferencesPopup extends PopupDialog
                 }
             }
         };
+        treeLayoutAction.setChecked(treeLayout);
         dialogMenu.add(flatLayoutAction);
         dialogMenu.add(treeLayoutAction);
         dialogMenu.add(new Separator());
