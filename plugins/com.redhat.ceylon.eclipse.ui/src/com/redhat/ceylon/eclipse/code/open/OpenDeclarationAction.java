@@ -44,10 +44,10 @@ public class OpenDeclarationAction extends Action {
             dialog.setInitialPattern(getSelectionText((ITextEditor) editor));
         }
         dialog.open();
-        Object[] types = dialog.getResult();
-        if (types != null) { 
-            for (int i=0; i<types.length; i++) {
-                gotoDeclaration((Declaration) types[i]);
+        Declaration[] results = dialog.getResult();
+        if (results != null) { 
+            for (int i=0; i<results.length; i++) {
+                gotoDeclaration(results[i]);
             }
         }
     }

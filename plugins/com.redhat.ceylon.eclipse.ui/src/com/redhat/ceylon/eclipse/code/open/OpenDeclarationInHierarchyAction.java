@@ -40,10 +40,10 @@ public class OpenDeclarationInHierarchyAction extends Action {
             dialog.setInitialPattern(getSelectionText((ITextEditor) editor));
         }
         dialog.open();
-        Object[] types = dialog.getResult();
-        if (types!=null && types.length>0) {
+        Declaration[] results = dialog.getResult();
+        if (results!=null && results.length>0) {
             try {
-                showHierarchyView().focusOn((Declaration) types[0]);
+                showHierarchyView().focusOn(results[0]);
             }
             catch (PartInitException e) {
                 e.printStackTrace();

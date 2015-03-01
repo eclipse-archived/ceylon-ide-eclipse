@@ -392,7 +392,7 @@ public class LaunchHelper {
                     IProgressMonitor monitor)
                     throws CoreException {
                 for (int i=0; i<decls.size(); i++) {
-                    contentProvider.add(decls.get(i), itemsFilter);
+                    contentProvider.add(new DeclarationProxy(decls.get(i)), itemsFilter);
                 }
             }
         };

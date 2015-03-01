@@ -75,6 +75,8 @@ import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
+import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
@@ -250,7 +252,16 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         settings.put(EXCLUDE_JDK, excludeJDK);
         settings.put(EXCLUDE_ORA_JDK, excludeOracleJDK);
     }
-
+    
+    private static Declaration toDeclaration(Object object) {
+        if (object instanceof DeclarationProxy) {
+            return ((DeclarationProxy) object).declaration;
+        }
+        else {
+            return null;
+        }
+    }
+    
     public class Filter extends ItemsFilter {
         boolean members = includeMembers;
         boolean filterDeprecated = excludeDeprecated;
@@ -260,7 +271,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public boolean matchItem(Object item) {
-            Declaration declaration = (Declaration) item;
+            Declaration declaration = toDeclaration(item);
             Module module = declaration.getUnit().getPackage().getModule();
             if (filterJDK && 
                     module instanceof JDTModule &&
@@ -301,7 +312,6 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     return false;
                 }
             }
-//            return matches(getElementName(item));
         }
 
         @Override
@@ -365,21 +375,23 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public String decorateText(String text, Object element) {
-            if (element instanceof Declaration) {
-                Declaration dec = (Declaration) element;
-                try {
-                    if (!nameOccursMultipleTimes(dec)) {
-                        if (showSelectionPackage) {
-                            text += " - " + getPackageLabel(dec);
-                        }
-                        if (showSelectionModule) {
-                            text += " - " + getModule(dec);
+            if (showSelectionPackage||showSelectionModule) {
+                Declaration dec = toDeclaration(element);
+                if (dec!=null) {
+                    try {
+                        if (!nameOccursMultipleTimes(dec)) {
+                            if (showSelectionPackage) {
+                                text += " - " + getPackageLabel(dec);
+                            }
+                            if (showSelectionModule) {
+                                text += " - " + getModule(dec);
+                            }
                         }
                     }
-                }
-                catch (Exception e) {
-                    System.err.println(dec.getName());
-                    e.printStackTrace();
+                    catch (Exception e) {
+                        System.err.println(dec.getName());
+                        e.printStackTrace();
+                    }
                 }
             }
             return text;
@@ -408,13 +420,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public String getText(Object element) {
-            if (element instanceof Declaration) {
-                Declaration d = (Declaration) element;
+            Declaration dec = toDeclaration(element);
+            if (dec!=null) {
                 try {
-                    return getPackageLabel(d) /*+ " - " + getLocation(dwp)*/;
+                    return getPackageLabel(dec) /*+ " - " + getLocation(dwp)*/;
                 }
                 catch (Exception e) {
-                    System.err.println(d.getName());
+                    System.err.println(dec.getName());
                     e.printStackTrace();
                     return "";
                 }
@@ -429,7 +441,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public Image getImage(Object element) {
-            if (element instanceof Declaration) {
+            Declaration dec = toDeclaration(element);
+            if (dec!=null) {
                 return CeylonResources.PACKAGE;
             }
             else {
@@ -455,13 +468,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public String getText(Object element) {
-            if (element instanceof Declaration) {
-                Declaration d = (Declaration) element;
+            Declaration dec = toDeclaration(element);
+            if (dec!=null) {
                 try {
-                    return getModuleLabel(d)/* + " - " + getLocation(dwp)*/;
+                    return getModuleLabel(dec)/* + " - " + getLocation(dwp)*/;
                 }
                 catch (Exception e) {
-                    System.err.println(d.getName());
+                    System.err.println(dec.getName());
                     e.printStackTrace();
                     return "";
                 }
@@ -476,7 +489,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public Image getImage(Object element) {
-            if (element instanceof Declaration) {
+            Declaration dec = toDeclaration(element);
+            if (dec!=null) {
                 return CeylonResources.MODULE;
             }
             else {
@@ -502,8 +516,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public String getText(Object element) {
-            if (element instanceof Declaration) {
-                Declaration dec = (Declaration) element;
+            Declaration dec = toDeclaration(element);
+            if (dec!=null) {
                 try {
                     return getLocation(dec);
                 }
@@ -523,9 +537,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public Image getImage(Object element) {
-            if (element instanceof Declaration) {
-                Declaration dec = 
-                        (Declaration) element;
+            Declaration dec = toDeclaration(element);
+            if (dec!=null) {
                 return getLocationImage(dec);
             }
             else {
@@ -549,8 +562,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public Image getImage(Object element) {
-            if (element instanceof Declaration) {
-                Declaration dec = (Declaration) element;
+            Declaration dec = toDeclaration(element);
+            if (dec!=null) {
                 try {
                     return getImageForDeclaration(dec);
                 }
@@ -572,8 +585,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public StyledString getStyledText(Object element) {
-            if (element instanceof Declaration) {
-                Declaration dec = (Declaration) element;
+            Declaration dec = toDeclaration(element);
+            if (dec!=null) {
                 try {
                     IPreferenceStore prefs = EditorUtil.getPreferences();
                     StyledString label = 
@@ -604,7 +617,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public void update(ViewerCell cell) {
             Object element = cell.getElement();
-            if (element instanceof Declaration) {
+            if (element instanceof DeclarationProxy) {
                 StyledString styledText = getStyledText(element);
                 cell.setText(styledText.toString());
                 cell.setStyleRanges(styledText.getStyleRanges());
@@ -620,14 +633,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
     private class TypeSelectionHistory extends SelectionHistory {
         
-        protected Object restoreItemFromMemento(IMemento element) {
+        protected DeclarationProxy restoreItemFromMemento(IMemento element) {
             String qualifiedName = element.getString("qualifiedName");
             String unitFileName = element.getString("unitFileName");
             String packageName = element.getString("packageName");
             String projectName = element.getString("projectName");
             
             for (IProject project: getProjects()) {
-                
                 if (projectName!=null && 
                         project.getName().equals(projectName)) {
                     //search for a source file in the project
@@ -640,7 +652,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                                 try {
                                     if (isPresentable(dec) && 
                                             qualifiedName.equals(dec.getQualifiedNameString())) {
-                                        return isFiltered(dec) ? null : dec;
+                                        return isFiltered(dec) ? null : new DeclarationProxy(dec);
                                     }
                                 }
                                 catch (Exception e) {
@@ -663,7 +675,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                                     for (Declaration dec: pkg.getMembers()) {
                                         if (isPresentable(dec) && 
                                                 qualifiedName.equals(dec.getQualifiedNameString())) {
-                                            return isFiltered(dec) ? null : dec;
+                                            return isFiltered(dec) ? null : new DeclarationProxy(dec);
                                         }
                                         //TODO: members!
                                     }
@@ -678,7 +690,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         
         protected void storeItemToMemento(Object item, IMemento element) {
-            Declaration dec = (Declaration) item;
+            Declaration dec = toDeclaration(item);
             Unit unit = dec.getUnit();
             element.putString("qualifiedName", 
                     dec.getQualifiedNameString());
@@ -733,30 +745,29 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     protected Comparator<Object> getItemsComparator() {
         return new Comparator<Object>() {
             @Override
-            public int compare(Object o1, Object o2) {
-                return compareDeclarations((Declaration) o1, 
-                        (Declaration) o2);
+            public int compare(Object x, Object y) {
+                return compareDeclarations(toDeclaration(x), 
+                        toDeclaration(y));
             }
-            private int compareDeclarations(Declaration dec1, 
-                    Declaration dec2) {
-                int dc = dec1.getName()
-                        .compareTo(dec2.getName());
-                if (dc!=0) {
-                    return dc;
+            private int compareDeclarations(Declaration p, 
+                    Declaration q) {
+                int result = p.getName().compareTo(q.getName());
+                if (result!=0) {
+                    return result;
                 }
-                else if (dec1.isClassOrInterfaceMember() && 
-                        !dec2.isClassOrInterfaceMember()) {
+                else if (p.isClassOrInterfaceMember() && 
+                        !q.isClassOrInterfaceMember()) {
                     return 1;
                 }
-                else if (!dec1.isClassOrInterfaceMember() && 
-                        dec2.isClassOrInterfaceMember()) {
+                else if (!p.isClassOrInterfaceMember() && 
+                        q.isClassOrInterfaceMember()) {
                     return -1;
                 }
-                else if (dec1.isClassOrInterfaceMember() && 
-                        dec2.isClassOrInterfaceMember()) {
+                else if (p.isClassOrInterfaceMember() && 
+                        q.isClassOrInterfaceMember()) {
                     return compareDeclarations(
-                            (Declaration) dec1.getContainer(), 
-                            (Declaration) dec2.getContainer());
+                            (Declaration) p.getContainer(), 
+                            (Declaration) q.getContainer());
                 }
                 else {
                     return 0;
@@ -813,6 +824,39 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             if (monitor.isCanceled()) break;
         }
     }
+    
+    protected static class DeclarationProxy {
+        private Declaration declaration;
+        private String location;
+        public DeclarationProxy(Declaration declaration) {
+            this.declaration = declaration;
+            location = getLocation(declaration);
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this==obj) {
+                return true;
+            }
+            else if (obj instanceof DeclarationProxy) {
+                DeclarationProxy that = (DeclarationProxy) obj;
+                if (declaration.equals(that.declaration)) {
+                    return location==that.location || 
+                            location!=null && that.location!=null &&
+                            location.equals(that.location);
+                }
+                else {
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+        }
+        @Override
+        public int hashCode() {
+            return declaration.hashCode() + location.hashCode();
+        }
+    }
 
     private void fillDeclarationAndMembers(
             AbstractContentProvider contentProvider, 
@@ -822,7 +866,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 //watch out for dupes!
                 (!module.isProjectModule() || 
                  !dec.getUnit().getFilename().endsWith("ceylon"))) {
-            contentProvider.add(dec, itemsFilter);
+            contentProvider.add(new DeclarationProxy(dec), itemsFilter);
             nameOccurs(dec);
             if (includeMembers && dec instanceof ClassOrInterface) {
                 try {
@@ -847,7 +891,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     (JDTModule) unit.getPackage().getModule();
             for (Declaration dec: unit.getDeclarations()) {
                 if (includeDeclaration(jdtModule, dec)) {
-                    contentProvider.add(dec, itemsFilter);
+                    contentProvider.add(new DeclarationProxy(dec), itemsFilter);
                     nameOccurs(dec);
                 }
             }
@@ -1005,22 +1049,26 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private static String getLocation(Declaration declaration) {
-        Module module = declaration.getUnit().getPackage().getModule();
+        Unit unit = declaration.getUnit();
+        Module module = unit.getPackage().getModule();
         if (module instanceof JDTModule) {
             JDTModule m = (JDTModule) module;
-            if (m.isProjectModule()) {
-                IResourceAware sourceFile = 
-                        (IResourceAware) declaration.getUnit();
-                return sourceFile.getFileResource()
-                        .getFullPath().toPortableString();
+            if (unit instanceof EditedSourceFile ||
+                unit instanceof ProjectSourceFile ||
+                unit instanceof CrossProjectSourceFile ) {
+                IResourceAware sourceFile = (IResourceAware) unit;
+                return sourceFile.getFileResource().getFullPath()
+                        .toPortableString();
             }
-            String displayString = m.getRepositoryDisplayString();
-            File repository = 
-                    CeylonPlugin.getInstance().getCeylonRepository();
-            if (repository.getPath().equals(displayString)) {
-                displayString = "IDE System Modules";
+            else {
+                String displayString = m.getRepositoryDisplayString();
+                File repository = 
+                        CeylonPlugin.getInstance().getCeylonRepository();
+                if (repository.getPath().equals(displayString)) {
+                    displayString = "IDE System Modules";
+                }
+                return displayString;
             }
-            return displayString;
         }
         else {
             return null;
@@ -1057,7 +1105,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     @Override
     public String getElementName(Object item) {
-        return ((Declaration) item).getQualifiedNameString();
+        return toDeclaration(item).getQualifiedNameString();
     }
     
     @Override
@@ -1130,9 +1178,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             try {
                 if (selection!=null &&
                         selection.length==1 &&
-                        selection[0] instanceof Declaration) {
+                        selection[0] instanceof DeclarationProxy) {
                     browser.setText(getDocumentationFor(null, 
-                            (Declaration) selection[0]));
+                            toDeclaration(selection[0])));
                 }
                 else {
                     if (emptyDoc==null) {
@@ -1246,4 +1294,19 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
     
+    @Override
+    public Declaration[] getResult() {
+        Object[] proxies = super.getResult();
+        if (proxies==null) {
+            return null;
+        }
+        else {
+            Declaration[] declarations = new Declaration[proxies.length];
+            for (int i = 0; i < proxies.length; i++) {
+                declarations[i] = toDeclaration(proxies[i]);
+            }
+            return declarations;
+        }
+    }
+
 }

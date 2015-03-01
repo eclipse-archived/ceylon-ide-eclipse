@@ -335,13 +335,14 @@ public abstract class FiltersPreferencePage
             protected void fillViewMenu(IMenuManager menuManager) {}
         };
         if (dialog.open() == IDialogConstants.OK_ID) {
-            Object[] types = dialog.getResult();
-            for (int i=0; i<types.length; i++) {
-                Declaration dec = (Declaration) types[i];
-                String string = 
-                        dec.getQualifiedNameString() +
-                        declarationType(dec);
-                addFilter(string, true);
+            Declaration[] results = dialog.getResult();
+            if (results!=null) {
+                for (Declaration dec: results) {
+                    String string = 
+                            dec.getQualifiedNameString() +
+                            declarationType(dec);
+                    addFilter(string, true);
+                }
             }
         }
     }
