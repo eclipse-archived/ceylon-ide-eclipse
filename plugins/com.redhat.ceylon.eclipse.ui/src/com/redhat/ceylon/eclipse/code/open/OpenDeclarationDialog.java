@@ -22,7 +22,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -79,6 +78,7 @@ import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -639,45 +639,64 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             String packageName = element.getString("packageName");
             String projectName = element.getString("projectName");
             
-            for (IProject project: getProjects()) {
-                if (projectName!=null && 
-                        project.getName().equals(projectName)) {
-                    //search for a source file in the project
-                    for (PhasedUnit unit: getUnits(project)) {
-                        String filename = unit.getUnit().getFilename();
-                        String pname = unit.getPackage().getQualifiedNameString();
-                        if (filename.equals(unitFileName) && 
-                                pname.equals(packageName)) {
-                            for (Declaration dec: unit.getDeclarations()) {
-                                try {
-                                    if (isPresentable(dec) && 
-                                            qualifiedName.equals(dec.getQualifiedNameString())) {
-                                        return isFiltered(dec) ? null : new DeclarationProxy(dec);
+            if (projectName!=null) {
+                for (IProject project: getProjects()) {
+                     if (project.getName().equals(projectName)) {
+                        //search for a source file in the project
+                        for (PhasedUnit phasedUnit: getUnits(project)) {
+                            String filename = phasedUnit.getUnit().getFilename();
+                            String pname = phasedUnit.getPackage().getQualifiedNameString();
+                            if (filename.equals(unitFileName) && 
+                                    pname.equals(packageName)) {
+                                for (Declaration dec: phasedUnit.getDeclarations()) {
+                                    try {
+                                        if (isPresentable(dec)) {
+                                            String qname = dec.getQualifiedNameString();
+                                            if (qualifiedName.equals(qname)) {
+                                                return isFiltered(dec) ? null : 
+                                                    new DeclarationProxy(dec);
+                                            }
+                                        }
                                     }
-                                }
-                                catch (Exception e) {
-                                    e.printStackTrace();
+                                    catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }
                     }
                 }
-                else {
-                    //for archives, search all dependent modules
-                    //this will find declarations in src archives
-                    Modules modules = getProjectTypeChecker(project)
-                            .getContext().getModules();
-                    for (Module module: modules.getListOfModules()) {
-                        if (module.isJava() || //TODO: is this correct
-                                packageName.startsWith(module.getNameAsString())) {
-                            for (Package pkg: module.getAllPackages()) { 
-                                if (pkg.getQualifiedNameString().equals(packageName)) {
-                                    for (Declaration dec: pkg.getMembers()) {
-                                        if (isPresentable(dec) && 
-                                                qualifiedName.equals(dec.getQualifiedNameString())) {
-                                            return isFiltered(dec) ? null : new DeclarationProxy(dec);
+            }
+                
+            for (IProject project: getProjects()) {
+                //for archives, search all dependent modules
+                //this will find declarations in source archives
+                Modules modules = 
+                        getProjectTypeChecker(project)
+                                .getContext().getModules();
+                for (Module module: modules.getListOfModules()) {
+                    Package pkg = module.getDirectPackage(packageName);
+                    if (pkg!=null) {
+                        for (Unit unit: pkg.getUnits()) {
+                            if (unit.getFilename().equals(unitFileName)) {
+                                for (Declaration dec: unit.getDeclarations()) {
+                                    if (isPresentable(dec)) {
+                                        String qname = dec.getQualifiedNameString();
+                                        if (qualifiedName.equals(qname)) {
+                                            return isFiltered(dec) ? null : 
+                                                new DeclarationProxy(dec);
                                         }
-                                        //TODO: members!
+                                        else if (qualifiedName.startsWith(qname+ '.')) {
+                                            for (Declaration mem: dec.getMembers()) {
+                                                if (isPresentable(mem)) {
+                                                    String mqname = mem.getQualifiedNameString();
+                                                    if (qualifiedName.equals(mqname)) {
+                                                        return isFiltered(dec) ? null : 
+                                                            new DeclarationProxy(mem);
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -698,9 +717,12 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     unit.getFilename());
             element.putString("packageName", 
                     unit.getPackage().getQualifiedNameString());
-            if (unit instanceof ProjectSourceFile) {
-                ProjectSourceFile projectSourceFile = 
-                        (ProjectSourceFile) unit;
+            if (unit instanceof EditedSourceFile ||
+                unit instanceof ProjectSourceFile ||
+                unit instanceof CrossProjectSourceFile ||
+                //TODO: is this correct:
+                unit instanceof JavaCompilationUnit) {
+                IResourceAware projectSourceFile = (IResourceAware) unit;
                 element.putString("projectName", 
                         projectSourceFile.getProjectResource().getName());
             }
@@ -1048,23 +1070,26 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
+    private static String repositoryPath = 
+            CeylonPlugin.getInstance().getCeylonRepository().getPath();
+    
     private static String getLocation(Declaration declaration) {
         Unit unit = declaration.getUnit();
         Module module = unit.getPackage().getModule();
         if (module instanceof JDTModule) {
-            JDTModule m = (JDTModule) module;
             if (unit instanceof EditedSourceFile ||
                 unit instanceof ProjectSourceFile ||
-                unit instanceof CrossProjectSourceFile ) {
+                unit instanceof CrossProjectSourceFile ||
+                //TODO: is this correct:
+                unit instanceof JavaCompilationUnit) {
                 IResourceAware sourceFile = (IResourceAware) unit;
                 return sourceFile.getFileResource().getFullPath()
                         .toPortableString();
             }
             else {
-                String displayString = m.getRepositoryDisplayString();
-                File repository = 
-                        CeylonPlugin.getInstance().getCeylonRepository();
-                if (repository.getPath().equals(displayString)) {
+                JDTModule mod = (JDTModule) module;
+                String displayString = mod.getRepositoryDisplayString();
+                if (repositoryPath.equals(displayString)) {
                     displayString = "IDE System Modules";
                 }
                 return displayString;
