@@ -74,7 +74,7 @@ class AddModuleImportProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        return "Add 'import " + name + "' to module descriptor";
+        return "Add 'import " + name + " \"" + version + "\"' to module descriptor";
     }
 
     @Override

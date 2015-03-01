@@ -252,35 +252,32 @@ public class Highlights  {
         result.append(tokens.nextToken());
         while (tokens.hasMoreTokens()) {
             String tok = tokens.nextToken();
-            if (tok.equals("\"")) {
-                result.append(tok, VERSION_STYLER);
-                if (tokens.hasMoreTokens()) {
-                    result.append(tokens.nextToken(), VERSION_STYLER);
-                }
-                if (tokens.hasMoreTokens()) {
-                    String close = tokens.nextToken();
-                    if (close.equals("\"")) {
-                        result.append(close, VERSION_STYLER);
-                    }
-                    else {
-                        result.append(close);
-                    }
-                }
-            }
-            else if (tok.equals("\'")) {
+            if (tok.equals("\'")) {
                 if (!eliminateQuotes) {
                     result.append(tok);
                 }
-                if (tokens.hasMoreTokens()) {
+                while (tokens.hasMoreTokens()) {
                     String token = tokens.nextToken();
-                    styleProposal(result, token, 
-                            qualifiedNameIsPath && 
-                            token.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$"));
-                }
-                if (tokens.hasMoreTokens()) {
-                    String close = tokens.nextToken();
-                    if (!eliminateQuotes || !close.equals("\'")) {
-                        result.append(close);
+                    if (token.equals("\'")) {
+                        if (!eliminateQuotes) {
+                            result.append(token);
+                        }
+                        break;
+                    }
+                    else if (token.equals("\"")) {
+                        result.append(token, VERSION_STYLER);
+                        while (tokens.hasMoreTokens()) {
+                            String quoted = tokens.nextToken();
+                            result.append(quoted, VERSION_STYLER);
+                            if (quoted.equals("\"")) {
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        styleProposal(result, token, 
+                                qualifiedNameIsPath && 
+                                token.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$"));
                     }
                 }
             }

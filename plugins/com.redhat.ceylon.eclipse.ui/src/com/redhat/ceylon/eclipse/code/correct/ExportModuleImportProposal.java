@@ -32,11 +32,14 @@ public class ExportModuleImportProposal implements ICompletionProposal,
     private final IProject project;
     private final Unit unit; 
     private final String name;
+    private String version;
     
-    ExportModuleImportProposal(IProject project, Unit unit, String name) {
+    ExportModuleImportProposal(IProject project, Unit unit, 
+            String name, String version) {
         this.project = project;
         this.unit = unit;
         this.name = name;
+        this.version = version;
     }
     
     @Override
@@ -58,7 +61,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        return "Export 'import " + name + "' to clients of module";
+        return "Export 'import " + name + " \"" + version + "\"' to clients of module";
     }
 
     @Override
@@ -144,7 +147,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
             }
         }
         proposals.add(new ExportModuleImportProposal(project, unit, 
-                decModule.getNameAsString()));
+                decModule.getNameAsString(), decModule.getVersion()));
     }
 
 }
