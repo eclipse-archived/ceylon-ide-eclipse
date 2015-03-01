@@ -8,7 +8,9 @@ import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -347,8 +349,12 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         addButton.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                Set<String> names = new HashSet<String>();
+                for (Parameter p: parameterModels) {
+                    names.add(p.getName());
+                }
                 AddParameterDialog dialog = new AddParameterDialog(getShell(), 
-                        refactoring.node, refactoring.project);
+                        refactoring.node, refactoring.project, names);
                 if (dialog.open()==Window.OK) {
                     String name = dialog.getName();
                     ProducedType type = dialog.getType();

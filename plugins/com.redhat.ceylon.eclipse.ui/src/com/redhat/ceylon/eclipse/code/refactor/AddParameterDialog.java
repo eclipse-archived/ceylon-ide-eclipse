@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IProject;
@@ -33,10 +34,13 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
     private String argument;
     private TypeParser parser;
     private Node node;
+    private Set<String> parameterNames;
     
     public AddParameterDialog(Shell parentShell, 
-            Node node, IProject project) {
+            Node node, IProject project, 
+            Set<String> parameterNames) {
         super(parentShell);
+        this.parameterNames = parameterNames;
         parser = new TypeParser(getProjectModelLoader(project));
         this.node = node;
         name = "something";
@@ -98,7 +102,9 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                name = nameText.getText();
+                if (updateName(nameText, errorLabel)) {
+                    updateType(typeText, errorLabel);
+                }
             }
         });
         argumentText.addModifyListener(new ModifyListener() {
@@ -110,46 +116,8 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         typeText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent event) {
-                try {
-                    String text = typeText.getText();
-                    StringBuffer buffer = new StringBuffer();
-                    StringTokenizer tokens = 
-                            new StringTokenizer(text, 
-                                    " <>()[]{}*+|&,?", true);
-                    while (tokens.hasMoreTokens()) {
-                        String token = tokens.nextToken();
-                        if (" <>()[]{}*+|&,?".contains(token)) {
-                            buffer.append(token);
-                        }
-                        else {
-                            Declaration dec = 
-                                    node.getScope()
-                                        .getMemberOrParameter(node.getUnit(), 
-                                                token, null, false);
-                            if (dec==null) {
-                                errorLabel.setText("Type not found: " + token);
-                                errorLabel.setVisible(true);
-                                return;
-                            }
-                            else if (!(dec instanceof TypeDeclaration)) {
-                                errorLabel.setText("Not a type: " + token);
-                                errorLabel.setVisible(true);
-                                return;
-                            }
-                            else {
-                                buffer.append(dec.getQualifiedNameString());
-                            }
-                        }
-                    }
-                    type = parser.decodeType(buffer.toString(), 
-                            node.getScope(), 
-                            node.getUnit().getPackage().getModule(), 
-                            node.getUnit());
-                    errorLabel.setVisible(false);
-                }
-                catch (Exception e) {
-                    errorLabel.setText("Illegal type expression");
-                    errorLabel.setVisible(true);
+                if (updateType(typeText, errorLabel)) {
+                    updateName(nameText, errorLabel);
                 }
             }
         });
@@ -157,4 +125,74 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         return parent;
     }
 
+    private boolean updateType(Text typeText, CLabel errorLabel) {
+        try {
+            String text = typeText.getText();
+            StringBuffer buffer = new StringBuffer();
+            StringTokenizer tokens = 
+                    new StringTokenizer(text, 
+                            " <>()[]{}*+|&,?", true);
+            while (tokens.hasMoreTokens()) {
+                String token = tokens.nextToken();
+                if (" <>()[]{}*+|&,?".contains(token)) {
+                    buffer.append(token);
+                }
+                else {
+                    Declaration dec = 
+                            node.getScope()
+                                .getMemberOrParameter(node.getUnit(), 
+                                        token, null, false);
+                    if (dec==null) {
+                        errorLabel.setText("Type not found: " + token);
+                        errorLabel.setVisible(true);
+                        return false;
+                    }
+                    else if (!(dec instanceof TypeDeclaration)) {
+                        errorLabel.setText("Not a type: " + token);
+                        errorLabel.setVisible(true);
+                        return false;
+                    }
+                    else {
+                        buffer.append(dec.getQualifiedNameString());
+                    }
+                }
+            }
+            type = parser.decodeType(buffer.toString(), 
+                    node.getScope(), 
+                    node.getUnit().getPackage().getModule(), 
+                    node.getUnit());
+            errorLabel.setVisible(false);
+            return true;
+        }
+        catch (Exception e) {
+            errorLabel.setText("Illegal type expression");
+            errorLabel.setVisible(true);
+            return false;
+        }
+    }
+
+    private boolean updateName(Text nameText, CLabel errorLabel) {
+        String text = nameText.getText();
+        if (text.isEmpty()) {
+            errorLabel.setText("Missing name");
+            errorLabel.setVisible(true);
+            return false;
+        }
+        else if (!text.matches("^[a-z_]\\w*$")) {
+            errorLabel.setText("Illegal parameter name");
+            errorLabel.setVisible(true);
+            return false;
+        }
+        else if (parameterNames.contains(text)) {
+            errorLabel.setText("Duplicate parameter name");
+            errorLabel.setVisible(true);
+            return false;
+        }
+        else {
+            name = text;
+            errorLabel.setVisible(false);
+            return true;
+        }
+    }
+    
 }
