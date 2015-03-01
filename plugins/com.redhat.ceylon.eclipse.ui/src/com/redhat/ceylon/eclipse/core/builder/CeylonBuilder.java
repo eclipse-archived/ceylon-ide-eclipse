@@ -1695,18 +1695,30 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             monitor.subTask("scanning declarations " + pu.getUnit().getFilename());
             pu.scanDeclarations();
             monitor.worked(1);
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
         for (PhasedUnit pu: dependencies) {
             monitor.subTask("scanning type declarations " + pu.getUnit().getFilename());
             pu.scanTypeDeclarations();
             monitor.worked(2);
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
         for (PhasedUnit pu: dependencies) {
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
         for (PhasedUnit pu: dependencies) {
             pu.analyseTypes(); // Needed to have the right values in the Value.trans field (set in Expression visitor)
                                 // which in turn is important for debugging !
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
         
         // Then typecheck the changed source of this project
@@ -1804,29 +1816,31 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 phasedUnit.scanDeclarations();
             }
             monitor.worked(1);
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
 
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isTypeDeclarationsScanned()) {
                 monitor.subTask("scanning type declarations " + phasedUnit.getUnit().getFilename());
                 phasedUnit.scanTypeDeclarations();
             }
             monitor.worked(2);
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
+        
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isRefinementValidated()) {
                 phasedUnit.validateRefinement();
             }
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
+        
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             if (! phasedUnit.isFullyTyped()) {
                 monitor.subTask("typechecking " + phasedUnit.getUnit().getFilename());
@@ -1836,12 +1850,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
                 monitor.worked(3);
             }
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
+
         for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
             phasedUnit.analyseFlow();
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
 
         UnknownTypeCollector utc = new UnknownTypeCollector();
@@ -1911,20 +1929,33 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             monitor.subTask("scanning declarations " + pu.getUnit().getFilename());
             pu.scanDeclarations();
             monitor.worked(1);
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
+        
         for (PhasedUnit pu: dependencies) {
             monitor.subTask("scanning type declarations " + pu.getUnit().getFilename());
             pu.scanTypeDeclarations();
             monitor.worked(2);
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
                 
         for (PhasedUnit pu: dependencies) {
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
 
         for (PhasedUnit pu: dependencies) {
             pu.analyseTypes(); // Needed to have the right values in the Value.trans field (set in Expression visitor)
                                 // which in turn is important for debugging !
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
 
         Module languageModule = loader.getLanguageModule();
@@ -1943,28 +1974,29 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 pu.scanDeclarations();
                 monitor.worked(1);
             }
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
         
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
         for (PhasedUnit pu : listOfUnits) {
             if (! pu.isTypeDeclarationsScanned()) {
                 monitor.subTask("scanning types " + pu.getUnit().getFilename());
                 pu.scanTypeDeclarations();
                 monitor.worked(2);
             }
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
+        
         for (PhasedUnit pu: listOfUnits) {
             if (! pu.isRefinementValidated()) {
                 pu.validateRefinement();
             }
-        }
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
 
         for (PhasedUnit pu : listOfUnits) {
@@ -1976,13 +2008,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
                 monitor.worked(3);
             }
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
         
-        if (monitor.isCanceled()) {
-            throw new OperationCanceledException();
-        }
         for (PhasedUnit pu: listOfUnits) {
             pu.analyseFlow();
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
         }
 
         UnknownTypeCollector utc = new UnknownTypeCollector();
