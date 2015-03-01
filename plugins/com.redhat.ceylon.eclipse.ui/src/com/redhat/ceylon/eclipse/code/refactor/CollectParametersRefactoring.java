@@ -279,12 +279,14 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                 prev = na;
             }
             Tree.SequencedArgument sa = nal.getSequencedArgument();
-            if (models.contains(sa.getParameter().getModel())) {
-                int fromOffset = Nodes.getNodeStartOffset(sa);
-                int toOffset = Nodes.getNodeEndOffset(sa);
-                tfc.addEdit(new DeleteEdit(fromOffset, 
-                        toOffset-fromOffset));
-                results.add(sa);
+            if (sa!=null) {
+                if (models.contains(sa.getParameter().getModel())) {
+                    int fromOffset = Nodes.getNodeStartOffset(sa);
+                    int toOffset = Nodes.getNodeEndOffset(sa);
+                    tfc.addEdit(new DeleteEdit(fromOffset, 
+                            toOffset-fromOffset));
+                    results.add(sa);
+                }
             }
             if (!results.isEmpty()) {
                 StringBuilder builder = new StringBuilder();
