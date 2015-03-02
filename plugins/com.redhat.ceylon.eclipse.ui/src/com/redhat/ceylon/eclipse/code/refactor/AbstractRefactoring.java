@@ -27,6 +27,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.CrossProjectBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
@@ -85,6 +87,10 @@ abstract class AbstractRefactoring extends Refactoring {
     
     boolean inSameProject(Declaration declaration) {
         Unit unit = declaration.getUnit();
+        if (unit instanceof CrossProjectSourceFile ||
+            unit instanceof CrossProjectBinaryUnit) {
+            return false;
+        }
         if (unit instanceof IResourceAware) {
             IProject project = 
                     ((IResourceAware) unit).getProjectResource();
