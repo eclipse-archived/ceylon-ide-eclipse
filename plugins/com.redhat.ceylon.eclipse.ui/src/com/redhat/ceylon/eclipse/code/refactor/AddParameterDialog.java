@@ -20,15 +20,19 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
 import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.StaticType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -110,7 +114,9 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
             @Override
             public void modifyText(ModifyEvent e) {
                 if (updateName(nameText, errorLabel)) {
-                    updateType(typeText, errorLabel);
+                    if (updateType(typeText, errorLabel)) {
+                        updateArgument(argumentText, errorLabel);
+                    }
                 }
             }
         });
@@ -118,13 +124,20 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
             @Override
             public void modifyText(ModifyEvent e) {
                 argument = argumentText.getText();
+                if (updateArgument(argumentText, errorLabel)) {
+                    if (updateType(typeText, errorLabel)) {
+                        updateName(nameText, errorLabel);
+                    }
+                }
             }
         });
         typeText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent event) {
                 if (updateType(typeText, errorLabel)) {
-                    updateName(nameText, errorLabel);
+                    if (updateName(nameText, errorLabel)) {
+                        updateArgument(argumentText, errorLabel);
+                    }
                 }
             }
         });
@@ -170,8 +183,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                 }
             });
             staticType.visit(new TypeVisitor(unit));
-            //TODO: error if unparameterized type has type args!
-            type = staticType.getTypeModel();
+            staticType.visit(new ExpressionVisitor(unit));
             
             errorLabel.setVisible(false);
             
@@ -184,11 +196,106 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                 }
             }.visit(staticType);
             
-            return !errorLabel.isVisible();
+            if (errorLabel.isVisible()) { 
+                return false;
+            }
+            else {
+                type = staticType.getTypeModel();
+                return true;
+            }
             
         }
         catch (Exception e) {
             errorLabel.setText("Could not parse type expression");
+            errorLabel.setVisible(true);
+            return false;
+        }
+    }
+
+    private boolean updateArgument(final Text argumentText, 
+            final CLabel errorLabel) {
+        try {
+            String text = argumentText.getText();
+            if (text.isEmpty()) {
+                errorLabel.setText("Missing argument expression");
+                errorLabel.setVisible(true);
+                return false;
+            }
+            String typeExpression = type==null ? "Anything" : type.getProducedTypeName(unit);
+            String parameterName = name==null ? "something" : name;
+            String paramDeclaration = "(" + typeExpression + " " + parameterName + " = " + text + ")";
+            
+            CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(paramDeclaration));
+            CommonTokenStream ts = new CommonTokenStream(lexer);
+            ts.fill();
+            List<LexError> lexErrors = lexer.getErrors();
+            if (!lexErrors.isEmpty()) {
+                errorLabel.setText(lexErrors.get(0).getMessage());
+                errorLabel.setVisible(true);
+                return false;
+            }
+            
+            CeylonParser parser = new CeylonParser(ts);
+            Tree.ParameterList parameters = parser.parameters();
+            if (ts.index()<ts.size()-1) {
+                errorLabel.setText("extra tokens in argument expression");
+                errorLabel.setVisible(true);
+                return false;
+            }
+            List<ParseError> parseErrors = parser.getErrors();
+            if (!parseErrors.isEmpty()) {
+                errorLabel.setText(parseErrors.get(0).getMessage());
+                errorLabel.setVisible(true);
+                return false;
+            }
+            
+            final Value value = new Value();
+            value.setName(name);
+            final Parameter param = new Parameter();
+            param.setName(name);
+            param.setModel(value);
+            parameters.visit(new Visitor() {
+                @Override
+                public void visitAny(Node that) {
+                    that.setUnit(unit);
+                    that.setScope(node.getScope());
+                    super.visitAny(that);
+                }
+                @Override
+                public void visit(Tree.AttributeDeclaration that) {
+                    that.setDeclarationModel(value);
+                    super.visit(that);
+                }
+                @Override public void visit(Tree.ParameterDeclaration that) {
+                    that.setParameterModel(param);
+                    super.visit(that);
+                }
+            });
+            parameters.visit(new TypeVisitor(unit));
+            parameters.visit(new ExpressionVisitor(unit));
+            
+            errorLabel.setVisible(false);
+            
+            new ErrorVisitor() {
+                @Override
+                protected void handleMessage(int startOffset, int endOffset, 
+                        int startCol, int startLine, Message error) {
+                    errorLabel.setText(error.getMessage());
+                    errorLabel.setVisible(true);
+                }
+            }.visit(parameters);
+            
+            if (errorLabel.isVisible()) { 
+                return false;
+            }
+            else {
+                this.argument = text;
+                return true;
+            }
+            
+        }
+        catch (Exception e) {
+            errorLabel.setText("Could not parse argument expression");
             errorLabel.setVisible(true);
             return false;
         }
