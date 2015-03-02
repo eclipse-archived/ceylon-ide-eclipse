@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
@@ -34,12 +36,24 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
+import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
+import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.compiler.typechecker.parser.LexError;
+import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
 public class ChangeParametersInputPage extends UserInputWizardPage {
     
@@ -235,6 +249,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
             @Override
             protected void setValue(Object element, Object value) {
+                updateArgument((Parameter) element, (String) value,
+                        refactoring);
                 MethodOrValue model = ((Parameter) element).getModel();
                 refactoring.getDefaultArgs().put(model, 
                         (String) value);
@@ -413,4 +429,89 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         return (ChangeParametersRefactoring) getRefactoring();
     }
     
+    private boolean updateArgument(final Parameter parameter, 
+            final String text, 
+            final ChangeParametersRefactoring refactoring) {
+        try {
+            if (text.isEmpty()) {
+                return true;
+//                setErrorMessage("Missing argument expression");
+//                return false;
+            }
+            String typeExpression = parameter.getType().getProducedTypeName();
+            String parameterName = parameter.getName();
+            String paramDeclaration = "(" + typeExpression + " " + parameterName + " = " + text + ")";
+            
+            CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(paramDeclaration));
+            CommonTokenStream ts = new CommonTokenStream(lexer);
+            ts.fill();
+            List<LexError> lexErrors = lexer.getErrors();
+            if (!lexErrors.isEmpty()) {
+                setErrorMessage(lexErrors.get(0).getMessage());
+                return false;
+            }
+            
+            CeylonParser parser = new CeylonParser(ts);
+            Tree.ParameterList parameters = parser.parameters();
+            if (ts.index()<ts.size()-1) {
+                setErrorMessage("extra tokens in argument expression");
+                return false;
+            }
+            List<ParseError> parseErrors = parser.getErrors();
+            if (!parseErrors.isEmpty()) {
+                setErrorMessage(parseErrors.get(0).getMessage());
+                return false;
+            }
+            
+            final Unit unit = refactoring.node.getUnit();
+            final Scope scope = refactoring.node.getScope();
+            final Value value = new Value();
+            value.setName(parameterName);
+            final Parameter param = new Parameter();
+            param.setName(parameterName);
+            param.setModel(value);
+            parameters.visit(new Visitor() {
+                @Override
+                public void visitAny(Node that) {
+                    that.setUnit(unit);
+                    that.setScope(scope);
+                    super.visitAny(that);
+                }
+                @Override
+                public void visit(Tree.AttributeDeclaration that) {
+                    that.setDeclarationModel(value);
+                    super.visit(that);
+                }
+                @Override public void visit(Tree.ParameterDeclaration that) {
+                    that.setParameterModel(param);
+                    super.visit(that);
+                }
+            });
+            parameters.visit(new TypeVisitor(unit));
+            parameters.visit(new ExpressionVisitor(unit));
+            
+            setErrorMessage(null);
+            
+            new ErrorVisitor() {
+                @Override
+                protected void handleMessage(int startOffset, int endOffset, 
+                        int startCol, int startLine, Message error) {
+                    setErrorMessage(error.getMessage());
+                }
+            }.visit(parameters);
+            
+            if (getErrorMessage()!=null) { 
+                return false;
+            }
+            else {
+                return true;
+            }
+            
+        }
+        catch (Exception e) {
+            setErrorMessage("Could not parse argument expression");
+            return false;
+        }
+    }
+
 }
