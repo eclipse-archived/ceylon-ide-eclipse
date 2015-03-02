@@ -127,6 +127,96 @@ public class JDTModule extends LazyModule {
         }
         return null;
     }
+
+    private class BinaryPhasedUnits extends PhasedUnitMap<ExternalPhasedUnit, SoftReference<ExternalPhasedUnit>> {
+        Set<String> sourceCannotBeResolved = new HashSet<String>();
+        final String fullPathPrefix = sourceArchivePath + "!/"; 
+        
+        public BinaryPhasedUnits() {
+            for (Object value : classesToSources.values()) {
+                String sourceRelativePath = (String) value;
+                putRelativePath(sourceRelativePath);
+            }
+        }
+
+        public void putRelativePath(String sourceRelativePath) {
+            String path = fullPathPrefix + sourceRelativePath;
+            phasedUnitPerPath.put(path, new SoftReference<ExternalPhasedUnit>(null));
+            relativePathToPath.put(sourceRelativePath, path);
+        }
+        
+        @Override
+        public ExternalPhasedUnit getPhasedUnit(String path) {
+            if (! phasedUnitPerPath.containsKey(path)) {
+                if (path.endsWith(".ceylon")) {
+                    // Case of a Ceylon file with a Java implementation, the classesToSources key is the Java source file.
+                    String javaFileRelativePath = getJavaImplementationFile(path.replace(sourceArchivePath + "!/", ""));                        
+                    if (javaFileRelativePath != null) {
+                        return super.getPhasedUnit(sourceArchivePath + "!/" + javaFileRelativePath);
+                    }
+                }
+                return null;
+            }
+            return super.getPhasedUnit(path);
+        }
+
+        @Override
+        public ExternalPhasedUnit getPhasedUnitFromRelativePath(String relativePath) {
+            if (relativePath.startsWith("/")) {
+                relativePath = relativePath.substring(1);
+            }
+            if (! relativePathToPath.containsKey(relativePath)) {
+                if (relativePath.endsWith(".ceylon")) {
+                    // Case of a Ceylon file with a Java implementation, the classesToSources key is the Java source file.
+                    String javaFileRelativePath = getJavaImplementationFile(relativePath);                        
+                    if (javaFileRelativePath != null) {
+                        return super.getPhasedUnitFromRelativePath(javaFileRelativePath);
+                    }
+                }
+                return null;
+            }
+            return super.getPhasedUnitFromRelativePath(relativePath);
+        }
+        
+        @Override
+        protected ExternalPhasedUnit fromStoredType(SoftReference<ExternalPhasedUnit> storedValue, String path) {
+            ExternalPhasedUnit result = storedValue.get();
+            if (result == null) {
+                if (!sourceCannotBeResolved.contains(path)) {
+                    result = buildPhasedUnitForBinaryUnit(path);
+                    if (result != null) {
+                        phasedUnitPerPath.put(path, toStoredType(result));
+                    } else {
+                        sourceCannotBeResolved.add(path);
+                    }
+                }
+            }
+            return result;
+        }
+        
+        @Override
+        protected void addInReturnedList(List<ExternalPhasedUnit> list,
+                ExternalPhasedUnit phasedUnit) {
+            if (phasedUnit != null) {
+                list.add(phasedUnit);
+            }
+        }
+
+        @Override
+        protected SoftReference<ExternalPhasedUnit> toStoredType(ExternalPhasedUnit phasedUnit) {
+            return new SoftReference<ExternalPhasedUnit>(phasedUnit);
+        }
+
+        @Override
+        public void removePhasedUnitForRelativePath(String relativePath) {
+            // Don't clean the Package since we are in the binary case 
+            String path = relativePathToPath.get(relativePath);
+            relativePathToPath.remove(relativePath);
+            phasedUnitPerPath.remove(path);
+        }
+        
+        
+    };
     
     synchronized void setArtifact(ArtifactResult artifactResult) {
         artifact = artifactResult.artifact();
@@ -150,91 +240,6 @@ public class JDTModule extends LazyModule {
             } catch (Exception e) {
                 CeylonPlugin.getInstance().getLog().log(new Status(IStatus.WARNING, CeylonPlugin.PLUGIN_ID, "Cannot find the source archive for the Ceylon binary module " + getSignature(), e));
             }
-            class BinaryPhasedUnits extends PhasedUnitMap<ExternalPhasedUnit, SoftReference<ExternalPhasedUnit>> {
-                Set<String> sourceCannotBeResolved = new HashSet<String>();
-                
-                public BinaryPhasedUnits() {
-                    String fullPathPrefix = sourceArchivePath + "!/"; 
-                    for (Object value : classesToSources.values()) {
-                        String sourceRelativePath = (String) value;
-                        String path = fullPathPrefix + sourceRelativePath;
-                        phasedUnitPerPath.put(path, new SoftReference<ExternalPhasedUnit>(null));
-                        relativePathToPath.put(sourceRelativePath, path);
-                    }
-                }
-                
-                @Override
-                public ExternalPhasedUnit getPhasedUnit(String path) {
-                    if (! phasedUnitPerPath.containsKey(path)) {
-                        if (path.endsWith(".ceylon")) {
-                            // Case of a Ceylon file with a Java implementation, the classesToSources key is the Java source file.
-                            String javaFileRelativePath = getJavaImplementationFile(path.replace(sourceArchivePath + "!/", ""));                        
-                            if (javaFileRelativePath != null) {
-                                return super.getPhasedUnit(sourceArchivePath + "!/" + javaFileRelativePath);
-                            }
-                        }
-                        return null;
-                    }
-                    return super.getPhasedUnit(path);
-                }
-
-                @Override
-                public ExternalPhasedUnit getPhasedUnitFromRelativePath(String relativePath) {
-                    if (relativePath.startsWith("/")) {
-                        relativePath = relativePath.substring(1);
-                    }
-                    if (! relativePathToPath.containsKey(relativePath)) {
-                        if (relativePath.endsWith(".ceylon")) {
-                            // Case of a Ceylon file with a Java implementation, the classesToSources key is the Java source file.
-                            String javaFileRelativePath = getJavaImplementationFile(relativePath);                        
-                            if (javaFileRelativePath != null) {
-                                return super.getPhasedUnitFromRelativePath(javaFileRelativePath);
-                            }
-                        }
-                        return null;
-                    }
-                    return super.getPhasedUnitFromRelativePath(relativePath);
-                }
-                
-                @Override
-                protected ExternalPhasedUnit fromStoredType(SoftReference<ExternalPhasedUnit> storedValue, String path) {
-                    ExternalPhasedUnit result = storedValue.get();
-                    if (result == null) {
-                        if (!sourceCannotBeResolved.contains(path)) {
-                            result = buildPhasedUnitForBinaryUnit(path);
-                            if (result != null) {
-                                phasedUnitPerPath.put(path, toStoredType(result));
-                            } else {
-                                sourceCannotBeResolved.add(path);
-                            }
-                        }
-                    }
-                    return result;
-                }
-                
-                @Override
-                protected void addInReturnedList(List<ExternalPhasedUnit> list,
-                        ExternalPhasedUnit phasedUnit) {
-                    if (phasedUnit != null) {
-                        list.add(phasedUnit);
-                    }
-                }
-
-                @Override
-                protected SoftReference<ExternalPhasedUnit> toStoredType(ExternalPhasedUnit phasedUnit) {
-                    return new SoftReference<ExternalPhasedUnit>(phasedUnit);
-                }
-
-                @Override
-                public void removePhasedUnitForRelativePath(String relativePath) {
-                    // Don't clean the Package since we are in the binary case 
-                    String path = relativePathToPath.get(relativePath);
-                    relativePathToPath.remove(relativePath);
-                    phasedUnitPerPath.remove(path);
-                }
-                
-                
-            };
             binaryModulePhasedUnits = new BinaryPhasedUnits(); 
         }
         
@@ -754,6 +759,10 @@ public class JDTModule extends LazyModule {
                             if (sourceArchive != null) {
                                 sourceArchive.close();
                             }
+                        }
+                    } else if (isCeylonBinaryArchive() && binaryModulePhasedUnits != null){
+                        for (String relativePathToAdd : originalUnitsToAdd) {
+                            ((BinaryPhasedUnits) binaryModulePhasedUnits).putRelativePath(relativePathToAdd);
                         }
                     }
                     
