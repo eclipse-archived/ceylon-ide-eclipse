@@ -60,7 +60,7 @@ PhasedUnit? createPhasedUnit(String contents, String path) {
     
     abstract class TestVirtualFile(path) satisfies VirtualFile {
         shared default actual InputStream inputStream => nothing;
-        shared actual String name => path.split('/'.equals, true, true).last else nothing;
+        shared actual String name => path.split('/'.equals, true, true).last;
         shared actual String path;
     }
     
