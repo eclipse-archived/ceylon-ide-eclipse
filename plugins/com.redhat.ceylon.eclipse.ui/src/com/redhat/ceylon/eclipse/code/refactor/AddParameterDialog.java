@@ -1,10 +1,10 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
-
+import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -20,31 +20,38 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.compiler.loader.TypeParser;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.compiler.typechecker.parser.LexError;
+import com.redhat.ceylon.compiler.typechecker.parser.ParseError;
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.StaticType;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
 public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
     
     private String name; 
     private ProducedType type;
     private String argument;
-    private TypeParser parser;
     private Node node;
     private Set<String> parameterNames;
+    private Unit unit;
     
     public AddParameterDialog(Shell parentShell, 
             Node node, IProject project, 
             Set<String> parameterNames) {
         super(parentShell);
         this.parameterNames = parameterNames;
-        parser = new TypeParser(getProjectModelLoader(project));
         this.node = node;
         name = "something";
-        type = node.getUnit().getAnythingDeclaration().getType();
+        unit = node.getUnit();
+        type = unit.getAnythingDeclaration().getType();
         argument = "nothing";
     }
     
@@ -74,7 +81,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(GridLayoutFactory.swtDefaults().numColumns(2).create());
-        composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
+        composite.setLayoutData(GridDataFactory.fillDefaults().hint(500, SWT.DEFAULT).grab(true, true).create());
         
         Label typeLabel = new Label(composite, SWT.NONE);
         typeLabel.setText("Type:");
@@ -86,7 +93,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         final Text nameText = new Text(composite, SWT.SINGLE | SWT.BORDER);
         nameText.setText("something");
         nameText.selectAll();
-        nameText.setLayoutData(GridDataFactory.fillDefaults().hint(80, SWT.DEFAULT).create());
+        nameText.setLayoutData(GridDataFactory.fillDefaults().create());
         
         Label valLabel = new Label(composite, SWT.NONE);
         valLabel.setText("Argument:");
@@ -95,7 +102,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         argumentText.setText("nothing");
 
         final CLabel errorLabel = new CLabel(composite, SWT.NONE);
-        errorLabel.setLayoutData(GridDataFactory.fillDefaults().span(4, 1).grab(true, false).create());
+        errorLabel.setLayoutData(GridDataFactory.fillDefaults().span(4, 1).grab(true, true).create());
         errorLabel.setVisible(false);
         errorLabel.setImage(CeylonResources.ERROR);
         
@@ -125,53 +132,70 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         return parent;
     }
 
-    private boolean updateType(Text typeText, CLabel errorLabel) {
+    private boolean updateType(final Text typeText, 
+            final CLabel errorLabel) {
         try {
             String text = typeText.getText();
-            StringBuffer buffer = new StringBuffer();
-            StringTokenizer tokens = 
-                    new StringTokenizer(text, 
-                            " <>()[]{}*+|&,?", true);
-            while (tokens.hasMoreTokens()) {
-                String token = tokens.nextToken();
-                if (" <>()[]{}*+|&,?".contains(token)) {
-                    buffer.append(token);
-                }
-                else {
-                    Declaration dec = 
-                            node.getScope()
-                                .getMemberOrParameter(node.getUnit(), 
-                                        token, null, false);
-                    if (dec==null) {
-                        errorLabel.setText("Type not found: " + token);
-                        errorLabel.setVisible(true);
-                        return false;
-                    }
-                    else if (!(dec instanceof TypeDeclaration)) {
-                        errorLabel.setText("Not a type: " + token);
-                        errorLabel.setVisible(true);
-                        return false;
-                    }
-                    else {
-                        buffer.append(dec.getQualifiedNameString());
-                    }
-                }
+            
+            CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(text));
+            CommonTokenStream ts = new CommonTokenStream(lexer);
+            ts.fill();
+            List<LexError> lexErrors = lexer.getErrors();
+            if (!lexErrors.isEmpty()) {
+                errorLabel.setText(lexErrors.get(0).getMessage());
+                errorLabel.setVisible(true);
+                return false;
             }
-            type = parser.decodeType(buffer.toString(), 
-                    node.getScope(), 
-                    node.getUnit().getPackage().getModule(), 
-                    node.getUnit());
+            
+            CeylonParser parser = new CeylonParser(ts);
+            StaticType staticType = parser.type();
+            if (ts.index()<ts.size()-1) {
+                errorLabel.setText("extra tokens in type expression");
+                errorLabel.setVisible(true);
+                return false;
+            }
+            List<ParseError> parseErrors = parser.getErrors();
+            if (!parseErrors.isEmpty()) {
+                errorLabel.setText(parseErrors.get(0).getMessage());
+                errorLabel.setVisible(true);
+                return false;
+            }
+            
+            staticType.visit(new Visitor() {
+                @Override
+                public void visitAny(Node that) {
+                    that.setUnit(unit);
+                    that.setScope(node.getScope());
+                    super.visitAny(that);
+                }
+            });
+            staticType.visit(new TypeVisitor(unit));
+            //TODO: error if unparameterized type has type args!
+            type = staticType.getTypeModel();
+            
             errorLabel.setVisible(false);
-            return true;
+            
+            new ErrorVisitor() {
+                @Override
+                protected void handleMessage(int startOffset, int endOffset, 
+                        int startCol, int startLine, Message error) {
+                    errorLabel.setText(error.getMessage());
+                    errorLabel.setVisible(true);
+                }
+            }.visit(staticType);
+            
+            return !errorLabel.isVisible();
+            
         }
         catch (Exception e) {
-            errorLabel.setText("Illegal type expression");
+            errorLabel.setText("Could not parse type expression");
             errorLabel.setVisible(true);
             return false;
         }
     }
 
-    private boolean updateName(Text nameText, CLabel errorLabel) {
+    private boolean updateName(final Text nameText, 
+            final CLabel errorLabel) {
         String text = nameText.getText();
         if (text.isEmpty()) {
             errorLabel.setText("Missing name");
