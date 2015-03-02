@@ -819,7 +819,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             for (Module m: modules.getListOfModules()) {
                 if (m instanceof JDTModule) {
                     JDTModule module = (JDTModule) m;
-                    if ((!excludeJDK || !JDKUtils.isJDKModule(module.getNameAsString())) &&
+                    if (module.isAvailable() &&
+                        (!excludeJDK || !JDKUtils.isJDKModule(module.getNameAsString())) &&
                         (!excludeOracleJDK || !JDKUtils.isOracleJDKModule(module.getNameAsString())) &&
                             searchedArchives.add(uniqueIdentifier(module))) {
                         fill(contentProvider, itemsFilter, module, monitor);
@@ -1018,7 +1019,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             for (Module m: modules.getListOfModules()) {
                 if (m instanceof JDTModule) {
                     JDTModule module = (JDTModule) m;
-                    if ((!excludeJDK || !JDKUtils.isJDKModule(module.getNameAsString())) &&
+                    if (module.isAvailable() &&
+                        (!excludeJDK || !JDKUtils.isJDKModule(module.getNameAsString())) &&
                         (!excludeOracleJDK || !JDKUtils.isOracleJDKModule(module.getNameAsString())) &&
                             searchedArchives.add(uniqueIdentifier(module))) {
                         work += 1 + m.getPackages().size();
