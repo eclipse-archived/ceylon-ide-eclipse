@@ -695,16 +695,66 @@ public class DebugUtils {
         if (parts.length == 2) {
             List<Method> methodsWithTheSameName = method.declaringType().methodsByName(parts[0]);
             if (methodsWithTheSameName != null) {
+                label:
                 for (Method m : methodsWithTheSameName) {
                     try {
                         for (LocalVariable arg : m.arguments()) {
                             if (parts[1].equals(arg.name())) {
                                 isDefaultArgumentMethod = true;
+                                break label;
                             }
                         }
                     } catch (AbsentInformationException e) {
                         e.printStackTrace();
                     }
+                }
+            }
+        } else {
+            List<Method> defaultArgumentMethods = new ArrayList<>();
+            for (Method m : method.declaringType().methods()) {
+                if (m.name().startsWith(parts[0] + "$")) {
+                    defaultArgumentMethods.add(m);
+                }
+            }
+            if (! defaultArgumentMethods.isEmpty()) {
+                ArrayList<String> defaultArguments = new ArrayList<>(defaultArgumentMethods.size());
+                for (Method defaultArgumentMethod : defaultArgumentMethods) {
+                    String argumentName = defaultArgumentMethod.name().substring(parts[0].length() + 1);
+                    if (! argumentName.isEmpty()) {
+                        defaultArguments.add(argumentName);
+                    }
+                }
+                
+                List<Method> overloadedMethods = method.declaringType().methodsByName(parts[0]);
+                Method methodWithAllArguments = null;
+                if (overloadedMethods.size() > 1) {
+                    for (Method overloadedMethod : overloadedMethods) {
+                        if (overloadedMethod.equals(method)) {
+                            continue;
+                        }
+                        
+                        try {
+                            List<LocalVariable> arguments = overloadedMethod.arguments();
+                            if (arguments.size() != defaultArguments.size()) {
+                                continue;
+                            }
+                            List<String> argumentNames = new ArrayList<>(arguments.size());
+                            for (LocalVariable arg : arguments) {
+                                argumentNames.add(arg.name());
+                            }
+                            
+                            if (! defaultArguments.containsAll(argumentNames)) {
+                                continue;
+                            }
+                            methodWithAllArguments = overloadedMethod;
+                            break;
+                        } catch (AbsentInformationException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                if (methodWithAllArguments != null) {
+                    isDefaultArgumentMethod = true;
                 }
             }
         }
