@@ -129,6 +129,13 @@ class FindOccurrenceLocationVisitor extends Visitor
         super.visit(that);
     }
     
+    public void visit(Tree.DelegatedConstructor that) {
+        if (inBounds(that)) {
+            occurrence = EXTENDS;
+        }
+        super.visit(that);
+    }
+    
     public void visit(Tree.SatisfiedTypes that) {
         if (inBounds(that)) {
             occurrence = inTypeConstraint? 

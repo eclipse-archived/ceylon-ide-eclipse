@@ -68,6 +68,7 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.TypeArgumentListCompletions.addTypeArgumentListProposal;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
+import static com.redhat.ceylon.eclipse.util.Nodes.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.ALIAS_REF;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CASE;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CATCH;
@@ -694,7 +695,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             ProducedType requiredType, int previousTokenType, int tokenType) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-        OccurrenceLocation ol = Nodes.getOccurrenceLocation(cpc.getRootNode(), node, offset);
+        OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node, offset);
         
         if (node instanceof Tree.TypeConstraint) {
             for (DeclarationWithProximity dwp: sortedProposals) {
@@ -800,7 +801,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 
                 if (!secondLevel && !inDoc && noParamsFollow &&
                         isInvocationProposable(dwp, ol, previousTokenType) && 
-                        (!isQualifiedType(node) || dec instanceof Constructor || dec.isStaticallyImportable())) {
+                        (!isQualifiedType(node) || dec instanceof Constructor || dec.isStaticallyImportable()) &&
+                        (!(scope instanceof Constructor) || ol!=EXTENDS || scope.getContainer().isInherited(dec))) {
                     for (Declaration d: overloads(dec)) {
                         ProducedReference pr = isMember ? 
                                 getQualifiedProducedReference(node, d) :
@@ -813,8 +815,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 if (isProposable(dwp, ol, scope, node.getUnit(), 
                             requiredType, previousTokenType) && 
                             isProposable(node, ol, dec) &&
-                            (definitelyRequiresType(ol) || noParamsFollow || 
-                                dec instanceof Functional)) {
+                            (definitelyRequiresType(ol) || noParamsFollow || dec instanceof Functional) &&
+                            (!(scope instanceof Constructor) || ol!=EXTENDS || scope.getContainer().isInherited(dec))) {
                     if (ol==DOCLINK) {
                         addDocLinkProposal(offset, prefix, cpc, result, dec, scope);
                     }
