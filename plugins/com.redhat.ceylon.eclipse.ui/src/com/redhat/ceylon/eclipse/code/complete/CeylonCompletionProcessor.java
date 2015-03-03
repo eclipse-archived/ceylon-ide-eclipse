@@ -1072,6 +1072,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                  ol==EXPRESSION && (!(dec instanceof Class) || !((Class) dec).isAbstract()) || 
                  ol==EXTENDS && dec instanceof Class && !((Class) dec).isFinal() && 
                          ((Class) dec).getTypeParameters().isEmpty() ||
+                 ol==EXTENDS && dec instanceof Constructor && !((Class) dec.getContainer()).isFinal() && 
+                         ((Class) dec.getContainer()).getTypeParameters().isEmpty() ||
                  ol==CLASS_ALIAS && dec instanceof Class ||
                  ol==PARAMETER_LIST && dec instanceof Method && 
                          dec.isAnnotation()) &&
@@ -1085,7 +1087,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             OccurrenceLocation ol, Scope scope, Unit unit, 
             ProducedType requiredType, int previousTokenType) {
         Declaration dec = dwp.getDeclaration();
-        return (ol!=EXTENDS || dec instanceof Class && !((Class) dec).isFinal()) && 
+        return (ol!=EXTENDS || dec instanceof Class && !((Class) dec).isFinal() && !(scope instanceof Constructor) || 
+                               dec instanceof Constructor && !((Class) dec.getContainer()).isFinal()) && 
                (ol!=CLASS_ALIAS || dec instanceof Class) &&
                (ol!=SATISFIES || dec instanceof Interface) &&
                (ol!=OF || dec instanceof Class || isAnonymousClassValue(dec)) && 
