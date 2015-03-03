@@ -4,49 +4,43 @@ import ceylon.collection {
     ArrayList,
     naturalOrderTreeMap
 }
+import ceylon.interop.java {
+    CeylonIterable
+}
+import ceylon.language.meta {
+    type
+}
+import ceylon.language.meta.declaration {
+    ValueDeclaration,
+    ClassDeclaration
+}
 import ceylon.test {
-    test,
     assertEquals
 }
 
-import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
-    buildDeltas,
-    DeclarationMemberAdded,
-    removed,
-    structuralChange,
-    TopLevelDeclarationAdded,
-    invisibleOutside,
-    NodeComparisonListener
+import com.redhat.ceylon.compiler.typechecker.analyzer {
+    UsageWarning
 }
-
-import test.com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
-    NestedDeclarationDeltaMockup,
-    CompilationUnitDeltaMockup,
-    RegularCompilationUnitDeltaMockup,
-    TopLevelDeclarationDeltaMockup,
-    createPhasedUnit
-}
-import ceylon.interop.java {
-    CeylonIterable
+import com.redhat.ceylon.compiler.typechecker.context {
+    PhasedUnit
 }
 import com.redhat.ceylon.compiler.typechecker.tree {
     Ast=Tree,
     Message,
     Node
 }
-import com.redhat.ceylon.compiler.typechecker.analyzer {
-    UsageWarning
-}
-import ceylon.language.meta.declaration {
-    ValueDeclaration,
-    ClassDeclaration
-}
-import ceylon.language.meta {
-    type
+import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
+    buildDeltas,
+    NodeComparisonListener
 }
 
-alias NodeComparison => [String,String, String->String];
-class NodeComparisons({NodeComparison*} elements = {}) extends TreeSet<NodeComparison>((NodeComparison x,NodeComparison y)=>x.string <=> y.string, elements) {
+import test.com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
+    CompilationUnitDeltaMockup,
+    createPhasedUnit
+}
+
+alias NodeComparison => [String, String, String->String];
+class NodeComparisons({NodeComparison*} elements = {}) extends TreeSet<NodeComparison>((NodeComparison x, NodeComparison y) => x.string <=> y.string, elements) {
     shared actual String string {
         value builder = StringBuilder();
         for (comparison in this) {
@@ -63,7 +57,7 @@ class NodeComparisons({NodeComparison*} elements = {}) extends TreeSet<NodeCompa
 }
 
 object declarationFieldFilter {
-    {ValueDeclaration*} ignoredFields = { 
+    {ValueDeclaration*} ignoredFields = {
         `value Ast.Declaration.identifier`,
         `value Ast.Declaration.declarationModel`,
         `value Ast.Declaration.compilerAnnotations`,
@@ -81,13 +75,13 @@ object declarationFieldFilter {
     };
     
     shared Boolean isIgnored(ValueDeclaration field) {
-        if (! field.container is ClassDeclaration
-         || field.container == `class Node`
-         || field.parameter
-         || field in ignoredFields) {
-            return true; 
+        if (!field.container is ClassDeclaration
+                    || field.container == `class Node`
+                    || field.parameter
+                    || field in ignoredFields) {
+            return true;
         }
-        assert(is ClassDeclaration decl=field.container);
+        assert (is ClassDeclaration decl = field.container);
         if (exists parent = decl.extendedType?.declaration,
             exists refinedField = parent.getMemberDeclaration<ValueDeclaration>(field.name)) {
             if (isIgnored(refinedField)) {
@@ -98,22 +92,13 @@ object declarationFieldFilter {
     }
 }
 
-void comparePhasedUnits(String path, String oldContents, String newContents, 
-                        CompilationUnitDeltaMockup expectedDelta,
-                        Boolean printNodeComparisons = false, 
-                        Anything({[String,String, String->String]*})? doWithNodeComparisons = null) {
-    value oldPasedUnit = createPhasedUnit(oldContents, path);
-    assert(exists oldPasedUnit);
-    assertEquals(CeylonIterable(oldPasedUnit.compilationUnit.errors)
-                       .filter((Message message) => !(message is UsageWarning)).sequence(), []);
-    value newPasedUnit = createPhasedUnit(newContents, path);
-    assert(exists newPasedUnit);
-    assertEquals(CeylonIterable(newPasedUnit.compilationUnit.errors)
-        .filter((Message message) => !(message is UsageWarning)).sequence(), []);
-
+void compare(PhasedUnit oldPhasedUnit, PhasedUnit newPhasedUnit,
+    CompilationUnitDeltaMockup expectedDelta,
+    Boolean printNodeComparisons = false,
+    Anything({[String, String, String->String]*})? doWithNodeComparisons = null) {
     value nodeComparisons = NodeComparisons();
-    value memberCheckedByDeclaration = naturalOrderTreeMap<String, ArrayList<String>>{};
-    value checkedDeclarations = naturalOrderTreeMap<String, Ast.Declaration>{};
+    value memberCheckedByDeclaration = naturalOrderTreeMap<String,ArrayList<String>> { };
+    value checkedDeclarations = naturalOrderTreeMap<String,Ast.Declaration> { };
     
     Boolean checkTestCompleteness;
     if (expectedDelta.changes.empty && expectedDelta.childrenDeltas.empty) {
@@ -154,28 +139,44 @@ void comparePhasedUnits(String path, String oldContents, String newContents,
         }
     }
     
-    value delta = buildDeltas(oldPasedUnit, newPasedUnit, listener);
-
+    value delta = buildDeltas(oldPhasedUnit, newPhasedUnit, listener);
+    
     if (printNodeComparisons) {
-        print("Node signature comparisons for ``path`` :");
+        print("Node signature comparisons for ``oldPhasedUnit.unit.fullPath`` :");
         print(nodeComparisons);
     }
     assertEquals(delta, expectedDelta);
     
     if (checkTestCompleteness) {
-        for (name -> decl in checkedDeclarations) {
+        for (name->decl in checkedDeclarations) {
             value requiredChecks = HashSet {
-                for (attr in type(decl).declaration.memberDeclarations<ValueDeclaration>()) 
-                if (!declarationFieldFilter.isIgnored(attr)) attr.name
+                for (attr in type(decl).declaration.memberDeclarations<ValueDeclaration>())
+                    if (!declarationFieldFilter.isIgnored(attr)) attr.name
             };
             value performedChecks = memberCheckedByDeclaration.get(name);
-            assert(exists performedChecks);
+            assert (exists performedChecks);
             value missingChecks = requiredChecks.complement(HashSet { *performedChecks });
             assertEquals(missingChecks.sequence(), empty, "Some members of the declaration ' ``name`` ' were not compared.");
         }
     }
-
+    
     if (exists doWithNodeComparisons) {
         doWithNodeComparisons(nodeComparisons);
     }
+}
+
+void comparePhasedUnits(String path, String oldContents, String newContents,
+    CompilationUnitDeltaMockup expectedDelta,
+    Boolean printNodeComparisons = false,
+    Anything({[String, String, String->String]*})? doWithNodeComparisons = null) {
+    value oldPasedUnit = createPhasedUnit(oldContents, path);
+    assert (exists oldPasedUnit);
+    assertEquals(CeylonIterable(oldPasedUnit.compilationUnit.errors)
+            .filter((Message message) => !(message is UsageWarning)).sequence(), []);
+    value newPhasedUnit = createPhasedUnit(newContents, path);
+    assert (exists newPhasedUnit);
+    assertEquals(CeylonIterable(newPhasedUnit.compilationUnit.errors)
+            .filter((Message message) => !(message is UsageWarning)).sequence(), []);
+    
+    compare(oldPasedUnit, newPhasedUnit, expectedDelta, printNodeComparisons, doWithNodeComparisons);
 }
