@@ -201,6 +201,9 @@ class CreateParameterProposal extends InitializerProposal {
             List<Tree.ParameterList> pls = ((Tree.AnyMethod) decNode).getParameterLists();
             return pls.isEmpty() ? null : pls.get(0);
         }
+        else if (decNode instanceof Tree.Constructor) {
+            return ((Tree.Constructor) decNode).getParameterList();
+        }
         return null;
     }
 

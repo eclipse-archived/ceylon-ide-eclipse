@@ -87,6 +87,12 @@ class AddParameterProposal extends InitializerProposal {
                 }
                 pl = pls.get(0);
             }
+            else if (container instanceof Tree.Constructor) {
+                pl = ((Tree.Constructor) container).getParameterList();
+                if (pl==null) {
+                    return;
+                }
+            }
             else {
                 return;
             }
