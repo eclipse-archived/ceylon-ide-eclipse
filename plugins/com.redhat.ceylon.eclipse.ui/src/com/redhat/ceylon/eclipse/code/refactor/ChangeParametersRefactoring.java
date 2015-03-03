@@ -34,6 +34,8 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Functional;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
@@ -79,7 +81,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             if (primary instanceof Tree.MemberOrTypeExpression) {
                 MemberOrTypeExpression mte = 
                         (Tree.MemberOrTypeExpression) primary;
-                if (mte.getDeclaration().refines(declaration)) {
+                Declaration dec = mte.getDeclaration();
+                if (isReference(dec)) {
                     Tree.PositionalArgumentList pal = 
                             that.getPositionalArgumentList();
                     if (pal != null) {
@@ -92,6 +95,14 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     }
                 }
             }
+        }
+
+        private boolean isReference(Declaration dec) {
+            return dec.refines(declaration) ||
+                    dec instanceof Class && 
+                    declaration instanceof Constructor &&
+                    declaration.getContainer().equals(dec) && 
+                    declaration.getName().equals(dec.getName());
         }
     }
 
