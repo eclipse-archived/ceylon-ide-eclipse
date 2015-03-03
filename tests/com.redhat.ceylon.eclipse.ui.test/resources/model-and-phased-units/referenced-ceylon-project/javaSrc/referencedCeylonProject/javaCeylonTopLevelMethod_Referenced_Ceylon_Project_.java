@@ -7,7 +7,7 @@ import com.redhat.ceylon.compiler.java.metadata.TypeInfo;
 import com.redhat.ceylon.compiler.java.metadata.TypeParameter;
 import com.redhat.ceylon.compiler.java.metadata.TypeParameters;
 
-@Ceylon(major = 6) 
+@Ceylon(major = 8) 
 @Method
 public class javaCeylonTopLevelMethod_Referenced_Ceylon_Project_ {
 
