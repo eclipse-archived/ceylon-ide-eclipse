@@ -21,6 +21,7 @@
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,16 @@ public class JDTAnnotation implements AnnotationMirror {
             }
             values.put(name, value);
         }
+        if (! values.containsKey("value")) {
+            for (MethodBinding elementMethod : annotation.getAnnotationType().methods()) {
+                if (new String(elementMethod.selector).equals("value")) {
+                    Object value = convertValue(elementMethod.returnType, null);
+                    if (value != null) {
+                        values.put("value", value);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -61,7 +72,7 @@ public class JDTAnnotation implements AnnotationMirror {
     }
 
     private Object convertValue(TypeBinding returnType, Object value) {
-        if(value.getClass().isArray()){
+        if(value != null && value.getClass().isArray()){
             Object[] array = (Object[])value;
             List<Object> values = new ArrayList<Object>(array.length);
             TypeBinding elementType = ((ArrayBinding)returnType).elementsType();
@@ -70,6 +81,9 @@ public class JDTAnnotation implements AnnotationMirror {
             return values;
         }
         if(returnType.isArrayType()){
+            if (value == null) {
+                return Collections.emptyList();
+            }
             // got a single value but expecting array
             List<Object> values = new ArrayList<Object>(1);
             TypeBinding elementType = ((ArrayBinding)returnType).elementsType();
