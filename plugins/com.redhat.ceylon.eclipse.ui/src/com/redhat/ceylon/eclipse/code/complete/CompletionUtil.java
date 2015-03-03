@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,7 +27,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnnotationList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -68,7 +69,7 @@ public class CompletionUtil {
             Tree.ImportPath path) {
         StringBuilder fullPath = new StringBuilder();
         if (path!=null) {
-            fullPath.append(Util.formatPath(path.getIdentifiers()));
+            fullPath.append(formatPath(path.getIdentifiers()));
             fullPath.append('.');
             fullPath.setLength(offset-path.getStartIndex()-prefix.length());
         }

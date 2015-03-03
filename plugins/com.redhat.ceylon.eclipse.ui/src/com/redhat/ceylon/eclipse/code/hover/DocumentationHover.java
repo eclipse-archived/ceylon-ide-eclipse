@@ -1113,6 +1113,43 @@ public class DocumentationHover extends SourceInfoHover {
                 scope, unit);
     }
     
+    public static String getDocumentationFor(ModuleDetails mod, String version, 
+            String packageName, Scope scope, Unit unit) {
+        StringBuilder buffer = new StringBuilder();
+        String ann = toHex(getCurrentThemeColor(ANNOTATIONS));
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("annotation_obj.gif").toExternalForm(), 
+                16, 16, 
+                "<tt><span style='font-size:" + annotationSize + ";color:" + ann + "'>shared</span></tt>"
+                , 20, 4);
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("package_obj.gif").toExternalForm(), 
+                16, 16, 
+                "<tt><span style='font-size:" + largerSize + "'>" + 
+                HTML.highlightLine("package " + packageName) +
+                "</span></tt>", 
+                20, 4);
+        
+        buffer.append("<p>This package belongs to the unimported module <code> " + 
+                mod.getName() +"</code>, which will be automatically added to the descriptor of the current module.<p>");
+        
+        HTML.addImageAndLabel(buffer, null, 
+                HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
+                16, 16, 
+                "<tt><span style='font-size:" + largerSize + "'>" + 
+                HTML.highlightLine("import " + mod.getName() + " \"" + version + "\"") + 
+                "</span></tt></b>",
+                20, 4);
+        
+        if (mod.getDoc()!=null) {
+            buffer.append(markdown(mod.getDoc(), scope, unit));
+        }
+                
+        insertPageProlog(buffer, 0, HTML.getStyleSheet());
+        addPageEpilog(buffer);
+        return buffer.toString();
+    }
+    
     public static String getDocumentationForModule(String name, 
             String version, String doc, Scope scope, Unit unit) {
         StringBuilder buffer = new StringBuilder();
@@ -1130,8 +1167,7 @@ public class DocumentationHover extends SourceInfoHover {
                 
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addPageEpilog(buffer);
-        return buffer.toString();
-        
+        return buffer.toString();        
     }
 
     private static String description(String name, String version) {

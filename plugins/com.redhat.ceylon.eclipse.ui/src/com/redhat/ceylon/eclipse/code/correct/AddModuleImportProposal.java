@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -19,7 +20,6 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
@@ -92,46 +92,9 @@ class AddModuleImportProposal implements ICompletionProposal,
         return Highlights.styleProposal(getDisplayString(), true);
     }
     
-    static class Runnable implements IRunnableWithProgress {
-        private String pkg;
-        private Unit unit;
-        private IProject project;
-        private TypeChecker typeChecker;
-        private Collection<ICompletionProposal> proposals;
-        
-        Runnable(String pkg, Unit unit, IProject project,
-                TypeChecker typeChecker,
-                Collection<ICompletionProposal> proposals) {
-            this.pkg = pkg;
-            this.unit = unit;
-            this.project = project;
-            this.typeChecker = typeChecker;
-            this.proposals = proposals;
-        }
-        
-        @Override
-        public void run(IProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException {
-            monitor.beginTask("Querying module repositories...", IProgressMonitor.UNKNOWN);
-            ModuleQuery query = getModuleQuery("", project);
-            query.setMemberName(pkg);
-            query.setMemberSearchPackageOnly(true);
-            query.setMemberSearchExact(true);
-            query.setCount(10l);
-            query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
-            ModuleSearchResult msr = typeChecker.getContext()
-                    .getRepositoryManager()
-                    .searchModules(query);
-            for (ModuleDetails md: msr.getResults()) {
-                proposals.add(new AddModuleImportProposal(project, unit, md));
-            }
-            monitor.done();
-        }
-    }
-
-    static void addModuleImportProposals(Collection<ICompletionProposal> proposals, 
-            IProject project, TypeChecker typeChecker, Node node) {
-        Unit unit = node.getUnit();
+    static void addModuleImportProposals(final Collection<ICompletionProposal> proposals, 
+            final IProject project, final TypeChecker typeChecker, Node node) {
+        final Unit unit = node.getUnit();
         if (unit.getPackage().getModule().isDefault()) {
             return;
         }
@@ -139,7 +102,7 @@ class AddModuleImportProposal implements ICompletionProposal,
             node = ((Tree.Import) node).getImportPath();
         }
         List<Tree.Identifier> ids = ((Tree.ImportPath) node).getIdentifiers();
-        String pkg = formatPath(ids);
+        final String pkg = formatPath(ids);
         if (JDKUtils.isJDKAnyPackage(pkg)) {
             for (String mod: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
                 if (JDKUtils.isJDKPackage(mod, pkg)) {
@@ -149,9 +112,34 @@ class AddModuleImportProposal implements ICompletionProposal,
                 }
             }
         }
+        
+        class Runnable implements IRunnableWithProgress {
+            @Override
+            public void run(IProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException {
+                monitor.beginTask("Querying module repositories...", 
+                        IProgressMonitor.UNKNOWN);
+                ModuleQuery query = getModuleQuery("", project);
+                query.setMemberName(pkg);
+                query.setMemberSearchPackageOnly(true);
+                query.setMemberSearchExact(true);
+                query.setCount(10l);
+                query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                ModuleSearchResult msr = 
+                        typeChecker
+                            .getContext()
+                            .getRepositoryManager()
+                            .searchModules(query);
+                for (ModuleDetails md: msr.getResults()) {
+                    proposals.add(new AddModuleImportProposal(project, unit, md));
+                }
+                monitor.done();
+            }
+        }
         try {
-            PlatformUI.getWorkbench().getActiveWorkbenchWindow().run(true, true,
-                    new Runnable(pkg, unit, project, typeChecker, proposals));
+            getWorkbench()
+                    .getActiveWorkbenchWindow()
+                    .run(true, true, new Runnable());
         }
         catch (Exception e) {
             e.printStackTrace();
