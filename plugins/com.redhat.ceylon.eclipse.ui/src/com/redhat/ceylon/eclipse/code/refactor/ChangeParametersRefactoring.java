@@ -189,7 +189,18 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     parameters = null;
                 }
                 else {
-                    declaration = (Declaration) refDec;
+                    Declaration dec = (Declaration) refDec;
+                    if (dec instanceof Class) {
+                        if (((Class) dec).hasConstructors()) {
+                            Declaration d = 
+                                    dec.getMember(dec.getName(), 
+                                            null, false);
+                            if (d instanceof Constructor) {
+                                dec = d;
+                            }
+                        }
+                    }
+                    declaration = dec;
                     List<Parameter> paramList = 
                             pls.get(0).getParameters();
                     parameters = new ArrayList<Parameter>(paramList);
