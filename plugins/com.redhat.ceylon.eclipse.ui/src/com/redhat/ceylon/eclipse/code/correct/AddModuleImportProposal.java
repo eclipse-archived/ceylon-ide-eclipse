@@ -117,7 +117,7 @@ class AddModuleImportProposal implements ICompletionProposal,
             query.setMemberName(pkg);
             query.setMemberSearchPackageOnly(true);
             query.setMemberSearchExact(true);
-            query.setCount(1l);
+            query.setCount(10l);
             query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
             ModuleSearchResult msr = typeChecker.getContext()
                     .getRepositoryManager()
