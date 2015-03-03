@@ -1,17 +1,29 @@
-import com.redhat.ceylon.compiler.typechecker.context {
-    PhasedUnit,
-    PhasedUnits,
-    Context
+import ceylon.collection {
+    ArrayList
 }
-import com.redhat.ceylon.compiler.typechecker {
-    TypeChecker {
-        languageModuleVersion = \iLANGUAGE_MODULE_VERSION
-    }
+import ceylon.interop.java {
+    CeylonIterable,
+    javaString,
+    JavaList
 }
+
 import com.redhat.ceylon.cmr.ceylon {
     CeylonUtils {
         repoManager
     }
+}
+import com.redhat.ceylon.compiler.typechecker {
+    TypeChecker {
+        languageModuleVersion=\iLANGUAGE_MODULE_VERSION
+    }
+}
+import com.redhat.ceylon.compiler.typechecker.analyzer {
+    ModuleValidator
+}
+import com.redhat.ceylon.compiler.typechecker.context {
+    PhasedUnit,
+    PhasedUnits,
+    Context
 }
 import com.redhat.ceylon.compiler.typechecker.io {
     VFS,
@@ -20,29 +32,19 @@ import com.redhat.ceylon.compiler.typechecker.io {
 import com.redhat.ceylon.compiler.typechecker.model {
     Module
 }
-import com.redhat.ceylon.compiler.typechecker.analyzer {
-    ModuleValidator
+import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
+    ...
 }
-import java.util {
-    JList = List,
-    Collections {
-        emptyList
-    },
-    Arrays {
-        asList
-    }
-}
+
 import java.io {
     InputStream,
     ByteArrayInputStream
 }
-import ceylon.interop.java { 
-    CeylonIterable,
-    javaString
-}
-import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {...}
-import ceylon.collection {
-    ArrayList
+import java.util {
+    JList=List,
+    Collections {
+        emptyList
+    }
 }
 
 PhasedUnit? createPhasedUnit(String contents, String path) {
@@ -59,6 +61,7 @@ PhasedUnit? createPhasedUnit(String contents, String path) {
     value phasedUnits = PhasedUnits(context);
     
     abstract class TestVirtualFile(path) satisfies VirtualFile {
+        suppressWarnings("expressionTypeNothing")
         shared default actual InputStream inputStream => nothing;
         shared actual String name => path.split('/'.equals, true, true).last;
         shared actual String path;
@@ -78,7 +81,7 @@ PhasedUnit? createPhasedUnit(String contents, String path) {
             return createChild(filePath.split('/'.equals).sequence(), contents);
         }
         
-        shared actual JList<VirtualFile> children => asList(*theChildren.map<VirtualFile>((TestVirtualFile element) => element));
+        shared actual JList<VirtualFile> children => JavaList<VirtualFile>(theChildren.collect<VirtualFile>((TestVirtualFile element) => element));
         
         TestFile createChild([String*] filePath, String contents) {
             if (nonempty filePath, nonempty rest = filePath.rest) {
