@@ -50,6 +50,7 @@ import org.eclipse.jdt.internal.core.JavaElement;
 import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
 import com.redhat.ceylon.compiler.java.codegen.Naming;
+import com.redhat.ceylon.compiler.java.codegen.Naming.Prefix;
 import com.redhat.ceylon.compiler.java.codegen.Naming.Suffix;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -292,7 +293,9 @@ public class JavaSearch {
         String name = dec.getElementName();
         
         if (dec instanceof IMethod) {
-            if (name.equals("get_")) {
+            if (name.startsWith(Prefix.$default$.name())) {
+                name = name.substring(Prefix.$default$.name().length());
+            } else if (name.equals("get_")) {
                 name = null;
             } else if (name.startsWith("$")) {
                 name = name.substring(1);
@@ -304,6 +307,30 @@ public class JavaSearch {
                name = "string";
             } else if (name.equals("hashCode")) {
                 name = "hash";
+            } else if (name.contains("$")) {
+                String[] parts = name.split("\\$");
+                if (parts.length == 2) {
+                    IType declaringType = dec.getDeclaringType();
+                    if (isCeylon(declaringType)) {
+                        IMethod[] methodsWithTheSameName;
+                        try {
+                            methodsWithTheSameName = declaringType.getMethods();
+                            if (methodsWithTheSameName != null) {
+                                label:
+                                for (IMethod m : methodsWithTheSameName) {
+                                    for (String argName : m.getParameterNames()) {
+                                        if (parts[1].equals(argName)) {
+                                            name = argName;
+                                            break label;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (JavaModelException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
             if (name.endsWith(Suffix.$priv$.name())) {
                 name = name.substring(0, name.length() - Suffix.$priv$.name().length());
@@ -557,8 +584,7 @@ public class JavaSearch {
                     }
                     if (methodName.equals(Naming.Unfix.$call$.name()) ||
                             methodName.equals(Naming.Unfix.$calltyped$.name()) ||
-                            methodName.equals(Naming.Unfix.$callvariadic$.name()) ||
-                            methodName.startsWith(Naming.Prefix.$default$.name())) {
+                            methodName.equals(Naming.Unfix.$callvariadic$.name())) {
                         return toCeylonDeclarationElement(parentType);
                     }
                     if (methodName.equals("$evaluate$")) {
