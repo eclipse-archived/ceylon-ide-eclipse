@@ -93,12 +93,8 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
     }
     
     boolean steppingThroughLocation = false;
-    
-    private boolean locationIsFilteredForCeylon(Method method) {
-        steppingThroughLocation = DebugUtils.isCeylonGeneratedMethodToStepThrough(method);
-        return DebugUtils.isMethodFiltered(method);
-    }
-    
+    boolean originalLocationIsAnAncestor = false;
+        
     private int changeSecondaryStepRequestKindForCeylon(int currentStepKind) throws DebugException {
         if (steppingThroughLocation) {
             steppingThroughLocation = false;
@@ -113,7 +109,13 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return new StepIntoHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return locationIsFilteredForCeylon(method);
+                return DebugUtils.isMethodFiltered(method);
+            }
+            @Override
+            protected boolean locationShouldBeFiltered(Location location)
+                    throws DebugException {
+                storeAdditionalLocationData(location);
+                return super.locationShouldBeFiltered(location);
             }
             @Override
             protected void createSecondaryStepRequest() throws DebugException {
@@ -128,7 +130,13 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return new StepOverHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return locationIsFilteredForCeylon(method);
+                return DebugUtils.isMethodFiltered(method);
+            }
+            @Override
+            protected boolean locationShouldBeFiltered(Location location)
+                    throws DebugException {
+                storeAdditionalLocationData(location);
+                return super.locationShouldBeFiltered(location);
             }
             @Override
             protected void createSecondaryStepRequest() throws DebugException {
@@ -142,7 +150,13 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return new StepReturnHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return locationIsFilteredForCeylon(method);
+                return DebugUtils.isMethodFiltered(method);
+            }
+            @Override
+            protected boolean locationShouldBeFiltered(Location location)
+                    throws DebugException {
+                storeAdditionalLocationData(location);
+                return super.locationShouldBeFiltered(location);
             }
             @Override
             protected void createSecondaryStepRequest() throws DebugException {
@@ -166,5 +180,25 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
             return true;
         }
         return false;
+    }
+    
+    @Override
+    protected boolean shouldDoExtraStepInto(Location location)
+            throws DebugException {
+        return super.shouldDoExtraStepInto(location) && originalLocationIsAnAncestor;
+    }
+
+    public void storeAdditionalLocationData(Location location)
+            throws DebugException {
+        steppingThroughLocation = DebugUtils.isCeylonGeneratedMethodToStepThrough(location.method());
+        if (getUnderlyingFrameCount() < getOriginalStepStackDepth()) {
+            originalLocationIsAnAncestor = false;
+        }
+    }
+    
+    @Override
+    protected void setOriginalStepLocation(Location location) {
+        originalLocationIsAnAncestor = true;
+        super.setOriginalStepLocation(location);
     }
 }
