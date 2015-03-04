@@ -56,7 +56,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
         this.desc = desc;
         this.typeNode = type;
         this.rootNode = cu;
-        this.infType = infType;
+        this.infType = rootNode.getUnit().denotableType(infType);
         this.editor = editor;
     }
     
@@ -117,7 +117,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
     
     public static SpecifyTypeProposal createProposal(Tree.CompilationUnit cu, 
             Node node, CeylonEditor editor) {
-        final Tree.Type type = (Tree.Type) node;
+        Tree.Type type = (Tree.Type) node;
         return new SpecifyTypeProposal("Declare explicit type", 
                 type, cu, type.getTypeModel(), editor);
     }
