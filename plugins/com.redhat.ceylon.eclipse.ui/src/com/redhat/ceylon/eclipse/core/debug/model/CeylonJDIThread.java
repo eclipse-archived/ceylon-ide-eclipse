@@ -14,6 +14,7 @@ import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.request.StepRequest;
 
 public class CeylonJDIThread extends PatchedForCeylonJDIThread {
     public CeylonJDIThread(CeylonJDIDebugTarget debugTarget, ThreadReference reference) {
@@ -91,14 +92,32 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return topStackFrame;
     }
     
-    Location steppingThroughLocation = null;
+    boolean steppingThroughLocation = false;
     
+    private boolean locationIsFilteredForCeylon(Method method) {
+        steppingThroughLocation = DebugUtils.isCeylonGeneratedMethodToStepThrough(method);
+        return DebugUtils.isMethodFiltered(method);
+    }
+    
+    private int changeSecondaryStepRequestKindForCeylon(int currentStepKind) throws DebugException {
+        if (steppingThroughLocation) {
+            steppingThroughLocation = false;
+            return StepRequest.STEP_INTO;
+        } else {
+            return currentStepKind;
+        }
+    }
+
     @Override
     protected StepIntoHandler newStepIntoHandler() {
         return new StepIntoHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return DebugUtils.isMethodFiltered(method);
+                return locationIsFilteredForCeylon(method);
+            }
+            @Override
+            protected void createSecondaryStepRequest() throws DebugException {
+                createSecondaryStepRequest(changeSecondaryStepRequestKindForCeylon(getStepKind()));
             }
         };
         
@@ -109,7 +128,11 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return new StepOverHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return DebugUtils.isMethodFiltered(method);
+                return locationIsFilteredForCeylon(method);
+            }
+            @Override
+            protected void createSecondaryStepRequest() throws DebugException {
+                createSecondaryStepRequest(changeSecondaryStepRequestKindForCeylon(getStepKind()));
             }
         };
     }
@@ -119,7 +142,11 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
         return new StepReturnHandler() {
             @Override
             protected boolean locationIsFiltered(Method method) {
-                return DebugUtils.isMethodFiltered(method);
+                return locationIsFilteredForCeylon(method);
+            }
+            @Override
+            protected void createSecondaryStepRequest() throws DebugException {
+                createSecondaryStepRequest(changeSecondaryStepRequestKindForCeylon(getStepKind()));
             }
         };
     }

@@ -7,7 +7,7 @@
 			<accessrule kind="accessible" pattern="org/eclipse/core/internal/events/NotificationManager"/>
 			<accessrule kind="accessible" pattern="org/eclipse/osgi/util/*"/>
 			<accessrule kind="accessible" pattern="org/osgi/framework/**"/>
-			<accessrule kind="accessible" pattern="com/sun/jdi/*"/>
+			<accessrule kind="accessible" pattern="com/sun/jdi/**"/>
 			<accessrule kind="accessible" pattern="org/eclipse/debug/internal/**"/>
 			<accessrule kind="accessible" pattern="org/eclipse/core/internal/runtime/AdapterManager"/>
 			<accessrule kind="accessible" pattern="org/eclipse/core/internal/utils/Cache*"/>
