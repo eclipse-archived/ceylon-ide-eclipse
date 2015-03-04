@@ -743,7 +743,7 @@ public class DebugUtils {
                         
                         try {
                             List<LocalVariable> arguments = overloadedMethod.arguments();
-                            if (arguments.size() != defaultArguments.size()) {
+                            if (arguments.size() < defaultArguments.size()) {
                                 continue;
                             }
                             List<String> argumentNames = new ArrayList<>(arguments.size());
@@ -751,7 +751,7 @@ public class DebugUtils {
                                 argumentNames.add(arg.name());
                             }
                             
-                            if (! defaultArguments.containsAll(argumentNames)) {
+                            if (! argumentNames.containsAll(defaultArguments)) {
                                 continue;
                             }
                             methodWithAllArguments = overloadedMethod;
