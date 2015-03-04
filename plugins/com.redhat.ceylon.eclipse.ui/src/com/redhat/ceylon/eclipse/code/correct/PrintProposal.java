@@ -191,17 +191,18 @@ class PrintProposal implements ICompletionProposal {
                 return false;
             }
             //some expressions get interpreted as annotations
+            Tree.AnnotationList al = dec.getAnnotationList();
             List<Annotation> annotations = 
-                    dec.getAnnotationList().getAnnotations();
+                    al.getAnnotations();
             Tree.AnonymousAnnotation aa = 
-            		dec.getAnnotationList().getAnonymousAnnotation();
+            		al.getAnonymousAnnotation();
             if (aa!=null &&
             		currentOffset<=aa.getStopIndex()+1) {
                 return aa.getEndToken().getLine()!=line;
             }
             else if (!annotations.isEmpty() &&
                     currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
-                return aa.getEndToken().getLine()!=line;
+                return al.getEndToken().getLine()!=line;
             }
             else if (st instanceof Tree.TypedDeclaration) {
                 //some expressions look like a type declaration
