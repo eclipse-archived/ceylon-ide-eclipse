@@ -205,7 +205,7 @@ public class CeylonStepFilterPreferencePage
         SWTFactory.createLabel(container, "Unchecked filters are disabled.", 2);
         
         fFilterDefaultArgumentMethodsButton = SWTFactory.createCheckButton(container, 
-                "Step through &default argument code", 
+                "Filter and step through &default argument code", 
                 null, getPreferenceStore().getBoolean(FILTER_DEFAULT_ARGUMENTS_CODE), 2);
 
         setPageEnablement(fUseStepFiltersButton.getSelection());
