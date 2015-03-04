@@ -123,15 +123,17 @@ public class Navigation {
         if (rootNode!=null && unit.equals(rootNode.getUnit())) {
             editor.selectAndReveal(startOffset, length);
         }
-        if (unit instanceof IResourceAware) {
-            IFile file = ((IResourceAware) unit).getFileResource();
-            if (file != null) {
-                gotoFile(file, startOffset, length);
-                return;
+        else {
+            if (unit instanceof IResourceAware) {
+                IFile file = ((IResourceAware) unit).getFileResource();
+                if (file != null) {
+                    gotoFile(file, startOffset, length);
+                    return;
+                }
             }
+
+            gotoLocation(getNodePath(node), startOffset, length);
         }
-        
-        gotoLocation(getNodePath(node), startOffset, length);
     }
 
 
