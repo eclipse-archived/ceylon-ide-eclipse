@@ -1724,13 +1724,28 @@ public class DocumentationHover extends SourceInfoHover {
                         }
                     }
                     else if (dec instanceof Value) {
-                        desc = "Attribute of";
+                        if (dec.isStaticallyImportable()) {
+                            desc = "Static attribute of";
+                        }
+                        else {
+                            desc = "Attribute of";
+                        }
                     }
                     else if (dec instanceof Method) {
-                        desc = "Method of";
+                        if (dec.isStaticallyImportable()) {
+                            desc = "Static method of";
+                        }
+                        else {
+                            desc = "Method of";
+                        }
                     }
                     else {
-                        desc = "Member of";
+                        if (dec.isStaticallyImportable()) {
+                            desc = "Static member of";
+                        }
+                        else {
+                            desc = "Member of";
+                        }
                     }
                     buffer.append(desc + "&nbsp;&nbsp;<tt>" + 
                             producedTypeLink(qt, unit) + "</tt>.");
