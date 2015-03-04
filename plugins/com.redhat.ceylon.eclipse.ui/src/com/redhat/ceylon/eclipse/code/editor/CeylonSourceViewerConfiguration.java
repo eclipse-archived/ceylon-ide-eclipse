@@ -13,7 +13,6 @@ import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
@@ -47,7 +46,6 @@ import com.redhat.ceylon.eclipse.code.correct.CeylonCorrectionProcessor;
 import com.redhat.ceylon.eclipse.code.hover.AnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
-import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -176,7 +174,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         }
         else {
             return new IHyperlinkDetector[] { 
-                    new CeylonHyperlinkDetector(pc), 
+                    new CeylonHyperlinkDetector(editor), 
                     new JavaHyperlinkDetector(pc) 
                 };
         }

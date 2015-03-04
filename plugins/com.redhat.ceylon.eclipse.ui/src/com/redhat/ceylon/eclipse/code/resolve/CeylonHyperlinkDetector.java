@@ -12,14 +12,15 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
-    private CeylonParseController parseController;
+    private CeylonEditor editor;
     
-    public CeylonHyperlinkDetector(CeylonParseController pc) {
-        this.parseController = pc;
+    public CeylonHyperlinkDetector(CeylonEditor editor) {
+        this.editor = editor;
     }
 
     private final class CeylonNodeLink implements IHyperlink {
@@ -33,7 +34,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public void open() {
-            gotoNode(node);
+            gotoNode(node, editor);
         }
 
         @Override
@@ -56,13 +57,15 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, 
             boolean canShowMultipleHyperlinks) {
-        if (parseController==null ||
-                parseController.getRootNode()==null) {
+        CeylonParseController controller = 
+                editor.getParseController();
+        if (controller==null ||
+                controller.getRootNode()==null) {
             return null;
         }
         else {
             Node node = 
-                    findNode(parseController.getRootNode(), 
+                    findNode(controller.getRootNode(), 
                             region.getOffset(), 
                             region.getOffset()+region.getLength());
             Node id = getIdentifyingNode(node);

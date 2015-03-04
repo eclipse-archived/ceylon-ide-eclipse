@@ -74,7 +74,7 @@ final class PeekDefinitionPopup extends PopupDialog
             if (EditorUtil.triggersBinding(e, getCommandBinding())) {
                 e.doit=false;
                 dispose();
-                gotoNode(referencedNode);
+                gotoNode(referencedNode, editor);
             }
         }
     }

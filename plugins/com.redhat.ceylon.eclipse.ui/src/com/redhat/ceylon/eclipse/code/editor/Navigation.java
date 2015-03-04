@@ -37,6 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
@@ -60,7 +61,7 @@ public class Navigation {
                 Node node = getReferencedNodeInUnit(model, 
                         ceylonUnit.getCompilationUnit());
                 if (node != null) {
-                    gotoNode(node);
+                    gotoNode(node, null);
                 }
                 else if (ceylonUnit instanceof CeylonBinaryUnit) {
                     //special case for Java source in ceylon.language!
@@ -113,10 +114,15 @@ public class Navigation {
 //        }
 //    }
     
-    public static void gotoNode(Node node) {
+    public static void gotoNode(Node node, CeylonEditor editor) {
         Unit unit = node.getUnit();
         int length = Nodes.getLength(node);
         int startOffset = Nodes.getStartOffset(node);
+        Tree.CompilationUnit rootNode = editor==null ? null : 
+            editor.getParseController().getRootNode();
+        if (rootNode!=null && unit.equals(rootNode.getUnit())) {
+            editor.selectAndReveal(startOffset, length);
+        }
         if (unit instanceof IResourceAware) {
             IFile file = ((IResourceAware) unit).getFileResource();
             if (file != null) {
@@ -147,7 +153,14 @@ public class Navigation {
     
     public static void gotoLocation(IPath path, int offset, int length) {
         if (path==null || path.isEmpty()) return;
-        IEditorInput editorInput = getEditorInput(path);
+        IEditorInput editorInput;
+        try {
+            editorInput = getEditorInput(path);
+        }
+        catch (IllegalArgumentException iae) {
+            //this happens for source files that are not in a Ceylon source folder
+            return;
+        }
         try {
             IEditorPart editor = getActivePage()
                     .openEditor(editorInput, EDITOR_ID);
