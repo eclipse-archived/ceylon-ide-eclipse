@@ -47,8 +47,10 @@ public class TypeArgumentListCompletions {
                         try {
                             String pref = document.get(that.getIdentifier().getStartIndex(), 
                                     that.getStopIndex()-that.getIdentifier().getStartIndex()+1);
-                            addInvocationProposals(offset, pref, cpc, result, d, 
-                                    pr, scope, null, typeArgText, false);
+                            for (Declaration dec: CompletionUtil.overloads(d)) {
+                                addInvocationProposals(offset, pref, cpc, result, dec, 
+                                        pr, scope, null, typeArgText, false);
+                            }
                         } 
                         catch (BadLocationException e) {
                             e.printStackTrace();
@@ -67,9 +69,11 @@ public class TypeArgumentListCompletions {
                         try {
                             String pref = document.get(that.getStartIndex(), 
                                     that.getStopIndex()-that.getStartIndex()+1);
-                            addInvocationProposals(offset, pref, cpc, result, d, 
-                                    that.getTypeModel(), scope, null, typeArgText, 
-                                    false);
+                            for (Declaration dec: CompletionUtil.overloads(d)) {
+                                addInvocationProposals(offset, pref, cpc, result, dec, 
+                                        that.getTypeModel(), scope, null, typeArgText, 
+                                        false);
+                            }
                         }
                         catch (BadLocationException e) {
                             e.printStackTrace();
