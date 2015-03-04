@@ -22,9 +22,6 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
@@ -74,7 +71,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
             expanse = st;
             resultType = e.getTypeModel();
             if (e.getTerm() instanceof Tree.InvocationExpression) {
-                Primary primary = 
+                Tree.Primary primary = 
                         ((Tree.InvocationExpression) e.getTerm()).getPrimary();
                 if (primary instanceof Tree.QualifiedMemberExpression) {
                     Tree.QualifiedMemberExpression prim = 
@@ -99,7 +96,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
                 return;
             }
             //some expressions get interpreted as annotations
-            List<Annotation> annotations = 
+            List<Tree.Annotation> annotations = 
                     dec.getAnnotationList().getAnnotations();
             Tree.AnonymousAnnotation aa = 
                     dec.getAnnotationList().getAnonymousAnnotation();
@@ -247,7 +244,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
                     ((Tree.ExpressionStatement) st).getExpression();
             ProducedType resultType = e.getTypeModel();
             if (e.getTerm() instanceof Tree.InvocationExpression) {
-                Primary primary = 
+                Tree.Primary primary = 
                         ((Tree.InvocationExpression) e.getTerm()).getPrimary();
                 if (primary instanceof Tree.QualifiedMemberExpression) {
                     Tree.QualifiedMemberExpression prim = 
@@ -266,7 +263,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
         }
         else if (st instanceof Tree.Declaration) {
             Tree.Declaration dec = (Tree.Declaration) st;
-            Identifier id = dec.getIdentifier();
+            Tree.Identifier id = dec.getIdentifier();
             if (id==null) {
                 return false;
             }
@@ -276,7 +273,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
                 return false;
             }
             //some expressions get interpreted as annotations
-            List<Annotation> annotations = 
+            List<Tree.Annotation> annotations = 
                     dec.getAnnotationList().getAnnotations();
             Tree.AnonymousAnnotation aa = 
                     dec.getAnnotationList().getAnonymousAnnotation();
