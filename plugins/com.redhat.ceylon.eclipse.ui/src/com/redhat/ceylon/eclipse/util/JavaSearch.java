@@ -396,6 +396,7 @@ public class JavaSearch {
             }
         }
         
+        System.out.println();
         IMember declaringElement = getDeclaringElement(typeOrMethod);
         
         if (declaringElement != null) {
@@ -546,7 +547,8 @@ public class JavaSearch {
                     && declaringElement.getElementName()
                         .equals(typeOrMethod.getElementName() + "_")
                     && isCeylonMethod(declaringElement)) {
-                declaringElement = null;
+                IMember declaringElementDeclaringElement = getDeclaringElement(declaringElement);
+                return declaringElementDeclaringElement;
             }
         }
         return declaringElement;
