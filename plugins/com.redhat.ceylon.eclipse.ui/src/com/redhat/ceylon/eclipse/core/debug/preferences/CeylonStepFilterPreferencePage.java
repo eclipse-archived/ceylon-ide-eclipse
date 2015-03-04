@@ -4,6 +4,7 @@ package com.redhat.ceylon.eclipse.core.debug.preferences;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.ACTIVE_FILTERS_LIST;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.INACTIVE_FILTERS_LIST;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.USE_STEP_FILTERS;
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.FILTER_DEFAULT_ARGUMENTS_CODE;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CreateFilterDialog.showCreateFilterDialog;
 import static org.eclipse.debug.internal.ui.SWTFactory.createPushButton;
 import static org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin.createAllPackagesDialog;
@@ -104,6 +105,7 @@ public class CeylonStepFilterPreferencePage
 //    private Button fStepThruButton;
     private Button fSelectAllButton;
     private Button fDeselectAllButton;
+    private Button fFilterDefaultArgumentMethodsButton;
     
     /**
      * Constructor
@@ -202,8 +204,12 @@ public class CeylonStepFilterPreferencePage
 
         SWTFactory.createLabel(container, "Unchecked filters are disabled.", 2);
         
+        fFilterDefaultArgumentMethodsButton = SWTFactory.createCheckButton(container, 
+                "Step through &default argument code", 
+                null, getPreferenceStore().getBoolean(FILTER_DEFAULT_ARGUMENTS_CODE), 2);
+
         setPageEnablement(fUseStepFiltersButton.getSelection());
-        
+
         return container;
     }
     
@@ -232,6 +238,7 @@ public class CeylonStepFilterPreferencePage
         fAddTypeButton.setEnabled(enabled);
         fDeselectAllButton.setEnabled(enabled);
         fSelectAllButton.setEnabled(enabled);
+        fFilterDefaultArgumentMethodsButton.setEnabled(enabled);
 //        fFilterConstructorButton.setEnabled(enabled);
 //        fStepThruButton.setEnabled(enabled);
 //        fFilterGetterButton.setEnabled(enabled);
@@ -457,6 +464,8 @@ public class CeylonStepFilterPreferencePage
         pref = serializeList(inactive.toArray(new String[inactive.size()]));
         store.setValue(INACTIVE_FILTERS_LIST, pref);
         
+        store.setValue(FILTER_DEFAULT_ARGUMENTS_CODE, 
+                fFilterDefaultArgumentMethodsButton.getSelection());
         //common with JDT preferences
 //        store.setValue(IJDIPreferencesConstants.PREF_FILTER_CONSTRUCTORS, fFilterConstructorButton.getSelection());
 //        store.setValue(IJDIPreferencesConstants.PREF_FILTER_STATIC_INITIALIZERS, fFilterStaticButton.getSelection());
@@ -473,6 +482,10 @@ public class CeylonStepFilterPreferencePage
         boolean stepenabled = store.getBoolean(USE_STEP_FILTERS);
         fUseStepFiltersButton.setSelection(stepenabled);
         setPageEnablement(stepenabled);
+
+        boolean filterDefaultArgumentMethods = store.getBoolean(FILTER_DEFAULT_ARGUMENTS_CODE);
+        fFilterDefaultArgumentMethodsButton.setSelection(filterDefaultArgumentMethods);
+        
 //        fFilterSyntheticButton.setSelection(store.getDefaultBoolean(IJDIPreferencesConstants.PREF_FILTER_SYNTHETICS));
 //        fFilterStaticButton.setSelection(store.getDefaultBoolean(IJDIPreferencesConstants.PREF_FILTER_STATIC_INITIALIZERS));
 //        fFilterConstructorButton.setSelection(store.getDefaultBoolean(IJDIPreferencesConstants.PREF_FILTER_CONSTRUCTORS));

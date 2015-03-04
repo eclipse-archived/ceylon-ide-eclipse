@@ -49,6 +49,7 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
     private IProject project = null;
     private String[] ceylonStepFilters;
     private boolean stepFiltersEnabled;
+    private boolean filterDefaultArgumentsCode;
     
     public CeylonJDIDebugTarget(ILaunch launch, VirtualMachine jvm, String name,
             boolean supportTerminate, boolean supportDisconnect,
@@ -421,10 +422,18 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
         return ceylonStepFilters;
     }
     
+    public void setFiltersDefaultArgumentsCode(boolean enabled) {
+        filterDefaultArgumentsCode = enabled;
+    }
+    
+    public boolean isFiltersDefaultArgumentsCode() {
+        return filterDefaultArgumentsCode;
+    }
+    
     public void setCeylonStepFiltersEnabled(boolean enabled) {
         stepFiltersEnabled = enabled;
     }
-    
+
     @Override
     public boolean isStepFiltersEnabled() {
         return stepFiltersEnabled;

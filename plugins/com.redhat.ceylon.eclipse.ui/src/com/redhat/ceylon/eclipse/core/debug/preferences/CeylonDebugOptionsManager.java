@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.debug.preferences;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.ACTIVE_FILTERS_LIST;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.INACTIVE_FILTERS_LIST;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.USE_STEP_FILTERS;
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.FILTER_DEFAULT_ARGUMENTS_CODE;
 import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.parseList;
 
 import org.eclipse.debug.core.DebugEvent;
@@ -84,6 +85,7 @@ public class CeylonDebugOptionsManager
         String[] filters = parseList(store.getString(ACTIVE_FILTERS_LIST));
         target.setCeylonStepFilters(filters);
         target.setCeylonStepFiltersEnabled(store.getBoolean(USE_STEP_FILTERS));
+        target.setFiltersDefaultArgumentsCode(store.getBoolean(FILTER_DEFAULT_ARGUMENTS_CODE));
         
         if (!registeredAsPropertyChangeListener) {
             registeredAsPropertyChangeListener = true;
@@ -123,7 +125,8 @@ public class CeylonDebugOptionsManager
     private boolean isFilterProperty(String property) {
         return property.equals(ACTIVE_FILTERS_LIST) ||
                 property.equals(INACTIVE_FILTERS_LIST) ||
-                property.equals(USE_STEP_FILTERS);
+                property.equals(USE_STEP_FILTERS) ||
+                property.equals(FILTER_DEFAULT_ARGUMENTS_CODE);
     }
 
     private boolean registeredAsPropertyChangeListener = false;

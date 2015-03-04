@@ -687,25 +687,33 @@ public class DebugUtils {
         }
 
         if (methodName.startsWith(Naming.Prefix.$default$.name())) {
-            return true;
+            CeylonJDIDebugTarget debugTarget = getDebugTarget();
+            return debugTarget != null 
+                    && debugTarget.isStepFiltersEnabled() 
+                    && debugTarget.isFiltersDefaultArgumentsCode();
         }
 
         boolean isDefaultArgumentMethod = false;
         String[] parts = methodName.split("\\$");
         if (parts.length == 2) {
-            List<Method> methodsWithTheSameName = method.declaringType().methodsByName(parts[0]);
-            if (methodsWithTheSameName != null) {
-                label:
-                for (Method m : methodsWithTheSameName) {
-                    try {
-                        for (LocalVariable arg : m.arguments()) {
-                            if (parts[1].equals(arg.name())) {
-                                isDefaultArgumentMethod = true;
-                                break label;
+            CeylonJDIDebugTarget debugTarget = getDebugTarget();
+            if(debugTarget != null 
+                    && debugTarget.isStepFiltersEnabled() 
+                    && debugTarget.isFiltersDefaultArgumentsCode()) {
+                List<Method> methodsWithTheSameName = method.declaringType().methodsByName(parts[0]);
+                if (methodsWithTheSameName != null) {
+                    label:
+                    for (Method m : methodsWithTheSameName) {
+                        try {
+                            for (LocalVariable arg : m.arguments()) {
+                                if (parts[1].equals(arg.name())) {
+                                    isDefaultArgumentMethod = true;
+                                    break label;
+                                }
                             }
+                        } catch (AbsentInformationException e) {
+                            e.printStackTrace();
                         }
-                    } catch (AbsentInformationException e) {
-                        e.printStackTrace();
                     }
                 }
             }
