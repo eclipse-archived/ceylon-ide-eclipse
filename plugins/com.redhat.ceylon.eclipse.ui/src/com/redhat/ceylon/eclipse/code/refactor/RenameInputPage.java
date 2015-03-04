@@ -14,6 +14,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.eclipse.util.Escaping;
 
 public class RenameInputPage extends UserInputWizardPage {
@@ -91,8 +94,28 @@ public class RenameInputPage extends UserInputWizardPage {
             setPageComplete(false);
         }
         else {
-            setErrorMessage(null);
-            setPageComplete(true);
+            int ch = name.codePointAt(0);
+            Declaration declaration = getRenameRefactoring().getDeclaration();
+            if (declaration instanceof TypedDeclaration) {
+                if (!Character.isLowerCase(ch) && ch!='_') {
+                    setErrorMessage("Not an initial lowercase identifier");
+                    setPageComplete(false);
+                }
+                else {
+                    setErrorMessage(null);
+                    setPageComplete(true);
+                }
+            }
+            else if (declaration instanceof TypeDeclaration) {
+                if (!Character.isUpperCase(ch)) {
+                    setErrorMessage("Not an initial uppercase identifier");
+                    setPageComplete(false);
+                }
+                else {
+                    setErrorMessage(null);
+                    setPageComplete(true);
+                }
+            }
         }
     }
 

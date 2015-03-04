@@ -11,6 +11,7 @@ import static org.eclipse.jdt.core.search.IJavaSearchConstants.CLASS_AND_INTERFA
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
 import static org.eclipse.jdt.core.search.SearchPattern.R_EXACT_MATCH;
 import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
+import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -44,12 +45,15 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -164,6 +168,25 @@ public class RenameRefactoring extends AbstractRefactoring {
 
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
+        if (!newName.matches("^[a-zA-Z_]\\w*$")) {
+            return createErrorStatus("Not a legal Ceylon identifier");
+        }
+        else if (Escaping.KEYWORDS.contains(newName)) {
+            return createErrorStatus("'" + newName + "' is a Ceylon keyword");
+        }
+        else {
+            int ch = newName.codePointAt(0);
+            if (declaration instanceof TypedDeclaration) {
+                if (!Character.isLowerCase(ch) && ch!='_') {
+                    return createErrorStatus("Not an initial lowercase identifier");
+                }
+            }
+            else if (declaration instanceof TypeDeclaration) {
+                if (!Character.isUpperCase(ch)) {
+                    return createErrorStatus("Not an initial uppercase identifier");
+                }
+            }
+        }
         Declaration existing = declaration.getContainer()
                         .getMemberOrParameter(declaration.getUnit(), 
                                 newName, null, false);
