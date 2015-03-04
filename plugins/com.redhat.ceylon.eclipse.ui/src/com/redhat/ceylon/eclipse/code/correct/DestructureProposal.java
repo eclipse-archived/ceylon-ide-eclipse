@@ -137,6 +137,7 @@ class DestructureProposal extends LocalProposal {
     
     @Override
     boolean isEnabled(ProducedType resultType) {
+        if (node==null || node.getUnit()==null) return false; 
         Class td = node.getUnit().getTupleDeclaration();
         Class ed = node.getUnit().getEntryDeclaration();
         TypeDeclaration rtd = resultType.getDeclaration();
