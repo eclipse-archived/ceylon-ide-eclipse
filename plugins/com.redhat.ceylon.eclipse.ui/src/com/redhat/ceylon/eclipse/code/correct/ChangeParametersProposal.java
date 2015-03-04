@@ -1,9 +1,11 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REORDER;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 
 import java.util.Collection;
 
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -61,7 +63,11 @@ class ChangeParametersProposal implements ICompletionProposal,
     
     @Override
     public StyledString getStyledDisplayString() {
-        return Highlights.styleProposal(getDisplayString(), false);
+        TriggerSequence binding = 
+                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.changeParameters");
+        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        return Highlights.styleProposal(getDisplayString(), false)
+                .append(hint, StyledString.QUALIFIER_STYLER);
     }
 
     public static void add(Collection<ICompletionProposal> proposals,
