@@ -99,7 +99,9 @@ import static java.lang.Character.isDigit;
 import static java.lang.Character.isLetter;
 import static java.util.Collections.emptyMap;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,7 +115,9 @@ import java.util.regex.Pattern;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
@@ -182,8 +186,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         this.editor=editor;
     }
     
-    public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, 
-            int offset) {
+    public ICompletionProposal[] computeCompletionProposals(final ITextViewer viewer, 
+            final int offset) {
         if (offset!=lastOffsetAcrossSessions) {
             returnedParamInfo = false;
             secondLevel = false;
@@ -205,21 +209,35 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         lastOffset = offset;
         lastOffsetAcrossSessions = offset;
-        try {
-            ICompletionProposal[] contentProposals = 
-                    getContentProposals(editor.getParseController(), 
-                            offset, viewer, secondLevel, returnedParamInfo);
-            if (contentProposals!=null && contentProposals.length==1 && 
-                    contentProposals[0] instanceof 
-                            InvocationCompletionProposal.ParameterInfo) {
-                returnedParamInfo = true;
+        
+        class Runnable implements IRunnableWithProgress {
+            ICompletionProposal[] contentProposals = NO_COMPLETIONS;
+            @Override
+            public void run(IProgressMonitor monitor) 
+                    throws InvocationTargetException, InterruptedException {
+                monitor.beginTask("Preparing completions...", 
+                        IProgressMonitor.UNKNOWN);
+                contentProposals = 
+                        getContentProposals(editor.getParseController(), 
+                                offset, viewer, secondLevel, returnedParamInfo);
+                if (contentProposals!=null && contentProposals.length==1 && 
+                        contentProposals[0] instanceof 
+                        InvocationCompletionProposal.ParameterInfo) {
+                    returnedParamInfo = true;
+                }
+                monitor.done();
             }
-            return contentProposals;
+        }
+        Runnable runnable = new Runnable();
+        try {
+            getWorkbench()
+                    .getActiveWorkbenchWindow()
+                    .run(true, true, runnable);
         }
         catch (Exception e) {
             e.printStackTrace();
-            return NO_COMPLETIONS;
         }
+        return runnable.contentProposals;
     }
 
     private boolean isIdentifierCharacter(ITextViewer viewer, int offset)
