@@ -68,7 +68,9 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.TypeArgumentListCompletions.addTypeArgumentListProposal;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getOccurrenceLocation;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.ALIAS_REF;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CASE;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CATCH;
@@ -147,7 +149,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -777,8 +778,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 if (!dec.isToplevel() && 
                     !dec.isClassOrInterfaceMember() &&
                     dec.getUnit().equals(node.getUnit())) {
-                    Node decNode = Nodes.getReferencedNodeInUnit(dec, cpc.getRootNode());
-                    if (decNode!=null && offset<Nodes.getIdentifyingNode(decNode).getStartIndex()) {
+                    Node decNode = getReferencedNodeInUnit(dec, cpc.getRootNode());
+                    if (decNode!=null && offset<getIdentifyingNode(decNode).getStartIndex()) {
                         continue;
                     }
                 }
@@ -965,7 +966,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 
     private static boolean isReferenceProposable(OccurrenceLocation ol,
             Declaration dec) {
-        return (ol==VALUE_REF || !(dec instanceof Value)) &&
+        return (ol==VALUE_REF || !(dec instanceof Value) || 
+                    ((Value)dec).getTypeDeclaration().isAnonymous()) &&
             (ol==FUNCTION_REF || !(dec instanceof Method)) &&
             (ol==ALIAS_REF || !(dec instanceof TypeAlias)) &&
             (ol==TYPE_PARAMETER_REF || !(dec instanceof TypeParameter)) &&
@@ -1265,7 +1267,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     private static Map<String, DeclarationWithProximity> getProposals(Node node, 
             Scope scope, String prefix, boolean memberOp, Tree.CompilationUnit cu) {
         Unit unit = node.getUnit();
-        if (node instanceof MemberLiteral) { //this case is rather ugly!
+        if (node instanceof Tree.MemberLiteral) {
             Tree.StaticType mlt = ((Tree.MemberLiteral) node).getType();
             if (mlt!=null) {
                 ProducedType type = mlt.getTypeModel();
@@ -1278,6 +1280,20 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 }
             }
         }
+        else if (node instanceof Tree.TypeLiteral) {
+            Tree.StaticType tlt = ((Tree.TypeLiteral) node).getType();
+            if (tlt!=null) {
+                ProducedType type = tlt.getTypeModel();
+                if (type!=null) {
+                    return type.resolveAliases().getDeclaration()
+                            .getMatchingMemberDeclarations(unit, scope, prefix, 0);
+                }
+                else {
+                    return emptyMap();
+                }
+            }
+        }
+        
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte = 
                     (Tree.QualifiedMemberOrTypeExpression) node;
