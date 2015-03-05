@@ -43,6 +43,7 @@ import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
@@ -644,13 +645,11 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             List<CommonToken> tokens) {
         StringBuilder sb = new StringBuilder("(");
         for (int i=0; i<parameters.length; i++) {
-            Tree.Parameter parameter = parameters[i];
-            String oldName = parameter.getParameterModel().getName();
             String paramString = 
-                    Nodes.toString(parameter, tokens)
-                    //TODO: this is rubbish!
-                        .replace(oldName, names.get(i));
-            sb.append(paramString).append(", ");
+                    paramString(parameters[i], names.get(i), 
+                            tokens);
+            sb.append(paramString)
+              .append(", ");
         }
         sb.setLength(sb.length() - 2);
         sb.append(")");
@@ -671,32 +670,21 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 int index = order.get(i);
                 Parameter addedParameter = 
                         this.parameters.get(index);
+                Unit unit = list.getUnit();
                 paramString = 
                         addedParameter.getType()
-                            .getProducedTypeName(list.getUnit()) + 
+                            .getProducedTypeName(unit) + 
                         ' ' + newName;
                 if (defaulted.get(i) && !actual) {
                     MethodOrValue model = 
                             addedParameter.getModel();
-                    paramString += 
-                            " = " + defaultArgs.get(model);
+                    paramString += " = " + defaultArgs.get(model);
                 }
             }
             else {
-                String oldName = 
-                        parameter.getParameterModel().getName();
                 paramString = 
-                        Nodes.toString(parameter, tokens)
-                    //TODO: this is rubbish!
-                            .replace(oldName, newName);
-                // first remove the default arg
-                Node sie = getDefaultArgSpecifier(parameter);
-                if (sie!=null) {
-                    int loc = sie.getStartIndex() - 
-                            parameter.getStartIndex();
-                    paramString = 
-                            paramString.substring(0,loc).trim();
-                }
+                        paramStringWithoutDefaultArg(parameter, 
+                                newName, tokens);
                 if (defaulted.get(i) && !actual) {
                     // now add the new default arg
                     // TODO: this results in incorrectly-typed
@@ -714,6 +702,49 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         sb.append(")");
         return new ReplaceEdit(getNodeStartOffset(list), 
                 getNodeLength(list), sb.toString());
+    }
+
+    private String paramString(Tree.Parameter parameter, 
+            String newName, List<CommonToken> tokens) {
+        String paramString = 
+                Nodes.toString(parameter, tokens);
+        int loc = parameter.getStartIndex();
+        Tree.Identifier id = getIdentifier(parameter);
+        int start = id.getStartIndex() - loc;
+        int end = id.getStopIndex()+1 - loc;
+        paramString = paramString.substring(0, start) + 
+                newName + paramString.substring(end);
+        return paramString;
+    }
+
+    private String paramStringWithoutDefaultArg(Tree.Parameter parameter,
+            String newName, List<CommonToken> tokens) {
+        String paramString = Nodes.toString(parameter, tokens);
+        // first remove the default arg
+        Node sie = getDefaultArgSpecifier(parameter);
+        int loc = parameter.getStartIndex();
+        if (sie!=null) {
+            int start = sie.getStartIndex() - loc;
+            paramString = paramString.substring(0,start).trim();
+        }
+        Tree.Identifier id = getIdentifier(parameter);
+        int start = id.getStartIndex() - loc;
+        int end = id.getStopIndex()+1 - loc;
+        paramString = paramString.substring(0, start) + 
+                newName + paramString.substring(end);
+        return paramString;
+    }
+
+    private Tree.Identifier getIdentifier(Tree.Parameter parameter) {
+        if (parameter instanceof Tree.InitializerParameter) {
+            return ((Tree.InitializerParameter) parameter).getIdentifier();
+        }
+        else if (parameter instanceof Tree.ParameterDeclaration) {
+            return ((Tree.ParameterDeclaration) parameter).getTypedDeclaration().getIdentifier();
+        }
+        else {
+            throw new RuntimeException();
+        }
     }
 
     private static String getSpecifier(Tree.Parameter parameter) {
