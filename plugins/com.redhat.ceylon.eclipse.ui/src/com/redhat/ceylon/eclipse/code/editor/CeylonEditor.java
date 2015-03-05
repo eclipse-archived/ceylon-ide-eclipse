@@ -70,6 +70,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.ui.actions.IRunToLineTarget;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
+import org.eclipse.jdt.internal.debug.ui.actions.JavaBreakpointPropertiesRulerAction;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
@@ -184,6 +185,7 @@ public class CeylonEditor extends TextEditor {
     private ICharacterPairMatcher bracketMatcher;
     private ToggleBreakpointAction toggleBreakpointAction;
     private IAction enableDisableBreakpointAction;
+    private IAction breakpointPropertiesAction;
     private FoldingActionGroup foldingActionGroup;
     private SourceArchiveDocumentProvider sourceArchiveDocumentProvider;
     private ToggleBreakpointAdapter toggleBreakpointTarget;
@@ -323,6 +325,7 @@ public class CeylonEditor extends TextEditor {
             enableDisableBreakpointAction= new RulerEnableDisableBreakpointAction(this, 
                     verticalRuler);
             setAction("ToggleBreakpoint", action);
+            breakpointPropertiesAction= new JavaBreakpointPropertiesRulerAction(this, verticalRuler);
         }
 
 //        action= new TextOperationAction(bundle, "Format.", this, 
@@ -1016,6 +1019,7 @@ public class CeylonEditor extends TextEditor {
     private void addDebugActions(IMenuManager menu) {
         menu.add(toggleBreakpointAction);
         menu.add(enableDisableBreakpointAction);
+        menu.add(breakpointPropertiesAction);
     }
 
     /**
