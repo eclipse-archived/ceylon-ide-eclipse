@@ -309,7 +309,9 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
+        
         RefactoringStatus result = new RefactoringStatus();
+        
         boolean foundDefaulted = false;
         for (int index=0; index<defaulted.size(); index++) {
             if (defaulted.get(index)) {
@@ -322,6 +324,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 }
             }
         }
+        
         for (int index=0; index<defaulted.size(); index++) {
             Parameter p = parameters.get(order.get(index));
             if (defaulted.get(index)) {
@@ -332,6 +335,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 }
             }
         }
+        
         return result;
     }
 
@@ -369,224 +373,247 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             Tree.CompilationUnit root, List<CommonToken> tokens) {
         tfc.setEdit(new MultiTextEdit());
         if (declaration != null) {
-            int requiredParams = -1;
-            for (int i=0; i<defaulted.size(); i++) {
-                int index = order.get(i);
-                Parameter p = parameters.get(index);
-                if (!defaulted.get(i) || defaultHasChanged(p)) {
-                    if (i > requiredParams) {
-                        requiredParams = i;
-                    }
-                }
-            }
-
-            FindInvocationsVisitor fiv = 
-                    new FindInvocationsVisitor(declaration);
-            root.visit(fiv);
-            for (Tree.PositionalArgumentList pal : 
-                    fiv.getPositionalArgLists()) {
-                List<Tree.PositionalArgument> pas = pal
-                        .getPositionalArguments();
-                int existingArgs = 0;
-                for (int i=0; i<pas.size(); i++) {
-                    Parameter p = pas.get(i).getParameter();
-                    if (p != null) {
-                        int newLoc = order.indexOf(i);
-                        if (newLoc > existingArgs) {
-                            existingArgs = newLoc;
-                        }
-                    }
-                }
-                int len = Math.max(requiredParams + 1, 
-                        existingArgs + 1);
-                Tree.PositionalArgument[] args = 
-                        new Tree.PositionalArgument[len];
-                for (int i=0; i<pas.size(); i++) {
-                    PositionalArgument argument = pas.get(i);
-                    int index = order.indexOf(i);
-                    if (index >= 0) {
-                        args[index] = argument;
-                    }
-                }
-                tfc.addEdit(reorderEdit(pal, args, tokens));
-            }
-
-            for (Tree.NamedArgumentList nal : 
-                    fiv.getNamedArgLists()) {
-                List<Tree.NamedArgument> nas = 
-                        nal.getNamedArguments();
-                Tree.NamedArgument last = null;
-                for (Tree.NamedArgument na : nas) {
-                    Parameter nap = na.getParameter();
-                    if (nap != null) {
-                        boolean found = false;
-                        for (int i=0; i<defaulted.size(); i++) {
-                            Parameter p = parameters.get(order.get(i));
-                            if (nap.getModel()
-                                    .equals(p.getModel())) {
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            int start = 
-                                    last == null ? 
-                                    nal.getStartIndex() + 1 : 
-                                    last.getStopIndex() + 1;
-                            tfc.addEdit(new DeleteEdit(start, 
-                                    na.getStopIndex() - start + 1));
-                        }
-                    }
-                    last = na;
-                }
-                for (int i = 0; i<defaulted.size(); i++) {
-                    int index = order.get(i);
-                    Parameter p = parameters.get(index);
-                    if (!defaulted.get(i) || 
-                            defaultHasChanged(p)) {
-                        boolean found = false;
-                        for (Tree.NamedArgument na : nas) {
-                            Parameter nap = na.getParameter();
-                            if (nap!=null
-                                    && nap.getModel()
-                                            .equals(p.getModel())) {
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            String arg = arguments.get(p.getModel());
-                            String argString = 
-                                    getInlinedNamedArg(p, arg);
-                            int startOffset = nal.getStartIndex();
-                            int stopOffset = nal.getStopIndex();
-                            try {
-                                IDocument doc = getDocument(tfc);
-                                if (doc.getLineOfOffset(stopOffset) > 
-                                    doc.getLineOfOffset(startOffset)) {
-                                    argString = 
-                                            getDefaultIndent() + 
-                                            argString + ';' +
-                                            getDefaultLineDelimiter(doc) + 
-                                            getIndent(nal, doc);
-                                }
-                                else if (startOffset==stopOffset-1) {
-                                    argString = 
-                                            ' ' + argString + ' ';
-                                }
-                                else {
-                                    argString = 
-                                            argString + ' ';
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            tfc.addEdit(new InsertEdit(stopOffset, 
-                                    argString));
-                        }
-                    }
-                }
-            }
-
-            FindRefinementsVisitor frv = 
-                    new FindRefinementsVisitor(declaration);
-            root.visit(frv);
-            for (Tree.StatementOrArgument decNode: 
-                    frv.getDeclarationNodes()) {
-                boolean actual;
-                Tree.ParameterList pl;
-                if (decNode instanceof Tree.AnyMethod) {
-                    Tree.AnyMethod m = 
-                            (Tree.AnyMethod) decNode;
-                    pl = m.getParameterLists().get(0);
-                    actual = m.getDeclarationModel().isActual();
-                }
-                else if (decNode instanceof Tree.AnyClass) {
-                    Tree.AnyClass c = 
-                            (Tree.AnyClass) decNode;
-                    pl = c.getParameterList();
-                    actual = c.getDeclarationModel().isActual();
-                }
-                else if (decNode instanceof Tree.Constructor) {
-                    Tree.Constructor c = 
-                            (Tree.Constructor) decNode;
-                    pl = c.getParameterList();
-                    actual = c.getDeclarationModel().isActual();
-                }
-                else if (decNode instanceof Tree.SpecifierStatement) {
-                    Tree.SpecifierStatement ss = 
-                            (Tree.SpecifierStatement) decNode;
-                    Tree.Term bme = 
-                            ss.getBaseMemberExpression();
-                    if (bme instanceof Tree.ParameterizedExpression) {
-                        Tree.ParameterizedExpression pe = 
-                                (Tree.ParameterizedExpression) bme;
-                        pl = pe.getParameterLists().get(0);
-                        actual = true;
-                    }
-                    else {
-                        continue;
-                    }
-                }
-                else {
-                    continue;
-                }
-                List<Tree.Parameter> ps = pl.getParameters();
-                int size = defaulted.size();
-                Tree.Parameter[] params = 
-                        new Tree.Parameter[size];
-                for (int i = 0; i < ps.size(); i++) {
-                    int index = order.indexOf(i);
-                    if (index >= 0) {
-                        params[index] = ps.get(i);
-                    }
-                }
-                tfc.addEdit(reorderEdit(pl, params, 
-                        actual, tokens));
-            }
-
-            FindArgumentsVisitor fav = 
-                    new FindArgumentsVisitor(declaration);
-            root.visit(fav);
-            for (Tree.MethodArgument decNode: 
-                    fav.getResults()) {
-                Tree.ParameterList pl = 
-                        decNode.getParameterLists().get(0);
-                List<Tree.Parameter> ps = pl.getParameters();
-                int size = defaulted.size();
-                Tree.Parameter[] params = 
-                        new Tree.Parameter[size];
-                for (int i = 0; i < ps.size(); i++) {
-                    int index = order.indexOf(i);
-                    if (index >= 0) {
-                        params[index] = ps.get(i);
-                    }
-                }
-                tfc.addEdit(reorderEdit(pl, params, tokens));
-            }
-            
-            for (int i=0; i<names.size(); i++) {
-                Parameter p = parameters.get(order.get(i));
-                String newName = names.get(i);
-                if (!p.getName().equals(newName)) {
-                    FindReferencesVisitor fprv = 
-                            new FindReferencesVisitor(p.getModel());
-                    root.visit(fprv);
-                    for (Node ref: fprv.getNodes()) {
-                        Node idn = getIdentifyingNode(ref);
-                        if (idn instanceof Tree.Identifier) {
-                            Tree.Identifier id = (Tree.Identifier) idn;
-                            tfc.addEdit(new ReplaceEdit(id.getStartIndex(), 
-                                  id.getStopIndex()-id.getStartIndex()+1, 
-                                  newName));
-                        }
-                    }
-                }
-            }
+            refactorArgumentLists(tfc, root);
+            refactorDeclarations(tfc, root, tokens);
+            refactorReferences(tfc, root);
         }
         if (tfc.getEdit().hasChildren()) {
             cc.add(tfc);
         }
+    }
+
+    private void refactorReferences(TextChange tfc, Tree.CompilationUnit root) {
+        for (int i=0; i<names.size(); i++) {
+            Parameter p = parameters.get(order.get(i));
+            String newName = names.get(i);
+            if (!p.getName().equals(newName)) {
+                FindReferencesVisitor fprv = 
+                        new FindReferencesVisitor(p.getModel());
+                root.visit(fprv);
+                for (Node ref: fprv.getNodes()) {
+                    Node idn = getIdentifyingNode(ref);
+                    if (idn instanceof Tree.Identifier) {
+                        Tree.Identifier id = (Tree.Identifier) idn;
+                        tfc.addEdit(new ReplaceEdit(id.getStartIndex(), 
+                              id.getStopIndex()-id.getStartIndex()+1, 
+                              newName));
+                    }
+                }
+            }
+        }
+    }
+
+    private void refactorDeclarations(TextChange tfc,
+            Tree.CompilationUnit root, List<CommonToken> tokens) {
+        
+        FindRefinementsVisitor frv = 
+                new FindRefinementsVisitor(declaration);
+        root.visit(frv);
+        
+        for (Tree.StatementOrArgument decNode: 
+                frv.getDeclarationNodes()) {
+            boolean actual;
+            Tree.ParameterList pl;
+            if (decNode instanceof Tree.AnyMethod) {
+                Tree.AnyMethod m = 
+                        (Tree.AnyMethod) decNode;
+                pl = m.getParameterLists().get(0);
+                actual = m.getDeclarationModel().isActual();
+            }
+            else if (decNode instanceof Tree.AnyClass) {
+                Tree.AnyClass c = 
+                        (Tree.AnyClass) decNode;
+                pl = c.getParameterList();
+                actual = c.getDeclarationModel().isActual();
+            }
+            else if (decNode instanceof Tree.Constructor) {
+                Tree.Constructor c = 
+                        (Tree.Constructor) decNode;
+                pl = c.getParameterList();
+                actual = c.getDeclarationModel().isActual();
+            }
+            else if (decNode instanceof Tree.SpecifierStatement) {
+                Tree.SpecifierStatement ss = 
+                        (Tree.SpecifierStatement) decNode;
+                Tree.Term bme = 
+                        ss.getBaseMemberExpression();
+                if (bme instanceof Tree.ParameterizedExpression) {
+                    Tree.ParameterizedExpression pe = 
+                            (Tree.ParameterizedExpression) bme;
+                    pl = pe.getParameterLists().get(0);
+                    actual = true;
+                }
+                else {
+                    continue;
+                }
+            }
+            else {
+                continue;
+            }
+            
+            tfc.addEdit(reorderParamsEdit(pl, 
+                    reorderedParameters(pl.getParameters()), 
+                    actual, tokens));
+        }
+    }
+
+    private void refactorArgumentLists(TextChange tfc,
+            Tree.CompilationUnit root) {
+                
+        FindInvocationsVisitor fiv = 
+                new FindInvocationsVisitor(declaration);
+        root.visit(fiv);
+        
+        int requiredParams = countRequiredParameters();
+        for (Tree.PositionalArgumentList pal: fiv.getPositionalArgLists()) {
+            tfc.addEdit(reorderArgsEdit(pal, 
+                    reorderedArguments(requiredParams, 
+                            pal.getPositionalArguments()), 
+                    tokens));
+        }
+
+        for (Tree.NamedArgumentList nal: fiv.getNamedArgLists()) {
+            List<Tree.NamedArgument> nas = 
+                    nal.getNamedArguments();
+            Tree.NamedArgument last = null;
+            for (Tree.NamedArgument na: nas) {
+                Parameter nap = na.getParameter();
+                if (nap != null) {
+                    boolean found = false;
+                    for (int i=0; i<defaulted.size(); i++) {
+                        Parameter p = parameters.get(order.get(i));
+                        if (nap.getModel()
+                                .equals(p.getModel())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        int start = 
+                                last == null ? 
+                                nal.getStartIndex() + 1 : 
+                                last.getStopIndex() + 1;
+                        tfc.addEdit(new DeleteEdit(start, 
+                                na.getStopIndex() - start + 1));
+                    }
+                }
+                last = na;
+            }
+            for (int i=0; i<defaulted.size(); i++) {
+                int index = order.get(i);
+                Parameter p = parameters.get(index);
+                if (!defaulted.get(i) || 
+                        defaultHasChanged(p)) {
+                    boolean found = false;
+                    for (Tree.NamedArgument na : nas) {
+                        Parameter nap = na.getParameter();
+                        if (nap!=null
+                                && nap.getModel()
+                                        .equals(p.getModel())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        String arg = arguments.get(p.getModel());
+                        String argString = 
+                                getInlinedNamedArg(p, arg);
+                        int startOffset = nal.getStartIndex();
+                        int stopOffset = nal.getStopIndex();
+                        try {
+                            IDocument doc = getDocument(tfc);
+                            if (doc.getLineOfOffset(stopOffset) > 
+                                doc.getLineOfOffset(startOffset)) {
+                                argString = 
+                                        getDefaultIndent() + 
+                                        argString + ';' +
+                                        getDefaultLineDelimiter(doc) + 
+                                        getIndent(nal, doc);
+                            }
+                            else if (startOffset==stopOffset-1) {
+                                argString = ' ' + argString + ' ';
+                            }
+                            else {
+                                argString = argString + ' ';
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        tfc.addEdit(new InsertEdit(stopOffset, 
+                                argString));
+                    }
+                }
+            }
+        }
+        
+        FindArgumentsVisitor fav = 
+                new FindArgumentsVisitor(declaration);
+        root.visit(fav);
+        for (Tree.MethodArgument decNode: 
+                fav.getResults()) {
+            Tree.ParameterList pl = 
+                    decNode.getParameterLists().get(0);
+            tfc.addEdit(reorderParamsEdit(pl, 
+                    reorderedParameters(pl.getParameters()), 
+                    tokens));
+        }
+        
+    }
+
+    private int countRequiredParameters() {
+        int requiredParams = -1;
+        for (int i=0; i<defaulted.size(); i++) {
+            int index = order.get(i);
+            Parameter p = parameters.get(index);
+            if (!defaulted.get(i) || defaultHasChanged(p)) {
+                if (i > requiredParams) {
+                    requiredParams = i;
+                }
+            }
+        }
+        return requiredParams;
+    }
+
+    private int countExistingArgs(List<Tree.PositionalArgument> pas) {
+        int existingArgs = 0;
+        for (int i=0; i<pas.size(); i++) {
+            Parameter p = pas.get(i).getParameter();
+            if (p != null) {
+                int newLoc = order.indexOf(i);
+                if (newLoc > existingArgs) {
+                    existingArgs = newLoc;
+                }
+            }
+        }
+        return existingArgs;
+    }
+
+    private Tree.PositionalArgument[] reorderedArguments(int requiredParams,
+            List<Tree.PositionalArgument> pas) {
+        int existingArgs = countExistingArgs(pas);
+        int len = Math.max(requiredParams + 1, existingArgs + 1);
+        Tree.PositionalArgument[] args = 
+                new Tree.PositionalArgument[len];
+        for (int i=0; i<pas.size(); i++) {
+            PositionalArgument argument = pas.get(i);
+            int index = order.indexOf(i);
+            if (index >= 0) {
+                args[index] = argument;
+            }
+        }
+        return args;
+    }
+
+    Tree.Parameter[] reorderedParameters(List<Tree.Parameter> ps) {
+        Tree.Parameter[] params = 
+                new Tree.Parameter[defaulted.size()];
+        for (int i=0; i<ps.size(); i++) {
+            int index = order.indexOf(i);
+            if (index >= 0) {
+                params[index] = ps.get(i);
+            }
+        }
+        return params;
     }
 
     boolean defaultHasChanged(Parameter p) {
@@ -597,7 +624,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 (current == null || !current.equals(original));
     }
 
-    public ReplaceEdit reorderEdit(Node list,
+    public ReplaceEdit reorderArgsEdit(Node list,
             Tree.PositionalArgument[] arguments,
             List<CommonToken> tokens) {
         StringBuilder sb = new StringBuilder("(");
@@ -614,13 +641,15 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             }
             sb.append(argString).append(", ");
         }
-        sb.setLength(sb.length() - 2);
+        if (sb.toString().endsWith(", ")) {
+            sb.setLength(sb.length() - 2);
+        }
         sb.append(")");
         return new ReplaceEdit(getNodeStartOffset(list), 
                 getNodeLength(list), sb.toString());
     }
 
-    public ReplaceEdit reorderEdit(Node list, 
+    public ReplaceEdit reorderParamsEdit(Node list, 
             Tree.Parameter[] parameters,
             List<CommonToken> tokens) {
         StringBuilder sb = new StringBuilder("(");
@@ -631,13 +660,15 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             sb.append(paramString)
               .append(", ");
         }
-        sb.setLength(sb.length() - 2);
+        if (sb.toString().endsWith(", ")) {
+            sb.setLength(sb.length() - 2);
+        }
         sb.append(")");
         return new ReplaceEdit(getNodeStartOffset(list), 
                 getNodeLength(list), sb.toString());
     }
 
-    public ReplaceEdit reorderEdit(Node list, 
+    public ReplaceEdit reorderParamsEdit(Node list, 
             Tree.Parameter[] parameters,
             boolean actual, 
             List<CommonToken> tokens) {
@@ -678,7 +709,9 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             }
             sb.append(paramString).append(", ");
         }
-        sb.setLength(sb.length() - 2);
+        if (sb.toString().endsWith(", ")) {
+            sb.setLength(sb.length() - 2);
+        }
         sb.append(")");
         return new ReplaceEdit(getNodeStartOffset(list), 
                 getNodeLength(list), sb.toString());
