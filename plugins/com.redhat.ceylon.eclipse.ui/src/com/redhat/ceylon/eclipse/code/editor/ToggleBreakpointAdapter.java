@@ -29,10 +29,13 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 
 public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget {
 
@@ -196,14 +199,21 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget {
 
     public void setLineBreakpoint(IFile file, int lineNumber) throws CoreException {
         String srcFileName = file.getName();
-        String typeName = srcFileName.substring(0, srcFileName.lastIndexOf('.'));
+        String relativePath = null;
+        if (ExternalSourceArchiveManager.isInSourceArchive(file)) {
+            relativePath = file.getProjectRelativePath().removeFirstSegments(1).toString();
+        } else {
+            IResourceAware unit = CeylonBuilder.getUnit(file);
+            if (unit != null) {
+                relativePath = ((Unit)unit).getRelativePath();
+            }
+        }
+        
         Map<String,Object> bkptAttributes= new HashMap<String, Object>();
-        bkptAttributes.put("org.eclipse.jdt.debug.core.sourceName", srcFileName);
-        bkptAttributes.put("org.eclipse.jdt.debug.core.typeName", typeName);
 
         try {
             JDIDebugModel.createStratumBreakpoint(file, null, srcFileName,
-                    null, null, lineNumber, -1, -1, 0, true, bkptAttributes);
+                    relativePath, null, lineNumber, -1, -1, 0, true, bkptAttributes);
         } 
         catch (CoreException e) {
             e.printStackTrace();
