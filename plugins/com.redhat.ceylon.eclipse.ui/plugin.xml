@@ -1630,19 +1630,16 @@
               </visibleWhen>
             <command 
                   commandId="org.eclipse.debug.ui.commands.StepInto"
-                  label="Step &amp;Into"/>
+                  label="Step Into"/>
             <command 
                   commandId="org.eclipse.debug.ui.commands.StepOver"
-                  label="Step &amp;Over"/>
+                  label="Step Over"/>
             <command 
                   commandId="org.eclipse.debug.ui.commands.StepReturn"
-                  label="Step &amp;Return"/>
+                  label="Step Return"/>
             <command 
                   commandId="org.eclipse.debug.ui.commands.RunToLine"
-                  label="Run to &amp;Line"/>
-            <command 
-                  commandId="org.eclipse.ui.edit.paste"
-                  label="&amp;Paste"/>
+                  label="Run to Line"/>
             </menu>
             <separator
                   visible="true"
