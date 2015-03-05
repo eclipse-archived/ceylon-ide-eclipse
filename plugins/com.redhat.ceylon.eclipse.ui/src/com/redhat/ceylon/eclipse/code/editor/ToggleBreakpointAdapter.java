@@ -5,6 +5,7 @@ import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -33,6 +34,7 @@ import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.debug.ui.IJavaDebugUIConstants;
 import org.eclipse.jdt.internal.debug.ui.BreakpointUtils;
 import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
@@ -58,7 +60,7 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
     public ToggleBreakpointAdapter() {}
 
     static interface BreakpointAction {
-        void doIt(ITextSelection selection, Node node, boolean isValidLocation, int lineNumber, IFile sourceFile) throws CoreException;
+        void doIt(ITextSelection selection, Map.Entry<Integer, Node> firstValidLocation, IFile sourceFile) throws CoreException;
     }
     
 
@@ -71,26 +73,32 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
             IEditorInput editorInput = editorPart.getEditorInput();
             final IFile origSrcFile = getSourceFile(editorInput);
             int line = textSel.getStartLine();
-            boolean emptyLine = false;
-            Node node = null;
+            boolean emptyLine = true;
+            Map.Entry<Integer, Node> location = null;
             try {
                 CeylonEditor editor = (CeylonEditor) editorPart;
                 IDocument document = editor.getCeylonSourceViewer().getDocument();
-                Tree.CompilationUnit rootNode = editor.getParseController().getRootNode();
-                final IRegion lineInformation = document.getLineInformation(line);
-                String text = 
-                        document.get(lineInformation.getOffset(), 
+                int lineCount = document.getNumberOfLines();
+                String text = null;
+                while (line < lineCount) {
+                    final IRegion lineInformation = document.getLineInformation(line);
+                    text = document.get(lineInformation.getOffset(), 
                                 lineInformation.getLength()).trim();
-                emptyLine = text.isEmpty();
+                    if (! text.isEmpty()) {
+                        emptyLine = false;
+                        break;
+                    }
+                    line ++;
+                };
+                
                 if (!emptyLine) {
-                    node = getNode(rootNode, lineInformation);
+                    Tree.CompilationUnit rootNode = editor.getParseController().getRootNode();
+                    location = getFirstValidLocation(rootNode, document, textSel);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            final boolean breakable = !emptyLine && node!=null;
-            final int lineNumber = line+1;
-            action.doIt(textSel, node, breakable, lineNumber, origSrcFile);
+            action.doIt(textSel, location, origSrcFile);
         }
     }
     
@@ -98,17 +106,18 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
         doOnBreakpoints(part, selection, new BreakpointAction() {
 
             @Override
-            public void doIt(final ITextSelection selection, final Node node,
-                    final boolean isValidLocation, final int lineNumber, final IFile sourceFile) throws DebugException {
+            public void doIt(final ITextSelection selection, final Map.Entry<Integer, Node> firstValidLocation,
+                    final IFile sourceFile) throws CoreException {
+                final int requestedLineNumber = selection.getStartLine();
                 IWorkspaceRunnable wr = new IWorkspaceRunnable() {
                     public void run(IProgressMonitor monitor) throws CoreException {
-                        IMarker marker = findBreakpointMarker(sourceFile, lineNumber);
+                        IMarker marker = findBreakpointMarker(sourceFile, requestedLineNumber + 1);
                         if (marker!=null) {
                             // The following will delete the associated marker
-                            clearLineBreakpoint(sourceFile, lineNumber);
-                        } else if (isValidLocation) {
+                            clearLineBreakpoint(sourceFile, requestedLineNumber + 1);
+                        } else if (firstValidLocation != null) {
                             // The following will create a marker as a side-effect
-                            createLineBreakpoint(sourceFile, lineNumber, null, false);
+                            createLineBreakpoint(sourceFile, firstValidLocation.getKey() + 1, null, false);
                         }
                     }
                 };
@@ -140,22 +149,33 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
         return origSrcFile;
     }
 
-    private static Node getNode(Tree.CompilationUnit rootNode,
-            final IRegion lineInformation) {
+    private static Map.Entry<Integer, Node> getFirstValidLocation(Tree.CompilationUnit rootNode,
+            final IDocument document, final ITextSelection textSelection) {
         class BreakpointVisitor extends Visitor {
-            Node result;
-            int start = lineInformation.getOffset();
-            int end = start + lineInformation.getLength()+1;
-            boolean in(Node node) {
+            TreeMap<Integer, Node> nodes = new TreeMap<>();
+            int requestedLine = textSelection.getStartLine();
+            
+            void check(Node node) {
                 Integer startIndex = node.getStartIndex();
                 Integer stopIndex = node.getStopIndex();
+                
                 if (startIndex != null && stopIndex != null) {
                     stopIndex ++;
-                    return startIndex<=start && stopIndex>=end ||
-                            startIndex>=start && startIndex<end ||
-                            stopIndex>=start && stopIndex<end;
+                    int nodeStartLine;
+                    try {
+                        nodeStartLine = document.getLineOfOffset(startIndex);
+                        if (nodeStartLine >= requestedLine) {
+                            nodes.put(nodeStartLine, node);
+                        } else {
+                            int nodeEndLine = document.getLineOfOffset(stopIndex);
+                            if (nodeEndLine >= requestedLine) {
+                                nodes.put(requestedLine, node);
+                            }
+                        }
+                    } catch (BadLocationException e) {
+                        e.printStackTrace();
+                    }
                 }
-                return false;
             }
             @Override
             public void visit(Tree.Annotation that) {}
@@ -196,29 +216,23 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
 //            }
             @Override
             public void visit(Tree.ExecutableStatement that) {
-                if (in(that)) {
-                    result = that;
-                }
+                check(that);
                 super.visit(that);
             }
             @Override
             public void visit(Tree.SpecifierOrInitializerExpression that) {
-                if (in(that)) {
-                    result = that;
-                }
+                check(that);
                 super.visit(that);
             }
             @Override
             public void visit(Tree.Expression that) {
-                if (in(that)) {
-                    result = that;
-                }
+                check(that);
                 super.visit(that);
             }
         };
         BreakpointVisitor visitor = new BreakpointVisitor();
         visitor.visit(rootNode);
-        return visitor.result;
+        return visitor.nodes.firstEntry();
     }
     
     private IMarker findBreakpointMarker(IFile srcFile, int lineNumber) throws CoreException {
@@ -350,19 +364,19 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
     public void runToLine(IWorkbenchPart part, ISelection selection, final ISuspendResume target) throws CoreException {
         doOnBreakpoints(part, selection, new BreakpointAction() {
             @Override
-            public void doIt(final ITextSelection textSelection, final Node node,
-                    final boolean isValidLocation, final int lineNumber, final IFile sourceFile) throws CoreException {
+            public void doIt(final ITextSelection textSelection, final Map.Entry<Integer, Node> firstValidLocation,
+                    final IFile sourceFile) throws CoreException {
+                final int requestedLineNumber = textSelection.getStartLine();
                 String errorMessage;  //$NON-NLS-1$
-                if (isValidLocation) {
-                    IBreakpoint breakpoint= null;
-                    Map<String, Object> attributes = new HashMap<String, Object>(4);
-                    BreakpointUtils.addRunToLineAttributes(attributes);
-                    breakpoint = createLineBreakpoint(sourceFile, lineNumber, attributes, true);
-
+                if (firstValidLocation != null && requestedLineNumber == firstValidLocation.getKey().intValue()) {
                     errorMessage = "Unable to locate debug target";  //$NON-NLS-1$
                     if (target instanceof IAdaptable) {
                         IDebugTarget debugTarget = (IDebugTarget) ((IAdaptable)target).getAdapter(IDebugTarget.class);
                         if (debugTarget != null) {
+                            IBreakpoint breakpoint= null;
+                            Map<String, Object> attributes = new HashMap<String, Object>(4);
+                            BreakpointUtils.addRunToLineAttributes(attributes);
+                            breakpoint = createLineBreakpoint(sourceFile, firstValidLocation.getKey() + 1, attributes, true);
                             RunToLineHandler handler = new RunToLineHandler(debugTarget, target, breakpoint);
                             handler.run(new NullProgressMonitor());
                             return;
