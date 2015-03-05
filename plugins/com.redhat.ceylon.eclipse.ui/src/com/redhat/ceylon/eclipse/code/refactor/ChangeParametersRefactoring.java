@@ -331,13 +331,6 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             + p.getName());
                 }
             }
-            /*
-             * else if (p.isDefaulted()) { String arg =
-             * originalDefaultArgs.get(p.getModel()); if (arg==null ||
-             * arg.isEmpty()) {
-             * result.addWarning("missing argument to inline for " +
-             * p.getName()); } }
-             */
         }
         return result;
     }
@@ -427,13 +420,11 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     Parameter nap = na.getParameter();
                     if (nap != null) {
                         boolean found = false;
-//                        int index = -1;
                         for (int i=0; i<defaulted.size(); i++) {
                             Parameter p = parameters.get(order.get(i));
                             if (nap.getModel()
                                     .equals(p.getModel())) {
                                 found = true;
-//                                index = i;
                                 break;
                             }
                         }
@@ -445,15 +436,6 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             tfc.addEdit(new DeleteEdit(start, 
                                     na.getStopIndex() - start + 1));
                         }
-//                        else {
-//                            String newName = names.get(index);
-//                            if (!nap.getName().equals(newName)) {
-//                                Tree.Identifier id = na.getIdentifier();
-//                                tfc.addEdit(new ReplaceEdit(id.getStartIndex(), 
-//                                        id.getStopIndex()-id.getStartIndex()+1, 
-//                                        newName));
-//                            }
-//                        }
                     }
                     last = na;
                 }
