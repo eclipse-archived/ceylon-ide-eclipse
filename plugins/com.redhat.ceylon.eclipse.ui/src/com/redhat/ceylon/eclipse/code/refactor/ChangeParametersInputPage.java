@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static org.eclipse.jface.viewers.ArrayContentProvider.getInstance;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
@@ -14,7 +15,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
@@ -28,6 +31,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -36,6 +40,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
@@ -54,11 +59,16 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ChangeParametersInputPage extends UserInputWizardPage {
     
+    private StyledText signatureText;
+
     public ChangeParametersInputPage(String name) {
         super(name);
     }
@@ -185,6 +195,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                         .set(parameterModels.indexOf((Parameter) element), 
                                 value.toString());
                 viewer.update(element, null);
+                drawSignature();
             } 
         });
         TableViewerColumn optCol = new TableViewerColumn(viewer, SWT.LEFT);
@@ -222,6 +233,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                         .set(parameterModels.indexOf(element), 
                                 value.equals(1));
                 viewer.update(element, null);
+                drawSignature();
             } 
         });
         TableViewerColumn diffCol = new TableViewerColumn(viewer, SWT.LEFT);
@@ -310,6 +322,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 refactoring.getDefaultArgs().put(model, 
                         (String) value);
                 viewer.update(element, null);
+                drawSignature();
             } 
         });
         
@@ -337,6 +350,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     viewer.refresh();
                     viewer.getTable().select(index-1);
                 }
+                drawSignature();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -362,6 +376,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     viewer.refresh();
                     viewer.getTable().select(index+1);
                 }
+                drawSignature();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -390,6 +405,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     defaulted.set(index, !defaulted.get(index));
                     viewer.refresh();
                 }
+                drawSignature();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -417,6 +433,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                         downButton.setEnabled(false);
                     }
                 }
+                drawSignature();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -468,6 +485,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                         removeButton.setEnabled(true);
                     }
                 }
+                drawSignature();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
@@ -484,6 +502,53 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             upButton.setEnabled(false);
             downButton.setEnabled(false);
         }
+        
+        new Label(composite, SWT.SEPARATOR|SWT.HORIZONTAL)
+            .setLayoutData(GridDataFactory.fillDefaults().span(4, 1).create());
+        
+        Label l = new Label(composite, SWT.NONE);
+        l.setLayoutData(GridDataFactory.fillDefaults().span(4, 1).create());
+        l.setText("Refactored signature preview:");
+        
+        signatureText = new StyledText(composite, SWT.FLAT|SWT.READ_ONLY|SWT.WRAP);
+        signatureText.setLayoutData(GridDataFactory.fillDefaults().hint(300, 50).grab(true, true).span(4, 3).create());
+        signatureText.setBackground(composite.getBackground());
+        drawSignature();
+    }
+    
+    private void drawSignature() {
+        ChangeParametersRefactoring ref = 
+                getChangeParametersRefactoring();
+        Declaration declaration = 
+                ref.getDeclaration();
+        Node decNode = getReferencedNode(declaration);
+        Tree.ParameterList pl;
+        if (decNode instanceof Tree.AnyMethod) {
+            pl = ((Tree.AnyMethod) decNode).getParameterLists().get(0);
+        }
+        else if (decNode instanceof Tree.AnyClass) {
+            pl = ((Tree.AnyClass) decNode).getParameterList();
+        }
+        else if (decNode instanceof Tree.Constructor) {
+            pl = ((Tree.Constructor) decNode).getParameterList();
+        }
+        else {
+            return;
+        }
+        List<CommonToken> tokens = 
+                ((CeylonUnit) declaration.getUnit()).getPhasedUnit().getTokens();
+        Tree.Parameter[] reorderedParameters = 
+                ref.reorderedParameters(pl.getParameters());
+        ReplaceEdit edit = 
+                ref.reorderParamsEdit(pl, reorderedParameters, false, tokens);
+        int start = ((CommonToken) decNode.getMainToken()).getStartIndex() - decNode.getStartIndex();
+        int end = pl.getStartIndex() - decNode.getStartIndex();
+        String text = Nodes.toString(decNode, tokens).substring(start,end) + edit.getText();
+        StyledString styledString = new StyledString();
+        Highlights.styleProposal(styledString, text, false);
+        signatureText.setText(styledString.getString());
+        signatureText.setStyleRanges(styledString.getStyleRanges());
+        signatureText.setFont(CeylonEditor.getEditorFont());
     }
     
     private ChangeParametersRefactoring getChangeParametersRefactoring() {
