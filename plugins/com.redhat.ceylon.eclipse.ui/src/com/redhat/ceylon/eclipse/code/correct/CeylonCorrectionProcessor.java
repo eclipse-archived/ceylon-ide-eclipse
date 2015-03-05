@@ -99,7 +99,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTyp
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_WARNING;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findBinaryOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
@@ -1112,9 +1112,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                                 sb.append('"')
                                   .append(warningName)
                                   .append('"');
-                                ss.append('"', VERSION_STYLER)
-                                  .append(warningName, VERSION_STYLER)
-                                  .append('"', VERSION_STYLER);
+                                ss.append('"', STRING_STYLER)
+                                  .append(warningName, STRING_STYLER)
+                                  .append('"', STRING_STYLER);
                             }
                         }
                     }

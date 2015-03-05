@@ -14,7 +14,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
-import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
@@ -629,7 +629,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                         ((Tree.ModuleDescriptor) node).getVersion();
                 if (version!=null) {
                     styledString.append(" ")
-                                .append(version.getText(), VERSION_STYLER);
+                                .append(version.getText(), STRING_STYLER);
                 }
                 return styledString;
             }
@@ -690,9 +690,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             else {
                 return new StyledString(name/*, PACKAGE_STYLER*/)
-                    .append(" \"", VERSION_STYLER)
-                    .append(moduleNode.getVersion(), VERSION_STYLER)
-                    .append("\"", VERSION_STYLER);
+                    .append(" \"", STRING_STYLER)
+                    .append(moduleNode.getVersion(), STRING_STYLER)
+                    .append("\"", STRING_STYLER);
             }
         }
         else if (node instanceof Tree.SpecifierStatement) {

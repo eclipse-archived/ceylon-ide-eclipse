@@ -24,9 +24,9 @@ public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
     
         StyledString styledText = new StyledString();
         styledText.append(moduleNode.getName()); //really should be: CeylonLabelProvider.PACKAGE_STYLER
-        styledText.append(" \"", Highlights.VERSION_STYLER);
-        styledText.append(lastVersion.getVersion(), Highlights.VERSION_STYLER);
-        styledText.append("\"", Highlights.VERSION_STYLER);
+        styledText.append(" \"", Highlights.STRING_STYLER);
+        styledText.append(lastVersion.getVersion(), Highlights.STRING_STYLER);
+        styledText.append("\"", Highlights.STRING_STYLER);
     
 //        if (lastVersion.getAuthors() != null && !lastVersion.getAuthors().isEmpty()) {
 //            styledText.append(" (by ", StyledString.QUALIFIER_STYLER);
@@ -41,9 +41,9 @@ public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
 
     private void updateVersionNode(ViewerCell cell, ModuleVersionNode versionNode) {
         StyledString styledText = new StyledString();
-        styledText.append(" \"", Highlights.VERSION_STYLER);
-        styledText.append(versionNode.getVersion(), Highlights.VERSION_STYLER);
-        styledText.append("\"", Highlights.VERSION_STYLER);
+        styledText.append(" \"", Highlights.STRING_STYLER);
+        styledText.append(versionNode.getVersion(), Highlights.STRING_STYLER);
+        styledText.append("\"", Highlights.STRING_STYLER);
         cell.setText(styledText.toString());
         cell.setStyleRanges(styledText.getStyleRanges());
         cell.setImage(CeylonResources.VERSION);

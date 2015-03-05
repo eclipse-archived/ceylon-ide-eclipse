@@ -57,7 +57,7 @@ public class CeylonNavigatorLabelProvider extends
 			String name = jdtModule == null ? externalModule.getSignature() : super.getStyledText(jdtModule).toString();
 			StyledString moduleText = new StyledString(name);
             if (jdtModule != null) {
-                moduleText.append(" \"" + jdtModule.getVersion() + "\"", Highlights.VERSION_STYLER);
+                moduleText.append(" \"" + jdtModule.getVersion() + "\"", Highlights.STRING_STYLER);
             }
             return moduleText;
         }

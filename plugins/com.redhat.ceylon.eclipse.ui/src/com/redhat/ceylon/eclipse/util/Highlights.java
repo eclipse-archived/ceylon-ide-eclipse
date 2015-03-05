@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static java.lang.Character.isDigit;
 import static java.lang.Character.isJavaIdentifierStart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
@@ -177,35 +178,41 @@ public class Highlights  {
             String token = tokens.nextToken();
             if (token.equals("\"")) {
                 version = !version;
-                result.append(token, VERSION_STYLER);
+                result.append(token, STRING_STYLER);
             }
             else if (version) {
-                result.append(token, VERSION_STYLER);
+                result.append(token, STRING_STYLER);
             }
             else if (token.equals(".")) {
                 qualified = true;
                 result.append(token);
                 continue;
             }
-            else if (isUpperCase(token.charAt(0))) {
-                result.append(token, TYPE_ID_STYLER);
-            }
-            else if (isLowerCase(token.charAt(0))) {
-                if (Escaping.KEYWORDS.contains(token)) {
-                    result.append(token, KW_STYLER);
+            else {
+                int initial = token.codePointAt(0);
+                if (isDigit(initial)) {
+                    result.append(token, NUM_STYLER);
                 }
-                else if (token.contains(".")) {
-                    result.append(token, PACKAGE_STYLER);
+                else if (isUpperCase(initial)) {
+                    result.append(token, TYPE_ID_STYLER);
                 }
-                else if (qualified) {
-                    result.append(token, MEMBER_STYLER);
+                else if (isLowerCase(initial)) {
+                    if (Escaping.KEYWORDS.contains(token)) {
+                        result.append(token, KW_STYLER);
+                    }
+                    else if (token.contains(".")) {
+                        result.append(token, PACKAGE_STYLER);
+                    }
+                    else if (qualified) {
+                        result.append(token, MEMBER_STYLER);
+                    }
+                    else {
+                        result.append(token, ID_STYLER);
+                    }
                 }
                 else {
-                    result.append(token, ID_STYLER);
+                    result.append(token);
                 }
-            }
-            else {
-                result.append(token);
             }
             qualified = false;
         }
@@ -265,10 +272,10 @@ public class Highlights  {
                         break;
                     }
                     else if (token.equals("\"")) {
-                        result.append(token, VERSION_STYLER);
+                        result.append(token, STRING_STYLER);
                         while (tokens.hasMoreTokens()) {
                             String quoted = tokens.nextToken();
-                            result.append(quoted, VERSION_STYLER);
+                            result.append(quoted, STRING_STYLER);
                             if (quoted.equals("\"")) {
                                 break;
                             }
@@ -315,10 +322,16 @@ public class Highlights  {
             textStyle.foreground=color(colorRegistry, KEYWORDS);
         }
     };
-    public static final Styler VERSION_STYLER = new Styler() {
+    public static final Styler STRING_STYLER = new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground=color(colorRegistry, STRINGS);
+        }
+    };
+    public static final Styler NUM_STYLER = new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground=color(colorRegistry, NUMBERS);
         }
     };
     public static final Styler PACKAGE_STYLER = new Styler() {

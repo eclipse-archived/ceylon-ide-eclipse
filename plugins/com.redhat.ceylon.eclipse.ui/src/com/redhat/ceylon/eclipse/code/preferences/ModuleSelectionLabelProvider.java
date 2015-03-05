@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REPO;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.VERSION;
-import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -62,12 +62,12 @@ final class ModuleSelectionLabelProvider
             ModuleNode md = (ModuleNode) element;
             return new StyledString(md.getName())
                 .append(" \"" + md.getLastVersion().getVersion() + "\"", 
-                    VERSION_STYLER);
+                    STRING_STYLER);
         }
         else if (element instanceof ModuleVersionNode) {
             ModuleVersionNode mvn = (ModuleVersionNode) element;
             return new StyledString("\"" + mvn.getVersion() + "\"",
-                    VERSION_STYLER);
+                    STRING_STYLER);
         }
         else {
             ModuleCategoryNode mcn = (ModuleCategoryNode) element;

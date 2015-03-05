@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFolders;
-import static com.redhat.ceylon.eclipse.util.Highlights.VERSION_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 
 import java.util.Comparator;
 import java.util.Set;
@@ -64,7 +64,7 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
                 } else {
                     return new StyledString(module.getNameAsString())
                         .append(" \"" + module.getVersion() + "\"", 
-                                VERSION_STYLER);
+                                STRING_STYLER);
                 }
             }
             return new StyledString();
