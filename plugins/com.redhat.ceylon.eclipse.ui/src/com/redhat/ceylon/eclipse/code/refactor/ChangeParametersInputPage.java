@@ -159,7 +159,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 String name = getChangeParametersRefactoring().getNames()
                         .get(parameterModels.indexOf((Parameter) cell.getElement()));
                 StyledString styledString = new StyledString();
-                styledString.append(name, Highlights.MEMBER_STYLER);
+                styledString.append(name, Highlights.ID_STYLER);
                 cell.setText(styledString.toString());
                 cell.setStyleRanges(styledString.getStyleRanges());
                 super.update(cell);
@@ -260,8 +260,18 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         TableViewerColumn argCol = new TableViewerColumn(viewer, SWT.LEFT);
         argCol.getColumn().setText("Default Argument");
         argCol.getColumn().setWidth(100);
-        argCol.setLabelProvider(new ColumnLabelProvider() {
+        argCol.setLabelProvider(new StyledCellLabelProvider() {
             @Override
+            public void update(ViewerCell cell) {
+                StyledString styledString = new StyledString();
+                String text = getText(cell.getElement());
+                if (text!=null) {
+                    Highlights.styleProposal(styledString, text, false);
+                }
+                cell.setText(styledString.toString());
+                cell.setStyleRanges(styledString.getStyleRanges());
+                super.update(cell);
+            }
             public String getText(Object element) {
                 MethodOrValue model = ((Parameter) element).getModel();
                 if (isDefaulted(parameterModels, (Parameter) element)) {
