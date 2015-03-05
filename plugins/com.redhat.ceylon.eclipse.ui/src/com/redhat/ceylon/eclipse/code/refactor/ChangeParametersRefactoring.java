@@ -473,9 +473,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             }
                         }
                         if (!found) {
-                            String arg = 
-                                    arguments.get(p.getModel()) + 
-                                    ';';
+                            String arg = arguments.get(p.getModel());
                             String argString = 
                                     getInlinedNamedArg(p, arg);
                             int startOffset = nal.getStartIndex();
@@ -486,7 +484,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                                     doc.getLineOfOffset(startOffset)) {
                                     argString = 
                                             getDefaultIndent() + 
-                                            argString + 
+                                            argString + ';' +
                                             getDefaultLineDelimiter(doc) + 
                                             getIndent(nal, doc);
                                 }
