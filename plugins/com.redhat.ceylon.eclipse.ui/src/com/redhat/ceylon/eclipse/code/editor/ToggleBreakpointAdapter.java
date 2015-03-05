@@ -118,10 +118,14 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget {
             int end = start + lineInformation.getLength()+1;
             boolean in(Node node) {
                 Integer startIndex = node.getStartIndex();
-                int stopIndex = node.getStopIndex()+1;
-                return startIndex<=start && stopIndex>=end ||
-                        startIndex>=start && startIndex<end ||
-                        stopIndex>=start && stopIndex<end;
+                Integer stopIndex = node.getStopIndex();
+                if (startIndex != null && stopIndex != null) {
+                    stopIndex ++;
+                    return startIndex<=start && stopIndex>=end ||
+                            startIndex>=start && startIndex<end ||
+                            stopIndex>=start && stopIndex<end;
+                }
+                return false;
             }
             @Override
             public void visit(Tree.Annotation that) {}
