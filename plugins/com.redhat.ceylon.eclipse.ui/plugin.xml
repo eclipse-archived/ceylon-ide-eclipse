@@ -1618,6 +1618,34 @@
             </menu>
             <separator
                   visible="true"
+                  name="sep00"/>
+            <menu
+                  id="debugSession"
+                  label="Debug">
+              <visibleWhen>
+                    <systemTest
+                          property="org.eclipse.jdt.debug.ui.debuggerActive"
+                          value="true">
+                    </systemTest>
+              </visibleWhen>
+            <command 
+                  commandId="org.eclipse.debug.ui.commands.StepInto"
+                  label="Step &amp;Into"/>
+            <command 
+                  commandId="org.eclipse.debug.ui.commands.StepOver"
+                  label="Step &amp;Over"/>
+            <command 
+                  commandId="org.eclipse.debug.ui.commands.StepReturn"
+                  label="Step &amp;Return"/>
+            <command 
+                  commandId="org.eclipse.debug.ui.commands.RunToLine"
+                  label="Run to &amp;Line"/>
+            <command 
+                  commandId="org.eclipse.ui.edit.paste"
+                  label="&amp;Paste"/>
+            </menu>
+            <separator
+                  visible="true"
                   name="sep0"/>
             <dynamic
                   id="navigate"
