@@ -584,16 +584,16 @@ public class CeylonDebugHover extends SourceInfoHover {
             primaryJdiObject = createCeylonObject(debugTarget, "ceylon.language.Integer", "(J)V", primaryJdiValue);
             break;
         case "byte":
-            primaryJdiObject = createCeylonObject(debugTarget, "ceylon.language.Integer", "(B)V", primaryJdiValue);
+            primaryJdiObject = createCeylonObject(debugTarget, "ceylon.language.Byte", "(B)V", primaryJdiValue);
             break;
         case "char":
-            primaryJdiObject = createCeylonObject(debugTarget, "ceylon.language.Integer", "(C)V", primaryJdiValue);
+            primaryJdiObject = createCeylonObject(debugTarget, "ceylon.language.Character", "(C)V", primaryJdiValue);
             break;
-        case "float":
-            primaryJdiObject = createCeylonObject(debugTarget, "ceylon.language.Integer", "(D)V", primaryJdiValue);
+        case "double":
+            primaryJdiObject = createCeylonObject(debugTarget, "ceylon.language.Float", "(D)V", primaryJdiValue);
             break;
         case "boolean":
-            primaryJdiObject = createCeylonObject(debugTarget, "ceylon.language.Integer", "(Z)V", primaryJdiValue);
+            primaryJdiObject = createCeylonObject(debugTarget, "ceylon.language.Boolean", "(Z)V", primaryJdiValue);
             break;
         }
 
