@@ -11,14 +11,28 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IBreakpointManager;
 import org.eclipse.debug.core.model.IBreakpoint;
+import org.eclipse.debug.core.model.IDebugElement;
+import org.eclipse.debug.core.model.IDebugTarget;
+import org.eclipse.debug.core.model.ISuspendResume;
+import org.eclipse.debug.ui.actions.IRunToLineTarget;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
+import org.eclipse.debug.ui.actions.RunToLineHandler;
+import org.eclipse.jdt.debug.core.IJavaDebugTarget;
 import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
+import org.eclipse.jdt.debug.core.IJavaStratumLineBreakpoint;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
+import org.eclipse.jdt.debug.ui.IJavaDebugUIConstants;
+import org.eclipse.jdt.internal.debug.ui.BreakpointUtils;
+import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
@@ -37,13 +51,18 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 
-public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget {
+public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunToLineTarget {
 
     private static final String JDT_DEBUG_PLUGIN_ID = "org.eclipse.jdt.debug";
 
     public ToggleBreakpointAdapter() {}
 
-    public void toggleLineBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException {
+    static interface BreakpointAction {
+        void doIt(ITextSelection selection, Node node, boolean isValidLocation, int lineNumber, IFile sourceFile) throws CoreException;
+    }
+    
+
+    public void doOnBreakpoints(IWorkbenchPart part, ISelection selection, BreakpointAction action) throws CoreException {
         if (selection instanceof ITextSelection) {
             ITextSelection textSel= (ITextSelection) selection;
             IEditorPart editorPart= (IEditorPart) part.getAdapter(IEditorPart.class);
@@ -71,25 +90,36 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget {
             }
             final boolean breakable = !emptyLine && node!=null;
             final int lineNumber = line+1;
-            IWorkspaceRunnable wr = new IWorkspaceRunnable() {
-                public void run(IProgressMonitor monitor) throws CoreException {
-                    IMarker marker = findBreakpointMarker(origSrcFile, lineNumber);
-                    if (marker!=null) {
-                        // The following will delete the associated marker
-                        clearLineBreakpoint(origSrcFile, lineNumber);
-                    } else if (breakable) {
-                        // The following will create a marker as a side-effect
-                        setLineBreakpoint(origSrcFile, lineNumber);
-                    }
-                }
-            };
-            try {
-                getWorkspace().run(wr, null);
-            } 
-            catch (CoreException e) {
-                throw new DebugException(e.getStatus());
-            }
+            action.doIt(textSel, node, breakable, lineNumber, origSrcFile);
         }
+    }
+    
+    public void toggleLineBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException {
+        doOnBreakpoints(part, selection, new BreakpointAction() {
+
+            @Override
+            public void doIt(final ITextSelection selection, final Node node,
+                    final boolean isValidLocation, final int lineNumber, final IFile sourceFile) throws DebugException {
+                IWorkspaceRunnable wr = new IWorkspaceRunnable() {
+                    public void run(IProgressMonitor monitor) throws CoreException {
+                        IMarker marker = findBreakpointMarker(sourceFile, lineNumber);
+                        if (marker!=null) {
+                            // The following will delete the associated marker
+                            clearLineBreakpoint(sourceFile, lineNumber);
+                        } else if (isValidLocation) {
+                            // The following will create a marker as a side-effect
+                            createLineBreakpoint(sourceFile, lineNumber, null, false);
+                        }
+                    }
+                };
+                try {
+                    getWorkspace().run(wr, null);
+                } 
+                catch (CoreException e) {
+                    throw new DebugException(e.getStatus());
+                }
+            }
+        });
     }
 
     private IFile getSourceFile(IEditorInput editorInput) {
@@ -201,7 +231,7 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget {
         return null;
     }
 
-    public void setLineBreakpoint(IFile file, int lineNumber) throws CoreException {
+    public IJavaStratumLineBreakpoint createLineBreakpoint(IFile file, int lineNumber, Map<String,Object> attributes, boolean isForRunToLine) throws CoreException {
         String srcFileName = file.getName();
         String relativePath = null;
         if (ExternalSourceArchiveManager.isInSourceArchive(file)) {
@@ -213,15 +243,18 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget {
             }
         }
         
-        Map<String,Object> bkptAttributes= new HashMap<String, Object>();
+        if (attributes == null) {
+            attributes = new HashMap<String, Object>();
+        }
 
         try {
-            JDIDebugModel.createStratumBreakpoint(file, null, srcFileName,
-                    relativePath, null, lineNumber, -1, -1, 0, true, bkptAttributes);
+            return JDIDebugModel.createStratumBreakpoint(isForRunToLine ? getWorkspace().getRoot() : file, null, srcFileName,
+                    relativePath, null, lineNumber, -1, -1, 0, !isForRunToLine, attributes);
         } 
         catch (CoreException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public void clearLineBreakpoint(IFile file, int lineNumber) throws CoreException {
@@ -308,6 +341,56 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget {
     }
 
     public boolean canToggleWatchpoints(IWorkbenchPart part, ISelection selection) {
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.ui.actions.IRunToLineTarget#runToLine(org.eclipse.ui.IWorkbenchPart, org.eclipse.jface.viewers.ISelection, org.eclipse.debug.core.model.ISuspendResume)
+     */
+    public void runToLine(IWorkbenchPart part, ISelection selection, final ISuspendResume target) throws CoreException {
+        doOnBreakpoints(part, selection, new BreakpointAction() {
+            @Override
+            public void doIt(final ITextSelection textSelection, final Node node,
+                    final boolean isValidLocation, final int lineNumber, final IFile sourceFile) throws CoreException {
+                String errorMessage;  //$NON-NLS-1$
+                if (isValidLocation) {
+                    IBreakpoint breakpoint= null;
+                    Map<String, Object> attributes = new HashMap<String, Object>(4);
+                    BreakpointUtils.addRunToLineAttributes(attributes);
+                    breakpoint = createLineBreakpoint(sourceFile, lineNumber, attributes, true);
+
+                    errorMessage = "Unable to locate debug target";  //$NON-NLS-1$
+                    if (target instanceof IAdaptable) {
+                        IDebugTarget debugTarget = (IDebugTarget) ((IAdaptable)target).getAdapter(IDebugTarget.class);
+                        if (debugTarget != null) {
+                            RunToLineHandler handler = new RunToLineHandler(debugTarget, target, breakpoint);
+                            handler.run(new NullProgressMonitor());
+                            return;
+                        }
+                    }
+                } else {
+                    // invalid line
+                    if (textSelection.getLength() > 0) {
+                        errorMessage = "Selected line is not a valid location to run to";  //$NON-NLS-1$
+                    } else {
+                        errorMessage = "Cursor position is not a valid location to run to";  //$NON-NLS-1$
+                    }
+                }
+                throw new CoreException(new Status(IStatus.ERROR, JDIDebugUIPlugin.getUniqueIdentifier(), IJavaDebugUIConstants.INTERNAL_ERROR,
+                        errorMessage, null));
+            }
+        });
+    }
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.ui.actions.IRunToLineTarget#canRunToLine(org.eclipse.ui.IWorkbenchPart, org.eclipse.jface.viewers.ISelection, org.eclipse.debug.core.model.ISuspendResume)
+     */
+    public boolean canRunToLine(IWorkbenchPart part, ISelection selection, ISuspendResume target) {
+        if (target instanceof IDebugElement && target.canResume()) {
+            IDebugElement element = (IDebugElement) target;
+            IJavaDebugTarget adapter = (IJavaDebugTarget) element.getDebugTarget().getAdapter(IJavaDebugTarget.class);
+            return adapter != null;
+        }
         return false;
     }
 }

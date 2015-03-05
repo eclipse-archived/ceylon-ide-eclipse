@@ -67,6 +67,7 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.ui.actions.IRunToLineTarget;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
 import org.eclipse.jface.action.Action;
@@ -264,6 +265,9 @@ public class CeylonEditor extends TextEditor {
             return getOutlinePage();
         }
         if (IToggleBreakpointsTarget.class.equals(required)) {
+            return getToggleBreakpointAdapter();
+        }
+        if (IRunToLineTarget.class.equals(required)) {
             return getToggleBreakpointAdapter();
         }
         return super.getAdapter(required);
