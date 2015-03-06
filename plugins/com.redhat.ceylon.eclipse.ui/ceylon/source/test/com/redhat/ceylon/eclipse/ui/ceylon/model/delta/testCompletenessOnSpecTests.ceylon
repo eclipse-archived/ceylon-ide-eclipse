@@ -21,6 +21,9 @@ import ceylon.test {
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
     DeltaBuilderFactory
 }
+import com.redhat.ceylon.compiler.typechecker.context {
+    PhasedUnit
+}
 
 
 test
@@ -45,15 +48,17 @@ shared void testCompletenessOnSpecTests() {
         .typeChecker;
     typeChecker.process();
 
-    for (phasedUnit in CeylonIterable(typeChecker.phasedUnits.phasedUnits)) {
+    for (phasedUnit in CeylonIterable(typeChecker.phasedUnits.phasedUnits).filter {
+                                    function selecting(PhasedUnit pu)
+                                        => pu.unitFile.name != moduleDescriptorFileName
+                                            && pu.unitFile.name != packageDescriptorFileName;
+                                }) {
         assert (exists unit = phasedUnit.unit);
         assert(exists unitName = phasedUnit.unitFile?.name);
         compare {
             oldPhasedUnit = phasedUnit;
             newPhasedUnit = phasedUnit;
-            expectedDelta = if (unitName == moduleDescriptorFileName) then ModuleDescriptorDeltaMockup(unit.string, [], [])
-                            else if (unitName == packageDescriptorFileName) then PackageDescriptorDeltaMockup(unit.string, [])
-                            else RegularCompilationUnitDeltaMockup(unit.string, [], []);
+            expectedDelta = RegularCompilationUnitDeltaMockup(unit.string, [], []);
             printNodeComparisons = true;
             deltaBuilderFactory = DeltaBuilderFactory(true);
         };
