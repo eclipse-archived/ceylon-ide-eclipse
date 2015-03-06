@@ -664,6 +664,14 @@ shared class DeltaBuilderFactory(
                         oldAnnotations != newAnnotations,
                         !errorListsEquals(oldNode.errors, newNode.errors),
                         lookForChanges {
+                            function between(Ast.Constructor oldConstructor, Ast.Constructor newConstructor) {
+                                return any {
+                                    nodesDiffer(oldConstructor.delegatedConstructor, newConstructor.delegatedConstructor, "delegatedConstructor"),
+                                    nodesDiffer(oldConstructor.parameterList, newConstructor.parameterList, "parameterList")
+                                };
+                            }
+                        },
+                        lookForChanges {
                             function between(Ast.TypedDeclaration oldTyped, Ast.TypedDeclaration newTyped) {
                                 return any {
                                     nodesDiffer(oldTyped.type, newTyped.type, "type"),
