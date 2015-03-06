@@ -1073,8 +1073,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }*/
         if (node instanceof Tree.BaseType) {
             Tree.BaseType bt = (Tree.BaseType) node;
-            String brokenName = bt.getIdentifier().getText();
-            addCreateTypeParameterProposal(proposals, project, cu, bt, brokenName);
+            Tree.Identifier id = bt.getIdentifier();
+            if (id!=null) {
+                String brokenName = id.getText();
+                addCreateTypeParameterProposal(proposals, project, cu, bt, brokenName);
+            }
         }
     }
 

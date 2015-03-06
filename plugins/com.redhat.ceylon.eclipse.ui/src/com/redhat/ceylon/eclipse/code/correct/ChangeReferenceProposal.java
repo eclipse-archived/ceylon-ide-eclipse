@@ -114,13 +114,16 @@ class ChangeReferenceProposal extends CorrectionProposal
     static void addChangeReferenceProposals(Tree.CompilationUnit cu, 
             Node node, ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, IFile file) {
-        String brokenName = getIdentifyingNode(node).getText();
-        if (brokenName!=null && !brokenName.isEmpty()) {
-            Collection<DeclarationWithProximity> dwps = 
-                    getProposals(node, node.getScope(), cu).values();
-            for (DeclarationWithProximity dwp: dwps) {
-                processProposal(cu, problem, proposals, file,
-                        brokenName, dwp.getDeclaration());
+        Node id = getIdentifyingNode(node);
+        if (id!=null) {
+            String brokenName = id.getText();
+            if (brokenName!=null && !brokenName.isEmpty()) {
+                Collection<DeclarationWithProximity> dwps = 
+                        getProposals(node, node.getScope(), cu).values();
+                for (DeclarationWithProximity dwp: dwps) {
+                    processProposal(cu, problem, proposals, file,
+                            brokenName, dwp.getDeclaration());
+                }
             }
         }
     }
