@@ -754,7 +754,7 @@ shared class DeltaBuilderFactory(
                                         function between(Ast.TypeAliasDeclaration oldTypeAliasDeclaration, Ast.TypeAliasDeclaration newTypeAliasDeclaration) {
                                             return any {
                                                 nodesDiffer(oldTypeAliasDeclaration.typeConstraintList, newTypeAliasDeclaration.typeConstraintList, "typeConstraintList"),
-                                                nodesDiffer(oldTypeAliasDeclaration.typeSpecifier, newTypeAliasDeclaration.typeConstraintList, "parameterList")
+                                                nodesDiffer(oldTypeAliasDeclaration.typeSpecifier, newTypeAliasDeclaration.typeSpecifier, "typeSpecifier")
                                             };
                                         }
                                     },
