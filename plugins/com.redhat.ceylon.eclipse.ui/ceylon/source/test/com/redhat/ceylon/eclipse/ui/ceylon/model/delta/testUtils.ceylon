@@ -30,7 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Node
 }
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
-    buildDeltas,
+    DeltaBuilderFactory,
     NodeComparisonListener
 }
 
@@ -73,7 +73,7 @@ object declarationFieldFilter {
         `value Ast.ClassDefinition.classBody`,
         `value Ast.InterfaceDefinition.interfaceBody`
     };
-    
+
     shared Boolean isIgnored(ValueDeclaration field) {
         if (!field.container is ClassDeclaration
                     || field.container == `class Node`
@@ -95,11 +95,12 @@ object declarationFieldFilter {
 void compare(PhasedUnit oldPhasedUnit, PhasedUnit newPhasedUnit,
     CompilationUnitDeltaMockup expectedDelta,
     Boolean printNodeComparisons = false,
-    Anything({[String, String, String->String]*})? doWithNodeComparisons = null) {
+    Anything({[String, String, String->String]*})? doWithNodeComparisons = null,
+    DeltaBuilderFactory deltaBuilderFactory = DeltaBuilderFactory()) {
     value nodeComparisons = NodeComparisons();
     value memberCheckedByDeclaration = naturalOrderTreeMap<String,ArrayList<String>> { };
     value checkedDeclarations = naturalOrderTreeMap<String,Ast.Declaration> { };
-    
+
     Boolean checkTestCompleteness;
     if (expectedDelta.changes.empty && expectedDelta.childrenDeltas.empty) {
         // we are expecting structural equivalence between the 2 AST
@@ -109,7 +110,7 @@ void compare(PhasedUnit oldPhasedUnit, PhasedUnit newPhasedUnit,
         // test completeness has no meaning since checks are stop at the first encountered node difference
         checkTestCompleteness = false;
     }
-    
+
     object listener satisfies NodeComparisonListener {
         shared actual void comparedDeclaration(Ast.Declaration declaration, Boolean hasStructuralChanges) {
             if (hasStructuralChanges) {
@@ -119,7 +120,7 @@ void compare(PhasedUnit oldPhasedUnit, PhasedUnit newPhasedUnit,
                 memberCheckedByDeclaration.remove(declarationName);
             }
         }
-        
+
         shared actual void comparedNodes(String? oldSignature, String? newSignature, Ast.Declaration declaration, String memberName) {
             String declarationName = declaration.declarationModel.qualifiedNameString;
             ArrayList<String> checkedMembers;
@@ -131,22 +132,22 @@ void compare(PhasedUnit oldPhasedUnit, PhasedUnit newPhasedUnit,
                 memberCheckedByDeclaration.put(declarationName, checkedMembers);
             }
             checkedMembers.add(memberName);
-            
+
             if (oldSignature is Null && newSignature is Null) {
                 return;
             }
             nodeComparisons.add([declarationName, memberName, (oldSignature else "<null>") -> (newSignature else "<null>")]);
         }
     }
-    
-    value delta = buildDeltas(oldPhasedUnit, newPhasedUnit, listener);
-    
+
+    value delta = deltaBuilderFactory.buildDeltas(oldPhasedUnit, newPhasedUnit, listener);
+
     if (printNodeComparisons) {
         print("Node signature comparisons for ``oldPhasedUnit.unit.fullPath`` :");
         print(nodeComparisons);
     }
     assertEquals(delta, expectedDelta);
-    
+
     if (checkTestCompleteness) {
         for (name->decl in checkedDeclarations) {
             value requiredChecks = HashSet {
@@ -159,7 +160,7 @@ void compare(PhasedUnit oldPhasedUnit, PhasedUnit newPhasedUnit,
             assertEquals(missingChecks.sequence(), empty, "Some members of the declaration ' ``name`` ' were not compared.");
         }
     }
-    
+
     if (exists doWithNodeComparisons) {
         doWithNodeComparisons(nodeComparisons);
     }
@@ -177,6 +178,6 @@ void comparePhasedUnits(String path, String oldContents, String newContents,
     assert (exists newPhasedUnit);
     assertEquals(CeylonIterable(newPhasedUnit.compilationUnit.errors)
             .filter((Message message) => !(message is UsageWarning)).sequence(), []);
-    
+
     compare(oldPasedUnit, newPhasedUnit, expectedDelta, printNodeComparisons, doWithNodeComparisons);
 }

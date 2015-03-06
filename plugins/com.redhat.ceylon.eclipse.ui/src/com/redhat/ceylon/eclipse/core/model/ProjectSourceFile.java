@@ -14,12 +14,13 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.CompilationUnitDelta;
-import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.buildDeltas_;
+import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.DeltaBuilderFactory;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 
 public class ProjectSourceFile extends SourceFile implements IResourceAware {
-
+    static private DeltaBuilderFactory deltaBuilderFactory = new DeltaBuilderFactory();
+    
     public ProjectSourceFile(ProjectPhasedUnit phasedUnit) {
         super(phasedUnit);
     }
@@ -100,7 +101,7 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
                     lastPhasedUnit.getCompilationUnit().visit(utc);
 
                     if (lastPhasedUnit.getCompilationUnit().getErrors().isEmpty()) {
-                        return buildDeltas_.buildDeltas(modelPhaseUnit, lastPhasedUnit);
+                        return deltaBuilderFactory.buildDeltas(modelPhaseUnit, lastPhasedUnit);
                     }
                 }
             }

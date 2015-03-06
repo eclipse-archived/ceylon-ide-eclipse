@@ -18,6 +18,9 @@ import com.redhat.ceylon.compiler.typechecker.analyzer {
 import ceylon.test {
     test
 }
+import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
+    DeltaBuilderFactory
+}
 
 
 test
@@ -51,6 +54,8 @@ shared void testCompletenessOnSpecTests() {
             expectedDelta = if (unitName == moduleDescriptorFileName) then ModuleDescriptorDeltaMockup(unit.string, [], [])
                             else if (unitName == packageDescriptorFileName) then PackageDescriptorDeltaMockup(unit.string, [])
                             else RegularCompilationUnitDeltaMockup(unit.string, [], []);
+            printNodeComparisons = true;
+            deltaBuilderFactory = DeltaBuilderFactory(true);
         };
     }
 }
