@@ -56,14 +56,16 @@ public class ImportProposals {
         if (node instanceof Tree.BaseMemberOrTypeExpression ||
                 node instanceof Tree.SimpleType) {
             Node id = getIdentifyingNode(node);
-            String brokenName = id.getText();
-            Module module = cu.getUnit().getPackage().getModule();
-            for (Declaration decl: 
-                    findImportCandidates(module, brokenName, cu)) {
-                ICompletionProposal ip = 
-                        createImportProposal(cu, file, decl);
-                if (ip!=null) {
-                    proposals.add(ip);
+            if (id!=null) {
+                String brokenName = id.getText();
+                Module module = cu.getUnit().getPackage().getModule();
+                for (Declaration decl: 
+                        findImportCandidates(module, brokenName, cu)) {
+                    ICompletionProposal ip = 
+                            createImportProposal(cu, file, decl);
+                    if (ip!=null) {
+                        proposals.add(ip);
+                    }
                 }
             }
         }
