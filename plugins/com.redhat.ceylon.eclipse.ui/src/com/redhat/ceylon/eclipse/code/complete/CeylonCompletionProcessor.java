@@ -1286,12 +1286,14 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             Scope scope, String prefix, boolean memberOp, Tree.CompilationUnit cu) {
         Unit unit = node.getUnit();
         if (node instanceof Tree.MemberLiteral) {
-            Tree.StaticType mlt = ((Tree.MemberLiteral) node).getType();
+            Tree.StaticType mlt = 
+                    ((Tree.MemberLiteral) node).getType();
             if (mlt!=null) {
                 ProducedType type = mlt.getTypeModel();
                 if (type!=null) {
                     return type.resolveAliases().getDeclaration()
-                            .getMatchingMemberDeclarations(unit, scope, prefix, 0);
+                            .getMatchingMemberDeclarations(unit, 
+                                    scope, prefix, 0);
                 }
                 else {
                     return emptyMap();
@@ -1299,12 +1301,19 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
         }
         else if (node instanceof Tree.TypeLiteral) {
-            Tree.StaticType tlt = ((Tree.TypeLiteral) node).getType();
+            Tree.StaticType tlt = 
+                    ((Tree.TypeLiteral) node).getType();
+            if (tlt instanceof Tree.BaseType && 
+                    ((Tree.BaseType)tlt).getPackageQualified()) {
+                return unit.getPackage()
+                        .getMatchingDirectDeclarations(prefix, 0);
+            }
             if (tlt!=null) {
                 ProducedType type = tlt.getTypeModel();
                 if (type!=null) {
                     return type.resolveAliases().getDeclaration()
-                            .getMatchingMemberDeclarations(unit, scope, prefix, 0);
+                            .getMatchingMemberDeclarations(unit, 
+                                    scope, prefix, 0);
                 }
                 else {
                     return emptyMap();
@@ -1319,21 +1328,28 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             if (qmte.getStaticMethodReference()) {
                 type = unit.getCallableReturnType(type);
             }
-            if (type!=null) {
+            if (type!=null && !type.isUnknown()) {
                 return type.resolveAliases().getDeclaration()
-                           .getMatchingMemberDeclarations(unit, scope, prefix, 0);
+                           .getMatchingMemberDeclarations(unit, 
+                                   scope, prefix, 0);
             }
             else if (qmte.getPrimary() instanceof Tree.MemberOrTypeExpression) {
                 //it might be a qualified type or even a static method reference
-                Declaration pmte = ((Tree.MemberOrTypeExpression) qmte.getPrimary())
-                        .getDeclaration();
+                Declaration pmte = 
+                        ((Tree.MemberOrTypeExpression) qmte.getPrimary())
+                                .getDeclaration();
                 if (pmte instanceof TypeDeclaration) {
                     type = ((TypeDeclaration) pmte).getType();
                     if (type!=null) {
                         return type.resolveAliases().getDeclaration()
-                                .getMatchingMemberDeclarations(unit, scope, prefix, 0);
+                                .getMatchingMemberDeclarations(unit, 
+                                        scope, prefix, 0);
                     }
                 }
+            }
+            else if (qmte.getPrimary() instanceof Tree.Package) {
+                return unit.getPackage()
+                        .getMatchingDirectDeclarations(prefix, 0);
             }
             return emptyMap();
         } 
@@ -1342,10 +1358,21 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     ((Tree.QualifiedType) node).getOuterType().getTypeModel();
             if (type!=null) {
                 return type.resolveAliases().getDeclaration()
-                        .getMatchingMemberDeclarations(unit, scope, prefix, 0);
+                        .getMatchingMemberDeclarations(unit, 
+                                scope, prefix, 0);
             }
             else {
                 return emptyMap();
+            }
+        }
+        else if (node instanceof Tree.BaseType) {
+            Tree.BaseType type = (Tree.BaseType) node;
+            if (type.getPackageQualified()) {
+                return unit.getPackage()
+                        .getMatchingDirectDeclarations(prefix, 0);
+            }
+            else {
+                return scope.getMatchingDeclarations(unit, prefix, 0);
             }
         }
         else if (memberOp && 
@@ -1367,14 +1394,14 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             else if (node instanceof Tree.Term) {
                 type = ((Tree.Term)node).getTypeModel();
             } 
-
             
             if (type!=null) {
                 return type.resolveAliases().getDeclaration()
-                        .getMatchingMemberDeclarations(unit, scope, prefix, 0);
+                        .getMatchingMemberDeclarations(unit, 
+                                scope, prefix, 0);
             }
             else {
-                return emptyMap();
+                return scope.getMatchingDeclarations(unit, prefix, 0);
             }
         }
         else {
