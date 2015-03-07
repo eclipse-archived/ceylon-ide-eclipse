@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CASE;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CATCH;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXPRESSION;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.META;
 
 import java.util.Arrays;
@@ -82,6 +83,10 @@ public class KeywordCompletionProposal extends CompletionProposal {
                 previousTokenType==CeylonLexer.LPAREN) {
             addKeywordProposal(offset, prefix, result, "exists");
             addKeywordProposal(offset, prefix, result, "nonempty");
+        }
+        else if (ol==EXTENDS) {
+            addKeywordProposal(offset, prefix, result, "package");
+            addKeywordProposal(offset, prefix, result, "super");
         }
     }
     
