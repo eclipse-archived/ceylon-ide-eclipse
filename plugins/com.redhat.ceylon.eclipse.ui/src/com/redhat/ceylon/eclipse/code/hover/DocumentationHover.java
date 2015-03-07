@@ -1982,13 +1982,18 @@ public class DocumentationHover extends SourceInfoHover {
                 }
                 bounds.append(producedTypeLink(st, dec.getUnit()));
             }
-            String arg;
-            ProducedType typeArg = pr==null ? null : pr.getTypeArguments().get(tp);
-            if (typeArg!=null && !tp.getType().isExactly(typeArg)) {
-                arg = "&nbsp;=&nbsp;" + producedTypeLink(typeArg, unit);
+            String arg= "";
+            String liveValue = getLiveValue(tp, unit);
+            if (liveValue!=null) {
+                arg = liveValue;
             }
             else {
-                arg = "";
+                ProducedType typeArg = pr==null ? 
+                        null : pr.getTypeArguments().get(tp);
+                if (typeArg!=null && 
+                        !tp.getType().isExactly(typeArg)) {
+                    arg = "&nbsp;=&nbsp;" + producedTypeLink(typeArg, unit);
+                }
             }
             HTML.addImageAndLabel(buffer, tp, 
                     HTML.fileUrl(getIcon(tp)).toExternalForm(), 
@@ -2019,7 +2024,11 @@ public class DocumentationHover extends SourceInfoHover {
         }
         
         String result = HTML.highlightLine(description.toString());
-        
+        String liveValue = getLiveValue(dec, unit);
+        return liveValue==null ? result : result+liveValue;
+    }
+
+    private static String getLiveValue(Declaration dec, Unit unit) {
         if (dec instanceof TypeParameter && unit!=null) {
             TypeParameter typeParameter = (TypeParameter) dec;
             JDIStackFrame stackFrame = getFrame();
@@ -2034,7 +2043,7 @@ public class DocumentationHover extends SourceInfoHover {
                         ProducedType producedType = 
                                 toModelProducedType(jdiProducedType);
                         if (producedType != null) {
-                            result += new StringBuilder()
+                            return new StringBuilder()
                                     .append(" <i>= ")
                                     .append(producedTypeLink(producedType, unit))
                                     .append("</i>").toString();
@@ -2046,8 +2055,7 @@ public class DocumentationHover extends SourceInfoHover {
                 }
             }
         }
-        
-        return result;
+        return null;
     }
 
     private static void appendJavadoc(Declaration model,
