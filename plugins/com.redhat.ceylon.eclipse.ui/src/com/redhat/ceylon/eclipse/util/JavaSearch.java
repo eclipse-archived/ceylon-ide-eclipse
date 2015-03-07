@@ -85,19 +85,26 @@ public class JavaSearch {
         }
         else if (declaration instanceof Value) {
             int loc = pattern.lastIndexOf('.') + 1;
-            String setter = pattern.substring(0,loc) + 
-                    "set" + pattern.substring(loc+3);
-            SearchPattern getterPattern = 
-                    createPattern(pattern, METHOD, limitTo, R_EXACT_MATCH);
-            SearchPattern setterPattern = 
-                    createPattern(setter, METHOD, limitTo, R_EXACT_MATCH);
-            switch (limitTo) {
-            case IJavaSearchConstants.WRITE_ACCESSES:
-                return setterPattern;
-            case IJavaSearchConstants.READ_ACCESSES:
-                return getterPattern;
-            default:
-                return createOrPattern(getterPattern, setterPattern);
+            if (pattern.substring(loc).startsWith("get")) {
+                String setter = pattern.substring(0,loc) + 
+                        "set" + pattern.substring(loc+3);
+                SearchPattern getterPattern = 
+                        createPattern(pattern, METHOD, limitTo, R_EXACT_MATCH);
+                SearchPattern setterPattern = 
+                        createPattern(setter, METHOD, limitTo, R_EXACT_MATCH);
+                switch (limitTo) {
+                case IJavaSearchConstants.WRITE_ACCESSES:
+                    return setterPattern;
+                case IJavaSearchConstants.READ_ACCESSES:
+                    return getterPattern;
+                default:
+                    return createOrPattern(getterPattern, setterPattern);
+                }
+            }
+            else {
+                SearchPattern fieldPattern = 
+                        createPattern(pattern, IJavaSearchConstants.FIELD, limitTo, R_EXACT_MATCH);
+                return fieldPattern;
             }
         }
         else {
