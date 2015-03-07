@@ -30,7 +30,6 @@ import org.eclipse.jdt.internal.debug.core.model.JDILocalVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 import org.eclipse.jdt.internal.debug.core.model.JDIThisVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDIVariable;
-import org.eclipse.jdt.internal.debug.ui.ExpressionInformationControlCreator;
 import org.eclipse.jdt.internal.debug.ui.IJDIPreferencesConstants;
 import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
 import org.eclipse.jdt.internal.debug.ui.JDIModelPresentation;
@@ -55,6 +54,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SafeMemberOp;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.hover.SourceInfoHover;
 import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
@@ -79,9 +79,12 @@ public class CeylonDebugHover extends SourceInfoHover {
     
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
         Object object = getHoverInfo2(textViewer, hoverRegion);
-        if (object instanceof IVariable) {  
-            IVariable var = (IVariable) object;
-            return getVariableText(var);
+        if (object instanceof Object[]) {
+            Object[] inputs = (Object[]) object;
+            if (inputs[0] instanceof IVariable) {  
+                IVariable var = (IVariable) inputs[0];
+                return getVariableText(var);
+            }
         }
         return null;
     }
@@ -479,7 +482,11 @@ public class CeylonDebugHover extends SourceInfoHover {
                 if (editor != null) {
                     node = getHoverNode(hoverRegion, editor.getParseController());
                 }
-                return jdiVariableForNode(debugTarget, frame, node);
+                return new Object[] {
+                        jdiVariableForNode(debugTarget, frame, node),
+                        new DocumentationHover(editor)
+                            .getHoverInfo(textViewer, hoverRegion)
+                };
             } catch (DebugException e) {
                 return null;
             }
@@ -735,10 +742,4 @@ public class CeylonDebugHover extends SourceInfoHover {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.text.ITextHoverExtension2#getInformationPresenterControlCreator()
-     */
-    public IInformationControlCreator getInformationPresenterControlCreator() {
-        return new ExpressionInformationControlCreator();
-    }
 }
