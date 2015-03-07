@@ -23,6 +23,10 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
+import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getFrame;
+import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getJdiProducedType;
+import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.toModelProducedType;
+import static com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover.jdiVariableForTypeParameter;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
 import static com.redhat.ceylon.eclipse.util.Highlights.NUMBERS;
@@ -125,8 +129,6 @@ import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
-import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
-import com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -388,7 +390,7 @@ public class DocumentationHover extends SourceInfoHover {
 
     private  IInformationControlCreator getInformationPresenterControlCreator() {
         if (fPresenterControlCreator == null)
-            fPresenterControlCreator = new PresenterControlCreator(this);
+            fPresenterControlCreator = new PresenterControlCreator();
         return fPresenterControlCreator;
     }
 
@@ -2002,46 +2004,46 @@ public class DocumentationHover extends SourceInfoHover {
         if (pr==null) {
             pr = getProducedReference(dec, node);
         }
-        String description = getDocDescriptionFor(dec, pr, unit);
+        StringBuffer description = 
+                new StringBuffer(getDocDescriptionFor(dec, pr, unit));
         if (dec instanceof TypeDeclaration) {
             TypeDeclaration td = (TypeDeclaration) dec;
             if (td.isAlias() && td.getExtendedType()!=null) {
-                description += " => " + 
-                        td.getExtendedType().getProducedTypeName();
+                description.append(" => ")
+                    .append(td.getExtendedType().getProducedTypeName());
             }
         }
         if (dec instanceof Value && !isVariable(dec) ||
                 dec instanceof Method) {
-            description += getInitialValueDescription(dec, cpc);
+            description.append(getInitialValueDescription(dec, cpc));
         }
         
-        String result = HTML.highlightLine(description);
+        String result = HTML.highlightLine(description.toString());
         
-        if (dec instanceof TypeParameter && unit != null) {
-            StringBuilder buffer = new StringBuilder();
-            
+        if (dec instanceof TypeParameter && unit!=null) {
             TypeParameter typeParameter = (TypeParameter) dec;
-            JDIStackFrame stackFrame = DebugUtils.getFrame();
-            ProducedType producedType = null;
-            if (stackFrame != null) {
+            JDIStackFrame stackFrame = getFrame();
+            if (stackFrame!=null) {
                 try {
-                    IJavaVariable typeDescriptor = CeylonDebugHover.jdiVariableForTypeParameter(stackFrame.getJavaDebugTarget(), stackFrame, typeParameter);
-                    if (typeDescriptor != null) {
-                        IJavaObject jdiProducedType = DebugUtils.getJdiProducedType(typeDescriptor.getValue());
-                        producedType = DebugUtils.toModelProducedType(jdiProducedType);
+                    IJavaVariable typeDescriptor = 
+                            jdiVariableForTypeParameter(stackFrame.getJavaDebugTarget(), 
+                                    stackFrame, typeParameter);
+                    if (typeDescriptor!=null) {
+                        IJavaObject jdiProducedType = 
+                                getJdiProducedType(typeDescriptor.getValue());
+                        ProducedType producedType = 
+                                toModelProducedType(jdiProducedType);
+                        if (producedType != null) {
+                            result += new StringBuilder()
+                                    .append(" <i>= ")
+                                    .append(producedTypeLink(producedType, unit))
+                                    .append("</i>").toString();
+                        }
                     }
-                } catch (DebugException e) {
-                    // TODO Auto-generated catch block
+                }
+                catch (DebugException e) {
                     e.printStackTrace();
                 }
-            }
-            if (producedType != null) {
-                buffer.append("<i> ( = ")
-                .append("<tt>")
-                .append(producedTypeLink(producedType, unit))
-                .append("</tt>");
-                buffer.append(" )</i>");
-                result += buffer.toString();
             }
         }
         
@@ -2259,13 +2261,8 @@ public class DocumentationHover extends SourceInfoHover {
     /**
      * Creates the "enriched" control.
      */
-    private final class PresenterControlCreator extends AbstractReusableInformationControlCreator {
-        
-        private final DocumentationHover docHover;
-        
-        PresenterControlCreator(DocumentationHover docHover) {
-            this.docHover = docHover;
-        }
+    private final class PresenterControlCreator 
+    extends AbstractReusableInformationControlCreator {
         
         @Override
         public IInformationControl doCreateInformationControl(Shell parent) {
@@ -2303,7 +2300,8 @@ public class DocumentationHover extends SourceInfoHover {
                     tbm.add(openAttachedJavadocAction);
                 }*/
 
-                IInputChangedListener inputChangeListener = new IInputChangedListener() {
+                IInputChangedListener inputChangeListener = 
+                        new IInputChangedListener() {
                     public void inputChanged(Object newInput) {
                         backAction.update();
                         forwardAction.update();
@@ -2336,7 +2334,8 @@ public class DocumentationHover extends SourceInfoHover {
         
     }
     
-    private final class HoverControlCreator extends AbstractReusableInformationControlCreator {
+    private final class HoverControlCreator 
+    extends AbstractReusableInformationControlCreator {
         
         private final DocumentationHover docHover;
         private String statusLineMessage;
