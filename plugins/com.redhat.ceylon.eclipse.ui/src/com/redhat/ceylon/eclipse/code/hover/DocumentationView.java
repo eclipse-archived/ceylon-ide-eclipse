@@ -1,9 +1,10 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDeclarationHover;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverInfo;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverText;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationHoverText;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
@@ -142,8 +143,11 @@ public class DocumentationView extends ViewPart {
         else if (location.startsWith("doc:")) {
             Referenceable target = getLinkedModel(editor, location);
             if (target!=null) {
-                info = getHoverInfo(target, info, editor, null);
-                if (info!=null) control.setText(info.getHtml());
+                String html = getDocumentationHoverText(target, editor, null);
+                if (html!=null) {
+                    control.setText(html);
+                    info = new CeylonBrowserInput(info, target, html);
+                }
                 back.update();
                 forward.update();
             }
@@ -188,13 +192,14 @@ public class DocumentationView extends ViewPart {
             clear();
         }
         else {
-            CeylonBrowserInput newInfo = getDeclarationHover(editor, 
-                    new Region(offset, length));
-            if (newInfo!=null && newInfo.getHtml()!=null) {
-                if (info==null || 
-                        !info.getHtml().equals(newInfo.getHtml())) {
-                    info = newInfo;
-                    control.setText(info.getHtml());
+            Region hoverRegion = new Region(offset, length);
+            String html = getHoverText(editor, hoverRegion);
+            if (html!=null) {
+                if (info==null || !info.getHtml().equals(html)) {
+                    control.setText(html);
+                    info = new CeylonBrowserInput(info, 
+                            getModel(editor, hoverRegion), 
+                            html);
                     back.update();
                     forward.update();
                     openDeclarationAction.setEnabled(true);

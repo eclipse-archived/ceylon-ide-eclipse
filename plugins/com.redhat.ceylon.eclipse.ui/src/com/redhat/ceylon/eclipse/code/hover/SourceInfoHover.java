@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static java.lang.Character.isJavaIdentifierPart;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -18,7 +19,8 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public abstract class SourceInfoHover implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 
-    protected static Node getHoverNode(IRegion hoverRegion, CeylonParseController parseController) {
+    protected static Node getHoverNode(IRegion hoverRegion, 
+            CeylonParseController parseController) {
         if (parseController==null) {
             return null;
         }
@@ -48,7 +50,7 @@ public abstract class SourceInfoHover implements ITextHover, ITextHoverExtension
         
             while (pos >= 0) {
                 c= document.getChar(pos);
-                if (!Character.isJavaIdentifierPart(c)) {
+                if (!isJavaIdentifierPart(c)) {
                     break;
                 }
                 --pos;
@@ -60,7 +62,7 @@ public abstract class SourceInfoHover implements ITextHover, ITextHoverExtension
         
             while (pos < length) {
                 c= document.getChar(pos);
-                if (!Character.isJavaIdentifierPart(c)) {
+                if (!isJavaIdentifierPart(c)) {
                     break;
         
                 }

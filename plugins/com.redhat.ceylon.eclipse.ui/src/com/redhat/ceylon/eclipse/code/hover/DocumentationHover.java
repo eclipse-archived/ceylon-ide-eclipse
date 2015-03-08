@@ -131,7 +131,6 @@ import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 
 
@@ -208,7 +207,7 @@ public class DocumentationHover extends SourceInfoHover {
             else if (location.startsWith("doc:")) {
                 Referenceable target = getLinkedModel(editor, location);
                 if (target!=null) {
-                    control.setInput(getHoverInfo(target, control.getInput(), editor, null));
+                    control.setInput(getDocumentationHoverText(target, editor, null));
                 }
             }
             else if (location.startsWith("ref:")) {
@@ -234,7 +233,7 @@ public class DocumentationHover extends SourceInfoHover {
             else if (location.startsWith("stp:")) {
                 close(control);
                 CompilationUnit rn = editor.getParseController().getRootNode();
-                Node node = Nodes.findNode(rn, Integer.parseInt(location.substring(4)));
+                Node node = findNode(rn, Integer.parseInt(location.substring(4)));
                 SpecifyTypeProposal.createProposal(rn, node, editor)
                                    .apply(editor.getParseController().getDocument());
             }
@@ -282,7 +281,8 @@ public class DocumentationHover extends SourceInfoHover {
                 BrowserInput previous = current.getPrevious();
                 setToolTipText("Back to " + previous.getInputName());
                 setEnabled(true);
-            } else {
+            }
+            else {
                 setToolTipText("Back");
                 setEnabled(false);
             }
@@ -318,7 +318,8 @@ public class DocumentationHover extends SourceInfoHover {
             if (current != null && current.getNext() != null) {
                 setToolTipText("Forward to " + current.getNext().getInputName());
                 setEnabled(true);
-            } else {
+            }
+            else {
                 setToolTipText("Forward");
                 setEnabled(false);
             }
@@ -472,31 +473,38 @@ public class DocumentationHover extends SourceInfoHover {
     }
     
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-        CeylonBrowserInput info = (CeylonBrowserInput) 
-                getHoverInfo2(textViewer, hoverRegion);
-        return info!=null ? info.getHtml() : null;
+        if (editor==null || editor.getSelectionProvider()==null) {
+            return null;
+        }
+        String result = getExpressionHoverText(editor, hoverRegion);
+        if (result==null) {
+            result = getHoverText(editor, hoverRegion);
+        }
+        return result;
     }
 
     @Override
     public CeylonBrowserInput getHoverInfo2(ITextViewer textViewer, 
             IRegion hoverRegion) {
-        return internalGetHoverInfo(editor, hoverRegion);
-    }
-
-    static CeylonBrowserInput internalGetHoverInfo(CeylonEditor editor, 
-            IRegion hoverRegion) {
         if (editor==null || editor.getSelectionProvider()==null) {
             return null;
         }
-        CeylonBrowserInput result = 
-                getExpressionHover(editor, hoverRegion);
-        if (result==null) {
-            result = getDeclarationHover(editor, hoverRegion);
+        String result = getExpressionHoverText(editor, hoverRegion);
+        if (result!=null) {
+            return new CeylonBrowserInput(null, null, result);
         }
-        return result;
+        else {
+            result = getHoverText(editor, hoverRegion);
+            if (result!=null) {
+                return new CeylonBrowserInput(null, 
+                        getModel(editor, hoverRegion), 
+                        result);
+            }
+        }
+        return null;
     }
 
-    static CeylonBrowserInput getExpressionHover(CeylonEditor editor, 
+    static String getExpressionHoverText(CeylonEditor editor, 
             IRegion hoverRegion) {
         CeylonParseController parseController = 
                 editor.getParseController();
@@ -509,69 +517,58 @@ public class DocumentationHover extends SourceInfoHover {
             int hoffset = hoverRegion.getOffset();
             ITextSelection selection = 
                     editor.getSelectionFromThread();
-            if (selection!=null && 
-                selection.getOffset()<=hoffset &&
-                selection.getOffset()+selection.getLength()>=hoffset) {
-                Node node = findNode(rn, 
-                        selection.getOffset(),
-                        selection.getOffset()+selection.getLength()-1);
-                if (node instanceof Tree.Type) {
-                    return getTypeHoverInfo(node, 
-                            selection.getText(), 
-                            editor.getCeylonSourceViewer().getDocument(),
-                            editor.getParseController().getProject());
-                }
-                if (node instanceof Tree.Expression) {
-                    node = ((Tree.Expression) node).getTerm();
-                }
-                if (node instanceof Tree.Term) {
-                    return getTermTypeHoverInfo(node, 
-                            selection.getText(), 
-                            editor.getCeylonSourceViewer().getDocument(),
-                            editor.getParseController().getProject());
-                }
-                else {
-                    return null;
+            if (selection!=null) {
+                int offset = selection.getOffset();
+                int length = selection.getLength();
+                if (offset<=hoffset && offset+length>=hoffset) {
+                    Node node = findNode(rn, offset, offset+length-1);
+                    if (node instanceof Tree.Type) {
+                        return getTypeHoverText(node, 
+                                selection.getText(), 
+                                editor.getCeylonSourceViewer().getDocument(),
+                                editor.getParseController().getProject());
+                    }
+                    if (node instanceof Tree.Expression) {
+                        node = ((Tree.Expression) node).getTerm();
+                    }
+                    if (node instanceof Tree.Term) {
+                        return getTermTypeHoverText(node, 
+                                selection.getText(), 
+                                editor.getCeylonSourceViewer().getDocument(),
+                                editor.getParseController().getProject());
+                    }
                 }
             }
-            else {
-                return null;
-            }
         }
-        else {
-            return null;
-        }
+        return null;
     }
-
-    static CeylonBrowserInput getDeclarationHover(CeylonEditor editor,
+    
+    static Referenceable getModel(CeylonEditor editor,
+            IRegion hoverRegion) {
+        Node node = getHoverNode(hoverRegion, 
+                editor.getParseController());
+        return node!=null ? getReferencedDeclaration(node) : null;
+    }
+    
+    static String getHoverText(CeylonEditor editor,
             IRegion hoverRegion) {
         CeylonParseController parseController = 
                 editor.getParseController();
 
         Node node = getHoverNode(hoverRegion, parseController);
-        if (node != null) {
-            if (node instanceof Tree.ImportPath) {
-                Referenceable r = 
-                        ((Tree.ImportPath) node).getModel();
-                if (r!=null) {
-                    return getHoverInfo(r, null, editor, node);
-                }
-                else {
-                    return null;
-                }
-            }
-            else if (node instanceof Tree.LocalModifier) {
-                return getInferredTypeHoverInfo(node,
+        if (node!=null) {
+            if (node instanceof Tree.LocalModifier) {
+                return getInferredTypeHoverText(node,
                         parseController.getProject());
             }
             else if (node instanceof Tree.Literal) {
-                return getTermTypeHoverInfo(node, null, 
+                return getTermTypeHoverText(node, null, 
                         editor.getCeylonSourceViewer().getDocument(),
                         parseController.getProject());
             }
             else {
-                return getHoverInfo(getReferencedDeclaration(node), 
-                        null, editor, node);
+                Referenceable model = getReferencedDeclaration(node);
+                return getDocumentationHoverText(model, editor, node);
             }
         }
         else {
@@ -579,7 +576,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
 
-    private static CeylonBrowserInput getInferredTypeHoverInfo(Node node, 
+    private static String getInferredTypeHoverText(Node node, 
             IProject project) {
         ProducedType t = ((Tree.LocalModifier) node).getTypeModel();
         if (t==null) return null;
@@ -588,7 +585,7 @@ public class DocumentationHover extends SourceInfoHover {
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("types.gif").toExternalForm(), 
                 16, 16, 
-                "<tt>" + producedTypeLink(t, node.getUnit()) + "</tt>", 
+                "Inferred type&nbsp;&nbsp;<tt>" + producedTypeLink(t, node.getUnit()) + "</tt>", 
                 20, 4);
         buffer.append("<br/>");
         if (!t.containsUnknowns()) {
@@ -601,10 +598,10 @@ public class DocumentationHover extends SourceInfoHover {
         }
         //buffer.append(getDocumentationFor(editor.getParseController(), t.getDeclaration()));
         HTMLPrinter.addPageEpilog(buffer);
-        return new CeylonBrowserInput(null, null, buffer.toString());
+        return buffer.toString();
     }
     
-    private static CeylonBrowserInput getTypeHoverInfo(Node node, String selectedText, 
+    private static String getTypeHoverText(Node node, String selectedText, 
             IDocument doc, IProject project) {
         ProducedType t = ((Tree.Type) node).getTypeModel();
         if (t==null) return null;
@@ -630,7 +627,7 @@ public class DocumentationHover extends SourceInfoHover {
                   .append(unabbreviated);
         }
         HTMLPrinter.addPageEpilog(buffer);
-        return new CeylonBrowserInput(null, null, buffer.toString());
+        return buffer.toString();
 
     }
     
@@ -644,7 +641,7 @@ public class DocumentationHover extends SourceInfoHover {
                 .replace("\f", "\\f");
     }
     
-    private static CeylonBrowserInput getTermTypeHoverInfo(Node node, String selectedText, 
+    private static String getTermTypeHoverText(Node node, String selectedText, 
             IDocument doc, IProject project) {
         ProducedType t = ((Tree.Term) node).getTypeModel();
         if (t==null) return null;
@@ -657,11 +654,13 @@ public class DocumentationHover extends SourceInfoHover {
 //        }
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
-        String desc = node instanceof Tree.Literal ? "literal" : "expression";
+        String desc = node instanceof Tree.Literal ? 
+                "Literal of type" : "Expression of type";
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("types.gif").toExternalForm(), 
                 16, 16, 
-                "<tt>" + producedTypeLink(t, node.getUnit()) + "</tt> " + desc, 
+                desc + "&nbsp;&nbsp;<tt>" + 
+                producedTypeLink(t, node.getUnit()) + "</tt> ", 
                 20, 4);
         if (node instanceof Tree.StringLiteral) {
             String escaped = escape(node.getText());
@@ -731,7 +730,7 @@ public class DocumentationHover extends SourceInfoHover {
             buffer.append("<br/>");
         }
         HTMLPrinter.addPageEpilog(buffer);
-        return new CeylonBrowserInput(null, null, buffer.toString());
+        return buffer.toString();
     }
 
     private static void appendCharacterHoverInfo(StringBuilder buffer, String character) {
@@ -751,7 +750,8 @@ public class DocumentationHover extends SourceInfoHover {
             hex = "0" + hex;
         }
         buffer.append("<br/>Codepoint: <code>").append("U+").append(hex).append("</code>");
-        buffer.append("<br/>General Category: <code>").append(getCodepointGeneralCategoryName(codepoint)).append("</code>");
+        buffer.append("<br/>General Category: <code>")
+            .append(getCodepointGeneralCategoryName(codepoint)).append("</code>");
         Character.UnicodeScript script = Character.UnicodeScript.of(codepoint);
         buffer.append("<br/>Script: <code>").append(script.name()).append("</code>");
         Character.UnicodeBlock block = Character.UnicodeBlock.of(codepoint);
@@ -910,31 +910,28 @@ public class DocumentationHover extends SourceInfoHover {
 
     /**
      * Computes the hover info.
-     * @param previousInput the previous input, or <code>null</code>
      * @param node 
      * @param elements the resolved elements
      * @param editorInputElement the editor input, or <code>null</code>
-     *
      * @return the HTML hover info for the given element(s) or <code>null</code> 
      *         if no information is available
      * @since 3.4
      */
-    static CeylonBrowserInput getHoverInfo(Referenceable model, 
-            BrowserInput previousInput, CeylonEditor editor, Node node) {
+    static String getDocumentationHoverText(Referenceable model, 
+            CeylonEditor editor, Node node) {
+        CeylonParseController parseController = 
+                editor.getParseController();
         if (model instanceof Declaration) {
             Declaration dec = (Declaration) model;
-            return new CeylonBrowserInput(previousInput, dec, 
-                    getDocumentationFor(editor.getParseController(), dec, node, null));
+            return getDocumentationFor(parseController, dec, node, null);
         }
         else if (model instanceof Package) {
             Package dec = (Package) model;
-            return new CeylonBrowserInput(previousInput, dec, 
-                    getDocumentationFor(editor.getParseController(), dec));
+            return getDocumentationFor(parseController, dec);
         }
         else if (model instanceof Module) {
             Module dec = (Module) model;
-            return new CeylonBrowserInput(previousInput, dec, 
-                    getDocumentationFor(editor.getParseController(), dec));
+            return getDocumentationFor(parseController, dec);
         }
         else {
             return null;
