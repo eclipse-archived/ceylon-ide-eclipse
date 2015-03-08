@@ -458,16 +458,33 @@ public class CeylonDebugHover extends SourceInfoHover {
      * @see org.eclipse.jface.text.ITextHoverExtension2#getHoverInfo2(org.eclipse.jface.text.ITextViewer, org.eclipse.jface.text.IRegion)
      */
     public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+        Node node = null;
+        if (editor != null) {
+            node = getHoverNode(hoverRegion, editor.getParseController());
+        }
+        IJavaVariable var = jdiVariableForNode(textViewer, hoverRegion, node);
+        if (var!=null) {
+            return new Object[] { var,
+                    new DocumentationHover(editor)
+                            .getHoverInfo(textViewer, hoverRegion) };
+        }
+        else {
+            return null;
+        }
+    }
+
+    private IJavaVariable jdiVariableForNode(ITextViewer textViewer,
+            IRegion hoverRegion, Node node) {
         JDIStackFrame frame = DebugUtils.getFrame();
         if (frame != null
                 && frame.getDebugTarget() instanceof CeylonJDIDebugTarget) {
             try {
                 final CeylonJDIDebugTarget debugTarget = (CeylonJDIDebugTarget) frame.getDebugTarget();
                 // first check for 'this' - code resolve does not resolve java elements for 'this'
-                IDocument document= textViewer.getDocument();
+                IDocument document = textViewer.getDocument();
                 if (document != null) {
                     try {
-                        String variableName= document.get(hoverRegion.getOffset(), hoverRegion.getLength());
+                        String variableName = document.get(hoverRegion.getOffset(), hoverRegion.getLength());
                         if (variableName.equals("this")) { //$NON-NLS-1$
                             IJavaVariable variable = frame.findVariable(variableName);
                             if (variable != null) {
@@ -478,17 +495,7 @@ public class CeylonDebugHover extends SourceInfoHover {
                         return null;
                     }
                 }
-                Node node = null;
-                if (editor != null) {
-                    node = getHoverNode(hoverRegion, editor.getParseController());
-                }
-                IJavaVariable var = 
-                        jdiVariableForNode(debugTarget, frame, node);
-                if (var!=null) {
-                    return new Object[] { var,
-                            new DocumentationHover(editor)
-                                    .getHoverInfo(textViewer, hoverRegion) };
-                }
+                return jdiVariableForNode(debugTarget, frame, node);
             }
             catch (DebugException e) {
                 return null;
@@ -496,6 +503,22 @@ public class CeylonDebugHover extends SourceInfoHover {
         }
         return null;
     }
+
+//    public static IJavaVariable jdiVariableForNode(Node node) {
+//        JDIStackFrame frame = DebugUtils.getFrame();
+//        if (frame != null
+//                && frame.getDebugTarget() instanceof CeylonJDIDebugTarget) {
+//            try {
+//                final CeylonJDIDebugTarget debugTarget = 
+//                        (CeylonJDIDebugTarget) frame.getDebugTarget();
+//                return jdiVariableForNode(debugTarget, frame, node);
+//            }
+//            catch (DebugException e) {
+//                return null;
+//            }
+//        }
+//        return null;
+//    }
 
     private static IJavaVariable jdiVariableForNode(CeylonJDIDebugTarget debugTarget, JDIStackFrame frame, Node node) throws DebugException {
         if (node instanceof Tree.QualifiedMemberExpression) {
