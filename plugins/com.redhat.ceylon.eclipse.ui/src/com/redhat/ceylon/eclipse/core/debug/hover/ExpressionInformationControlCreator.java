@@ -451,13 +451,11 @@ public class ExpressionInformationControlCreator implements IInformationControlC
          * @see org.eclipse.jface.text.IInformationControlExtension2#setInput(java.lang.Object)
          */
         public void setInput(Object input) {
-            if (input instanceof Object[]) {
-                Object[] inputs = (Object[]) input;
-                if (inputs[0] instanceof IVariable) {           
-                    fVariable = (IVariable) inputs[0];
-                    fViewer.setInput(new TreeRoot());
-                    fBrowser.setText((String) inputs[1]);
-                }
+            if (input instanceof DebugHoverInput) {
+                DebugHoverInput inputs = (DebugHoverInput) input;
+                fVariable = inputs.getVariable();
+                fViewer.setInput(new TreeRoot());
+                fBrowser.setText(inputs.getText());
             }
         }
 

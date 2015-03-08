@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedM
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonContentProviderFilter.unBoxIfVariableBoxed;
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,7 +66,6 @@ import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
 import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.hover.SourceInfoHover;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
@@ -497,9 +497,12 @@ public class CeylonDebugHover extends SourceInfoHover {
         }
         IJavaVariable var = jdiVariableForNode(textViewer, hoverRegion, node);
         if (var!=null) {
-            return new Object[] { var,
-                    new DocumentationHover(editor)
-                            .getHoverInfo(textViewer, hoverRegion) };
+            String text = null;
+            Referenceable model = getReferencedDeclaration(node);
+            if (model!=null) {
+                text = getDocumentationHoverText(model, editor, node);
+            }
+            return new DebugHoverInput(var, text);
         }
         else {
             return null;
@@ -868,9 +871,8 @@ public class CeylonDebugHover extends SourceInfoHover {
             else if (location.startsWith("doc:")) {
                 Referenceable target = getLinkedModel(editor, location);
                 if (target!=null) {
-                    control.setInput(new Object[] { 
-                            control.getVariable(), 
-                            getDocumentationHoverText(target, editor, null) });
+                    control.setInput(new DebugHoverInput(control.getVariable(), 
+                            getDocumentationHoverText(target, editor, null)));
                 }
             }
             else if (location.startsWith("ref:")) {
