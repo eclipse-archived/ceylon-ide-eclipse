@@ -917,7 +917,7 @@ public class DocumentationHover extends SourceInfoHover {
      *         if no information is available
      * @since 3.4
      */
-    static String getDocumentationHoverText(Referenceable model, 
+    public static String getDocumentationHoverText(Referenceable model, 
             CeylonEditor editor, Node node) {
         CeylonParseController parseController = 
                 editor.getParseController();

@@ -1,7 +1,11 @@
 package com.redhat.ceylon.eclipse.core.debug.hover;
 
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationHoverText;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonContentProviderFilter.unBoxIfVariableBoxed;
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +43,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.codegen.Naming.Suffix;
@@ -51,12 +58,21 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SafeMemberOp;
+import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
+import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
+import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.hover.SourceInfoHover;
+import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
+import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
+import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
+import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
+import com.redhat.ceylon.eclipse.core.debug.hover.ExpressionInformationControlCreator.ExpressionInformationControl;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationListener;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationRunner;
@@ -312,11 +328,28 @@ public class CeylonDebugHover extends SourceInfoHover {
         return value;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.text.ITextHoverExtension#getHoverControlCreator()
-     */
     public IInformationControlCreator getHoverControlCreator() {
-        return new ExpressionInformationControlCreator();
+        return new ExpressionInformationControlCreator() {
+            @Override
+            public ExpressionInformationControl createInformationControl(Shell shell) {
+                ExpressionInformationControl control = new ExpressionInformationControl(shell, true) {
+                    @Override
+                    public ExpressionInformationControlCreator getInformationPresenterControlCreator() {
+                        return new ExpressionInformationControlCreator() {
+                            @Override
+                            public ExpressionInformationControl createInformationControl(Shell shell) {
+                                ExpressionInformationControl enrichedControl = 
+                                        new ExpressionInformationControl(shell, true);
+                                enrichedControl.addLocationListener(new CeylonLocationListener(enrichedControl));
+                                return enrichedControl;
+                            }
+                        };
+                    }
+                };
+                control.addLocationListener(new CeylonLocationListener(control));
+                return control;
+            }
+        };
     }
 
     // copied from the compiler project since it is not visible
@@ -768,4 +801,116 @@ public class CeylonDebugHover extends SourceInfoHover {
         return null;
     }
 
+    final class CeylonLocationListener implements LocationListener {
+        private final ExpressionInformationControl control;
+        
+        CeylonLocationListener(ExpressionInformationControl control) {
+            this.control = control;
+        }
+        
+        @Override
+        public void changing(LocationEvent event) {
+            String location = event.location;
+            
+            //necessary for windows environment (fix for blank page)
+            //somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
+            if (!"about:blank".equals(location) && !location.startsWith("http:")) {
+                event.doit = false;
+                handleLink(location);
+            }
+            
+            /*else if (location.startsWith("javadoc:")) {
+                final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
+                int beginIndex = input.getHtml().indexOf("javadoc:")+8;
+                final String handle = input.getHtml().substring(beginIndex, input.getHtml().indexOf("\"",beginIndex));
+                new Job("Fetching Javadoc") {
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        final IJavaElement elem = JavaCore.create(handle);
+                        try {
+                            final String javadoc = JavadocContentAccess2.getHTMLContent((IMember) elem, true);
+                            if (javadoc!=null) {
+                                PlatformUI.getWorkbench().getProgressService()
+                                        .runInUI(editor.getSite().getWorkbenchWindow(), new IRunnableWithProgress() {
+                                    @Override
+                                    public void run(IProgressMonitor monitor) 
+                                            throws InvocationTargetException, InterruptedException {
+                                        StringBuilder sb = new StringBuilder();
+                                        HTMLPrinter.insertPageProlog(sb, 0, getStyleSheet());
+                                        appendJavadoc(elem, javadoc, sb);
+                                        HTMLPrinter.addPageEpilog(sb);
+                                        control.setInput(new DocBrowserInformationControlInput(input, null, sb.toString(), 0));
+                                    }
+                                }, null);
+                            }
+                        } 
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule();
+            }*/
+        }
+        
+        private void close(ExpressionInformationControl control) {
+            control.dispose();
+        }
+        
+        private void handleLink(String location) {
+            if (location.startsWith("dec:")) {
+                Referenceable target = getLinkedModel(editor, location);
+                if (target!=null) {
+                    close(control); //FIXME: should have protocol to hide, rather than dispose
+                    gotoDeclaration(target);
+                }
+            }
+            else if (location.startsWith("doc:")) {
+                Referenceable target = getLinkedModel(editor, location);
+                if (target!=null) {
+                    control.setInput(new Object[] { 
+                            control.getVariable(), 
+                            getDocumentationHoverText(target, editor, null) });
+                }
+            }
+            else if (location.startsWith("ref:")) {
+                Referenceable target = getLinkedModel(editor, location);
+                close(control);
+                new FindReferencesAction(editor, (Declaration) target).run();
+            }
+            else if (location.startsWith("sub:")) {
+                Referenceable target = getLinkedModel(editor, location);
+                close(control);
+                new FindSubtypesAction(editor, (Declaration) target).run();
+            }
+            else if (location.startsWith("act:")) {
+                Referenceable target = getLinkedModel(editor, location);
+                close(control);
+                new FindRefinementsAction(editor, (Declaration) target).run();
+            }
+            else if (location.startsWith("ass:")) {
+                Referenceable target = getLinkedModel(editor, location);
+                close(control);
+                new FindAssignmentsAction(editor, (Declaration) target).run();
+            }
+            else if (location.startsWith("stp:")) {
+                close(control);
+                CompilationUnit rn = editor.getParseController().getRootNode();
+                Node node = findNode(rn, Integer.parseInt(location.substring(4)));
+                SpecifyTypeProposal.createProposal(rn, node, editor)
+                                   .apply(editor.getParseController().getDocument());
+            }
+            else if (location.startsWith("exv:")) {
+                close(control);
+                new ExtractValueProposal(editor).apply(editor.getParseController().getDocument());
+            }
+            else if (location.startsWith("exf:")) {
+                close(control);
+                new ExtractFunctionProposal(editor).apply(editor.getParseController().getDocument());
+            }
+        }
+        
+        @Override
+        public void changed(LocationEvent event) {}
+    }
 }

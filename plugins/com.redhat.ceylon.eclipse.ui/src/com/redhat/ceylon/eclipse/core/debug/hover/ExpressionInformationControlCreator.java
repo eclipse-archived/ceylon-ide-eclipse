@@ -27,7 +27,6 @@ import org.eclipse.debug.ui.AbstractDebugView;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.AbstractInformationControl;
-import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -36,6 +35,7 @@ import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -90,6 +90,10 @@ public class ExpressionInformationControlCreator implements IInformationControlC
          */
         private IVariable fVariable;
         
+        public IVariable getVariable() {
+            return fVariable;
+        }
+        
         private IPresentationContext fContext;
         private TreeModelViewer fViewer;
         private SashForm fSashForm;
@@ -99,7 +103,7 @@ public class ExpressionInformationControlCreator implements IInformationControlC
 
         private SashForm fSashForm2;
 
-        private DocBrowser browser;
+        private DocBrowser fBrowser;
             
         /**
          * Creates the content for the root element of the tree viewer in the hover
@@ -193,6 +197,10 @@ public class ExpressionInformationControlCreator implements IInformationControlC
             create();
         }
         
+        public void addLocationListener(LocationListener listener) {
+            fBrowser.addLocationListener(listener);
+        }
+
         /* (non-Javadoc)
          * @see org.eclipse.jface.text.AbstractInformationControl#computeSizeHint()
          */
@@ -289,7 +297,7 @@ public class ExpressionInformationControlCreator implements IInformationControlC
             fSashForm2 = new SashForm(parent, parent.getStyle());
             fSashForm2.setOrientation(SWT.HORIZONTAL);
             
-            browser = new DocBrowser(fSashForm2, SWT.NONE);
+            fBrowser = new DocBrowser(fSashForm2, SWT.NONE);
             
             fSashForm = new SashForm(fSashForm2, parent.getStyle());
             fSashForm.setOrientation(SWT.VERTICAL);
@@ -448,7 +456,7 @@ public class ExpressionInformationControlCreator implements IInformationControlC
                 if (inputs[0] instanceof IVariable) {           
                     fVariable = (IVariable) inputs[0];
                     fViewer.setInput(new TreeRoot());
-                    browser.setText((String) inputs[1]);
+                    fBrowser.setText((String) inputs[1]);
                 }
             }
         }
@@ -457,13 +465,13 @@ public class ExpressionInformationControlCreator implements IInformationControlC
          * @see org.eclipse.jface.text.AbstractInformationControl#getInformationPresenterControlCreator()
          */
         @Override
-        public IInformationControlCreator getInformationPresenterControlCreator() {
+        public ExpressionInformationControlCreator getInformationPresenterControlCreator() {
             return new ExpressionInformationControlCreator() {
                 /* (non-Javadoc)
                  * @see org.eclipse.jdt.internal.debug.ui.ExpressionInformationControlCreator#createInformationControl(org.eclipse.swt.widgets.Shell)
                  */
                 @Override
-                public IInformationControl createInformationControl(Shell shell) {
+                public ExpressionInformationControl createInformationControl(Shell shell) {
                     return new ExpressionInformationControl(shell, true);
                 }
             };
@@ -473,7 +481,7 @@ public class ExpressionInformationControlCreator implements IInformationControlC
     /* (non-Javadoc)
      * @see org.eclipse.jface.text.IInformationControlCreator#createInformationControl(org.eclipse.swt.widgets.Shell)
      */
-    public IInformationControl createInformationControl(Shell parent) {
+    public ExpressionInformationControl createInformationControl(Shell parent) {
         return new ExpressionInformationControl(parent, false);
     }
 
