@@ -68,22 +68,32 @@ public class ExpressionInformationControlCreator implements IInformationControlC
         /**
          * Dialog setting key for height
          */
-        private static final String HEIGHT = "HEIGHT"; //$NON-NLS-1$
+        private static final String HEIGHT = "HEIGHT";
 
         /**
          * Dialog setting key for width. 
          */
-        private static final String WIDTH = "WIDTH"; //$NON-NLS-1$
+        private static final String WIDTH = "WIDTH";
 
         /**
          * Dialog setting key for tree sash weight
          */
-        private static final String SASH_WEIGHT_TREE = "SashWeightTree"; //$NON-NLS-1$
+        private static final String SASH_WEIGHT_TREE = "SashWeightTree";
         
         /**
          * Dialog setting key for details sash weight
          */
-        private static final String SASH_WEIGHT_DETAILS = "SashWeightDetails"; //$NON-NLS-1$        
+        private static final String SASH_WEIGHT_DETAILS = "SashWeightDetails";        
+        
+        /**
+         * Dialog setting key for tree sash weight
+         */
+        private static final String SASH_WEIGHT_DOC = "SashWeightDoc";
+        
+        /**
+         * Dialog setting key for details sash weight
+         */
+        private static final String SASH_WEIGHT_DEBUG = "SashWeightDebug";        
         
         /**
          * Variable to display.
@@ -273,6 +283,9 @@ public class ExpressionInformationControlCreator implements IInformationControlC
                     int[] weights = fSashForm.getWeights();
                     settings.put(SASH_WEIGHT_TREE, weights[0]);
                     settings.put(SASH_WEIGHT_DETAILS, weights[1]);
+                    int[] weights2 = fSashForm2.getWeights();
+                    settings.put(SASH_WEIGHT_DOC, weights2[0]);
+                    settings.put(SASH_WEIGHT_DEBUG, weights2[1]);
                 }
             }
         }
@@ -401,6 +414,13 @@ public class ExpressionInformationControlCreator implements IInformationControlC
         protected void initSashWeights(){
             IDialogSettings settings = getDialogSettings(false);
             if (settings != null) {
+                int doc = getIntSetting(settings, SASH_WEIGHT_DOC);
+                if (doc > 0) {
+                    int debug = getIntSetting(settings, SASH_WEIGHT_DEBUG);
+                    if (debug > 0) {
+                        fSashForm2.setWeights(new int[]{doc, debug});
+                    }
+                }
                 int tree = getIntSetting(settings, SASH_WEIGHT_TREE);
                 if (tree > 0) {
                     int details = getIntSetting(settings, SASH_WEIGHT_DETAILS);
