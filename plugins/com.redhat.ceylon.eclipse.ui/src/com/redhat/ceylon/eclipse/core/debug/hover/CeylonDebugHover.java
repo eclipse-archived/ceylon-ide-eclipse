@@ -332,7 +332,7 @@ public class CeylonDebugHover extends SourceInfoHover {
         return new ExpressionInformationControlCreator() {
             @Override
             public ExpressionInformationControl createInformationControl(Shell shell) {
-                ExpressionInformationControl control = new ExpressionInformationControl(shell, true) {
+                ExpressionInformationControl control = new ExpressionInformationControl(shell, false) {
                     @Override
                     public ExpressionInformationControlCreator getInformationPresenterControlCreator() {
                         return new ExpressionInformationControlCreator() {
