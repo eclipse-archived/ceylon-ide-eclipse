@@ -1534,10 +1534,10 @@ public class DocumentationHover extends SourceInfoHover {
                             StringBuilder param = new StringBuilder();
                             param.append("accepts&nbsp;&nbsp;");
 //                            param.append("<span style='font-size:" + smallerSize + "'>accepts&nbsp;&nbsp;");
-                        	appendParameter(param, pr, p, unit);
-                        	param.append("<tt>")
-                        	     .append(HTML.highlightLine(getInitialValueDescription(model, cpc)))
-                        	     .append("</tt>");
+                            appendParameter(param, pr, p, unit);
+                            param.append("<tt>")
+                                 .append(HTML.highlightLine(getInitialValueDescription(model, cpc)))
+                                 .append("</tt>");
                             Tree.Declaration refNode = 
                                     (Tree.Declaration) getReferencedNode(model);
                             if (refNode!=null) {
@@ -1563,7 +1563,7 @@ public class DocumentationHover extends SourceInfoHover {
                 pr = getProducedReference(dec, node);
             }
             if (pr==null) return;
-			ProducedType ret = pr.getType();
+            ProducedType ret = pr.getType();
             if (ret!=null) {
                 buffer.append("<p>");
                 StringBuilder buf = new StringBuilder("returns&nbsp;&nbsp;<tt>");
