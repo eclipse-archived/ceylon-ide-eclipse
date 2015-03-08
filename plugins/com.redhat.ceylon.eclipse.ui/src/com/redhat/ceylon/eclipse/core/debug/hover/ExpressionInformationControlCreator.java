@@ -63,6 +63,23 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
  */
 public class ExpressionInformationControlCreator implements IInformationControlCreator {
 
+    private static final String SETTINGS_ID = 
+            CeylonPlugin.PLUGIN_ID + ".expressionHover";
+    
+    /**
+     * Returns the dialog settings for this hover or <code>null</code> if none
+     * 
+     * @param create whether to create the settings
+     */
+    private static IDialogSettings getDialogSettings(boolean create) {
+        IDialogSettings settings = CeylonPlugin.getInstance().getDialogSettings();
+        IDialogSettings section = settings.getSection(SETTINGS_ID);
+        if (section == null & create) {
+            section = settings.addNewSection(SETTINGS_ID);
+        }
+        return section;
+    }
+    
     class ExpressionInformationControl extends AbstractInformationControl implements IInformationControlExtension2 {
 
         /**
@@ -229,20 +246,6 @@ public class ExpressionInformationControlCreator implements IInformationControlC
             return super.computeSizeHint();
         }
 
-        /**
-         * Returns the dialog settings for this hover or <code>null</code> if none
-         * 
-         * @param create whether to create the settings
-         */
-        private IDialogSettings getDialogSettings(boolean create) {
-            IDialogSettings settings = CeylonPlugin.getInstance().getDialogSettings();
-            IDialogSettings section = settings.getSection(this.getClass().getName());
-            if (section == null & create) {
-                section = settings.addNewSection(this.getClass().getName());
-            }
-            return section;
-        }
-        
         /**
          * Returns an integer value in the given dialog settings or -1 if none.
          * 
