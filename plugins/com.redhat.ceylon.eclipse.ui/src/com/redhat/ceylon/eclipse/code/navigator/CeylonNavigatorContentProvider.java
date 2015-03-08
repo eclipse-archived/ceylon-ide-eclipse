@@ -27,7 +27,6 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.navigator.IExtensionStateConstants.Values;
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer;
-import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer.RequiredProjectWrapper;
 import org.eclipse.jdt.internal.ui.packageview.LibraryContainer;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -94,9 +93,6 @@ public class CeylonNavigatorContentProvider implements
                                     }
                                 }
                             }
-                        }
-                        if (entry instanceof RequiredProjectWrapper) {
-                            System.out.print("");
                         }
                     }
                 }
@@ -501,7 +497,6 @@ public class CeylonNavigatorContentProvider implements
     
     @Override
     public Object[] getElements(Object inputElement) {
-        System.out.print("");
         return new Object[0];
     }
 

@@ -403,7 +403,6 @@ public class JavaSearch {
             }
         }
         
-        System.out.println();
         IMember declaringElement = getDeclaringElement(typeOrMethod);
         
         if (declaringElement != null) {

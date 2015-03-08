@@ -29,8 +29,6 @@ public class CeylonDebugTargetProxy extends JavaDebugTargetProxy {
                             ((ModelDelta)delta).setFlags(newFlags);
                         }
                     }
-                } else {
-                    System.out.print("");
                 }
             }
             
