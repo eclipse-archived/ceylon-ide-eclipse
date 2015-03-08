@@ -482,12 +482,15 @@ public class CeylonDebugHover extends SourceInfoHover {
                 if (editor != null) {
                     node = getHoverNode(hoverRegion, editor.getParseController());
                 }
-                return new Object[] {
-                        jdiVariableForNode(debugTarget, frame, node),
-                        new DocumentationHover(editor)
-                            .getHoverInfo(textViewer, hoverRegion)
-                };
-            } catch (DebugException e) {
+                IJavaVariable var = 
+                        jdiVariableForNode(debugTarget, frame, node);
+                if (var!=null) {
+                    return new Object[] { var,
+                            new DocumentationHover(editor)
+                                    .getHoverInfo(textViewer, hoverRegion) };
+                }
+            }
+            catch (DebugException e) {
                 return null;
             }
         }
