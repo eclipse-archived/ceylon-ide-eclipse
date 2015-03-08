@@ -35,7 +35,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class CeylonTopLevelSelectionDialog extends FilteredItemsSelectionDialog {
 
     private static final String SETTINGS_ID = 
-            CeylonPlugin.PLUGIN_ID + ".TOPLEVEL_DECLARATION_SELECTION_DIALOG";
+            CeylonPlugin.PLUGIN_ID + ".toplevelSelection";
     
     private List<Declaration> decls;
     

@@ -177,8 +177,7 @@ public class CreateFilterDialog extends StatusDialog {
 	 * @return String
 	 */
 	protected String getDialogSettingsSectionName() {
-		return CeylonPlugin.PLUGIN_ID + 
-		        ".CREATE_STEP_FILTER_DIALOG_SECTION";
+		return CeylonPlugin.PLUGIN_ID + ".createStepFilterDialog";
 	}
 	
 	@Override
