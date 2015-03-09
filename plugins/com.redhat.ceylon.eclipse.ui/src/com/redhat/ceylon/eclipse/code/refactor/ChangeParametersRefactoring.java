@@ -482,6 +482,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     boolean found = false;
                     for (int i=0; i<defaulted.size(); i++) {
                         Parameter p = parameters.get(order.get(i));
+                        //TODO: this condition looks wrong
+                        //      when we have refinement
                         if (nap.getModel()
                                 .equals(p.getModel())) {
                             found = true;
@@ -508,6 +510,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     for (Tree.NamedArgument na : nas) {
                         Parameter nap = na.getParameter();
                         if (nap!=null
+                                //TODO: this condition looks wrong
+                                //      when we have refinement
                                 && nap.getModel()
                                         .equals(p.getModel())) {
                             found = true;
@@ -531,10 +535,10 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                                         getIndent(nal, doc);
                             }
                             else if (startOffset==stopOffset-1) {
-                                argString = ' ' + argString + ' ';
+                                argString = ' ' + argString + ';' + ' ';
                             }
                             else {
-                                argString = argString + ' ';
+                                argString = argString + ';' + ' ';
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
