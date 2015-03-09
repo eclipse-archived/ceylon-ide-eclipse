@@ -35,7 +35,8 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Util {
         formatPath
     },
-    Message
+    Message,
+    NaturalVisitor
 }
 import com.redhat.ceylon.compiler.typechecker.util {
     ProducedTypeNamePrinter
@@ -272,9 +273,8 @@ shared class DeltaBuilderFactory(
             }
         }
 
-        shared actual Ast.Declaration[] getChildren(AstNode astNode) {
-            return empty;
-        }
+        shared actual Ast.Declaration[] getChildren(AstNode astNode)
+            => empty;
     }
 
     class ModuleDescriptorDeltaBuilder(Ast.ModuleDescriptor oldNode, Ast.ModuleDescriptor? newNode, NodeComparisonListener? nodeComparisonListener)
@@ -419,7 +419,8 @@ shared class DeltaBuilderFactory(
             change = removed;
         }
 
-        shared actual AstNode[] getChildren(AstNode astNode) => empty;
+        shared actual AstNode[] getChildren(AstNode astNode)
+            => empty;
     }
 
     class RegularCompilationUnitDeltaBuilder(Ast.CompilationUnit oldNode, Ast.CompilationUnit newNode, NodeComparisonListener? nodeComparisonListener)
@@ -476,10 +477,14 @@ shared class DeltaBuilderFactory(
 
         shared actual Ast.Declaration[] getChildren(AstNode astNode) {
             value children = ArrayList<Ast.Declaration>(5);
-            object visitor extends Visitor() {
-                shared actual void visit(Ast.Declaration declaration) {
-                    assert(declaration.declarationModel.toplevel);
-                    children.add(declaration);
+            object visitor extends Visitor() satisfies NaturalVisitor {
+                shared actual void visitAny(AstAbstractNode? node) {
+                    if (is Ast.Declaration declaration = node) {
+                        assert(declaration.declarationModel.toplevel);
+                        children.add(declaration);
+                    } else {
+                        super.visitAny(node);
+                    }
                 }
             }
             astNode.visitChildren(visitor);
@@ -508,11 +513,15 @@ shared class DeltaBuilderFactory(
 
         shared actual Ast.Declaration[] getChildren(AstNode astNode) {
             value children = ArrayList<Ast.Declaration>(5);
-            object visitor extends Visitor() {
-                shared actual void visit(Ast.Declaration declaration) {
-                    assert(!declaration.declarationModel.toplevel);
-                    if (declaration.declarationModel.shared) {
-                        children.add(declaration);
+            object visitor extends Visitor() satisfies NaturalVisitor {
+                shared actual void visitAny(AstAbstractNode? node) {
+                    if (is Ast.Declaration declaration = node) {
+                        assert(!declaration.declarationModel.toplevel);
+                        if (declaration.declarationModel.shared) {
+                            children.add(declaration);
+                        }
+                    } else {
+                        super.visitAny(node);
                     }
                 }
             }
@@ -742,9 +751,22 @@ shared class DeltaBuilderFactory(
                                                     }
                                                 },
                                                 lookForChanges {
-                                                    function between(Ast.InterfaceDefinition oldInterface, Ast.InterfaceDefinition newInterface) {
-                                                        listener?.comparedNodes(oldInterface.\idynamic.string, newInterface.\idynamic.string, oldNode, "dynamic");
-                                                        return oldInterface.\idynamic != newInterface.\idynamic;
+                                                    function between(Ast.AnyInterface oldInterface, Ast.AnyInterface newInterface) {
+                                                        return any {
+                                                            lookForChanges {
+                                                                function between(Ast.InterfaceDeclaration oldInterfaceDecl, Ast.InterfaceDeclaration newInterfaceDecl) {
+                                                                    return any {
+                                                                        nodesDiffer(oldInterfaceDecl.typeSpecifier, newInterfaceDecl.typeSpecifier, "typeSpecifier")
+                                                                    };
+                                                                }
+                                                            },
+                                                            lookForChanges {
+                                                                function between(Ast.InterfaceDefinition oldInterface, Ast.InterfaceDefinition newInterface) {
+                                                                    listener?.comparedNodes(oldInterface.\idynamic.string, newInterface.\idynamic.string, oldNode, "dynamic");
+                                                                    return oldInterface.\idynamic != newInterface.\idynamic;
+                                                                }
+                                                            }
+                                                        };
                                                     }
                                                 }
                                             };
