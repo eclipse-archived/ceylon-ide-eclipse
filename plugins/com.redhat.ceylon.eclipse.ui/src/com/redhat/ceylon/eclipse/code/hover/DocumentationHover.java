@@ -207,7 +207,8 @@ public class DocumentationHover extends SourceInfoHover {
             else if (location.startsWith("doc:")) {
                 Referenceable target = getLinkedModel(editor, location);
                 if (target!=null) {
-                    control.setInput(getDocumentationHoverText(target, editor, null));
+                    control.setInput(new CeylonBrowserInput(control.getInput(), 
+                            target, getDocumentationHoverText(target, editor, null)));
                 }
             }
             else if (location.startsWith("ref:")) {
