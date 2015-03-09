@@ -158,7 +158,7 @@ void compare(PhasedUnit oldPhasedUnit, PhasedUnit newPhasedUnit,
             value performedChecks = memberCheckedByDeclaration.get(name);
             assert (exists performedChecks);
             value missingChecks = requiredChecks.complement(HashSet { *performedChecks });
-            assertEquals(missingChecks.sequence(), empty, "Some members of the declaration ' ``name`` ' were not compared.");
+            assertEquals(missingChecks.sequence(), empty, "Some members of the declaration ' ``name`` ' were not compared in file `` oldPhasedUnit.unitFile.path ``.");
         }
     }
 
