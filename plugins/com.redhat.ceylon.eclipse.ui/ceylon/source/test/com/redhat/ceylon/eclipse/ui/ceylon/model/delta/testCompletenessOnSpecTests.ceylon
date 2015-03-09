@@ -59,7 +59,6 @@ shared void testCompletenessOnSpecTests() {
             oldPhasedUnit = phasedUnit;
             newPhasedUnit = phasedUnit;
             expectedDelta = RegularCompilationUnitDeltaMockup(unit.string, [], []);
-            printNodeComparisons = true;
             deltaBuilderFactory = DeltaBuilderFactory(true);
         };
     }
