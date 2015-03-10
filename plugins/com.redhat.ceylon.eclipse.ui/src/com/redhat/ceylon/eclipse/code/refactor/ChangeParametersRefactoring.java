@@ -456,6 +456,18 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     actual, tokens));
         }
     }
+    
+    private static boolean isSameParameter(Parameter x, Parameter y) {
+        if (x==null || y==null) return false;
+        Declaration xd = x.getDeclaration();
+        Declaration yd = y.getDeclaration();
+        List<ParameterList> xpl = ((Functional) xd).getParameterLists();
+        List<ParameterList> ypl = ((Functional) yd).getParameterLists();
+        return !xpl.isEmpty() && !ypl.isEmpty() &&
+                xd.getRefinedDeclaration().equals(yd.getRefinedDeclaration())
+                && xpl.get(0).getParameters().indexOf(x) ==
+                   ypl.get(0).getParameters().indexOf(y);
+    }
 
     private void refactorArgumentLists(TextChange tfc,
             Tree.CompilationUnit root) {
@@ -482,10 +494,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     boolean found = false;
                     for (int i=0; i<defaulted.size(); i++) {
                         Parameter p = parameters.get(order.get(i));
-                        //TODO: this condition looks wrong
-                        //      when we have refinement
-                        if (nap.getModel()
-                                .equals(p.getModel())) {
+                        if (isSameParameter(p,nap)) {
                             found = true;
                             break;
                         }
@@ -509,11 +518,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     boolean found = false;
                     for (Tree.NamedArgument na : nas) {
                         Parameter nap = na.getParameter();
-                        if (nap!=null
-                                //TODO: this condition looks wrong
-                                //      when we have refinement
-                                && nap.getModel()
-                                        .equals(p.getModel())) {
+                        if (isSameParameter(p,nap)) {
                             found = true;
                             break;
                         }
