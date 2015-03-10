@@ -7,6 +7,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.FunctionArgument;
 
 class FindReferencedNodeVisitor extends Visitor {
     
@@ -86,6 +87,14 @@ class FindReferencedNodeVisitor extends Visitor {
             if (isDeclaration(that.getDeclaration())) {
                 declarationNode = that;
             }
+        }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(FunctionArgument that) {
+        if (isDeclaration(that.getDeclarationModel())) {
+            declarationNode = that;
         }
         super.visit(that);
     }

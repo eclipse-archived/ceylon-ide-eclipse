@@ -40,7 +40,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
     }
     
 	private static void addSplitDeclarationProposal(IDocument doc, 
-	        Tree.TypedDeclaration decNode, Tree.CompilationUnit cu, 
+	        Tree.TypedDeclaration decNode, Tree.CompilationUnit rootNode, 
 	        IFile file, Collection<ICompletionProposal> proposals) {
         TypedDeclaration dec = decNode.getDeclarationModel();
         if (dec==null) return;
@@ -82,8 +82,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
             //TODO: does not handle default args correctly for callable parameters
             change.addEdit(new DeleteEdit(startOffset, idStartOffset-startOffset));
             change.addEdit(new DeleteEdit(idEndOffset, paramsEndOffset-idEndOffset));
-            Node containerNode = (Tree.Declaration) 
-                    getReferencedNodeInUnit((Declaration) dec.getContainer(), cu);
+            Declaration container = (Declaration) dec.getContainer();
+            Node containerNode = getReferencedNodeInUnit(container, rootNode);
             Tree.Body body;
             if (containerNode instanceof Tree.ClassDefinition) {
                 body = ((Tree.ClassDefinition) containerNode).getClassBody();
@@ -91,10 +91,13 @@ class SplitDeclarationProposal extends CorrectionProposal {
             else if (containerNode instanceof Tree.MethodDefinition) {
                 body = ((Tree.MethodDefinition) containerNode).getBlock();
             }
+            else if (containerNode instanceof Tree.FunctionArgument) {
+                body = ((Tree.FunctionArgument) containerNode).getBlock();
+            }
             else {
                 return;
             }
-            if (body.getStatements().contains(decNode)) {
+            if (body==null || body.getStatements().contains(decNode)) {
                 return;
             }
             Tree.AnnotationList al = decNode.getAnnotationList();
@@ -141,8 +144,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
             else {
                 explicitType = infType.getProducedTypeNameInSource(decNode.getUnit());
                 HashSet<Declaration> decs = new HashSet<Declaration>();
-                importType(decs, infType, cu);
-                il=applyImports(change, decs, cu, doc);
+                importType(decs, infType, rootNode);
+                il=applyImports(change, decs, rootNode, doc);
             }
             Integer typeOffset = type.getStartIndex();
             Integer typeLen = type.getStopIndex()-typeOffset+1;
