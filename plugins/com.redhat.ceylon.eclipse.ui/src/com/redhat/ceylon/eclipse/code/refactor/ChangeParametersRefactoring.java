@@ -384,19 +384,35 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 
     private void refactorReferences(TextChange tfc, Tree.CompilationUnit root) {
         for (int i=0; i<names.size(); i++) {
-            Parameter p = parameters.get(order.get(i));
             String newName = names.get(i);
-            if (!p.getName().equals(newName)) {
-                FindReferencesVisitor fprv = 
-                        new FindReferencesVisitor(p.getModel());
-                root.visit(fprv);
-                for (Node ref: fprv.getNodes()) {
-                    Node idn = getIdentifyingNode(ref);
-                    if (idn instanceof Tree.Identifier) {
-                        Tree.Identifier id = (Tree.Identifier) idn;
+            final Parameter param = parameters.get(order.get(i));
+            FindReferencesVisitor fprv = 
+                    new FindReferencesVisitor(param.getModel()) {
+                @Override
+                protected boolean isReference(Parameter p) {
+                    return isSameParameter(param, p);
+                }
+                @Override
+                protected boolean isReference(Declaration ref,
+                        String id) {
+                    if (ref.isParameter()) {
+                        return isSameParameter(param, 
+                                ((MethodOrValue) ref).getInitializerParameter());
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            };
+            root.visit(fprv);
+            for (Node ref: fprv.getNodes()) {
+                Node idn = getIdentifyingNode(ref);
+                if (idn instanceof Tree.Identifier) {
+                    Tree.Identifier id = (Tree.Identifier) idn;
+                    if (!id.getText().equals(newName)) {
                         tfc.addEdit(new ReplaceEdit(id.getStartIndex(), 
-                              id.getStopIndex()-id.getStartIndex()+1, 
-                              newName));
+                                id.getStopIndex()-id.getStartIndex()+1, 
+                                newName));
                     }
                 }
             }
