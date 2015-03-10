@@ -27,7 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
     
     private Referenceable declaration;
-    private final Set<Node> nodes = new HashSet<Node>();
+    protected final Set<Node> nodes = new HashSet<Node>();
     
     public FindReferencesVisitor(Referenceable declaration) {
         if (declaration instanceof TypedDeclaration) {

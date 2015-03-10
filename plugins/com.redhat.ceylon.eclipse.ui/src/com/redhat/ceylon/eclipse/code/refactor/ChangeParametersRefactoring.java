@@ -389,6 +389,47 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             FindReferencesVisitor fprv = 
                     new FindReferencesVisitor(param.getModel()) {
                 @Override
+                public void visit(Tree.InitializerParameter that) {
+                    //initializer parameters will be handled when
+                    //we refactor the parameter list
+                    Tree.SpecifierExpression se = 
+                            that.getSpecifierExpression();
+                    if (se!=null) {
+                        se.visit(this);
+                    }
+                }
+                @Override
+                public void visit(Tree.ParameterDeclaration that) {
+                    //don't confuse a parameter declaration with
+                    //a split declaration below
+                    Tree.TypedDeclaration td = 
+                            that.getTypedDeclaration();
+                    if (td instanceof Tree.AttributeDeclaration) {
+                        Tree.SpecifierOrInitializerExpression se = 
+                                ((Tree.AttributeDeclaration)td).getSpecifierOrInitializerExpression();
+                        if (se!=null) {
+                            se.visit(this);
+                        }
+                    }
+                    if (td instanceof Tree.MethodDeclaration) {
+                        Tree.SpecifierExpression se = 
+                                ((Tree.MethodDeclaration)td).getSpecifierExpression();
+                        if (se!=null) {
+                            se.visit(this);
+                        }
+                    }
+                }
+                @Override
+                public void visit(Tree.TypedDeclaration that) {
+                    //handle split declarations
+                    super.visit(that);
+                    if (that.getIdentifier()!=null &&
+                            isReference(that.getDeclarationModel(), 
+                                    that.getIdentifier().getText())) {
+                        nodes.add(that);
+                    }
+                }
+                @Override
                 protected boolean isReference(Parameter p) {
                     return isSameParameter(param, p);
                 }
@@ -561,7 +602,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             else {
                                 argString = argString + ';' + ' ';
                             }
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e) {
                             e.printStackTrace();
                         }
                         tfc.addEdit(new InsertEdit(stopOffset, 
@@ -680,8 +722,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         StringBuilder sb = new StringBuilder("(");
         for (int i=0; i<parameters.length; i++) {
             String paramString = 
-                    paramString(parameters[i], names.get(i), 
-                            tokens);
+                    paramString(parameters[i], 
+                            names.get(i), tokens);
             sb.append(paramString)
               .append(", ");
         }
@@ -750,9 +792,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         Tree.Identifier id = getIdentifier(parameter);
         int start = id.getStartIndex() - loc;
         int end = id.getStopIndex()+1 - loc;
-        paramString = paramString.substring(0, start) + 
+        return paramString.substring(0, start) + 
                 newName + paramString.substring(end);
-        return paramString;
     }
 
     private String paramStringWithoutDefaultArg(Tree.Parameter parameter,
@@ -768,9 +809,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         Tree.Identifier id = getIdentifier(parameter);
         int start = id.getStartIndex() - loc;
         int end = id.getStopIndex()+1 - loc;
-        paramString = paramString.substring(0, start) + 
+        return paramString.substring(0, start) + 
                 newName + paramString.substring(end);
-        return paramString;
     }
 
     private Tree.Identifier getIdentifier(Tree.Parameter parameter) {
