@@ -22,6 +22,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
@@ -39,13 +41,11 @@ import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
-import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.sun.jdi.VirtualMachine;
 
 public class ModuleLaunchDelegate extends JavaLaunchDelegate {
@@ -115,10 +115,9 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                         throws CoreException {
                     try {
                         super.run(config, launch, monitor);
-                    } catch (Exception e) {
+                    } catch (final Exception e) {
                         e.printStackTrace();
-                        MessageDialog.openError(EditorUtil.getShell(), "Ceylon Module Launcher Error", 
-                                "Internal Error");
+                        throw new CoreException(new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, "Ceylon Module Launcher Error", e));
                     }
                 }
                 
