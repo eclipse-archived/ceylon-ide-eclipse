@@ -154,9 +154,13 @@ public class EditorUtil {
     }
     
     public static Shell getShell() {
-        return getWorkbench()
-                .getActiveWorkbenchWindow()
-                .getShell();
+        IWorkbenchWindow activeWindow = getWorkbench()
+                .getActiveWorkbenchWindow();
+        if (activeWindow != null) {
+            return activeWindow.getShell();
+        } else {
+            return null;
+        }
     }
 
     public static IPreferenceStore getPreferences() {
