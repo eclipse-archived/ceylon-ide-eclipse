@@ -798,6 +798,32 @@ public class DebugUtils {
         String declaringTypeName = declaringType.name();
         final String methodName = method.name();
 
+        if (method.isStaticInitializer()) {
+            try {
+                if (location.sourceName() != null
+                        && ! location.sourceName().endsWith(".ceylon")) {
+                    return false;
+                }
+            } catch (AbsentInformationException e1) {
+                e1.printStackTrace();
+                return false;
+            }
+
+            if (! declaringTypeName.endsWith("_")) {
+                return true;
+            }
+            if (! (declaringType instanceof ClassType)) {
+                return true;
+            }
+
+            try {
+                List<Location> locations = method.allLineLocations();
+                return locations.size() <= 1;
+            } catch (AbsentInformationException e) {
+            }
+            return false;
+        }
+        
         if (declaringTypeName.equals(CEYLON_BOOLEAN)) {
             return true;
         }
