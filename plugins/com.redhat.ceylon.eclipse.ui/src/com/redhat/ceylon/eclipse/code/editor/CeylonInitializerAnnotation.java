@@ -1,12 +1,18 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
+import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
+import static org.eclipse.jface.resource.JFaceResources.getFontRegistry;
 
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationPresentation;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -14,6 +20,7 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -22,15 +29,29 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
 
     private final Position initializerPosition;
     private final int depth;
+    private StyledString styledString = new StyledString();
+    
+    public StyledString getStyledString() {
+        return styledString;
+    }
 
     public CeylonInitializerAnnotation(String name, Position initializerPosition, int depth) {
         this.initializerPosition = initializerPosition;
         this.depth = depth;
+        styledString.append("Initializer section of " + name, new Styler() {
+            @Override
+            public void applyStyles(TextStyle textStyle) {
+                FontData data = getFontRegistry()
+                        .getFontData(APPEARANCE_JAVADOC_FONT)[0];
+                
+                textStyle.font = new Font(Display.getDefault(), new FontData(data.getName(), data.getHeight(), SWT.BOLD));
+            }
+        });
+        styledString.append("\nThe initial part of the body of a class is called the initializer "
+                + "of the class\nand contains executable code that initializes references.\n"
+                + "The initializer is executed every time the class is instantiated.");
 
-        setText("<b>Initializer section of " + name + "</b>" +
-                "<p>The initial part of the body of a class is called the initializer "
-                + "of the class and contains executable code that initializes references. "
-                + "The initializer is executed every time the class is instantiated.</p>");
+        setText(styledString.getString());
     }
 
     public Position getInitializerPosition() {

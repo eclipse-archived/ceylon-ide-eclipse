@@ -45,6 +45,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
@@ -239,7 +240,17 @@ class AnnotationInformationControl extends AbstractInformationControl
                     public void widgetDefaultSelected(SelectionEvent e) {}
                 });
             }
-            else {
+            else if (annotation instanceof CeylonInitializerAnnotation) {
+                StyledText text = 
+                        new StyledText(composite, SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
+                text.setLayoutData(data);
+                String annotationText = annotation.getText();
+                if (annotationText!=null && !annotationText.isEmpty()) {
+                    StyledString styledString = ((CeylonInitializerAnnotation) annotation).getStyledString();
+                    text.setText(styledString.getString());
+                    text.setStyleRanges(styledString.getStyleRanges());
+                }
+            } else {
                 StyledText text = 
                         new StyledText(composite, SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
                 text.setLayoutData(data);
