@@ -561,7 +561,8 @@ public class JavaSearch {
     }
 
     public static IProject[] getProjectsToSearch(IProject project) {
-        if (project.getName().equals("Ceylon Source Archives")) {
+        if (project == null ||
+                project.getName().equals("Ceylon Source Archives")) {
             return CeylonBuilder.getProjects().toArray(new IProject[0]);
         }
         else {
