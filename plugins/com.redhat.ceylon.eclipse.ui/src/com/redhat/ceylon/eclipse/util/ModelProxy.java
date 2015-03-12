@@ -18,6 +18,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IProjectAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
@@ -34,11 +36,26 @@ public class ModelProxy {
     
     private SoftReference<Declaration> declaration;
     
+    private Declaration toModelDeclaration(Declaration declaration) {
+        Unit unit = declaration.getUnit();
+        if (unit instanceof ExternalSourceFile) {
+            ExternalSourceFile externalSourceFile = (ExternalSourceFile) unit;
+            if (externalSourceFile.isBinaryDeclarationSource()) {
+                Declaration binaryDeclaration = externalSourceFile.retrieveBinaryDeclaration(declaration);
+                if (binaryDeclaration != null) {
+                    return binaryDeclaration;
+                }
+            }
+        }
+        return declaration;
+    }
+    
     public ModelProxy(Declaration declaration) {
+        declaration = toModelDeclaration(declaration);
+        Unit unit = declaration.getUnit();
         this.name = declaration.getName();
         this.qualifiedName = declaration.getQualifiedNameString();
         //TODO: persist the signature somehow, to handle overloads
-        Unit unit = declaration.getUnit();
         this.unitName = unit.getFilename();
         Package pack = unit.getPackage();
         this.packageName = pack.getNameAsString();
@@ -46,7 +63,13 @@ public class ModelProxy {
         this.moduleVersion = pack.getModule().getVersion();
         this.declaration = new SoftReference<Declaration>(declaration);
         if (unit instanceof IResourceAware) {
-            project = ((IResourceAware) unit).getProjectResource();
+            project = ((IResourceAware) unit).getProjectResource(); 
+            // TODO In case of a cross project dependency (ICrossProjectReference-derived classes),
+            // it will return the original project containing the source declaration.
+            // Is is intentional ? In this case I wonder whether we should'nt also add a reference to 
+            // the original source declaration in the original source unit of original project :
+            // which means search the equivalent declaration in ((ICrossProjectReference)unit).getOriginalSourceFile().
+            // I wonder whether it's not better to keep per-project ModelProxys.
         }
         else if (unit instanceof IProjectAware) {
             project = ((IProjectAware) unit).getProject();
@@ -72,10 +95,12 @@ public class ModelProxy {
                 Unit unit = rootNode.getUnit();
                 if (unit!=null) {
                     String pname = unit.getPackage().getNameAsString();
+                    // TODO don't we check the module and module version and project ??
                     if (pname.equals(packageName)) {
                         Declaration result = 
                                 getDeclarationInUnit(qualifiedName, unit);
                         if (result!=null) {
+                            result = toModelDeclaration(result);
                             declaration = new SoftReference<Declaration>(result);
                             return result;
                         }
@@ -90,33 +115,28 @@ public class ModelProxy {
             Package pack = getModelLoader(typeChecker)
                     .getLoadedModule(moduleName)
                     .getPackage(packageName);
+            boolean searchForCeylonSourceFileUnit = unitName.endsWith(".ceylon");
             for (Unit unit: pack.getUnits()) {
+                boolean foundTheUnit = false;
                 if (unit.getFilename().equals(unitName)) {
+                    foundTheUnit = true;
+                } else if (searchForCeylonSourceFileUnit && unit instanceof CeylonBinaryUnit) {
+                    // This is only to accommodate for cases when the source file name of a binary unit 
+                    // has been stored in the 'fileName' field of the proxy 
+                    // (in the serialized ModelProxy objects of the history for example)
+                    String ceylonSourceFileName = ((CeylonBinaryUnit)unit).getCeylonFileName();
+                    if (ceylonSourceFileName != null) {
+                        if (ceylonSourceFileName.equals(unitName)) {
+                            foundTheUnit = true;
+                        }
+                    }
+                }
+                if (foundTheUnit) {
                     Declaration result = 
                             getDeclarationInUnit(qualifiedName, unit);
                     if (result!=null) {
                         declaration = new SoftReference<Declaration>(result);
                         return result;
-                    }
-                }
-            }
-            //the above approach doesn't work for binary modules 
-            //because the filenames are wrong for the iterated 
-            //units (.class instead of .ceylon), nor for Java
-            //modules, apparently
-            //TODO: David has a better way!
-            for (Declaration d: pack.getMembers()) {
-                String qn = d.getQualifiedNameString();
-                if (qn.equals(qualifiedName)) {
-                    declaration = new SoftReference<Declaration>(d);
-                    return d;
-                }
-                else if (qualifiedName.startsWith(qn)) {
-                    for (Declaration m: d.getMembers()) {
-                        if (m.getQualifiedNameString().equals(qualifiedName)) {
-                            declaration = new SoftReference<Declaration>(m);
-                            return m;
-                        }
                     }
                 }
             }
@@ -144,6 +164,7 @@ public class ModelProxy {
         else if (obj instanceof ModelProxy) {
             ModelProxy proxy = (ModelProxy) obj;
             return qualifiedName.equals(proxy.qualifiedName);
+            // TODO : why don't we also take in account the module (for version of course), as well as the project ?
         }
         else {
             return false;
