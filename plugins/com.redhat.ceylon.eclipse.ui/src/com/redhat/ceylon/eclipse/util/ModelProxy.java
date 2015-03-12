@@ -94,9 +94,13 @@ public class ModelProxy {
             if (rootNode!=null) {
                 Unit unit = rootNode.getUnit();
                 if (unit!=null) {
-                    String pname = unit.getPackage().getNameAsString();
-                    // TODO don't we check the module and module version and project ??
-                    if (pname.equals(packageName)) {
+                    Package p = unit.getPackage();
+                    String pname = p.getNameAsString();
+                    String mname = p.getModule().getNameAsString();
+                    String mversion = p.getModule().getVersion();
+                    if (pname.equals(packageName) &&
+                        mname.equals(moduleName) &&
+                        mversion.equals(moduleVersion)) {
                         Declaration result = 
                                 getDeclarationInUnit(qualifiedName, unit);
                         if (result!=null) {
@@ -115,16 +119,22 @@ public class ModelProxy {
             Package pack = getModelLoader(typeChecker)
                     .getLoadedModule(moduleName)
                     .getPackage(packageName);
-            boolean searchForCeylonSourceFileUnit = unitName.endsWith(".ceylon");
+            boolean searchForCeylonSourceFileUnit = 
+                    unitName.endsWith(".ceylon");
             for (Unit unit: pack.getUnits()) {
                 boolean foundTheUnit = false;
                 if (unit.getFilename().equals(unitName)) {
                     foundTheUnit = true;
-                } else if (searchForCeylonSourceFileUnit && unit instanceof CeylonBinaryUnit) {
-                    // This is only to accommodate for cases when the source file name of a binary unit 
-                    // has been stored in the 'fileName' field of the proxy 
-                    // (in the serialized ModelProxy objects of the history for example)
-                    String ceylonSourceFileName = ((CeylonBinaryUnit)unit).getCeylonFileName();
+                } 
+                else if (searchForCeylonSourceFileUnit && 
+                        unit instanceof CeylonBinaryUnit) {
+                    // This is only to accommodate for cases when 
+                    // the source file name of a binary unit has 
+                    // been stored in the 'fileName' field of the 
+                    // proxy (in the serialized ModelProxy objects 
+                    // of the history for example)
+                    String ceylonSourceFileName = 
+                            ((CeylonBinaryUnit) unit).getCeylonFileName();
                     if (ceylonSourceFileName != null) {
                         if (ceylonSourceFileName.equals(unitName)) {
                             foundTheUnit = true;
@@ -163,8 +173,9 @@ public class ModelProxy {
         }
         else if (obj instanceof ModelProxy) {
             ModelProxy proxy = (ModelProxy) obj;
-            return qualifiedName.equals(proxy.qualifiedName);
-            // TODO : why don't we also take in account the module (for version of course), as well as the project ?
+            return qualifiedName.equals(proxy.qualifiedName) &&
+                    moduleName.equals(proxy.moduleName) &&
+                    moduleVersion.equals(proxy.moduleVersion);
         }
         else {
             return false;
