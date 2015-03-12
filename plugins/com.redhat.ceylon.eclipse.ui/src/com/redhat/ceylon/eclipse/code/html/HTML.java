@@ -11,6 +11,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGES;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPES;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
+import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -225,7 +226,7 @@ public class HTML {
         String kwc = toHex(getCurrentThemeColor(KEYWORDS));
         return "<span style='color:"+kwc+"'>"+ kw + "</span>";
     }
-
+    
     public static String highlightLine(String line) {
         String kwc = toHex(getCurrentThemeColor(KEYWORDS));
         String tc = toHex(getCurrentThemeColor(TYPES));
@@ -243,7 +244,8 @@ public class HTML {
             String s = convertToHTMLContent(token.getText());
             int type = token.getType();
             if (type!=CeylonLexer.LIDENTIFIER &&
-                type!=CeylonLexer.MEMBER_OP) {
+                type!=CeylonLexer.MEMBER_OP &&
+                token.getChannel()!=HIDDEN_CHANNEL) {
                 inPackageName = false;
             }
             else if (inPackageName) {
