@@ -12,6 +12,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -34,30 +35,30 @@ public class Importer implements
 
     @Override
     public void left(LinkedModeModel model, int flags) {
-        //hate this, but it's needed or we get corruption in the editor :-(
-        //TODO: do the documentation modification somehow asynchronously,
-        //      after the typed character has been fully processed
-        if ((flags&EXTERNAL_MODIFICATION)!=0) return; 
-        
         if (type!=null) {
-            Set<Declaration> imports = new HashSet<Declaration>();
-            //note: we want the very latest tree here, so 
-            //get it direct from the editor!
-            Tree.CompilationUnit rootNode = 
-                    editor.getParseController().getRootNode();
-            importType(imports, type, rootNode);
-            if (!imports.isEmpty()) {
-                DocumentChange change = 
-                        new DocumentChange("Import Type", document);
-                change.setEdit(new MultiTextEdit());
-                applyImports(change, imports, rootNode, document);
-                try {
-                    change.perform(new NullProgressMonitor());
+            Display.getCurrent().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    Set<Declaration> imports = new HashSet<Declaration>();
+                    //note: we want the very latest tree here, so 
+                    //get it direct from the editor!
+                    Tree.CompilationUnit rootNode = 
+                            editor.getParseController().getRootNode();
+                    importType(imports, type, rootNode);
+                    if (!imports.isEmpty()) {
+                        DocumentChange change = 
+                                new DocumentChange("Import Type", document);
+                        change.setEdit(new MultiTextEdit());
+                        applyImports(change, imports, rootNode, document);
+                        try {
+                            change.perform(new NullProgressMonitor());
+                        }
+                        catch (CoreException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-                catch (CoreException e) {
-                    e.printStackTrace();
-                }
-            }
+            });
         }
     }
 
