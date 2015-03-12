@@ -250,7 +250,7 @@ public class ModuleCompletions {
             TypeChecker typeChecker = cpc.getTypeChecker();
             if (typeChecker!=null) {
                 IProject project = cpc.getProject();
-                monitor.subTask("Querying module repositories...");
+                monitor.subTask("querying module repositories...");
                 ModuleQuery query = getModuleQuery(prefix, project);
                 query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
                 final ModuleSearchResult results = 
