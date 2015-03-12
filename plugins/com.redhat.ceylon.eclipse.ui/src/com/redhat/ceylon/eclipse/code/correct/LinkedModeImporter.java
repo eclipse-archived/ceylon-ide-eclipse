@@ -20,15 +20,13 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-public class Importer implements 
-        LinkedModeCompletionProposal.TypeImporter, 
-        ILinkedModeListener {
+public class LinkedModeImporter implements ILinkedModeListener {
     
     private ProducedType type;
     private IDocument document;
     private CeylonEditor editor;
 
-    public Importer(IDocument document, CeylonEditor editor) {
+    public LinkedModeImporter(IDocument document, CeylonEditor editor) {
         this.document = document;
         this.editor = editor;
     }
@@ -68,7 +66,6 @@ public class Importer implements
     @Override
     public void resume(LinkedModeModel model, int flags) {}
 
-    @Override
     public void setImportedType(ProducedType type) {
         this.type = type;
     }

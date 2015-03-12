@@ -269,13 +269,9 @@ public class LinkedModeCompletionProposal
         return proposals;
     }
     
-    public interface TypeImporter {
-        public void setImportedType(ProducedType type);
-    }
-
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
             Unit unit, final ProducedType type, boolean includeValue, String kind,
-            final TypeImporter importer) {
+            final LinkedModeImporter importer) {
         if (type==null) {
             return new ICompletionProposal[0];
         }
@@ -297,7 +293,13 @@ public class LinkedModeCompletionProposal
         if (includeValue) {
             typeProposals[i++] =
                     new LinkedModeCompletionProposal(kind, offset, kind, 0, 
-                            getDecoratedImage(CEYLON_LITERAL, 0, false));
+                            getDecoratedImage(CEYLON_LITERAL, 0, false)) {
+                @Override
+                public void apply(IDocument document) {
+                    super.apply(document);
+                    importer.setImportedType(null);
+                }
+            };
         }
         if (td instanceof UnionType || 
             td instanceof IntersectionType) {

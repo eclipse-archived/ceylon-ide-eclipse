@@ -12,7 +12,7 @@ import org.eclipse.jface.text.link.ProposalPosition;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.correct.Importer;
+import com.redhat.ceylon.eclipse.code.correct.LinkedModeImporter;
 import com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -86,7 +86,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
                 editor.getParseController().getRootNode();
         Unit unit = rootNode.getUnit();
         
-        Importer importer =  new Importer(document, editor);
+        LinkedModeImporter importer =  new LinkedModeImporter(document, editor);
         linkedModeModel.addLinkingListener(importer);
         
         ProposalPosition linkedPosition = 
