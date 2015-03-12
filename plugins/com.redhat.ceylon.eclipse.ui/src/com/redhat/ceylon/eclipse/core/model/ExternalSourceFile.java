@@ -25,39 +25,43 @@ public class ExternalSourceFile extends SourceFile {
         return (ExternalPhasedUnit) super.getPhasedUnit();
     }
     
+    public boolean isBinaryDeclarationSource() {
+        JDTModule module = getModule();
+        return module.isCeylonBinaryArchive() 
+                && (getPackage() instanceof SingleSourceUnitPackage);
+
+    }
+    
     public Declaration retrieveBinaryDeclaration(Declaration sourceDeclaration) {
-        if (sourceDeclaration.getUnit() != this) {
+        if (! this.equals(sourceDeclaration.getUnit())) {
             return null;
         }
         Declaration binaryDeclaration = null;
-        JDTModule module = getModule();
-        if (module.isCeylonBinaryArchive()) {
-            if (getPackage() instanceof SingleSourceUnitPackage) {
-                SingleSourceUnitPackage sourceUnitPackage = (SingleSourceUnitPackage) getPackage();
-                Package binaryPackage = sourceUnitPackage.getModelPackage();
-                Stack<Declaration> ancestors = new Stack<>();
-                Scope container = sourceDeclaration.getContainer();
-                while (container instanceof Declaration) {
-                    Declaration ancestor = (Declaration) container;
-                    ancestors.push(ancestor);
-                    container = ancestor.getContainer();
+        if (isBinaryDeclarationSource()) {
+            SingleSourceUnitPackage sourceUnitPackage = (SingleSourceUnitPackage) getPackage();
+            Package binaryPackage = sourceUnitPackage.getModelPackage();
+            Stack<Declaration> ancestors = new Stack<>();
+            Scope container = sourceDeclaration.getContainer();
+            while (container instanceof Declaration) {
+                Declaration ancestor = (Declaration) container;
+                ancestors.push(ancestor);
+                container = ancestor.getContainer();
+            }
+            if (container.equals(sourceUnitPackage)) {
+                Scope curentBinaryScope = binaryPackage;
+                while (! ancestors.isEmpty()) {
+                    Declaration binaryAncestor = curentBinaryScope.getDirectMember(ancestors.pop().getName(), null, false);
+                    if (binaryAncestor instanceof Value) {
+                        binaryAncestor = ((Value) binaryAncestor).getTypeDeclaration();
+                    }
+                    if (binaryAncestor instanceof Scope) {
+                        curentBinaryScope = (Scope) binaryAncestor;
+                    } else {
+                        break;
+                    }
                 }
-                if (container.equals(sourceUnitPackage)) {
-                    Scope curentBinaryScope = binaryPackage;
-                    while (! ancestors.isEmpty()) {
-                        Declaration binaryAncestor = curentBinaryScope.getDirectMember(ancestors.pop().getName(), null, false);
-                        if (binaryAncestor instanceof Value) {
-                            binaryAncestor = ((Value) binaryAncestor).getTypeDeclaration();
-                        }
-                        if (binaryAncestor instanceof Scope) {
-                            curentBinaryScope = (Scope) binaryAncestor;
-                        } else {
-                            break;
-                        }
-                    }
-                    if (curentBinaryScope != null) {
-                        binaryDeclaration = curentBinaryScope.getDirectMember(sourceDeclaration.getName(), null, false);
-                    }
+                if (curentBinaryScope != null) {
+                    binaryDeclaration = curentBinaryScope.getDirectMember(sourceDeclaration.getName(), null, false);
                 }
             }
         }
