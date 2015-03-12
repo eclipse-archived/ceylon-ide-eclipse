@@ -303,7 +303,18 @@ public class JavaSearch {
             if (name.startsWith(Prefix.$default$.name())) {
                 name = name.substring(Prefix.$default$.name().length());
             } else if (name.equals("get_")) {
-                name = null;
+                boolean isStatic = false;
+                int parameterCount = 0;
+                IMethod method = (IMethod) dec;
+                try {
+                    isStatic = (method.getFlags() & Flags.AccStatic) != 0;
+                    parameterCount = method.getParameterNames().length;
+                } catch (JavaModelException e) {
+                    e.printStackTrace();
+                }
+                if (isStatic && parameterCount == 0) {
+                    name = null;
+                }
             } else if (name.startsWith("$")) {
                 name = name.substring(1);
             } else if (name.startsWith("get") ||
