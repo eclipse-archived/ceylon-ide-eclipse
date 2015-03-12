@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPack
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -25,16 +26,19 @@ final class ImportVisitor extends Visitor {
     private final Node node;
     private final CeylonParseController cpc;
     private final List<ICompletionProposal> result;
+    private IProgressMonitor monitor;
 
     ImportVisitor(String prefix, CommonToken token, int offset,
             Node node, CeylonParseController cpc,
-            List<ICompletionProposal> result) {
+            List<ICompletionProposal> result, 
+            IProgressMonitor monitor) {
         this.prefix = prefix;
         this.token = token;
         this.offset = offset;
         this.node = node;
         this.cpc = cpc;
         this.result = result;
+        this.monitor = monitor;
     }
 
     @Override
@@ -81,7 +85,8 @@ final class ImportVisitor extends Visitor {
         if (that.getImportPath()==node) {
             addModuleCompletions(cpc, offset, prefix, 
                     (Tree.ImportPath) node, node, result, 
-                    nextTokenType(cpc, token)!=CeylonLexer.STRING_LITERAL);
+                    nextTokenType(cpc, token)!=CeylonLexer.STRING_LITERAL,
+                    monitor);
         }
     }
 
@@ -90,7 +95,8 @@ final class ImportVisitor extends Visitor {
         super.visit(that);
         if (that.getImportPath()==node) {
             addModuleCompletions(cpc, offset, prefix, 
-                    (Tree.ImportPath) node, node, result, false);
+                    (Tree.ImportPath) node, node, result, false,
+                    monitor);
         }
     }
 }

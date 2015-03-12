@@ -219,7 +219,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         IProgressMonitor.UNKNOWN);
                 contentProposals = 
                         getContentProposals(editor.getParseController(), 
-                                offset, viewer, secondLevel, returnedParamInfo);
+                                offset, viewer, secondLevel, returnedParamInfo,
+                                monitor);
                 if (contentProposals!=null && contentProposals.length==1 && 
                         contentProposals[0] instanceof 
                         InvocationCompletionProposal.ParameterInfo) {
@@ -275,7 +276,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
     public ICompletionProposal[] getContentProposals(CeylonParseController cpc,
             int offset, ITextViewer viewer, boolean secondLevel, 
-            boolean returnedParamInfo) {
+            boolean returnedParamInfo, IProgressMonitor monitor) {
         
         if (cpc==null || viewer==null || 
                 cpc.getRootNode()==null || 
@@ -343,8 +344,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             //compute the offset, in order to
             //account for quoted identifiers, where
             //the \i or \I is not in the token text 
-            int offsetInToken = offset-adjustedToken.getStopIndex()-1+text.length();
-            int realOffsetInToken = offset-adjustedToken.getStartIndex();
+            int offsetInToken = 
+                    offset-adjustedToken.getStopIndex()-1+text.length();
+            int realOffsetInToken = 
+                    offset-adjustedToken.getStartIndex();
             if (offsetInToken<=text.length()) {
                 prefix = text.substring(0, offsetInToken);
                 fullPrefix = getRealText(adjustedToken)
@@ -355,7 +358,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         String qualified = null;
         
         // special handling for doc links
-        boolean inDoc = isAnnotationStringLiteral(adjustedToken) &&
+        boolean inDoc = 
+                isAnnotationStringLiteral(adjustedToken) &&
                 offset>adjustedToken.getStartIndex() &&
                 offset<=adjustedToken.getStopIndex();
         if (inDoc) {
@@ -393,7 +397,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         ICompletionProposal[] completions = 
                 constructCompletions(offset, fullPrefix, cpc, node, 
                         adjustedToken, scope, returnedParamInfo, 
-                        isMemberOp, viewer.getDocument(), tokenType);
+                        isMemberOp, viewer.getDocument(), tokenType,
+                        monitor);
         if (completions==null) {
             //finally, construct and sort proposals
             Map<String, DeclarationWithProximity> proposals = 
@@ -613,7 +618,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     private static ICompletionProposal[] constructCompletions(final int offset, 
             final String prefix, final CeylonParseController cpc, final Node node, 
             final CommonToken token, final Scope scope, boolean returnedParamInfo, 
-            boolean memberOp, final IDocument document, int tokenType) {
+            boolean memberOp, final IDocument document, int tokenType, 
+            IProgressMonitor monitor) {
         
         final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
         
@@ -624,7 +630,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             addPackageCompletions(cpc, offset, prefix, null, node, result, false);
         }
         else if (node instanceof Tree.ModuleLiteral) {
-            addModuleCompletions(cpc, offset, prefix, null, node, result, false);
+            addModuleCompletions(cpc, offset, prefix, null, node, result, false, monitor);
         }
         else if (isDescriptorPackageNameMissing(node)) {
             addCurrentPackageNameCompletion(cpc, offset, prefix, result);
@@ -635,10 +641,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else if (node instanceof Tree.ImportModule && offset>token.getStopIndex()+1) {
             addModuleCompletions(cpc, offset, prefix, null, node, result, 
-                    nextTokenType(cpc, token)!=STRING_LITERAL);
+                    nextTokenType(cpc, token)!=STRING_LITERAL, monitor);
         }
         else if (node instanceof Tree.ImportPath) {
-            new ImportVisitor(prefix, token, offset, node, cpc, result)
+            new ImportVisitor(prefix, token, offset, node, cpc, result, monitor)
                     .visit(cpc.getRootNode());
         }
         else if (isEmptyModuleDescriptor(cpc)) {

@@ -8,7 +8,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumen
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
-import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
+import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +17,7 @@ import java.util.TreeSet;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -28,9 +29,11 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.cmr.api.JDKUtils;
+import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
@@ -221,15 +224,17 @@ public class ModuleCompletions {
     
     static void addModuleCompletions(CeylonParseController cpc, 
             int offset, String prefix, Tree.ImportPath path, Node node, 
-            List<ICompletionProposal> result, boolean withBody) {
+            List<ICompletionProposal> result, boolean withBody,
+            IProgressMonitor monitor) {
         String fullPath = fullPath(offset, prefix, path);
         addModuleCompletions(offset, prefix, node, result, fullPath.length(), 
-                fullPath+prefix, cpc, withBody);
+                fullPath+prefix, cpc, withBody, monitor);
     }
 
     private static void addModuleCompletions(int offset, String prefix, Node node, 
             List<ICompletionProposal> result, final int len, String pfp,
-            final CeylonParseController cpc, final boolean withBody) {
+            final CeylonParseController cpc, final boolean withBody,
+            IProgressMonitor monitor) {
         if (pfp.startsWith("java.")) {
             for (String name: 
                     new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
@@ -245,8 +250,17 @@ public class ModuleCompletions {
             TypeChecker typeChecker = cpc.getTypeChecker();
             if (typeChecker!=null) {
                 IProject project = cpc.getProject();
+                monitor.subTask("Querying module repositories...");
+                ModuleQuery query = getModuleQuery(prefix, project);
+                query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
                 final ModuleSearchResult results = 
-                        getModuleSearchResults(pfp, typeChecker,project);
+                        typeChecker.getContext()
+                                .getRepositoryManager()
+                                .completeModules(query);
+                monitor.subTask(null);
+//                final ModuleSearchResult results = 
+//                        getModuleSearchResults(pfp, typeChecker,project);
+                if (results==null) return;
                 for (ModuleDetails module: results.getResults()) {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
