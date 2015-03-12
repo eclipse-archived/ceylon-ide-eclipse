@@ -307,10 +307,10 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         tfc.addEdit(new ReplaceEdit(Nodes.getNodeStartOffset(node), 
                 Nodes.getNodeLength(node), call));
         int buffer = pl.getParameters().isEmpty()?0:2;
-        decRegion = new Region(start+typeDec.length()+buffer+1, newName.length());
-        refRegion = new Region(Nodes.getNodeStartOffset(node)+dectext.length()+il+refStart, 
+        decRegion = new Region(start+il+typeDec.length()+buffer+1, newName.length());
+        refRegion = new Region(Nodes.getNodeStartOffset(node)+il+dectext.length()+refStart, 
                 newName.length());
-        typeRegion = new Region(start+buffer, typeDec.length());
+        typeRegion = new Region(start+il+buffer, typeDec.length());
     }
 
     private int addType(TextChange tfc, IDocument doc, 

@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getSupertypeProposals;
+import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getSupertypeProposals;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -12,7 +12,8 @@ import org.eclipse.jface.text.link.ProposalPosition;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal;
+import com.redhat.ceylon.eclipse.code.correct.Importer;
+import com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Escaping;
@@ -81,11 +82,17 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
 
 	protected void addTypePosition(IDocument document,
             ProducedType type, int offset, int length) {
-        Unit unit = editor.getParseController().getRootNode().getUnit();
+        Tree.CompilationUnit rootNode = 
+                editor.getParseController().getRootNode();
+        Unit unit = rootNode.getUnit();
+        
+        Importer importer =  new Importer(document, rootNode);
+        linkedModeModel.addLinkingListener(importer);
+        
         ProposalPosition linkedPosition = 
                 new ProposalPosition(document, offset, length, 1, 
                         getSupertypeProposals(offset, unit, type,
-                                canBeInferred(), getKind()));
+                                canBeInferred(), getKind(), importer));
         try {
             LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
         } 

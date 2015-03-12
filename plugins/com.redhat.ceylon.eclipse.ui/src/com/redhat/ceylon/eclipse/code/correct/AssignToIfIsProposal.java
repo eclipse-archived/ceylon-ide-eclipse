@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getCaseTypeProposals;
-import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getNameProposals;
+import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getCaseTypeProposals;
+import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getNameProposals;
 
 import java.util.Collection;
 

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
@@ -263,9 +263,14 @@ public class LinkedModeCompletionProposal
         }
         return proposals;
     }
+    
+    public interface TypeImporter {
+        public void setImportedType(ProducedType type);
+    }
 
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
-            Unit unit, ProducedType type, boolean includeValue, String kind) {
+            Unit unit, final ProducedType type, boolean includeValue, String kind,
+            final TypeImporter importer) {
         if (type==null) {
             return new ICompletionProposal[0];
         }
@@ -292,13 +297,25 @@ public class LinkedModeCompletionProposal
         if (td instanceof UnionType || 
             td instanceof IntersectionType) {
             typeProposals[i++] = 
-                    new LinkedModeCompletionProposal(type, unit, offset, 0);
+                    new LinkedModeCompletionProposal(type, unit, offset, 0) {
+                @Override
+                public void apply(IDocument document) {
+                    super.apply(document);
+                    importer.setImportedType(type);
+                }
+            };
         }
         for (int j=supertypes.size()-1; j>=0; j--) {
-            ProducedType supertype = 
+            final ProducedType supertype = 
                     type.getSupertype(supertypes.get(j));
             typeProposals[i++] = 
-                    new LinkedModeCompletionProposal(supertype, unit, offset, 0);
+                    new LinkedModeCompletionProposal(supertype, unit, offset, 0) {
+                @Override
+                public void apply(IDocument document) {
+                    super.apply(document);
+                    importer.setImportedType(supertype);
+                }
+            };
         }
         return typeProposals;
     }

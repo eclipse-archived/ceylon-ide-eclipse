@@ -166,9 +166,9 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         tfc.addEdit(new InsertEdit(start, text));
         tfc.addEdit(new ReplaceEdit(Nodes.getNodeStartOffset(node), 
         		Nodes.getNodeLength(node), newName));
-        typeRegion = new Region(start, typeDec.length());
-        decRegion = new Region(start+typeDec.length()+1, newName.length());
-        refRegion = new Region(Nodes.getNodeStartOffset(node)+text.length()+il, 
+        typeRegion = new Region(start+il, typeDec.length());
+        decRegion = new Region(start+il+typeDec.length()+1, newName.length());
+        refRegion = new Region(Nodes.getNodeStartOffset(node)+il+text.length(), 
         		newName.length());
     }
     

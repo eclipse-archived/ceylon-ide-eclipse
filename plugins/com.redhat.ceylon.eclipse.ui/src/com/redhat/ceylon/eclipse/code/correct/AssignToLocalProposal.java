@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getNameProposals;
-import static com.redhat.ceylon.eclipse.code.complete.LinkedModeCompletionProposal.getSupertypeProposals;
+import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getNameProposals;
+import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getSupertypeProposals;
 
 import java.util.Collection;
 
@@ -45,10 +45,14 @@ class AssignToLocalProposal extends LocalProposal {
     
     protected void addLinkedPositions(IDocument document, Unit unit)
             throws BadLocationException {
+        
+        Importer importer = new Importer(document, rootNode);
+        linkedModeModel.addLinkingListener(importer);
+        
         ProposalPosition typePosition = 
         		new ProposalPosition(document, offset, 5, 1, 
         				getSupertypeProposals(offset, unit, 
-        						type, true, "value"));
+        						type, true, "value", importer));
         
         ProposalPosition namePosition = 
         		new ProposalPosition(document, offset+6, initialName.length(), 0, 
@@ -74,3 +78,4 @@ class AssignToLocalProposal extends LocalProposal {
     }
 
 }
+

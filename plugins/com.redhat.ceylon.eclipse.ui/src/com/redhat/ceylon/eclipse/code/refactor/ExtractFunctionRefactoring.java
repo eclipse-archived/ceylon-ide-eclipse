@@ -639,9 +639,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         Integer decStart = decNode.getStartIndex();
         tfc.addEdit(new InsertEdit(decStart, text));
         tfc.addEdit(new ReplaceEdit(start, length, invocation));
-        typeRegion = new Region(decStart, type.length());
-        decRegion = new Region(decStart+type.length()+1, newName.length());
-        refRegion = new Region(refStart+text.length()+il, newName.length());
+        typeRegion = new Region(decStart+il, type.length());
+        decRegion = new Region(decStart+il+type.length()+1, newName.length());
+        refRegion = new Region(refStart+il+text.length(), newName.length());
     }
 
     private Scope getContainingScope(Tree.Declaration decNode) {
@@ -840,8 +840,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         Integer decStart = decNode.getStartIndex();
         tfc.addEdit(new InsertEdit(decStart, content));        
         tfc.addEdit(new ReplaceEdit(start, length, invocation));
-        typeRegion = new Region(decStart, content.indexOf(' '));
-        decRegion = new Region(decStart+content.indexOf(' ')+1, newName.length());
+        typeRegion = new Region(decStart+il, content.indexOf(' '));
+        decRegion = new Region(decStart+il+content.indexOf(' ')+1, newName.length());
         refRegion = new Region(start+content.length()+il+invocation.indexOf('=')+1, newName.length());
     }
 
