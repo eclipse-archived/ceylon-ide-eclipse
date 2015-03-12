@@ -107,10 +107,14 @@ public class LinkedModeCompletionProposal
     private final int offset;
     private int position;
     private String description;
+    private String breakChars;
+    private String regionChars;
     
     private LinkedModeCompletionProposal(String name,
             int offset, int position) {
         this(name, offset, name, position, null);
+        breakChars = " (<";
+        regionChars = "\\";
     }
     
     private LinkedModeCompletionProposal(ProducedType type,
@@ -129,6 +133,8 @@ public class LinkedModeCompletionProposal
         this.position = position;
         this.image = image;
         this.offset = offset;
+        regionChars = "<>[](){}*+.,|&?\\";
+        breakChars = " ";
     }
     
     @Override
@@ -163,13 +169,12 @@ public class LinkedModeCompletionProposal
                 i++) {
             char ch = document.getChar(i);
             if (Character.isJavaIdentifierPart(ch) 
-                    || ch=='<' || ch=='>' 
-                    || ch=='[' || ch==']' 
-                    || ch=='.' || ch=='\\') {
+                    || regionChars.indexOf(ch)>=0) {
                 lastWasWs = false;
                 length++;
             }
-            else if (Character.isWhitespace(ch) || ch=='(') {
+            else if (Character.isWhitespace(ch) 
+                    || breakChars.indexOf(ch)>=0) {
                 if (!lastWasWs) {
                     if (count++==position) {
                         break;

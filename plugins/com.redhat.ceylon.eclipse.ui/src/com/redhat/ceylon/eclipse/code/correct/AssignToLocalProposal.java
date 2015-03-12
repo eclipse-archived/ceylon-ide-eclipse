@@ -46,7 +46,7 @@ class AssignToLocalProposal extends LocalProposal {
     protected void addLinkedPositions(IDocument document, Unit unit)
             throws BadLocationException {
         
-        Importer importer = new Importer(document, rootNode);
+        Importer importer = new Importer(document, editor);
         linkedModeModel.addLinkingListener(importer);
         
         ProposalPosition typePosition = 

@@ -86,7 +86,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
                 editor.getParseController().getRootNode();
         Unit unit = rootNode.getUnit();
         
-        Importer importer =  new Importer(document, rootNode);
+        Importer importer =  new Importer(document, editor);
         linkedModeModel.addLinkingListener(importer);
         
         ProposalPosition linkedPosition = 
