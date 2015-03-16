@@ -133,11 +133,21 @@ public class AddAnnotionProposal extends CorrectionProposal {
             selection = null;
         }
         Scope container = dec.getContainer();
-        String containerDesc = container instanceof TypeDeclaration ?
-                " in '" + ((TypeDeclaration) container).getName() + "'" : "";
+        String containerDesc = "";
+        if (container instanceof TypeDeclaration) {
+            String name = ((TypeDeclaration) container).getName();
+            if (name == null && container instanceof Constructor) {
+                Scope cont = container.getContainer();
+                if (cont instanceof Declaration) {
+                    name = ((Declaration) cont).getName();
+                }
+            }
+            containerDesc = " in '" + name + "'";
+        }
         String name = dec.getName();
         if (name == null && dec instanceof Constructor) {
-            if (container instanceof Declaration) {
+            Scope cont = dec.getContainer();
+            if (cont instanceof Declaration) {
                 name = ((Declaration) container).getName();
                 containerDesc = "";
             }
