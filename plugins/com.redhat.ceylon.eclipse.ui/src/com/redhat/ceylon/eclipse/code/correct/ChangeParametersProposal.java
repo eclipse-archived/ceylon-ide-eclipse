@@ -14,7 +14,9 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeParametersRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeParametersRefactoringAction;
@@ -43,7 +45,14 @@ class ChangeParametersProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        return "Change parameters of '" + dec.getName() + "'";
+        String name = dec.getName();
+        if (name == null && dec instanceof Constructor) {
+            Scope container = dec.getContainer();
+            if (container instanceof Declaration) {
+                name = ((Declaration) container).getName();
+            }
+        }
+        return "Change parameters of '" + name + "'";
     }
 
     @Override

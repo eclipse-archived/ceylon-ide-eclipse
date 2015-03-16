@@ -44,6 +44,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
+import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
@@ -90,9 +91,16 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         result.setLayout(layout);
         Label title = new Label(result, SWT.LEFT);  
         Declaration dec = refactoring.getDeclaration();
+        String name = dec.getName();
+        if (name == null && dec instanceof Constructor) {
+            Scope container = dec.getContainer();
+            if (container instanceof Declaration) {
+                name = ((Declaration) container).getName();
+            }
+        }
         title.setText("Change parameters in " + 
                 refactoring.getCount() + 
-                " occurrences of '" + dec.getName() + "'.");
+                " occurrences of '" + name + "'.");
         GridData gd = new GridData();
         gd.horizontalSpan=2;
         title.setLayoutData(gd);
