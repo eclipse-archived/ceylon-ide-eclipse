@@ -24,6 +24,7 @@ import org.eclipse.text.edits.TextEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -134,8 +135,15 @@ public class AddAnnotionProposal extends CorrectionProposal {
         Scope container = dec.getContainer();
         String containerDesc = container instanceof TypeDeclaration ?
                 " in '" + ((TypeDeclaration) container).getName() + "'" : "";
+        String name = dec.getName();
+        if (name == null && dec instanceof Constructor) {
+            if (container instanceof Declaration) {
+                name = ((Declaration) container).getName();
+                containerDesc = "";
+            }
+        }
         String description = 
-                "Make '" + dec.getName() + "' " + annotation + containerDesc;
+                "Make '" + name + "' " + annotation + containerDesc;
         AddAnnotionProposal p = new AddAnnotionProposal(dec, annotation, 
         		description, edit.getOffset(), change, selection);
         if (!proposals.contains(p)) {
