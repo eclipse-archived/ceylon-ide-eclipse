@@ -70,6 +70,7 @@ public class FindSubtypesAction extends AbstractFindAction {
     @Override
     boolean isValidSelection() {
         return declaration instanceof TypeDeclaration &&
+                declaration.getNameAsString()!=null &&
                 !(declaration instanceof TypeParameter);
     }
 

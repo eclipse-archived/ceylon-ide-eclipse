@@ -3,8 +3,6 @@ package com.redhat.ceylon.eclipse.util;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
@@ -27,8 +25,7 @@ public class FindRefinementsVisitor extends Visitor implements NaturalVisitor {
     
     protected boolean isRefinement(Declaration dec) {
         return dec!=null && dec.refines(declaration) ||
-                isSetterRefinement(dec) ||
-                isConstructorReference(dec);
+                isSetterRefinement(dec);
     }
 
     private boolean isSetterRefinement(Declaration dec) {
@@ -40,18 +37,6 @@ public class FindRefinementsVisitor extends Visitor implements NaturalVisitor {
         }
     }
     
-    private boolean isConstructorReference(Declaration ref) {
-        if (ref instanceof Constructor) {
-            Constructor constructor = (Constructor) ref;
-            ClassOrInterface c = constructor.getExtendedTypeDeclaration();
-            return c.getName().equals(ref.getName()) &&
-                    c.equals(declaration);
-        }
-        else {
-            return false;
-        }
-    }
-
     @Override
     public void visit(Tree.SpecifierStatement that) {
         if (that.getRefinement() &&

@@ -99,7 +99,8 @@ public class FindReferencesAction extends AbstractFindAction {
     
     @Override
     boolean isValidSelection() {
-        return declaration!=null;
+        return declaration!=null &&
+                declaration.getNameAsString()!=null;
     }
 
     @Override

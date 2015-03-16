@@ -85,7 +85,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 MemberOrTypeExpression mte = 
                         (Tree.MemberOrTypeExpression) primary;
                 Declaration dec = mte.getDeclaration();
-                if (isReference(dec)) {
+                if (dec.refines(declaration)) {
                     Tree.PositionalArgumentList pal = 
                             that.getPositionalArgumentList();
                     if (pal != null) {
@@ -98,14 +98,6 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     }
                 }
             }
-        }
-
-        private boolean isReference(Declaration dec) {
-            return dec.refines(declaration) ||
-                    dec instanceof Class && 
-                    declaration instanceof Constructor &&
-                    declaration.getContainer().equals(dec) && 
-                    declaration.getName().equals(dec.getName());
         }
     }
 
@@ -199,13 +191,10 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 else {
                     Declaration dec = (Declaration) refDec;
                     if (dec instanceof Class) {
-                        if (((Class) dec).hasConstructors()) {
-                            Declaration d = 
-                                    dec.getMember(dec.getName(), 
-                                            null, false);
-                            if (d instanceof Constructor) {
-                                dec = d;
-                            }
+                        Constructor defaultConstructor = 
+                                ((Class) dec).getDefaultConstructor();
+                        if (defaultConstructor!=null) {
+                            dec = defaultConstructor;
                         }
                     }
                     declaration = dec;

@@ -72,11 +72,16 @@ public class FindRefinementsAction extends AbstractFindAction {
     
     @Override
     boolean isValidSelection() {
-        declaration = 
-                new FindReferencesVisitor(declaration).getDeclaration();
-        return declaration instanceof Declaration /*&& 
-                declaration.isClassOrInterfaceMember() &&
-                !(declaration instanceof TypeParameter)*/;
+        if (declaration==null || 
+                declaration.getNameAsString()==null) {
+            return false;
+        }
+        else {
+            declaration = 
+                    new FindReferencesVisitor(declaration)
+                            .getDeclaration();
+            return declaration instanceof Declaration;
+        }
     }
 
     @Override

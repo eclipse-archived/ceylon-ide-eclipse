@@ -13,6 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
@@ -37,24 +38,29 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
                 od = ((TypedDeclaration) od).getOriginalDeclaration();
             }
         }
-        if (declaration instanceof Declaration && 
-                ((Declaration)declaration).getContainer() instanceof Setter) {
-            Setter setter = (Setter) ((Declaration)declaration).getContainer();
-            if (setter.getDirectMember(setter.getName(), null, false)
-                    .equals(declaration)) {
-                declaration = setter;
+        if (declaration instanceof Declaration) { 
+            Scope container = 
+                    ((Declaration) declaration).getContainer();
+            if (container instanceof Setter) {
+                Setter setter = (Setter) container;
+                if (setter.getDirectMember(setter.getName(), null, false)
+                        .equals(declaration)) {
+                    declaration = setter;
+                }
             }
         }
         if (declaration instanceof Setter) {
             declaration = ((Setter) declaration).getGetter();
         }
-        if (declaration instanceof Constructor) {
-            Constructor constructor = (Constructor) declaration;
-            ClassOrInterface c = constructor.getExtendedTypeDeclaration();
-            if (c!=null && 
-                    c.getName().equals(constructor.getName())) {
-                //default constructor
-                declaration = c;
+        if (declaration instanceof Constructor &&
+                declaration.getNameAsString()==null) {
+            //default constructor
+            Constructor constructor =
+                    (Constructor) declaration;
+            ClassOrInterface classOrInterface = 
+                    constructor.getExtendedTypeDeclaration();
+            if (classOrInterface!=null) {
+                declaration = classOrInterface;
             }
         }
         this.declaration = declaration;
@@ -74,9 +80,8 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
     
     protected boolean isReference(Declaration ref) {
         return ref!=null && declaration instanceof Declaration && 
-                (((Declaration)declaration).refines(ref) || 
-                        isSetterParameterReference(ref) ||
-                        isConstructorReference(ref));
+                (((Declaration) declaration).refines(ref) || 
+                        isSetterParameterReference(ref));
     }
 
     private boolean isSetterParameterReference(Declaration ref) {
@@ -89,19 +94,7 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
             return false;
         }
     }
-
-    private boolean isConstructorReference(Declaration ref) {
-        if (ref instanceof Constructor) {
-            Constructor constructor = (Constructor) ref;
-            ClassOrInterface c = constructor.getExtendedTypeDeclaration();
-            return c.getName().equals(ref.getName()) &&
-                    c.equals(declaration);
-        }
-        else {
-            return false;
-        }
-    }
-
+    
     protected boolean isReference(Declaration ref, String id) {
         return isReference(ref);
     }
