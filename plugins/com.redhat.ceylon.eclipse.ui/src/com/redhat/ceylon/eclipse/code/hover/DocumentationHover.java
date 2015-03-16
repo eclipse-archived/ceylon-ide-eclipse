@@ -1729,7 +1729,7 @@ public class DocumentationHover extends SourceInfoHover {
                 if (qt!=null) {
                     String desc;
                     if (dec instanceof Constructor) {
-                        if (dec.getName().equals(outer.getName())) {
+                        if (dec.getName()==null) {
                             desc = "Default constructor of";
                         }
                         else {
