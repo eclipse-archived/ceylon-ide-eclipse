@@ -1013,7 +1013,11 @@ public class DocumentationHover extends SourceInfoHover {
             Package pack) {
         boolean first = true;
         for (Declaration dec: pack.getMembers()) {
-            if (dec instanceof Class && ((Class)dec).isOverloaded()) {
+            if (dec.getName()==null) {
+                continue;
+            }
+            if (dec instanceof Class && 
+                    ((Class) dec).isOverloaded()) {
                 continue;
             }
             if (dec.isShared() && !dec.isAnonymous()) {
@@ -1372,6 +1376,9 @@ public class DocumentationHover extends SourceInfoHover {
             if (!dec.getMembers().isEmpty()) {
                 boolean first = true;
                 for (Declaration mem: dec.getMembers()) {
+                    if (mem.getName()==null) {
+                        continue;
+                    }
                     if (mem instanceof Method && 
                             ((Method) mem).isOverloaded()) {
                         continue;
@@ -1680,10 +1687,16 @@ public class DocumentationHover extends SourceInfoHover {
         Unit unit = node==null ? null : node.getUnit();
         buffer.append("<p>");
         if (dec.isParameter()) {
-            Declaration pd = 
-                    ((MethodOrValue) dec).getInitializerParameter()
-                            .getDeclaration();
-            if (pd.getName().startsWith("anonymous#")) {
+            Parameter ip = ((MethodOrValue) dec).getInitializerParameter();
+            Declaration pd = ip.getDeclaration();
+            if (pd.getName()==null) {
+                if (pd instanceof Constructor) {
+                    buffer.append("Parameter of default constructor of");
+                    appendParameterLink(buffer, (Declaration) pd.getContainer());
+                    buffer.append(".");
+                }
+            }
+            else if (pd.getName().startsWith("anonymous#")) {
                 buffer.append("Parameter of anonymous function.");
             }
             else {
