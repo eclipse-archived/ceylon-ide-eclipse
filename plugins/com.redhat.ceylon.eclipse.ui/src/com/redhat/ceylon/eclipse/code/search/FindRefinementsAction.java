@@ -29,7 +29,7 @@ public class FindRefinementsAction extends AbstractFindAction {
                 Referenceable referencedDeclaration) {
             //TODO: very ugly!!
             Declaration declaration = (Declaration)
-                    new FindReferencesVisitor((Declaration)referencedDeclaration)
+                    new FindReferencesVisitor(referencedDeclaration)
                             .getDeclaration();
             FindRefinementsVisitor frv = new FindRefinementsVisitor(declaration);
             cu.visit(frv);
