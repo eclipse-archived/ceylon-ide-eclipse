@@ -68,17 +68,22 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                     findNode(controller.getRootNode(), 
                             region.getOffset(), 
                             region.getOffset()+region.getLength());
-            Node id = getIdentifyingNode(node);
             if (node==null) {
                 return null;
             }
             else {
-                Node r = getReferencedNode(node);
-                if (r==null) {
+                Node id = getIdentifyingNode(node);
+                if (id==null) {
                     return null;
                 }
                 else {
-                    return new IHyperlink[] { new CeylonNodeLink(r, id) };
+                    Node r = getReferencedNode(node);
+                    if (r==null) {
+                        return null;
+                    }
+                    else {
+                        return new IHyperlink[] { new CeylonNodeLink(r, id) };
+                    }
                 }
             }
         }
