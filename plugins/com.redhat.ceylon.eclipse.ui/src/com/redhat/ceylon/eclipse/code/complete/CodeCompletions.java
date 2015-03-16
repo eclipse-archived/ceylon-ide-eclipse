@@ -774,9 +774,11 @@ public class CodeCompletions {
                 }
             }
         }
-        result.append(" ")
-            .append(descriptionOnly ? 
+        result.append(" ");
+        if (d.getName()!=null) {
+            result.append(descriptionOnly ? 
                     d.getName() : escapeName(d));
+        }
     }
     
     private static void appendNamedArgumentHeader(Parameter p, 
