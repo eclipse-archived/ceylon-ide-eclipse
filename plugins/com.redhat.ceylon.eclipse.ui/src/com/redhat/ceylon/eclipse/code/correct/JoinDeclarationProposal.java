@@ -14,7 +14,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -25,11 +25,16 @@ public class JoinDeclarationProposal {
     static void addJoinDeclarationProposal(final Collection<ICompletionProposal> proposals, 
             Tree.CompilationUnit rootNode, final Tree.Statement statement, final IFile file) {
         if (statement instanceof Tree.SpecifierStatement) {
-            final Tree.SpecifierStatement spec = (Tree.SpecifierStatement) statement;
+            final Tree.SpecifierStatement spec = 
+                    (Tree.SpecifierStatement) statement;
             Tree.Term term = spec.getBaseMemberExpression();
+            while (term instanceof Tree.ParameterizedExpression) {
+                term = ((Tree.ParameterizedExpression) term).getPrimary();
+            }
             if (term instanceof Tree.BaseMemberExpression) {
-                final Declaration dec = ((Tree.BaseMemberExpression) term).getDeclaration();
-                if (dec instanceof Value) {
+                final Declaration dec = 
+                        ((Tree.BaseMemberExpression) term).getDeclaration();
+                if (dec instanceof MethodOrValue) {
                     class FindBodyVisitor extends Visitor {
                         @Override
                         public void visit(Tree.Body that) {
@@ -48,6 +53,18 @@ public class JoinDeclarationProposal {
                                             break;
                                         }
                                     }
+                                    else if (st instanceof Tree.MethodDeclaration) {
+                                        Tree.MethodDeclaration ad = 
+                                                (Tree.MethodDeclaration) st;
+                                        if (ad.getDeclarationModel().equals(dec) &&
+                                                ad.getSpecifierExpression()==null) {
+                                            createJoinDeclarationProposal(proposals, 
+                                                    spec, file, dec, that, 
+                                                    that.getStatements().indexOf(st), 
+                                                    ad);
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -56,10 +73,18 @@ public class JoinDeclarationProposal {
                 }
             }
         }
-        if (statement instanceof Tree.AttributeDeclaration) {
-            final Tree.AttributeDeclaration ad = 
-                    (Tree.AttributeDeclaration) statement;
-            if (ad.getSpecifierOrInitializerExpression()==null) {
+        if (statement instanceof Tree.AttributeDeclaration ||
+            statement instanceof Tree.MethodDeclaration) {
+            final Tree.TypedDeclaration ad = 
+                    (Tree.TypedDeclaration) statement;
+            Tree.SpecifierOrInitializerExpression sie = null;
+            if (statement instanceof Tree.AttributeDeclaration) {
+                sie = ((Tree.AttributeDeclaration) ad).getSpecifierOrInitializerExpression();
+            }
+            else if (statement instanceof Tree.MethodDeclaration) {
+                sie = ((Tree.MethodDeclaration) ad).getSpecifierExpression();
+            }
+            if (sie==null) {
                 final Declaration dec = ad.getDeclarationModel();
                 class FindBodyVisitor extends Visitor {
                     @Override
@@ -71,6 +96,9 @@ public class JoinDeclarationProposal {
                                     final Tree.SpecifierStatement spec = 
                                             (Tree.SpecifierStatement) st;
                                     Tree.Term term = spec.getBaseMemberExpression();
+                                    while (term instanceof Tree.ParameterizedExpression) {
+                                        term = ((Tree.ParameterizedExpression) term).getPrimary();
+                                    }
                                     if (term instanceof Tree.BaseMemberExpression) {
                                         Declaration sd = 
                                                 ((Tree.BaseMemberExpression) term).getDeclaration();
@@ -93,11 +121,10 @@ public class JoinDeclarationProposal {
     }
 
     private static void createJoinDeclarationProposal(
-            final Collection<ICompletionProposal> proposals,
-            final Tree.SpecifierStatement statement,
-            final IFile file, final Declaration dec,
-            Tree.Body that, int i,
-            Tree.AttributeDeclaration ad) {
+            Collection<ICompletionProposal> proposals,
+            Tree.SpecifierStatement statement,
+            IFile file, Declaration dec,
+            Tree.Body that, int i, Tree.TypedDeclaration ad) {
         TextChange change = new TextFileChange("Join Declaration", file);
         change.setEdit(new MultiTextEdit());
         IDocument document = EditorUtil.getDocument(change);
