@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -87,7 +88,8 @@ public class AddConstructorProposal {
                         params.append(", ");
                     }
                     String type = 
-                            dec.getType().getProducedTypeName(unit);
+                            dec.getProducedReference(null, Collections.<ProducedType>emptyList())
+                               .getFullType().getProducedTypeName(unit);
                     params.append(type)
                           .append(" ")
                           .append(dec.getName());
@@ -150,7 +152,16 @@ public class AddConstructorProposal {
                         (Tree.AttributeDeclaration) s;
                 Tree.SpecifierOrInitializerExpression sie = 
                         ad.getSpecifierOrInitializerExpression();
-                return !(sie instanceof Tree.LazySpecifierExpression);
+                return !(sie instanceof Tree.LazySpecifierExpression) &&
+                        !ad.getDeclarationModel().isFormal();
+            }
+            else if (s instanceof Tree.MethodDeclaration) {
+                Tree.MethodDeclaration ad = 
+                        (Tree.MethodDeclaration) s;
+                Tree.SpecifierExpression sie = 
+                        ad.getSpecifierExpression();
+                return !(sie instanceof Tree.LazySpecifierExpression) &&
+                        !ad.getDeclarationModel().isFormal();
             }
             else if (s instanceof Tree.ObjectDefinition) {
                 Tree.ObjectDefinition o = (Tree.ObjectDefinition) s;
