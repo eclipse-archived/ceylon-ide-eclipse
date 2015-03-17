@@ -242,7 +242,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         try {
             pattern = getJavaNameOfDeclaration(declaration);
         }
-        catch (IllegalArgumentException e) {
+        catch (Exception e) {
             return;
         }
         boolean anonymous = pattern.endsWith(".get_");
