@@ -341,7 +341,8 @@ final class TerminateStatementAction extends Action {
             @Override
             public void visit(Tree.ClassDeclaration that) {
                 super.visit(that);
-                if (that.getParameterList()==null) {
+                if (inLine(that) && 
+                        that.getParameterList()==null) {
                     if (!change.getEdit().hasChildren()) {
                         change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
                     }
@@ -350,12 +351,14 @@ final class TerminateStatementAction extends Action {
             @Override
             public void visit(Tree.ClassDefinition that) {
                 super.visit(that);
-                if (that.getParameterList()==null && that.getClassBody()!=null) {
-                    for (Tree.Statement st: that.getClassBody().getStatements()) {
+                if (inLine(that) && 
+                        that.getParameterList()==null && 
+                        that.getClassBody()!=null) {
+                    /*for (Tree.Statement st: that.getClassBody().getStatements()) {
                         if (st instanceof Tree.Constructor) {
                             return;
                         }
-                    }
+                    }*/
                     if (!change.getEdit().hasChildren()) {
                         change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
                     }
@@ -364,16 +367,21 @@ final class TerminateStatementAction extends Action {
             @Override
             public void visit(Tree.Constructor that) {
                 super.visit(that);
-                if (that.getParameterList()==null && that.getBlock()!=null) {
+                if (inLine(that) && 
+                        that.getParameterList()==null && 
+                        that.getBlock()!=null) {
                     if (!change.getEdit().hasChildren()) {
-                        change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
+                        Tree.Identifier id = that.getIdentifier();
+                        CommonToken tok = (CommonToken) (id==null ? that.getMainToken() : id.getToken());
+                        change.addEdit(new InsertEdit(tok.getStopIndex()+1, "()"));
                     }
                 }
             }
             @Override
             public void visit(Tree.AnyMethod that) {
                 super.visit(that);
-                if (that.getParameterLists().isEmpty()) {
+                if (inLine(that) && 
+                        that.getParameterLists().isEmpty()) {
                     if (!change.getEdit().hasChildren()) {
                         change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
                     }
@@ -517,11 +525,6 @@ final class TerminateStatementAction extends Action {
                             terminateWithSemicolon(that);
                         }
                     }
-                    if (that instanceof Tree.Constructor) {
-                        Tree.Constructor cd = (Tree.Constructor) that;
-                        terminateWithParenAndBaces(that, cd.getParameterList());
-                    }
-                    
                     if (that instanceof Tree.InterfaceDeclaration) {
                         Tree.InterfaceDeclaration id = (Tree.InterfaceDeclaration) that;
                         if (id.getTypeSpecifier()==null) {
