@@ -22,7 +22,8 @@ class AddInitializerProposal extends InitializerProposal {
 	private AddInitializerProposal(TypedDeclaration dec, int offset, int length,
 	        TextChange change) {
         super("Add initializer to '" + dec.getName() + "'", 
-        		change, dec, dec.getType(), new Region(offset, length),
+        		change, dec, dec.getType(), 
+        		new Region(offset, length),
         		MINOR_CHANGE, -1, null);
     }
     

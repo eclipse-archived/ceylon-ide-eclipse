@@ -118,6 +118,17 @@ public class EditorUtil {
         }
     }
 
+    public static IFile getFile(IEditorPart editor) {
+        if (editor!=null && 
+                editor.getEditorInput() instanceof FileEditorInput) {
+            FileEditorInput input = (FileEditorInput) editor.getEditorInput();
+            if (input!=null) {
+                return input.getFile();
+            }
+        }
+        return null;
+    }
+    
     public static ITextSelection getSelection(ITextEditor textEditor) {
         ISelectionProvider sp = textEditor.getSelectionProvider();
         return sp==null ? null : (ITextSelection) sp.getSelection();

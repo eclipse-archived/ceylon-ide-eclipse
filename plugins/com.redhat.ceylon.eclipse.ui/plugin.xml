@@ -865,10 +865,34 @@
             name="Undo Expand Selection"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Invert Boolean"
+            description="Invert boolean"
             id="com.redhat.ceylon.eclipse.ui.action.invertBoolean"
-            name="Invert Boolean">
-      </command>
+            name="Invert Boolean"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Assign expression to new local"
+            id="com.redhat.ceylon.eclipse.ui.action.assignToLocal"
+            name="Assign To Local"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Print expression"
+            id="com.redhat.ceylon.eclipse.ui.action.print"
+            name="Print Expression"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Refine inherited formal members"
+            id="com.redhat.ceylon.eclipse.ui.action.refineFormalMembers"
+            name="Refine Formal Members"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Add initializer parameters"
+            id="com.redhat.ceylon.eclipse.ui.action.addParameterList"
+            name="Add Parameter List"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Add default constructor"
+            id="com.redhat.ceylon.eclipse.ui.action.addConstructor"
+            name="Add Default Constructor"/>
    </extension>
    
    <extension
@@ -980,8 +1004,22 @@
       </handler>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.InvertBooleanHandler"
-            commandId="com.redhat.ceylon.eclipse.ui.action.invertBoolean">
-      </handler>
+            commandId="com.redhat.ceylon.eclipse.ui.action.invertBoolean"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.correct.AssignToLocalHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.assignToLocal"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.correct.PrintHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.print"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.refineFormalMembers"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.correct.AddConstructorHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.addConstructor"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.correct.AddParameterListHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.addParameterList"/>
    </extension>
    
    <extension
@@ -1150,7 +1188,34 @@
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.editor.gotoMatchingFence"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-            
+      
+      <!-- Quick fixes/assists -->
+      <key
+            sequence="M1+2 L"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.action.assignToLocal"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 P"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.action.print"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 F"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.action.refineFormalMembers"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 I"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.action.addParameterList"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 C"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.action.addConstructor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      
    </extension>
    
    <!-- Now, platform-dependent key binding -->

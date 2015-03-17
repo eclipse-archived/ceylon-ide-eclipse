@@ -105,6 +105,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findBinaryOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 
@@ -440,10 +441,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         if (file==null) return;
         IProject project = file.getProject();
         TypeChecker tc = getProjectTypeChecker(project);
-        int offset = problem.getOffset();
-        Node node = Nodes.findNode(rootNode, offset, 
-                    offset + problem.getLength());
-        switch ( problem.getProblemId() ) {
+        int start = problem.getOffset();
+        int end = start + problem.getLength();
+        Node node = findNode(rootNode, start, end);
+        switch (problem.getProblemId()) {
         case 100:
             addDeclareLocalProposal(rootNode, node, proposals, file, editor);
             //fall through:
@@ -627,14 +628,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addTypeParameterProposal(file, rootNode, proposals, node);
             break;
         case 3000:
-            addAssignToLocalProposal(rootNode, proposals, node, offset);
-            addDestructureProposal(rootNode, proposals, node, offset);
-            addAssignToForProposal(rootNode, proposals, node, offset);
-            addAssignToIfExistsProposal(rootNode, proposals, node, offset);
-            addAssignToIfNonemptyProposal(rootNode, proposals, node, offset);
-            addAssignToTryProposal(rootNode, proposals, node, offset);
-            addAssignToIfIsProposal(rootNode, proposals, node, offset);
-            addPrintProposal(rootNode, proposals, node, offset);
+            addAssignToLocalProposal(rootNode, proposals, node, start);
+            addDestructureProposal(rootNode, proposals, node, start);
+            addAssignToForProposal(rootNode, proposals, node, start);
+            addAssignToIfExistsProposal(rootNode, proposals, node, start);
+            addAssignToIfNonemptyProposal(rootNode, proposals, node, start);
+            addAssignToTryProposal(rootNode, proposals, node, start);
+            addAssignToIfIsProposal(rootNode, proposals, node, start);
+            addPrintProposal(rootNode, proposals, node, start);
             break;
         case 3100:
             addShadowReferenceProposal(file, rootNode, proposals, node);
@@ -714,10 +715,12 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         IProject project = EditorUtil.getProject(editor.getEditorInput());
         IFile file = EditorUtil.getFile(editor.getEditorInput());
         
-        Tree.CompilationUnit rootNode = editor.getParseController().getRootNode();
+        Tree.CompilationUnit rootNode = 
+                editor.getParseController().getRootNode();
         if (rootNode!=null) {
-            Node node = Nodes.findNode(rootNode, context.getOffset(), 
-                    context.getOffset() + context.getLength());
+            int start = context.getOffset();
+            int end = start + context.getLength();
+            Node node = findNode(rootNode, start, end);
             int currentOffset = editor.getSelection().getOffset();
             
             RenameProposal.add(proposals, editor);

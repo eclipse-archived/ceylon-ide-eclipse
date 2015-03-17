@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
@@ -20,6 +21,7 @@ import java.util.Set;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -81,7 +83,11 @@ class RefineFormalMembersProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        return Highlights.styleProposal(getDisplayString(), false);
+        TriggerSequence binding = 
+                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.refineFormalMembers");
+        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        return Highlights.styleProposal(getDisplayString(), false)
+                .append(hint, StyledString.QUALIFIER_STYLER);
     }
 
     @Override

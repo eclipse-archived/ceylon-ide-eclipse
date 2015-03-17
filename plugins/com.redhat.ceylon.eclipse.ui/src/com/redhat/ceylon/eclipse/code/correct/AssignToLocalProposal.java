@@ -2,13 +2,16 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getNameProposals;
 import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getSupertypeProposals;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 
 import java.util.Collection;
 
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.link.ProposalPosition;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -65,6 +68,20 @@ class AssignToLocalProposal extends LocalProposal {
     @Override
     public String getDisplayString() {
         return "Assign expression to new local";
+    }
+    
+//    @Override
+//    public Point getSelection(IDocument document) {
+//        return new Point(exitPos, 0);
+//    }
+    
+    @Override
+    public StyledString getStyledDisplayString() {
+        TriggerSequence binding = 
+                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.assignToLocal");
+        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        return new StyledString(getDisplayString())
+                .append(hint, StyledString.QUALIFIER_STYLER);
     }
 
     static void addAssignToLocalProposal(Tree.CompilationUnit cu, 
