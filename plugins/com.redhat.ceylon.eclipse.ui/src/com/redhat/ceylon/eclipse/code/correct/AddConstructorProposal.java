@@ -17,6 +17,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
+import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -87,18 +88,21 @@ public class AddConstructorProposal {
                     if (params.length()!=0) {
                         params.append(", ");
                     }
+                    ProducedReference pr = 
+                            dec.getProducedReference(null, 
+                                    Collections.<ProducedType>emptyList());
                     String type = 
-                            dec.getProducedReference(null, Collections.<ProducedType>emptyList())
-                               .getFullType().getProducedTypeName(unit);
+                            pr.getFullType().getProducedTypeName(unit);
+                    String name = dec.getName();
                     params.append(type)
                           .append(" ")
-                          .append(dec.getName());
+                          .append(name);
                     initializers.append(indent)
                                 .append(defaultIndent)
                                 .append("this.")
-                                .append(dec.getName())
+                                .append(name)
                                 .append(" = ")
-                                .append(dec.getName())
+                                .append(name)
                                 .append(";")
                                 .append(delim);
                 }
