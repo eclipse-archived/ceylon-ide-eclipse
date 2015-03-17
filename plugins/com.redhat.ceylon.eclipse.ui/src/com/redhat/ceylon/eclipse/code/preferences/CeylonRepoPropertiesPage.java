@@ -34,6 +34,9 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
         projectConfig.setProjectLocalRepos(block.getProjectLocalRepos());
         projectConfig.setProjectRemoteRepos(block.getProjectRemoteRepos());
         projectConfig.setProjectSuppressWarningsEnum(getSuppressedWarnings(project));
+        projectConfig.setProjectOverrides(block.getOverrides());
+        projectConfig.setProjectFlatClasspath(block.getFlatClasspath());
+        projectConfig.setProjectAutoExportMavenDependencies(block.getAutoExportMavenDependencies());
         projectConfig.save();
         
         if (CeylonNature.isEnabled(project)) {

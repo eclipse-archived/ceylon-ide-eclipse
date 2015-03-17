@@ -193,11 +193,11 @@ public class CeylonProjectConfig {
         this.transientOverrides = overrides;
     }
 
-    public Boolean getFlatClasspath() {
+    public Boolean isFlatClasspath() {
         return DefaultToolOptions.getDefaultFlatClasspath(mergedConfig);
     }
 
-    public Boolean getProjectFlatClasspath() {
+    public Boolean isProjectFlatClasspath() {
         return DefaultToolOptions.getDefaultFlatClasspath(projectConfig);
     }
 
@@ -206,11 +206,11 @@ public class CeylonProjectConfig {
         this.transientFlatClasspath = flatClasspath;
     }
 
-    public Boolean getAutoExportMavenDependencies() {
+    public Boolean isAutoExportMavenDependencies() {
         return DefaultToolOptions.getDefaultAutoExportMavenDependencies(mergedConfig);
     }
 
-    public Boolean getProjectAutoExportMavenDependencies() {
+    public Boolean isProjectAutoExportMavenDependencies() {
         return DefaultToolOptions.getDefaultAutoExportMavenDependencies(projectConfig);
     }
 

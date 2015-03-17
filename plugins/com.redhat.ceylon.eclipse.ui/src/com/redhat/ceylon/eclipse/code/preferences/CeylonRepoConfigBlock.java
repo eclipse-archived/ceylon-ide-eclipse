@@ -75,13 +75,28 @@ public class CeylonRepoConfigBlock {
     private Button removeRepoButton;
     private Button upButton;
     private Button downButton;
+    
+    private CeylonModuleResolutionBlock moduleResolutionBlock;
 
     public CeylonRepoConfigBlock(ValidationCallback validationCallback) {
         this.validationCallback = validationCallback;
+        moduleResolutionBlock = new CeylonModuleResolutionBlock();
     }
     
     public IProject getProject() {
         return project;
+    }
+
+    public Boolean getFlatClasspath() {
+        return moduleResolutionBlock.getFlatClasspath();
+    }
+
+    public String getOverrides() {
+        return moduleResolutionBlock.getOverrides();
+    }
+
+    public Boolean getAutoExportMavenDependencies() {
+        return moduleResolutionBlock.getAutoExportMavenDependencies();
     }
 
     public String getSystemRepo() {
@@ -111,6 +126,8 @@ public class CeylonRepoConfigBlock {
         addLookupRepos(globalLookupRepos, true);
         addLookupRepos(otherRemoteRepos, true);
         
+        moduleResolutionBlock.performDefaults();
+
         validate();
     }
     
@@ -148,6 +165,8 @@ public class CeylonRepoConfigBlock {
         addExternalRepoButton.setEnabled(isCeylonNatureEnabled);
         addAetherRepoButton.setEnabled(isCeylonNatureEnabled);
         addRemoteRepoButton.setEnabled(isCeylonNatureEnabled);
+        
+        moduleResolutionBlock.initState(project, isCeylonNatureEnabled);
     }
 
     public void initContents(Composite parent) {
@@ -172,6 +191,7 @@ public class CeylonRepoConfigBlock {
         initRemoveRepoButton(lookupRepoButtons);
         initUpDownButtons(lookupRepoButtons);
         
+        moduleResolutionBlock.initContents(parent);
         performDefaults();
     }
 
