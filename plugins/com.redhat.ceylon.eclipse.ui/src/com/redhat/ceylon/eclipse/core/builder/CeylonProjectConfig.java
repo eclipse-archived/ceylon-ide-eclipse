@@ -60,8 +60,10 @@ public class CeylonProjectConfig {
     
     private boolean isOfflineChanged = false;
     private boolean isEncodingChanged = false;
+    private boolean isOverridesChanged = false;
     private Boolean transientOffline;
     private String transientEncoding;
+    private String transientOverrides;
 
 	private List<String> transientSourceDirectories;
 	private List<String> transientResourceDirectories;
@@ -174,6 +176,19 @@ public class CeylonProjectConfig {
         this.transientOffline = offline;
     }
 
+    public String getOverrides() {
+        return DefaultToolOptions.getDefaultOverrides(mergedConfig);
+    }
+
+    public String getProjectOverrides() {
+        return DefaultToolOptions.getDefaultOverrides(projectConfig);
+    }
+
+    public void setProjectOverrides(String overrides) {
+        this.isOverridesChanged = true;
+        this.transientOverrides = overrides;
+    }
+
     public List<String> getSourceDirectories() {
         return getConfigSourceDirectories(mergedConfig);
     }
@@ -271,6 +286,7 @@ public class CeylonProjectConfig {
         isOfflineChanged = false;
         isEncodingChanged = false;
         isSuppressWarningsChanged = false;
+        isOverridesChanged = false;
         transientEncoding = null;
         transientOffline = null;
         transientOutputRepo = null;
@@ -279,6 +295,7 @@ public class CeylonProjectConfig {
         transientSourceDirectories = null;
         transientResourceDirectories = null;
         transientSuppressWarnings = null;
+        transientOverrides = null;
     }
 
     public void save() {
@@ -312,7 +329,7 @@ public class CeylonProjectConfig {
         if (config==null || 
                    isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged || 
                    isOfflineChanged || isEncodingChanged || isSourceDirsChanged || isResourceDirsChanged ||
-                   isSuppressWarningsChanged) {
+                   isSuppressWarningsChanged || isOverridesChanged) {
             try {
                 if (isOutputRepoChanged) {
                     Repository newOutputRepo = new Repositories.SimpleRepository("", transientOutputRepo, null);
@@ -340,6 +357,9 @@ public class CeylonProjectConfig {
                 }
                 if (isSuppressWarningsChanged) {
                     setConfigValuesAsList(projectConfig, DefaultToolOptions.COMPILER_SUPPRESSWARNING, transientSuppressWarnings);
+                }
+                if (isOverridesChanged) {
+                    setProjectOverrides(transientOverrides);
                 }
 
                 ConfigWriter.write(projectConfig, getProjectConfigFile());
