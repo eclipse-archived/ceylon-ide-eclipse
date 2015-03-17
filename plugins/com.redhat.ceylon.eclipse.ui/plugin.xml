@@ -872,27 +872,27 @@
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Assign expression to new local"
             id="com.redhat.ceylon.eclipse.ui.action.assignToLocal"
-            name="Assign To Local"/>
+            name="Quick Assist - Assign To Local"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Print expression"
             id="com.redhat.ceylon.eclipse.ui.action.print"
-            name="Print Expression"/>
+            name="Quick Assist - Print Expression"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Refine inherited formal members"
             id="com.redhat.ceylon.eclipse.ui.action.refineFormalMembers"
-            name="Refine Formal Members"/>
+            name="Quick Assist - Refine Formal Members"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Add initializer parameters"
             id="com.redhat.ceylon.eclipse.ui.action.addParameterList"
-            name="Add Parameter List"/>
+            name="Quick Assist - Add Parameter List"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Add default constructor"
             id="com.redhat.ceylon.eclipse.ui.action.addConstructor"
-            name="Add Default Constructor"/>
+            name="Quick Assist - Add Default Constructor"/>
    </extension>
    
    <extension
