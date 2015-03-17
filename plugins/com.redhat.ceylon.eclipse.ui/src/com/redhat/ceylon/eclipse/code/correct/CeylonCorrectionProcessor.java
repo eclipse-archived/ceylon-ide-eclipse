@@ -24,11 +24,11 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddConstructorProposal.addConstructorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddEmptyParameterListProposal.addEmptyParameterListProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddInitializerProposal.addInitializerProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
+import static com.redhat.ceylon.eclipse.code.correct.AddParameterListProposal.addParameterListProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposals;
-import static com.redhat.ceylon.eclipse.code.correct.AddParameterListProposal.addAddInitializerProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddParameterListProposal.addAddParenthesesProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
@@ -544,8 +544,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 1000:
         case 1001:
-            addAddParenthesesProposal(file, proposals, node);
-            addAddInitializerProposal(file, proposals, node, rootNode);
+            addEmptyParameterListProposal(file, proposals, node);
+            addParameterListProposal(file, proposals, node, rootNode);
             addConstructorProposal(file, proposals, node, rootNode);
             addChangeDeclarationProposal(problem, file, proposals, node);
             break;
@@ -584,7 +584,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         	addMakeFormalDecProposal(proposals, project, node);
         	addParameterProposals(proposals, file, rootNode, node, null);
         	addInitializerProposals(proposals, file, rootNode, node);
-            addAddInitializerProposal(file, proposals, node, rootNode);
+            addParameterListProposal(file, proposals, node, rootNode);
         	addConstructorProposal(file, proposals, node, rootNode);
         	break;
         case 1500:

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.AddConstructorProposal.collectUninitializedMembers;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.collectUninitializedMembers;
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDescription;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
 import java.util.Collection;
@@ -13,8 +14,6 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Scope;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -26,7 +25,7 @@ class AddParameterListProposal extends CorrectionProposal {
         super(desc, change, new Region(offset, 0));
     }
 
-    static void addAddInitializerProposal(IFile file,
+    static void addParameterListProposal(IFile file,
             Collection<ICompletionProposal> proposals, 
             Node node, Tree.CompilationUnit rootNode) {
         if (node instanceof Tree.TypedDeclaration) {
@@ -35,7 +34,7 @@ class AddParameterListProposal extends CorrectionProposal {
         if (node instanceof Tree.ClassDefinition) {
             Tree.ClassDefinition decNode = 
                     (Tree.ClassDefinition) node;
-            Node n = getBeforeParenthesisNode(decNode);
+            Node n = CorrectionUtil.getBeforeParenthesisNode(decNode);
             if (n!=null && decNode.getParameterList()==null) {
                 Declaration dec = decNode.getDeclarationModel();
                 List<TypedDeclaration> uninitialized = 
@@ -62,50 +61,4 @@ class AddParameterListProposal extends CorrectionProposal {
         }
     }
 
-    static void addAddParenthesesProposal(IFile file,
-            Collection<ICompletionProposal> proposals, 
-            Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) node;
-        Node n = getBeforeParenthesisNode(decNode);
-        if (n!=null) {
-            Declaration dec = decNode.getDeclarationModel();
-            TextFileChange change = 
-                    new TextFileChange("Add Empty Parameter List", file);
-            int offset = n.getStopIndex();
-            change.setEdit(new InsertEdit(offset+1, "()"));
-            proposals.add(new AddParameterListProposal(dec, offset+2, 
-                    "Add empty parameter list to " + getDescription(dec), 
-                    change));
-        }
-    }
-
-    private static String getDescription(Declaration dec) {
-        String desc = "'" + dec.getName() + "'";
-        Scope container = dec.getContainer();
-        if (container instanceof TypeDeclaration) {
-            desc += " in '" + ((TypeDeclaration) container).getName() + "'";
-        }
-        return desc;
-    }
-
-    private static Node getBeforeParenthesisNode(Tree.Declaration decNode) {
-        Node n = decNode.getIdentifier();
-        if (decNode instanceof Tree.TypeDeclaration) {
-            Tree.TypeParameterList tpl = 
-                    ((Tree.TypeDeclaration) decNode)
-                            .getTypeParameterList();
-            if (tpl!=null) {
-                n = tpl;
-            }
-        }
-        if (decNode instanceof Tree.AnyMethod) {
-            Tree.TypeParameterList tpl = 
-                    ((Tree.AnyMethod) decNode)
-                            .getTypeParameterList();
-            if (tpl!=null) {
-                n = tpl;
-            }
-        }
-        return n;
-    }
 }

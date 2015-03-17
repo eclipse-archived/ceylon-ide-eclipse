@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.text.Region;
@@ -10,9 +11,13 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -200,6 +205,73 @@ class CorrectionUtil {
             length = 7;
         }
         return new Region(offset + loc, length);
+    }
+
+    static String getDescription(Declaration dec) {
+        String desc = "'" + dec.getName() + "'";
+        Scope container = dec.getContainer();
+        if (container instanceof TypeDeclaration) {
+            desc += " in '" + ((TypeDeclaration) container).getName() + "'";
+        }
+        return desc;
+    }
+
+    static Node getBeforeParenthesisNode(Tree.Declaration decNode) {
+        Node n = decNode.getIdentifier();
+        if (decNode instanceof Tree.TypeDeclaration) {
+            Tree.TypeParameterList tpl = 
+                    ((Tree.TypeDeclaration) decNode)
+                            .getTypeParameterList();
+            if (tpl!=null) {
+                n = tpl;
+            }
+        }
+        if (decNode instanceof Tree.AnyMethod) {
+            Tree.TypeParameterList tpl = 
+                    ((Tree.AnyMethod) decNode)
+                            .getTypeParameterList();
+            if (tpl!=null) {
+                n = tpl;
+            }
+        }
+        return n;
+    }
+
+    static List<TypedDeclaration> collectUninitializedMembers(
+            Tree.Body body) {
+        List<TypedDeclaration> uninitialized = 
+                new ArrayList<TypedDeclaration>();
+        if (body!=null) {
+            List<Tree.Statement> statements = 
+                    body.getStatements();
+            for (Tree.Statement st: statements) {
+                if (st instanceof Tree.AttributeDeclaration) {
+                    Tree.AttributeDeclaration ad = 
+                            (Tree.AttributeDeclaration) st;
+                    if (ad.getSpecifierOrInitializerExpression()==null &&
+                            !ad.getDeclarationModel().isFormal()) {
+                        uninitialized.add(ad.getDeclarationModel());
+                    }
+                }
+                else if (st instanceof Tree.MethodDeclaration) {
+                    Tree.MethodDeclaration md = 
+                            (Tree.MethodDeclaration) st;
+                    if (md.getSpecifierExpression()==null &&
+                            !md.getDeclarationModel().isFormal()) {
+                        uninitialized.add(md.getDeclarationModel());
+                    }
+                }
+                else if (st instanceof Tree.SpecifierStatement) {
+                    Tree.SpecifierStatement ss = 
+                            (Tree.SpecifierStatement) st;
+                    Tree.Term bme = ss.getBaseMemberExpression();
+                    if (bme instanceof Tree.BaseMemberExpression) {
+                        uninitialized.remove(((Tree.BaseMemberExpression) bme).getDeclaration());
+                    }
+                }
+            }
+        }
+        return uninitialized;
     }
     
 }

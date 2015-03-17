@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.collectUninitializedMembers;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -124,44 +124,7 @@ public class AddConstructorProposal {
         return les;
     }
 
-    static List<TypedDeclaration> collectUninitializedMembers(
-            Tree.Body body) {
-        List<TypedDeclaration> uninitialized = 
-                new ArrayList<TypedDeclaration>();
-        if (body!=null) {
-            List<Tree.Statement> statements = 
-                    body.getStatements();
-            for (Tree.Statement st: statements) {
-                if (st instanceof Tree.AttributeDeclaration) {
-                    Tree.AttributeDeclaration ad = 
-                            (Tree.AttributeDeclaration) st;
-                    if (ad.getSpecifierOrInitializerExpression()==null &&
-                            !ad.getDeclarationModel().isFormal()) {
-                        uninitialized.add(ad.getDeclarationModel());
-                    }
-                }
-                else if (st instanceof Tree.MethodDeclaration) {
-                    Tree.MethodDeclaration md = 
-                            (Tree.MethodDeclaration) st;
-                    if (md.getSpecifierExpression()==null &&
-                            !md.getDeclarationModel().isFormal()) {
-                        uninitialized.add(md.getDeclarationModel());
-                    }
-                }
-                else if (st instanceof Tree.SpecifierStatement) {
-                    Tree.SpecifierStatement ss = 
-                            (Tree.SpecifierStatement) st;
-                    Tree.Term bme = ss.getBaseMemberExpression();
-                    if (bme instanceof Tree.BaseMemberExpression) {
-                        uninitialized.remove(((Tree.BaseMemberExpression) bme).getDeclaration());
-                    }
-                }
-            }
-        }
-        return uninitialized;
-    }
-    
-    static boolean isExecutableStatement(Tree.Statement s) {
+    private static boolean isExecutableStatement(Tree.Statement s) {
         Unit unit = s.getUnit();
         if (s instanceof Tree.SpecifierStatement) {
             //shortcut refinement statements with => aren't really "executable"
