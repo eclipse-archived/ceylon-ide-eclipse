@@ -3897,7 +3897,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static String getCeylonSystemRepo(IProject project) {
         String defaultRepo = "${ceylon.repo}";
-        if (project.isAccessible()) {
+        if (!project.isAccessible()) {
             return defaultRepo;
         }
         
