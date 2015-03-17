@@ -2415,6 +2415,22 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             options.add(systemRepo);
         }
         
+        String overrides = CeylonProjectConfig.get(project).getOverrides();
+        if (overrides != null) {
+            options.add("-overrides");
+            options.add(overrides);
+        }
+        
+        Boolean flatClasspath = CeylonProjectConfig.get(project).isFlatClasspath();
+        if (flatClasspath != null) {
+            options.add("-flat-classpath");
+        }
+
+        Boolean autoExportMavenDependencies = CeylonProjectConfig.get(project).isAutoExportMavenDependencies();
+        if (autoExportMavenDependencies != null) {
+            options.add("-auto-export-maven-dependencies");
+        }
+
         final File modulesOutputDir = getCeylonModulesOutputDirectory(project);
         if (modulesOutputDir!=null) {
             options.add("-out");

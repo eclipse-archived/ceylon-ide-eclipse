@@ -122,6 +122,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
@@ -1440,5 +1441,23 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     void addJDKModuleToClassPath(Module module) {
         modulesInClassPath.add(module);
+    }
+
+    @Override
+    protected boolean isAutoExportMavenDependencies() {
+        if (javaProject != null) {
+            return CeylonProjectConfig.get(javaProject.getProject()).isAutoExportMavenDependencies();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    protected boolean isFlatClasspath() {
+        if (javaProject != null) {
+            return CeylonProjectConfig.get(javaProject.getProject()).isFlatClasspath();
+        } else {
+            return false;
+        }
     }
 }
