@@ -155,6 +155,9 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         }
         
         prepareRepositoryArguments(args, project, workingRepos);
+        prepareOverridesArgument(args, project);
+        prepareFlatClasspathArgument(args, project);
+        prepareAutoExportMavenDependencies(args, project);
         prepareOfflineArgument(args, project);
         if (configuration.getAttribute(ATTR_LAUNCH_VERBOSE, false)) {
             prepareVerboseArgument(args, runAsJs);
@@ -188,12 +191,35 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         }
     }
 
+    protected void prepareOverridesArgument(List<String> args, IProject project) {
+        String overrides = CeylonProjectConfig.get(project).getOverrides();
+        if (overrides != null) {
+            args.add("--overrides=" + overrides);
+        }
+    }
+
+    protected void prepareFlatClasspathArgument(List<String> args, IProject project) {
+        Boolean flatClasspath = CeylonProjectConfig.get(project).isFlatClasspath();
+        if (flatClasspath != null && flatClasspath) {
+            args.add("--flat-classpath");
+        }
+    }
+
+    protected void prepareAutoExportMavenDependencies(List<String> args, IProject project) {
+        Boolean autoExportMavenDependencies = CeylonProjectConfig.get(project).isAutoExportMavenDependencies();
+        if (autoExportMavenDependencies != null && autoExportMavenDependencies) {
+            args.add("--auto-export-maven-dependencies");
+        }
+    }
+
     protected void prepareOfflineArgument(List<String> args, IProject project) {
         if (CeylonProjectConfig.get(project).isOffline()) {
             args.add("--offline");
         }
     }
 
+
+    
     protected void prepareVerboseArgument(List<String> args, boolean runAsJs) {
         args.add("--verbose");        
         if (runAsJs) {
