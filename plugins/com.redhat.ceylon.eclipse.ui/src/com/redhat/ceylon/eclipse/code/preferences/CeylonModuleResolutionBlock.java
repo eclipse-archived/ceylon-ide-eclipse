@@ -149,6 +149,7 @@ public class CeylonModuleResolutionBlock {
             public void widgetSelected(SelectionEvent e) {
                  FileDialog fileDialog = new FileDialog(composite.getShell(), SWT.SHEET);
                  fileDialog.setFilterExtensions(new String[] {"*.xml", "*.*"});
+                 fileDialog.setFilterPath(project.getLocation().toFile().getAbsolutePath());
                  fileDialog.setFileName("overrides.xml");
                  String result = fileDialog.open();
                  if (result != null) {
