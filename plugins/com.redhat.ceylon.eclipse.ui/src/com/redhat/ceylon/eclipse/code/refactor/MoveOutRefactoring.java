@@ -269,7 +269,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     }
 
     private static String defaultName(Tree.Declaration owner) {
-        if (owner==null) {
+        if (owner==null || owner.getIdentifier()==null) {
             return "it";
         }
         String name = owner.getIdentifier().getText();
