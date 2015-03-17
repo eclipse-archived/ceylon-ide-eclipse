@@ -191,7 +191,7 @@ public class CeylonRepoConfigBlock {
         initRemoveRepoButton(lookupRepoButtons);
         initUpDownButtons(lookupRepoButtons);
         
-        moduleResolutionBlock.initContents(parent);
+        moduleResolutionBlock.initContents(composite);
         performDefaults();
     }
 
