@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,11 +28,16 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 public class AddConstructorProposal {
 
     public static void addConstructorProposal(IFile file,
-            Collection<ICompletionProposal> proposals, Node node) {
+            Collection<ICompletionProposal> proposals, Node node,
+            Tree.CompilationUnit rootNode) {
+        if (node instanceof Tree.TypedDeclaration) {
+            node = findDeclarationWithBody(rootNode, node);
+        }
         if (node instanceof Tree.ClassDefinition) {
             TextFileChange change = 
                     new TextFileChange("Add Default Constructor", file);
             Tree.ClassDefinition cd = (Tree.ClassDefinition) node;
+            if (cd.getParameterList()!=null) return;
             Tree.ClassBody body = cd.getClassBody();
             if (body!=null && cd.getIdentifier()!=null) {
                 IDocument doc = getDocument(change);
@@ -130,7 +136,7 @@ public class AddConstructorProposal {
                 int loc = start + text.indexOf('(') + 1;
                 String name = cd.getDeclarationModel().getName();
                 proposals.add(new CorrectionProposal(
-                        "Add default constructor 'new (" + params + ")' of '" + name + "'", 
+                        "Add constructor 'new (" + params + ")' of '" + name + "'", 
                         change, 
                         new Region(loc, 0)));
             }

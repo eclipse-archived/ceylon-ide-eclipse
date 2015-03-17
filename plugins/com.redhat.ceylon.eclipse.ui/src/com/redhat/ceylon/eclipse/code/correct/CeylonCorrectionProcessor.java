@@ -545,7 +545,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 1001:
             addAddParenthesesProposal(problem, file, proposals, node);
             addChangeDeclarationProposal(problem, file, proposals, node);
-            addConstructorProposal(file, proposals, node);
+            addConstructorProposal(file, proposals, node, rootNode);
             break;
         case 1050:
             addFixAliasProposal(proposals, file, problem);
@@ -582,6 +582,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         	addMakeFormalDecProposal(proposals, project, node);
         	addParameterProposals(proposals, file, rootNode, node, null);
         	addInitializerProposals(proposals, file, rootNode, node);
+        	addConstructorProposal(file, proposals, node, rootNode);
         	break;
         case 1500:
         case 1501:
