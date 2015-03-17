@@ -61,9 +61,13 @@ public class CeylonProjectConfig {
     private boolean isOfflineChanged = false;
     private boolean isEncodingChanged = false;
     private boolean isOverridesChanged = false;
+    private boolean isFlatClasspathChanged = false;
+    private boolean isAutoExportMavenDependenciesChanged = false;
     private Boolean transientOffline;
     private String transientEncoding;
     private String transientOverrides;
+    private Boolean transientFlatClasspath;
+    private Boolean transientAutoExportMavenDependencies;
 
 	private List<String> transientSourceDirectories;
 	private List<String> transientResourceDirectories;
@@ -189,6 +193,33 @@ public class CeylonProjectConfig {
         this.transientOverrides = overrides;
     }
 
+    public Boolean getFlatClasspath() {
+        return DefaultToolOptions.getDefaultFlatClasspath(mergedConfig);
+    }
+
+    public Boolean getProjectFlatClasspath() {
+        return DefaultToolOptions.getDefaultFlatClasspath(projectConfig);
+    }
+
+    public void setProjectFlatClasspath(Boolean flatClasspath) {
+        this.isFlatClasspathChanged = true;
+        this.transientFlatClasspath = flatClasspath;
+    }
+
+    public Boolean getAutoExportMavenDependencies() {
+        return DefaultToolOptions.getDefaultAutoExportMavenDependencies(mergedConfig);
+    }
+
+    public Boolean getProjectAutoExportMavenDependencies() {
+        return DefaultToolOptions.getDefaultAutoExportMavenDependencies(projectConfig);
+    }
+
+    public void setProjectAutoExportMavenDependencies(Boolean autoExportMavenDependencies) {
+        this.isAutoExportMavenDependenciesChanged = true;
+        this.transientAutoExportMavenDependencies = autoExportMavenDependencies;
+    }
+
+    
     public List<String> getSourceDirectories() {
         return getConfigSourceDirectories(mergedConfig);
     }
@@ -287,6 +318,8 @@ public class CeylonProjectConfig {
         isEncodingChanged = false;
         isSuppressWarningsChanged = false;
         isOverridesChanged = false;
+        isFlatClasspathChanged = false;
+        isAutoExportMavenDependenciesChanged = false;
         transientEncoding = null;
         transientOffline = null;
         transientOutputRepo = null;
@@ -296,6 +329,8 @@ public class CeylonProjectConfig {
         transientResourceDirectories = null;
         transientSuppressWarnings = null;
         transientOverrides = null;
+        transientFlatClasspath = null;
+        transientAutoExportMavenDependencies = null;
     }
 
     public void save() {
@@ -329,7 +364,7 @@ public class CeylonProjectConfig {
         if (config==null || 
                    isOutputRepoChanged || isProjectLocalReposChanged || isProjectRemoteReposChanged || 
                    isOfflineChanged || isEncodingChanged || isSourceDirsChanged || isResourceDirsChanged ||
-                   isSuppressWarningsChanged || isOverridesChanged) {
+                   isSuppressWarningsChanged || isOverridesChanged || isFlatClasspathChanged || isAutoExportMavenDependenciesChanged) {
             try {
                 if (isOutputRepoChanged) {
                     Repository newOutputRepo = new Repositories.SimpleRepository("", transientOutputRepo, null);
@@ -359,7 +394,13 @@ public class CeylonProjectConfig {
                     setConfigValuesAsList(projectConfig, DefaultToolOptions.COMPILER_SUPPRESSWARNING, transientSuppressWarnings);
                 }
                 if (isOverridesChanged) {
-                    setProjectOverrides(transientOverrides);
+                    projectConfig.setOption(DefaultToolOptions.DEFAULTS_OVERRIDES, transientOverrides);
+                }
+                if (isFlatClasspathChanged) {
+                    projectConfig.setBoolOption(DefaultToolOptions.DEFAULTS_FLAT_CLASSPATH, transientFlatClasspath);
+                }
+                if (isAutoExportMavenDependenciesChanged) {
+                    projectConfig.setBoolOption(DefaultToolOptions.DEFAULTS_AUTO_EPORT_MAVEN_DEPENDENCIES, transientAutoExportMavenDependencies);
                 }
 
                 ConfigWriter.write(projectConfig, getProjectConfigFile());
