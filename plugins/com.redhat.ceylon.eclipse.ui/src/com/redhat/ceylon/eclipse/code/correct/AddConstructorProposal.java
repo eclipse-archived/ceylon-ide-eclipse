@@ -41,43 +41,9 @@ public class AddConstructorProposal {
             Tree.ClassBody body = cd.getClassBody();
             if (body!=null && cd.getIdentifier()!=null) {
                 IDocument doc = getDocument(change);
-                Tree.Statement les = null;
                 List<TypedDeclaration> uninitialized = 
-                        new ArrayList<TypedDeclaration>();
-                if (body!=null) {
-                    List<Tree.Statement> statements = 
-                            body.getStatements();
-                    for (int i=0; i<statements.size(); i++) {
-                        Tree.Statement st = statements.get(i);
-                        if (isExecutableStatement(st) || 
-                                st instanceof Tree.Constructor) {
-                            les = st;
-                        }
-                        if (st instanceof Tree.AttributeDeclaration) {
-                            Tree.AttributeDeclaration ad = 
-                                    (Tree.AttributeDeclaration) st;
-                            if (ad.getSpecifierOrInitializerExpression()==null) {
-                                uninitialized.add(ad.getDeclarationModel());
-                            }
-                        }
-                        else if (st instanceof Tree.MethodDeclaration) {
-                            Tree.MethodDeclaration ad = 
-                                    (Tree.MethodDeclaration) st;
-                            if (ad.getSpecifierExpression()==null) {
-                                uninitialized.add(ad.getDeclarationModel());
-                            }
-                        }
-                        else if (st instanceof Tree.SpecifierStatement) {
-                            Tree.SpecifierStatement ss = 
-                                    (Tree.SpecifierStatement) st;
-                            Tree.Term bme = ss.getBaseMemberExpression();
-                            if (bme instanceof Tree.BaseMemberExpression) {
-                                uninitialized.remove(((Tree.BaseMemberExpression) bme).getDeclaration());
-                            }
-                        }
-                    }
-                }
-                
+                        collectUninitializedMembers(body);
+                Tree.Statement les = findLastExecutable(body);
                 String defaultIndent = getDefaultIndent();
                 String delim = getDefaultLineDelimiter(doc);
                 String indent;
@@ -141,6 +107,58 @@ public class AddConstructorProposal {
                         new Region(loc, 0)));
             }
         }
+    }
+
+    private static Tree.Statement findLastExecutable(Tree.ClassBody body) {
+        Tree.Statement les = null;
+        if (body!=null) {
+            List<Tree.Statement> statements = 
+                    body.getStatements();
+            for (Tree.Statement st: statements) {
+                if (isExecutableStatement(st) || 
+                        st instanceof Tree.Constructor) {
+                    les = st;
+                }
+            }
+        }
+        return les;
+    }
+
+    static List<TypedDeclaration> collectUninitializedMembers(
+            Tree.Body body) {
+        List<TypedDeclaration> uninitialized = 
+                new ArrayList<TypedDeclaration>();
+        if (body!=null) {
+            List<Tree.Statement> statements = 
+                    body.getStatements();
+            for (Tree.Statement st: statements) {
+                if (st instanceof Tree.AttributeDeclaration) {
+                    Tree.AttributeDeclaration ad = 
+                            (Tree.AttributeDeclaration) st;
+                    if (ad.getSpecifierOrInitializerExpression()==null &&
+                            !ad.getDeclarationModel().isFormal()) {
+                        uninitialized.add(ad.getDeclarationModel());
+                    }
+                }
+                else if (st instanceof Tree.MethodDeclaration) {
+                    Tree.MethodDeclaration md = 
+                            (Tree.MethodDeclaration) st;
+                    if (md.getSpecifierExpression()==null &&
+                            !md.getDeclarationModel().isFormal()) {
+                        uninitialized.add(md.getDeclarationModel());
+                    }
+                }
+                else if (st instanceof Tree.SpecifierStatement) {
+                    Tree.SpecifierStatement ss = 
+                            (Tree.SpecifierStatement) st;
+                    Tree.Term bme = ss.getBaseMemberExpression();
+                    if (bme instanceof Tree.BaseMemberExpression) {
+                        uninitialized.remove(((Tree.BaseMemberExpression) bme).getDeclaration());
+                    }
+                }
+            }
+        }
+        return uninitialized;
     }
     
     static boolean isExecutableStatement(Tree.Statement s) {
