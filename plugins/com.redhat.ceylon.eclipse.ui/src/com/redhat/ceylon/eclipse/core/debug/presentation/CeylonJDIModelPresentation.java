@@ -21,6 +21,7 @@ import org.eclipse.jdt.internal.debug.ui.JDIModelPresentation;
 import org.eclipse.osgi.util.NLS;
 
 import com.redhat.ceylon.common.JVMModuleUtil;
+import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
 import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonPresentationContext.PresentationType;
 
@@ -184,6 +185,9 @@ public class CeylonJDIModelPresentation extends JDIModelPresentation {
         }
         if (isLocalVariable || isSynthetic 
                 && name.contains("$")) {
+            if(name.endsWith(Naming.Suffix.$param$.name())) {
+                return name.substring(0, name.length() - Naming.Suffix.$param$.name().length());
+            }
             Matcher matcher = localVariablePattern.matcher(name);
             if (matcher.matches()) {
                 name = matcher.group(1);

@@ -298,6 +298,11 @@ public class JavaSearch {
      */
     public static String getCeylonSimpleName(IMember dec) {
         String name = dec.getElementName();
+
+        String nameAnnotationValue = getCeylonNameAnnotationValue(dec);
+        if (nameAnnotationValue != null) {
+            return nameAnnotationValue;
+        }
         
         if (dec instanceof IMethod) {
             if (name.startsWith(Prefix.$default$.name())) {
@@ -355,10 +360,6 @@ public class JavaSearch {
             }
         } else if (dec instanceof IType) {
             IType type = (IType) dec;
-            String nameAnnotationValue = getCeylonNameAnnotationValue(type);
-            if (nameAnnotationValue != null) {
-                return nameAnnotationValue;
-            }
             
             if (name.endsWith("_")) {
                 if (isCeylonObject(type) ||
@@ -600,7 +601,12 @@ public class JavaSearch {
                     if (methodName.equals(parentType.getElementName())
                             && method.isConstructor()
                             && isCeylon(parentType)) {
-                        return toCeylonDeclarationElement(parentType);
+                        String constructorName = getCeylonNameAnnotationValue(method);
+                        if (constructorName != null) {
+                            return method;
+                        } else {
+                            return toCeylonDeclarationElement(parentType);
+                        }
                     }
                     if (methodName.equals(Naming.Unfix.$call$.name()) ||
                             methodName.equals(Naming.Unfix.$calltyped$.name()) ||

@@ -51,6 +51,7 @@ import org.eclipse.swt.widgets.Shell;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.codegen.Naming.Suffix;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
@@ -709,6 +710,9 @@ public class CeylonDebugHover extends SourceInfoHover {
         if (referenceable instanceof Declaration) {
             Declaration declaration = (Declaration) referenceable;
             Declaration container = JavaSearch.getContainingDeclaration(declaration);
+            if (container instanceof Constructor && ((Constructor)container).getName() == null) {
+                container = JavaSearch.getContainingDeclaration(container); // case of the default constructor
+            }
             Declaration frameMethodDeclaration = DebugUtils.getSourceDeclaration(frame);
             // redescendre en utilisant le field this$x (si on est anonyme) de la classe de la méthode
             // => Faire une fonction qui retourne dans le scope du dessous (classe, OK, ... ou méthode et là on utilise les val$... qui avac un peu de chance sont capturés explicitement par le compilateur Ceylon ???)
