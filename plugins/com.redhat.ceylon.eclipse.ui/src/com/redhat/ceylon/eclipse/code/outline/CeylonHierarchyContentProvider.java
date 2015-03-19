@@ -321,8 +321,8 @@ public final class CeylonHierarchyContentProvider
             allModules.add(currentModule);
             for (TypeChecker typeChecker: getTypeCheckers()) {
                 JDTModelLoader modelLoader = getModelLoader(typeChecker);
-                Module module = modelLoader.getLoadedModule(name);
-                if (module!=null && module.getVersion().equals(version)) { //TODO: check this with David ... could we use JDTModule.getReferencingModules()?
+                Module module = modelLoader.getLoadedModule(name, version);
+                if (module!=null) { //TODO: check this with David ... could we use JDTModule.getReferencingModules()?
                     ModuleManager moduleManager = 
                             typeChecker.getPhasedUnits().getModuleManager();
                     allModules.addAll(moduleManager.getCompiledModules());

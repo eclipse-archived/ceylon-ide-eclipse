@@ -444,7 +444,7 @@ public class DocumentationHover extends SourceInfoHover {
         String[] bits = location.split(":");
         JDTModelLoader modelLoader = getModelLoader(typeChecker);
         String moduleName = bits[1];
-        Module module = modelLoader.getLoadedModule(moduleName);
+        Module module = modelLoader.getLoadedModule(moduleName, null);
         if (module==null || bits.length==2) {
             return module;
         }

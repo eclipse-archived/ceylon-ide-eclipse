@@ -70,7 +70,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
     private <T extends PhasedUnit> T checkExternalPhasedUnitClass(String moduleName, String phasedUnitPath, Class<T> expectedPhasedUnitClass) {
         PhasedUnit pu = null;
         
-        JDTModule module = (JDTModule) modelLoader.getLoadedModule(moduleName);
+        JDTModule module = (JDTModule) modelLoader.getLoadedModule(moduleName, null);
         pu = module.getPhasedUnitFromRelativePath(phasedUnitPath);
         Assert.assertNotNull("No phased unit for path : " + phasedUnitPath, pu);
         Class<? extends PhasedUnit> phasedUnitClass = pu.getClass();

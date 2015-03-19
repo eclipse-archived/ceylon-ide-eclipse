@@ -96,7 +96,7 @@ final class RootFolderScanner implements IResourceVisitor {
             }
         }
         
-        Module realModule = modelLoader.getLoadedModule(pkgNameAsString);
+        Module realModule = modelLoader.getLoadedModule(pkgNameAsString, null);
         if (realModule != null) {
             // The module descriptor had probably been found in another source directory
             module = realModule;

@@ -117,7 +117,7 @@ public class ModelProxy {
                 getTypeChecker(moduleName, moduleVersion, project);
         if (typeChecker!=null) {
             Package pack = getModelLoader(typeChecker)
-                    .getLoadedModule(moduleName)
+                    .getLoadedModule(moduleName, moduleVersion)
                     .getPackage(packageName);
             boolean searchForCeylonSourceFileUnit = 
                     unitName.endsWith(".ceylon");
@@ -197,8 +197,8 @@ public class ModelProxy {
         if (project==null) {
             for (TypeChecker typeChecker: getTypeCheckers()) {
                 JDTModelLoader modelLoader = getModelLoader(typeChecker);
-                Module module = modelLoader.getLoadedModule(moduleName);
-                if (module!=null && module.getVersion().equals(moduleVersion)) {
+                Module module = modelLoader.getLoadedModule(moduleName, moduleVersion);
+                if (module!=null) {
                     return typeChecker;
                 }
             }
