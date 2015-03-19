@@ -1,12 +1,14 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingLength;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
+
 import org.eclipse.search.ui.text.Match;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonSearchMatch extends Match {
     
@@ -42,8 +44,8 @@ public class CeylonSearchMatch extends Match {
             VirtualFile file) {
         super(new CeylonElement(node, file, match.getToken().getLine()),
                 //the exact location of the match:
-                Nodes.getStartOffset(match), 
-                Nodes.getLength(match));
+                getIdentifyingStartOffset(match), 
+                getIdentifyingLength(match));
         inImport = node instanceof Tree.Import || 
                 node instanceof Tree.ImportModule;
     }

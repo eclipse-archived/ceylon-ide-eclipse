@@ -7,6 +7,8 @@ import static com.redhat.ceylon.compiler.typechecker.model.Util.isAbstraction;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.addTaskAnnotation;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingLength;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
 
 import java.util.Iterator;
 import java.util.List;
@@ -172,16 +174,18 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             Tree.StatementOrArgument that, Node line, Declaration dec) {
         Declaration refined = getRefinedDeclaration(dec);
         if (refined!=null) {
-            Declaration container = (Declaration) refined.getContainer();
+            Declaration container = 
+                    (Declaration) refined.getContainer();
             Unit unit = that.getUnit();
             String description = 
                     "refines " + container.getName(unit) + 
                     "." + refined.getName(unit);
-            RefinementAnnotation ra = new RefinementAnnotation(description,  
-                    refined, line.getToken().getLine());
+            RefinementAnnotation ra = 
+                    new RefinementAnnotation(description,  
+                            refined, line.getToken().getLine());
             model.addAnnotation(ra, 
-                    new Position(Nodes.getStartOffset(that), 
-                            Nodes.getLength(that)));
+                    new Position(getIdentifyingStartOffset(that), 
+                            getIdentifyingLength(that)));
         }
     }
     

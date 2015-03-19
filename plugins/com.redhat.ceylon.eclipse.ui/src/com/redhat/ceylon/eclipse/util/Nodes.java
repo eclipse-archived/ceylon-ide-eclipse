@@ -217,31 +217,23 @@ public class Nodes {
                 s.getOffset(), 
                 s.getOffset()+s.getLength());
     }
-
-    private static Node toNode(Node node) {
-        if (node instanceof Node) {
-            return Nodes.getIdentifyingNode((Node) node);
-        }
-        else {
-            return null;
-        }
-    }
     
-    public static int getStartOffset(Node node) {
-        return Nodes.getNodeStartOffset(toNode(node));
+    public static int getIdentifyingStartOffset(Node node) {
+        return getNodeStartOffset(getIdentifyingNode(node));
     }
 
-    public static int getEndOffset(Node node) {
-        return Nodes.getNodeEndOffset(toNode(node));
+    public static int getIdentifyingEndOffset(Node node) {
+        return getNodeEndOffset(getIdentifyingNode(node));
     }
 
-    public static int getLength(Node node) {
-        return getEndOffset(node) - getStartOffset(node);
+    public static int getIdentifyingLength(Node node) {
+        return getIdentifyingEndOffset(node) - 
+                getIdentifyingStartOffset(node);
     }
 
     public static int getNodeLength(Node node) {
-        return Nodes.getNodeEndOffset(node) - 
-               Nodes.getNodeStartOffset(node);
+        return getNodeEndOffset(node) - 
+               getNodeStartOffset(node);
     }
 
     public static Node getIdentifyingNode(Node node) {

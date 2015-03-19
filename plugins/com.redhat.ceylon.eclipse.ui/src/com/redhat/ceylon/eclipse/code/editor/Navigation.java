@@ -4,6 +4,8 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingLength;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
@@ -48,7 +50,6 @@ import com.redhat.ceylon.eclipse.core.model.JavaUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 
 public class Navigation {
@@ -116,8 +117,8 @@ public class Navigation {
     
     public static void gotoNode(Node node, CeylonEditor editor) {
         Unit unit = node.getUnit();
-        int length = Nodes.getLength(node);
-        int startOffset = Nodes.getStartOffset(node);
+        int length = getIdentifyingLength(node);
+        int startOffset = getIdentifyingStartOffset(node);
         Tree.CompilationUnit rootNode = editor==null ? null : 
             editor.getParseController().getRootNode();
         if (rootNode!=null && unit.equals(rootNode.getUnit())) {

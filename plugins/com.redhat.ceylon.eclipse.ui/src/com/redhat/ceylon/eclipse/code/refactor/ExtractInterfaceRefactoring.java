@@ -378,35 +378,35 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
         boolean containsSatisfies = false;
         if (containerAsClassOrInter != null) {
             if (containerAsClassOrInter.getSatisfiedTypes() != null) {
-                offset = Nodes.getEndOffset(containerAsClassOrInter.getSatisfiedTypes());
+                offset = Nodes.getIdentifyingEndOffset(containerAsClassOrInter.getSatisfiedTypes());
                 containsSatisfies = true;
             }
             else if (containerAsClassOrInter instanceof Tree.AnyClass && ((Tree.AnyClass) containerAsClassOrInter).getExtendedType() != null) {
-                offset = Nodes.getEndOffset(((Tree.AnyClass) containerAsClassOrInter).getExtendedType());
+                offset = Nodes.getIdentifyingEndOffset(((Tree.AnyClass) containerAsClassOrInter).getExtendedType());
             }
             else if (containerAsClassOrInter.getCaseTypes() != null) {
-                offset = Nodes.getEndOffset(containerAsClassOrInter.getCaseTypes());
+                offset = Nodes.getIdentifyingEndOffset(containerAsClassOrInter.getCaseTypes());
             }
             else if (containerAsClassOrInter instanceof Tree.AnyClass && ((Tree.AnyClass) containerAsClassOrInter).getParameterList() != null) {
-                offset = Nodes.getEndOffset(((Tree.AnyClass) containerAsClassOrInter).getParameterList());
+                offset = Nodes.getIdentifyingEndOffset(((Tree.AnyClass) containerAsClassOrInter).getParameterList());
             }
             else if (containerAsClassOrInter.getTypeParameterList() != null) {
-                offset = Nodes.getEndOffset(containerAsClassOrInter.getTypeParameterList());
+                offset = Nodes.getIdentifyingEndOffset(containerAsClassOrInter.getTypeParameterList());
             }
             else {
-                offset = Nodes.getEndOffset(containerAsClassOrInter.getIdentifier());
+                offset = Nodes.getIdentifyingEndOffset(containerAsClassOrInter.getIdentifier());
             }
         }
         if (containerAsObjectDef != null) {
             if (containerAsObjectDef.getSatisfiedTypes() != null) {
-                offset = Nodes.getEndOffset(containerAsObjectDef.getSatisfiedTypes());
+                offset = Nodes.getIdentifyingEndOffset(containerAsObjectDef.getSatisfiedTypes());
                 containsSatisfies = true;
             }
             else if (containerAsObjectDef.getExtendedType() != null) {
-                offset = Nodes.getEndOffset(containerAsObjectDef.getExtendedType());
+                offset = Nodes.getIdentifyingEndOffset(containerAsObjectDef.getExtendedType());
             }
             else {
-                offset = Nodes.getEndOffset(containerAsObjectDef.getIdentifier());
+                offset = Nodes.getIdentifyingEndOffset(containerAsObjectDef.getIdentifier());
             }
         }
 

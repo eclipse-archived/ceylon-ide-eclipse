@@ -20,6 +20,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingEndOffset;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
 import static java.lang.System.identityHashCode;
 
 import java.util.ArrayList;
@@ -43,7 +45,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonOutlineNode implements IAdaptable {
     
@@ -154,8 +155,8 @@ public class CeylonOutlineNode implements IAdaptable {
         }
         if (category==DEFAULT_CATEGORY) {
             //span of the "identifying" node
-            startOffset = Nodes.getStartOffset(treeNode);
-            endOffset = Nodes.getEndOffset(treeNode);
+            startOffset = getIdentifyingStartOffset(treeNode);
+            endOffset = getIdentifyingEndOffset(treeNode);
         }
         if (treeNode!=null && 
                 !(treeNode instanceof PackageNode) &&
