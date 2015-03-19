@@ -292,7 +292,8 @@ public abstract class LocalProposal extends AbstractLinkedMode
                 }
                 resultType = a.getTypeModel();
             }
-            else if (st instanceof Tree.TypedDeclaration) {
+            else if (st instanceof Tree.TypedDeclaration &&
+                    !(st instanceof Tree.ObjectDefinition)) {
                 //some expressions look like a type declaration
                 //when they appear right in front of an annotation
                 //or function invocations
