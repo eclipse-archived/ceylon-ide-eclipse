@@ -240,7 +240,8 @@ public class Nodes {
         if (node instanceof Tree.Declaration) {
             Tree.Identifier identifier = 
                     ((Tree.Declaration) node).getIdentifier();
-            if (identifier==null) {
+            if (identifier==null && 
+                    !(node instanceof Tree.MissingDeclaration)) {
                 identifier = new Tree.Identifier(new CommonToken(node.getMainToken())); 
             }
             return identifier;
