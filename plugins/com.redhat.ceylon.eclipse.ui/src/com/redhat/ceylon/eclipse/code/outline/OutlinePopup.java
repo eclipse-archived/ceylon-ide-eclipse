@@ -21,11 +21,15 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIDE_PRIVATE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.triggersBinding;
+import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -53,6 +57,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -61,7 +66,6 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.Widget;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.DeclarationWithProximity;
@@ -74,10 +78,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ObjectDefinition;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class OutlinePopup extends TreeViewPopup {
@@ -181,9 +184,12 @@ public class OutlinePopup extends TreeViewPopup {
             }
             else if (e1 instanceof Declaration && 
                      e2 instanceof Declaration) {
-                Unit unit = getEditor().getParseController().getRootNode().getUnit();
-                return ((Declaration)e1).getName(unit)
-                        .compareTo(((Declaration)e2).getName(unit));
+                Unit unit = 
+                        getEditor().getParseController()
+                            .getRootNode().getUnit();
+                String e1n = ((Declaration) e1).getName(unit);
+                String e2n = ((Declaration) e2).getName(unit);
+                return e1n.compareTo(e2n);
             }
             else {
                 return 0;
@@ -205,14 +211,18 @@ public class OutlinePopup extends TreeViewPopup {
             setDescription("Sort entries lexically by name");
             setImageDescriptor(imageRegistry.getDescriptor(SORT_ALPHA));
             treeViewer = viewer;
-            setChecked(getDialogSettings().getBoolean("sort"));
+            boolean checked = 
+                    getDialogSettings().getBoolean("sort");
+            setChecked(checked);
         }
 
         @Override
         public void run() {
             boolean on = isChecked();
             setChecked(on);
-            BusyIndicator.showWhile(treeViewer.getControl().getDisplay(), 
+            Display display = 
+                    treeViewer.getControl().getDisplay();
+            BusyIndicator.showWhile(display, 
                     new Runnable() {
                 @Override
                 public void run() {
@@ -256,7 +266,8 @@ public class OutlinePopup extends TreeViewPopup {
             
             setImageDescriptor(imageRegistry.getDescriptor(HIDE_PRIVATE)); 
             
-            boolean checked = getDialogSettings().getBoolean("hideNonShared");
+            boolean checked = 
+                    getDialogSettings().getBoolean("hideNonShared");
             valueChanged(checked, false);
         }
 
@@ -269,7 +280,9 @@ public class OutlinePopup extends TreeViewPopup {
 
         private void valueChanged(final boolean on, boolean store) {
             setChecked(on);
-            BusyIndicator.showWhile(treeViewer.getControl().getDisplay(), 
+            Display display = 
+                    treeViewer.getControl().getDisplay();
+            BusyIndicator.showWhile(display, 
                     new Runnable() {
                 @Override
                 public void run() {
@@ -288,20 +301,26 @@ public class OutlinePopup extends TreeViewPopup {
         }
     }
     
-    public OutlinePopup(CeylonEditor editor, Shell shell, int shellStyle) {
-        super(shell, shellStyle, PLUGIN_ID + ".editor.showOutline", editor);
-        setTitleText("Quick Outline - " + editor.getEditorInput().getName());
+    public OutlinePopup(CeylonEditor editor, Shell shell, 
+            int shellStyle) {
+        super(shell, shellStyle, 
+                PLUGIN_ID + ".editor.showOutline", editor);
+        setTitleText("Quick Outline - " + 
+                editor.getEditorInput().getName());
     }
 
     @Override
     protected TreeViewer createTreeViewer(Composite parent) {
+        
         Tree tree = new Tree(parent, SWT.SINGLE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = tree.getItemHeight() * 12;
         tree.setLayoutData(gd);
+        
         final TreeViewer treeViewer = new OutlineTreeViewer(tree);
         lexicalSortingAction = new LexicalSortingAction(treeViewer);
         hideNonSharedAction = new HideNonSharedAction(treeViewer);
+        
         outlineContentProvider = new CeylonOutlineContentProvider() {
             @Override
             public Object getParent(Object element) {
@@ -317,24 +336,31 @@ public class OutlinePopup extends TreeViewPopup {
                 if (element instanceof CeylonOutlineNode) {
                     if (mode) {
                         boolean includeParameters =
-                                !EditorUtil.getPreferences().getBoolean(PARAMS_IN_OUTLINES);
-                        CeylonOutlineNode node = (CeylonOutlineNode) element;
+                                !getPreferences().getBoolean(PARAMS_IN_OUTLINES);
+                        CeylonOutlineNode node = 
+                                (CeylonOutlineNode) element;
                         CompilationUnit rootNode = 
-                                getEditor().getParseController().getRootNode();
+                                getEditor().getParseController()
+                                    .getRootNode();
                         Node treeNode = 
                                 Nodes.findNode(rootNode, 
                                         node.getStartOffset());
-                        TypeDeclaration typedec;
+                        TypeDeclaration td;
                         if (treeNode instanceof ClassOrInterface) {
-                            typedec = ((ClassOrInterface) treeNode).getDeclarationModel();
+                            ClassOrInterface ci = 
+                                    (ClassOrInterface) treeNode;
+                            td = ci.getDeclarationModel();
                         }
                         else if (treeNode instanceof ObjectDefinition) {
-                            typedec = ((ObjectDefinition) treeNode).getDeclarationModel().getTypeDeclaration();
+                            ObjectDefinition od = 
+                                    (ObjectDefinition) treeNode;
+                            td = od.getDeclarationModel().getTypeDeclaration();
                         }
                         else {
                             return super.getChildren(element);
                         }
-                        List<Declaration> list = new ArrayList<Declaration>();
+                        List<Declaration> list = 
+                                new ArrayList<Declaration>();
                         String filter = getFilterText().getText();
                         for (int i=0; i<filter.length(); i++) {
                             char ch = filter.charAt(i);
@@ -344,9 +370,10 @@ public class OutlinePopup extends TreeViewPopup {
                                 break;
                             }
                         }
-                        for (DeclarationWithProximity dwp:
-                            typedec.getMatchingMemberDeclarations(rootNode.getUnit(), 
-                                    typedec, filter, 0).values()) {
+                        Collection<DeclarationWithProximity> members = 
+                                td.getMatchingMemberDeclarations(rootNode.getUnit(), 
+                                        td, filter, 0).values();
+                        for (DeclarationWithProximity dwp: members) {
                             for (Declaration dec: overloads(dwp.getDeclaration())) {
                                 if (!(dec instanceof TypeParameter)) {
                                     if (includeParameters || !dec.isParameter()) {
@@ -356,10 +383,14 @@ public class OutlinePopup extends TreeViewPopup {
                             }
                         }
                         if (!lexicalSortingAction.isChecked()) {
-                            Collections.sort(list, new Comparator<Declaration>() {
+                            Collections.sort(list, 
+                                    new Comparator<Declaration>() {
                                 public int compare(Declaration x, Declaration y) {
-                                    return x.getContainer().getQualifiedNameString()
-                                            .compareTo(y.getContainer().getQualifiedNameString());
+                                    String xn = x.getContainer()
+                                            .getQualifiedNameString();
+                                    String yn = y.getContainer()
+                                            .getQualifiedNameString();
+                                    return xn.compareTo(yn);
                                 }
                             });
                         }
@@ -374,6 +405,7 @@ public class OutlinePopup extends TreeViewPopup {
                 }
             }
         };
+        
         labelProvider = new CeylonLabelProvider() {
             @Override
             public StyledString getStyledText(Object element) {
@@ -381,7 +413,7 @@ public class OutlinePopup extends TreeViewPopup {
                     return super.getStyledText(element);
                 }
                 else if (element instanceof Declaration) {
-                    IPreferenceStore prefs = EditorUtil.getPreferences();
+                    IPreferenceStore prefs = getPreferences();
                     return getQualifiedDescriptionFor((Declaration) element,
                             prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
                             prefs.getBoolean(PARAMS_IN_OUTLINES),
@@ -405,6 +437,7 @@ public class OutlinePopup extends TreeViewPopup {
                 }
             }
         };
+        
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new OutlineNamePatternFilter(getFilterText()));
         //    fSortByDefiningTypeAction= new SortByDefiningTypeAction(treeViewer);
@@ -422,7 +455,8 @@ public class OutlinePopup extends TreeViewPopup {
         TriggerSequence binding = getCommandBinding();
         if (binding==null) return "";
         String action = mode ? " to hide " : " to show ";
-        return binding.format() + action + "inherited members of classes and interfaces";
+        return binding.format() + action + 
+                "inherited members of classes and interfaces";
     }
     
     @Override
@@ -461,7 +495,9 @@ public class OutlinePopup extends TreeViewPopup {
         sortButton = new ToolItem(toolBar, SWT.CHECK);
         sortButton.setImage(SORT);
         sortButton.setToolTipText("Sort by Name");
-        sortButton.setSelection(getDialogSettings().getBoolean("sort"));
+        boolean sortChecker = 
+                getDialogSettings().getBoolean("sort");
+        sortButton.setSelection(sortChecker);
         sortButton.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -474,7 +510,9 @@ public class OutlinePopup extends TreeViewPopup {
         hideButton = new ToolItem(toolBar, SWT.CHECK);
         hideButton.setImage(PUBLIC);
         hideButton.setToolTipText("Hide Unshared Declarations");
-        hideButton.setSelection(getDialogSettings().getBoolean("hideNonShared"));
+        boolean hideChecked = 
+                getDialogSettings().getBoolean("hideNonShared");
+        hideButton.setSelection(hideChecked);
         hideButton.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -488,8 +526,11 @@ public class OutlinePopup extends TreeViewPopup {
     
     @Override
     public void setInput(Object information) {
+        CeylonParseController controller = 
+                getEditor().getParseController();
         CeylonOutlineNode info = 
-                new CeylonOutlineBuilder().buildTree(getEditor().getParseController());
+                new CeylonOutlineBuilder()
+                    .buildTree(controller);
         inputChanged(info, info);
     }
 
@@ -513,14 +554,14 @@ public class OutlinePopup extends TreeViewPopup {
         viewMenu.add(new Separator());
         Action configureAction = 
                 new Action("Configure Labels...", 
-                        CeylonPlugin.getInstance().getImageRegistry()
-                        .getDescriptor(CeylonResources.CONFIG_LABELS)) {
+                        CeylonPlugin.getInstance()
+                            .getImageRegistry()
+                            .getDescriptor(CONFIG_LABELS)) {
             @Override
             public void run() {
-                PreferencesUtil.createPreferenceDialogOn(
-                        getShell(), 
+                createPreferenceDialogOn(getShell(), 
                         CeylonPreferencePage.ID, 
-                        new String[] {CeylonPreferencePage.ID}, 
+                        new String[] { CeylonPreferencePage.ID }, 
                         null).open();
                 getTreeViewer().refresh();
             }
@@ -533,9 +574,12 @@ public class OutlinePopup extends TreeViewPopup {
         Object object = getSelectedElement();
         if (object instanceof CeylonOutlineNode) {
             dispose();
-            CeylonOutlineNode on = (CeylonOutlineNode) object;
-            getEditor().selectAndReveal(on.getStartOffset(), 
-                    on.getEndOffset()-on.getStartOffset());
+            CeylonOutlineNode on = 
+                    (CeylonOutlineNode) object;
+            int startOffset = on.getStartOffset();
+            int endOffset = on.getEndOffset();
+            getEditor().selectAndReveal(startOffset, 
+                    endOffset-startOffset);
         }
         else if (object instanceof Referenceable) {
             dispose();

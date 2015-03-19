@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.compiler.typechecker.model.Util.isNameMatching;
 import static com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog.isMatchingGlob;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.DEFAULT_CATEGORY;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -27,21 +29,18 @@ class OutlineNamePatternFilter extends ViewerFilter {
 
     @Override
     public boolean select(Viewer viewer, Object parentElement, Object element) {
-        /*JavaElementPrefixPatternMatcher matcher= getMatcher();
-        if (matcher == null || !(viewer instanceof TreeViewer))
-            return true;
-        TreeViewer treeViewer= (TreeViewer) viewer;
-
-        String matchName= ((ILabelProvider) treeViewer.getLabelProvider()).getText(element);
-        matchName= TextProcessor.deprocess(matchName);
-        if (matchName != null && matcher.matches(matchName))
-            return true;
-
-        return hasUnfilteredChild(treeViewer, element);*/
         TreeViewer treeViewer = (TreeViewer) viewer;
+        String filter = filterText.getText();
         String name = null;
         if (element instanceof CeylonOutlineNode) {
-            name = ((CeylonOutlineNode) element).getName();
+            CeylonOutlineNode on = 
+                    (CeylonOutlineNode) element;
+            int category = on.getCategory();
+            if (category!=DEFAULT_CATEGORY && 
+                category!=IMPORT_LIST_CATEGORY) {
+                return false;
+            }
+            name = on.getName();
         }
         else if (element instanceof Declaration) {
             name = ((Declaration) element).getName();
@@ -50,10 +49,9 @@ class OutlineNamePatternFilter extends ViewerFilter {
             return true;
         }
         if (name==null) {
-            return false;
+            return filter.isEmpty() || filter.equals("*");
         }
         else {
-            String filter = filterText.getText();
             if (filter.contains("*")) {
                 return isMatchingGlob(filter, name) ||
                         hasUnfilteredChild(treeViewer, element);

@@ -524,7 +524,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.TypeParameterDeclaration ac = (Tree.TypeParameterDeclaration) node;
             return new StyledString(name(ac.getIdentifier()));
         }
-        if (node instanceof Tree.AnyClass) {
+        else if (node instanceof Tree.AnyClass) {
             Tree.AnyClass ac = (Tree.AnyClass) node;
             StyledString label = new StyledString("class ", KW_STYLER);
             label.append(name(ac.getIdentifier()), TYPE_ID_STYLER);
@@ -539,14 +539,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             parameters(ai.getTypeParameterList(), label);
             return label;
         }
-        if (node instanceof Tree.Constructor) {
+        else if (node instanceof Tree.Constructor) {
             Tree.Constructor ac = (Tree.Constructor) node;
             StyledString label = new StyledString("new ", KW_STYLER);
-            label.append(name(ac.getIdentifier()), TYPE_ID_STYLER);
+            if (ac.getIdentifier()!=null) {
+                label.append(name(ac.getIdentifier()), TYPE_ID_STYLER);
+            }
             parameters(ac.getParameterList(), label);
             return label;
         }
-        if (node instanceof Tree.TypeAliasDeclaration) {
+        else if (node instanceof Tree.TypeAliasDeclaration) {
             Tree.TypeAliasDeclaration ac = (Tree.TypeAliasDeclaration) node;
             StyledString label = new StyledString("alias ", KW_STYLER);
             label.append(name(ac.getIdentifier()), TYPE_ID_STYLER);
@@ -1012,8 +1014,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (node instanceof Tree.SpecifierStatement) {
             Tree.Term bme = ((Tree.SpecifierStatement) node).getBaseMemberExpression();
             Declaration d;
-            if (bme instanceof Tree.BaseMemberExpression) {
-                d = ((Tree.BaseMemberExpression) bme).getDeclaration();
+            if (bme instanceof Tree.StaticMemberOrTypeExpression) {
+                d = ((Tree.StaticMemberOrTypeExpression) bme).getDeclaration();
             }
             else if (bme instanceof Tree.ParameterizedExpression) {
                 Tree.Primary primary = ((Tree.ParameterizedExpression) bme).getPrimary();
