@@ -180,7 +180,12 @@ public class OutlinePopup extends TreeViewPopup {
                 CeylonOutlineNode n2 = (CeylonOutlineNode) e2;
                 int cat = n1.getCategory()-n2.getCategory();
                 if (cat!=0) return cat;
-                return n1.getName().compareTo(n2.getName());
+                String n1n = n1.getName();
+                String n2n = n2.getName();
+                if (n1n==n2n) return 0;
+                if (n1n==null) return -1;
+                if (n2n==null) return 1;
+                return n1n.compareTo(n2n);
             }
             else if (e1 instanceof Declaration && 
                      e2 instanceof Declaration) {
@@ -189,6 +194,9 @@ public class OutlinePopup extends TreeViewPopup {
                             .getRootNode().getUnit();
                 String e1n = ((Declaration) e1).getName(unit);
                 String e2n = ((Declaration) e2).getName(unit);
+                if (e1n==e2n) return 0;
+                if (e1n==null) return -1;
+                if (e2n==null) return 1;
                 return e1n.compareTo(e2n);
             }
             else {
