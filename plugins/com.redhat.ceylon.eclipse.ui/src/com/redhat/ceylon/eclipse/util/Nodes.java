@@ -238,7 +238,12 @@ public class Nodes {
 
     public static Node getIdentifyingNode(Node node) {
         if (node instanceof Tree.Declaration) {
-            return ((Tree.Declaration) node).getIdentifier();
+            Tree.Identifier identifier = 
+                    ((Tree.Declaration) node).getIdentifier();
+            if (identifier==null) {
+                identifier = new Tree.Identifier(new CommonToken(node.getMainToken())); 
+            }
+            return identifier;
         }
         else if (node instanceof Tree.ModuleDescriptor) {
             return ((Tree.ModuleDescriptor) node).getImportPath();

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 
@@ -51,7 +52,6 @@ import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class CeylonOpenAction extends OpenAction {
 
@@ -153,10 +153,11 @@ public class CeylonOpenAction extends OpenAction {
                                     member = (IMember) elementToOpen;
                                 }
                                 if (member != null) {
-                                    Declaration declaration = toCeylonDeclaration(member, ceylonUnit, ceylonUnit.getModule().getModuleManager().getModelLoader());
+                                    Declaration declaration = toCeylonDeclaration(member, ceylonUnit, 
+                                            ceylonUnit.getModule().getModuleManager().getModelLoader());
                                     Node node = getReferencedNodeInUnit(declaration, ceylonUnit.getCompilationUnit());
                                     if (node != null) {
-                                        ceylonEditor.selectAndReveal(getIdentifyingStartOffset(node), Nodes.getIdentifyingLength(node));
+                                        ceylonEditor.selectAndReveal(getIdentifyingStartOffset(node), getIdentifyingLength(node));
                                     }
                                 }
                             }
