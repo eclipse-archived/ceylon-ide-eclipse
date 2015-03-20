@@ -91,10 +91,11 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     public CeylonPlugin() {
         final String version = System.getProperty("java.version");
         if (!version.startsWith("1.7") && !version.startsWith("1.8")) {
-            Display.getDefault().asyncExec(new Runnable() {
+            final Display display = Display.getDefault();
+            display.asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    ErrorDialog.openError(getWorkbench().getActiveWorkbenchWindow().getShell(),
+                    ErrorDialog.openError(display.getActiveShell(),
                             "Ceylon IDE does not support this JVM",  
                             "Ceylon IDE requires Java 1.7 or 1.8.", 
                             new Status(IStatus.ERROR, PLUGIN_ID, 
