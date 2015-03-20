@@ -65,8 +65,10 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
         if (projectConfig != null) {
             String overridesFilePath = projectConfig.getOverrides();
-            File overridesFile = FileUtil.absoluteFile(FileUtil.applyCwd(project.getLocation().toFile(), new File(overridesFilePath)));
-            overridesResource = CeylonBuilder.fileToIFile(overridesFile, project);
+            if (overridesFilePath != null) {
+                File overridesFile = FileUtil.absoluteFile(FileUtil.applyCwd(project.getLocation().toFile(), new File(overridesFilePath)));
+                overridesResource = CeylonBuilder.fileToIFile(overridesFile, project);
+            }
         }
         
     }
