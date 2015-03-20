@@ -5,22 +5,31 @@ import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.io.input.ReaderInputStream;
+import org.eclipse.core.internal.registry.ExtensionRegistry;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.ContributorFactoryOSGi;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IContributor;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.RegistryFactory;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -126,6 +135,22 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         registerCeylonModules.schedule();
         
         CeylonDebugOptionsManager.getDefault().startup();
+        InputStream contributionStream = new ReaderInputStream(new StringReader(
+                "<plugin>\n" +
+                "<extension point=\"org.eclipse.wst.xml.core.catalogContributions\">\n" +
+                "  <catalogContribution>\n" +
+                "    <uri "
+                        + "name=\"http://www.ceylon-lang.org/xsd/overrides\" "
+                        + "uri=\"platform:/plugin/" + PLUGIN_ID + "/META-INF/overrides.xsd\"/>\n" + 
+                "  </catalogContribution>\n"+
+                "</extension>\n" +
+                "</plugin>"));
+
+        IExtensionRegistry reg = RegistryFactory.getRegistry();
+        Object key = ((ExtensionRegistry) reg).getTemporaryUserToken();
+        IContributor contributor = ContributorFactoryOSGi.createContributor(context.getBundle());
+                
+        RegistryFactory.getRegistry().addContribution(contributionStream, contributor, false, PLUGIN_ID + ".xmlCatalogContribution", null, key);
     }
     
     @Override
