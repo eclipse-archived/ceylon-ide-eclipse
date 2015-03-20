@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInSourceFol
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isResourceFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isSourceFile;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +23,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
+import com.redhat.ceylon.common.FileUtil;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
@@ -37,6 +39,7 @@ final class DeltaScanner implements IResourceDeltaVisitor {
     private IPath explodedDirPath;
     private Map<IProject, IPath> modulesDirPathByProject = new HashMap<>();
     private boolean astAwareIncrementalBuild = true;
+    private IFile overridesResource = null;
     
     DeltaScanner(BooleanHolder mustDoFullBuild, IProject project,
             BooleanHolder somethingToBuild,
@@ -59,6 +62,13 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         } catch (CoreException e) {
         }
         astAwareIncrementalBuild = CeylonBuilder.areAstAwareIncrementalBuildsEnabled(project);
+        CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
+        if (projectConfig != null) {
+            String overridesFilePath = projectConfig.getOverrides();
+            File overridesFile = FileUtil.absoluteFile(FileUtil.applyCwd(project.getLocation().toFile(), new File(overridesFilePath)));
+            overridesResource = CeylonBuilder.fileToIFile(overridesFile, project);
+        }
+        
     }
 
     @Override
@@ -158,7 +168,8 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                 }
             }
             if (fileName.equals(".classpath") ||
-                    fileName.equals("config")) {
+                    fileName.equals("config") ||
+                    file.equals(overridesResource)) {
                 //the classpath changed
                 mustDoFullBuild.value = true;
                 mustResolveClasspathContainer.value = true;
