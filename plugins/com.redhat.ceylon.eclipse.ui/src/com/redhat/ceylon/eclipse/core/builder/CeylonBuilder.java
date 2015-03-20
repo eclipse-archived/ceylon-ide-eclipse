@@ -3271,11 +3271,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     
     public static IFile fileToIFile(File file, IProject project) {
-        File projectLocation = project.getLocation().toFile();
-        String projectAbsolutePath = projectLocation.getAbsolutePath();
-        String absolutePath = file.getAbsolutePath();
-        if (absolutePath.contains(projectAbsolutePath)) {
-            IPath projectRelativePath = new Path(absolutePath.substring(projectAbsolutePath.length()));
+        IPath projectLocation = project.getLocation();
+        IPath absolutePath = new Path(file.getAbsolutePath());
+        
+        if (projectLocation.isPrefixOf(absolutePath)) {
+            IPath projectRelativePath = absolutePath.removeFirstSegments(projectLocation.segmentCount());
             IResource resource = project.findMember(projectRelativePath);
             if (resource != null 
                     && resource.isAccessible()
