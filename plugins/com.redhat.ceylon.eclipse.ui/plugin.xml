@@ -130,6 +130,14 @@
       <super type="org.eclipse.jdt.core.buildpath_problem"/>
       <persistent value="true"/>
    </extension>
+  
+   <extension
+         id="invalidOverridesProblem"
+         name="Ceylon Invalid Overrides File Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
    
    <extension
          id="ceylonProblem.backend"

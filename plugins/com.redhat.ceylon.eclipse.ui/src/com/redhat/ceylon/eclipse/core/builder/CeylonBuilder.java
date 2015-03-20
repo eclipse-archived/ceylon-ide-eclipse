@@ -88,17 +88,23 @@ import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.PackageFragment;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.xml.sax.SAXParseException;
 
 import com.redhat.ceylon.cmr.api.ArtifactCallback;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactCreator;
 import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.cmr.api.Overrides;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
@@ -221,6 +227,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
      */
     public static final String CEYLON_CONFIG_NOT_IN_SYNC_MARKER = PLUGIN_ID + ".ceylonConfigProblem";
         
+    /**
+     * A marker ID that identifies Invalid Overrides XML file problems
+     */
+
+    public static final String CEYLON_INVALID_OVERRIDES_MARKER = PLUGIN_ID + ".invalidOverridesProblem";
     /**
      * A marker ID that identifies tasks
      */
@@ -3240,9 +3251,135 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         return repoManager;
     }
+
+    private static void removeOverridesProblemMarker(final IProject project) {
+        Job job = new Job("Remove Overrides problem marker") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    project.deleteMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_INFINITE);
+                }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.setRule(project);
+        job.schedule();
+    }
+
     
-    public static RepositoryManager resetProjectRepositoryManager(IProject project) throws CoreException {
-        RepositoryManager repositoryManager = repoManager()
+    public static IFile fileToIFile(File file, IProject project) {
+        File projectLocation = project.getLocation().toFile();
+        String projectAbsolutePath = projectLocation.getAbsolutePath();
+        String absolutePath = file.getAbsolutePath();
+        if (absolutePath.contains(projectAbsolutePath)) {
+            IPath projectRelativePath = new Path(absolutePath.substring(projectAbsolutePath.length()));
+            IResource resource = project.findMember(projectRelativePath);
+            if (resource != null 
+                    && resource.isAccessible()
+                    && resource instanceof IFile) {
+                return (IFile) resource;
+            }
+        }
+        return null;
+    }
+    
+    private static void createOverridesProblemMarker(final IProject project,
+            final Exception e, final File overridesFile, final int line, final int column) {
+        Job job = new Job("Create Overrides problem marker") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    IResource markerResource = project;
+                    IFile overridesResource = fileToIFile(overridesFile, project);
+                    if (overridesResource != null) {
+                        markerResource = overridesResource;
+                    }
+                    project.deleteMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_INFINITE);
+                    IMarker marker = markerResource.createMarker(CEYLON_INVALID_OVERRIDES_MARKER);
+                    marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+                    marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                    if (line > -1) {
+                        marker.setAttribute(IMarker.LOCATION, "Line " + line);
+                        marker.setAttribute(IMarker.LINE_NUMBER, line);
+                        if (column > -1 && markerResource instanceof IFile) {
+                            TextFileDocumentProvider docProvider = new TextFileDocumentProvider();
+                            docProvider.connect(markerResource);
+                            IDocument overridesDocument = docProvider.getDocument(markerResource);
+                            if (overridesDocument != null) {
+                                IRegion lineInfo;
+                                try {
+                                    lineInfo = overridesDocument.getLineInformation(line-1);
+                                    int endCharOffset  = lineInfo.getOffset() + column - 1;
+                                    if (endCharOffset == lineInfo.getOffset() + lineInfo.getLength()) {
+                                         while (endCharOffset > lineInfo.getOffset()) {
+                                            char lineEnd = overridesDocument.getChar(endCharOffset);
+                                            if (lineEnd == '\n' || lineEnd == '\r') {
+                                                endCharOffset --;
+                                            } else {
+                                                break;
+                                            }
+                                         }
+                                    }
+                                    char endChar = overridesDocument.getChar(endCharOffset);
+                                    int firstCharOffset = endCharOffset - 2;
+                                    if (firstCharOffset < 0) {
+                                        firstCharOffset= 0;
+                                    }
+                                    if (endChar == '>') {
+                                        int offset = endCharOffset -1;
+                                        while (offset >= lineInfo.getOffset()) {
+                                            if (overridesDocument.getChar(offset) == '<') {
+                                                firstCharOffset = offset;
+                                                break;
+                                            }
+                                            offset--;
+                                        }
+                                    }
+                                    marker.setAttribute(IMarker.CHAR_START, firstCharOffset);
+                                    marker.setAttribute(IMarker.CHAR_END, endCharOffset +1);
+                                } catch (BadLocationException e1) {
+                                }
+                            }
+                        }
+                    }
+                    marker.setAttribute(IMarker.SOURCE_ID, CeylonBuilder.SOURCE);
+                    marker.setAttribute(IMarker.MESSAGE, "The Module Resolver Overrides file is invalid : " + e.getMessage());
+                }
+                catch (CoreException e) {
+                    e.printStackTrace();
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.setRule(project);
+        job.schedule();
+    }
+    
+    public static RepositoryManager resetProjectRepositoryManager(final IProject project) throws CoreException {
+        RepositoryManager repositoryManager = new CeylonUtils.CeylonRepoManagerBuilder() {
+            protected com.redhat.ceylon.cmr.api.Overrides getOverrides(File absoluteFile) {
+                        try {
+                            Overrides result = super.getOverrides(absoluteFile);
+                            removeOverridesProblemMarker(project);
+                            return result;
+                        } catch(Overrides.InvalidOverrideException e) {
+                            createOverridesProblemMarker(project, e, absoluteFile, e.line, e.column);
+                        } catch(IllegalStateException e) {
+                            Throwable cause = e.getCause();
+                            if (cause instanceof SAXParseException) {
+                                SAXParseException spe = (SAXParseException) cause;
+                                createOverridesProblemMarker(project, e, absoluteFile, spe.getLineNumber(), spe.getColumnNumber());
+                            }
+                        } catch(Exception e) {
+                            createOverridesProblemMarker(project, e, absoluteFile, -1, -1);
+                        }
+                        return null;
+                    };
+                    
+                }
                 .offline(CeylonProjectConfig.get(project).isOffline())
                 .cwd(project.getLocation().toFile())
                 .systemRepo(getInterpolatedCeylonSystemRepo(project))
