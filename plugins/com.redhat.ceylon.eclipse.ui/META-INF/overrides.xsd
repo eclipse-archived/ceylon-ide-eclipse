@@ -1,132 +1,343 @@
 <?xml version="1.1" encoding="UTF-8"?>
-<xs:schema xmlns:ovr="http://www.ceylon-lang.org/xsd/overrides" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ceylon-lang.org/xsd/overrides">
-  <xs:complexType name="defineType">
-    <xs:annotation>
-      <xs:documentation>Define variables for string interpolation</xs:documentation>
-    </xs:annotation>
-    <xs:attribute type="xs:string" name="name"/>
-    <xs:attribute type="xs:string" name="value"/>
-  </xs:complexType>
-  <xs:complexType name="addType" abstract="false">
-        <xs:attribute type="xs:string" name="module" use="optional"/>
-        <xs:attribute type="xs:string" name="groupId" use="optional"/>
-        <xs:attribute type="xs:string" name="artifactId" use="optional"/>
-        <xs:attribute type="xs:string" name="version"/>
-        <xs:attribute type="xs:string" name="shared" use="optional"/>
-        <xs:attribute type="xs:string" name="optional" use="optional"/>
-  </xs:complexType>
-  <xs:complexType name="moduleType">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element type="ovr:addType" name="add" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:removeType" name="remove" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:shareType" name="share" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:unshareType" name="unshare" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:optionalType" name="optional" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:requireType" name="require" form="qualified">
-          </xs:element>
-        </xs:choice>
-        <xs:attribute type="xs:string" name="module"/>
-        <xs:attribute type="xs:string" name="groupId" use="optional"/>
-        <xs:attribute type="xs:string" name="artifactId" use="optional"/>
-        <xs:attribute type="xs:string" name="version" use="optional"/>
-  </xs:complexType>
-  <xs:complexType name="artifactType">
-    <xs:complexContent>
-      <xs:restriction base="ovr:moduleType">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element type="ovr:addType" name="add" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:removeType" name="remove" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:shareType" name="share" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:unshareType" name="unshare" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:optionalType" name="optional" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:requireType" name="require" form="qualified">
-          </xs:element>
-        </xs:choice>
-        <xs:attribute type="xs:string" name="groupId"/>
-        <xs:attribute type="xs:string" name="artifactId"/>
-        <xs:attribute type="xs:string" name="version" use="optional"/>
-      </xs:restriction>
-    </xs:complexContent>
-  </xs:complexType>
+<xsd:schema xmlns:ovr="http://www.ceylon-lang.org/xsd/overrides" attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ceylon-lang.org/xsd/overrides">
+  <xsd:attributeGroup name="moduleIdentification">
+        <xsd:attribute type="xsd:string" name="module" use="optional"/>
+        <xsd:attribute type="xsd:string" name="groupId" use="optional"/>
+        <xsd:attribute type="xsd:string" name="artifactId" use="optional"/>
+        <xsd:attribute type="xsd:string" name="packaging" use="optional"/>
+        <xsd:attribute type="xsd:string" name="classifier" use="optional"/>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="artifactIdentification">
+        <xsd:attribute type="xsd:string" name="groupId"/>
+        <xsd:attribute type="xsd:string" name="artifactId"/>
+        <xsd:attribute type="xsd:string" name="packaging" use="optional"/>
+        <xsd:attribute type="xsd:string" name="classifier" use="optional"/>
+  </xsd:attributeGroup>
+  <xsd:complexType name="defineType">
+    <xsd:attribute type="xsd:string" name="name" use="required">
+        <xsd:annotation><xsd:documentation><![CDATA[
+        name of the interpolated variable.
+        ]]></xsd:documentation></xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute type="xsd:string" name="value" use="required">
+        <xsd:annotation><xsd:documentation><![CDATA[
+        value by which ${name} will be replaced.
+        ]]></xsd:documentation></xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="addType" abstract="false">
+        <xsd:attributeGroup ref="ovr:moduleIdentification"/>
+        <xsd:attribute type="xsd:string" name="version" use="required"/>
+        <xsd:attribute type="xsd:string" name="shared" use="optional"/>
+        <xsd:attribute type="xsd:string" name="optional" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="moduleType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+          <xsd:element type="ovr:addType" name="add">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import addition/change</b>
+            <br/>
+            <br/>Adds or updates the import of the specified module or artifact.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:removeType" name="remove">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import removal</b>
+            <br/>
+            <br/>Removes the import of the specified module or artifact.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be removed.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:shareType" name="share">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import visibility change</b>
+            <br/>
+            <br/>Shares the import of the specified module or artifact.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be shared.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:unshareType" name="unshare">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import visibility change</b>
+            <br/>
+            <br/>Hides (unshare) the import of the specified module or artifact.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be hidden.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:optionalType" name="optional">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import requirement change</b>
+            <br/>
+            <br/>Makes the import of the specified module or artifact optional.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be made optional.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:requireType" name="require">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import requirement change</b>
+            <br/>
+            <br/>Makes the import of the specified module or artifact required.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be made required.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:filterType" name="filter">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific package filter</b>
+            <br/>
+            <br/>Defines package filtering rules for the containing module.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+        </xsd:choice>
+        <xsd:attributeGroup ref="ovr:moduleIdentification"/>
+        <xsd:attribute type="xsd:string" name="version" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="artifactType">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+          <xsd:element type="ovr:addType" name="add">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import addition/change</b>
+            <br/>
+            <br/>Adds or updates the import of the specified module or artifact.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:removeType" name="remove">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import removal</b>
+            <br/>
+            <br/>Removes the import of the specified module or artifact.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be removed.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:shareType" name="share">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import visibility change</b>
+            <br/>
+            <br/>Shares the import of the specified module or artifact.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be shared.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:unshareType" name="unshare">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import visibility change</b>
+            <br/>
+            <br/>Hides (unshare) the import of the specified module or artifact.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be hidden.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:optionalType" name="optional">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import requirement change</b>
+            <br/>
+            <br/>Makes the import of the specified module or artifact optional.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be made optional.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:requireType" name="require">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific import requirement change</b>
+            <br/>
+            <br/>Makes the import of the specified module or artifact required.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be made required.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:filterType" name="filter">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific package filter</b>
+            <br/>
+            <br/>Defines package filtering rules for the containing module.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+    </xsd:choice>
+    <xsd:attributeGroup ref="ovr:artifactIdentification"/>
+    <xsd:attribute type="xsd:string" name="version" use="optional"/>
+  </xsd:complexType>
 
-  <xs:complexType name="replaceType" abstract="false">
-    <xs:sequence minOccurs="0" maxOccurs="unbounded">
-      <xs:element type="ovr:withType" name="with"/>
-    </xs:sequence>
-    <xs:attribute type="xs:string" name="module" use="optional"/>
-    <xs:attribute type="xs:string" name="groupId" use="optional"/>
-    <xs:attribute type="xs:string" name="artifactId" use="optional"/>
-    <xs:attribute type="xs:string" name="version" use="optional"/>
-  </xs:complexType>
-  <xs:complexType name="setType" abstract="false">
-    <xs:attribute type="xs:string" name="module" use="optional"/>
-    <xs:attribute type="xs:string" name="groupId" use="optional"/>
-    <xs:attribute type="xs:string" name="artifactId" use="optional"/>
-    <xs:attribute type="xs:string" name="version" use="optional"/>
-  </xs:complexType>
-  <xs:complexType name="removeType" abstract="false">
-    <xs:attribute type="xs:string" name="module" use="optional"/>
-    <xs:attribute type="xs:string" name="groupId" use="optional"/>
-    <xs:attribute type="xs:string" name="artifactId" use="optional"/>
-    <xs:attribute type="xs:string" name="version" use="optional"/>
-  </xs:complexType>
-  <xs:complexType name="unshareType" abstract="false">
-    <xs:attribute type="xs:string" name="module" use="optional"/>
-    <xs:attribute type="xs:string" name="groupId" use="optional"/>
-    <xs:attribute type="xs:string" name="artifactId" use="optional"/>
-        <xs:attribute type="xs:string" name="version" use="optional"/>
-  </xs:complexType>
-  <xs:complexType name="optionalType" abstract="false">
-    <xs:attribute type="xs:string" name="module" use="optional"/>
-    <xs:attribute type="xs:string" name="groupId" use="optional"/>
-    <xs:attribute type="xs:string" name="artifactId" use="optional"/>
-        <xs:attribute type="xs:string" name="version" use="optional"/>
-  </xs:complexType>
-  <xs:complexType name="requireType" abstract="false">
-    <xs:attribute type="xs:string" name="module" use="optional"/>
-    <xs:attribute type="xs:string" name="groupId" use="optional"/>
-    <xs:attribute type="xs:string" name="artifactId" use="optional"/>
-    <xs:attribute type="xs:string" name="version" use="optional"/>
-  </xs:complexType>
-  <xs:complexType name="shareType" abstract="false">
-    <xs:attribute type="xs:string" name="module" use="optional"/>
-    <xs:attribute type="xs:string" name="groupId" use="optional"/>
-    <xs:attribute type="xs:string" name="artifactId" use="optional"/>
-    <xs:attribute type="xs:string" name="version" use="optional"/>
-  </xs:complexType>
-  <xs:complexType name="withType" abstract="false">
-    <xs:attribute type="xs:string" name="module" use="optional"/>
-    <xs:attribute type="xs:string" name="groupId" use="optional"/>
-    <xs:attribute type="xs:string" name="artifactId" use="optional"/>
-    <xs:attribute type="xs:string" name="version" use="optional"/>
-  </xs:complexType>
-  <xs:complexType name="overridesType">
-    <xs:sequence minOccurs="0" maxOccurs="unbounded">
-        <xs:choice minOccurs="1" maxOccurs="1">
-          <xs:element type="ovr:defineType" name="define" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:setType" name="set" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:removeType" name="remove" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:replaceType" name="replace" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:moduleType" name="module" form="qualified">
-          </xs:element>
-          <xs:element type="ovr:artifactType" name="artifact" form="qualified">
-          </xs:element>
-        </xs:choice>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="overrides" type="ovr:overridesType"/>
-</xs:schema>
+  <xsd:complexType name="replaceType" abstract="false">
+    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+      <xsd:element type="ovr:withType" name="with"/>
+    </xsd:sequence>
+    <xsd:attributeGroup ref="ovr:moduleIdentification"/>
+    <xsd:attribute type="xsd:string" name="version" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="setType" abstract="false">
+    <xsd:attributeGroup ref="ovr:moduleIdentification"/>
+    <xsd:attribute type="xsd:string" name="version" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="removeType" abstract="false">
+    <xsd:attributeGroup ref="ovr:moduleIdentification"/>
+    <xsd:attribute type="xsd:string" name="version" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="unshareType" abstract="false">
+    <xsd:attributeGroup ref="ovr:moduleIdentification"/>
+        <xsd:attribute type="xsd:string" name="version" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="optionalType" abstract="false">
+    <xsd:attributeGroup ref="ovr:moduleIdentification"/>
+        <xsd:attribute type="xsd:string" name="version" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="requireType" abstract="false">
+    <xsd:attributeGroup ref="ovr:moduleIdentification"/>
+    <xsd:attribute type="xsd:string" name="version" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="shareType" abstract="false">
+    <xsd:attributeGroup ref="ovr:moduleIdentification"/>
+    <xsd:attribute type="xsd:string" name="version" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="withType" abstract="false">
+    <xsd:attributeGroup ref="ovr:moduleIdentification"/>
+    <xsd:attribute type="xsd:string" name="version" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="overridesType">
+    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+        <xsd:choice minOccurs="1" maxOccurs="1">
+          <xsd:element type="ovr:defineType" name="define">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>String interpolation variable</b>
+            <br/>
+            <br/>Define variables to use in string interpolation.
+            <br/>
+            <br/>Interpolation is done with the following syntax :
+            <br/>  <pre>${name}</pre>]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:setType" name="set">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Global import override</b>
+            <br/>
+            <br/>Globally override every import of the module or artifact to a specific version.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:removeType" name="remove">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><br>Global import remove</br>
+            <br/>
+            <br/>Globally remove every import of a module or artifact.
+            <br/>
+            <br/>If a version is specified, only the imports of the specific version will be removed.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:replaceType" name="replace">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Global import replace</b>
+            <br/>
+            <br/>Globally replace every import of the module or artifact with the imports
+            <br/>defined in the <b>'with'</b> children.
+            <br/>
+            <br/>If no version is specified both here and in the <b>'with'</b> children,
+            <br/>then imports are replaced with the <b>same</b> version.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:moduleType" name="module">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Module-specific override</b>
+            <br/>
+            <br/>Defines overrides specific to a module or artifact.
+            <br/>
+            <br/>If no version is specified, this defines the overrides for <b>any</b> version
+            <br/>of the specified module or artifact.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+          <xsd:element type="ovr:artifactType" name="artifact">
+            <xsd:annotation><xsd:documentation><![CDATA[
+            <br/><b>Artifact-specific override</b>
+            <br/>
+            <br/>Defines overrides specific to an artifact.
+            <br/>
+            <br/>If no version is specified, this defines the overrides for <b>any</b> version
+            <br/>of the specified artifact.
+            ]]></xsd:documentation></xsd:annotation>
+          </xsd:element>
+        </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="overrides" type="ovr:overridesType">
+    <xsd:annotation><xsd:documentation><![CDATA[
+    <br/><b>Module resolution overriding rules</b>
+    <br/>
+    <br/>Defines rules to override the resolution of module imports.
+    <br/>
+    <br/>This is useful to resolve conflicts that might appear when working with external dependencies.
+    ]]></xsd:documentation></xsd:annotation>
+  </xsd:element>
+    <xsd:complexType name="filterType">
+        <xsd:annotation>
+            <xsd:documentation>
+                A filter specification, consisting of zero or more filter items.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="include" type="ovr:pathSpecType" minOccurs="0">
+        <xsd:annotation>
+                    <xsd:documentation>
+                        A path to include. The path value can be a path name or a "glob" which may include the special
+                        wildcards "*", "**", and "?".
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="exclude" type="pathSpecType" minOccurs="0">
+        <xsd:annotation>
+                    <xsd:documentation>
+                        A path to exclude. The path value can be a path name or a "glob" which may include the special
+                        wildcards "*", "**", and "?".
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="include-set" type="pathSetType" minOccurs="0">
+        <xsd:annotation>
+                    <xsd:documentation>
+                        A set of literal path names to include. Wildcards are not supported.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="exclude-set" type="pathSetType" minOccurs="0">
+        <xsd:annotation>
+                    <xsd:documentation>
+                        A set of literal path names to exclude. Wildcards are not supported.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="pathSpecType">
+        <xsd:annotation>
+            <xsd:documentation>
+                A path specification type, which may include wildcards.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:attribute name="path" type="xsd:string" use="required">
+        <xsd:annotation>
+                <xsd:documentation>
+                    The path name, which can be a literal path name or it may include the special wildcards "*", "**",
+                    and "?".
+                </xsd:documentation>
+                </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="pathSetType">
+        <xsd:annotation>
+            <xsd:documentation>
+                A set of literal path names which can be used for efficient matching against multiple possible values.
+            </xsd:documentation>
+                </xsd:annotation>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="path" type="pathType" minOccurs="0">
+        <xsd:annotation>
+                    <xsd:documentation>
+                        The path name to include in the set.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:choice>
+    </xsd:complexType>
+</xsd:schema>
