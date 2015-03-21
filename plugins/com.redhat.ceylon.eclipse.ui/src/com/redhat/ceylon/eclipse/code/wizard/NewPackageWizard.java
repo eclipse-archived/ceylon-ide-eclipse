@@ -22,6 +22,7 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     
     public NewPackageWizard() {
         setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+        setWindowTitle("New Ceylon Package");
     }
     
     public IPackageFragment getPackageFragment() {

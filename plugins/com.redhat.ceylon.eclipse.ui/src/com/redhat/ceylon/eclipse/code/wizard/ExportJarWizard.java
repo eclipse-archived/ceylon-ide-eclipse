@@ -47,6 +47,7 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
     
     public ExportJarWizard() {
         setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+        setWindowTitle("Export Java Archive");
     }
     
     @Override

@@ -45,6 +45,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
     
     public ExportModuleWizard() {
         setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+        setWindowTitle("Export Ceylon Module");
     }
     
     @Override

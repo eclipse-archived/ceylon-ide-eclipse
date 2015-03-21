@@ -17,11 +17,29 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     
     private IStructuredSelection selection;
     private IWorkbench workbench;
+    private String pastedText;
 
     private NewUnitWithDeclarationWizardPage page;
+    private String unitName;
+    private String title;
+    private String description;
     
     public NewUnitWizard() {
         setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+        setWindowTitle("New Ceylon Source File");
+    }
+    
+    public void setPastedText(String pastedText) {
+        this.pastedText = pastedText;
+    }
+    
+    public void setDefaultUnitName(String name) {
+        unitName = name;
+    }
+    
+    public void setTitleAndDescription(String title, String description) {
+        this.title = title;
+        this.description = description;
     }
     
     @Override
@@ -52,15 +70,19 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     private String getDeclarationText() {
         if (page.isDeclaration()) {
             char initial = page.getUnitName().charAt(0);
+            String body = pastedText==null ? "{}" : 
+                "{" + System.lineSeparator() + 
+                    pastedText + 
+                    System.lineSeparator() + "}";
             if (Character.isUpperCase(initial)) {
-                return "class " + page.getUnitName() + "() {}";
+                return "class " + page.getUnitName() + "() " + body;
             }
             else {
-                return "void " + page.getUnitName() + "() {}";
+                return "void " + page.getUnitName() + "() " + body;
             }
         }
         else {
-            return "";
+            return pastedText==null ? "" : pastedText;
         }
     }
     
@@ -70,6 +92,15 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         if (page==null) {
             page = new NewUnitWithDeclarationWizardPage();
             page.init(workbench, selection);
+            if (unitName!=null) {
+                page.setUnitName(unitName);
+            }
+            if (title!=null) {
+                page.setTitle(title);
+            }
+            if (description!=null) {
+                page.setDescription(description);
+            }
         }
         addPage(page);
     }

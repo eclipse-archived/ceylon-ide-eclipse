@@ -127,6 +127,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
     
     public NewModuleWizard() {
         setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+        setWindowTitle("New Ceylon Module");
     }
     
     @Override
