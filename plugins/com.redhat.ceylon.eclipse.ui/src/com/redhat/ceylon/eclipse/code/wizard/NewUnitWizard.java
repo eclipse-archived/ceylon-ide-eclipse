@@ -23,6 +23,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     private String unitName;
     private String title;
     private String description;
+    private String importText;
     
     public NewUnitWizard() {
         setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
@@ -31,6 +32,10 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     
     public void setPastedText(String pastedText) {
         this.pastedText = pastedText;
+    }
+    
+    public void setImports(String importText) {
+        this.importText = importText;
     }
     
     public void setDefaultUnitName(String name) {
@@ -74,11 +79,13 @@ public class NewUnitWizard extends Wizard implements INewWizard {
                 "{" + System.lineSeparator() + 
                     pastedText + 
                     System.lineSeparator() + "}";
+            String imports = importText==null || importText.isEmpty() ? "" :
+                    importText + System.lineSeparator() + System.lineSeparator();
             if (Character.isUpperCase(initial)) {
-                return "class " + page.getUnitName() + "() " + body;
+                return imports + "class " + page.getUnitName() + "() " + body;
             }
             else {
-                return "void " + page.getUnitName() + "() " + body;
+                return imports + "void " + page.getUnitName() + "() " + body;
             }
         }
         else {
@@ -104,5 +111,5 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         }
         addPage(page);
     }
-    
+
 }
