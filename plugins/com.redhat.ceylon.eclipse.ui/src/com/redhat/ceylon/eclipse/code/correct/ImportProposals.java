@@ -121,8 +121,12 @@ public class ImportProposals {
             change.addEdit(new ReplaceEdit(id.getStartIndex(), brokenName.length(), 
                     proposedName));
         }*/
-        String description = "Add import of '" + proposedName + "'" + 
-                " in package '" + declaration.getUnit().getPackage().getNameAsString() + "'";
+        String pname = 
+                declaration.getUnit().getPackage()
+                        .getNameAsString();
+        String description = 
+                "Add import of '" + proposedName + "'" + 
+                " in package '" + pname + "'";
         return new CorrectionProposal(description, change, null, IMPORT) {
             @Override
             public StyledString getStyledDisplayString() {
@@ -234,7 +238,8 @@ public class ImportProposals {
                 text.append(d.getName());
             }
         }
-        Tree.Import oldImportNode = findImportNode(cu, oldPackageName);
+        Tree.Import oldImportNode = 
+                findImportNode(cu, oldPackageName);
         if (oldImportNode!=null) {
             Tree.ImportMemberOrTypeList imtl = 
                     oldImportNode.getImportMemberOrTypeList();
@@ -247,8 +252,9 @@ public class ImportProposals {
                     }
                 }
                 if (remaining==0) {
-                    result.add(new DeleteEdit(oldImportNode.getStartIndex(), 
-                            oldImportNode.getStopIndex()-oldImportNode.getStartIndex()+1));
+                    int start = oldImportNode.getStartIndex();
+                    int stop = oldImportNode.getStopIndex();
+                    result.add(new DeleteEdit(start, stop-start+1));
                 }
                 else {
                     //TODO: format it better!!!!
@@ -268,15 +274,17 @@ public class ImportProposals {
                     }
                     sb.setLength(sb.length()-2);
                     sb.append(delim).append("}");
-                    result.add(new ReplaceEdit(imtl.getStartIndex(), 
-                            imtl.getStopIndex()-imtl.getStartIndex()+1, 
+                    int start = imtl.getStartIndex();
+                    int stop = imtl.getStopIndex();
+                    result.add(new ReplaceEdit(start, stop-start+1, 
                             sb.toString()));
                 }
             }
         }
         if (!cu.getUnit().getPackage().getQualifiedNameString()
                 .equals(newPackageName)) {
-            Tree.Import importNode = findImportNode(cu, newPackageName);
+            Tree.Import importNode = 
+                    findImportNode(cu, newPackageName);
             if (importNode!=null) {
                 Tree.ImportMemberOrTypeList imtl = 
                         importNode.getImportMemberOrTypeList();
@@ -286,11 +294,13 @@ public class ImportProposals {
                 else {
                     int insertPosition = 
                             getBestImportMemberInsertPosition(importNode);
-                    result.add(new InsertEdit(insertPosition, text.toString()));
+                    result.add(new InsertEdit(insertPosition, 
+                            text.toString()));
                 }
             } 
             else {
-                int insertPosition = getBestImportInsertPosition(cu);
+                int insertPosition = 
+                        getBestImportInsertPosition(cu);
                 text.delete(0, 2);
                 text.insert(0, "import " + newPackageName + " {" + delim)
                     .append(delim + "}"); 
@@ -300,13 +310,14 @@ public class ImportProposals {
                 else {
                     text.insert(0, delim);
                 }
-                result.add(new InsertEdit(insertPosition, text.toString()));
+                result.add(new InsertEdit(insertPosition, 
+                        text.toString()));
             }
         }
         return result;
     }
     
-    private static int getBestImportInsertPosition(Tree.CompilationUnit cu) {
+    public static int getBestImportInsertPosition(Tree.CompilationUnit cu) {
         Integer stopIndex = cu.getImportList().getStopIndex();
         if (stopIndex == null) return 0;
         return stopIndex+1;
@@ -320,7 +331,7 @@ public class ImportProposals {
         return visitor.getResult();
     }
 
-    private static int getBestImportMemberInsertPosition(Tree.Import importNode) {
+    public static int getBestImportMemberInsertPosition(Tree.Import importNode) {
         Tree.ImportMemberOrTypeList imtl = 
                 importNode.getImportMemberOrTypeList();
         if (imtl.getImportWildcard()!=null) {
