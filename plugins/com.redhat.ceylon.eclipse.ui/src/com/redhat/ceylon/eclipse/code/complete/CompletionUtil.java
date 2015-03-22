@@ -311,4 +311,26 @@ public class CompletionUtil {
         }
     }
 
+    static String anonFunctionHeader(ProducedType requiredType,
+            Unit unit) {
+        StringBuilder text = new StringBuilder();
+        text.append("(");
+        boolean first = true;
+        char c = 'a';
+        for (ProducedType paramType: 
+                unit.getCallableArgumentTypes(requiredType)) {
+            if (first) {
+                first = false;
+            }
+            else {
+                text.append(", ");
+            }
+            text.append(paramType.getProducedTypeNameInSource(unit))
+                .append(" ")
+                .append(c++);
+        }
+        text.append(")");
+        return text.toString();
+    }
+
 }

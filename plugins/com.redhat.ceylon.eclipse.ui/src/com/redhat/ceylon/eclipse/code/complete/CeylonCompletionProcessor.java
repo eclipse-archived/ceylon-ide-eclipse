@@ -33,6 +33,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addDocLinkProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addImportProposal;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.anonFunctionHeader;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getLine;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getRealScope;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isEmptyModuleDescriptor;
@@ -66,6 +67,7 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.addRefinementProposal;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.complete.TypeArgumentListCompletions.addTypeArgumentListProposal;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
@@ -155,7 +157,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -165,7 +166,8 @@ import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 
 public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
-    private static final Image LARGE_CORRECTION_IMAGE = CeylonLabelProvider.getDecoratedImage(CeylonResources.CEYLON_CORRECTION, 0, false);
+    static final Image LARGE_CORRECTION_IMAGE = 
+            getDecoratedImage(CeylonResources.CEYLON_CORRECTION, 0, false);
 
     private static final char[] CONTEXT_INFO_ACTIVATION_CHARS = ",(;{".toCharArray();
     
@@ -728,7 +730,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 getOccurrenceLocation(cpc.getRootNode(), node, offset);
         
         if (node instanceof Tree.Term) {
-            addParametersProposal(offset, node, result);
+            ParametersCompletionProposal.addParametersProposal(offset, node, result, cpc);
         }
         else if (node instanceof Tree.ArgumentList) {
             class FindInvocationVisitor extends Visitor {
@@ -746,7 +748,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             fiv.visit(cpc.getRootNode());
             Tree.InvocationExpression ie = fiv.result;
             if (ie!=null) {
-                addParametersProposal(offset, ie, result);
+                ParametersCompletionProposal.addParametersProposal(offset, ie, result, cpc);
             }
         }
         
@@ -943,51 +945,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         return result.toArray(new ICompletionProposal[result.size()]);
     }
 
-    private static void addParametersProposal(final int offset, Node node,
-            final List<ICompletionProposal> result) {
-        if (!(node instanceof Tree.StaticMemberOrTypeExpression) || 
-                !(((Tree.StaticMemberOrTypeExpression) node).getDeclaration() instanceof Functional)) {
-            ProducedType type = ((Tree.Term) node).getTypeModel();
-            Unit unit = node.getUnit();
-            if (type!=null) {
-                TypeDeclaration td = type.getDeclaration();
-                Interface cd = unit.getCallableDeclaration();
-                if (td instanceof ClassOrInterface &&
-                        td.equals(cd)) {
-                    List<ProducedType> argTypes = 
-                            unit.getCallableArgumentTypes(type);
-                    StringBuilder text = new StringBuilder();
-                    text.append('(');
-                    for (ProducedType argType: argTypes) {
-                        if (text.length()>1) text.append(", ");
-                        TypeDeclaration atd = argType.getDeclaration();
-                        if (atd instanceof ClassOrInterface &&
-                                atd.equals(cd)) {
-                            text.append(anonFunctionHeader(argType, unit))
-                                .append(" => ");
-                            ProducedType rt = unit.getCallableReturnType(argType);
-                            atd = rt==null ? null : rt.getDeclaration();
-                        }
-                        if (atd instanceof ClassOrInterface||
-                                atd instanceof TypeParameter) {
-                            String name = atd.getName(unit);
-                            text.append(Character.toLowerCase(name.charAt(0)))
-                                .append(name.substring(1));
-                        }
-                        else {
-                            text.append("arg");
-                        }
-                    }
-                    text.append(')');
-                    result.add(new CompletionProposal(offset, "", 
-                            LARGE_CORRECTION_IMAGE, 
-                            text.toString(), text.toString()) {
-                    });
-                }
-            }
-        }
-    }
-
     private static boolean isProposable(Node node, OccurrenceLocation ol,
             Declaration dec) {
         if (ol!=EXISTS && ol!=NONEMPTY && ol!=IS) {
@@ -1041,28 +998,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 }
             });
         }
-    }
-
-    private static String anonFunctionHeader(ProducedType requiredType,
-            Unit unit) {
-        StringBuilder text = new StringBuilder();
-        text.append("(");
-        boolean first = true;
-        char c = 'a';
-        for (ProducedType paramType: 
-                unit.getCallableArgumentTypes(requiredType)) {
-            if (first) {
-                first = false;
-            }
-            else {
-                text.append(", ");
-            }
-            text.append(paramType.getProducedTypeNameInSource(unit))
-                .append(" ")
-                .append(c++);
-        }
-        text.append(")");
-        return text.toString();
     }
 
     private static boolean isReferenceProposable(OccurrenceLocation ol,
