@@ -820,7 +820,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             if (!secondLevel && !inDoc && !isMember) {
                 if (prefix.isEmpty() && !isTypeUnknown(requiredType) &&
                         node.getUnit().isCallableType(requiredType)) {
-                    addAnonFunctionProposal(offset, requiredType, result);
+                    addAnonFunctionProposal(offset, requiredType, result,
+                            node.getUnit());
                 }
             }
             
@@ -950,8 +951,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             Unit unit = node.getUnit();
             if (type!=null) {
                 TypeDeclaration td = type.getDeclaration();
+                Interface cd = unit.getCallableDeclaration();
                 if (td instanceof ClassOrInterface &&
-                        td.equals(unit.getCallableDeclaration())) {
+                        td.equals(cd)) {
                     List<ProducedType> argTypes = 
                             unit.getCallableArgumentTypes(type);
                     StringBuilder text = new StringBuilder();
@@ -959,11 +961,18 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     for (ProducedType argType: argTypes) {
                         if (text.length()>1) text.append(", ");
                         TypeDeclaration atd = argType.getDeclaration();
+                        if (atd instanceof ClassOrInterface &&
+                                atd.equals(cd)) {
+                            text.append(anonFunctionHeader(argType, unit))
+                                .append(" => ");
+                            ProducedType rt = unit.getCallableReturnType(argType);
+                            atd = rt==null ? null : rt.getDeclaration();
+                        }
                         if (atd instanceof ClassOrInterface||
                                 atd instanceof TypeParameter) {
                             String name = atd.getName(unit);
                             text.append(Character.toLowerCase(name.charAt(0)))
-                            .append(name.substring(1));
+                                .append(name.substring(1));
                         }
                         else {
                             text.append("arg");
@@ -1010,13 +1019,38 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     private static void addAnonFunctionProposal(int offset, 
-            ProducedType requiredType, List<ICompletionProposal> result) {
+            ProducedType requiredType, List<ICompletionProposal> result, 
+            Unit unit) {
+        String text = anonFunctionHeader(requiredType, unit);
+        String funtext = text + " => nothing";
+        result.add(new CompletionProposal(offset, "", 
+                LARGE_CORRECTION_IMAGE, funtext, funtext) {
+            @Override
+            public Point getSelection(IDocument document) {
+                return new Point(offset + text.indexOf("nothing"), 7);
+            }
+        });
+        if (unit.getCallableReturnType(requiredType).getDeclaration()
+                .equals(unit.getAnythingDeclaration())) {
+            String voidtext = "void " + text + " {}";
+            result.add(new CompletionProposal(offset, "", 
+                    LARGE_CORRECTION_IMAGE, voidtext, voidtext) {
+                @Override
+                public Point getSelection(IDocument document) {
+                    return new Point(offset + text.length()-1, 0);
+                }
+            });
+        }
+    }
+
+    private static String anonFunctionHeader(ProducedType requiredType,
+            Unit unit) {
         StringBuilder text = new StringBuilder();
         text.append("(");
-        Unit unit = requiredType.getDeclaration().getUnit();
         boolean first = true;
         char c = 'a';
-        for (ProducedType paramType: unit.getCallableArgumentTypes(requiredType)) {
+        for (ProducedType paramType: 
+                unit.getCallableArgumentTypes(requiredType)) {
             if (first) {
                 first = false;
             }
@@ -1028,25 +1062,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 .append(c++);
         }
         text.append(")");
-        String funtext = text.toString() + " => nothing";
-        result.add(new CompletionProposal(offset, "", 
-                LARGE_CORRECTION_IMAGE, funtext, funtext) {
-            @Override
-            public Point getSelection(IDocument document) {
-                return new Point(offset + text.indexOf("nothing"), 7);
-            }
-        });
-        if (unit.getCallableReturnType(requiredType).getDeclaration()
-                .equals(unit.getAnythingDeclaration())) {
-            String voidtext = "void " + text.toString() + " {}";
-            result.add(new CompletionProposal(offset, "", 
-                    LARGE_CORRECTION_IMAGE, voidtext, voidtext) {
-                @Override
-                public Point getSelection(IDocument document) {
-                    return new Point(offset + text.length()-1, 0);
-                }
-            });
-        }
+        return text.toString();
     }
 
     private static boolean isReferenceProposable(OccurrenceLocation ol,
