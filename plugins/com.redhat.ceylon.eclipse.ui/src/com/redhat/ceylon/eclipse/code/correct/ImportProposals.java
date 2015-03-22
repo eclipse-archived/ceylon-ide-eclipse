@@ -37,6 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.NothingType;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
@@ -44,6 +45,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
+import com.redhat.ceylon.compiler.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -401,27 +403,32 @@ public class ImportProposals {
     public static void importType(Set<Declaration> declarations, 
             ProducedType type, 
             Tree.CompilationUnit rootNode) {
-        if (type==null) return;
-        if (type.getDeclaration() instanceof UnionType) {
-            for (ProducedType t: 
-                    type.getDeclaration().getCaseTypes()) {
-                importType(declarations, t, rootNode);
-            }
-        }
-        else if (type.getDeclaration() instanceof IntersectionType) {
-            for (ProducedType t: 
-                    type.getDeclaration().getSatisfiedTypes()) {
-                importType(declarations, t, rootNode);
-            }
-        }
-        else {
-            importType(declarations, type.getQualifyingType(), rootNode);
+        if (type!=null) {
             TypeDeclaration td = type.getDeclaration();
-            if (td instanceof ClassOrInterface && 
-                    td.isToplevel()) {
-                importDeclaration(declarations, td, rootNode);
-                for (ProducedType arg: type.getTypeArgumentList()) {
-                    importType(declarations, arg, rootNode);
+            if (td instanceof UnknownType ||
+                    td instanceof NothingType) {
+                //nothing to do
+            }
+            else if (td instanceof UnionType) {
+                for (ProducedType t: 
+                        type.getDeclaration().getCaseTypes()) {
+                    importType(declarations, t, rootNode);
+                }
+            }
+            else if (td instanceof IntersectionType) {
+                for (ProducedType t: 
+                        type.getDeclaration().getSatisfiedTypes()) {
+                    importType(declarations, t, rootNode);
+                }
+            }
+            else {
+                importType(declarations, type.getQualifyingType(), rootNode);
+                if (td instanceof ClassOrInterface && 
+                        td.isToplevel()) {
+                    importDeclaration(declarations, td, rootNode);
+                    for (ProducedType arg: type.getTypeArgumentList()) {
+                        importType(declarations, arg, rootNode);
+                    }
                 }
             }
         }
