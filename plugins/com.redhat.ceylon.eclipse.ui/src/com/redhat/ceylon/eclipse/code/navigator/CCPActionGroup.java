@@ -186,6 +186,9 @@ public class CCPActionGroup extends ActionGroup {
 			                    if (text==null) {
 			                        text = (String) clipboard.getContents(TextTransfer.getInstance());
 			                    }
+			                    else {
+			                        text = text.substring(1);
+			                    }
 			                    if (text!=null) {
 			                        @SuppressWarnings({"unchecked", "rawtypes"})
 			                        Map<Declaration,String> imports = 
@@ -199,7 +202,7 @@ public class CCPActionGroup extends ActionGroup {
 			                            importText = getImportText(packages, imports, 
 			                                    System.lineSeparator());
 			                        }
-			                        openPackageWizard(selection, text.substring(1), importText);
+			                        openPackageWizard(selection, text, importText);
 			                        return;
 			                    }
 			                }
