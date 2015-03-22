@@ -31,6 +31,8 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.eclipse.util.LinkedMode.addLinkedPosition;
+import static com.redhat.ceylon.eclipse.util.LinkedMode.installLinkedMode;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
@@ -85,7 +87,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
@@ -394,7 +395,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                                     loc+startOfArgs, endOfLine, 
                                     ",;", "", true)+1;
                     String content = 
-                            document.get(offset, currentOffset-offset);
+                            document.get(offset, 
+                                    currentOffset-offset);
                     int fat = content.indexOf("=>");
                     if (fat>0) {
                         content = content.substring(fat+2);
@@ -425,8 +427,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
-    final class NestedLiteralCompletionProposal implements ICompletionProposal, 
-            ICompletionProposalExtension2 {
+    final class NestedLiteralCompletionProposal 
+            implements ICompletionProposal, 
+                       ICompletionProposalExtension2 {
         
         private final int loc;
         private final int index;
@@ -458,12 +461,14 @@ class InvocationCompletionProposal extends CompletionProposal {
                         findCharCount(index, document, 
                                 loc+startOfArgs, endOfLine, 
                                 ",;", "", true)+1;
-                if (offset>0 && document.getChar(offset)==' ') {
+                if (offset>0 && 
+                        document.getChar(offset)==' ') {
                     offset++;
                 }
-                int nextOffset = findCharCount(index+1, document, 
-                        loc+startOfArgs, endOfLine, 
-                        ",;", "", true);
+                int nextOffset = 
+                        findCharCount(index+1, document, 
+                                loc+startOfArgs, endOfLine, 
+                                ",;", "", true);
                 int middleOffset = findCharCount(1, document, 
                         offset, nextOffset, 
                         "=", "", true)+1;
@@ -539,11 +544,13 @@ class InvocationCompletionProposal extends CompletionProposal {
                             document.getLineInformationOfOffset(loc);
                     int endOfLine = li.getOffset() + li.getLength();
                     int startOfArgs = getFirstPosition();
-                    int offset = findCharCount(index, document, 
-                            loc+startOfArgs, endOfLine, 
-                            ",;", "", true)+1;
+                    int offset = 
+                            findCharCount(index, document, 
+                                    loc+startOfArgs, endOfLine, 
+                                    ",;", "", true)+1;
                     String content = 
-                            document.get(offset, currentOffset-offset);
+                            document.get(offset, 
+                                    currentOffset-offset);
                     int eq = content.indexOf("=");
                     if (eq>0) {
                         content = content.substring(eq+1);
@@ -624,7 +631,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         catch (Exception e) {
             e.printStackTrace();
         }
-        if (EditorUtil.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
+        if (getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
             activeLinkedMode(document);
         }
     }
@@ -643,14 +650,16 @@ class InvocationCompletionProposal extends CompletionProposal {
                 }
             }
             if (paramList!=null) {
-                List<Parameter> params = getParameters(paramList, 
-                        includeDefaulted, namedInvocation);
+                List<Parameter> params = 
+                        getParameters(paramList, 
+                                includeDefaulted, namedInvocation);
                 if (!params.isEmpty()) {
                     enterLinkedMode(document, params, null);
                     return; //NOTE: early exit!
                 }
             }
-            List<TypeParameter> typeParams = generic.getTypeParameters();
+            List<TypeParameter> typeParams = 
+                    generic.getTypeParameters();
             if (!typeParams.isEmpty()) {
                 enterLinkedMode(document, null, typeParams);
             }
@@ -780,7 +789,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     ProposalPosition linkedPosition = 
                             new ProposalPosition(document, start, len, seq, 
                                     props.toArray(NO_COMPLETIONS));
-                    LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
+                    addLinkedPosition(linkedModeModel, linkedPosition);
                     first = first+next+1;
                     next = getNextPosition(document, first);
                     seq++;
@@ -788,7 +797,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 param++; 
             }
             if (seq>0) {
-                LinkedMode.installLinkedMode((CeylonEditor) getCurrentEditor(), 
+                installLinkedMode((CeylonEditor) getCurrentEditor(), 
                         document, linkedModeModel, this, 
                         new LinkedMode.NullExitPolicy(),
                         seq, loc+text.length());
@@ -860,7 +869,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                             loc, index, false, isIterArg || isVarArg ? "*" : ""));
                 }
                 if (qualifier==null && 
-                        EditorUtil.getPreferences().getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
+                        getPreferences().getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
                     Collection<DeclarationWithProximity> members = 
                             ((Value) d).getTypeDeclaration()
                             .getMatchingMemberDeclarations(unit, scope, "", 0).values();
@@ -980,7 +989,8 @@ class InvocationCompletionProposal extends CompletionProposal {
     public IContextInformation getContextInformation() {
         if (namedInvocation||positionalInvocation) { //TODO: context info for type arg lists!
             if (declaration instanceof Functional) {
-                List<ParameterList> pls = ((Functional) declaration).getParameterLists();
+                List<ParameterList> pls = 
+                        ((Functional) declaration).getParameterLists();
                 if (!pls.isEmpty()) {
                     int argListOffset = isParameterInfo() ? 
                             this.offset : 
@@ -1029,7 +1039,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         rootNode.visit(new Visitor() {
             @Override
             public void visit(Tree.InvocationExpression that) {
-                Tree.ArgumentList al = that.getPositionalArgumentList();
+                Tree.ArgumentList al = 
+                        that.getPositionalArgumentList();
                 if (al==null) {
                     al = that.getNamedArgumentList();
                 }
@@ -1081,7 +1092,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         new Visitor() {
             @Override
             public void visit(Tree.InvocationExpression that) {
-                Tree.ArgumentList al = that.getPositionalArgumentList();
+                Tree.ArgumentList al = 
+                        that.getPositionalArgumentList();
                 if (al==null) {
                     al = that.getNamedArgumentList();
                 }
@@ -1184,8 +1196,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         @Override
         public boolean equals(Object that) {
             if (that instanceof ParameterContextInformation) {
-                return ((ParameterContextInformation) that).declaration
-                        .equals(declaration);
+                ParameterContextInformation pci = 
+                        (ParameterContextInformation) that;
+                return pci.declaration.equals(declaration);
             }
             else {
                 return false;
