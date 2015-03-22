@@ -831,17 +831,17 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     for (Declaration d: overloads(dec)) {
                         ProducedReference pr = isMember ? 
                                 getQualifiedProducedReference(node, d) :
-                                    getRefinedProducedReference(scope, d);
-                                addInvocationProposals(offset, prefix, cpc, result, 
-                                        d, pr, scope, ol, null, isMember);
+                                getRefinedProducedReference(scope, d);
+                        addInvocationProposals(offset, prefix, cpc, result, 
+                                d, pr, scope, ol, null, isMember);
                     }
                 }
                 
                 if (isProposable(dwp, ol, scope, node.getUnit(), 
                             requiredType, previousTokenType) && 
-                            isProposable(node, ol, dec) &&
-                            (definitelyRequiresType(ol) || noParamsFollow || dec instanceof Functional) &&
-                            (!(scope instanceof Constructor) || ol!=EXTENDS || scope.getContainer().isInherited(dec))) {
+                        isProposable(node, ol, dec) &&
+                        (definitelyRequiresType(ol) || noParamsFollow || dec instanceof Functional) &&
+                        (!(scope instanceof Constructor) || ol!=EXTENDS || scope.getContainer().isInherited(dec))) {
                     if (ol==DOCLINK) {
                         addDocLinkProposal(offset, prefix, cpc, result, dec, scope);
                     }
@@ -874,8 +874,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 }
 
                 if (!memberOp && !secondLevel &&
-                        isProposable(dwp, ol, scope, node.getUnit(), requiredType, 
-                                previousTokenType) && 
+                        isProposable(dwp, ol, scope, node.getUnit(), 
+                                requiredType, previousTokenType) && 
                         ol!=IMPORT && ol!=CASE && ol!=CATCH &&
                         isDirectlyInsideBlock(node, cpc, scope, token)) {
                     addForProposal(offset, prefix, cpc, result, dwp, dec);

@@ -29,6 +29,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
@@ -173,7 +174,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (!pls.isEmpty()) {
                 ParameterList parameterList = pls.get(0);
                 List<Parameter> ps = parameterList.getParameters();
-                String inexactMatches = EditorUtil.getPreferences().getString(INEXACT_MATCHES);
+                String inexactMatches = getPreferences().getString(INEXACT_MATCHES);
                 boolean exact = (typeArgs==null ? prefix : prefix.substring(0,prefix.length()-typeArgs.length()))
                         .equalsIgnoreCase(dec.getName(unit));
                 boolean positional = exact ||
