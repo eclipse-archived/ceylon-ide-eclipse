@@ -14,6 +14,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDeco
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CHAIN_LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
@@ -720,10 +721,15 @@ class ParametersCompletionProposal extends CompletionProposal {
                         td.equals(cd)) {
                     final List<ProducedType> argTypes = 
                             unit.getCallableArgumentTypes(type);
+                    boolean paramTypes = 
+                            getPreferences().getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
+                    final StringBuilder desc = new StringBuilder();
                     final StringBuilder text = new StringBuilder();
+                    desc.append('(');
                     text.append('(');
                     for (int i = 0; i < argTypes.size(); i++) {
                         ProducedType argType = argTypes.get(i);
+                        if (desc.length()>1) desc.append(", ");
                         if (text.length()>1) text.append(", ");
                         TypeDeclaration atd = argType.getDeclaration();
                         if (atd instanceof ClassOrInterface &&
@@ -734,19 +740,27 @@ class ParametersCompletionProposal extends CompletionProposal {
                             argTypes.set(i, rt);
                             atd = rt==null ? null : rt.getDeclaration();
                         }
+                        else if (paramTypes) {
+                            desc.append(argType.getProducedTypeName(unit))
+                                .append(' ');
+                        }
+                        String name;
                         if (atd instanceof ClassOrInterface||
                                 atd instanceof TypeParameter) {
-                            String name = atd.getName(unit);
-                            text.append(Character.toLowerCase(name.charAt(0)))
-                                .append(name.substring(1));
+                            String n = atd.getName(unit);
+                            name = Character.toLowerCase(n.charAt(0)) + 
+                                    n.substring(1);
                         }
                         else {
-                            text.append("arg");
+                            name = "arg";
                         }
+                        text.append(name);
+                        desc.append(name);
                     }
                     text.append(')');
+                    desc.append(')');
                     result.add(new ParametersCompletionProposal(offset, 
-                            text.toString(), text.toString(), 
+                            desc.toString(), text.toString(), 
                             argTypes, node.getScope(), cpc));
                 }
             }

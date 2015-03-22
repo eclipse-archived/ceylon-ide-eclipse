@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultV
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
@@ -418,7 +419,7 @@ public class CodeCompletions {
             }
             else {
                 boolean paramTypes = descriptionOnly && 
-                        EditorUtil.getPreferences().getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
+                        getPreferences().getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                 result.append("(");
                 for (Parameter p: params) {
                     ProducedTypedReference typedParameter = 
@@ -511,7 +512,7 @@ public class CodeCompletions {
             }
             else {
                 boolean paramTypes = descriptionOnly && 
-                        EditorUtil.getPreferences().getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
+                        getPreferences().getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                 result.append(" { ");
                 for (Parameter p: params) {
                     String name = descriptionOnly ? 
