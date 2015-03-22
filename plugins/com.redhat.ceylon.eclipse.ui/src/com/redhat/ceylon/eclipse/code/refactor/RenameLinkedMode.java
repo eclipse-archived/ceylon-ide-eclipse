@@ -8,6 +8,11 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
@@ -16,6 +21,7 @@ import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
+import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
@@ -212,6 +218,36 @@ public final class RenameLinkedMode
                 .setSelectedRange(originalSelection.x, 
                         originalSelection.y); 
         }
+    }
+    
+    @Override
+    protected void openPopup() {
+        super.openPopup();
+        getInfoPopup().getMenuManager().addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager) {
+                manager.add(new Separator());
+                Action renameLocals = 
+                        new Action("Rename Local Values", IAction.AS_CHECK_BOX) {
+                    @Override
+                    public void run() {
+                        refactoring.setRenameLocals(isChecked());
+                    }
+                };
+                renameLocals.setChecked(refactoring.isRenameLocals());
+                renameLocals.setEnabled(refactoring.getDeclaration() instanceof TypeDeclaration);
+                manager.add(renameLocals);
+                Action renameFile = 
+                        new Action("Rename Source File", IAction.AS_CHECK_BOX) {
+                    @Override
+                    public void run() {
+                        refactoring.setRenameFile(isChecked());
+                    }
+                };
+                renameFile.setChecked(refactoring.isRenameFile());
+                manager.add(renameFile);
+            }
+        });
     }
 
 //  private Image image= null;

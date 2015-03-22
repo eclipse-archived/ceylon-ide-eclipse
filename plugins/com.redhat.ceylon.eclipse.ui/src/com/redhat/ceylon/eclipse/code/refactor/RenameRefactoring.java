@@ -42,21 +42,20 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class RenameRefactoring extends AbstractRefactoring {
     
@@ -84,7 +83,7 @@ public class RenameRefactoring extends AbstractRefactoring {
             this.declaration = declaration;
         }
         @Override
-        public void visit(DocLink that) {
+        public void visit(Tree.DocLink that) {
             if (that.getBase()!=null) {
                 if (that.getBase().equals(declaration)) {
                     count++;
@@ -101,6 +100,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     private String newName;
     private final Declaration declaration;
     private boolean renameFile;
+    private boolean renameLocals;
     
     public Node getNode() {
         return node;
@@ -254,23 +254,25 @@ public class RenameRefactoring extends AbstractRefactoring {
                 @Override
                 public void acceptSearchMatch(SearchMatch match) {
                     TextChange change = canonicalChange(cc, changes, match);
-                    int loc = pattern.lastIndexOf('.')+1;
-                    String oldName = pattern.substring(loc);
-                    if (declaration instanceof Value) {
-                        String uppercased = 
-                                Character.toUpperCase(newName.charAt(0)) + 
-                                newName.substring(1);
-                        change.addEdit(new ReplaceEdit(match.getOffset()+3, 
-                                oldName.length()-3, 
-                                uppercased));
-                    }
-                    else {
-                        String replacedName = newName;
-                        if (oldName.startsWith("$")) {
-                            replacedName = '$' + replacedName;
+                    if (change!=null) {
+                        int loc = pattern.lastIndexOf('.')+1;
+                        String oldName = pattern.substring(loc);
+                        if (declaration instanceof Value) {
+                            String uppercased = 
+                                    Character.toUpperCase(newName.charAt(0)) + 
+                                    newName.substring(1);
+                            change.addEdit(new ReplaceEdit(match.getOffset()+3, 
+                                    oldName.length()-3, 
+                                    uppercased));
                         }
-                        change.addEdit(new ReplaceEdit(match.getOffset(), 
-                                oldName.length(), replacedName));
+                        else {
+                            String replacedName = newName;
+                            if (oldName.startsWith("$")) {
+                                replacedName = '$' + replacedName;
+                            }
+                            change.addEdit(new ReplaceEdit(match.getOffset(), 
+                                    oldName.length(), replacedName));
+                        }
                     }
                 }
             };
@@ -327,6 +329,11 @@ public class RenameRefactoring extends AbstractRefactoring {
             for (Region region: getStringsToReplace(root)) {
                 renameRegion(tfc, region, root);
             }
+            if (renameLocals) { 
+                for (Tree.Identifier id: getLocalsToRename(root)) {
+                    renameLocal(tfc, id, root);
+                }
+            }
         }
         if (tfc.getEdit().hasChildren()) {
             cc.add(tfc);
@@ -342,10 +349,40 @@ public class RenameRefactoring extends AbstractRefactoring {
         FindRefinementsVisitor fdv = 
                 new FindRefinementsVisitor((Declaration)frv.getDeclaration()) {
             @Override
-            public void visit(SpecifierStatement that) {}
+            public void visit(Tree.SpecifierStatement that) {}
         };
         root.visit(fdv);
         list.addAll(fdv.getDeclarationNodes());
+        return list;
+    }
+    
+    public List<Tree.Identifier> getLocalsToRename(Tree.CompilationUnit root) {
+        final ArrayList<Tree.Identifier> list = 
+                new ArrayList<Tree.Identifier>();
+        if (declaration instanceof TypeDeclaration) {
+            new Visitor() {
+                String name = declaration.getName();
+                @Override
+                public void visit(Tree.AnyAttribute that) {
+                    super.visit(that);
+                    Tree.Identifier id = 
+                            that.getIdentifier();
+                    if (id!=null) {
+                        TypeDeclaration d = 
+                                that.getType().getTypeModel()
+                                    .getDeclaration();
+                        if ((d instanceof ClassOrInterface||d instanceof TypeParameter) && 
+                                d.equals(declaration)) {
+                            String text = id.getText();
+                            if (text.equalsIgnoreCase(name) ||
+                                    text.endsWith(name)) {
+                                list.add(id);
+                            }
+                        }
+                    }
+                }
+            }.visit(root);
+        }
         return list;
     }
     
@@ -375,7 +412,23 @@ public class RenameRefactoring extends AbstractRefactoring {
         return result;
     }
 
-    protected void renameRegion(TextChange tfc, Region region, 
+    void renameLocal(TextChange tfc, Tree.Identifier id, 
+            Tree.CompilationUnit root) {
+        String name = declaration.getName();
+        int loc = id.getText().indexOf(name);
+        if (loc>0) {
+            tfc.addEdit(new ReplaceEdit(id.getStartIndex() + loc, 
+                    name.length(), newName));
+        }
+        else {
+            tfc.addEdit(new ReplaceEdit(id.getStartIndex(), 
+                    id.getText().length(), 
+                    Character.toLowerCase(newName.charAt(0)) + 
+                        newName.substring(1)));
+        }
+    }
+
+    void renameRegion(TextChange tfc, Region region, 
             Tree.CompilationUnit root) {
         tfc.addEdit(new ReplaceEdit(region.getOffset(), 
                 region.getLength(), newName));
@@ -383,11 +436,19 @@ public class RenameRefactoring extends AbstractRefactoring {
 
     protected void renameNode(TextChange tfc, Node node, 
             Tree.CompilationUnit root) {
-        Node identifyingNode = Nodes.getIdentifyingNode(node);
+        Node identifyingNode = getIdentifyingNode(node);
         tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex(), 
                 identifyingNode.getText().length(), newName));
     }
-
+    
+    public boolean isRenameLocals() {
+        return renameLocals;
+    }
+    
+    public void setRenameLocals(boolean renameLocals) {
+        this.renameLocals = renameLocals;
+    }
+    
     public void setNewName(String text) {
         newName = text;
     }

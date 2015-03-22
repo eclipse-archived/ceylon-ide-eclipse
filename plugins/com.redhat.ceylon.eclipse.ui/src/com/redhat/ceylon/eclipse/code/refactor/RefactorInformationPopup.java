@@ -12,6 +12,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
  *******************************************************************************/
 
 import static org.eclipse.jface.text.link.ILinkedModeListener.UPDATE_CARET;
+import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -76,11 +77,10 @@ import org.eclipse.swt.widgets.Tracker;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.progress.UIJob;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencePage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonRefactoringPreferencePage;
 
 public class RefactorInformationPopup 
         implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
@@ -727,7 +727,7 @@ public class RefactorInformationPopup
         menu.setVisible(true);
     }
 
-    private MenuManager getMenuManager() {
+    MenuManager getMenuManager() {
         if (fMenuManager != null) {
             return fMenuManager;
         }
@@ -758,8 +758,8 @@ public class RefactorInformationPopup
                 fLinkedMode.cancel();
                 String linkedModePrefPageID= 
                         "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
-                String refactoringPrefPageID = CeylonEditorPreferencePage.ID;
-                PreferencesUtil.createPreferenceDialogOn(fEditor.getSite().getShell(), 
+                String refactoringPrefPageID = CeylonRefactoringPreferencePage.ID;
+                createPreferenceDialogOn(fEditor.getSite().getShell(), 
                         refactoringPrefPageID, 
                         new String[] { linkedModePrefPageID, refactoringPrefPageID }, 
                         null).open();

@@ -31,7 +31,9 @@ public class RenameInputPage extends UserInputWizardPage {
         layout.numColumns = 3;
         result.setLayout(layout);
         Label title = new Label(result, SWT.LEFT);  
-        String name = getRenameRefactoring().getDeclaration().getName();
+        Declaration declaration = 
+                getRenameRefactoring().getDeclaration();
+        String name = declaration.getName();
         title.setText("Rename " + getRenameRefactoring().getCount() + 
                 " occurrences of declaration '" + 
                 name + "'.");
@@ -62,23 +64,40 @@ public class RenameInputPage extends UserInputWizardPage {
         text.selectAll();
         text.setFocus();
         
-        final Button checkbox = new Button(result, SWT.CHECK);
-        GridData gd4 = new GridData();
+        final Button renameSourceFile = 
+                new Button(result, SWT.CHECK);
+        GridData gd4 = new GridData(GridData.FILL_HORIZONTAL);
         gd4.horizontalSpan=3;
-        checkbox.setLayoutData(gd4);
-        String filename = getRenameRefactoring().getDeclaration().getUnit().getFilename();
-        checkbox.setText("Also rename source file '" + filename + "'");
-        checkbox.setSelection(getRenameRefactoring().isRenameFile());
-        checkbox.setEnabled(filename.endsWith(".ceylon"));
-        checkbox.addSelectionListener(new SelectionListener() {
+        gd4.grabExcessHorizontalSpace=true;
+        renameSourceFile.setLayoutData(gd4);
+        String filename = declaration.getUnit().getFilename();
+        renameSourceFile.setText("Also rename source file '" + filename + "'");
+        renameSourceFile.setSelection(getRenameRefactoring().isRenameFile());
+        renameSourceFile.setEnabled(filename.endsWith(".ceylon"));
+        renameSourceFile.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                getRenameRefactoring().setRenameFile(checkbox.getSelection());
+                getRenameRefactoring().setRenameFile(renameSourceFile.getSelection());
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
-    }
+
+        final Button renameLocals = 
+                new Button(result, SWT.CHECK);
+        renameLocals.setLayoutData(gd4);
+        renameLocals.setText("Rename similarly-named local values");
+        renameLocals.setSelection(getRenameRefactoring().isRenameLocals());
+        renameLocals.setEnabled(declaration instanceof TypeDeclaration);
+        renameLocals.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                getRenameRefactoring().setRenameLocals(renameLocals.getSelection());
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {}
+        });
+}
     
     private RenameRefactoring getRenameRefactoring() {
         return (RenameRefactoring) getRefactoring();
