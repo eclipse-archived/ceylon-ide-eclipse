@@ -155,6 +155,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -164,6 +165,8 @@ import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 
 public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
+    private static final Image LARGE_CORRECTION_IMAGE = CeylonLabelProvider.getDecoratedImage(CeylonResources.CEYLON_CORRECTION, 0, false);
+
     private static final char[] CONTEXT_INFO_ACTIVATION_CHARS = ",(;{".toCharArray();
     
     private static final IContextInformation[] NO_CONTEXTS = new IContextInformation[0];
@@ -715,12 +718,37 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     private static ICompletionProposal[] constructCompletions(final int offset, 
             final String prefix, Set<DeclarationWithProximity> sortedProposals, 
             Set<DeclarationWithProximity> sortedFunctionProposals, 
-            CeylonParseController cpc, Scope scope, Node node, CommonToken token, 
+            CeylonParseController cpc, Scope scope, final Node node, CommonToken token, 
             boolean memberOp, IDocument doc, boolean secondLevel, boolean inDoc,
             ProducedType requiredType, int previousTokenType, int tokenType) {
         
-        final List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-        OccurrenceLocation ol = getOccurrenceLocation(cpc.getRootNode(), node, offset);
+        final List<ICompletionProposal> result = 
+                new ArrayList<ICompletionProposal>();
+        OccurrenceLocation ol = 
+                getOccurrenceLocation(cpc.getRootNode(), node, offset);
+        
+        if (node instanceof Tree.Term) {
+            addParametersProposal(offset, node, result);
+        }
+        else if (node instanceof Tree.ArgumentList) {
+            class FindInvocationVisitor extends Visitor {
+                Tree.InvocationExpression result;
+                @Override
+                public void visit(Tree.InvocationExpression that) {
+                    if (that.getNamedArgumentList()==node ||
+                            that.getPositionalArgumentList()==node) {
+                        result = that;
+                    }
+                    super.visit(that);
+                }
+            }
+            FindInvocationVisitor fiv = new FindInvocationVisitor();
+            fiv.visit(cpc.getRootNode());
+            Tree.InvocationExpression ie = fiv.result;
+            if (ie!=null) {
+                addParametersProposal(offset, ie, result);
+            }
+        }
         
         if (node instanceof Tree.TypeConstraint) {
             for (DeclarationWithProximity dwp: sortedProposals) {
@@ -743,13 +771,15 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 t = ((Tree.Type) node).getTypeModel();
             }
             else if (node instanceof Tree.BaseTypeExpression) {
-                ProducedReference target = ((Tree.BaseTypeExpression) node).getTarget();
+                ProducedReference target = 
+                        ((Tree.BaseTypeExpression) node).getTarget();
                 if (target!=null) {
                     t = target.getType();
                 }
             }
             else if (node instanceof Tree.QualifiedTypeExpression) {
-                ProducedReference target = ((Tree.BaseTypeExpression) node).getTarget();
+                ProducedReference target = 
+                        ((Tree.BaseTypeExpression) node).getTarget();
                 if (target!=null) {
                     t = target.getType();
                 }
@@ -912,6 +942,43 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         return result.toArray(new ICompletionProposal[result.size()]);
     }
 
+    private static void addParametersProposal(final int offset, Node node,
+            final List<ICompletionProposal> result) {
+        if (!(node instanceof Tree.StaticMemberOrTypeExpression) || 
+                !(((Tree.StaticMemberOrTypeExpression) node).getDeclaration() instanceof Functional)) {
+            ProducedType type = ((Tree.Term) node).getTypeModel();
+            Unit unit = node.getUnit();
+            if (type!=null) {
+                TypeDeclaration td = type.getDeclaration();
+                if (td instanceof ClassOrInterface &&
+                        td.equals(unit.getCallableDeclaration())) {
+                    List<ProducedType> argTypes = 
+                            unit.getCallableArgumentTypes(type);
+                    StringBuilder text = new StringBuilder();
+                    text.append('(');
+                    for (ProducedType argType: argTypes) {
+                        if (text.length()>1) text.append(", ");
+                        TypeDeclaration atd = argType.getDeclaration();
+                        if (atd instanceof ClassOrInterface||
+                                atd instanceof TypeParameter) {
+                            String name = atd.getName(unit);
+                            text.append(Character.toLowerCase(name.charAt(0)))
+                            .append(name.substring(1));
+                        }
+                        else {
+                            text.append("arg");
+                        }
+                    }
+                    text.append(')');
+                    result.add(new CompletionProposal(offset, "", 
+                            LARGE_CORRECTION_IMAGE, 
+                            text.toString(), text.toString()) {
+                    });
+                }
+            }
+        }
+    }
+
     private static boolean isProposable(Node node, OccurrenceLocation ol,
             Declaration dec) {
         if (ol!=EXISTS && ol!=NONEMPTY && ol!=IS) {
@@ -962,27 +1029,21 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         text.append(")");
         String funtext = text.toString() + " => nothing";
-        result.add(new CompletionProposal(offset, "", null, funtext, funtext) {
+        result.add(new CompletionProposal(offset, "", 
+                LARGE_CORRECTION_IMAGE, funtext, funtext) {
             @Override
             public Point getSelection(IDocument document) {
                 return new Point(offset + text.indexOf("nothing"), 7);
-            }
-            @Override
-            public Image getImage() {
-                return CeylonResources.MINOR_CHANGE;
             }
         });
         if (unit.getCallableReturnType(requiredType).getDeclaration()
                 .equals(unit.getAnythingDeclaration())) {
             String voidtext = "void " + text.toString() + " {}";
-            result.add(new CompletionProposal(offset, "", null, voidtext, voidtext) {
+            result.add(new CompletionProposal(offset, "", 
+                    LARGE_CORRECTION_IMAGE, voidtext, voidtext) {
                 @Override
                 public Point getSelection(IDocument document) {
                     return new Point(offset + text.length()-1, 0);
-                }
-                @Override
-                public Image getImage() {
-                    return CeylonResources.MINOR_CHANGE;
                 }
             });
         }

@@ -151,7 +151,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
 
     public static Image getDecoratedImage(String key, 
             int decorationAttributes, boolean smallSize) {
-        ImageDescriptor descriptor = imageRegistry.getDescriptor(key);
+        ImageDescriptor descriptor = 
+                imageRegistry.getDescriptor(key);
         if (descriptor==null) {
             return null;
         }
