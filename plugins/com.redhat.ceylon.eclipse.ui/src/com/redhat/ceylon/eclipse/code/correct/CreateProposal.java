@@ -29,10 +29,10 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Interface;
-import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -263,18 +263,19 @@ class CreateProposal extends InitializerProposal {
         }
     }
 
-    private static void addCreateProposals(Tree.CompilationUnit cu,
+    private static void addCreateProposals(Tree.CompilationUnit rootNode,
             Collection<ICompletionProposal> proposals, IProject project,
             IFile file, Tree.MemberOrTypeExpression smte, DefinitionGenerator dg) {
         if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
             addCreateMemberProposals(proposals, project, dg, 
                     (Tree.QualifiedMemberOrTypeExpression) smte,
-                    Nodes.findStatement(cu, smte));
+                    Nodes.findStatement(rootNode, smte));
         }
         else {
             if (!(dg.getNode() instanceof Tree.ExtendedTypeExpression)) {
                 addCreateLocalProposals(proposals, project, dg);
-                ClassOrInterface container = findClassContainer(cu, smte);
+                ClassOrInterface container = 
+                        findClassContainer(rootNode, smte);
                 if (container!=null && 
                         container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
                     do {
@@ -283,7 +284,7 @@ class CreateProposal extends InitializerProposal {
                                 //TODO: this is a little lame because
                                 //      it doesn't handle some cases
                                 //      of nesting
-                                Nodes.findStatement(cu, smte));
+                                Nodes.findStatement(rootNode, smte));
                         if (container.getContainer() instanceof Declaration) {
                             Declaration outerContainer = 
                                     (Declaration) container.getContainer();
@@ -297,7 +298,7 @@ class CreateProposal extends InitializerProposal {
                 }
             }
             addCreateToplevelProposals(proposals, project, dg);
-            addCreateInNewUnitProposal(proposals, dg, file);
+            addCreateInNewUnitProposal(proposals, dg, file, rootNode);
         }
     }
 
