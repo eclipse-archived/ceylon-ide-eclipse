@@ -40,7 +40,7 @@ public abstract class AbstractLinkedMode {
     
     private boolean showPreview = false;
     private IUndoableOperation startingUndoOperation;
-    private RefactorInformationPopup infoPopup;
+    RefactorInformationPopup infoPopup;
 
     protected AbstractLinkedMode(CeylonEditor ceylonEditor) {
         editor = ceylonEditor;

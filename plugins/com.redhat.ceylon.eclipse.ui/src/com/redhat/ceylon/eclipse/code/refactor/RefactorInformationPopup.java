@@ -673,7 +673,7 @@ public class RefactorInformationPopup
 
     private StyledText hint;
     
-    private void createContent(Composite parent) {
+    protected void createContent(Composite parent) {
         Display display= parent.getDisplay();
         Color foreground= display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
         Color background= display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);

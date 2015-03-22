@@ -13,6 +13,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
@@ -20,6 +21,10 @@ import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -222,8 +227,19 @@ public final class RenameLinkedMode
     
     @Override
     protected void openPopup() {
-        super.openPopup();
-        getInfoPopup().getMenuManager().addMenuListener(new IMenuListener() {
+        infoPopup = new RefactorInformationPopup(editor, this) {
+            @Override
+            protected void createContent(Composite parent) {
+                super.createContent(parent);
+                Group group = new Group(getShell(), SWT.NONE);
+                group.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).margins(0, 0).create());
+                Button renameLocals = new Button(group, SWT.CHECK);
+                renameLocals.setText("Rename similarly-named local values");
+                Button renameFiles = new Button(group, SWT.CHECK);
+                renameFiles.setText("Also rename source file");
+            }
+        };
+        infoPopup.getMenuManager().addMenuListener(new IMenuListener() {
             @Override
             public void menuAboutToShow(IMenuManager manager) {
                 manager.add(new Separator());
@@ -248,6 +264,7 @@ public final class RenameLinkedMode
                 manager.add(renameFile);
             }
         });
+        infoPopup.open();
     }
 
 //  private Image image= null;
