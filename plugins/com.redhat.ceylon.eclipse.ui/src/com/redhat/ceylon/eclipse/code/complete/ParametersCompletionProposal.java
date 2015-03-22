@@ -734,7 +734,11 @@ class ParametersCompletionProposal extends CompletionProposal {
                         TypeDeclaration atd = argType.getDeclaration();
                         if (atd instanceof ClassOrInterface &&
                                 atd.equals(cd)) {
-                            text.append(anonFunctionHeader(argType, unit))
+                            String anon = 
+                                    anonFunctionHeader(argType, unit);
+                            text.append(anon)
+                                .append(" => ");
+                            desc.append(anon)
                                 .append(" => ");
                             ProducedType rt = unit.getCallableReturnType(argType);
                             argTypes.set(i, rt);
