@@ -228,17 +228,19 @@ public final class RenameLinkedMode
             public void menuAboutToShow(IMenuManager manager) {
                 manager.add(new Separator());
                 Action renameLocals = 
-                        new Action("Rename Local Values", IAction.AS_CHECK_BOX) {
+                        new Action("Rename Values And Functions", 
+                                IAction.AS_CHECK_BOX) {
                     @Override
                     public void run() {
-                        refactoring.setRenameLocals(isChecked());
+                        refactoring.setRenameValuesAndFunctions(isChecked());
                     }
                 };
-                renameLocals.setChecked(refactoring.isRenameLocals());
+                renameLocals.setChecked(refactoring.isRenameValuesAndFunctions());
                 renameLocals.setEnabled(refactoring.getDeclaration() instanceof TypeDeclaration);
                 manager.add(renameLocals);
                 Action renameFile = 
-                        new Action("Rename Source File", IAction.AS_CHECK_BOX) {
+                        new Action("Rename Source File", 
+                                IAction.AS_CHECK_BOX) {
                     @Override
                     public void run() {
                         refactoring.setRenameFile(isChecked());

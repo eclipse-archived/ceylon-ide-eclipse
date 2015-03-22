@@ -86,13 +86,16 @@ public class RenameInputPage extends UserInputWizardPage {
         final Button renameLocals = 
                 new Button(result, SWT.CHECK);
         renameLocals.setLayoutData(gd4);
-        renameLocals.setText("Rename similarly-named local values");
-        renameLocals.setSelection(getRenameRefactoring().isRenameLocals());
-        renameLocals.setEnabled(declaration instanceof TypeDeclaration);
+        boolean typeDec = declaration instanceof TypeDeclaration;
+        String txt = "Rename similarly-named values and functions";
+        if (typeDec) txt += " of type '" + declaration.getName() + "'";
+        renameLocals.setText(txt);
+        renameLocals.setSelection(getRenameRefactoring().isRenameValuesAndFunctions());
+        renameLocals.setEnabled(typeDec);
         renameLocals.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                getRenameRefactoring().setRenameLocals(renameLocals.getSelection());
+                getRenameRefactoring().setRenameValuesAndFunctions(renameLocals.getSelection());
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}

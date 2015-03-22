@@ -100,7 +100,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     private String newName;
     private final Declaration declaration;
     private boolean renameFile;
-    private boolean renameLocals;
+    private boolean renameValuesAndFunctions;
     
     public Node getNode() {
         return node;
@@ -136,7 +136,8 @@ public class RenameRefactoring extends AbstractRefactoring {
     }
 
     public int getCount() {
-        return declaration==null ? 0 : countDeclarationOccurrences();
+        return declaration==null ? 
+                0 : countDeclarationOccurrences();
     }
     
     @Override
@@ -329,9 +330,9 @@ public class RenameRefactoring extends AbstractRefactoring {
             for (Region region: getStringsToReplace(root)) {
                 renameRegion(tfc, region, root);
             }
-            if (renameLocals) { 
-                for (Tree.Identifier id: getLocalsToRename(root)) {
-                    renameLocal(tfc, id, root);
+            if (renameValuesAndFunctions) { 
+                for (Tree.Identifier id: getIdentifiersToRename(root)) {
+                    renameIdentifier(tfc, id, root);
                 }
             }
         }
@@ -356,14 +357,14 @@ public class RenameRefactoring extends AbstractRefactoring {
         return list;
     }
     
-    public List<Tree.Identifier> getLocalsToRename(Tree.CompilationUnit root) {
+    public List<Tree.Identifier> getIdentifiersToRename(Tree.CompilationUnit root) {
         final ArrayList<Tree.Identifier> list = 
                 new ArrayList<Tree.Identifier>();
         if (declaration instanceof TypeDeclaration) {
             new Visitor() {
                 String name = declaration.getName();
                 @Override
-                public void visit(Tree.AnyAttribute that) {
+                public void visit(Tree.TypedDeclaration that) {
                     super.visit(that);
                     Tree.Identifier id = 
                             that.getIdentifier();
@@ -371,7 +372,8 @@ public class RenameRefactoring extends AbstractRefactoring {
                         TypeDeclaration d = 
                                 that.getType().getTypeModel()
                                     .getDeclaration();
-                        if ((d instanceof ClassOrInterface||d instanceof TypeParameter) && 
+                        if ((d instanceof ClassOrInterface ||
+                             d instanceof TypeParameter) && 
                                 d.equals(declaration)) {
                             String text = id.getText();
                             if (text.equalsIgnoreCase(name) ||
@@ -412,7 +414,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         return result;
     }
 
-    void renameLocal(TextChange tfc, Tree.Identifier id, 
+    void renameIdentifier(TextChange tfc, Tree.Identifier id, 
             Tree.CompilationUnit root) {
         String name = declaration.getName();
         int loc = id.getText().indexOf(name);
@@ -441,12 +443,12 @@ public class RenameRefactoring extends AbstractRefactoring {
                 identifyingNode.getText().length(), newName));
     }
     
-    public boolean isRenameLocals() {
-        return renameLocals;
+    public boolean isRenameValuesAndFunctions() {
+        return renameValuesAndFunctions;
     }
     
-    public void setRenameLocals(boolean renameLocals) {
-        this.renameLocals = renameLocals;
+    public void setRenameValuesAndFunctions(boolean renameLocals) {
+        this.renameValuesAndFunctions = renameLocals;
     }
     
     public void setNewName(String text) {
