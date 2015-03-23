@@ -451,7 +451,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (location==null) {
             return null;
         }
-        else if (location.equals("doc:ceylon.language:ceylon.language:Nothing")) {
+        else if (location.matches("doc:ceylon.language/.*:ceylon.language:Nothing")) {
             Unit unit = controller.getRootNode().getUnit();
             return unit.getNothingDeclaration();
         }
@@ -463,9 +463,6 @@ public class DocumentationHover extends SourceInfoHover {
         if (location==null) {
             return null;
         }
-//        else if (location.equals("doc:ceylon.language:ceylon.language:Nothing")) {
-//            return editor.getParseController().getRootNode().getUnit().getNothingDeclaration();
-//        }
         for (TypeChecker typeChecker: getTypeCheckers()) {
             Referenceable linkedModel = 
                     getLinkedModel(location, typeChecker);
@@ -481,9 +478,15 @@ public class DocumentationHover extends SourceInfoHover {
         String[] bits = location.split(":");
         JDTModelLoader modelLoader = 
                 getModelLoader(typeChecker);
-        String moduleName = bits[1];
+        String moduleNameAndVersion = bits[1];
+        int loc = moduleNameAndVersion.indexOf('/');
+        String moduleName = 
+                moduleNameAndVersion.substring(0,loc);
+        String moduleVersion = 
+                moduleNameAndVersion.substring(loc+1);
         Module module = 
-                modelLoader.getLoadedModule(moduleName, null);
+                modelLoader.getLoadedModule(moduleName, 
+                        moduleVersion);
         if (module==null || bits.length==2) {
             return module;
         }
@@ -515,7 +518,8 @@ public class DocumentationHover extends SourceInfoHover {
         return target;
     }
     
-    public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
+    public String getHoverInfo(ITextViewer textViewer, 
+            IRegion hoverRegion) {
         if (editor==null || 
                 editor.getSelectionProvider()==null) {
             return null;
@@ -804,7 +808,8 @@ public class DocumentationHover extends SourceInfoHover {
         return buffer.toString();
     }
 
-    private static void appendCharacterHoverInfo(StringBuilder buffer, String character) {
+    private static void appendCharacterHoverInfo(StringBuilder buffer, 
+            String character) {
         buffer.append( "<br/>")
             .append("<code style='color:")
             .append(toHex(getCurrentThemeColor(CHARS)))
@@ -965,13 +970,14 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static String decorateTypeIcon(Declaration dec, String icon) {
-        if (((TypeDeclaration) dec).getCaseTypes()!=null) {
+        TypeDeclaration td = (TypeDeclaration) dec;
+        if (td.getCaseTypes()!=null) {
             return icon.replace("obj", "enum");
         }
         else if (dec.isAnnotation()) {
             return icon.replace("obj", "ann");
         }
-        else if (((TypeDeclaration) dec).isAlias()) {
+        else if (td.isAlias()) {
             return icon.replace("obj", "alias");
         }
         else {
@@ -1164,11 +1170,13 @@ public class DocumentationHover extends SourceInfoHover {
         String label;
         if (mod.getNameAsString().isEmpty() || 
                 mod.getNameAsString().equals("default")) {
-            label = "<span style='font-size:" + smallerSize + "'>in default module</span>";
+            label = "<span style='font-size:" + smallerSize + 
+                    "'>in default module</span>";
         }
         else {
-            label = "<span style='font-size:" + smallerSize + "'>in module&nbsp;&nbsp;" + 
-                    link(mod) + " \"" + mod.getVersion() + "\"" + "</span>";
+            label = "<span style='font-size:" + smallerSize + 
+                    "'>in module&nbsp;&nbsp;" + link(mod) + 
+                    " \"" + mod.getVersion() + "\"" + "</span>";
         }
         HTML.addImageAndLabel(buffer, mod, 
                 HTML.fileUrl(getIcon(mod)).toExternalForm(), 
@@ -1179,14 +1187,15 @@ public class DocumentationHover extends SourceInfoHover {
         return "package " + pack.getNameAsString();
     }
     
-    public static String getDocumentationFor(ModuleDetails mod, String version, 
-            Scope scope, Unit unit) {
-        return getDocumentationForModule(mod.getName(), version, mod.getDoc(),
-                scope, unit);
+    public static String getDocumentationFor(ModuleDetails mod, 
+            String version, Scope scope, Unit unit) {
+        return getDocumentationForModule(mod.getName(), version, 
+                mod.getDoc(), scope, unit);
     }
     
-    public static String getDocumentationFor(ModuleDetails mod, String version, 
-            String packageName, Scope scope, Unit unit) {
+    public static String getDocumentationFor(ModuleDetails mod, 
+            String version, String packageName, Scope scope, 
+            Unit unit) {
         StringBuilder buffer = new StringBuilder();
         String ann = toHex(getCurrentThemeColor(ANNOTATIONS));
         HTML.addImageAndLabel(buffer, null, 
@@ -1211,7 +1220,8 @@ public class DocumentationHover extends SourceInfoHover {
                 HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
                 16, 16, 
                 "<tt><span style='font-size:" + largerSize + "'>" + 
-                HTML.highlightLine("import " + mod.getName() + " \"" + version + "\"") + 
+                HTML.highlightLine("import " + mod.getName() + 
+                        " \"" + version + "\"") + 
                 "</span></tt></b>",
                 20, 4);
         
@@ -1402,14 +1412,13 @@ public class DocumentationHover extends SourceInfoHover {
         addReturnType(dec, buffer, node, pr, obj, unit);
         addParameters(controller, dec, node, pr, buffer, unit);
         addClassMembersInfo(dec, buffer);
-        addUnitInfo(dec, buffer);
-        addPackageInfo(dec, buffer);
         if (dec instanceof NothingType) {
             addNothingTypeInfo(buffer);
         }
         else {
+            addUnitInfo(dec, buffer);
+            addPackageInfo(dec, buffer);
             appendExtraActions(dec, buffer);
-
         }
         addPageEpilog(buffer);
         return buffer.toString();
@@ -2377,8 +2386,10 @@ public class DocumentationHover extends SourceInfoHover {
                             List<Tree.PositionalArgument> args = 
                                     argList.getPositionalArguments();
                             if (args.isEmpty()) continue;
-                            Tree.PositionalArgument typeArg = args.get(0);
-                            Tree.PositionalArgument textArg = args.size()>1 ? args.get(1) : null;
+                            Tree.PositionalArgument typeArg = 
+                                    args.get(0);
+                            Tree.PositionalArgument textArg = 
+                                    args.size()>1 ? args.get(1) : null;
                             if (typeArg instanceof Tree.ListedArgument && 
                                     (textArg==null || textArg instanceof Tree.ListedArgument)) {
                                 Tree.ListedArgument typeListedArg = 

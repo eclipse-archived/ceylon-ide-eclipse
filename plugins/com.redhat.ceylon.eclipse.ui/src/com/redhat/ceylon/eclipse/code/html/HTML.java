@@ -204,11 +204,14 @@ public class HTML {
             return declink(p.getModule()) + ":" + p.getNameAsString();
         }
         if (model instanceof Module) {
-            return  ((Module) model).getNameAsString();
+            Module module = (Module) model;
+            return module.getNameAsString() + "/" + 
+                    module.getVersion();
         }
         else if (model instanceof Declaration) {
-            String result = ":" + ((Declaration) model).getName();
-            Scope container = ((Declaration) model).getContainer();
+            Declaration declaration = (Declaration) model;
+            String result = ":" + declaration.getName();
+            Scope container = declaration.getContainer();
             if (container instanceof Referenceable) {
                 return declink((Referenceable) container)
                         + result;
