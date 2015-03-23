@@ -1233,7 +1233,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         int loc = 0;
         boolean first = true;
         for (String subfilter: filter.split("\\*")) {
-            int match = name.toLowerCase().indexOf(subfilter.toLowerCase(), loc);
+            int match = name.toLowerCase()
+                    .indexOf(subfilter.toLowerCase(), loc);
             if (match<0 || first && match>0) {
                 return false;
             }
@@ -1272,22 +1273,26 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             editor = (CeylonEditor) currentEditor;
             target = getLinkedModel(editor, location);
             if (location.startsWith("ref:")) {
-                new FindReferencesAction(editor, (Declaration) target).run();
+                new FindReferencesAction(editor, 
+                        (Declaration) target).run();
                 close();
                 return;
             }
             else if (location.startsWith("sub:")) {
-                new FindSubtypesAction(editor, (Declaration) target).run();
+                new FindSubtypesAction(editor, 
+                        (Declaration) target).run();
                 close();
                 return;
             }
             else if (location.startsWith("act:")) {
-                new FindRefinementsAction(editor, (Declaration) target).run();
+                new FindRefinementsAction(editor, 
+                        (Declaration) target).run();
                 close();
                 return;
             }
             else if (location.startsWith("ass:")) {
-                new FindAssignmentsAction(editor, (Declaration) target).run();
+                new FindAssignmentsAction(editor, 
+                        (Declaration) target).run();
                 close();
                 return;
             }
@@ -1297,15 +1302,18 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 target = getLinkedModel(location);
             }
             if (target instanceof Declaration) {
-                String text = getDocumentationFor(null, (Declaration) target);
+                String text = getDocumentationFor(null, 
+                        (Declaration) target);
                 if (text!=null) browser.setText(text);
             }
             if (target instanceof Package) {
-                String text = getDocumentationFor(null, (Package) target);
+                String text = getDocumentationFor(null,
+                        (Package) target);
                 if (text!=null) browser.setText(text);
             }
             if (target instanceof Module) {
-                String text = getDocumentationFor(null, (Module) target);
+                String text = getDocumentationFor(null, 
+                        (Module) target);
                 if (text!=null) browser.setText(text);
             }
         }
@@ -1328,8 +1336,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             return null;
         }
         else {
-            Declaration[] declarations = new Declaration[proxies.length];
-            for (int i = 0; i < proxies.length; i++) {
+            Declaration[] declarations = 
+                    new Declaration[proxies.length];
+            for (int i=0; i<proxies.length; i++) {
                 declarations[i] = toDeclaration(proxies[i]);
             }
             return declarations;
