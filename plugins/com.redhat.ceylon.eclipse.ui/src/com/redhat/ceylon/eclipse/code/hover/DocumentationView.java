@@ -135,13 +135,13 @@ public class DocumentationView extends ViewPart {
     //TODO: big copy/paste from DocumentationHover.handleLink
     private void handleLink(String location) {
         if (location.startsWith("dec:")) {
-            Referenceable target = getLinkedModel(editor, location);
+            Referenceable target = getLinkedModel(location, editor);
             if (target!=null) {
                 Navigation.gotoDeclaration(target);
             }
         }
         else if (location.startsWith("doc:")) {
-            Referenceable target = getLinkedModel(editor, location);
+            Referenceable target = getLinkedModel(location, editor);
             if (target!=null) {
                 String html = getDocumentationHoverText(target, editor, null);
                 if (html!=null) {
@@ -153,19 +153,19 @@ public class DocumentationView extends ViewPart {
             }
         }
         else if (location.startsWith("ref:")) {
-            Referenceable target = getLinkedModel(editor, location);
+            Referenceable target = getLinkedModel(location, editor);
             new FindReferencesAction(editor, (Declaration) target).run();
         }
         else if (location.startsWith("sub:")) {
-            Referenceable target = getLinkedModel(editor, location);
+            Referenceable target = getLinkedModel(location, editor);
             new FindSubtypesAction(editor, (Declaration) target).run();
         }
         else if (location.startsWith("act:")) {
-            Referenceable target = getLinkedModel(editor, location);
+            Referenceable target = getLinkedModel(location, editor);
             new FindRefinementsAction(editor, (Declaration) target).run();
         }
         else if (location.startsWith("ass:")) {
-            Referenceable target = getLinkedModel(editor, location);
+            Referenceable target = getLinkedModel(location, editor);
             new FindAssignmentsAction(editor, (Declaration) target).run();
         }
         /*else if (location.startsWith("stp:")) {
@@ -312,7 +312,7 @@ public class DocumentationView extends ViewPart {
         }
         @Override
         public void run() {
-            gotoDeclaration(getLinkedModel(editor, info.getAddress()));
+            gotoDeclaration(getLinkedModel(info.getAddress(), editor));
         }
     }
     

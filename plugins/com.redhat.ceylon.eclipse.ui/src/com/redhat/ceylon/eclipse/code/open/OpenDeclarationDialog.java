@@ -1271,7 +1271,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         IEditorPart currentEditor = EditorUtil.getCurrentEditor();
         if (currentEditor instanceof CeylonEditor) {
             editor = (CeylonEditor) currentEditor;
-            target = getLinkedModel(editor, location);
+            target = getLinkedModel(location, editor);
             if (location.startsWith("ref:")) {
                 new FindReferencesAction(editor, 
                         (Declaration) target).run();

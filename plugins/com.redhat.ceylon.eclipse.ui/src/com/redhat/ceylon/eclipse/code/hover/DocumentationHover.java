@@ -199,7 +199,7 @@ public class DocumentationHover extends SourceInfoHover {
         private void handleLink(String location) {
             if (location.startsWith("dec:")) {
                 Referenceable target = 
-                        getLinkedModel(editor,location);
+                        getLinkedModel(location,editor);
                 if (target!=null) {
                     close(control); //FIXME: should have protocol to hide, rather than dispose
                     gotoDeclaration(target);
@@ -207,7 +207,7 @@ public class DocumentationHover extends SourceInfoHover {
             }
             else if (location.startsWith("doc:")) {
                 Referenceable target = 
-                        getLinkedModel(editor,location);
+                        getLinkedModel(location,editor);
                 if (target!=null) {
                     String text = 
                             getDocumentationHoverText(target, 
@@ -220,37 +220,37 @@ public class DocumentationHover extends SourceInfoHover {
             }
             else if (location.startsWith("ref:")) {
                 Declaration target = (Declaration)
-                        getLinkedModel(editor,location);
+                        getLinkedModel(location,editor);
                 close(control);
                 new FindReferencesAction(editor,target).run();
             }
             else if (location.startsWith("sub:")) {
                 Declaration target = (Declaration)
-                        getLinkedModel(editor,location);
+                        getLinkedModel(location,editor);
                 close(control);
                 new FindSubtypesAction(editor,target).run();
             }
             else if (location.startsWith("act:")) {
                 Declaration target = (Declaration)
-                        getLinkedModel(editor,location);
+                        getLinkedModel(location,editor);
                 close(control);
                 new FindRefinementsAction(editor,target).run();
             }
             else if (location.startsWith("ass:")) {
                 Declaration target = (Declaration)
-                        getLinkedModel(editor,location);
+                        getLinkedModel(location,editor);
                 close(control);
                 new FindAssignmentsAction(editor,target).run();
             }
             else {
+                CeylonParseController controller = 
+                        editor.getParseController();
                 IDocument document = 
-                        editor.getParseController()
-                                .getDocument();
+                        controller.getDocument();
                 if (location.startsWith("stp:")) {
                     close(control);
                     Tree.CompilationUnit rootNode = 
-                            editor.getParseController()
-                                    .getRootNode();
+                            controller.getRootNode();
                     int offset = parseInt(location.substring(4));
                     Node node = findNode(rootNode, offset);
                     SpecifyTypeProposal
@@ -402,8 +402,8 @@ public class DocumentationHover extends SourceInfoHover {
             close(fInfoControl); //FIXME: should have protocol to hide, rather than dispose
             CeylonBrowserInput input = (CeylonBrowserInput) 
                     fInfoControl.getInput();
-            gotoDeclaration(getLinkedModel(editor, 
-                    input.getAddress()));
+            gotoDeclaration(getLinkedModel(input.getAddress(), 
+                    editor));
         }
     }
 
@@ -445,7 +445,8 @@ public class DocumentationHover extends SourceInfoHover {
         return fHoverControlCreator;
     }
     
-    public static Referenceable getLinkedModel(CeylonEditor editor, String location) {
+    public static Referenceable getLinkedModel(String location, 
+            CeylonEditor editor) {
         CeylonParseController controller = 
                 editor.getParseController();
         if (location==null) {

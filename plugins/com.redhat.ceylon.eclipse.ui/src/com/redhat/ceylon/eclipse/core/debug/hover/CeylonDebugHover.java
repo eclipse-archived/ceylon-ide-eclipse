@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonContentPro
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
+import static java.lang.Integer.parseInt;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,7 +61,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SafeMemberOp;
 import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
@@ -68,6 +68,7 @@ import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.hover.SourceInfoHover;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
@@ -866,53 +867,76 @@ public class CeylonDebugHover extends SourceInfoHover {
         
         private void handleLink(String location) {
             if (location.startsWith("dec:")) {
-                Referenceable target = getLinkedModel(editor, location);
+                Referenceable target = 
+                        getLinkedModel(location, editor);
                 if (target!=null) {
                     close(control); //FIXME: should have protocol to hide, rather than dispose
                     gotoDeclaration(target);
                 }
             }
             else if (location.startsWith("doc:")) {
-                Referenceable target = getLinkedModel(editor, location);
+                Referenceable target = 
+                        getLinkedModel(location, editor);
                 if (target!=null) {
-                    control.setInput(new DebugHoverInput(control.getVariable(), 
-                            getDocumentationHoverText(target, editor, null)));
+                    String text = 
+                            getDocumentationHoverText(target, 
+                                    editor, null);
+                    DebugHoverInput input = 
+                            new DebugHoverInput(control.getVariable(), 
+                                    text);
+                    control.setInput(input);
                 }
             }
             else if (location.startsWith("ref:")) {
-                Referenceable target = getLinkedModel(editor, location);
+                Declaration target = (Declaration)
+                        getLinkedModel(location, editor);
                 close(control);
-                new FindReferencesAction(editor, (Declaration) target).run();
+                new FindReferencesAction(editor,target).run();
             }
             else if (location.startsWith("sub:")) {
-                Referenceable target = getLinkedModel(editor, location);
+                Declaration target = (Declaration)
+                        getLinkedModel(location, editor);
                 close(control);
-                new FindSubtypesAction(editor, (Declaration) target).run();
+                new FindSubtypesAction(editor,target).run();
             }
             else if (location.startsWith("act:")) {
-                Referenceable target = getLinkedModel(editor, location);
+                Declaration target = (Declaration)
+                        getLinkedModel(location, editor);
                 close(control);
-                new FindRefinementsAction(editor, (Declaration) target).run();
+                new FindRefinementsAction(editor,target).run();
             }
             else if (location.startsWith("ass:")) {
-                Referenceable target = getLinkedModel(editor, location);
+                Declaration target = (Declaration)
+                        getLinkedModel(location, editor);
                 close(control);
-                new FindAssignmentsAction(editor, (Declaration) target).run();
+                new FindAssignmentsAction(editor,target).run();
             }
-            else if (location.startsWith("stp:")) {
-                close(control);
-                CompilationUnit rn = editor.getParseController().getRootNode();
-                Node node = findNode(rn, Integer.parseInt(location.substring(4)));
-                SpecifyTypeProposal.createProposal(rn, node, editor)
-                                   .apply(editor.getParseController().getDocument());
-            }
-            else if (location.startsWith("exv:")) {
-                close(control);
-                new ExtractValueProposal(editor).apply(editor.getParseController().getDocument());
-            }
-            else if (location.startsWith("exf:")) {
-                close(control);
-                new ExtractFunctionProposal(editor).apply(editor.getParseController().getDocument());
+            else {
+                CeylonParseController controller = 
+                        editor.getParseController();
+                IDocument document = 
+                        controller.getDocument();
+                if (location.startsWith("stp:")) {
+                    close(control);
+                    Tree.CompilationUnit rn = 
+                            controller.getRootNode();
+                    int offset = 
+                            parseInt(location.substring(4));
+                    Node node = findNode(rn, offset);
+                    SpecifyTypeProposal
+                        .createProposal(rn, node, editor)
+                        .apply(document);
+                }
+                else if (location.startsWith("exv:")) {
+                    close(control);
+                    new ExtractValueProposal(editor)
+                        .apply(document);
+                }
+                else if (location.startsWith("exf:")) {
+                    close(control);
+                    new ExtractFunctionProposal(editor)
+                        .apply(document);
+                }
             }
         }
         
