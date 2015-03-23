@@ -3241,15 +3241,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static RepositoryManager getProjectRepositoryManager(IProject project) {
-        RepositoryManager repoManager = projectRepositoryManagers.get(project);
-        if (repoManager == null) {
-            try {
-                repoManager = resetProjectRepositoryManager(project);
-            } catch(CoreException e) {
-                e.printStackTrace();
+        synchronized (projectRepositoryManagers) {
+            RepositoryManager repoManager = projectRepositoryManagers.get(project);
+            if (repoManager == null) {
+                try {
+                    repoManager = createProjectRepositoryManager(project);
+                    projectRepositoryManagers.put(project, repoManager);
+                } catch(CoreException e) {
+                    e.printStackTrace();
+                }
             }
+            return repoManager;
         }
-        return repoManager;
     }
 
     private static void removeOverridesProblemMarker(final IProject project) {
@@ -3358,25 +3361,52 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         job.schedule();
     }
     
-    public static RepositoryManager resetProjectRepositoryManager(final IProject project) throws CoreException {
+    public static RepositoryManager createProjectRepositoryManager(final IProject project) throws CoreException {
         RepositoryManager repositoryManager = new CeylonUtils.CeylonRepoManagerBuilder() {
-            protected com.redhat.ceylon.cmr.api.Overrides getOverrides(File absoluteFile) {
-                        try {
-                            Overrides result = super.getOverrides(absoluteFile);
+                    protected com.redhat.ceylon.cmr.api.Overrides getOverrides(String path) {
+                        if (path == null) {
                             removeOverridesProblemMarker(project);
-                            return result;
+                        }
+                        return super.getOverrides(path);
+                    }
+                    protected com.redhat.ceylon.cmr.api.Overrides getOverrides(File absoluteFile) {
+                        Overrides result = null;
+                        Exception overridesException = null;
+                        int overridesLine = -1;
+                        int overridesColumn = -1;
+                        try {
+                            result = super.getOverrides(absoluteFile);
                         } catch(Overrides.InvalidOverrideException e) {
-                            createOverridesProblemMarker(project, e, absoluteFile, e.line, e.column);
+                            overridesException = e;
+                            overridesLine = e.line;
+                            overridesColumn = e.column;
                         } catch(IllegalStateException e) {
                             Throwable cause = e.getCause();
                             if (cause instanceof SAXParseException) {
-                                SAXParseException spe = (SAXParseException) cause;
-                                createOverridesProblemMarker(project, e, absoluteFile, spe.getLineNumber(), spe.getColumnNumber());
+                                SAXParseException parseException = (SAXParseException) cause;
+                                overridesException = parseException;
+                                overridesLine = parseException.getLineNumber();
+                                overridesColumn = parseException.getColumnNumber();
+                            } else if (cause instanceof Exception) {
+                                overridesException = (Exception) cause;
+                            } else {
+                                overridesException = e;
                             }
                         } catch(Exception e) {
-                            createOverridesProblemMarker(project, e, absoluteFile, -1, -1);
+                            overridesException = e;
                         }
-                        return null;
+
+                        if (overridesException != null) {
+                            createOverridesProblemMarker(
+                                    project, 
+                                    overridesException, 
+                                    absoluteFile, 
+                                    overridesLine, 
+                                    overridesColumn);
+                        } else {
+                            removeOverridesProblemMarker(project);
+                        }
+                        return result;
                     };
                     
                 }
@@ -3388,7 +3418,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 .isJDKIncluded(true)
                 .buildManager();
 
-        projectRepositoryManagers.put(project, repositoryManager);
         return repositoryManager;
     }
     
