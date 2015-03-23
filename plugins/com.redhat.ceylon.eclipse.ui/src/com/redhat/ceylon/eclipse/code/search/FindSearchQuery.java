@@ -111,7 +111,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                                     module.getArtifact().getAbsolutePath();
                             if (searchedArchives.add(archivePath) &&
                                     searchedArchives.add(module.getSourceArchivePath()) && 
-                                    m.getAllPackages().contains(pack)) {
+                                    m.getAllReachablePackages().contains(pack)) {
                                 findInUnits(module.getPhasedUnits(), monitor);
                                 monitor.worked(1);
                                 if (monitor.isCanceled()) {
@@ -161,7 +161,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                                     module.getArtifact().getAbsolutePath();
                             if (searchedArchives.add(archivePath) &&
                                     searchedArchives.add(module.getSourceArchivePath()) && 
-                                    m.getAllPackages().contains(pack)) {
+                                    m.getAllReachablePackages().contains(pack)) {
                                 work++;
                             }
                         }

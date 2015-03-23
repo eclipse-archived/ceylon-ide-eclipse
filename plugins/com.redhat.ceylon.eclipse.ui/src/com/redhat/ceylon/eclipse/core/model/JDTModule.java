@@ -415,13 +415,24 @@ public class JDTModule extends LazyModule {
 
     
     @Override
-    public List<Package> getAllPackages() {
+    public List<Package> getAllVisiblePackages() {
         synchronized (getModelLoader()) {
             // force-load every package from the module if we can
             loadAllPackages(new HashSet<String>());
 
             // now delegate
-            return super.getAllPackages();
+            return super.getAllVisiblePackages();
+        }
+    }
+
+    @Override
+    public List<Package> getAllReachablePackages() {
+        synchronized (getModelLoader()) {
+            // force-load every package from the module if we can
+            loadAllPackages(new HashSet<String>());
+
+            // now delegate
+            return super.getAllReachablePackages();
         }
     }
 

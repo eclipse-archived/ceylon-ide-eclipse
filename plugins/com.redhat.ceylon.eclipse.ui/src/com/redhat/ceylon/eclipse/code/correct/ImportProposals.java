@@ -76,7 +76,7 @@ public class ImportProposals {
     private static Set<Declaration> findImportCandidates(Module module, 
             String name, Tree.CompilationUnit cu) {
         Set<Declaration> result = new HashSet<Declaration>();
-        for (Package pkg: module.getAllPackages()) {
+        for (Package pkg: module.getAllVisiblePackages()) {
             if (!pkg.getNameAsString().isEmpty()) {
                 Declaration member = 
                         pkg.getMember(name, null, false);

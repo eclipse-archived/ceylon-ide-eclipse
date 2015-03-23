@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -41,8 +42,8 @@ final class ImportProposalsVisitor extends Visitor {
             if (p.getName().equals(name)) return;
         }
         List<Declaration> possibles = new ArrayList<Declaration>();
-        for (Package p: cu.getUnit().getPackage().getModule()
-                .getAllPackages()) {
+        Module module = cu.getUnit().getPackage().getModule();
+        for (Package p: module.getAllVisiblePackages()) {
             Declaration d = p.getMember(name, null, false); //TODO: pass sig
             if (d!=null && d.isToplevel() && 
                     d.isShared() && !d.isAnonymous()) {

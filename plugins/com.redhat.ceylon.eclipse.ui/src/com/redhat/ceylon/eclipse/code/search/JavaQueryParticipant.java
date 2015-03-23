@@ -212,7 +212,7 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                                         if (module.isCeylonArchive() && module.getArtifact()!=null) {
                                             String archivePath = module.getArtifact().getAbsolutePath();
                                             if (searchedArchives.add(archivePath) && 
-                                                    m.getAllPackages().contains(pack)) {
+                                                    m.getAllReachablePackages().contains(pack)) {
                                                 searchInUnits(requestor, limitTo, declaration, 
                                                         module.getPhasedUnits());
                                                 if (monitor.isCanceled()) {

@@ -245,7 +245,7 @@ public class PackageCompletions {
             boolean found = false;
             Module module = unit.getPackage().getModule();
             final String fullPrefix = fullPath + prefix;
-            for (final Package candidate: module.getAllPackages()) {
+            for (final Package candidate: module.getAllVisiblePackages()) {
                 //if (!packages.contains(p)) {
                     //packages.add(p);
                 //if ( p.getModule().equals(module) || p.isShared() ) {

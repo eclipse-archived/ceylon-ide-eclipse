@@ -32,7 +32,7 @@ final class WarmupJob extends Job {
         monitor.worked(10000);
         try {
             for (Module m: modules) {
-                List<Package> packages = m.getAllPackages();
+                List<Package> packages = m.getAllVisiblePackages();
                 for (Package p: packages) {
                     if (p.isShared()) {
                         for (Declaration d: p.getMembers()) {

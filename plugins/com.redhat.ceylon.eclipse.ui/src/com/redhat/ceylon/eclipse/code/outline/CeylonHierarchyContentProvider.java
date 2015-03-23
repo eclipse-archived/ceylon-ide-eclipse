@@ -334,7 +334,7 @@ public final class CeylonHierarchyContentProvider
             Set<Package> packages = new HashSet<Package>();
             int ams = allModules.size();
             for (Module module: allModules) {
-                for (Package pack: module.getAllPackages()) {
+                for (Package pack: module.getAllReachablePackages()) {
                     String packageModuleName = pack.getModule().getNameAsString();
                     if ((!excludeJDK || !JDKUtils.isJDKModule(packageModuleName)) && 
                             (!excludeOracleJDK || !JDKUtils.isOracleJDKModule(packageModuleName))) {
