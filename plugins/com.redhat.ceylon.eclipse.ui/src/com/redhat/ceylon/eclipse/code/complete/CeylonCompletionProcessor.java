@@ -632,7 +632,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             addFakeShowParametersCompletion(node, cpc, result);
         }
         else if (node instanceof Tree.PackageLiteral) {
-            addPackageCompletions(cpc, offset, prefix, null, node, result, false);
+            addPackageCompletions(cpc, offset, prefix, null, node, result, false, monitor);
         }
         else if (node instanceof Tree.ModuleLiteral) {
             addModuleCompletions(cpc, offset, prefix, null, node, result, false, monitor);
@@ -642,7 +642,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else if (node instanceof Tree.Import && offset>token.getStopIndex()+1) {
             addPackageCompletions(cpc, offset, prefix, null, node, result, 
-                    nextTokenType(cpc, token)!=LBRACE);
+                    nextTokenType(cpc, token)!=LBRACE, monitor);
         }
         else if (node instanceof Tree.ImportModule && offset>token.getStopIndex()+1) {
             addModuleCompletions(cpc, offset, prefix, null, node, result, 

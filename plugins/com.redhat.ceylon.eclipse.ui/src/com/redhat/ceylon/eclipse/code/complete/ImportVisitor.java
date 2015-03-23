@@ -66,7 +66,8 @@ final class ImportVisitor extends Visitor {
         if (that.getImportPath()==node) {
             addPackageCompletions(cpc, offset, prefix, 
                     (Tree.ImportPath) node, node, result, 
-                    nextTokenType(cpc, token)!=CeylonLexer.LBRACE);
+                    nextTokenType(cpc, token)!=CeylonLexer.LBRACE,
+                    monitor);
         }
     }
 
@@ -75,7 +76,8 @@ final class ImportVisitor extends Visitor {
         super.visit(that);
         if (that.getImportPath()==node) {
             addPackageCompletions(cpc, offset, prefix, 
-                    (Tree.ImportPath) node, node, result, false);
+                    (Tree.ImportPath) node, node, result, false,
+                    monitor);
         }
     }
 

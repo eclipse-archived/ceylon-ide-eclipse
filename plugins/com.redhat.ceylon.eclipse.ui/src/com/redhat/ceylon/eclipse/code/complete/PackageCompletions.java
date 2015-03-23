@@ -10,17 +10,15 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -107,10 +105,11 @@ public class PackageCompletions {
         public void apply(IDocument document) {
             super.apply(document);
             if (withBody && 
-                    EditorUtil.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
+                    getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
                 final LinkedModeModel linkedModeModel = new LinkedModeModel();
                 final Point selection = getSelection(document);
-                List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
+                List<ICompletionProposal> proposals = 
+                        new ArrayList<ICompletionProposal>();
                 for (final Declaration d: candidate.getMembers()) {
                     if (Util.isResolvable(d) && d.isShared() && 
                             !isOverloadedVersion(d)) {
@@ -230,16 +229,18 @@ public class PackageCompletions {
 
     static void addPackageCompletions(CeylonParseController cpc, 
             int offset, String prefix, Tree.ImportPath path, Node node, 
-            List<ICompletionProposal> result, boolean withBody) {
+            List<ICompletionProposal> result, boolean withBody,
+            IProgressMonitor monitor) {
         String fullPath = fullPath(offset, prefix, path);
         addPackageCompletions(offset, prefix, fullPath, 
-                withBody, node.getUnit(), cpc, result);
+                withBody, node.getUnit(), cpc, result, monitor);
     }
 
-    private static void addPackageCompletions(final int offset, final String prefix,
-            final String fullPath, final boolean withBody, final Unit unit,
-            final CeylonParseController controller, 
-            final List<ICompletionProposal> result) {
+    private static void addPackageCompletions(int offset, String prefix,
+            String fullPath, boolean withBody, final Unit unit,
+            CeylonParseController controller, 
+            List<ICompletionProposal> result, 
+            IProgressMonitor monitor) {
         if (unit!=null) { //a null unit can occur if we have not finished parsing the file
             boolean found = false;
             Module module = unit.getPackage().getModule();
@@ -273,45 +274,29 @@ public class PackageCompletions {
                 //}
             }
             if (!found && !unit.getPackage().getNameAsString().isEmpty()) {
-                class Runnable implements IRunnableWithProgress {
-                    @Override
-                    public void run(IProgressMonitor monitor)
-                            throws InvocationTargetException, InterruptedException {
-                        monitor.beginTask("Querying module repositories...", 
-                                IProgressMonitor.UNKNOWN);
-                        ModuleQuery query = 
-                                getModuleQuery("", controller.getProject());
-                        query.setMemberName(fullPrefix);
-                        query.setMemberSearchPackageOnly(true);
-                        query.setMemberSearchExact(false);
-                        query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
-                        ModuleSearchResult msr = 
-                                controller.getTypeChecker()
-                                    .getContext()
-                                    .getRepositoryManager()
-                                    .searchModules(query);
-                        for (final ModuleDetails md: msr.getResults()) {
-                            final ModuleVersionDetails version = 
-                                    md.getLastVersion();
-                            for (String packageName: version.getMembers()) {
-                                //TODO: completion filtering
-                                if (packageName.startsWith(fullPrefix)) {
-                                    result.add(new QueriedModulePackageProposal(offset, prefix, 
-                                            packageName.substring(fullPath.length()), withBody,
-                                            packageName, controller, version, unit, md));
-                                }
-                            }
+                monitor.subTask("querying module repositories...");
+                ModuleQuery query = 
+                        getModuleQuery("", controller.getProject());
+                query.setMemberName(fullPrefix);
+                query.setMemberSearchPackageOnly(true);
+                query.setMemberSearchExact(false);
+                query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                ModuleSearchResult msr = 
+                        controller.getTypeChecker()
+                            .getContext()
+                            .getRepositoryManager()
+                            .searchModules(query);
+                for (final ModuleDetails md: msr.getResults()) {
+                    final ModuleVersionDetails version = 
+                            md.getLastVersion();
+                    for (String packageName: version.getMembers()) {
+                        //TODO: completion filtering
+                        if (packageName.startsWith(fullPrefix)) {
+                            result.add(new QueriedModulePackageProposal(offset, prefix, 
+                                    packageName.substring(fullPath.length()), withBody,
+                                    packageName, controller, version, unit, md));
                         }
-                        monitor.done();
                     }
-                }
-                try {
-                    getWorkbench()
-                            .getActiveWorkbenchWindow()
-                            .run(true, true, new Runnable());
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
         }

@@ -232,8 +232,8 @@ public class ModuleCompletions {
     }
 
     private static void addModuleCompletions(int offset, String prefix, Node node, 
-            List<ICompletionProposal> result, final int len, String pfp,
-            final CeylonParseController cpc, final boolean withBody,
+            List<ICompletionProposal> result, int len, String pfp,
+            CeylonParseController cpc, boolean withBody,
             IProgressMonitor monitor) {
         if (pfp.startsWith("java.")) {
             for (String name: 
