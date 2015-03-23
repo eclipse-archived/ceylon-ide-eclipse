@@ -11,6 +11,7 @@
 			<accessrule kind="accessible" pattern="org/eclipse/debug/internal/**"/>
 			<accessrule kind="accessible" pattern="org/eclipse/core/internal/runtime/AdapterManager"/>
 			<accessrule kind="accessible" pattern="org/eclipse/core/internal/utils/Cache*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/core/internal/registry/ExtensionRegistry"/>
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
