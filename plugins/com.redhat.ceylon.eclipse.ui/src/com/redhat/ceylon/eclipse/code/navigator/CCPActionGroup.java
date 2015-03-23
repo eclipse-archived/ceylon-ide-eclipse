@@ -12,11 +12,13 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.internal.corext.refactoring.reorg.JavaElementTransfer;
 import org.eclipse.jdt.internal.ui.actions.CopyQualifiedNameAction;
 import org.eclipse.jdt.internal.ui.refactoring.reorg.CopyToClipboardAction;
 import org.eclipse.jdt.internal.ui.refactoring.reorg.CutAction;
 import org.eclipse.jdt.internal.ui.refactoring.reorg.DeleteAction;
 import org.eclipse.jdt.internal.ui.refactoring.reorg.PasteAction;
+import org.eclipse.jdt.internal.ui.refactoring.reorg.TypedSourceTransfer;
 //import org.eclipse.jdt.internal.ui.refactoring.reorg.PasteAction;
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
 import org.eclipse.jface.action.IAction;
@@ -26,6 +28,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IViewPart;
@@ -35,6 +38,7 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionGroup;
 import org.eclipse.ui.navigator.ICommonMenuConstants;
 import org.eclipse.ui.part.Page;
+import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
@@ -181,33 +185,38 @@ public class CCPActionGroup extends ActionGroup {
 			                    firstElement instanceof IProject) {
 			                Clipboard clipboard = 
 			                        new Clipboard(getShell().getDisplay());
-			                try {
-			                    String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
-			                    if (text==null) {
-			                        text = (String) clipboard.getContents(TextTransfer.getInstance());
-			                    }
-			                    else {
-			                        text = text.substring(1);
-			                    }
-			                    if (text!=null) {
-			                        @SuppressWarnings({"unchecked", "rawtypes"})
-			                        Map<Declaration,String> imports = 
-			                                (Map) clipboard.getContents(ImportsTransfer.INSTANCE);
-			                        String importText = null;
-			                        if (imports!=null) {
-			                            Set<String> packages = new HashSet<String>();
-			                            for (Declaration d: imports.keySet()) {
-			                                packages.add(d.getUnit().getPackage().getNameAsString());
-			                            }
-			                            importText = getImportText(packages, imports, 
-			                                    System.lineSeparator());
-			                        }
-			                        openPackageWizard(selection, text, importText);
-			                        return;
-			                    }
-			                }
-			                catch (Exception e) {
-			                    e.printStackTrace();
+			                if (clipboard.getContents(FileTransfer.getInstance())==null &&
+		                        clipboard.getContents(JavaElementTransfer.getInstance())==null &&
+		                        clipboard.getContents(ResourceTransfer.getInstance())==null &&
+		                        clipboard.getContents(TypedSourceTransfer.getInstance())==null) {
+    			                try {
+    			                    String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
+    			                    if (text==null) {
+    			                        text = (String) clipboard.getContents(TextTransfer.getInstance());
+    			                    }
+    			                    else {
+    			                        text = text.substring(1);
+    			                    }
+    			                    if (text!=null) {
+    			                        @SuppressWarnings({"unchecked", "rawtypes"})
+    			                        Map<Declaration,String> imports = 
+    			                                (Map) clipboard.getContents(ImportsTransfer.INSTANCE);
+    			                        String importText = null;
+    			                        if (imports!=null) {
+    			                            Set<String> packages = new HashSet<String>();
+    			                            for (Declaration d: imports.keySet()) {
+    			                                packages.add(d.getUnit().getPackage().getNameAsString());
+    			                            }
+    			                            importText = getImportText(packages, imports, 
+    			                                    System.lineSeparator());
+    			                        }
+    			                        openPackageWizard(selection, text, importText);
+    			                        return;
+    			                    }
+    			                }
+    			                catch (Exception e) {
+    			                    e.printStackTrace();
+    			                }
 			                }
 			            }
 			            super.run(selection);
