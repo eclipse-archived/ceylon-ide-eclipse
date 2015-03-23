@@ -30,6 +30,8 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -152,6 +154,13 @@ public class CCPActionGroup extends ActionGroup {
         return null;
     }
     
+    private static boolean isAvailable(Transfer transfer, TransferData[] availableDataTypes) {
+        for (int i= 0; i < availableDataTypes.length; i++) {
+            if (transfer.isSupportedType(availableDataTypes[i])) return true;
+        }
+        return false;
+    }
+
 	/**
 	 * Creates a new <code>CCPActionGroup</code>. The group requires that the selection provided by
 	 * the given selection provider is of type {@link IStructuredSelection}.
@@ -185,10 +194,11 @@ public class CCPActionGroup extends ActionGroup {
 			                    firstElement instanceof IProject) {
 			                Clipboard clipboard = 
 			                        new Clipboard(getShell().getDisplay());
-			                if (clipboard.getContents(FileTransfer.getInstance())==null &&
-		                        clipboard.getContents(JavaElementTransfer.getInstance())==null &&
-		                        clipboard.getContents(ResourceTransfer.getInstance())==null &&
-		                        clipboard.getContents(TypedSourceTransfer.getInstance())==null) {
+			                TransferData[] availableTypes = clipboard.getAvailableTypes();
+                            if (!isAvailable(FileTransfer.getInstance(), availableTypes) &&
+                                !isAvailable(JavaElementTransfer.getInstance(), availableTypes) &&
+                                !isAvailable(ResourceTransfer.getInstance(), availableTypes) &&
+                                !isAvailable(TypedSourceTransfer.getInstance(), availableTypes)) {
     			                try {
     			                    String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
     			                    if (text==null) {
