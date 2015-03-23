@@ -34,11 +34,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -97,20 +95,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     }
 
     public CeylonPlugin() {
-        final String version = System.getProperty("java.version");
-        if (!version.startsWith("1.7") && !version.startsWith("1.8")) {
-            final Display display = Display.getDefault();
-            display.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    ErrorDialog.openError(display.getActiveShell(),
-                            "Ceylon IDE does not support this JVM",  
-                            "Ceylon IDE requires Java 1.7 or 1.8.", 
-                            new Status(IStatus.ERROR, PLUGIN_ID, 
-                                    "Eclipse is running on a Java " + version + " VM.", 
-                                    null));
-                }});
-        }
         pluginInstance = this;
     }
 

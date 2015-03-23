@@ -8,9 +8,13 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchListener;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
@@ -75,6 +79,21 @@ public class CeylonStartup implements IStartup {
 
     @Override
     public void earlyStartup() {
+        final String version = System.getProperty("java.version");
+        if (!version.startsWith("1.7") && !version.startsWith("1.8")) {
+            final Display display = getWorkbench().getDisplay();
+            display.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    ErrorDialog.openError(display.getActiveShell(),
+                            "Ceylon IDE does not support this JVM",  
+                            "Ceylon IDE requires Java 1.7 or 1.8.", 
+                            new Status(IStatus.ERROR, PLUGIN_ID, 
+                                    "Eclipse is running on a Java " + version + " VM.", 
+                                    null));
+                }});
+        }
+        
         DebugPlugin.getDefault().getLaunchManager().addLaunchListener(new ILaunchListener() {
             Boolean activated = false;
             
