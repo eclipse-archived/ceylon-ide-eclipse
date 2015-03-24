@@ -29,6 +29,10 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.compiler.typechec
         setShared(delegate.isShared());
     }
     
+    public String getFullPathOfSourceUnitToTypecheck() {
+        return fullPathOfSourceUnitToTypecheck;
+    }
+
     private boolean mustSearchInSourceFile(Declaration modelDeclaration) {
         if (modelDeclaration == null) {
             return true;
@@ -155,7 +159,9 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.compiler.typechec
     @Override
     public Unit getUnit() {
         Unit modelUnit = modelPackage.getUnit();
-        return mustSearchInSourceFile(modelUnit) ? super.getUnit() : modelUnit;
+        return mustSearchInSourceFile(modelUnit) ? 
+                super.getUnit() : 
+                    modelUnit;
     }
 
     @Override
