@@ -42,6 +42,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
+import com.redhat.ceylon.common.FileUtil;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.dist.osgi.Activator;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
@@ -100,6 +101,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
     @Override
     public void start(BundleContext context) throws Exception {
+        javaSourceArchiveCacheDirectory = new File(getStateLocation().toFile(), "JavaSourceArchiveCache");
+        javaSourceArchiveCacheDirectory.mkdirs();
         String ceylonRepositoryProperty = System.getProperty("ceylon.repo", "");
         ceylonRepository = getCeylonPluginRepository(ceylonRepositoryProperty);
         super.start(context);
@@ -143,6 +146,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         CeylonEncodingSynchronizer.getInstance().uninstall();
         CeylonDebugElementAdapterFactory.restoreJDTDebugElementAdapters();
         CeylonDebugOptionsManager.getDefault().shutdown();
+        FileUtil.deleteQuietly(getJavaSourceArchiveCacheDirectory());
     }
 
     private void addResourceFilterPreference() throws BackingStoreException {
@@ -428,6 +432,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     }
 
     IResourceChangeListener projectOpenCloseListener = new ProjectChangeListener();
+    private File javaSourceArchiveCacheDirectory;
     
     public BundleContext getBundleContext() {
         return this.bundleContext;
@@ -461,6 +466,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         return fontRegistry;
     }
 
-
+    public File getJavaSourceArchiveCacheDirectory() {
+        return javaSourceArchiveCacheDirectory;
+    }
 }
 

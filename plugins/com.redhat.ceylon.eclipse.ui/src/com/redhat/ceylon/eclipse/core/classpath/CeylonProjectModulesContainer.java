@@ -21,6 +21,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClas
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
+import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static java.util.Arrays.asList;
 import static java.util.Collections.synchronizedSet;
@@ -467,8 +468,22 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
             JDTModule module) {
         File srcArtifact = getSourceArtifact(provider, module);
         if (srcArtifact!=null) {
-            return new Path(srcArtifact.getPath());
+            if (module.isCeylonBinaryArchive()) {
+                if (module.containsJavaImplementations()) {
+                    srcArtifact = ceylonSourceArchiveToJavaSourceArchive(
+                            module.getNameAsString(),
+                            module.getVersion(),
+                            srcArtifact);
+                } else {
+                    srcArtifact = null;
+                }
+            }
         }
+        
+        if (srcArtifact!=null) {
+            return new Path(srcArtifact.getAbsolutePath());
+        }
+        
         return null;
     }
 

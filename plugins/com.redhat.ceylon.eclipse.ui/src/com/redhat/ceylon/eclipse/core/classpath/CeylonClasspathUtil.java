@@ -17,12 +17,20 @@
  */
 package com.redhat.ceylon.eclipse.core.classpath;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.FileHeader;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -34,6 +42,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
+import com.redhat.ceylon.common.FileUtil;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public final class CeylonClasspathUtil {
@@ -43,7 +52,7 @@ public final class CeylonClasspathUtil {
     }
 
     /**
-     * Get the Ivy classpath container from the selection in the Java package view
+     * Get the Ceylon classpath container from the selection in the Java package view
      * 
      * @param selection
      *            the selection
@@ -236,13 +245,13 @@ public final class CeylonClasspathUtil {
     }
 
     /**
-     * Search the Ivy classpath entry within the specified Java project with the specific path
+     * Search the Ceylon classpath entry within the specified Java project with the specific path
      * 
      * @param containerPath
      *            the path of the container
      * @param javaProject
      *            the project to search into
-     * @return the Ivy classpath container if found, otherwise return <code>null</code>
+     * @return the Ceylon classpath container if found, otherwise return <code>null</code>
      */
     public static IClasspathEntry getCeylonClasspathEntry(IPath containerPath,
             IJavaProject javaProject) {
@@ -267,4 +276,69 @@ public final class CeylonClasspathUtil {
         return null;
     }
 
+    private static String javaSourceArchivePath(String moduleName, String moduleVersion, File ceylonSourceArchive) {
+        String fullPath = ceylonSourceArchive.getAbsolutePath();
+        String pathSegmentsToRemove = moduleName.replace('.', File.separatorChar) 
+                + File.separator + moduleVersion + File.separator;
+        String[] splitFullPath = fullPath.split(pathSegmentsToRemove);
+        if (splitFullPath.length == 2) {
+            return splitFullPath[0].replace(':', '_') + splitFullPath[1];
+        }
+        return null;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static File ceylonSourceArchiveToJavaSourceArchive(String moduleName, String moduleVersion, File ceylonSourceArchive) {
+        if (ceylonSourceArchive == null) {
+            return null;
+        }
+        
+        File cacheDirectory = CeylonPlugin.getInstance().getJavaSourceArchiveCacheDirectory();
+        if (cacheDirectory != null) {
+            if (!cacheDirectory.exists()) {
+                cacheDirectory.mkdirs();
+            }
+            String sourceArchivePath = javaSourceArchivePath(moduleName, moduleVersion, ceylonSourceArchive);
+            if (sourceArchivePath != null) {
+                File cachedJavaArchive = new File(cacheDirectory, sourceArchivePath);
+                if (cachedJavaArchive.exists()) {
+                    return cachedJavaArchive;
+                }
+                try {
+                    FileUtil.copy(ceylonSourceArchive.getParentFile(), 
+                            new File(ceylonSourceArchive.getName()), 
+                            cacheDirectory, 
+                            new File(sourceArchivePath));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                if (cachedJavaArchive.exists()) {
+                    Set<String> entriesToDelete = new HashSet<String>();
+                    ZipFile zipFile = null;
+                    try {
+                        zipFile = new ZipFile(cachedJavaArchive);
+                        
+                        for (FileHeader header : (List<FileHeader>) zipFile.getFileHeaders()) {
+                            if (!header.isDirectory()) {
+                                String sourceFile = header.getFileName();
+                                if (sourceFile != null && ! sourceFile.endsWith(".java")) {
+                                    entriesToDelete.add(sourceFile);
+                                }
+                            }
+                        }
+
+                        for (String entryToDelete : entriesToDelete) {
+                            zipFile.removeFile(entryToDelete);
+                        }
+                        return cachedJavaArchive;
+                    } catch (ZipException e) {
+                        e.printStackTrace();
+                        FileUtil.deleteQuietly(cachedJavaArchive);
+                        return null;
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }

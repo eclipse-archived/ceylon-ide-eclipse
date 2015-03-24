@@ -306,6 +306,16 @@ public class JDTModule extends LazyModule {
         return classesToSources;
     }
     
+    public boolean containsJavaImplementations() {
+        for (String className : classesToSources.stringPropertyNames()) {
+            String sourceFile = classesToSources.getProperty(className);
+            if (sourceFile != null && sourceFile.endsWith(".java")) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public String toSourceUnitRelativePath(String binaryUnitRelativePath) {
         return getClassesToSources().getProperty(binaryUnitRelativePath);
     }
@@ -842,6 +852,7 @@ public class JDTModule extends LazyModule {
         return p;
     }
 
+    @SuppressWarnings("unchecked")
     private ExternalPhasedUnit buildPhasedUnitForBinaryUnit(String sourceUnitFullPath) {
         if (sourceArchivePath == null || sourceUnitFullPath == null) {
             return null;
