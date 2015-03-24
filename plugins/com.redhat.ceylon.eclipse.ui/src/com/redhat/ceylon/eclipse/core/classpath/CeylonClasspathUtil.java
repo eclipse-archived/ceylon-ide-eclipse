@@ -281,8 +281,13 @@ public final class CeylonClasspathUtil {
         String pathSegmentsToRemove = moduleName.replace('.', File.separatorChar) 
                 + File.separator + moduleVersion + File.separator;
         String[] splitFullPath = fullPath.split(pathSegmentsToRemove);
+        String name = ceylonSourceArchive.getName();
+        int dotIndex = name.lastIndexOf(".");
+        if (dotIndex > 0) {
+            name = name.substring(0, dotIndex) + ".javaSources.zip";
+        }
         if (splitFullPath.length == 2) {
-            return splitFullPath[0].replace(':', '_') + splitFullPath[1];
+            return splitFullPath[0].replace(':', '_') + name;
         }
         return null;
     }
