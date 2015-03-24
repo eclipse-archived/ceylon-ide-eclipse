@@ -342,7 +342,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     ANTLRStringStream stream = 
                             new NewlineFixingStringStream(doc.get());
                     CeylonLexer lexer = new CeylonLexer(stream);
-                    CommonTokenStream tokens = new CommonTokenStream(lexer);
+                    CommonTokenStream tokens = 
+                            new CommonTokenStream(lexer);
                     tokens.fill();
                     CommonToken token = 
                             getTokenStrictlyContainingOffset(offset, 
@@ -383,7 +384,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                                 pasteImports(imports, edit, text, doc);
                             }
                             if (quoted && !verbatim && !fromStringLiteral &&
-                                    getPreferences().getBoolean(PASTE_ESCAPE_QUOTED)) {
+                                    getPreferences()
+                                        .getBoolean(PASTE_ESCAPE_QUOTED)) {
                                 text = text
                                         .replace("\\", "\\\\")
                                         .replace("\t", "\\t")
@@ -402,7 +404,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         }
                         try {
                             if (startOfLine && 
-                                    getPreferences().getBoolean(PASTE_CORRECT_INDENTATION)) {
+                                    getPreferences()
+                                        .getBoolean(PASTE_CORRECT_INDENTATION)) {
                                 endOffset = 
                                         correctSourceIndentation(endOffset-text.length(), 
                                                 text.length(), doc)+1;
@@ -887,7 +890,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 Declaration declaration = e.getKey();
                 Package declarationPackage = 
                         declaration.getUnit().getPackage();
-                String dpn = declarationPackage.getNameAsString();
+                String dpn = 
+                        declarationPackage.getNameAsString();
                 Pattern pattern = 
                         Pattern.compile("\\bimport\\s+" + 
                                 dpn.replace(".", "\\.") + 
@@ -914,7 +918,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
             }
             if (!imports.isEmpty()) {
                 List<InsertEdit> edits = 
-                        importEdits(cu, imports.keySet(), imports.values(), 
+                        importEdits(cu, 
+                                imports.keySet(), 
+                                imports.values(), 
                                 null, doc);
                 for (InsertEdit importEdit: edits) {
                     edit.addChild(importEdit);                    
