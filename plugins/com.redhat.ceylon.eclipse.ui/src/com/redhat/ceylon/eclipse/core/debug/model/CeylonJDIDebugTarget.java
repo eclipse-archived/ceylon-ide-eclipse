@@ -165,7 +165,8 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
                         }
                     }
                 }
-            } catch(com.sun.jdi.VMDisconnectedException | DebugException e) {
+            } catch(com.sun.jdi.VMDisconnectedException e) {
+            } catch(DebugException e) {
                 e.printStackTrace();
             }
             return newThread;
