@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import java.util.Arrays;
+import static java.util.Arrays.asList;
 
 import org.eclipse.compare.ITypedElement;
 import org.eclipse.compare.structuremergeviewer.DocumentRangeNode;
@@ -13,8 +13,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class CeylonDocumentRangeNode extends DocumentRangeNode 
         implements ITypedElement {
     
-    private static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
-            .getImageRegistry();
+    private static ImageRegistry imageRegistry = 
+            CeylonPlugin.getInstance().getImageRegistry();
     
     private final CeylonOutlineNode node;
     
@@ -49,7 +49,7 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
 
     @Override
     public String toString() {
-        return node.getIdentifier() + Arrays.asList(getChildren());
+        return node.getIdentifier() + asList(getChildren());
     }
     
 }

@@ -41,10 +41,8 @@ import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonOutlineNode implements IAdaptable {
     
@@ -254,7 +252,7 @@ public class CeylonOutlineNode implements IAdaptable {
             if (currentEditor instanceof CeylonEditor) {
                 CeylonEditor ce = 
                         (CeylonEditor) currentEditor;
-                CompilationUnit rootNode = 
+                Tree.CompilationUnit rootNode = 
                         ce.getParseController().getRootNode();
                 if (rootNode!=null) {
                     Node node = findNode(rootNode, startOffset);
@@ -271,14 +269,17 @@ public class CeylonOutlineNode implements IAdaptable {
 
     public int getDecorations() {
         if (category==DEFAULT_CATEGORY && declaration) {
-            IEditorPart currentEditor = EditorUtil.getCurrentEditor();
+            IEditorPart currentEditor = getCurrentEditor();
             if (currentEditor instanceof CeylonEditor) {
-                CeylonEditor ce = (CeylonEditor) currentEditor;
+                CeylonEditor ce = 
+                        (CeylonEditor) currentEditor;
                 Tree.CompilationUnit rootNode = 
                         ce.getParseController().getRootNode();
-                Node node = findNode(rootNode, startOffset);
-                if (node!=null) {
-                    return getNodeDecorationAttributes(node);
+                if (rootNode!=null) {
+                    Node node = findNode(rootNode, startOffset);
+                    if (node!=null) {
+                        return getNodeDecorationAttributes(node);
+                    }
                 }
             }
         }

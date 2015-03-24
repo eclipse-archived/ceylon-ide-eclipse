@@ -131,12 +131,7 @@ public class Nodes {
         }
         FindContainer fc = new FindContainer();
         cu.visit(fc);
-        if (fc.result instanceof Tree.Declaration) {
-            return (Tree.Declaration) fc.result;
-        }
-        else {
-            return null;
-        }
+        return fc.result;
     }
 
     public static Tree.ImportMemberOrType findImport(Tree.CompilationUnit cu, Node node) {
@@ -147,13 +142,17 @@ public class Nodes {
         
         final Declaration declaration;
         if (node instanceof Tree.MemberOrTypeExpression) {
-            declaration = ((Tree.MemberOrTypeExpression) node).getDeclaration();
+            Tree.MemberOrTypeExpression mte = 
+                    (Tree.MemberOrTypeExpression) node;
+            declaration = mte.getDeclaration();
         }
         else if (node instanceof Tree.SimpleType) {
-            declaration = ((Tree.SimpleType) node).getDeclarationModel();
+            Tree.SimpleType st = (Tree.SimpleType) node;
+            declaration = st.getDeclarationModel();
         }
         else if (node instanceof Tree.MemberLiteral) {
-            declaration = ((Tree.MemberLiteral) node).getDeclaration();
+            Tree.MemberLiteral ml = (Tree.MemberLiteral) node;
+            declaration = ml.getDeclaration();
         }
         else {
             return null;
@@ -166,8 +165,8 @@ public class Nodes {
             @Override
             public void visit(Tree.ImportMemberOrType that) {
                 super.visit(that);
-                if (that.getDeclarationModel()!=null &&
-                        that.getDeclarationModel().equals(declaration)) {
+                Declaration dec = that.getDeclarationModel();
+                if (dec!=null && dec.equals(declaration)) {
                     result = that;
                 }
             }
@@ -188,11 +187,11 @@ public class Nodes {
         return findNode(cu, offset, offset+1);
     }
 
-    public static Node findNode(Node cu, 
+    public static Node findNode(Node node, 
             int startOffset, int endOffset) {
         FindNodeVisitor visitor = 
                 new FindNodeVisitor(startOffset, endOffset);
-        cu.visit(visitor);
+        node.visit(visitor);
         return visitor.getNode();
     }
 
