@@ -17,9 +17,10 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchy
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_ESCAPE_QUOTED;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_IMPORTS;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.getTokenStrictlyContainingOffset;
+import static java.lang.Character.isWhitespace;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
-import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,12 +36,10 @@ import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.DocumentRewriteSession;
-import org.eclipse.jface.text.DocumentRewriteSessionType;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
@@ -61,7 +60,6 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.PartInitException;
 
-import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Import;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -71,8 +69,8 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
@@ -133,15 +131,21 @@ public class CeylonSourceViewer extends ProjectionViewer {
     private IAutoEditStrategy autoEditStrategy;
     private CeylonEditor editor;
 
-    public CeylonSourceViewer(CeylonEditor ceylonEditor, Composite parent, IVerticalRuler verticalRuler, 
-            IOverviewRuler overviewRuler, boolean showAnnotationsOverview, int styles) {
-        super(parent, verticalRuler, overviewRuler, showAnnotationsOverview, styles);
+    public CeylonSourceViewer(CeylonEditor ceylonEditor, 
+            Composite parent, IVerticalRuler verticalRuler, 
+            IOverviewRuler overviewRuler, 
+            boolean showAnnotationsOverview, int styles) {
+        super(parent, verticalRuler, overviewRuler, 
+                showAnnotationsOverview, styles);
         this.editor = ceylonEditor;
     }
 
-    public CeylonSourceViewer(Composite parent, IVerticalRuler verticalRuler, 
-            IOverviewRuler overviewRuler, boolean showAnnotationsOverview, int styles) {
-        this(null, parent, verticalRuler, overviewRuler, showAnnotationsOverview, styles);
+    public CeylonSourceViewer(Composite parent, 
+            IVerticalRuler verticalRuler, 
+            IOverviewRuler overviewRuler, 
+            boolean showAnnotationsOverview, int styles) {
+        this(null, parent, verticalRuler, overviewRuler, 
+                showAnnotationsOverview, styles);
     }
 
     public boolean canDoOperation(int operation) {
@@ -244,7 +248,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
     
     private void afterCopyCut(String selection, Map<Declaration,String> imports) {
-        if (imports!=null && !editor.isBlockSelectionModeEnabled()) {
+        if (imports!=null && 
+                !editor.isBlockSelectionModeEnabled()) {
             char c = 
                     editor.getSelectedNode() 
                         instanceof Tree.Literal ? 
@@ -261,7 +266,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     Object[] data;
                     Transfer[] dataTypes;
                     if (rtf==null) {
-                        data = new Object[] { text, imports, c + selection };
+                        data = new Object[] { text, 
+                                              imports, 
+                                              c + selection };
                         dataTypes = new Transfer[] {
                                 TextTransfer.getInstance(),
                                 ImportsTransfer.INSTANCE, 
@@ -269,7 +276,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
                             };
                     }
                     else {
-                        data = new Object[] { text, rtf, imports, c + selection };
+                        data = new Object[] { text, 
+                                              rtf, 
+                                              imports, 
+                                              c + selection };
                         dataTypes = new Transfer[] {
                                 TextTransfer.getInstance(),
                                 RTFTransfer.getInstance(),
@@ -297,11 +307,13 @@ public class CeylonSourceViewer extends ProjectionViewer {
             Clipboard clipboard = 
                     new Clipboard(getTextWidget().getDisplay());
             try {
-                String text = (String) clipboard.getContents(SourceTransfer.INSTANCE);
+                String text = (String) 
+                        clipboard.getContents(SourceTransfer.INSTANCE);
                 boolean fromStringLiteral;
                 if (text==null) {
                     fromStringLiteral = false;
-                    text = (String) clipboard.getContents(TextTransfer.getInstance());
+                    text = (String) 
+                            clipboard.getContents(TextTransfer.getInstance());
                 }
                 else {
                     fromStringLiteral = text.charAt(0)=='"';
@@ -312,18 +324,19 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 }
                 else {
                     @SuppressWarnings({"unchecked", "rawtypes"})
-                    Map<Declaration,String> imports = 
-                            (Map) clipboard.getContents(ImportsTransfer.INSTANCE);
+                    Map<Declaration,String> imports = (Map) 
+                            clipboard.getContents(ImportsTransfer.INSTANCE);
                     IRegion selection = editor.getSelection();
                     int offset = selection.getOffset();
                     int length = selection.getLength();
                     int endOffset = offset+length;
                     
                     IDocument doc = this.getDocument();
-                    DocumentRewriteSession rewriteSession= null;
+                    DocumentRewriteSession rewriteSession = null;
                     if (doc instanceof IDocumentExtension4) {
                         rewriteSession = 
-                                ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
+                                ((IDocumentExtension4) doc)
+                                    .startRewriteSession(SEQUENTIAL);
                     }
                     
                     ANTLRStringStream stream = 
@@ -331,8 +344,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     CeylonLexer lexer = new CeylonLexer(stream);
                     CommonTokenStream tokens = new CommonTokenStream(lexer);
                     tokens.fill();
-                    CommonToken token = getTokenStrictlyContainingOffset(offset, 
-                            tokens.getTokens());
+                    CommonToken token = 
+                            getTokenStrictlyContainingOffset(offset, 
+                                    tokens.getTokens());
                     boolean quoted;
                     boolean verbatim;
                     if (token == null) {
@@ -352,8 +366,12 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     try {
                         boolean startOfLine = false;
                         try {
-                            int lineStart = doc.getLineInformationOfOffset(offset).getOffset();
-                            startOfLine = doc.get(lineStart, offset-lineStart).trim().isEmpty();
+                            int lineStart = 
+                                    doc.getLineInformationOfOffset(offset)
+                                        .getOffset();
+                            startOfLine = 
+                                    doc.get(lineStart, offset-lineStart)
+                                        .trim().isEmpty();
                         }
                         catch (BadLocationException e) {
                             e.printStackTrace();
@@ -361,11 +379,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         try {
                             MultiTextEdit edit = new MultiTextEdit();
                             if (!quoted && imports!=null &&
-                                    EditorUtil.getPreferences().getBoolean(PASTE_IMPORTS)) {
+                                    getPreferences().getBoolean(PASTE_IMPORTS)) {
                                 pasteImports(imports, edit, text, doc);
                             }
                             if (quoted && !verbatim && !fromStringLiteral &&
-                                    EditorUtil.getPreferences().getBoolean(PASTE_ESCAPE_QUOTED)) {
+                                    getPreferences().getBoolean(PASTE_ESCAPE_QUOTED)) {
                                 text = text
                                         .replace("\\", "\\\\")
                                         .replace("\t", "\\t")
@@ -374,7 +392,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
                             }
                             edit.addChild(new ReplaceEdit(offset, length, text));
                             edit.apply(doc);
-                            endOffset = edit.getRegion().getOffset()+edit.getRegion().getLength();
+                            endOffset = 
+                                    edit.getRegion().getOffset() + 
+                                    edit.getRegion().getLength();
                         } 
                         catch (Exception e) {
                             e.printStackTrace();
@@ -382,8 +402,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         }
                         try {
                             if (startOfLine && 
-                                    EditorUtil.getPreferences().getBoolean(PASTE_CORRECT_INDENTATION)) {
-                                endOffset = correctSourceIndentation(endOffset-text.length(), text.length(), doc)+1;
+                                    getPreferences().getBoolean(PASTE_CORRECT_INDENTATION)) {
+                                endOffset = 
+                                        correctSourceIndentation(endOffset-text.length(), 
+                                                text.length(), doc)+1;
                             }
                             return true;
                         } 
@@ -394,7 +416,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     }
                     finally {
                         if (doc instanceof IDocumentExtension4) {
-                            ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
+                            ((IDocumentExtension4) doc)
+                                .stopRewriteSession(rewriteSession);
                         }
                         setSelectedRange(endOffset, 0);
                     }
@@ -437,7 +460,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
         Point p = this.getSelectedRange();
 
         if (doc instanceof IDocumentExtension4) {
-            rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
+            rewriteSession = 
+                    ((IDocumentExtension4) doc)
+                        .startRewriteSession(SEQUENTIAL);
         }
 
         try {
@@ -452,7 +477,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
         } 
         finally {
             if (doc instanceof IDocumentExtension4) {
-                ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
+                ((IDocumentExtension4) doc)
+                    .stopRewriteSession(rewriteSession);
             }
             restoreSelection();
         }
@@ -464,8 +490,9 @@ public class CeylonSourceViewer extends ProjectionViewer {
         Point p = this.getSelectedRange();
 
         if (doc instanceof IDocumentExtension4) {
-            IDocumentExtension4 extension= (IDocumentExtension4) doc;
-            rewriteSession= extension.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
+            rewriteSession = 
+                    ((IDocumentExtension4) doc)
+                        .startRewriteSession(SEQUENTIAL);
         }
 
         try {
@@ -493,7 +520,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
         finally {
             if (doc instanceof IDocumentExtension4) {
-                ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
+                ((IDocumentExtension4) doc)
+                    .stopRewriteSession(rewriteSession);
             }
             restoreSelection();
         }
@@ -506,35 +534,47 @@ public class CeylonSourceViewer extends ProjectionViewer {
         final String lineCommentPrefix = "//";
 
         if (doc instanceof IDocumentExtension4) {
-            rewriteSession= ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
+            rewriteSession = 
+                    ((IDocumentExtension4) doc)
+                        .startRewriteSession(SEQUENTIAL);
         }
 
         try {
             final int selStart = p.x;
             final int selLen = p.y;
             final int selEnd = selStart+selLen;
-            final int startLine= doc.getLineOfOffset(selStart);
-            int endLine= doc.getLineOfOffset(selEnd);
+            final int startLine = doc.getLineOfOffset(selStart);
+            int endLine = doc.getLineOfOffset(selEnd);
 
             if (selLen>0 && lookingAtLineEnd(doc, selEnd))
                 endLine--;
 
-            boolean linesAllHaveCommentPrefix = linesHaveCommentPrefix(doc, lineCommentPrefix, startLine, endLine);
+            boolean linesAllHaveCommentPrefix = 
+                    linesHaveCommentPrefix(doc, 
+                            lineCommentPrefix, 
+                            startLine, endLine);
             boolean useCommonLeadingSpace = true; // take from a preference?
-            int leadingSpaceToUse = useCommonLeadingSpace ? calculateLeadingSpace(doc, startLine, endLine) : 0;
+            int leadingSpaceToUse = 
+                    useCommonLeadingSpace ? 
+                            calculateLeadingSpace(doc, 
+                                    startLine, endLine) : 0;
 
-            for(int line = startLine; line<=endLine; line++) {
+            for (int line = startLine; line<=endLine; line++) {
+                
                 int lineStart = doc.getLineOffset(line);
                 int lineEnd = lineStart+doc.getLineLength(line)-1;
 
                 if (linesAllHaveCommentPrefix) {
                     // remove the comment prefix from each line, wherever it occurs in the line
                     int offset = lineStart;
-                    while (Character.isWhitespace(doc.getChar(offset)) && offset<lineEnd) {
+                    while (isWhitespace(doc.getChar(offset)) && 
+                            offset<lineEnd) {
                         offset++;
                     }
                     // The first non-whitespace characters *must* be the single-line comment prefix
-                    doc.replace(offset, lineCommentPrefix.length(), "");
+                    doc.replace(offset, 
+                            lineCommentPrefix.length(), 
+                            "");
                 }
                 else {
                     // add the comment prefix to each line, after however many spaces leadingSpaceToAdd indicates
@@ -548,22 +588,28 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
         finally {
             if (doc instanceof IDocumentExtension4) {
-                ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
+                ((IDocumentExtension4) doc)
+                    .stopRewriteSession(rewriteSession);
             }
             restoreSelection();
         }
     }
 
-    private int calculateLeadingSpace(IDocument doc, int startLine, int endLine) {
+    private int calculateLeadingSpace(IDocument doc, 
+            int startLine, int endLine) {
         try {
             int result = Integer.MAX_VALUE;
-            for(int line = startLine; line <= endLine; line++) {
+            for (int line=startLine; line<=endLine; line++) {
+                
                 int lineStart = doc.getLineOffset(line);
                 int lineEnd = lineStart + doc.getLineLength(line) - 1;
                 int offset = lineStart;
-                while (Character.isWhitespace(doc.getChar(offset)) && offset < lineEnd) {
+                
+                while (isWhitespace(doc.getChar(offset)) && 
+                        offset < lineEnd) {
                     offset++;
                 }
+                
                 int leadingSpaces = offset - lineStart;
                 result = Math.min(result, leadingSpaces);
             }
@@ -575,29 +621,37 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
 
     /**
-     * @return true, if the given inclusive range of lines all start with the single-line comment prefix,
-     * even if they have different amounts of leading whitespace
+     * @return true, if the given inclusive range of lines 
+     * all start with the single-line comment prefix, even 
+     * if they have different amounts of leading whitespace
      */
-    private boolean linesHaveCommentPrefix(IDocument doc, String lineCommentPrefix, int startLine, int endLine) {
+    private boolean linesHaveCommentPrefix(IDocument doc, 
+            String lineCommentPrefix, int startLine, int endLine) {
         try {
-            int docLen= doc.getLength();
+            int docLen = doc.getLength();
 
-            for(int line= startLine; line <= endLine; line++) {
-                int lineStart= doc.getLineOffset(line);
-                int lineEnd= lineStart + doc.getLineLength(line) - 1;
-                int offset= lineStart;
+            for (int line=startLine; line<=endLine; line++) {
+                
+                int lineStart = doc.getLineOffset(line);
+                int lineEnd = lineStart + doc.getLineLength(line) - 1;
+                int offset = lineStart;
 
-                while (Character.isWhitespace(doc.getChar(offset)) && offset < lineEnd) {
+                while (isWhitespace(doc.getChar(offset)) && 
+                        offset < lineEnd) {
                     offset++;
                 }
-                if (docLen - offset > lineCommentPrefix.length() && 
-                    doc.get(offset, lineCommentPrefix.length()).equals(lineCommentPrefix)) {
+                
+                if (docLen-offset > lineCommentPrefix.length() && 
+                    doc.get(offset, lineCommentPrefix.length())
+                            .equals(lineCommentPrefix)) {
                     // this line starts with the single-line comment prefix
-                } else {
+                }
+                else {
                     return false;
                 }
             }
-        } catch (BadLocationException e) {
+        }
+        catch (BadLocationException e) {
             return false;
         }
         return true;
@@ -606,14 +660,17 @@ public class CeylonSourceViewer extends ProjectionViewer {
     private void doCorrectIndentation(int offset, int len) {
         
         IDocument doc = getDocument();
-        DocumentRewriteSession rewriteSession= null;
+        DocumentRewriteSession rewriteSession = null;
         if (doc instanceof IDocumentExtension4) {
-            rewriteSession = ((IDocumentExtension4) doc).startRewriteSession(SEQUENTIAL);
+            rewriteSession = 
+                    ((IDocumentExtension4) doc)
+                        .startRewriteSession(SEQUENTIAL);
         }
         
         
         Point selectedRange = getSelectedRange();
-        boolean emptySelection = selectedRange==null || selectedRange.y==0;
+        boolean emptySelection = 
+                selectedRange==null || selectedRange.y==0;
         
         try {
             correctSourceIndentation(offset, len, doc);
@@ -623,12 +680,13 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
         finally {
             if (doc instanceof IDocumentExtension4) {
-                ((IDocumentExtension4) doc).stopRewriteSession(rewriteSession);
+                ((IDocumentExtension4) doc)
+                    .stopRewriteSession(rewriteSession);
             }
             restoreSelection();
             if (emptySelection) {
                 selectedRange = getSelectedRange();
-                setSelectedRange(selectedRange.x/*+selectedRange.y*/, 0);
+                setSelectedRange(selectedRange.x, 0);
             }
         }
     }
@@ -640,7 +698,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
         int endLine = doc.getLineOfOffset(selEnd);
 
         // If the selection extends just to the beginning of the next line, don't indent that one too
-        if (selLen > 0 && lookingAtLineEnd(doc, selEnd)) {
+        if (selLen > 0 && 
+                lookingAtLineEnd(doc, selEnd)) {
             endLine--;
         }
         
@@ -671,7 +730,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
         try {
             for(String lineTerm: legalLineTerms) {
                 int len = lineTerm.length();
-                if (pos>len && doc.get(pos-len,len).equals(lineTerm)) {
+                if (pos>len && 
+                        doc.get(pos-len,len).equals(lineTerm)) {
                     return true;
                 }
             }
@@ -683,31 +743,17 @@ public class CeylonSourceViewer extends ProjectionViewer {
     }
 
     public void configure(SourceViewerConfiguration configuration) {
-        /*
-         * Prevent access to colors disposed in unconfigure(), see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=53641
-         * https://bugs.eclipse.org/bugs/show_bug.cgi?id=86177
-         */
-//        StyledText textWidget = getTextWidget();
-//        if (textWidget != null && !textWidget.isDisposed()) {
-//            Color foregroundColor = textWidget.getForeground();
-//            if (foregroundColor != null && foregroundColor.isDisposed()) {
-//                textWidget.setForeground(null);
-//            }
-//            Color backgroundColor = textWidget.getBackground();
-//            if (backgroundColor != null && backgroundColor.isDisposed()) {
-//                textWidget.setBackground(null);
-//            }
-//        }
-        
         super.configure(configuration);
         
-        AbstractInformationControlManager hoverController = getTextHoveringController();
+        AbstractInformationControlManager hoverController = 
+                getTextHoveringController();
         if (hoverController!=null) { //null in a merge viewer
             hoverController.setSizeConstraints(80, 30, false, true);
         }
         
         if (configuration instanceof CeylonSourceViewerConfiguration) {
-            CeylonSourceViewerConfiguration svc = (CeylonSourceViewerConfiguration) configuration;
+            CeylonSourceViewerConfiguration svc = 
+                    (CeylonSourceViewerConfiguration) configuration;
             
             outlinePresenter = svc.getOutlinePresenter(this);
             if (outlinePresenter!=null) {
@@ -737,15 +783,6 @@ public class CeylonSourceViewer extends ProjectionViewer {
             autoEditStrategy = new CeylonAutoEditStrategy();
             
         }
-        //    if (fPreferenceStore != null) {
-        //        fPreferenceStore.addPropertyChangeListener(this);
-        //        initializeViewerColors();
-        //    }
-        
-        ITextHover textHover = configuration.getTextHover(this, DEFAULT_CONTENT_TYPE);
-        if (textHover!=null) {
-            setTextHover(textHover, DEFAULT_CONTENT_TYPE);
-        }
     }
 
     public void unconfigure() {
@@ -761,34 +798,31 @@ public class CeylonSourceViewer extends ProjectionViewer {
             hierarchyPresenter.uninstall();
             hierarchyPresenter= null;
         }
-        // if (fForegroundColor != null) {
-        // fForegroundColor.dispose();
-        // fForegroundColor= null;
-        // }
-        // if (fBackgroundColor != null) {
-        // fBackgroundColor.dispose();
-        // fBackgroundColor= null;
-        // }
-        // if (fPreferenceStore != null)
-        // fPreferenceStore.removePropertyChangeListener(this);
         super.unconfigure();
     }
     
     Map<Declaration,String> copyImports() {
     	try {
-    		CeylonParseController pc = editor.getParseController();
-    		if (pc==null || pc.getRootNode()==null) return null;
-    		Tree.CompilationUnit cu = pc.getRootNode();
+    		CeylonParseController controller = 
+    		        editor.getParseController();
+    		if (controller==null || 
+    		        controller.getRootNode()==null) {
+    		    return null;
+    		}
+    		Tree.CompilationUnit cu = controller.getRootNode();
     		final IRegion selection = editor.getSelection();
     		class SelectedImportsVisitor extends Visitor {
-    			Map<Declaration,String> results = new HashMap<Declaration,String>();
+    			Map<Declaration,String> results = 
+    			        new HashMap<Declaration,String>();
     			boolean inSelection(Node node) {
     				return node.getStartIndex()>=selection.getOffset() &&
     						node.getStopIndex()<selection.getOffset()+selection.getLength();
     			}
     			void addDeclaration(Declaration d, Tree.Identifier id) {
     				if (d!=null && id!=null && d.isToplevel()) {
-    					String pname = d.getUnit().getPackage().getNameAsString();
+    					String pname = 
+    					        d.getUnit().getPackage()
+    					            .getNameAsString();
     					if (!pname.isEmpty() &&
     							!pname.equals(Module.LANGUAGE_MODULE_NAME)) {
     						results.put(d, id.getText());
@@ -820,7 +854,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
     				super.visit(that);
     			}
     		}
-    		SelectedImportsVisitor v = new SelectedImportsVisitor();
+    		SelectedImportsVisitor v = 
+    		        new SelectedImportsVisitor();
     		cu.visit(v);
     		return v.results;
     	}
@@ -833,22 +868,30 @@ public class CeylonSourceViewer extends ProjectionViewer {
     void pasteImports(Map<Declaration,String> map, MultiTextEdit edit, 
             String pastedText, IDocument doc) {
         if (!map.isEmpty()) {
-            CeylonParseController pc = editor.getParseController();
-            if (pc==null || pc.getRootNode()==null) return;
-            Tree.CompilationUnit cu = pc.getRootNode();
+            CeylonParseController controller = 
+                    editor.getParseController();
+            if (controller==null || 
+                    controller.getRootNode()==null) {
+                return;
+            }
+            Tree.CompilationUnit cu = controller.getRootNode();
             Unit unit = cu.getUnit();
             //copy them, so as to not affect the clipboard
             Map<Declaration,String> imports = 
                     new LinkedHashMap<Declaration,String>(); 
             imports.putAll(map);
-            for (Iterator<Map.Entry<Declaration,String>> i=imports.entrySet().iterator(); 
+            for (Iterator<Map.Entry<Declaration,String>> i = 
+                        imports.entrySet().iterator(); 
                     i.hasNext();) {
                 Map.Entry<Declaration,String> e = i.next();
                 Declaration declaration = e.getKey();
-                Package declarationPackage = declaration.getUnit().getPackage();
-                Pattern pattern = Pattern.compile("\\bimport\\s+" + 
-                        declarationPackage.getNameAsString().replace(".", "\\.") + 
-                        "\\b[^.]");
+                Package declarationPackage = 
+                        declaration.getUnit().getPackage();
+                String dpn = declarationPackage.getNameAsString();
+                Pattern pattern = 
+                        Pattern.compile("\\bimport\\s+" + 
+                                dpn.replace(".", "\\.") + 
+                                "\\b[^.]");
                 if (unit.getPackage().equals(declarationPackage)) {
                     //the declaration belongs to this package
                     i.remove();
