@@ -302,7 +302,11 @@ public final class CeylonClasspathUtil {
             if (sourceArchivePath != null) {
                 File cachedJavaArchive = new File(cacheDirectory, sourceArchivePath);
                 if (cachedJavaArchive.exists()) {
-                    return cachedJavaArchive;
+                    if (cachedJavaArchive.lastModified() > ceylonSourceArchive.lastModified()) {
+                        return cachedJavaArchive;
+                    } else {
+                        FileUtil.deleteQuietly(cachedJavaArchive);
+                    }
                 }
                 try {
                     FileUtil.copy(ceylonSourceArchive.getParentFile(), 
