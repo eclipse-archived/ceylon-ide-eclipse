@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -280,7 +281,7 @@ public final class CeylonClasspathUtil {
         String fullPath = ceylonSourceArchive.getAbsolutePath();
         String pathSegmentsToRemove = moduleName.replace('.', File.separatorChar) 
                 + File.separator + moduleVersion + File.separator;
-        String[] splitFullPath = fullPath.split(pathSegmentsToRemove);
+        String[] splitFullPath = fullPath.split(Pattern.quote(pathSegmentsToRemove));
         String name = ceylonSourceArchive.getName();
         int dotIndex = name.lastIndexOf(".");
         if (dotIndex > 0) {
