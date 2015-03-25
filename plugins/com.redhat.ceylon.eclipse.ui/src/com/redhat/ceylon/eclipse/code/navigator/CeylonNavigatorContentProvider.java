@@ -236,6 +236,8 @@ public class CeylonNavigatorContentProvider implements
                     SourceModuleNode sourceModuleNode = sourceDirectoryModules.get(signature);
                     if (sourceModuleNode == null) {
                         sourceModuleNode = SourceModuleNode.createSourceModuleNode(sourceRoot, signature);
+                    }
+                    if (sourceModuleNode != null) {
                         sourceDirectoryModules.put(signature, sourceModuleNode);
                     }
                 }

@@ -975,13 +975,16 @@ public class JDTModule extends LazyModule {
     public JDTModule getOriginalModule() {
         if (originalProject != null) {
             if (originalModule == null) {
-                for (Module m : CeylonBuilder.getProjectModules(originalProject).getListOfModules()) {
-                    // TODO : in the future : manage version ?? in case we reference 2 identical projects with different version in the workspace
-                    if (m.getNameAsString().equals(getNameAsString())) {  
-                        assert(m instanceof JDTModule);
-                        if (((JDTModule) m).isProjectModule()) {
-                            originalModule = (JDTModule) m;
-                            break;
+                Modules modules = CeylonBuilder.getProjectModules(originalProject);
+                if (modules != null) {
+                    for (Module m : modules.getListOfModules()) {
+                        // TODO : in the future : manage version ?? in case we reference 2 identical projects with different version in the workspace
+                        if (m.getNameAsString().equals(getNameAsString())) {  
+                            assert(m instanceof JDTModule);
+                            if (((JDTModule) m).isProjectModule()) {
+                                originalModule = (JDTModule) m;
+                                break;
+                            }
                         }
                     }
                 }

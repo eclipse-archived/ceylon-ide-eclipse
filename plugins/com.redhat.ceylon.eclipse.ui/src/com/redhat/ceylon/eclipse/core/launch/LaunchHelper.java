@@ -39,6 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Class;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Method;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
+import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -228,13 +229,15 @@ public class LaunchHelper {
     }
         
     private static boolean isDefaultModulePresent(IProject project) {
-        Module defaultModule = 
-                getProjectModules(project).getDefaultModule();
-        if (defaultModule != null) {
-            List<Declaration> decls = 
-                    getDeclarationsForModule(project, defaultModule);
-            if (!decls.isEmpty()) {
-                return true;
+        Modules modules = getProjectModules(project);
+        if (modules != null) {
+            Module defaultModule = modules.getDefaultModule();
+            if (defaultModule != null) {
+                List<Declaration> decls = 
+                        getDeclarationsForModule(project, defaultModule);
+                if (!decls.isEmpty()) {
+                    return true;
+                }
             }
         }
         return false;
