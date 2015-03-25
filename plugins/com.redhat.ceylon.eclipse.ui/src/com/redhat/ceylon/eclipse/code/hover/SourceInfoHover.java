@@ -17,7 +17,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
-public abstract class SourceInfoHover implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
+public abstract class SourceInfoHover 
+        implements ITextHover, ITextHoverExtension, 
+                   ITextHoverExtension2 {
 
     protected static Node getHoverNode(IRegion hoverRegion, 
             CeylonParseController parseController) {

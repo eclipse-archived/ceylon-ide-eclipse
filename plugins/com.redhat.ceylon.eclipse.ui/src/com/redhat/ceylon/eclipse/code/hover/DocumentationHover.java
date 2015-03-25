@@ -359,32 +359,6 @@ public class DocumentationHover extends SourceInfoHover {
     }
     
     /**
-     * Action that shows the current hover contents in the Javadoc view.
-     */
-    /*private static final class ShowInDocViewAction extends Action {
-        private final BrowserInformationControl fInfoControl;
-
-        public ShowInJavadocViewAction(BrowserInformationControl infoControl) {
-            fInfoControl= infoControl;
-            setText("Show in Ceylondoc View");
-            setImageDescriptor(JavaPluginImages.DESC_OBJS_JAVADOCTAG); //TODO: better image
-        }
-
-        @Override
-        public void run() {
-            DocBrowserInformationControlInput infoInput= (DocBrowserInformationControlInput) fInfoControl.getInput(); //TODO: check cast
-            fInfoControl.notifyDelayedInputChange(null);
-            fInfoControl.dispose(); //FIXME: should have protocol to hide, rather than dispose
-            try {
-                JavadocView view= (JavadocView) JavaPlugin.getActivePage().showView(JavaUI.ID_JAVADOC_VIEW);
-                view.setInput(infoInput);
-            } catch (PartInitException e) {
-                JavaPlugin.log(e);
-            }
-        }
-    }*/
-    
-    /**
      * Action that opens the current hover input element.
      */
     final class OpenDeclarationAction extends Action {
@@ -412,37 +386,75 @@ public class DocumentationHover extends SourceInfoHover {
         control.dispose();
     }
     
-    /**
-     * The hover control creator.
-     */
-    private IInformationControlCreator fHoverControlCreator;
-    /**
-     * The presentation control creator.
-     */
-    private IInformationControlCreator fPresenterControlCreator;
-
-    private  IInformationControlCreator getInformationPresenterControlCreator() {
-        if (fPresenterControlCreator == null) {
-            fPresenterControlCreator = 
-                    new PresenterControlCreator();
-        }
-        return fPresenterControlCreator;
-    }
-
     @Override
     public IInformationControlCreator getHoverControlCreator() {
         return getHoverControlCreator("F2 for focus");
     }
 
     public IInformationControlCreator getHoverControlCreator(
-            String statusLineMessage) {
-        if (fHoverControlCreator == null) {
-            fHoverControlCreator = 
-                    new HoverControlCreator(this, 
-                            getInformationPresenterControlCreator(), 
-                            statusLineMessage);
-        }
-        return fHoverControlCreator;
+            final String statusLineMessage) {
+        return new AbstractReusableInformationControlCreator() {
+            @Override
+            public IInformationControl doCreateInformationControl(Shell parent) {
+                BrowserInformationControl control = 
+                        new BrowserInformationControl(parent, 
+                                APPEARANCE_JAVADOC_FONT, 
+                                statusLineMessage) {
+                    /**
+                     * Create the "enriched" control when 
+                     * the hover receives focus
+                     */
+                    @Override
+                    public IInformationControlCreator getInformationPresenterControlCreator() {
+                        return new AbstractReusableInformationControlCreator() {
+                            @Override
+                            public IInformationControl doCreateInformationControl(Shell parent) {
+                                ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
+                                BrowserInformationControl control = 
+                                        new BrowserInformationControl(parent, 
+                                                APPEARANCE_JAVADOC_FONT, tbm);
+
+                                final BackAction backAction = 
+                                        new BackAction(control);
+                                backAction.setEnabled(false);
+                                tbm.add(backAction);
+                                final ForwardAction forwardAction = 
+                                        new ForwardAction(control);
+                                tbm.add(forwardAction);
+                                forwardAction.setEnabled(false);
+
+                                final OpenDeclarationAction openDeclarationAction = 
+                                        new OpenDeclarationAction(control);
+                                tbm.add(openDeclarationAction);
+
+                                IInputChangedListener inputChangeListener = 
+                                        new IInputChangedListener() {
+                                    public void inputChanged(Object newInput) {
+                                        backAction.update();
+                                        forwardAction.update();
+                                        boolean isDeclaration = false;
+                                        if (newInput instanceof CeylonBrowserInput) {
+                                            CeylonBrowserInput input = 
+                                                    (CeylonBrowserInput) newInput;
+                                            isDeclaration = input.getAddress()!=null;
+                                        }
+                                        openDeclarationAction.setEnabled(isDeclaration);
+                                    }
+                                };
+                                control.addInputChangeListener(inputChangeListener);
+
+                                tbm.update(true);
+
+                                control.addLocationListener(new CeylonLocationListener(control));
+                                return control;
+                            }
+                        };
+                    }
+                };
+                control.addLocationListener(new CeylonLocationListener(control));
+                return control;
+            }
+        };
     }
     
     public static Referenceable getLinkedModel(String location, 
@@ -2476,121 +2488,6 @@ public class DocumentationHover extends SourceInfoHover {
         else {
             return resolveModule(scope.getContainer());
         }
-    }
-    
-    /**
-     * Creates the "enriched" control.
-     */
-    private final class PresenterControlCreator 
-    extends AbstractReusableInformationControlCreator {
-        
-        @Override
-        public IInformationControl doCreateInformationControl(Shell parent) {
-//            if (isAvailable(parent)) {
-                ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
-                BrowserInformationControl control = 
-                        new BrowserInformationControl(parent, 
-                                APPEARANCE_JAVADOC_FONT, tbm);
-
-                final BackAction backAction = 
-                        new BackAction(control);
-                backAction.setEnabled(false);
-                tbm.add(backAction);
-                final ForwardAction forwardAction = 
-                        new ForwardAction(control);
-                tbm.add(forwardAction);
-                forwardAction.setEnabled(false);
-
-                //final ShowInJavadocViewAction showInJavadocViewAction= new ShowInJavadocViewAction(iControl);
-                //tbm.add(showInJavadocViewAction);
-                final OpenDeclarationAction openDeclarationAction = 
-                        new OpenDeclarationAction(control);
-                tbm.add(openDeclarationAction);
-
-//                final SimpleSelectionProvider selectionProvider = new SimpleSelectionProvider();
-                //TODO: an action to open the generated ceylondoc  
-                //      from the doc archive, in a browser window
-                /*if (fSite != null) {
-                    OpenAttachedJavadocAction openAttachedJavadocAction= new OpenAttachedJavadocAction(fSite);
-                    openAttachedJavadocAction.setSpecialSelectionProvider(selectionProvider);
-                    openAttachedJavadocAction.setImageDescriptor(DESC_ELCL_OPEN_BROWSER);
-                    openAttachedJavadocAction.setDisabledImageDescriptor(DESC_DLCL_OPEN_BROWSER);
-                    selectionProvider.addSelectionChangedListener(openAttachedJavadocAction);
-                    selectionProvider.setSelection(new StructuredSelection());
-                    tbm.add(openAttachedJavadocAction);
-                }*/
-
-                IInputChangedListener inputChangeListener = 
-                        new IInputChangedListener() {
-                    public void inputChanged(Object newInput) {
-                        backAction.update();
-                        forwardAction.update();
-//                        if (newInput == null) {
-//                            selectionProvider.setSelection(new StructuredSelection());
-//                        }
-//                        else 
-                        boolean isDeclaration = false;
-                        if (newInput instanceof CeylonBrowserInput) {
-//                            Object inputElement = ((CeylonBrowserInput) newInput).getInputElement();
-//                            selectionProvider.setSelection(new StructuredSelection(inputElement));
-                            //showInJavadocViewAction.setEnabled(isJavaElementInput);
-                            isDeclaration = ((CeylonBrowserInput) newInput).getAddress()!=null;
-                        }
-                        openDeclarationAction.setEnabled(isDeclaration);
-                    }
-                };
-                control.addInputChangeListener(inputChangeListener);
-
-                tbm.update(true);
-
-                control.addLocationListener(new CeylonLocationListener(control));
-                return control;
-
-//            } 
-//            else {
-//                return new DefaultInformationControl(parent, true);
-//            }
-        }
-        
-    }
-    
-    private final class HoverControlCreator 
-    extends AbstractReusableInformationControlCreator {
-        
-        private final DocumentationHover docHover;
-        private String statusLineMessage;
-        private final IInformationControlCreator enrichedControlCreator;
-
-        HoverControlCreator(DocumentationHover docHover, 
-                IInformationControlCreator enrichedControlCreator,
-                String statusLineMessage) {
-            this.docHover = docHover;
-            this.enrichedControlCreator = enrichedControlCreator;
-            this.statusLineMessage = statusLineMessage;
-        }
-        
-        @Override
-        public IInformationControl doCreateInformationControl(Shell parent) {
-//            if (enrichedControlCreator!=null && isAvailable(parent)) {
-                BrowserInformationControl control = 
-                        new BrowserInformationControl(parent, 
-                                APPEARANCE_JAVADOC_FONT, 
-                                statusLineMessage) {
-                    @Override
-                    public IInformationControlCreator getInformationPresenterControlCreator() {
-                        return enrichedControlCreator;
-                    }
-                };
-                if (docHover!=null) {
-                    control.addLocationListener(new CeylonLocationListener(control));
-                }
-                return control;
-//            } 
-//            else {
-//                return new DefaultInformationControl(parent, statusLineMessage);
-//            }
-        }
-        
     }
     
 }

@@ -82,8 +82,11 @@ final class PeekDefinitionPopup extends PopupDialog
     private ISourceViewer viewer;
     private final CeylonEditor editor;
     private Node referencedNode;
-    private CeylonParseController parseController = 
+    private final CeylonParseController parseController = 
             new CeylonParseController();
+    private final IDocumentProvider docProvider = 
+            new SourceArchiveDocumentProvider();
+    private IEditorInput ei;
     
     public ISourceViewer getViewer() {
         return viewer;
@@ -138,6 +141,12 @@ final class PeekDefinitionPopup extends PopupDialog
     protected Control createDialogArea(Composite parent) {
         int styles= SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.FULL_SELECTION;
         viewer = new CeylonSourceViewer(editor, parent, null, null, false, styles);
+        viewer.configure(new CeylonSourceViewerConfiguration(editor) {
+            @Override
+            protected CeylonParseController getParseController() {
+                return parseController;
+            }
+        });
         viewer.setEditable(false);
         StyledText textWidget = viewer.getTextWidget();
         textWidget.setFont(getEditorWidget(editor).getFont());
@@ -303,19 +312,18 @@ final class PeekDefinitionPopup extends PopupDialog
         close();
     }
 
-    IDocumentProvider docProvider = new SourceArchiveDocumentProvider();
-    IEditorInput ei;
-    
     @Override
     public void setInput(Object input) {
         CeylonParseController controller = 
                 editor.getParseController();
-        IRegion r = editor.getSelection();
-        Node node = 
-                findNode(controller.getRootNode(), 
-                    r.getOffset(), 
-                    r.getOffset()+r.getLength());
-        referencedNode = getReferencedNode(node);
+        IRegion region = editor.getSelection();
+        int offset = region.getOffset();
+        int length = region.getLength();
+        Tree.CompilationUnit rootNode = 
+                controller.getRootNode();
+        referencedNode = 
+                getReferencedNode(findNode(rootNode, 
+                        offset, offset+length));
         if (referencedNode==null) return;
         IProject project = controller.getProject();
 		IPath path = getNodePath(referencedNode);
@@ -325,7 +333,8 @@ final class PeekDefinitionPopup extends PopupDialog
         IPath pathToCompare = path;
         if (project!=null && 
                 project.getLocation().isPrefixOf(path)) {
-            pathToCompare = path.makeRelativeTo(project.getLocation());
+            pathToCompare = 
+                    path.makeRelativeTo(project.getLocation());
         }
         IDocument doc;
         if (pathToCompare.equals(controller.getPath())) {
@@ -347,8 +356,10 @@ final class PeekDefinitionPopup extends PopupDialog
         }
         viewer.setDocument(doc);
         try {
-            IRegion firstLine = doc.getLineInformationOfOffset(referencedNode.getStartIndex());
-            IRegion lastLine = doc.getLineInformationOfOffset(referencedNode.getStopIndex());
+            IRegion firstLine = 
+                    doc.getLineInformationOfOffset(referencedNode.getStartIndex());
+            IRegion lastLine = 
+                    doc.getLineInformationOfOffset(referencedNode.getStopIndex());
             viewer.setVisibleRegion(firstLine.getOffset(), 
                     lastLine.getOffset()+lastLine.getLength()-firstLine.getOffset());
         }
@@ -367,8 +378,12 @@ final class PeekDefinitionPopup extends PopupDialog
             e.printStackTrace();
         }*/
         if (referencedNode instanceof Tree.Declaration) {
-            Declaration model = ((Tree.Declaration) referencedNode).getDeclarationModel();
-            setTitleText("Peek Definition - " + getLabelDescriptionFor(model));
+            Tree.Declaration declaration = 
+                    (Tree.Declaration) referencedNode;
+            Declaration model = 
+                    declaration.getDeclarationModel();
+            setTitleText("Peek Definition - " + 
+                    getLabelDescriptionFor(model));
         }
     }
 
@@ -390,10 +405,6 @@ final class PeekDefinitionPopup extends PopupDialog
     @Override
     public Rectangle computeTrim() {
         return getShell().computeTrim(0, 0, 0, 0);
-    }
-
-    public CeylonParseController getParseController() {
-        return parseController;
     }
 
     @Override

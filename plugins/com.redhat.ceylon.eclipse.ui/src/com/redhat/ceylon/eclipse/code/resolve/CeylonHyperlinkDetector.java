@@ -18,9 +18,12 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     private CeylonEditor editor;
+    private CeylonParseController controller;
     
-    public CeylonHyperlinkDetector(CeylonEditor editor) {
+    public CeylonHyperlinkDetector(CeylonEditor editor,
+            CeylonParseController controller) {
         this.editor = editor;
+        this.controller = controller;
     }
 
     private final class CeylonNodeLink implements IHyperlink {
@@ -55,10 +58,8 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     }
 
     @Override
-    public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, 
-            boolean canShowMultipleHyperlinks) {
-        CeylonParseController controller = 
-                editor.getParseController();
+    public IHyperlink[] detectHyperlinks(ITextViewer textViewer, 
+            IRegion region, boolean canShowMultipleHyperlinks) {
         if (controller==null ||
                 controller.getRootNode()==null) {
             return null;

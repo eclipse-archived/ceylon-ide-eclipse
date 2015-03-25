@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT_PREFIX;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
@@ -20,6 +21,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.ITextViewerExtension2;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -45,6 +47,7 @@ import com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor;
 import com.redhat.ceylon.eclipse.code.correct.CeylonCorrectionProcessor;
 import com.redhat.ceylon.eclipse.code.hover.AnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
+import com.redhat.ceylon.eclipse.code.hover.CeylonSourceHover;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
@@ -53,7 +56,6 @@ import com.redhat.ceylon.eclipse.code.resolve.CeylonHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.ReferencesPopup;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSourceViewerConfiguration extends TextSourceViewerConfiguration {
     
@@ -127,14 +129,15 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         contentAssistant.setRepeatedInvocationTrigger(KeySequence.getInstance(key));
         contentAssistant.setStatusMessage(key.format() + " to toggle second-level completions");
         contentAssistant.setStatusLineVisible(true);
-        contentAssistant.setInformationControlCreator(new DocumentationHover(editor).getHoverControlCreator("Click for focus"));
+        contentAssistant.setInformationControlCreator(new DocumentationHover(editor)
+                .getHoverControlCreator("Click for focus"));
         contentAssistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 //      contentAssistant.setContextInformationPopupBackground(Display.getDefault().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
         return contentAssistant;
     }
 
     static void configCompletionPopup(ContentAssistant contentAssistant) {
-        IPreferenceStore preferenceStore = EditorUtil.getPreferences();
+        IPreferenceStore preferenceStore = getPreferences();
         contentAssistant.enableAutoInsert(preferenceStore.getBoolean(AUTO_INSERT));
         contentAssistant.enableAutoActivation(preferenceStore.getBoolean(AUTO_ACTIVATION));
         contentAssistant.setAutoActivationDelay(preferenceStore.getInt(AUTO_ACTIVATION_DELAY));
@@ -168,14 +171,16 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
 
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
-        CeylonParseController pc = getParseController();
-        if (pc==null) {
+        CeylonParseController controller = 
+                getParseController();
+        if (controller==null) {
             return new IHyperlinkDetector[0];
         }
         else {
             return new IHyperlinkDetector[] { 
-                    new CeylonHyperlinkDetector(editor), 
-                    new JavaHyperlinkDetector(pc) 
+                    new CeylonHyperlinkDetector(editor,
+                            controller), 
+                    new JavaHyperlinkDetector(controller) 
                 };
         }
     }
@@ -194,95 +199,43 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     }
     
     /**
-     * The PeekDefinitionPopup shares the editor that it is
-     * servicing, but it has its own CeylonParseController
-     * for the file it is actually displaying. Therefore, 
-     * the hyperlink detector must be redirected to that
-     * parse controller.
-     */
-    private static final class PopupSourceViewerConfiguration 
-            extends CeylonSourceViewerConfiguration {
-        private final PeekDefinitionPopup popup;
-        private PopupSourceViewerConfiguration(CeylonEditor editor,
-                PeekDefinitionPopup popup) {
-            super(editor);
-            this.popup = popup;
-        }
-        
-        @Override
-        protected CeylonParseController getParseController() {
-            return popup.getParseController();
-        }
-    }
-
-    /**
      * Used to present hover help (anything else?)
      */
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer) {
-        return new BrowserControlCreator();
+        return new IInformationControlCreator() {
+            @Override
+            public IInformationControl createInformationControl(Shell parent) {
+                return new BrowserInformationControl(parent, 
+                        APPEARANCE_JAVADOC_FONT,
+                        (String) null);
+            }
+        };
+    }
+    
+    private static final int[] STATE_MASKS =
+            new int[] { ITextViewerExtension2.DEFAULT_HOVER_STATE_MASK, SWT.SHIFT };
+    
+    @Override
+    public int[] getConfiguredTextHoverStateMasks(ISourceViewer sourceViewer,
+            String contentType) {
+        return STATE_MASKS;
+    }
+    
+    @Override
+    public ITextHover getTextHover(ISourceViewer sourceViewer,
+            String contentType, int stateMask) {
+        if (stateMask==SWT.SHIFT) {
+            return new CeylonSourceHover(editor);
+        }
+        else {
+            return getTextHover(sourceViewer, contentType);
+        }
     }
 
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
         if (editor==null) return null;
         return new BestMatchHover(editor);
     }
-
-    /*public IInformationPresenter getInformationPresenter(ISourceViewer sourceViewer) {
-        if (infoPresenter == null) {
-            infoPresenter= new InformationPresenter(getInformationControlCreator(sourceViewer));
-            infoPresenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-            infoPresenter.setAnchor(ANCHOR_GLOBAL);
-
-            IInformationProvider provider= new HoverInformationProvider();
-            infoPresenter.setInformationProvider(provider, IDocument.DEFAULT_CONTENT_TYPE);
-            //infoPresenter.setSizeConstraints(500, 100, true, false);
-            //infoPresenter.setRestoreInformationControlBounds(getSettings("outline_presenter_bounds"), true, true); //$NON-NLS-1$
-        }
-        return infoPresenter;
-    }
-
-    private final class HoverInformationProvider implements IInformationProvider {
-        private IAnnotationModel annotationModel= editor.getDocumentProvider()
-                .getAnnotationModel(editor.getEditorInput());
-
-        private List<Annotation> getParserAnnotationsAtOffset(int offset) {
-            List<Annotation> result= new LinkedList<Annotation>();
-            if (annotationModel != null) {
-                for(Iterator<Annotation> iter= annotationModel.getAnnotationIterator(); 
-                        iter.hasNext(); ) {
-                    Annotation ann= iter.next();
-                    if (annotationModel.getPosition(ann).includes(offset) && 
-                            isParseAnnotation(ann)) {
-                        result.add(ann);
-                    }
-                }
-            }
-            return result;
-        }
-
-        public IRegion getSubject(ITextViewer textViewer, int offset) {
-            List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(offset);
-            if (!parserAnnsAtOffset.isEmpty()) {
-                Annotation ann= parserAnnsAtOffset.get(0);
-                Position pos= annotationModel.getPosition(ann);
-                return new Region(pos.offset, pos.length);
-            }
-            Node selNode= findNode(editor.getParseController().getRootNode(), offset);
-            return new Region(getStartOffset(selNode), getLength(selNode));
-        }
-
-        public String getInformation(ITextViewer textViewer, IRegion subject) {
-            List<Annotation> parserAnnsAtOffset = getParserAnnotationsAtOffset(subject.getOffset());
-            if (!parserAnnsAtOffset.isEmpty()) {
-                return parserAnnsAtOffset.get(0).getText();
-            }
-
-            CeylonParseController pc = editor.getParseController();
-            Node selNode= findNode(pc.getRootNode(), subject.getOffset());
-            return new CeylonDocumentationProvider().getDocumentation(selNode, pc);
-            return null;
-        }
-    }*/
 
     private IDialogSettings getSettings() {
         return CeylonPlugin.getInstance().getDialogSettings(); 
@@ -342,23 +295,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         return presenter;
     }
     
-    private static final class BrowserControlCreator 
-            implements IInformationControlCreator {
-        @Override
-        public IInformationControl createInformationControl(Shell parent) {
-//            try {
-                return new BrowserInformationControl(parent, 
-                        APPEARANCE_JAVADOC_FONT, 
-                        (String) null);
-//            }
-//            catch (org.eclipse.swt.SWTError x) {
-//                return new DefaultInformationControl(parent, 
-//                        "Press 'F2' for focus", 
-//                        new HTMLTextPresenter(true));
-//            }
-        }
-    }
-    
     private static int getPopupStyle() {
         String platform = SWT.getPlatform();
         int resize = platform.equals("carbon") || platform.equals("cocoa") ? SWT.RESIZE : SWT.NONE;
@@ -397,10 +333,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         }
         @Override
         public IInformationControl createInformationControl(Shell parent) {
-            PeekDefinitionPopup popup = 
-                    new PeekDefinitionPopup(parent, getPopupStyle(), editor);
-            popup.getViewer().configure(new PopupSourceViewerConfiguration(editor, popup));
-            return popup;
+            return new PeekDefinitionPopup(parent, getPopupStyle(), editor);
         }
     }
     
@@ -418,10 +351,6 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
     
     private static final class DummyInformationProvider 
             implements IInformationProvider, IInformationProviderExtension {
-//        private CeylonParseController parseController;
-//        DummyInformationProvider(CeylonParseController parseController) {
-//            this.parseController = parseController;
-//        }
         @Override
         public IRegion getSubject(ITextViewer textViewer, int offset) {
             return new Region(offset, 0); // Could be anything, since it's ignored below in getInformation2()...

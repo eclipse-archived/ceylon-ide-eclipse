@@ -48,60 +48,6 @@ public class AnnotationHover
         implements IAnnotationHover, IAnnotationHoverExtension {
 
     /**
-     * Creates the "enriched" control.
-     */
-    private final class PresenterControlCreator 
-            extends AbstractReusableInformationControlCreator {
-
-        @Override
-        public IInformationControl doCreateInformationControl(Shell parent) {
-            ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
-            AnnotationInformationControl control = 
-                    new AnnotationInformationControl(parent, tbm);
-            ConfigureAnnotationsAction configAnnotations = 
-                    new ConfigureAnnotationsAction(control);
-            configAnnotations.setEnabled(true);
-            //TODO: add a listener which sets the annotation type
-            //      onto the ConfigureAnnotationsAction
-            tbm.add(configAnnotations);
-            tbm.update(true);
-            return control;
-        }
-    }
-
-    private static final class HoverControlCreator 
-            extends AbstractReusableInformationControlCreator {
-        private final IInformationControlCreator fPresenterControlCreator;
-
-        public HoverControlCreator(IInformationControlCreator presenterControlCreator) {
-            fPresenterControlCreator = presenterControlCreator;
-        }
-
-        @Override
-        public IInformationControl doCreateInformationControl(Shell parent) {
-            return new AnnotationInformationControl(parent, "F2 for focus") {
-                @Override
-                public IInformationControlCreator getInformationPresenterControlCreator() {
-                    return fPresenterControlCreator;
-                }
-            };
-        }
-
-        @Override
-        public boolean canReuse(IInformationControl control) {
-            if (!super.canReuse(control)) {
-                return false;
-            }
-
-            if (control instanceof IInformationControlExtension4) {
-                ((IInformationControlExtension4) control).setStatusText("F2 for focus");
-            }
-
-            return true;
-        }
-    }
-
-    /**
      * Action to configure the annotation preferences.
      *
      */
@@ -147,9 +93,6 @@ public class AnnotationHover
     private final DefaultMarkerAnnotationAccess fAnnotationAccess = 
             new DefaultMarkerAnnotationAccess();
 
-    private IInformationControlCreator fHoverControlCreator;
-    private IInformationControlCreator fPresenterControlCreator;
-    
     private final CeylonEditor editor;
     private final boolean rulerHover;
     
@@ -224,18 +167,46 @@ public class AnnotationHover
     
     @Override
     public IInformationControlCreator getHoverControlCreator() {
-        if (fHoverControlCreator == null) {
-            fHoverControlCreator = 
-                    new HoverControlCreator(getInformationPresenterControlCreator());
-        }
-        return fHoverControlCreator;
-    }
-    
-    private IInformationControlCreator getInformationPresenterControlCreator() {
-        if (fPresenterControlCreator == null) {
-            fPresenterControlCreator = new PresenterControlCreator();
-        }
-        return fPresenterControlCreator;
+        return new AbstractReusableInformationControlCreator() {
+            @Override
+            public IInformationControl doCreateInformationControl(Shell parent) {
+                return new AnnotationInformationControl(parent, "F2 for focus") {
+                    /**
+                     * Create the "enriched" control
+                     */
+                    @Override
+                    public IInformationControlCreator getInformationPresenterControlCreator() {
+                        return new AbstractReusableInformationControlCreator() {
+                            @Override
+                            public IInformationControl doCreateInformationControl(Shell parent) {
+                                ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
+                                AnnotationInformationControl control = 
+                                        new AnnotationInformationControl(parent, tbm);
+                                ConfigureAnnotationsAction configAnnotations = 
+                                        new ConfigureAnnotationsAction(control);
+                                configAnnotations.setEnabled(true);
+                                //TODO: add a listener which sets the annotation type
+                                //      onto the ConfigureAnnotationsAction
+                                tbm.add(configAnnotations);
+                                tbm.update(true);
+                                return control;
+                            }
+                        };
+                    }
+                };
+            }
+            @Override
+            public boolean canReuse(IInformationControl control) {
+                if (!super.canReuse(control)) {
+                    return false;
+                }
+                if (control instanceof IInformationControlExtension4) {
+                    ((IInformationControlExtension4) control)
+                            .setStatusText("F2 for focus");
+                }
+                return true;
+            }
+        };
     }
     
     @Override
