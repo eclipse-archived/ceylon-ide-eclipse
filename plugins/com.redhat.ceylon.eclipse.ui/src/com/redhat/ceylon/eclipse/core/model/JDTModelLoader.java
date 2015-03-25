@@ -87,13 +87,12 @@ import org.eclipse.jdt.internal.core.JavaElementRequestor;
 import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.NameLookup;
-import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jdt.internal.core.SearchableEnvironment;
+import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
 import com.redhat.ceylon.cmr.api.ArtifactResult;
-import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.util.Timer;
@@ -237,22 +236,12 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     @Override
-    public void loadStandardModules() {
-        // Now create JDK and Oracle modules (cf. https://github.com/ceylon/ceylon-ide-eclipse/issues/733 )
-        loadJDKModules();
-        /*
-         * We start by loading java.lang because we will need it no matter what.
-         */
-        Module jdkModule = findOrCreateModule(JAVA_BASE_MODULE_NAME, JDKUtils.jdk.version);
+    protected Module loadLanguageModuleAndPackage() {
         Module languageModule = getLanguageModule();
         if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
             findOrCreatePackage(languageModule, CEYLON_LANGUAGE);
-        }        
-        
-        loadPackage(jdkModule, "java.lang", false);
-        loadPackage(languageModule, "com.redhat.ceylon.compiler.java.metadata", false);
-        loadPackage(languageModule, "com.redhat.ceylon.compiler.java.language", false);
-        
+        }
+        return languageModule;
     }
     
     private String getToplevelQualifiedName(final String pkgName, String name) {
@@ -265,113 +254,117 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    public synchronized boolean loadPackage(Module module, String packageName, boolean loadDeclarations) {
-        packageName = Util.quoteJavaKeywords(packageName);
-        if(loadDeclarations && !loadedPackages.add(cacheKeyByModule(module, packageName))){
-            return true;
-        }
-        
-        if (module instanceof JDTModule) {
-            JDTModule jdtModule = (JDTModule) module;
-            List<IPackageFragmentRoot> roots = jdtModule.getPackageFragmentRoots();
-            IPackageFragment packageFragment = null;
-            for (IPackageFragmentRoot root : roots) {
-                // skip packages that are not present
-                if(! root.exists() || ! javaProject.isOnClasspath(root))
-                    continue;
-                try {
-                    IClasspathEntry entry = root.getRawClasspathEntry();
-                    
-                    //TODO: is the following really necessary?
-                    //Note that getContentKind() returns an undefined
-                    //value for a classpath container or variable
-                    if (entry.getEntryKind()!=IClasspathEntry.CPE_CONTAINER &&
-                            entry.getEntryKind()!=IClasspathEntry.CPE_VARIABLE &&
-                            entry.getContentKind()==IPackageFragmentRoot.K_SOURCE && 
-                            !CeylonBuilder.isCeylonSourceEntry(entry)) {
-                        continue;
-                    }
-                    
-                    packageFragment = root.getPackageFragment(packageName);
-                    if(! packageFragment.exists()){
-                        continue;
-                    }
-                } catch (JavaModelException e) {
-                    if (! e.isDoesNotExist()) {
-                        e.printStackTrace();
-                    }
-                    continue;
-                }
-                if(!loadDeclarations) {
-                    // we found the package
-                    return true;
-                }
-                
-                // we have a few virtual types in java.lang that we need to load but they are not listed from class files
-                if(module.getNameAsString().equals(JAVA_BASE_MODULE_NAME)
-                        && packageName.equals("java.lang")) {
-                    loadJavaBaseArrays();
-                }
-                
-                IClassFile[] classFiles = new IClassFile[] {};
-                org.eclipse.jdt.core.ICompilationUnit[] compilationUnits = new org.eclipse.jdt.core.ICompilationUnit[] {};
-                try {
-                    classFiles = packageFragment.getClassFiles();
-                } catch (JavaModelException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    compilationUnits = packageFragment.getCompilationUnits();
-                } catch (JavaModelException e) {
-                    e.printStackTrace();
-                }
-                
-                List<IType> typesToLoad = new LinkedList<>();
-                for (IClassFile classFile : classFiles) {
-                    IType type = classFile.getType();
-                    typesToLoad.add(type);
-                }
-                
-                for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : compilationUnits) {
-                    // skip removed CUs
-                    if(!compilationUnit.exists())
+    public boolean loadPackage(Module module, String packageName, boolean loadDeclarations) {
+        synchronized (getLock()) {
+            packageName = Util.quoteJavaKeywords(packageName);
+            if(loadDeclarations && !loadedPackages.add(cacheKeyByModule(module, packageName))){
+                return true;
+            }
+            
+            if (module instanceof JDTModule) {
+                JDTModule jdtModule = (JDTModule) module;
+                List<IPackageFragmentRoot> roots = jdtModule.getPackageFragmentRoots();
+                IPackageFragment packageFragment = null;
+                for (IPackageFragmentRoot root : roots) {
+                    // skip packages that are not present
+                    if(! root.exists() || ! javaProject.isOnClasspath(root))
                         continue;
                     try {
-                        for (IType type : compilationUnit.getTypes()) {
-                            typesToLoad.add(type);
+                        IClasspathEntry entry = root.getRawClasspathEntry();
+                        
+                        //TODO: is the following really necessary?
+                        //Note that getContentKind() returns an undefined
+                        //value for a classpath container or variable
+                        if (entry.getEntryKind()!=IClasspathEntry.CPE_CONTAINER &&
+                                entry.getEntryKind()!=IClasspathEntry.CPE_VARIABLE &&
+                                entry.getContentKind()==IPackageFragmentRoot.K_SOURCE && 
+                                !CeylonBuilder.isCeylonSourceEntry(entry)) {
+                            continue;
                         }
+                        
+                        packageFragment = root.getPackageFragment(packageName);
+                        if(! packageFragment.exists()){
+                            continue;
+                        }
+                    } catch (JavaModelException e) {
+                        if (! e.isDoesNotExist()) {
+                            e.printStackTrace();
+                        }
+                        continue;
+                    }
+                    if(!loadDeclarations) {
+                        // we found the package
+                        return true;
+                    }
+                    
+                    // we have a few virtual types in java.lang that we need to load but they are not listed from class files
+                    if(module.getNameAsString().equals(JAVA_BASE_MODULE_NAME)
+                            && packageName.equals("java.lang")) {
+                        loadJavaBaseArrays();
+                    }
+                    
+                    IClassFile[] classFiles = new IClassFile[] {};
+                    org.eclipse.jdt.core.ICompilationUnit[] compilationUnits = new org.eclipse.jdt.core.ICompilationUnit[] {};
+                    try {
+                        classFiles = packageFragment.getClassFiles();
                     } catch (JavaModelException e) {
                         e.printStackTrace();
                     }
-                }
-                
-                for (IType type : typesToLoad) {
-                    String typeFullyQualifiedName = type.getFullyQualifiedName();
-                    String[] nameParts = typeFullyQualifiedName.split("\\.");
-                    String typeQualifiedName = nameParts[nameParts.length - 1];
-                    // only top-levels are added in source declarations
-                    if (typeQualifiedName.indexOf('$') > 0) {
-                        continue;
+                    try {
+                        compilationUnits = packageFragment.getCompilationUnits();
+                    } catch (JavaModelException e) {
+                        e.printStackTrace();
                     }
                     
-                    if (type.exists() 
-                            && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), typeFullyQualifiedName))
-                            && ! isTypeHidden(module, typeFullyQualifiedName)) {  
-                        convertToDeclaration(module, typeFullyQualifiedName, DeclarationType.VALUE);
+                    List<IType> typesToLoad = new LinkedList<>();
+                    for (IClassFile classFile : classFiles) {
+                        IType type = classFile.getType();
+                        typesToLoad.add(type);
+                    }
+                    
+                    for (org.eclipse.jdt.core.ICompilationUnit compilationUnit : compilationUnits) {
+                        // skip removed CUs
+                        if(!compilationUnit.exists())
+                            continue;
+                        try {
+                            for (IType type : compilationUnit.getTypes()) {
+                                typesToLoad.add(type);
+                            }
+                        } catch (JavaModelException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    
+                    for (IType type : typesToLoad) {
+                        String typeFullyQualifiedName = type.getFullyQualifiedName();
+                        String[] nameParts = typeFullyQualifiedName.split("\\.");
+                        String typeQualifiedName = nameParts[nameParts.length - 1];
+                        // only top-levels are added in source declarations
+                        if (typeQualifiedName.indexOf('$') > 0) {
+                            continue;
+                        }
+                        
+                        if (type.exists() 
+                                && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), typeFullyQualifiedName))
+                                && ! isTypeHidden(module, typeFullyQualifiedName)) {  
+                            convertToDeclaration(module, typeFullyQualifiedName, DeclarationType.VALUE);
+                        }
                     }
                 }
             }
+            return false;
         }
-        return false;
     }
 
-    synchronized public void refreshNameEnvironment() {
-        try {
-            lookupEnvironment.nameEnvironment = createSearchableEnvironment();
-        } catch (JavaModelException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }            
+    public void refreshNameEnvironment() {
+        synchronized (getLock()) {
+            try {
+                lookupEnvironment.nameEnvironment = createSearchableEnvironment();
+            } catch (JavaModelException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }            
+        }
     }
     
 
@@ -727,23 +720,41 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     
     @Override
-    public synchronized ClassMirror lookupNewClassMirror(Module module, String name) {
-        if (sourceDeclarations.containsKey(name)) {
-            return new SourceClass(sourceDeclarations.get(name));
+    public ClassMirror lookupNewClassMirror(Module module, String name) {
+        synchronized(getLock()){
+            if (sourceDeclarations.containsKey(name)) {
+                return new SourceClass(sourceDeclarations.get(name));
+            }
+            
+            ClassMirror classMirror = buildClassMirror(name);
+            if (classMirror == null && lastPartHasLowerInitial(name)) {
+                // We have to try the unmunged name first, so that we find the symbol
+                // from the source in preference to the symbol from any 
+                // pre-existing .class file
+                classMirror = buildClassMirror(name+"_");
+            }
+            
+            if(classMirror == null)
+                return null;
+            
+            Module classMirrorModule = findModuleForClassMirror(classMirror);
+            if(classMirrorModule == null){
+                logVerbose("Found a class mirror with no module");
+                return null;
+            }
+            // make sure it's imported
+            if(isImported(module, classMirrorModule)){
+                return classMirror;
+            }
+            logVerbose("Found a class mirror that is not imported: "+name);
+            return null;
         }
-        
-        ClassMirror mirror = buildClassMirror(name);
-        if (mirror == null && lastPartHasLowerInitial(name)) {
-            // We have to try the unmunged name first, so that we find the symbol
-            // from the source in preference to the symbol from any 
-            // pre-existing .class file
-            mirror = buildClassMirror(name+"_");
-        }
-        return mirror;
     }
 
-    public synchronized MissingTypeBinding getMissingTypeBinding() {
-        return missingTypeBinding;
+    public MissingTypeBinding getMissingTypeBinding() {
+        synchronized (getLock()) {
+            return missingTypeBinding;
+        }
     }
     
     public static interface ActionOnResolvedType {
@@ -1037,16 +1048,18 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     
     @Override
-    public synchronized Declaration convertToDeclaration(Module module, String typeName,
+    public Declaration convertToDeclaration(Module module, String typeName,
             DeclarationType declarationType) {
-        if (sourceDeclarations.containsKey(typeName)) {
-            return sourceDeclarations.get(typeName).getModelDeclaration();
-        }
-        try {
-            return super.convertToDeclaration(module, typeName, declarationType);
-        } catch(RuntimeException e) {
-            // FIXME: pretty sure this is plain wrong as it ignores problems and especially ModelResolutionException and just plain hides them
-            return null;
+        synchronized (getLock()) {
+            if (sourceDeclarations.containsKey(typeName)) {
+                return sourceDeclarations.get(typeName).getModelDeclaration();
+            }
+            try {
+                return super.convertToDeclaration(module, typeName, declarationType);
+            } catch(RuntimeException e) {
+                // FIXME: pretty sure this is plain wrong as it ignores problems and especially ModelResolutionException and just plain hides them
+                return null;
+            }
         }
     }
 
@@ -1301,33 +1314,37 @@ public class JDTModelLoader extends AbstractModelLoader {
         void setupSourceFileObjects(List<?> treeHolders);
     }
     
-    public synchronized void setupSourceFileObjects(List<?> treeHolders) {
-        addSourcePhasedUnits(treeHolders, true);
+    public void setupSourceFileObjects(List<?> treeHolders) {
+        synchronized (getLock()) {
+            addSourcePhasedUnits(treeHolders, true);
+        }
     }
 
-    public synchronized void addSourcePhasedUnits(List<?> treeHolders, final boolean isSourceToCompile) {
-        for (Object treeHolder : treeHolders) {
-            if (treeHolder instanceof PhasedUnit) {
-                final PhasedUnit unit = (PhasedUnit) treeHolder;
-                final String pkgName = unit.getPackage().getQualifiedNameString();
-                unit.getCompilationUnit().visit(new SourceDeclarationVisitor(){
-                    @Override
-                    public void loadFromSource(Tree.Declaration decl) {
-                        if (decl.getIdentifier()!=null) {
-                            String fqn = getToplevelQualifiedName(pkgName, decl.getIdentifier().getText());
-                            if (! sourceDeclarations.containsKey(fqn)) {
-                                sourceDeclarations.put(fqn, new SourceDeclarationHolder(unit, decl, isSourceToCompile));
+    public void addSourcePhasedUnits(List<?> treeHolders, final boolean isSourceToCompile) {
+        synchronized (getLock()) {
+            for (Object treeHolder : treeHolders) {
+                if (treeHolder instanceof PhasedUnit) {
+                    final PhasedUnit unit = (PhasedUnit) treeHolder;
+                    final String pkgName = unit.getPackage().getQualifiedNameString();
+                    unit.getCompilationUnit().visit(new SourceDeclarationVisitor(){
+                        @Override
+                        public void loadFromSource(Tree.Declaration decl) {
+                            if (decl.getIdentifier()!=null) {
+                                String fqn = getToplevelQualifiedName(pkgName, decl.getIdentifier().getText());
+                                if (! sourceDeclarations.containsKey(fqn)) {
+                                    sourceDeclarations.put(fqn, new SourceDeclarationHolder(unit, decl, isSourceToCompile));
+                                }
                             }
                         }
-                    }
-                    @Override
-                    public void loadFromSource(ModuleDescriptor that) {
-                    }
-
-                    @Override
-                    public void loadFromSource(PackageDescriptor that) {
-                    }
-                });
+                        @Override
+                        public void loadFromSource(ModuleDescriptor that) {
+                        }
+    
+                        @Override
+                        public void loadFromSource(PackageDescriptor that) {
+                        }
+                    });
+                }
             }
         }
     }
@@ -1336,30 +1353,34 @@ public class JDTModelLoader extends AbstractModelLoader {
         addSourcePhasedUnits(sourceArchivePhasedUnits, false);
     }
     
-    public synchronized void clearCachesOnPackage(String packageName) {
-        List<String> keysToRemove = new ArrayList<String>(classMirrorCache.size());
-        for (Entry<String, ClassMirror> element : classMirrorCache.entrySet()) {
-            if (element.getValue() == null) {
-                String className = element.getKey();
-                if (className != null) {
-                    String classPackageName =className.replaceAll("\\.[^\\.]+$", "");
-                    if (classPackageName.equals(packageName)) {
-                        keysToRemove.add(className);
+    public void clearCachesOnPackage(String packageName) {
+        synchronized (getLock()) {
+            List<String> keysToRemove = new ArrayList<String>(classMirrorCache.size());
+            for (Entry<String, ClassMirror> element : classMirrorCache.entrySet()) {
+                if (element.getValue() == null) {
+                    String className = element.getKey();
+                    if (className != null) {
+                        String classPackageName =className.replaceAll("\\.[^\\.]+$", "");
+                        if (classPackageName.equals(packageName)) {
+                            keysToRemove.add(className);
+                        }
                     }
                 }
             }
+            for (String keyToRemove : keysToRemove) {
+                classMirrorCache.remove(keyToRemove);
+            }
+            Package pkg = findPackage(packageName);
+            loadedPackages.remove(cacheKeyByModule(pkg.getModule(), packageName));
+            mustResetLookupEnvironment = true;
         }
-        for (String keyToRemove : keysToRemove) {
-            classMirrorCache.remove(keyToRemove);
-        }
-        Package pkg = findPackage(packageName);
-        loadedPackages.remove(cacheKeyByModule(pkg.getModule(), packageName));
-        mustResetLookupEnvironment = true;
     }
 
-    public synchronized void clearClassMirrorCacheForClass(JDTModule module, String classNameToRemove) {
-        classMirrorCache.remove(cacheKeyByModule(module, classNameToRemove));        
-        mustResetLookupEnvironment = true;
+    public void clearClassMirrorCacheForClass(JDTModule module, String classNameToRemove) {
+        synchronized (getLock()) {
+            classMirrorCache.remove(cacheKeyByModule(module, classNameToRemove));        
+            mustResetLookupEnvironment = true;
+        }
     }
 
     @Override
@@ -1399,16 +1420,6 @@ public class JDTModelLoader extends AbstractModelLoader {
         return (TypeFactory) typeFactory;
     }
     
-    public synchronized Package findPackage(String quotedPkgName) {
-        String pkgName = quotedPkgName.replace("$", "");
-        // in theory we only have one package with the same name per module in eclipse
-        for(Package pkg : packagesByName.values()){
-            if(pkg.getNameAsString().equals(pkgName))
-                return pkg;
-        }
-        return null;
-    }
-
     @Override
     protected Module findModuleForClassMirror(ClassMirror classMirror) {
         String pkgName = getPackageNameForQualifiedClassName(classMirror);
@@ -1416,15 +1427,14 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     public void loadJDKModules() {
-        for(String jdkModule : JDKUtils.getJDKModuleNames())
-            findOrCreateModule(jdkModule, JDKUtils.jdk.version);
-        for(String jdkOracleModule : JDKUtils.getOracleJDKModuleNames())
-            findOrCreateModule(jdkOracleModule, JDKUtils.jdk.version);
+        super.loadJDKModules();
     }
 
     @Override
-    public synchronized LazyPackage findOrCreateModulelessPackage(String pkgName) {
-        return (LazyPackage) findPackage(pkgName);
+    public LazyPackage findOrCreateModulelessPackage(String pkgName) {
+        synchronized(getLock()){
+            return (LazyPackage) findPackage(pkgName);
+        }
     }
 
     @Override
