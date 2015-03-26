@@ -74,13 +74,13 @@ public class NewUnitWizard extends Wizard implements INewWizard {
 
     private String getDeclarationText() {
         if (page.isDeclaration()) {
-            char initial = page.getUnitName().charAt(0);
             String body = pastedText==null ? "{}" : 
                 "{" + System.lineSeparator() + 
                     pastedText + 
                     System.lineSeparator() + "}";
             String imports = importText==null || importText.isEmpty() ? "" :
                     importText + System.lineSeparator() + System.lineSeparator();
+            int initial = page.getUnitName().codePointAt(0);
             if (Character.isUpperCase(initial)) {
                 return imports + "class " + page.getUnitName() + "() " + body;
             }

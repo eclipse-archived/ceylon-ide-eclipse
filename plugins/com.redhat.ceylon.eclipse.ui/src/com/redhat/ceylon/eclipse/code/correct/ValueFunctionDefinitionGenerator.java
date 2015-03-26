@@ -191,7 +191,7 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
     static ValueFunctionDefinitionGenerator create(String brokenName, 
             Tree.MemberOrTypeExpression node, 
             Tree.CompilationUnit rootNode) {
-        boolean isUpperCase = Character.isUpperCase(brokenName.charAt(0));
+        boolean isUpperCase = Character.isUpperCase(brokenName.codePointAt(0));
         if (isUpperCase) return null;
         FindValueFunctionVisitor fav = new FindValueFunctionVisitor(node);
         rootNode.visit(fav);

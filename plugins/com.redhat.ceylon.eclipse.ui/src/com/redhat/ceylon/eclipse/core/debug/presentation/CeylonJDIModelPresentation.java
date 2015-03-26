@@ -207,7 +207,7 @@ public class CeylonJDIModelPresentation extends JDIModelPresentation {
             typeName = typeName.substring(index+1);
         }
         
-        if (! Character.isUpperCase(typeName.charAt(0)) &&
+        if (!Character.isUpperCase(typeName.codePointAt(0)) &&
                 typeName.endsWith("_")) {
             typeName = typeName.substring(0, typeName.length() - 1);
         }

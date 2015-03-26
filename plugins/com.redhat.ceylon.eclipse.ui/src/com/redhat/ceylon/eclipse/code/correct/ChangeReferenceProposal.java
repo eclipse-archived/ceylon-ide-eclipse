@@ -160,7 +160,7 @@ class ChangeReferenceProposal extends CorrectionProposal
             IFile file, String brokenName, Declaration declaration) {
         String name = declaration.getName();
         if (!brokenName.equals(name) &&
-                isUpperCase(name.charAt(0))==isUpperCase(brokenName.charAt(0))) {
+                isUpperCase(name.codePointAt(0))==isUpperCase(brokenName.codePointAt(0))) {
             int dist = getLevenshteinDistance(brokenName, name); //+dwp.getProximity()/3;
             //TODO: would it be better to just sort by dist, and
             //      then select the 3 closest possibilities?

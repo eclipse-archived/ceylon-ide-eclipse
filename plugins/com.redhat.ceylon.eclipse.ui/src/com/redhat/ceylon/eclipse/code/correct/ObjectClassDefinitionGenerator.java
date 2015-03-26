@@ -91,7 +91,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             ProducedType returnType,
             LinkedHashMap<String, ProducedType> paramTypes) {
         this.brokenName = brokenName;
-        this.isUpperCase = Character.isUpperCase(brokenName.charAt(0));
+        this.isUpperCase = Character.isUpperCase(brokenName.codePointAt(0));
         this.node = node;
         this.rootNode = rootNode;
         this.desc = desc;

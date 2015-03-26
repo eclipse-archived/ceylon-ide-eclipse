@@ -1,13 +1,20 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.compiler.typechecker.model.Module.DEFAULT_MODULE_NAME;
+import static com.redhat.ceylon.compiler.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
+import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVA_MODULE;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getShell;
+import static java.lang.Character.charCount;
+import static java.lang.Character.isUpperCase;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Arrays;
@@ -43,6 +50,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -56,7 +64,8 @@ public class LaunchHelper {
             case IResource.FILE:
                 IFile file = (IFile) resource;
                 IPath path = file.getFullPath(); //getProjectRelativePath();
-                if (path!=null && "ceylon".equals(path.getFileExtension()) ) {
+                if (path!=null && 
+                        "ceylon".equals(path.getFileExtension()) ) {
                     files.add(file);
                 }
                 break;
@@ -76,16 +85,23 @@ public class LaunchHelper {
     }
     
     static Object[] findDeclarationFromFiles(List<IFile> files) {
-        List<Declaration> topLevelDeclarations = new LinkedList<Declaration>();
-        List<IFile> correspondingfiles = new LinkedList<IFile>();
+        List<Declaration> topLevelDeclarations = 
+                new LinkedList<Declaration>();
+        List<IFile> correspondingfiles = 
+                new LinkedList<IFile>();
         for (IFile file : files) {
             IProject project = file.getProject();
-            TypeChecker typeChecker = getProjectTypeChecker(project);
+            TypeChecker typeChecker = 
+                    getProjectTypeChecker(project);
             if (typeChecker != null) {
-                PhasedUnit phasedUnit = typeChecker.getPhasedUnits()
-                        .getPhasedUnit(createResourceVirtualFile(file));
+                IFileVirtualFile virtualFile = 
+                        createResourceVirtualFile(file);
+                PhasedUnit phasedUnit = 
+                        typeChecker.getPhasedUnits()
+                            .getPhasedUnit(virtualFile);
                 if (phasedUnit!=null) {
-                    List<Declaration> declarations = phasedUnit.getDeclarations();
+                    List<Declaration> declarations = 
+                            phasedUnit.getDeclarations();
                     for (Declaration d : declarations) {
                         if (isRunnable(d)) {
                             topLevelDeclarations.add(d);
@@ -96,16 +112,23 @@ public class LaunchHelper {
             }
         }
         
-        Declaration declarationToRun = null;
-        IFile fileToRun = null; 
-        if (topLevelDeclarations.size() == 0) {
-            MessageDialog.openError(EditorUtil.getShell(), "Ceylon Launcher", 
-                    "No runnable function or class.\n(Only shared toplevel functions and classes with no parameters are runnable.)"); 
+        Declaration declarationToRun;
+        IFile fileToRun;
+        if (topLevelDeclarations.isEmpty()) {
+            MessageDialog.openError(getShell(), 
+                    "Ceylon Launcher", 
+                    "No runnable function or class.\n(Only shared toplevel functions and classes with no parameters are runnable.)");
+            return null;
         } 
-        else if (topLevelDeclarations.size() > 1) {
-            declarationToRun = chooseDeclaration(topLevelDeclarations);
+        else if (topLevelDeclarations.size()>1) {
+            declarationToRun = 
+                    chooseDeclaration(topLevelDeclarations);
             if (declarationToRun!=null) {
-                fileToRun = correspondingfiles.get(topLevelDeclarations.indexOf(declarationToRun));
+                int index = topLevelDeclarations.indexOf(declarationToRun);
+                fileToRun = correspondingfiles.get(index);
+            }
+            else {
+                fileToRun = null;
             }
         } 
         else {
@@ -124,7 +147,8 @@ public class LaunchHelper {
         if (d instanceof Method) {
             Method methodDecl = (Method) d;
             if (!methodDecl.getParameterLists().isEmpty() && 
-                    !methodDecl.getParameterLists().get(0).getParameters().isEmpty()) {
+                    !methodDecl.getParameterLists().get(0)
+                            .getParameters().isEmpty()) {
                 candidateDeclaration = false;
             }
         }
@@ -132,7 +156,8 @@ public class LaunchHelper {
             Class classDecl = (Class) d;
             if (classDecl.isAbstract() || 
                     classDecl.getParameterList()==null || 
-                    !classDecl.getParameterList().getParameters().isEmpty()) {
+                    !classDecl.getParameterList()
+                            .getParameters().isEmpty()) {
                 candidateDeclaration = false;
             }
         }
@@ -144,7 +169,8 @@ public class LaunchHelper {
     
     static Module getModule(IProject project, String fullModuleName) {
         
-        fullModuleName = normalizeFullModuleName(fullModuleName);
+        fullModuleName = 
+                normalizeFullModuleName(fullModuleName);
         
         if (fullModuleName != null) {
             String[] parts = fullModuleName.split("/");
@@ -153,7 +179,8 @@ public class LaunchHelper {
                 return null;
             }
             
-            for (Module module: getProjectDeclaredSourceModules(project)) {
+            for (Module module: 
+                    getProjectDeclaredSourceModules(project)) {
                 if (module.getNameAsString().equals(parts[0]) && 
                         module.getVersion().equals(parts[1])) {
                     return module;
@@ -168,15 +195,18 @@ public class LaunchHelper {
     }
 
     private static String normalizeFullModuleName(String fullModuleName) {
-        if (Module.DEFAULT_MODULE_NAME.equals(fullModuleName)) {
+        if (DEFAULT_MODULE_NAME.equals(fullModuleName)) {
             return getFullModuleName(getEmptyDefaultModule());
-        } else {
+        }
+        else {
             return fullModuleName;
         }
     }
 
     private static Module getDefaultModule(IProject project) {
-        Module defaultModule = getProjectModules(project).getDefaultModule();
+        Module defaultModule = 
+                getProjectModules(project)
+                    .getDefaultModule();
         if (defaultModule == null) {
             defaultModule = getEmptyDefaultModule();
         }
@@ -185,7 +215,7 @@ public class LaunchHelper {
     
     private static Module getEmptyDefaultModule() {
         Module defaultModule = new Module();
-        defaultModule.setName(Arrays.asList(new String[]{Module.DEFAULT_MODULE_NAME}));
+        defaultModule.setName(Arrays.asList(DEFAULT_MODULE_NAME));
         defaultModule.setVersion("unversioned");
         defaultModule.setDefault(true);
         return defaultModule;
@@ -203,26 +233,30 @@ public class LaunchHelper {
     static String getModuleFullName(Declaration decl) {
         Module module = getModule(decl);
         if (module.isDefault()) {
-            return Module.DEFAULT_MODULE_NAME;
+            return DEFAULT_MODULE_NAME;
         } else {
             return getFullModuleName(module);
         }
     }
  
-    static Set<Module> getModules(IProject project, boolean includeDefault) {
+    static Set<Module> getModules(IProject project, 
+            boolean includeDefault) {
         Set<Module> modules = new HashSet<Module>();
-        for(Module module: getProjectDeclaredSourceModules(project)) {
-            if (module.isAvailable() 
-                    && !module.getNameAsString().startsWith(Module.LANGUAGE_MODULE_NAME) && 
-                    !module.isJava() ) {
+        for(Module module: 
+                getProjectDeclaredSourceModules(project)) {
+            if (module.isAvailable() && 
+                    !module.getNameAsString()
+                            .startsWith(LANGUAGE_MODULE_NAME) && 
+                    !module.isJava()) {
                 if ((module.isDefault() && includeDefault) // TODO : this is *never* true : the default module is not in the requested list
                         || (!module.isDefault() && 
-                                module.getPackage(module.getNameAsString()) != null)){
+                                module.getPackage(module.getNameAsString())!=null)){
                     modules.add(module);
                 }
             }
         }
-        if (modules.isEmpty() || isDefaultModulePresent(project)) {
+        if (modules.isEmpty() || 
+                isDefaultModulePresent(project)) {
             modules.add(getDefaultModule(project));
         }
         return modules;
@@ -231,10 +265,12 @@ public class LaunchHelper {
     private static boolean isDefaultModulePresent(IProject project) {
         Modules modules = getProjectModules(project);
         if (modules != null) {
-            Module defaultModule = modules.getDefaultModule();
+            Module defaultModule = 
+                    modules.getDefaultModule();
             if (defaultModule != null) {
                 List<Declaration> decls = 
-                        getDeclarationsForModule(project, defaultModule);
+                        getDeclarationsForModule(project, 
+                                defaultModule);
                 if (!decls.isEmpty()) {
                     return true;
                 }
@@ -243,15 +279,17 @@ public class LaunchHelper {
         return false;
     }
 
-    static boolean isModuleInProject(IProject project, String fullModuleName) {
+    static boolean isModuleInProject(IProject project, 
+            String fullModuleName) {
         if (fullModuleName.equals(Module.DEFAULT_MODULE_NAME) && 
                 isDefaultModulePresent(project)) {
             return true;
         }
         
-        for (Module module : getModules(project, false)) {
-                if (fullModuleName != null 
-                        && fullModuleName.equals(getFullModuleName(module))) {
+        for (Module module: getModules(project, false)) {
+                String name = getFullModuleName(module);
+                if (fullModuleName!=null &&
+                        fullModuleName.equals(name)) {
                 return true;
             }
         }
@@ -259,17 +297,19 @@ public class LaunchHelper {
     }
 
     static String getFullModuleName(Module module) {
-        return module.getNameAsString()+"/"+module.getVersion();
+        return module.getNameAsString() + "/" + 
+                module.getVersion();
     }
  
-    static List<Declaration> getDeclarationsForModule(IProject project, Module module) {
-        
-        List<Declaration> modDecls = new LinkedList<Declaration>();
-        
+    static List<Declaration> getDeclarationsForModule(IProject project, 
+            Module module) {
+        List<Declaration> modDecls = 
+                new LinkedList<Declaration>();
         if (module != null) {
             List<Package> pkgs = module.getPackages(); // avoid concurrent exception
             for (Package pkg : pkgs) {
-                if (pkg.getModule() != null && isPackageInProject(project, pkg))
+                if (pkg.getModule() != null && 
+                        isPackageInProject(project, pkg))
                 for (Declaration decl : pkg.getMembers()) {
                     if (isRunnable(decl)) {
                         modDecls.add(decl);
@@ -277,14 +317,15 @@ public class LaunchHelper {
                 }
             }
         }
-
         return modDecls;    
     }
     
-    private static boolean isPackageInProject(IProject project, Package pkg) {
-
-        TypeChecker typeChecker = getProjectTypeChecker(project);
-        List<PhasedUnit> pus = typeChecker.getPhasedUnits().getPhasedUnits();
+    private static boolean isPackageInProject(IProject project, 
+            Package pkg) {
+        TypeChecker typeChecker = 
+                getProjectTypeChecker(project);
+        List<PhasedUnit> pus = 
+                typeChecker.getPhasedUnits().getPhasedUnits();
         for (PhasedUnit phasedUnit : pus) {
             if (pkg.equals(phasedUnit.getPackage())) {
                 return true;
@@ -315,7 +356,8 @@ public class LaunchHelper {
         }
         
         if (Module.DEFAULT_MODULE_NAME.equals(fullModuleName)) {
-            fullModuleName = getFullModuleName(getDefaultModule(project));
+            fullModuleName = 
+                    getFullModuleName(getDefaultModule(project));
         }
         
         Module mod = getModule(project, fullModuleName);
@@ -358,8 +400,10 @@ public class LaunchHelper {
             }
             @Override
             protected IDialogSettings getDialogSettings() {
-                IDialogSettings settings = CeylonPlugin.getInstance().getDialogSettings();
-                IDialogSettings section = settings.getSection(SETTINGS_ID);
+                IDialogSettings settings = 
+                        CeylonPlugin.getInstance().getDialogSettings();
+                IDialogSettings section = 
+                        settings.getSection(SETTINGS_ID);
                 if (section == null) {
                     section = settings.addNewSection(SETTINGS_ID);
                 }
@@ -368,7 +412,8 @@ public class LaunchHelper {
             @Override
             protected IDialogSettings getDialogBoundsSettings() {
                 IDialogSettings settings = getDialogSettings();
-                IDialogSettings section = settings.getSection(DIALOG_BOUNDS_SETTINGS);
+                IDialogSettings section = 
+                        settings.getSection(DIALOG_BOUNDS_SETTINGS);
                 if (section == null) {
                     section = settings.addNewSection(DIALOG_BOUNDS_SETTINGS);
                     section.put(DIALOG_HEIGHT, 500);
@@ -395,7 +440,9 @@ public class LaunchHelper {
                     IProgressMonitor monitor)
                     throws CoreException {
                 for (int i=0; i<decls.size(); i++) {
-                    contentProvider.add(new DeclarationProxy(decls.get(i)), itemsFilter);
+                    DeclarationProxy item = 
+                            new DeclarationProxy(decls.get(i));
+                    contentProvider.add(item, itemsFilter);
                 }
             }
         };
@@ -406,9 +453,10 @@ public class LaunchHelper {
         return null;
     }
     
-    static Module chooseModule(IProject project, boolean includeDefault) {
+    static Module chooseModule(IProject project, 
+            boolean includeDefault) {
         CeylonModuleSelectionDialog cmsd = 
-                new CeylonModuleSelectionDialog(EditorUtil.getShell(), 
+                new CeylonModuleSelectionDialog(getShell(), 
                         getModules(project, true)); 
         if (cmsd.open() == Window.OK) {
             return (Module)cmsd.getFirstResult();
@@ -419,15 +467,19 @@ public class LaunchHelper {
     static IProject getProjectFromName(String projectName) {
         if (projectName != null && projectName.length() > 0) {
             IWorkspace workspace = getWorkspace();
-            IStatus status = workspace.validateName(projectName, IResource.PROJECT);
+            IStatus status = 
+                    workspace.validateName(projectName, 
+                            IResource.PROJECT);
             if (status.isOK()) {
-                return workspace.getRoot().getProject(projectName);
+                return workspace.getRoot()
+                        .getProject(projectName);
             }
         }
         return null;
     }
 
-    static String getTopLevelNormalName(String moduleFullName, String displayName) {
+    static String getTopLevelNormalName(String moduleFullName, 
+            String displayName) {
         if (displayName.contains(DEFAULT_RUN_MARKER) && 
                 moduleFullName.indexOf('/') != -1) {
             return moduleFullName.substring(0, 
@@ -438,11 +490,10 @@ public class LaunchHelper {
     }
     
     static String getTopLevelDisplayName(Declaration decl) {
-        
         String topLevelName = getRunnableName(decl);
-        
-        if (getModule(decl) != null && 
-                decl.equals(getDefaultRunnableForModule(getModule(decl)))) {
+        Module module = getModule(decl);
+        if (module!=null && 
+                decl.equals(getDefaultRunnableForModule(module))) {
             topLevelName = "run" + DEFAULT_RUN_MARKER; 
         }
         return topLevelName;
@@ -471,7 +522,7 @@ public class LaunchHelper {
 
     static Declaration getDefaultRunnableForModule(Module mod) {
         Declaration decl = null;
-        if (mod.getRootPackage() != null) {
+        if (mod.getRootPackage()!=null) {
             decl = mod.getRootPackage()
                     .getDirectMember("run", null, false);
         }
@@ -489,7 +540,8 @@ public class LaunchHelper {
     static boolean isBuilderEnabled(IProject project, String property) {
         if (CAN_LAUNCH_AS_CEYLON_JAVA_MODULE.equals(property)) {
             return CeylonBuilder.compileToJava(project);
-        } else if (CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE.equals(property)) {
+        }
+        else if (CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE.equals(property)) {
             return CeylonBuilder.compileToJs(project);
         }
         return false;
@@ -497,15 +549,16 @@ public class LaunchHelper {
 
     public static String getTopLevel(ILaunchConfiguration configuration)
             throws CoreException {
-        String topLevelName = configuration.getAttribute(
-                ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME,
-                (String) null);
+        String topLevelName = 
+                configuration.getAttribute(ATTR_TOPLEVEL_NAME,
+                        (String) null);
         if (topLevelName == null) {
-            String moduleName = configuration.getAttribute(
-                    ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME,
-                    (String) null);
+            String moduleName = 
+                    configuration.getAttribute(ATTR_MODULE_NAME,
+                            (String) null);
             if (moduleName != null) {
-                String packageName = moduleName.replaceAll("/.*$", "");
+                String packageName = 
+                        moduleName.replaceAll("/.*$", "");
                 return packageName + ".run";
             }
         }
@@ -519,19 +572,23 @@ public class LaunchHelper {
         String toplevel = getTopLevel(configuration);
         if (toplevel != null) {
             int index = toplevel.lastIndexOf(".");
-            if (index >= -1 && index < toplevel.length() - 1) {
-                char typeFirstChar = toplevel.charAt(index + 1);
-                if (!Character.isUpperCase(typeFirstChar)) {
+            if (index >= -1 && index < toplevel.length()-1) {
+                int typeFirstChar = 
+                        toplevel.codePointAt(index + 1);
+                if (!isUpperCase(typeFirstChar)) {
                     // It's a top-level method
-                    methodToStopIn = toplevel.substring(index + 1);
+                    methodToStopIn = 
+                            toplevel.substring(index + 
+                                    charCount(typeFirstChar));
                     toplevel += "_";
                 } else {
                     // It's a top-level class
                     methodToStopIn = "<init>"; // constructor
                 }
             }
-            location = new StringBuilder(toplevel).append('/').append(methodToStopIn).toString();
-        } else {
+            location = toplevel + '/' + methodToStopIn;
+        }
+        else {
             location = null;
         }
         return location;

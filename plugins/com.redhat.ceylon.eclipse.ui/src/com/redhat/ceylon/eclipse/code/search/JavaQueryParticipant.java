@@ -151,7 +151,7 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                 String ceylonMemberName = type!=element ? 
                         getCeylonSimpleName((IMember)element) : null;
                 String typeName = type.getElementName();
-                if (!Character.isUpperCase(typeName.charAt(0))
+                if (!Character.isUpperCase(typeName.codePointAt(0))
                     && typeName.endsWith("_") 
                     && ceylonMemberName == null) {
                     // Ceylon object value ... 

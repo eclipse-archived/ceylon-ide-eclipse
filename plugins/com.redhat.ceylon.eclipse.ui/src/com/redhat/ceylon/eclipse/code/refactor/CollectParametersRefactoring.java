@@ -149,8 +149,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         super(editor);
         new FindParametersVisitor().visit(rootNode);
         if (declaration!=null) {
-            newName = Character.toUpperCase(declaration.getName().charAt(0))
-                    + declaration.getName().substring(1);
+            newName = Escaping.toInitialUppercase(declaration.getName());
         }
     }
     

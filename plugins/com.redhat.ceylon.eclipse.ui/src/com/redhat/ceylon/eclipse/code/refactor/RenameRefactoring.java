@@ -260,8 +260,7 @@ public class RenameRefactoring extends AbstractRefactoring {
                         String oldName = pattern.substring(loc);
                         if (declaration instanceof Value) {
                             String uppercased = 
-                                    Character.toUpperCase(newName.charAt(0)) + 
-                                    newName.substring(1);
+                                    Escaping.toInitialUppercase(newName);
                             change.addEdit(new ReplaceEdit(match.getOffset()+3, 
                                     oldName.length()-3, 
                                     uppercased));

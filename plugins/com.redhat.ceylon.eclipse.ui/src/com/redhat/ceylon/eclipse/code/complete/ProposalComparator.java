@@ -45,10 +45,10 @@ final class ProposalComparator
             }
             String xName = x.getName();
             String yName = y.getName();
-            boolean yUpperCase = isUpperCase(yName.charAt(0));
-            boolean xUpperCase = isUpperCase(xName.charAt(0));
+            boolean yUpperCase = isUpperCase(yName.codePointAt(0));
+            boolean xUpperCase = isUpperCase(xName.codePointAt(0));
             if (!prefix.isEmpty()) {
-                boolean upperCasePrefix = isUpperCase(prefix.charAt(0));
+                boolean upperCasePrefix = isUpperCase(prefix.codePointAt(0));
                 if (!xUpperCase && yUpperCase) {
                     return upperCasePrefix ? 1 : -1;
                 }

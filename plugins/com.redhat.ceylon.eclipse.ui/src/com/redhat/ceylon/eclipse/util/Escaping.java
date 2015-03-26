@@ -5,6 +5,7 @@ import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toChars;
 import static java.lang.Character.toLowerCase;
+import static java.lang.Character.toUpperCase;
 import static java.util.Arrays.asList;
 
 import java.util.LinkedHashSet;
@@ -85,6 +86,12 @@ public class Escaping {
     public static String toInitialLowercase(String name) {
         int first = name.codePointAt(0);
         return new String(toChars(toLowerCase(first))) + 
+                name.substring(charCount(first));
+    }
+
+    public static String toInitialUppercase(String name) {
+        int first = name.codePointAt(0);
+        return new String(toChars(toUpperCase(first))) + 
                 name.substring(charCount(first));
     }
 

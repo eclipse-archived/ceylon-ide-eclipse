@@ -47,6 +47,7 @@ import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
+import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 /**
@@ -256,8 +257,7 @@ class AnnotationInformationControl extends AbstractInformationControl
                 text.setLayoutData(data);
                 String annotationText = annotation.getText();
                 if (annotationText!=null && !annotationText.isEmpty()) {
-                    annotationText = Character.toUpperCase(annotationText.charAt(0)) +
-                            annotationText.substring(1);
+                    annotationText = Escaping.toInitialUppercase(annotationText);
                     StyledString styled =
                             Highlights.styleProposal(annotationText, true, true);
                     text.setText(styled.getString());
