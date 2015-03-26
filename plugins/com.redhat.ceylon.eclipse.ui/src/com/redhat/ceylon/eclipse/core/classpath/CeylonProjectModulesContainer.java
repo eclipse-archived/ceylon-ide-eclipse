@@ -489,12 +489,14 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 
     public static File getModuleArtifact(RepositoryManager provider,
             JDTModule module) {
-        File moduleFile = module.getArtifact();
-        if (moduleFile == null) {
-            return null;
-        }
-        if (moduleFile.exists()) {
-            return moduleFile;
+        if (! module.isSourceArchive()) {
+            File moduleFile = module.getArtifact();
+            if (moduleFile == null) {
+                return null;
+            }
+            if (moduleFile.exists()) {
+                return moduleFile;
+            }
         }
         // Shouldn't need to execute this anymore ! 
         // We already retrieved this information during in the ModuleVisitor.
