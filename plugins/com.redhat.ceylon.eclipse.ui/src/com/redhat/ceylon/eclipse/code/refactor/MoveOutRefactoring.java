@@ -273,7 +273,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             return "it";
         }
         String name = owner.getIdentifier().getText();
-        String paramName = Character.toLowerCase(name.charAt(0))+name.substring(1);
+        String paramName = Escaping.toInitialLowercase(name);
         if (Escaping.KEYWORDS.contains(paramName)) {
             return "it";
         }

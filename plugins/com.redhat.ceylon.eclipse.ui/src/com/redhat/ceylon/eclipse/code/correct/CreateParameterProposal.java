@@ -38,6 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 class CreateParameterProposal extends InitializerProposal {
@@ -109,7 +110,7 @@ class CreateParameterProposal extends InitializerProposal {
 
     static void addCreateParameterProposal(Collection<ICompletionProposal> proposals, 
             IProject project, ValueFunctionDefinitionGenerator dg) {
-        if (Character.isLowerCase(dg.getBrokenName().charAt(0))) {
+        if (Character.isLowerCase(dg.getBrokenName().codePointAt(0))) {
             Tree.Declaration decl = 
                     findDeclarationWithBody(dg.getRootNode(), dg.getNode());
             if (decl == null || 
@@ -155,8 +156,7 @@ class CreateParameterProposal extends InitializerProposal {
                     parameterName = t.getDeclaration().getName();
                     if (parameterName!=null) {
                         parameterName = 
-                                Character.toLowerCase(parameterName.charAt(0)) + 
-                                parameterName.substring(1)
+                                Escaping.toInitialLowercase(parameterName)
                                         .replace("?", "").replace("[]", "");
                         if ("string".equals(parameterName)) {
                             parameterName = "text";

@@ -24,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 
 class DestructureProposal extends LocalProposal {
@@ -50,7 +51,7 @@ class DestructureProposal extends LocalProposal {
             for (int i = 0; i<elementTypes.size(); i++) {
                 ProducedType elementType = elementTypes.get(i);
                 if (builder.length()!=0) builder.append(", "); 
-                String name = lower(elementType.getDeclaration().getName(unit));
+                String name = Escaping.toInitialLowercase(elementType.getDeclaration().getName(unit));
                 if (!used.add(name)) {
                     name = name + i;
                 }
@@ -82,7 +83,7 @@ class DestructureProposal extends LocalProposal {
 
     static String[] getItemProposals(Unit unit, ProducedType type) {
         ProducedType itemType = unit.getValueType(type);
-        String itemName = lower(itemType.getDeclaration().getName(unit));
+        String itemName = Escaping.toInitialLowercase(itemType.getDeclaration().getName(unit));
         Set<String> itemMore = new LinkedHashSet<String>();
         itemMore.add("item");
         itemMore.add(itemName);
@@ -92,7 +93,7 @@ class DestructureProposal extends LocalProposal {
 
     static String[] getKeyProposals(Unit unit, ProducedType type) {
         ProducedType keyType = unit.getKeyType(type);
-        String keyName = lower(keyType.getDeclaration().getName(unit));
+        String keyName = Escaping.toInitialLowercase(keyType.getDeclaration().getName(unit));
         Set<String> keyMore = new LinkedHashSet<String>();
         keyMore.add("key");
         keyMore.add(keyName);
@@ -100,11 +101,6 @@ class DestructureProposal extends LocalProposal {
         return keyMore.toArray(new String[0]);
     }
 
-    static String lower(String name) {
-        return Character.toLowerCase(name.charAt(0)) + 
-                name.substring(1);
-    }
-    
     @Override
     protected int getExitPosition() {
         return exitPos;

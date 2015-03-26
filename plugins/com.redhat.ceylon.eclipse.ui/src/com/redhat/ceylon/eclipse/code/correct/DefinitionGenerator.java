@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.UnionType;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Escaping;
 
 public abstract class DefinitionGenerator {
     
@@ -54,12 +55,15 @@ public abstract class DefinitionGenerator {
         }
     }
 
-    static LinkedHashMap<String,ProducedType> getParametersFromPositionalArgs(Tree.PositionalArgumentList pal) {
-        LinkedHashMap<String,ProducedType> types = new LinkedHashMap<String,ProducedType>();
+    static LinkedHashMap<String,ProducedType> 
+    getParametersFromPositionalArgs(Tree.PositionalArgumentList pal) {
+        LinkedHashMap<String,ProducedType> types = 
+                new LinkedHashMap<String,ProducedType>();
         int i=0;
         for (Tree.PositionalArgument pa: pal.getPositionalArguments()) {
             if (pa instanceof Tree.ListedArgument) {
-                Tree.Expression e = ((Tree.ListedArgument) pa).getExpression();
+                Tree.Expression e = 
+                        ((Tree.ListedArgument) pa).getExpression();
                 ProducedType et = e.getTypeModel();
                 String name;
                 ProducedType t;
@@ -70,15 +74,16 @@ public abstract class DefinitionGenerator {
                 else {
                     t = pa.getUnit().denotableType(et);
                     if (e.getTerm() instanceof Tree.StaticMemberOrTypeExpression) {
-                        String id = ((Tree.StaticMemberOrTypeExpression) e.getTerm())
-                                .getIdentifier().getText();
-                        name = Character.toLowerCase(id.charAt(0)) + id.substring(1);
+                        String id = 
+                                ((Tree.StaticMemberOrTypeExpression) e.getTerm())
+                                        .getIdentifier().getText();
+                        name = Escaping.toInitialLowercase(id);
                     }
                     else {
                         if (et.getDeclaration() instanceof ClassOrInterface || 
                             et.getDeclaration() instanceof TypeParameter) {
                             String tn = et.getDeclaration().getName();
-                            name = Character.toLowerCase(tn.charAt(0)) + tn.substring(1);
+                            name = Escaping.toInitialLowercase(tn);
                         }
                         else {
                             name = "arg";
@@ -94,13 +99,17 @@ public abstract class DefinitionGenerator {
         return types;
     }
 
-    static LinkedHashMap<String,ProducedType> getParametersFromNamedArgs(Tree.NamedArgumentList nal) {
-        LinkedHashMap<String,ProducedType> types = new LinkedHashMap<String,ProducedType>();
+    static LinkedHashMap<String,ProducedType> 
+    getParametersFromNamedArgs(Tree.NamedArgumentList nal) {
+        LinkedHashMap<String,ProducedType> types = 
+                new LinkedHashMap<String,ProducedType>();
         int i=0;
         for (Tree.NamedArgument a: nal.getNamedArguments()) {
             if (a instanceof Tree.SpecifiedArgument) {
-                Tree.SpecifiedArgument na = (Tree.SpecifiedArgument) a;
-                Tree.Expression e = na.getSpecifierExpression().getExpression();
+                Tree.SpecifiedArgument na = 
+                        (Tree.SpecifiedArgument) a;
+                Tree.Expression e = 
+                        na.getSpecifierExpression().getExpression();
                 String name = na.getIdentifier().getText();
                 ProducedType t;
                 if (e==null) {

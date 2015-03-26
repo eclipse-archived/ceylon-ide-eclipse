@@ -655,12 +655,12 @@ public class Nodes {
 
     public static void addNameProposals(Set<String> names, 
             boolean plural, String tn) {
-        String name = Character.toLowerCase(tn.charAt(0)) + tn.substring(1);
+        String name = Escaping.toInitialLowercase(tn);
         Matcher matcher = IDPATTERN.matcher(name);
         while (matcher.find()) {
             int loc = matcher.start(2);
             String initial = name.substring(matcher.start(1), loc);
-            if (Character.isLowerCase(name.charAt(0))) {
+            if (Character.isLowerCase(name.codePointAt(0))) {
                 initial = initial.toLowerCase();
             }
             String subname = initial + name.substring(loc);

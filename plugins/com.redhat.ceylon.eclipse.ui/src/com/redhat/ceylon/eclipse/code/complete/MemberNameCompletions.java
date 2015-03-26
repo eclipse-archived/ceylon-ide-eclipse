@@ -170,15 +170,4 @@ public class MemberNameCompletions {
                         .getDeclaration().getName());
     }
 
-    /*private static String lower(String suggestedName) {
-        return Character.toLowerCase(suggestedName.charAt(0)) + 
-                suggestedName.substring(1);
-    }
-
-    private static String upper(String suggestedName) {
-        return Character.toUpperCase(suggestedName.charAt(0)) + 
-                suggestedName.substring(1);
-    }*/
-    
-
 }

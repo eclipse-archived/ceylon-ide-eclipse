@@ -30,6 +30,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Util;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -218,18 +219,22 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         tfc.setEdit(new MultiTextEdit());
         if (declaration!=null) {
             String paramName = 
-                    Character.toLowerCase(newName.charAt(0)) + newName.substring(1);
-            FindInvocationsVisitor fiv = new FindInvocationsVisitor(declaration);
+                    Escaping.toInitialLowercase(newName);
+            FindInvocationsVisitor fiv = 
+                    new FindInvocationsVisitor(declaration);
             root.visit(fiv);
             for (Tree.ArgumentList pal: fiv.getResults()) {
                 refactorInvocation(tfc, paramName, pal);
             }
-            FindRefinementsVisitor frv = new FindRefinementsVisitor(declaration);
+            FindRefinementsVisitor frv = 
+                    new FindRefinementsVisitor(declaration);
             root.visit(frv);
-            for (Tree.StatementOrArgument decNode: frv.getDeclarationNodes()) {
+            for (Tree.StatementOrArgument decNode: 
+                    frv.getDeclarationNodes()) {
                 refactorDeclaration(tfc, paramName, decNode);
             }
-            FindArgumentsVisitor fav = new FindArgumentsVisitor(declaration);
+            FindArgumentsVisitor fav = 
+                    new FindArgumentsVisitor(declaration);
             root.visit(fav);
             for (Tree.MethodArgument decNode: fav.getResults()) {
                 refactorArgument(tfc, paramName, decNode);
@@ -249,7 +254,8 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             List<Tree.PositionalArgument> pas = 
                     pal.getPositionalArguments();
             if (pas.size()>firstParam) {
-                Integer startIndex = pas.get(firstParam).getStartIndex();
+                Integer startIndex = 
+                        pas.get(firstParam).getStartIndex();
                 tfc.addEdit(new InsertEdit(startIndex, newName + "("));
                 Integer stopIndex = pas.size()>lastParam && 
                             !pas.get(lastParam).getParameter().isSequenced() ?

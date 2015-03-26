@@ -425,8 +425,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         else {
             tfc.addEdit(new ReplaceEdit(id.getStartIndex(), 
                     id.getText().length(), 
-                    Character.toLowerCase(newName.charAt(0)) + 
-                        newName.substring(1)));
+                    Escaping.toInitialLowercase(newName)));
         }
     }
 

@@ -2457,36 +2457,6 @@ public abstract class FilteredItemsSelectionDialog extends
         }
 
         /**
-         * General method for matching raw name pattern. Checks whether current
-         * pattern is prefix of name provided item.
-         * 
-         * @param item
-         *            item to check
-         * @return <code>true</code> if current pattern is a prefix of name
-         *         provided item, <code>false</code> if item's name is shorter
-         *         than prefix or sequences of characters don't match.
-         */
-//        public boolean matchesRawNamePattern(Object item) {
-//            String prefix = patternMatcher.getPattern();
-//            String text = getElementName(item);
-//
-//            if (text == null)
-//                return false;
-//
-//            int textLength = text.length();
-//            int prefixLength = prefix.length();
-//            if (textLength < prefixLength) {
-//                return false;
-//            }
-//            for (int i = prefixLength - 1; i >= 0; i--) {
-//                if (Character.toLowerCase(prefix.charAt(i)) != Character
-//                        .toLowerCase(text.charAt(i)))
-//                    return false;
-//            }
-//            return true;
-//        }
-
-        /**
          * Matches an item against filter conditions.
          * 
          * @param item

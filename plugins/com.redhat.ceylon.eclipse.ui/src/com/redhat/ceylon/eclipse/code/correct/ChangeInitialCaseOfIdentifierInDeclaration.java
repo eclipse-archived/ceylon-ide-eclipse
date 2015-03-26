@@ -1,5 +1,11 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static java.lang.Character.charCount;
+import static java.lang.Character.isUpperCase;
+import static java.lang.Character.toChars;
+import static java.lang.Character.toLowerCase;
+import static java.lang.Character.toUpperCase;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -48,17 +54,13 @@ public class ChangeInitialCaseOfIdentifierInDeclaration
     
     private static void addProposal(Identifier identifier, 
             Collection<ICompletionProposal> proposals, IFile file) {
-        String newIdentifier;
-        String newFirstLetter;
-        
         String oldIdentifier = identifier.getText();
-        if (Character.isUpperCase(oldIdentifier.charAt(0))) {
-            newFirstLetter = String.valueOf(Character.toLowerCase(oldIdentifier.charAt(0)));
-            newIdentifier = newFirstLetter + oldIdentifier.substring(1);
-        } else {
-            newFirstLetter = String.valueOf(Character.toUpperCase(oldIdentifier.charAt(0)));
-            newIdentifier = newFirstLetter + oldIdentifier.substring(1);
-        }
+        int first = oldIdentifier.codePointAt(0);
+        int newFirst = isUpperCase(first) ? 
+                toLowerCase(first) : toUpperCase(first);
+        String newFirstLetter = new String(toChars(newFirst));
+        String newIdentifier = newFirstLetter + 
+                oldIdentifier.substring(charCount(first));
         
         TextFileChange change = new TextFileChange("Change initial case of identifier", file);
         change.setEdit(new ReplaceEdit(identifier.getStartIndex(), 1, newFirstLetter));

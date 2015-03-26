@@ -1,17 +1,18 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.compiler.java.codegen.CodegenUtil.getJavaNameOfDeclaration;
+import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_ATTRIBUTE_ANNOTATION;
 import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_CEYLON_ANNOTATION;
 import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_LOCAL_DECLARATION_ANNOTATION;
 import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_METHOD_ANNOTATION;
 import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_NAME_ANNOTATION;
 import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_OBJECT_ANNOTATION;
-import static com.redhat.ceylon.compiler.loader.AbstractModelLoader.CEYLON_ATTRIBUTE_ANNOTATION;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.CLASS_AND_INTERFACE;
+import static org.eclipse.jdt.core.search.IJavaSearchConstants.FIELD;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.METHOD;
 import static org.eclipse.jdt.core.search.SearchPattern.R_EXACT_MATCH;
 import static org.eclipse.jdt.core.search.SearchPattern.createOrPattern;
@@ -81,7 +82,8 @@ public class JavaSearch {
             return null;
         }
         if (declaration instanceof Method) {
-            return createPattern(pattern, METHOD, limitTo, R_EXACT_MATCH);
+            return createPattern(pattern, METHOD, 
+                    limitTo, R_EXACT_MATCH);
         }
         else if (declaration instanceof Value) {
             int loc = pattern.lastIndexOf('.') + 1;
@@ -89,21 +91,25 @@ public class JavaSearch {
                 String setter = pattern.substring(0,loc) + 
                         "set" + pattern.substring(loc+3);
                 SearchPattern getterPattern = 
-                        createPattern(pattern, METHOD, limitTo, R_EXACT_MATCH);
+                        createPattern(pattern, METHOD, 
+                                limitTo, R_EXACT_MATCH);
                 SearchPattern setterPattern = 
-                        createPattern(setter, METHOD, limitTo, R_EXACT_MATCH);
+                        createPattern(setter, METHOD, 
+                                limitTo, R_EXACT_MATCH);
                 switch (limitTo) {
                 case IJavaSearchConstants.WRITE_ACCESSES:
                     return setterPattern;
                 case IJavaSearchConstants.READ_ACCESSES:
                     return getterPattern;
                 default:
-                    return createOrPattern(getterPattern, setterPattern);
+                    return createOrPattern(getterPattern, 
+                            setterPattern);
                 }
             }
             else {
                 SearchPattern fieldPattern = 
-                        createPattern(pattern, IJavaSearchConstants.FIELD, limitTo, R_EXACT_MATCH);
+                        createPattern(pattern, FIELD, 
+                                limitTo, R_EXACT_MATCH);
                 return fieldPattern;
             }
         }
@@ -122,20 +128,25 @@ public class JavaSearch {
     }
 
     public static IProject[] getProjectAndReferencingProjects(IProject project) {
-        IProject[] referencingProjects = project.getReferencingProjects();
-        IProject[] projects = new IProject[referencingProjects.length+1];
+        IProject[] referencingProjects = 
+                project.getReferencingProjects();
+        IProject[] projects = 
+                new IProject[referencingProjects.length+1];
         projects[0] = project;
-        System.arraycopy(referencingProjects, 0, projects, 1, referencingProjects.length);
+        System.arraycopy(referencingProjects, 0, 
+                projects, 1, referencingProjects.length);
         return projects;
     }
 
     public static IProject[] getProjectAndReferencedProjects(IProject project) {
-        IProject[] referencedProjects;
         try {
-            referencedProjects = project.getReferencedProjects();
-            IProject[] projects = new IProject[referencedProjects.length+1];
+            IProject[] referencedProjects = 
+                    project.getReferencedProjects();
+            IProject[] projects = 
+                    new IProject[referencedProjects.length+1];
             projects[0] = project;
-            System.arraycopy(referencedProjects, 0, projects, 1, referencedProjects.length);
+            System.arraycopy(referencedProjects, 0, 
+                    projects, 1, referencedProjects.length);
             return projects;
         }
         catch (Exception e) {
@@ -145,9 +156,9 @@ public class JavaSearch {
     }
 
     @SuppressWarnings("deprecation")
-    public static void runSearch(IProgressMonitor pm, SearchEngine searchEngine,
-            SearchPattern searchPattern, IProject[] projects,
-            SearchRequestor requestor) 
+    public static void runSearch(IProgressMonitor pm, 
+            SearchEngine searchEngine, SearchPattern searchPattern, 
+            IProject[] projects, SearchRequestor requestor) 
                     throws OperationCanceledException {
         try {
             searchEngine.search(searchPattern, 
@@ -188,15 +199,15 @@ public class JavaSearch {
             }
             else if (name.startsWith("get") ||
                      name.startsWith("set")) {
-                name = Character.toLowerCase(name.charAt(3)) + 
-                        name.substring(4);
+                name = Escaping.toInitialLowercase(name.substring(3));
             }
         }
         
         if (dec!=type) {
             String fullyQualifiedTypeName = type.getFullyQualifiedName();
             String[] parts = fullyQualifiedTypeName.split("\\.");
-            String typeName = parts.length == 0 ? fullyQualifiedTypeName : parts[parts.length-1];
+            String typeName = parts.length == 0 ? 
+                    fullyQualifiedTypeName : parts[parts.length-1];
             if (typeName.endsWith(name + "_")) {
                 return qualifier + name;
             }
@@ -252,7 +263,8 @@ public class JavaSearch {
                     ((IAnnotatable) element).getAnnotation(CEYLON_NAME_ANNOTATION);
             if (nameAnnotation.exists()) {
                 try {
-                    for (IMemberValuePair mvp : nameAnnotation.getMemberValuePairs()) {
+                    for (IMemberValuePair mvp: 
+                            nameAnnotation.getMemberValuePairs()) {
                         if ("value".equals(mvp.getMemberName())) {
                             Object value = mvp.getValue();
                             if ((value instanceof String) 
@@ -275,7 +287,8 @@ public class JavaSearch {
                     ((IAnnotatable) element).getAnnotation(CEYLON_LOCAL_DECLARATION_ANNOTATION);
             if (nameAnnotation.exists()) {
                 try {
-                    for (IMemberValuePair mvp : nameAnnotation.getMemberValuePairs()) {
+                    for (IMemberValuePair mvp: 
+                            nameAnnotation.getMemberValuePairs()) {
                         if ("qualifier".equals(mvp.getMemberName())) {
                             Object value = mvp.getValue();
                             if ((value instanceof String) 
@@ -299,7 +312,8 @@ public class JavaSearch {
     public static String getCeylonSimpleName(IMember dec) {
         String name = dec.getElementName();
 
-        String nameAnnotationValue = getCeylonNameAnnotationValue(dec);
+        String nameAnnotationValue = 
+                getCeylonNameAnnotationValue(dec);
         if (nameAnnotationValue != null) {
             return nameAnnotationValue;
         }
@@ -337,11 +351,12 @@ public class JavaSearch {
                     if (isCeylon(declaringType)) {
                         IMethod[] methodsWithTheSameName;
                         try {
-                            methodsWithTheSameName = declaringType.getMethods();
+                            methodsWithTheSameName = 
+                                    declaringType.getMethods();
                             if (methodsWithTheSameName != null) {
                                 label:
-                                for (IMethod m : methodsWithTheSameName) {
-                                    for (String argName : m.getParameterNames()) {
+                                for (IMethod m: methodsWithTheSameName) {
+                                    for (String argName: m.getParameterNames()) {
                                         if (parts[1].equals(argName)) {
                                             name = argName;
                                             break label;
@@ -356,7 +371,9 @@ public class JavaSearch {
                 }
             }
             if (name.endsWith(Suffix.$priv$.name())) {
-                name = name.substring(0, name.length() - Suffix.$priv$.name().length());
+                name = name.substring(0, 
+                        name.length() - 
+                        Suffix.$priv$.name().length());
             }
         } else if (dec instanceof IType) {
             IType type = (IType) dec;
@@ -374,8 +391,10 @@ public class JavaSearch {
     public static boolean elementEqualsDeclaration(IMember typeOrMethod, Declaration declaration) {
         // loadAllAnnotations(typeOrMethod); // Uncomment to easily load all annotations while debugging
 
-        String javaElementSimpleName = getCeylonSimpleName(typeOrMethod);
-        String ceylonDeclarationSimpleName = declaration.getName();
+        String javaElementSimpleName = 
+                getCeylonSimpleName(typeOrMethod);
+        String ceylonDeclarationSimpleName = 
+                declaration.getName();
         if (javaElementSimpleName == null) {
             return false;
         }
@@ -404,7 +423,7 @@ public class JavaSearch {
             String localDeclarationQualifier = 
                     getLocalDeclarationQualifier(typeOrMethod);
             if (localDeclarationQualifier != null) {
-                if (! localDeclarationQualifier.equals(declaration.getQualifier())) {
+                if (!localDeclarationQualifier.equals(declaration.getQualifier())) {
                     return false;
                 }
             }
@@ -415,10 +434,12 @@ public class JavaSearch {
             }
         }
         
-        IMember declaringElement = getDeclaringElement(typeOrMethod);
+        IMember declaringElement = 
+                getDeclaringElement(typeOrMethod);
         
         if (declaringElement != null) {
-            declaringElement = toCeylonDeclarationElement(declaringElement);
+            declaringElement = 
+                    toCeylonDeclarationElement(declaringElement);
             Declaration ceylonContainingDeclaration = 
                     getContainingDeclaration(declaration);
             
@@ -429,9 +450,10 @@ public class JavaSearch {
         } else {
             Scope scope = declaration.getScope();
             if (scope instanceof Package) {
-                String ceylonDeclarationPkgName = scope.getQualifiedNameString();
+                String ceylonDeclarationPkgName = 
+                        scope.getQualifiedNameString();
                 IPackageFragment pkgFragment = (IPackageFragment) 
-                        typeOrMethod.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
+                        typeOrMethod.getAncestor(PACKAGE_FRAGMENT);
                 String pkgFragmentName = pkgFragment != null ? 
                         pkgFragment.getElementName() : null;
                 return ceylonDeclarationPkgName.equals(pkgFragmentName);
@@ -441,18 +463,24 @@ public class JavaSearch {
     }
 
     public static void loadAllAnnotations(IMember typeOrMethod) {
-        Map<String, Map<String, Object>> memberAnnotations = new HashMap<>();
+        Map<String, Map<String, Object>> memberAnnotations = 
+                new HashMap<String, Map<String, Object>>();
         if (typeOrMethod instanceof IAnnotatable) {
             try {
-                for (IAnnotation annotation : ((IAnnotatable) typeOrMethod).getAnnotations()) {
-                    String annotationName = annotation.getElementName();
-                    if (! memberAnnotations.containsKey(annotationName)) {
-                        memberAnnotations.put(annotationName, new HashMap<String, Object>());
+                for (IAnnotation annotation: 
+                        ((IAnnotatable) typeOrMethod).getAnnotations()) {
+                    String annotationName = 
+                            annotation.getElementName();
+                    if (!memberAnnotations.containsKey(annotationName)) {
+                        memberAnnotations.put(annotationName, 
+                                new HashMap<String, Object>());
                     }
                     Map<String, Object> annotationMembers = 
                             memberAnnotations.get(annotationName);
-                    for (IMemberValuePair pair : annotation.getMemberValuePairs()) {
-                        annotationMembers.put(pair.getMemberName(), pair.getValue());
+                    for (IMemberValuePair pair: 
+                            annotation.getMemberValuePairs()) {
+                        annotationMembers.put(pair.getMemberName(), 
+                                pair.getValue());
                     }
                 }
             } catch (JavaModelException e) {
@@ -460,18 +488,24 @@ public class JavaSearch {
             }
         }
         
-        Map<String, Map<String, Object>> typeAnnotations = new HashMap<>();
+        Map<String, Map<String, Object>> typeAnnotations = 
+                new HashMap<String, Map<String, Object>>();
         if (typeOrMethod instanceof IType) {
             IType type = (IType) typeOrMethod;
             try {
-                for (IAnnotation annotation : ((IAnnotatable) type).getAnnotations()) {
+                for (IAnnotation annotation: 
+                        ((IAnnotatable) type).getAnnotations()) {
                     String annotationName = annotation.getElementName();
                     if (! typeAnnotations.containsKey(annotationName)) {
-                        typeAnnotations.put(annotationName, new HashMap<String, Object>());
+                        typeAnnotations.put(annotationName, 
+                                new HashMap<String, Object>());
                     }
-                    Map<String, Object> annotationMembers = typeAnnotations.get(annotationName);
-                    for (IMemberValuePair pair : annotation.getMemberValuePairs()) {
-                        annotationMembers.put(pair.getMemberName(), pair.getValue());
+                    Map<String, Object> annotationMembers = 
+                            typeAnnotations.get(annotationName);
+                    for (IMemberValuePair pair: 
+                            annotation.getMemberValuePairs()) {
+                        annotationMembers.put(pair.getMemberName(), 
+                                pair.getValue());
                     }
                 }
             } catch (JavaModelException e) {
@@ -529,7 +563,7 @@ public class JavaSearch {
                                     ReferenceBinding enclosingType = 
                                             classBinding.enclosingType();
                                     if (enclosingType != null) {
-                                        for (MethodBinding method : enclosingType.methods()) {
+                                        for (MethodBinding method: enclosingType.methods()) {
                                             if (CharOperation.equals(
                                                     CharOperation.concat(method.selector, 
                                                             method.signature()), 
@@ -546,9 +580,11 @@ public class JavaSearch {
                         if (enclosingMethodBinding[0] != null) {
                             IMethod enclosingMethod = (IMethod) 
                                     getUnresolvedJavaElement(enclosingMethodBinding[0], null, null);
-                            if (enclosingMethod != null && !enclosingMethod.isResolved()) {
+                            if (enclosingMethod != null && 
+                                    !enclosingMethod.isResolved()) {
                                 enclosingMethod = (IMethod) 
-                                        ((JavaElement)enclosingMethod).resolved(enclosingMethodBinding[0]);
+                                        ((JavaElement)enclosingMethod)
+                                            .resolved(enclosingMethodBinding[0]);
                                 if (enclosingMethod != null) {
                                     declaringElement = enclosingMethod;
                                 }
@@ -565,7 +601,8 @@ public class JavaSearch {
                     && declaringElement.getElementName()
                         .equals(typeOrMethod.getElementName() + "_")
                     && isCeylonMethod(declaringElement)) {
-                IMember declaringElementDeclaringElement = getDeclaringElement(declaringElement);
+                IMember declaringElementDeclaringElement = 
+                        getDeclaringElement(declaringElement);
                 return declaringElementDeclaringElement;
             }
         }
@@ -595,13 +632,15 @@ public class JavaSearch {
                 if (parentType != null) {
                     if ("get_".equals(methodName)
                         && ((method.getFlags() & Flags.AccStatic) > 0)
-                        && (isCeylonObject(parentType) || isCeylonAttribute(parentType))) {
+                        && (isCeylonObject(parentType) || 
+                                isCeylonAttribute(parentType))) {
                         return toCeylonDeclarationElement(parentType);
                     }
                     if (methodName.equals(parentType.getElementName())
                             && method.isConstructor()
                             && isCeylon(parentType)) {
-                        String constructorName = getCeylonNameAnnotationValue(method);
+                        String constructorName = 
+                                getCeylonNameAnnotationValue(method);
                         if (constructorName != null) {
                             return method;
                         } else {
@@ -624,7 +663,8 @@ public class JavaSearch {
         }
         if (typeOrMethod instanceof IType) {
             IType type = (IType) typeOrMethod;
-            String fullyQualifiedTypeName = type.getFullyQualifiedName();
+            String fullyQualifiedTypeName = 
+                    type.getFullyQualifiedName();
             if (fullyQualifiedTypeName.endsWith("$impl")) {
                 IType interfaceType = null;
                 try {
@@ -706,14 +746,15 @@ public class JavaSearch {
     }
 
     public static boolean isCeylonDeclaration(IJavaElement javaElement) {
-        IProject project = javaElement.getJavaProject().getProject();
+        IProject project = 
+                javaElement.getJavaProject().getProject();
         IPath path = javaElement.getPath();
         if (path!=null) {
             String extension = path.getFileExtension();
             if (extension!=null && extension.equals("car") ||
                     (isExplodeModulesEnabled(project)
-                            && getCeylonClassesOutputFolder(project).getFullPath()
-                            .isPrefixOf(path))) {
+                            && getCeylonClassesOutputFolder(project)
+                                    .getFullPath().isPrefixOf(path))) {
                 return true;
             }
         }

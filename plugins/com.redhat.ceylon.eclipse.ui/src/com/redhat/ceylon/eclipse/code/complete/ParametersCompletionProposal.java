@@ -61,6 +61,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 
@@ -752,8 +753,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                         if (atd instanceof ClassOrInterface||
                                 atd instanceof TypeParameter) {
                             String n = atd.getName(unit);
-                            name = Character.toLowerCase(n.charAt(0)) + 
-                                    n.substring(1);
+                            name = Escaping.toInitialLowercase(n);
                         }
                         else {
                             name = "arg";

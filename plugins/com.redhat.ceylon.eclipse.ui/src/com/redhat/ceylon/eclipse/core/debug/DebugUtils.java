@@ -60,6 +60,7 @@ import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.Evaluatio
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
+import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
@@ -888,8 +889,7 @@ public class DebugUtils {
             if (declaringType instanceof ClassType) {
                 ClassType classType = (ClassType) declaringType;
                 String fieldName = methodName.substring(3, methodName.length() - Suffix.$priv$.name().length());
-                fieldName = Character.toLowerCase(fieldName.charAt(0)) + 
-                        fieldName.substring(1);
+                fieldName = Escaping.toInitialLowercase(fieldName);
 
                 Field field = classType.fieldByName(fieldName);
                 if (field != null) {

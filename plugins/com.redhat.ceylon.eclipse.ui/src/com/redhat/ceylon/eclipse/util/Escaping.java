@@ -1,7 +1,10 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static java.lang.Character.charCount;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
+import static java.lang.Character.toChars;
+import static java.lang.Character.toLowerCase;
 import static java.util.Arrays.asList;
 
 import java.util.LinkedHashSet;
@@ -58,7 +61,7 @@ public class Escaping {
         if (alias==null) {
             return "";
         }
-        char c = alias.charAt(0);
+        int c = alias.codePointAt(0);
         if (d instanceof TypedDeclaration &&
                 (isUpperCase(c) || KEYWORDS.contains(alias))) {
             return "\\i" + alias;
@@ -78,5 +81,11 @@ public class Escaping {
         "return", "break", "continue", "throw", "if", "else", "switch", "case", "for", "while", 
         "try", "catch", "finally", "this", "outer", "super", "is", "exists", "nonempty", "then",
         "dynamic", "new", "let"));
+
+    public static String toInitialLowercase(String name) {
+        int first = name.codePointAt(0);
+        return new String(toChars(toLowerCase(first))) + 
+                name.substring(charCount(first));
+    }
 
 }
