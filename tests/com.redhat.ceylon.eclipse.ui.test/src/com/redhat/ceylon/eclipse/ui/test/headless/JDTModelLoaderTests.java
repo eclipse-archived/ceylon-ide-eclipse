@@ -204,6 +204,11 @@ public class JDTModelLoaderTests extends ModelLoaderTests {
     }
 
     @Override
+    protected String moduleVersionForJavaModelLoading() {
+        return "1.0.0";
+    }    
+    
+    @Override
     protected String packageForJavaModelLoading() {
         // TODO Auto-generated method stub
         return "declarations";
