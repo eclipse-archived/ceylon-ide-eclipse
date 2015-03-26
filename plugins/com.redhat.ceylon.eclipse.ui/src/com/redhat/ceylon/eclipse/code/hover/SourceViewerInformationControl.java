@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_SOURCE_HOVER_BACKGROUND_COLOR;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_SOURCE_HOVER_BACKGROUND_COLOR_SYSTEM_DEFAULT;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND;
@@ -19,6 +20,8 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jdt.ui.text.IJavaColorConstants;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
@@ -41,6 +44,11 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -50,11 +58,14 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Slider;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
@@ -63,6 +74,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
+import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvider;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -136,7 +148,19 @@ public class SourceViewerInformationControl
 
 	private Color fBackgroundColor;
 	private boolean fIsSystemBackgroundColor= true;
+    private int fResizeHandleSize;
 
+    public SourceViewerInformationControl(CeylonEditor editor, 
+            Shell parent, boolean isResizable, int orientation, 
+            String statusFieldText) {
+        this(editor, parent, isResizable, orientation, statusFieldText, null);
+    }
+    
+    public SourceViewerInformationControl(CeylonEditor editor, 
+            Shell parent, boolean isResizable, int orientation, 
+            ToolBarManager toolBarManager) {
+        this(editor, parent, isResizable, orientation, null, toolBarManager);
+    }
 
 	/**
 	 * Creates a source viewer information control with the given shell as parent. The given
@@ -149,15 +173,17 @@ public class SourceViewerInformationControl
 	 * @param statusFieldText the text to be used in the optional status field
 	 *            or <code>null</code> if the status field should be hidden
 	 */
-	public SourceViewerInformationControl(CeylonEditor editor, 
+	private SourceViewerInformationControl(CeylonEditor editor, 
 	        Shell parent, boolean isResizable, int orientation, 
-	        String statusFieldText) {
+	        String statusFieldText, ToolBarManager toolBarManager) {
 		this.editor = editor;
         Assert.isLegal(orientation == SWT.RIGHT_TO_LEFT || 
                 orientation == SWT.LEFT_TO_RIGHT || 
                 orientation == SWT.NONE);
 		fOrientation= orientation;
-
+		
+		fResizeHandleSize= -1;
+		
 		GridLayout layout;
 		GridData gd;
 
@@ -180,7 +206,7 @@ public class SourceViewerInformationControl
 		gd= new GridData(GridData.FILL_HORIZONTAL);
 		composite.setLayoutData(gd);
 
-		if (statusFieldText != null) {
+		if (statusFieldText!=null || toolBarManager!=null) {
 			composite= new Composite(composite, SWT.NONE);
 			layout= new GridLayout(1, false);
 			layout.marginHeight= 0;
@@ -220,37 +246,206 @@ public class SourceViewerInformationControl
 		});
 
 		// Status field
-		if (statusFieldText != null) {
-
-			// Horizontal separator line
-//			fSeparator= new Label(composite, 
-//			        SWT.SEPARATOR | SWT.HORIZONTAL | SWT.LINE_DOT);
-//			fSeparator.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-			// Status field label
-			fStatusField= new Label(composite, SWT.RIGHT);
-			fStatusField.setText(statusFieldText);
-			Font font= fStatusField.getFont();
-			FontData[] fontDatas= font.getFontData();
-			for (int i= 0; i < fontDatas.length; i++)
-				fontDatas[i].setHeight(fontDatas[i].getHeight() * 9 / 10);
-			fStatusTextFont= new Font(fStatusField.getDisplay(), fontDatas);
-			fStatusField.setFont(fStatusTextFont);
-			GridData gd2= new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
-			fStatusField.setLayoutData(gd2);
-			
-			RGB javaDefaultColor= 
-			        JavaUI.getColorManager().getColor(IJavaColorConstants.JAVA_DEFAULT).getRGB();
-			fStatusTextForegroundColor= 
-			        new Color(fStatusField.getDisplay(), 
-			                blend(fBackgroundColor.getRGB(), javaDefaultColor, 0.56f));
-			fStatusField.setForeground(fStatusTextForegroundColor);
-			fStatusField.setBackground(fBackgroundColor);
+		if (statusFieldText!=null) {
+			createStatusLabel(statusFieldText, composite);
+		}
+		if (toolBarManager!=null) {
+		    createToolBar(toolBarManager, composite);
 		}
 
 		addDisposeListener(this);
 	}
+
+    private void createStatusLabel(String statusFieldText, Composite composite) {
+        // Horizontal separator line
+//			fSeparator= new Label(composite, 
+//			        SWT.SEPARATOR | SWT.HORIZONTAL | SWT.LINE_DOT);
+//			fSeparator.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        // Status field label
+        fStatusField= new Label(composite, SWT.RIGHT);
+        fStatusField.setText(statusFieldText);
+        Font font= fStatusField.getFont();
+        FontData[] fontDatas= font.getFontData();
+        for (int i= 0; i < fontDatas.length; i++)
+        	fontDatas[i].setHeight(fontDatas[i].getHeight() * 9 / 10);
+        fStatusTextFont= new Font(fStatusField.getDisplay(), fontDatas);
+        fStatusField.setFont(fStatusTextFont);
+        GridData gd2= new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
+        fStatusField.setLayoutData(gd2);
+        
+        RGB javaDefaultColor= 
+                JavaUI.getColorManager().getColor(IJavaColorConstants.JAVA_DEFAULT).getRGB();
+        fStatusTextForegroundColor= 
+                new Color(fStatusField.getDisplay(), 
+                        blend(fBackgroundColor.getRGB(), javaDefaultColor, 0.56f));
+        fStatusField.setForeground(fStatusTextForegroundColor);
+        fStatusField.setBackground(fBackgroundColor);
+    }
 	
+    private void createToolBar(ToolBarManager toolBarManager, Composite composite) {
+        final Composite bars= new Composite(composite, SWT.NONE);
+        bars.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+
+        GridLayout layout= new GridLayout(3, false);
+        layout.marginHeight= 0;
+        layout.marginWidth= 0;
+        layout.horizontalSpacing= 0;
+        layout.verticalSpacing= 0;
+        bars.setLayout(layout);
+
+        ToolBar toolBar= toolBarManager.createControl(bars);
+        GridData gd= new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
+        toolBar.setLayoutData(gd);
+
+        Composite spacer= new Composite(bars, SWT.NONE);
+        gd= new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint= 0;
+        gd.heightHint= 0;
+        spacer.setLayoutData(gd);
+
+        addMoveSupport(spacer);
+        addResizeSupportIfNecessary(bars);
+    }
+
+    private void addResizeSupportIfNecessary(final Composite bars) {
+        // XXX: workarounds for
+        // - https://bugs.eclipse.org/bugs/show_bug.cgi?id=219139 : API to add resize grip / grow box in lower right corner of shell
+        // - https://bugs.eclipse.org/bugs/show_bug.cgi?id=23980 : platform specific shell resize behavior
+        String platform= SWT.getPlatform();
+        final boolean isWin= platform.equals("win32"); //$NON-NLS-1$
+        if (!isWin && !platform.equals("gtk")) //$NON-NLS-1$
+            return;
+
+        final Canvas resizer= new Canvas(bars, SWT.NONE);
+
+        int size= getResizeHandleSize(bars);
+
+        GridData data= new GridData(SWT.END, SWT.END, false, true);
+        data.widthHint= size;
+        data.heightHint= size;
+        resizer.setLayoutData(data);
+        resizer.addPaintListener(new PaintListener() {
+            public void paintControl(PaintEvent e) {
+                Point s= resizer.getSize();
+                int x= s.x - 2;
+                int y= s.y - 2;
+                int min= Math.min(x, y);
+                if (isWin) {
+                    // draw dots
+                    e.gc.setBackground(resizer.getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
+                    int end= min - 1;
+                    for (int i= 0; i <= 2; i++)
+                        for (int j= 0; j <= 2 - i; j++)
+                            e.gc.fillRectangle(end - 4 * i, end - 4 * j, 2, 2);
+                    end--;
+                    e.gc.setBackground(resizer.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                    for (int i= 0; i <= 2; i++)
+                        for (int j= 0; j <= 2 - i; j++)
+                            e.gc.fillRectangle(end - 4 * i, end - 4 * j, 2, 2);
+
+                } else {
+                    // draw diagonal lines
+                    e.gc.setForeground(resizer.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                    for (int i= 1; i < min; i+= 4) {
+                        e.gc.drawLine(i, y, x, i);
+                    }
+                    e.gc.setForeground(resizer.getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
+                    for (int i= 2; i < min; i+= 4) {
+                        e.gc.drawLine(i, y, x, i);
+                    }
+                }
+            }
+        });
+
+        final boolean isRTL= (resizer.getShell().getStyle() & SWT.RIGHT_TO_LEFT) != 0;
+        resizer.setCursor(resizer.getDisplay().getSystemCursor(isRTL ? SWT.CURSOR_SIZESW : SWT.CURSOR_SIZESE));
+        MouseAdapter resizeSupport= new MouseAdapter() {
+            private MouseMoveListener fResizeListener;
+
+            public void mouseDown(MouseEvent e) {
+                Rectangle shellBounds= fShell.getBounds();
+                final int shellX= shellBounds.x;
+                final int shellY= shellBounds.y;
+                final int shellWidth= shellBounds.width;
+                final int shellHeight= shellBounds.height;
+                Point mouseLoc= resizer.toDisplay(e.x, e.y);
+                final int mouseX= mouseLoc.x;
+                final int mouseY= mouseLoc.y;
+                fResizeListener= new MouseMoveListener() {
+                    public void mouseMove(MouseEvent e2) {
+                        Point mouseLoc2= resizer.toDisplay(e2.x, e2.y);
+                        int dx= mouseLoc2.x - mouseX;
+                        int dy= mouseLoc2.y - mouseY;
+                        if (isRTL) {
+                            setLocation(new Point(shellX + dx, shellY));
+                            setSize(shellWidth - dx, shellHeight + dy);
+                        } else {
+                            setSize(shellWidth + dx, shellHeight + dy);
+                        }
+                    }
+                };
+                resizer.addMouseMoveListener(fResizeListener);
+            }
+
+            public void mouseUp(MouseEvent e) {
+                resizer.removeMouseMoveListener(fResizeListener);
+                fResizeListener= null;
+            }
+        };
+        resizer.addMouseListener(resizeSupport);
+    }
+
+    private int getResizeHandleSize(Composite parent) {
+        if (fResizeHandleSize == -1) {
+            Slider sliderV= new Slider(parent, SWT.VERTICAL);
+            Slider sliderH= new Slider(parent, SWT.HORIZONTAL);
+            int width= sliderV.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+            int height= sliderH.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+            sliderV.dispose();
+            sliderH.dispose();
+            fResizeHandleSize= Math.min(width, height);
+        }
+
+        return fResizeHandleSize;
+    }
+
+    /**
+     * Adds support to move the shell by dragging the given control.
+     *
+     * @param control the control that can be used to move the shell
+     */
+    private void addMoveSupport(final Control control) {
+        MouseAdapter moveSupport= new MouseAdapter() {
+            private MouseMoveListener fMoveListener;
+
+            public void mouseDown(MouseEvent e) {
+                Point shellLoc= fShell.getLocation();
+                final int shellX= shellLoc.x;
+                final int shellY= shellLoc.y;
+                Point mouseLoc= control.toDisplay(e.x, e.y);
+                final int mouseX= mouseLoc.x;
+                final int mouseY= mouseLoc.y;
+                fMoveListener= new MouseMoveListener() {
+                    public void mouseMove(MouseEvent e2) {
+                        Point mouseLoc2= control.toDisplay(e2.x, e2.y);
+                        int dx= mouseLoc2.x - mouseX;
+                        int dy= mouseLoc2.y - mouseY;
+                        fShell.setLocation(shellX + dx, shellY + dy);
+                    }
+                };
+                control.addMouseMoveListener(fMoveListener);
+            }
+
+            public void mouseUp(MouseEvent e) {
+                control.removeMouseMoveListener(fMoveListener);
+                fMoveListener= null;
+            }
+        };
+        control.addMouseListener(moveSupport);
+    }
+
+
 	/**
 	 * Returns an RGB that lies between the given foreground and background
 	 * colors using the given mixing factor. A <code>factor</code> of 1.0 will produce a
@@ -633,8 +828,23 @@ public class SourceViewerInformationControl
 	public IInformationControlCreator getInformationPresenterControlCreator() {
 		return new IInformationControlCreator() {
 			public IInformationControl createInformationControl(Shell parent) {
-				return new SourceViewerInformationControl(editor, 
-				        parent, true, fOrientation, null);
+			    ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
+				SourceViewerInformationControl control = 
+				        new SourceViewerInformationControl(editor, 
+				                parent, true, fOrientation, tbm);
+				tbm.add(new Action() {
+				    {
+				        setText("Open Declaration");
+			            setToolTipText("Open Declaration");
+			            setLocalImageDescriptors(this, "goto_input.gif");
+				    }
+				    @Override
+			        public void run() {
+				        Navigation.gotoNode(referencedNode, editor);
+				    }
+                });
+				tbm.update(true);
+                return control;
 			}
 		};
 	}

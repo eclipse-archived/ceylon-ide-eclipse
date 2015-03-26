@@ -105,7 +105,7 @@ public abstract class AbstractInformationControl
     /** The toolbar manager used by the toolbar or <code>null</code> if none. */
     private final ToolBarManager fToolBarManager;
     /** Status line toolbar or <code>null</code> if none. */
-    private ToolBar fToolBar;
+//    private ToolBar fToolBar;
 
     /** Listener for shell activation and deactivation. */
     private Listener fShellListener;
@@ -265,9 +265,9 @@ public abstract class AbstractInformationControl
         layout.verticalSpacing= 0;
         bars.setLayout(layout);
 
-        fToolBar= toolBarManager.createControl(bars);
+        ToolBar toolBar = toolBarManager.createControl(bars);
         GridData gd= new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
-        fToolBar.setLayoutData(gd);
+        toolBar.setLayoutData(gd);
 
         Composite spacer= new Composite(bars, SWT.NONE);
         gd= new GridData(SWT.FILL, SWT.FILL, true, true);
