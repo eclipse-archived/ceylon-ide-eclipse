@@ -2040,8 +2040,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             throw new OperationCanceledException();
         }
         
-        projectModuleDependencies.get(project).addModulesWithDependencies(typeChecker.getContext().getModules().getListOfModules());
-
         monitor.done();
         
         return typeChecker.getPhasedUnits().getPhasedUnits();
@@ -2239,6 +2237,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     }
                 }
                 
+                projectModuleDependencies.get(project).addModulesWithDependencies(typeChecker.getContext().getModules().getListOfModules());
 
                 monitor.worked(1);
 
