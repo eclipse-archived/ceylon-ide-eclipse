@@ -56,7 +56,9 @@ import org.eclipse.zest.layouts.algorithms.TreeLayoutAlgorithm;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.Dependency;
@@ -65,7 +67,7 @@ import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.ModuleWeakReferen
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
-public class DependencyGraphView extends ViewPart implements IShowInTarget {
+public class DependencyGraphView extends ViewPart implements IShowInTarget, ICeylonModelListener {
 
     static final String ID = PLUGIN_ID + ".view.DependencyGraphView";
 
@@ -222,6 +224,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
         createViewer(parent);
         createMenu();
         setProject(projectMap.get(projectCombo.getText()));
+        CeylonBuilder.addModelListener(this);
     }
 
     protected void createViewer(Composite parent) {
@@ -451,18 +454,6 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
         if (dependencies == null) {
             return;
         }
-        /*if (dependencies.getAllDependencies().isEmpty()) {
-            IWorkbenchWindow activeWorkbenchWindow = 
-                    getWorkbench().getActiveWorkbenchWindow();
-            MessageBox messageBox = new MessageBox(activeWorkbenchWindow.getShell());
-            messageBox.setText("Ceylon Module Dependencies");
-            messageBox.setMessage("There is no declared module dependency within the project : '"  + 
-                    fProject.getName() + "'.");
-            messageBox.open();
-            return;
-        }*/
-//        setContentDescription("Ceylon module dependencies for project '" + 
-//                project.getName() + "'");
         viewer.setInput(dependencies);
         viewer.refresh();
         viewer.applyLayout();
@@ -471,6 +462,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
     @Override
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(updateProjectComboListener);
+        CeylonBuilder.removeModelListener(this);
     }
     
     @Override
@@ -508,6 +500,20 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget {
             }
         }
         return false;
+    }
+
+    @Override
+    public void modelParsed(final IProject project) {
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (!projectCombo.isDisposed()) {
+                    if (project.getName().equals(projectCombo.getText())) {
+                        setProject(project);
+                    }
+                }
+            }
+        });
     }
     
 }
