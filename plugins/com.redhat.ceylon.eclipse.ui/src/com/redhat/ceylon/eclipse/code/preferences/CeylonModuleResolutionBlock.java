@@ -13,6 +13,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridLayout;
@@ -21,7 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
@@ -108,19 +110,69 @@ public class CeylonModuleResolutionBlock {
         }
     }
 
+    private final String overridesTextWithoutLink = "Overrides XML file (customize module resolution)";
+    private final String overridesTextWithLink = "Overrides <a>XML file</a> (customize module resolution)";
+    
     public void initContents(Composite parent) {
 //        final Group resolutionGroup = new Group(parent, SWT.NONE);
 //        resolutionGroup.setText("Module Resolution");
 //        resolutionGroup.setLayoutData(fillDefaults().grab(true, false).create());
 //        resolutionGroup.setLayout(GridLayoutFactory.swtDefaults().create());
         
-        Label overridesLabel = new Label(parent, SWT.LEFT | SWT.WRAP);
-        overridesLabel.setText("Overrides XML file (customize module resolution)");
+        final Link overridesLabel = new Link(parent, SWT.LEFT | SWT.WRAP);
+        overridesLabel.setText(overridesTextWithoutLink);
         overridesLabel.setToolTipText("Specifies the xml file to use to load module overrides");
         overridesLabel.setLayoutData(swtDefaults().span(2, 1).grab(true, false).align(SWT.FILL, SWT.CENTER).create());
+        overridesLabel.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                IPath overridesPath = new Path(overridesText.getText());
+                if (overridesPath.isAbsolute()) {
+                    final IPath pathToOpen = overridesPath;
+                    Display.getDefault().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Navigation.openInEditor(pathToOpen, true);
+                            } catch (PartInitException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } else {
+                    IFile overridesResource = project.getFile(overridesPath);
+                    try {
+                        overridesResource.refreshLocal(IResource.DEPTH_ZERO, null);
+                    } catch (CoreException e1) {
+                        e1.printStackTrace();
+                    }
+                    final IFile fileToOpen = overridesResource;
+                    Display.getDefault().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Navigation.openInEditor(fileToOpen, true);
+                            } catch (PartInitException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            }
+        });
 
         overridesText = new Text(parent, SWT.SINGLE | SWT.BORDER);
         overridesText.setLayoutData(swtDefaults().align(SWT.FILL, SWT.CENTER).hint(250,  SWT.DEFAULT).grab(true, false).create());
+        overridesText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                if (overridesText.getText().isEmpty()) {
+                    overridesLabel.setText(overridesTextWithoutLink);
+                } else {
+                    overridesLabel.setText(overridesTextWithLink);
+                }
+            }
+        });
                 
         Composite overridesComposite = new Composite(parent, SWT.NONE);
         overridesComposite.setLayout(new GridLayout(2, true));
