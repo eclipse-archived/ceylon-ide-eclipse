@@ -64,6 +64,15 @@ abstract class FindSearchQuery implements ISearchQuery {
         //this.project = project;
         this.page = EditorUtil.getActivePage();
         name = referencedDeclaration.getNameAsString();
+        if (referencedDeclaration instanceof Declaration) {
+            Declaration dec = 
+                    (Declaration) referencedDeclaration;
+            if (dec.isClassOrInterfaceMember()) {
+                Declaration classOrInterface = 
+                        (Declaration) dec.getContainer();
+                name = classOrInterface.getName() + '.'  + name;
+            }
+        }
     }
     
     @Override
