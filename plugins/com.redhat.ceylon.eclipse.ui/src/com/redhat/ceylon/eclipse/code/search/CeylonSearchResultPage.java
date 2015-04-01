@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeConten
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PACKAGE;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FOLDER_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE_MODE;
@@ -15,8 +16,10 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PROJECT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.UNIT_MODE;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.jface.action.IAction.AS_CHECK_BOX;
 import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
+import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Path;
@@ -40,15 +43,12 @@ import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     
@@ -59,20 +59,21 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     @Override
     public void init(IPageSite site) {
         super.init(site);
-        propertyChangeListener = new IPropertyChangeListener() {
+        propertyChangeListener = 
+                new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 getViewer().refresh();
             }
         };
-        EditorUtil.getPreferences().addPropertyChangeListener(propertyChangeListener);
+        getPreferences().addPropertyChangeListener(propertyChangeListener);
     }
     
     @Override
     public void dispose() {
         super.dispose();
         if (propertyChangeListener!=null) {
-            EditorUtil.getPreferences().removePropertyChangeListener(propertyChangeListener);
+            getPreferences().removePropertyChangeListener(propertyChangeListener);
             propertyChangeListener = null;
         }
     }
@@ -99,13 +100,15 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
 
     @Override
     protected void configureTableViewer(final TableViewer viewer) {
-        contentProvider = new CeylonSearchResultContentProvider(viewer, this);
+        contentProvider = 
+                new CeylonSearchResultContentProvider(viewer, this);
         configureViewer(viewer);
     }
 
     @Override
     protected void configureTreeViewer(TreeViewer viewer) {
-        contentProvider = new CeylonSearchResultTreeContentProvider(viewer, this);
+        contentProvider = 
+                new CeylonSearchResultTreeContentProvider(viewer, this);
         configureViewer(viewer);
     }
 
@@ -118,36 +121,40 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     }
     
     @Override
-    protected void showMatch(Match match, int offset, int length, boolean activate)
-            throws PartInitException {
+    protected void showMatch(Match match, 
+            int offset, int length, 
+            boolean activate)
+                    throws PartInitException {
         Object elem = match.getElement();
         if (elem instanceof CeylonElement) {
-            open((CeylonElement) elem, offset, length, activate);
+            open((CeylonElement) elem, 
+                    offset, length, activate);
         }
         else if (elem instanceof IJavaElement) {
-            open((IJavaElement) elem, match, offset, length, activate);
+            open((IJavaElement) elem, match, 
+                    offset, length, activate);
         }
     }
 
-    private void open(IJavaElement element, Match match, int offset,
-            int length, boolean activate) throws PartInitException {
+    private void open(IJavaElement element, Match match, 
+            int offset, int length, 
+            boolean activate) 
+                    throws PartInitException {
         IFile file = (IFile) element.getResource();
         if (file==null) {
             //a binary archive
-            //TODO: is there some way to detect that the source
-            //      here is actually written in Ceylon and open
-            //      in the Ceylon editor? Relevant for ceylon.language
-            JavaSearchEditorOpener editorOpener = new JavaSearchEditorOpener();
-            IEditorPart javaEditor = editorOpener.openMatch(match);
-            if (javaEditor instanceof ITextEditor) {
-                ((ITextEditor) javaEditor).selectAndReveal(offset, length);
+            IEditorPart editor = 
+                    new JavaSearchEditorOpener().openMatch(match);
+            if (editor instanceof ITextEditor) {
+                ((ITextEditor) editor).selectAndReveal(offset, length);
             }
         }
         else {
             //a source file in the workspace
             IWorkbenchPage page = getSite().getPage();
             if (offset >= 0 && length != 0) {
-                openAndSelect(page, file, offset, length, activate);
+                openAndSelect(page, file, 
+                        offset, length, activate);
             } 
             else {
                 open(page, file, activate);
@@ -155,17 +162,20 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         }
     }
 
-    private void open(CeylonElement element, int offset, int length,
-            boolean activate) throws PartInitException {
+    private void open(CeylonElement element, 
+            int offset, int length,
+            boolean activate) 
+                    throws PartInitException {
         IFile file = element.getFile();
         if (file==null) {
-            Path path = new Path(element.getVirtualFile().getPath());
-            gotoLocation(path, offset, length);
+            String path = element.getVirtualFile().getPath();
+            gotoLocation(new Path(path), offset, length);
         }
         else {
             IWorkbenchPage page = getSite().getPage();
             if (offset>=0 && length!=0) {
-                openAndSelect(page, file, offset, length, activate);
+                openAndSelect(page, file, 
+                        offset, length, activate);
             } 
             else {
                 open(page, file, activate);
@@ -192,28 +202,35 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     private int fCurrentGrouping;
     
     private void initGroupingActions() {
-        fGroupProjectAction= new GroupAction("Project", 
-                "Group by Project", 
-                PROJECT_MODE, LEVEL_PROJECT);
-        fGroupFolderAction= new GroupAction("Source Folder", 
-                "Group by Source Folder", 
-                FOLDER_MODE, LEVEL_FOLDER);
-        fGroupModuleAction= new GroupAction("Module", 
-                "Group by Module", 
-                MODULE_MODE, LEVEL_MODULE);
-        fGroupPackageAction= new GroupAction("Package", 
-                "Group by Package", 
-                PACKAGE_MODE, LEVEL_PACKAGE);
-        fGroupFileAction= new GroupAction("Source File", 
-                "Group by Source File", 
-                UNIT_MODE, LEVEL_FILE);
+        fGroupProjectAction = 
+                new GroupAction("Project", 
+                        "Group by Project", 
+                        PROJECT_MODE, LEVEL_PROJECT);
+        fGroupFolderAction = 
+                new GroupAction("Source Folder", 
+                        "Group by Source Folder", 
+                        FOLDER_MODE, LEVEL_FOLDER);
+        fGroupModuleAction = 
+                new GroupAction("Module", 
+                        "Group by Module", 
+                        MODULE_MODE, LEVEL_MODULE);
+        fGroupPackageAction = 
+                new GroupAction("Package", 
+                        "Group by Package", 
+                        PACKAGE_MODE, LEVEL_PACKAGE);
+        fGroupFileAction = 
+                new GroupAction("Source File", 
+                        "Group by Source File", 
+                        UNIT_MODE, LEVEL_FILE);
         
-        fLayoutTreeAction= new LayoutAction("Tree", 
-                "Show as Tree", 
-                TREE_MODE, FLAG_LAYOUT_TREE);
-        fLayoutFlatAction= new LayoutAction("Flat", 
-                "Show as List", 
-                FLAT_MODE, FLAG_LAYOUT_FLAT);
+        fLayoutTreeAction = 
+                new LayoutAction("Tree", 
+                        "Show as Tree", 
+                        TREE_MODE, FLAG_LAYOUT_TREE);
+        fLayoutFlatAction = 
+                new LayoutAction("Flat", 
+                        "Show as List", 
+                        FLAT_MODE, FLAG_LAYOUT_FLAT);
     }
     
     private void updateGroupingActions() {
@@ -233,19 +250,22 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     @Override
     protected void fillToolbar(IToolBarManager tbm) {
         super.fillToolbar(tbm);
-        tbm.appendToGroup(GROUP_VIEWER_SETUP, new Separator(GROUP_LAYOUT));
+        tbm.appendToGroup(GROUP_VIEWER_SETUP, 
+                new Separator(GROUP_LAYOUT));
         tbm.appendToGroup(GROUP_LAYOUT, fLayoutFlatAction);
         tbm.appendToGroup(GROUP_LAYOUT, fLayoutTreeAction);
         updateLayoutActions();
-        if (getLayout()!= FLAG_LAYOUT_FLAT) {
-            tbm.appendToGroup(GROUP_VIEWER_SETUP, new Separator(GROUP_GROUPING));
+        if (getLayout() != FLAG_LAYOUT_FLAT) {
+            tbm.appendToGroup(GROUP_VIEWER_SETUP, 
+                    new Separator(GROUP_GROUPING));
             tbm.appendToGroup(GROUP_GROUPING, fGroupProjectAction);
             tbm.appendToGroup(GROUP_GROUPING, fGroupFolderAction);
             tbm.appendToGroup(GROUP_GROUPING, fGroupModuleAction);
             tbm.appendToGroup(GROUP_GROUPING, fGroupPackageAction);
             tbm.appendToGroup(GROUP_GROUPING, fGroupFileAction);
             try {
-                fCurrentGrouping = getSettings().getInt(KEY_GROUPING);
+                fCurrentGrouping = 
+                        getSettings().getInt(KEY_GROUPING);
             }
             catch (NumberFormatException nfe) {
                 //missing key
@@ -254,7 +274,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             contentProvider.setLevel(fCurrentGrouping);
             updateGroupingActions();
         }
-        this.getSite().getActionBars().updateActionBars();
+        getSite().getActionBars().updateActionBars();
     }
     
     @Override
@@ -272,9 +292,11 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     
     @Override
     public void makeContributions(IMenuManager menuManager,
-            IToolBarManager toolBarManager, IStatusLineManager statusLineManager) {
-        final IPreferenceStore prefs = EditorUtil.getPreferences();
-        Action showLocAction = new Action("Show Full Paths", AS_CHECK_BOX) {
+            IToolBarManager toolBarManager, 
+            IStatusLineManager statusLineManager) {
+        final IPreferenceStore prefs = getPreferences();
+        Action showLocAction = 
+                new Action("Show Full Paths", AS_CHECK_BOX) {
             @Override
             public void run() {
                 prefs.setValue(FULL_LOC_SEARCH_RESULTS, isChecked());
@@ -283,17 +305,18 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         };
         showLocAction.setChecked(prefs.getBoolean(FULL_LOC_SEARCH_RESULTS));
         menuManager.add(showLocAction);
-        super.makeContributions(menuManager, toolBarManager, statusLineManager);
+        super.makeContributions(menuManager, 
+                toolBarManager, 
+                statusLineManager);
         Action configureAction = 
                 new Action("Configure Labels...", 
                         CeylonPlugin.getInstance().getImageRegistry()
-                        .getDescriptor(CeylonResources.CONFIG_LABELS)) {
+                                .getDescriptor(CONFIG_LABELS)) {
             @Override
             public void run() {
-                PreferencesUtil.createPreferenceDialogOn(
-                        getSite().getShell(), 
+                createPreferenceDialogOn(getSite().getShell(), 
                         CeylonPreferencePage.ID, 
-                        new String[] {CeylonPreferencePage.ID}, 
+                        new String[] { CeylonPreferencePage.ID }, 
                         null).open();
             }
         };
