@@ -301,7 +301,7 @@ public class ModuleDependencies {
         for (ModuleImport imp : module.getImports()) {
             Module importedModule = imp.getModule();
             if (importedModule.equals(module.getLanguageModule())) {
-                return;
+                continue;
             }
 
             checkModuleIsComplete(importedModule);
