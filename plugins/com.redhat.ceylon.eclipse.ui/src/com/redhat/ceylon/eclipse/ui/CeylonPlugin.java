@@ -4,7 +4,6 @@ import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
@@ -57,7 +56,11 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     public static final String EMBEDDED_REPO_PLUGIN_ID = "com.redhat.ceylon.dist.repo";
     public static final String LANGUAGE_ID = "ceylon";
     public static final String EDITOR_ID = PLUGIN_ID + ".editor";
+    private static final String[] MODULE_LAUNCHER_LIBRARIES = new String[]{ 
+        "ceylon.bootstrap-"+Versions.CEYLON_VERSION_NUMBER+".jar" 
+    };
     private static final String[] RUNTIME_LIBRARIES = new String[]{
+        "ceylon.bootstrap-"+Versions.CEYLON_VERSION_NUMBER+".car",
         "com.redhat.ceylon.compiler.java-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+".jar",
@@ -231,22 +234,10 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     }
 
     /**
-     * Returns the list of jars in the bundled lib folder required to launch a module 
+     * Returns the list of jars required to launch a module 
      */
     public static List<String> getModuleLauncherJars(){
-        try {
-            Bundle bundle = Platform.getBundle(DIST_PLUGIN_ID);
-            Path path = new Path("lib");
-            URL eclipseUrl = FileLocator.find(bundle, path, null);
-            URL fileURL = FileLocator.resolve(eclipseUrl);
-            File libDir = new File(fileURL.getPath());
-            List<String> jars = new ArrayList<String>();
-            jars.add(new File(libDir, "ceylon-bootstrap.jar").getAbsolutePath());
-            return jars;
-        } catch (IOException x) {
-            x.printStackTrace();
-            return Collections.emptyList();
-        }
+        return getRequiredJars(MODULE_LAUNCHER_LIBRARIES);
     }
 
     private static List<String> getRequiredJars(String[] libraries){
