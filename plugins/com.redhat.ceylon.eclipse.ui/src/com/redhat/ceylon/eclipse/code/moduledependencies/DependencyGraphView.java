@@ -18,6 +18,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolygonDecoration;
+import org.eclipse.draw2d.Polyline;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jface.action.Action;
@@ -49,8 +50,11 @@ import org.eclipse.zest.core.viewers.ISelfStyleProvider;
 import org.eclipse.zest.core.widgets.GraphConnection;
 import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
+import org.eclipse.zest.layouts.LayoutAlgorithm;
 import org.eclipse.zest.layouts.LayoutStyles;
 import org.eclipse.zest.layouts.algorithms.HorizontalTreeLayoutAlgorithm;
+import org.eclipse.zest.layouts.algorithms.RadialLayoutAlgorithm;
+import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.eclipse.zest.layouts.algorithms.TreeLayoutAlgorithm;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
@@ -71,6 +75,42 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class DependencyGraphView extends ViewPart implements IShowInTarget, ICeylonModelListener {
 
+    private enum Layout {
+        spring("Spring"),
+        radial("Radial"),
+        horizonatlTree("Horizontal Tree"),
+        verticalTree("Vertical Tree");
+        
+        String label;
+        private Layout(String label) {
+            this.label = label;
+        }
+        
+        @Override
+        public String toString() {
+            return label;
+        }
+        
+        public LayoutAlgorithm getLayoutAlgorithm() {
+            switch(this) {
+                case spring : 
+                    SpringLayoutAlgorithm sla = new SpringLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING);
+                    return sla;
+                case radial : 
+                    RadialLayoutAlgorithm rla = new RadialLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING);
+                    rla.setRangeToLayout(-1.41, 1.41);
+                    return rla;
+                case horizonatlTree : 
+                    return new HorizontalTreeLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING);
+                case verticalTree : 
+                    return new TreeLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING);
+            }
+            return null;
+        }
+        
+        public final static Layout[] values = Layout.values();
+    }
+    
     static final String ID = PLUGIN_ID + ".view.DependencyGraphView";
 
     private IProject project;
@@ -80,7 +120,10 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
     
     private GraphViewer viewer;
     private Combo projectCombo;
+    private Combo viewCombo;
+    private Image overridesImage = null;
 
+    
     public void setProject(IProject project) {
         if (project!=null) {
             this.project = project;
@@ -199,15 +242,21 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                 }
             }
             if (overriding) {
-                connection.setImage(CeylonPlugin.imageRegistry.get(CeylonResources.CEYLON_DELETE_IMPORT));
+                connection.setLineColor(connection.getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE));
+                connection.setImage(overridesImage);
             }
             Label tooltip = new Label(tooltipText);
             connection.setTooltip(tooltip);
             connection.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
             Connection figure = connection.getConnectionFigure();
+            if (figure instanceof Polyline) {
+                ((Polyline) figure).setAntialias(SWT.ON);
+            }
             PolygonDecoration decoration = new PolygonDecoration();
             decoration.setFill(true);
             decoration.setLineWidth(connection.getLineWidth());
+            decoration.setLineJoin(SWT.JOIN_ROUND);
+            decoration.setAntialias(SWT.ON);
             ((PolylineConnection) figure).setTargetDecoration(decoration);
         }
         
@@ -271,29 +320,69 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
         }
     }
 
-
+    
     @Override
     public void createPartControl(Composite parent) {
         setPartName("Ceylon Module Dependencies");
 //        setContentDescription("Ceylon module dependencies");
-        parent.setLayout(new GridLayout(2, false));
+        parent.setLayout(new GridLayout(4, false));
         initProjectCombo(parent);
+        initViewCombo(parent);
         createViewer(parent);
         createMenu();
         setProject(projectMap.get(projectCombo.getText()));
         CeylonBuilder.addModelListener(this);
     }
 
+    LayoutAlgorithm getCurrentLayoutAlgorithm() {
+        int index = viewCombo.getSelectionIndex();
+        if (index > -1) {
+            return Layout.values[index].getLayoutAlgorithm();
+        }
+        return new HorizontalTreeLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING);
+    }
+    
     protected void createViewer(Composite parent) {
+        Image iconImage = CeylonPlugin.imageRegistry.get(CeylonResources.CEYLON_DELETE_IMPORT);
+        overridesImage = new Image(iconImage.getDevice(), iconImage.getImageData().scaledTo(20, 20));
+        overridesImage.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_RED));
         viewer = new GraphViewer(parent, SWT.NONE);
         viewer.getGraphControl()
                 .setNodeStyle(ZestStyles.NODES_NO_LAYOUT_RESIZE);
         viewer.setContentProvider(new GraphContentProvider());
         viewer.setLabelProvider(new GraphLabelProvider());
-        TreeLayoutAlgorithm tla = 
-                new HorizontalTreeLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING);
-        viewer.setLayoutAlgorithm(tla);
-        viewer.getControl().setLayoutData(GridDataFactory.fillDefaults().span(2, 1).grab(true, true).create());
+        viewer.setLayoutAlgorithm(getCurrentLayoutAlgorithm());
+        viewer.getControl().setLayoutData(GridDataFactory.fillDefaults().span(4, 1).grab(true, true).create());
+
+    }
+    
+    private void initViewCombo(Composite parent) {
+        org.eclipse.swt.widgets.Label graphLayoutLabel = 
+                new org.eclipse.swt.widgets.Label(parent, SWT.RIGHT | SWT.WRAP);
+        graphLayoutLabel.setText("Select the graph layout");
+        GridData gd = GridDataFactory.swtDefaults().align(SWT.END, SWT.CENTER).create();
+        graphLayoutLabel.setLayoutData(gd);
+        
+        viewCombo = new Combo(parent, SWT.SINGLE | SWT.BORDER | SWT.READ_ONLY);
+        viewCombo.setLayoutData(GridDataFactory.swtDefaults().hint(120, SWT.DEFAULT).create());
+        viewCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    viewer.setLayoutAlgorithm(getCurrentLayoutAlgorithm());
+                    viewer.applyLayout();
+                } catch(Exception ex){
+                    e.doit = false;
+                }
+            }
+        });
+        
+        List<String> items = new ArrayList<>(Layout.values.length);
+        for (Layout layout : Layout.values) {
+            items.add(layout.toString());
+        }
+        viewCombo.setItems(items.toArray(new String[0]));
+        viewCombo.setText(viewCombo.getItem(0));
     }
     
     private void initProjectCombo(Composite parent) {
@@ -304,7 +393,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
         projectLabel.setLayoutData(gd);
         
         projectCombo = new Combo(parent, SWT.SINGLE | SWT.BORDER | SWT.READ_ONLY);
-        projectCombo.setLayoutData(GridDataFactory.swtDefaults().hint(120, SWT.DEFAULT).create());
+        projectCombo.setLayoutData(GridDataFactory.swtDefaults().hint(200, SWT.DEFAULT).create());
         projectCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -511,9 +600,9 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
             return;
         }
         viewer.setInput(dependencies);
-        viewer.refresh();
-        viewer.applyLayout();
     }
+    
+    
     
     @Override
     public void dispose() {
