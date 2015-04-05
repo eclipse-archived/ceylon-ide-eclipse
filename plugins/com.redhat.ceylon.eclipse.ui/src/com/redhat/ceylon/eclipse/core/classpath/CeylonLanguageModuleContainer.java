@@ -62,8 +62,8 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
                     moduleName,
                     moduleVersion,
                     repoManager.getArtifact(new ArtifactContext(moduleName,moduleVersion, ArtifactContext.SRC)));
-            IPath ceylonLanguageSources = new Path(ceylonLanguageJavaSources != null ? 
-                    ceylonLanguageJavaSources.getAbsolutePath() : null);
+            IPath ceylonLanguageSources = ceylonLanguageJavaSources != null ? 
+                    new Path(ceylonLanguageJavaSources.getAbsolutePath()) : null;
             IClasspathEntry entry = newLibraryEntry(ceylonLanguageBinaries, ceylonLanguageSources, null);
             entries = new IClasspathEntry[] { entry };
         }
