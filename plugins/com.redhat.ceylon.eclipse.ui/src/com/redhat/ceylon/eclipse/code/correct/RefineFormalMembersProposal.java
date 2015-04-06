@@ -85,7 +85,8 @@ class RefineFormalMembersProposal implements ICompletionProposal,
     public StyledString getStyledDisplayString() {
         TriggerSequence binding = 
                 getCommandBinding("com.redhat.ceylon.eclipse.ui.action.refineFormalMembers");
-        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        String hint = binding==null ? 
+                "" : " (" + binding.format() + ")";
         return Highlights.styleProposal(getDisplayString(), false)
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }
@@ -132,6 +133,10 @@ class RefineFormalMembersProposal implements ICompletionProposal,
             body = ((Tree.ObjectDefinition) node).getClassBody();
             offset = -1;
         }
+        else if (node instanceof Tree.ObjectExpression) {
+            body = ((Tree.ObjectExpression) node).getClassBody();
+            offset = -1;
+        }
         else if (node instanceof Tree.ClassBody || 
                 node instanceof Tree.InterfaceBody) {
             body = (Tree.Body) node;
@@ -147,8 +152,10 @@ class RefineFormalMembersProposal implements ICompletionProposal,
             //TODO run a visitor to find the containing body!
             return; //TODO popup error dialog
         }
-        boolean isInterface = body instanceof Tree.InterfaceBody;
-        List<Statement> statements = body.getStatements();
+        boolean isInterface = 
+                body instanceof Tree.InterfaceBody;
+        List<Tree.Statement> statements = 
+                body.getStatements();
         String indent;
 //        String bodyIndent = getIndent(body, document);
         String bodyIndent = getIndent(node, document);
@@ -158,13 +165,15 @@ class RefineFormalMembersProposal implements ICompletionProposal,
             if (offset<0) offset = body.getStartIndex()+1;
         }
         else {
-            Statement statement = statements.get(statements.size()-1);
+            Tree.Statement statement = 
+                    statements.get(statements.size()-1);
             indent = delim + getIndent(statement, document);
             if (offset<0) offset = statement.getStopIndex()+1;
         }
         StringBuilder result = new StringBuilder();
         Set<Declaration> already = new HashSet<Declaration>();
-        ClassOrInterface ci = (ClassOrInterface) node.getScope();
+        ClassOrInterface ci = 
+                (ClassOrInterface) node.getScope();
         Unit unit = node.getUnit();
         Set<String> ambiguousNames = new HashSet<String>();
         //TODO: does not return unrefined overloaded  
@@ -178,7 +187,8 @@ class RefineFormalMembersProposal implements ICompletionProposal,
                 try {
                     if (d.isFormal() && 
                             ci.isInheritedFromSupertype(d)) {
-                        appendRefinementText(isInterface, indent, result, ci, unit, d);
+                        appendRefinementText(isInterface, indent, 
+                                result, ci, unit, d);
                         importSignatureTypes(d, rootNode, already);
                         ambiguousNames.add(d.getName());
                     }
@@ -188,16 +198,19 @@ class RefineFormalMembersProposal implements ICompletionProposal,
                 }
             }
         }
-        for (TypeDeclaration superType: ci.getSupertypeDeclarations()) {
+        for (TypeDeclaration superType: 
+                ci.getSupertypeDeclarations()) {
             for (Declaration m: superType.getMembers()) {
                 try {
                     if (m.isShared()) {
-                        Declaration r = ci.getMember(m.getName(), null, false);
+                        Declaration r = 
+                                ci.getMember(m.getName(), null, false);
                         if ((r==null || 
                                 !r.refines(m) && 
                                 !r.getContainer().equals(ci)) && 
                                 ambiguousNames.add(m.getName())) {
-                            appendRefinementText(isInterface, indent, result, ci, unit, m);
+                            appendRefinementText(isInterface, indent, 
+                                    result, ci, unit, m);
                             importSignatureTypes(m, rootNode, already);
                         }
                     }
@@ -209,7 +222,8 @@ class RefineFormalMembersProposal implements ICompletionProposal,
         }
         
         try {
-            if (document.getChar(offset)=='}' && result.length()>0) {
+            if (document.getChar(offset)=='}' && 
+                    result.length()>0) {
                 result.append(delim).append(bodyIndent);
             }
         } 
@@ -228,17 +242,21 @@ class RefineFormalMembersProposal implements ICompletionProposal,
         }
     }
 
-    private void appendRefinementText(boolean isInterface, String indent,
-            StringBuilder result, ClassOrInterface ci, Unit unit, 
-            Declaration member) {
-        ProducedReference pr = getRefinedProducedReference(ci, member);
-        String rtext = getRefinementTextFor(member, pr, unit, 
-                isInterface, ci, indent, true);
+    private void appendRefinementText(boolean isInterface, 
+            String indent, StringBuilder result, 
+            ClassOrInterface ci, Unit unit, Declaration member) {
+        ProducedReference pr = 
+                getRefinedProducedReference(ci, member);
+        String rtext = 
+                getRefinementTextFor(member, pr, unit, 
+                        isInterface, ci, indent, true);
         result.append(indent).append(rtext).append(indent);
     }
     
-    static void addRefineFormalMembersProposal(Collection<ICompletionProposal> proposals, 
-            Node node, Tree.CompilationUnit rootNode, boolean ambiguousError) {
+    static void addRefineFormalMembersProposal(
+            Collection<ICompletionProposal> proposals, 
+            Node node, Tree.CompilationUnit rootNode, 
+            boolean ambiguousError) {
         for (ICompletionProposal p: proposals) {
             if (p instanceof RefineFormalMembersProposal) {
                 return;
@@ -248,7 +266,8 @@ class RefineFormalMembersProposal implements ICompletionProposal,
                 node instanceof Tree.InterfaceBody ||
                 node instanceof Tree.ClassDefinition ||
                 node instanceof Tree.InterfaceDefinition ||
-                node instanceof Tree.ObjectDefinition) {
+                node instanceof Tree.ObjectDefinition ||
+                node instanceof Tree.ObjectExpression) {
             Scope scope = node.getScope();
             if (scope instanceof ClassOrInterface) {
                 ClassOrInterface ci = (ClassOrInterface) scope;
