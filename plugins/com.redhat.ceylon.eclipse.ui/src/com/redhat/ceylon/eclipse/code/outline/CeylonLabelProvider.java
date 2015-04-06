@@ -12,9 +12,9 @@ import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
-import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
@@ -23,6 +23,8 @@ import static org.eclipse.jface.viewers.IDecoration.TOP_LEFT;
 import static org.eclipse.jface.viewers.IDecoration.TOP_RIGHT;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -815,11 +817,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                             if (names && types) label.append(' ');
                             if (names) {
                                 label.append(name(td.getIdentifier()), ID_STYLER);
-                                if (p instanceof Tree.FunctionalParameterDeclaration) {
-                                    for (Tree.ParameterList ipl: 
-                                        ((Tree.MethodDeclaration) td).getParameterLists()) {
-                                        parameters(ipl, label);
-                                    }
+                            }
+                            if (p instanceof Tree.FunctionalParameterDeclaration) {
+                                List<Tree.ParameterList> pls = 
+                                        ((Tree.MethodDeclaration) td).getParameterLists();
+                                if (!names) {
+                                    pls = new ArrayList<Tree.ParameterList>(pls);
+                                    Collections.reverse(pls);
+                                }
+                                for (Tree.ParameterList ipl: pls) {
+                                    parameters(ipl, label);
                                 }
                             }
                         }
