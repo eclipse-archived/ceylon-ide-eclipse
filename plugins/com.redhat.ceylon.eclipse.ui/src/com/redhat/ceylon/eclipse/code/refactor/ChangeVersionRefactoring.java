@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +24,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ChangeVersionRefactoring extends AbstractRefactoring {
     
@@ -48,7 +49,8 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
                     nodes.add(version);
                 }
                 Tree.QuotedLiteral ql = that.getQuotedLiteral();
-                if (ql!=null && ql.getText().equals('"' + name + '"')) {
+                if (ql!=null && 
+                        ql.getText().equals('"' + name + '"')) {
                     nodes.add(version);
                 }
             }
@@ -61,7 +63,7 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
                 Tree.ImportPath ip = that.getImportPath();
                 if (ip!=null && ip.getModel()!=null &&
                         ip.getModel().getNameAsString()
-                        .equals(module.getNameAsString())) {
+                          .equals(module.getNameAsString())) {
                     nodes.add(version);
                 }
             }
@@ -93,12 +95,14 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
     }
 
     public int getCount() {
-        return module==null ? 0 : countDeclarationOccurrences();
+        return module==null ? 
+                0 : countDeclarationOccurrences();
     }
     
     @Override
     int countReferences(Tree.CompilationUnit cu) {
-        FindVersionReferenceVisitor frv = new FindVersionReferenceVisitor(module);
+        FindVersionReferenceVisitor frv = 
+                new FindVersionReferenceVisitor(module);
         cu.visit(frv);
         return frv.getNodes().size();
     }
@@ -118,29 +122,35 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
         return new RefactoringStatus();
     }
 
-    public CompositeChange createChange(IProgressMonitor pm) throws CoreException,
-            OperationCanceledException {
+    public CompositeChange createChange(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
-        CompositeChange cc = new CompositeChange(getName());
+        CompositeChange cc = 
+                new CompositeChange(getName());
         int i=0;
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange(pu);
-                renameInFile(tfc, cc, pu.getCompilationUnit());
+                TextFileChange tfc = 
+                        newTextFileChange(pu);
+                renameInFile(tfc, cc, 
+                        pu.getCompilationUnit());
                 pm.worked(i++);
             }
         }
         if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
-            renameInFile(dc, cc, editor.getParseController().getRootNode());
+            Tree.CompilationUnit rn = 
+                    editor.getParseController().getRootNode();
+            renameInFile(dc, cc, rn);
             pm.worked(i++);
         }
         pm.done();
         return cc;
     }
 
-    private void renameInFile(TextChange tfc, CompositeChange cc, Tree.CompilationUnit root) {
+    private void renameInFile(TextChange tfc, CompositeChange cc, 
+            Tree.CompilationUnit root) {
         tfc.setEdit(new MultiTextEdit());
         if (module!=null) {
             for (Node node: getNodesToRename(root)) {
@@ -154,16 +164,20 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
     
     public List<Node> getNodesToRename(Tree.CompilationUnit root) {
         ArrayList<Node> list = new ArrayList<Node>();
-        FindVersionReferenceVisitor frv = new FindVersionReferenceVisitor(module);
+        FindVersionReferenceVisitor frv = 
+                new FindVersionReferenceVisitor(module);
         root.visit(frv);
         list.addAll(frv.getNodes());
         return list;
     }
     
-    protected void renameNode(TextChange tfc, Node node, Tree.CompilationUnit root) {
-        Node identifyingNode = Nodes.getIdentifyingNode(node);
-        tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex()+1, 
-                identifyingNode.getText().length()-2, newVersion));
+    protected void renameNode(TextChange tfc, Node node, 
+            Tree.CompilationUnit root) {
+        Node identifyingNode = getIdentifyingNode(node);
+        int start = identifyingNode.getStartIndex() + 1;
+        int length = identifyingNode.getText().length() - 2;
+        tfc.addEdit(new ReplaceEdit(start, length, 
+                newVersion));
     }
 
     public void setNewVersion(String text) {

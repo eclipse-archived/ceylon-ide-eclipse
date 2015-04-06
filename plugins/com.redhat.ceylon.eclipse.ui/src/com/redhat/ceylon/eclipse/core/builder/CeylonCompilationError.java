@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,7 +22,6 @@ import org.eclipse.core.resources.IProject;
 
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 //This is bullshit. The IDE should have a nice way of converting
 //compilation units into objects that can be shown in the problems
@@ -132,7 +133,8 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
     @Override
     public long getStartPosition() {
         int startOffset = 0;
-        Node errorNode = Nodes.getIdentifyingNode(err.getTreeNode());
+        Node errorNode = 
+                getIdentifyingNode(err.getTreeNode());
         if (errorNode == null) {
             errorNode = err.getTreeNode();
         }
@@ -146,7 +148,8 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
     @Override
     public long getEndPosition() {
         int endOffset = 0;
-        Node errorNode = Nodes.getIdentifyingNode(err.getTreeNode());
+        Node errorNode = 
+                getIdentifyingNode(err.getTreeNode());
         if (errorNode == null) {
             errorNode = err.getTreeNode();
         }
@@ -165,7 +168,8 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
     @Override
     public long getColumnNumber() {
         int startCol = 0;
-        Node errorNode = Nodes.getIdentifyingNode(err.getTreeNode());
+        Node errorNode = 
+                getIdentifyingNode(err.getTreeNode());
         if (errorNode == null) {
             errorNode = err.getTreeNode();
         }
