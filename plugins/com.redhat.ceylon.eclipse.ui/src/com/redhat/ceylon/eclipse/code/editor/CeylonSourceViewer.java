@@ -12,6 +12,10 @@ package com.redhat.ceylon.eclipse.code.editor;
 *******************************************************************************/
 
 
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
@@ -32,6 +36,7 @@ import java.util.regex.Pattern;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.AbstractInformationControlManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
@@ -74,32 +79,38 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
-     * Text operation code for requesting the outline for the current input.
+     * Text operation code for requesting the outline for 
+     * the current input.
      */
     public static final int SHOW_OUTLINE= 51;
 
     /**
-     * Text operation code for requesting the outline for the element at the current position.
+     * Text operation code for requesting the outline for 
+     * the element at the current position.
      */
     public static final int OPEN_STRUCTURE= 52;
 
     /**
-     * Text operation code for requesting the hierarchy for the current input.
+     * Text operation code for requesting the hierarchy for 
+     * the current input.
      */
     public static final int SHOW_HIERARCHY= 53;
 
     /**
-     * Text operation code for requesting the code for the current input.
+     * Text operation code for requesting the code for the 
+     * current input.
      */
     public static final int SHOW_DEFINITION= 56;
 
     /**
-     * Text operation code for requesting the references for the current input.
+     * Text operation code for requesting the references for 
+     * the current input.
      */
     public static final int SHOW_REFERENCES= 59;
 
     /**
-     * Text operation code for toggling the commenting of a selected range of text, or the current line.
+     * Text operation code for toggling the commenting of a 
+     * selected range of text, or the current line.
      */
     public static final int TOGGLE_COMMENT= 54;
     
@@ -108,18 +119,20 @@ public class CeylonSourceViewer extends ProjectionViewer {
     public static final int REMOVE_BLOCK_COMMENT= 58;
 
     /**
-     * Text operation code for toggling the display of "occurrences" of the
-     * current selection, whatever that means to the current language.
+     * Text operation code for toggling the display of 
+     * "occurrences" of the current selection.
      */
     public static final int MARK_OCCURRENCES= 55;
 
     /**
-     * Text operation code for correcting the indentation of the currently selected text.
+     * Text operation code for correcting the indentation of 
+     * the currently selected text.
      */
     public static final int CORRECT_INDENTATION= 60;
 
     /**
-     * Text operation code for requesting the hierarchy for the current input.
+     * Text operation code for requesting the hierarchy for 
+     * the current input.
      */
     public static final int SHOW_IN_HIERARCHY_VIEW= 70;
 
@@ -216,7 +229,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 return;
             case CORRECT_INDENTATION:
                 Point selectedRange = getSelectedRange();
-                doCorrectIndentation(selectedRange.x, selectedRange.y);
+                doCorrectIndentation(selectedRange.x, 
+                        selectedRange.y);
                 return;
             case PASTE:
                 if (localPaste()) return;
@@ -243,11 +257,13 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
     }
 
-    public void showHierarchy() throws PartInitException {
+    public void showHierarchy() 
+            throws PartInitException {
         showHierarchyView().focusOnSelection(editor);
     }
     
-    private void afterCopyCut(String selection, Map<Declaration,String> imports) {
+    private void afterCopyCut(String selection, 
+            Map<Declaration,String> imports) {
         if (imports!=null && 
                 !editor.isBlockSelectionModeEnabled()) {
             char c = 
@@ -350,42 +366,53 @@ public class CeylonSourceViewer extends ProjectionViewer {
                                     tokens.getTokens());
                     boolean quoted;
                     boolean verbatim;
+//                    int startOfTokenInLine;
                     if (token == null) {
                         quoted = false;
                         verbatim = false;
+//                        startOfTokenInLine = -1;
                     }
                     else {
                         int tt = token.getType();
-                        quoted = tt==CeylonLexer.ASTRING_LITERAL ||
-                                tt==CeylonLexer.STRING_LITERAL || 
-                                tt==CeylonLexer.STRING_END || 
-                                tt==CeylonLexer.STRING_END || 
-                                tt==CeylonLexer.STRING_MID;
-                        verbatim = token.getText().startsWith("\"\"\"");
+                        quoted = 
+                                tt==ASTRING_LITERAL ||
+                                tt==STRING_LITERAL || 
+                                tt==STRING_END || 
+                                tt==STRING_END || 
+                                tt==STRING_MID;
+                        verbatim = 
+                                token.getText()
+                                     .startsWith("\"\"\"");
+//                        startOfTokenInLine = 
+//                                token.getCharPositionInLine() + 
+//                                (verbatim ? 3 : 1);
                     }
                     
                     try {
-                        boolean startOfLine = false;
+                        boolean startOfLineOrQuotedToken;
                         try {
                             int lineStart = 
                                     doc.getLineInformationOfOffset(offset)
-                                        .getOffset();
-                            startOfLine = 
-                                    doc.get(lineStart, offset-lineStart)
-                                        .trim().isEmpty();
+                                       .getOffset();
+                            int positionInLine = offset-lineStart;
+                            startOfLineOrQuotedToken = 
+//                                    startOfTokenInLine == positionInLine ||
+                                    doc.get(lineStart, positionInLine)
+                                       .trim().isEmpty();
                         }
                         catch (BadLocationException e) {
                             e.printStackTrace();
+                            startOfLineOrQuotedToken = false;
                         }
+                        IPreferenceStore prefs = getPreferences();
                         try {
                             MultiTextEdit edit = new MultiTextEdit();
                             if (!quoted && imports!=null &&
-                                    getPreferences().getBoolean(PASTE_IMPORTS)) {
+                                    prefs.getBoolean(PASTE_IMPORTS)) {
                                 pasteImports(imports, edit, text, doc);
                             }
                             if (quoted && !verbatim && !fromStringLiteral &&
-                                    getPreferences()
-                                        .getBoolean(PASTE_ESCAPE_QUOTED)) {
+                                    prefs.getBoolean(PASTE_ESCAPE_QUOTED)) {
                                 text = text
                                         .replace("\\", "\\\\")
                                         .replace("\t", "\\t")
@@ -394,18 +421,16 @@ public class CeylonSourceViewer extends ProjectionViewer {
                             }
                             edit.addChild(new ReplaceEdit(offset, length, text));
                             edit.apply(doc);
-                            endOffset = 
-                                    edit.getRegion().getOffset() + 
-                                    edit.getRegion().getLength();
+                            IRegion region = edit.getRegion();
+                            endOffset = region.getOffset() + region.getLength();
                         } 
                         catch (Exception e) {
                             e.printStackTrace();
                             return false;
                         }
                         try {
-                            if (startOfLine && 
-                                    getPreferences()
-                                        .getBoolean(PASTE_CORRECT_INDENTATION)) {
+                            if (startOfLineOrQuotedToken && 
+                                    prefs.getBoolean(PASTE_CORRECT_INDENTATION)) {
                                 endOffset = 
                                         correctSourceIndentation(endOffset-text.length(), 
                                                 text.length(), doc)+1;
@@ -434,28 +459,6 @@ public class CeylonSourceViewer extends ProjectionViewer {
             return false;
         }
     }
-    
-    /*private void afterPaste(StyledText textWidget) {
-        Clipboard clipboard= new Clipboard(textWidget.getDisplay());
-        try {
-            List<Declaration> imports = (List<Declaration>) clipboard.getContents(ImportsTransfer.INSTANCE);
-            if (imports!=null) {
-                MultiTextEdit edit = new MultiTextEdit();
-                pasteImports(imports, edit);
-                if (edit.hasChildren()) {
-                    try {
-                        edit.apply(getDocument());
-                    } 
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        finally {
-            clipboard.dispose();
-        }
-    }*/
     
     private void addBlockComment() {
         IDocument doc = this.getDocument();
@@ -694,7 +697,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
         }
     }
 
-    public int correctSourceIndentation(int selStart, int selLen, IDocument doc)
+    public int correctSourceIndentation(int selStart, int selLen, 
+            IDocument doc)
             throws BadLocationException {
         int selEnd = selStart + selLen;
         int startLine = doc.getLineOfOffset(selStart);
@@ -758,27 +762,32 @@ public class CeylonSourceViewer extends ProjectionViewer {
             CeylonSourceViewerConfiguration svc = 
                     (CeylonSourceViewerConfiguration) configuration;
             
-            outlinePresenter = svc.getOutlinePresenter(this);
+            outlinePresenter = 
+                    svc.getOutlinePresenter(this);
             if (outlinePresenter!=null) {
                 outlinePresenter.install(this);
             }
             
-            structurePresenter = svc.getOutlinePresenter(this);
+            structurePresenter = 
+                    svc.getOutlinePresenter(this);
             if (structurePresenter!=null) {
                 structurePresenter.install(this);
             }
             
-            hierarchyPresenter = svc.getHierarchyPresenter(this);
+            hierarchyPresenter = 
+                    svc.getHierarchyPresenter(this);
             if (hierarchyPresenter!=null) {
                 hierarchyPresenter.install(this);
             }
             
-            definitionPresenter = svc.getDefinitionPresenter(this);
+            definitionPresenter = 
+                    svc.getDefinitionPresenter(this);
             if (definitionPresenter!=null) {
                 definitionPresenter.install(this);
             }
             
-            referencesPresenter = svc.getReferencesPresenter(this);
+            referencesPresenter = 
+                    svc.getReferencesPresenter(this);
             if (referencesPresenter!=null) {
                 referencesPresenter.install(this);
             }
