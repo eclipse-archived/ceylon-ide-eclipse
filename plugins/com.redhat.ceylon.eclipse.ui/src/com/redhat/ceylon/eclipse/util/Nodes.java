@@ -241,7 +241,10 @@ public class Nodes {
                     ((Tree.Declaration) node).getIdentifier();
             if (identifier==null && 
                     !(node instanceof Tree.MissingDeclaration)) {
-                identifier = new Tree.Identifier(new CommonToken(node.getMainToken())); 
+                //TODO: whoah! this is really ugly!
+                CommonToken fakeToken = 
+                        new CommonToken(node.getMainToken());
+                identifier = new Tree.Identifier(fakeToken); 
             }
             return identifier;
         }
@@ -290,6 +293,22 @@ public class Nodes {
         else if (node instanceof Tree.TypeLiteral) {
             return getIdentifyingNode(((Tree.TypeLiteral) node).getType());
         }
+        //TODO: this would be better for navigation to refinements
+        //      so I guess we should split this method into two
+        //      versions :-/
+        /*else if (node instanceof Tree.SpecifierStatement) {
+            Tree.SpecifierStatement st = (Tree.SpecifierStatement) node;
+            if (st.getRefinement()) {
+                Tree.Term lhs = st.getBaseMemberExpression();
+                while (lhs instanceof Tree.ParameterizedExpression) {
+                    lhs = ((Tree.ParameterizedExpression) lhs).getPrimary();
+                }
+                if (lhs instanceof Tree.StaticMemberOrTypeExpression) {
+                    return ((Tree.StaticMemberOrTypeExpression) lhs).getIdentifier();
+                }
+            }
+            return node;
+        }*/
         else {    
             return node;
         }
