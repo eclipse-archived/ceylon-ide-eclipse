@@ -454,12 +454,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return new StyledString(((IJavaProject) element).getElementName());
         }
         else if (element instanceof IPackageFragment) {
-            String packageName = ((IPackageFragment) element).getElementName();
-            if (packageName.isEmpty()) packageName = "(default package)";
+            IPackageFragment pf = (IPackageFragment) element;
+            String packageName = pf.getElementName();
+            if (packageName.isEmpty()) {
+                packageName = "(default package)";
+            }
             return new StyledString(packageName, PACKAGE_STYLER);
         }
         else if (element instanceof IPackageFragmentRoot) {
-            boolean isCar = ((IPackageFragmentRoot) element).getPath().getFileExtension()!=null;
+            IPackageFragmentRoot pfr = (IPackageFragmentRoot) element;
+            boolean isCar = pfr.getPath().getFileExtension()!=null;
             String name = ((IJavaElement) element).getElementName();
             int loc = name.lastIndexOf('.');
             if (loc>=0) name = name.substring(0, loc);
@@ -473,8 +477,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
         }
         else if (element instanceof IImportDeclaration) {
+            IImportDeclaration id = (IImportDeclaration) element;
             return new StyledString("import ", KW_STYLER)
-                .append(((IImportDeclaration) element).getElementName(), PACKAGE_STYLER);
+                    .append(id.getElementName(), PACKAGE_STYLER);
         }
         else if (element instanceof Package) {
             return new StyledString(getPackageLabel((Package) element), 
