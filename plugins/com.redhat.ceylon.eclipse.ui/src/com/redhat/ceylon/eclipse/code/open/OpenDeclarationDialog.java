@@ -859,8 +859,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private void fill(AbstractContentProvider contentProvider,
             ItemsFilter itemsFilter, JDTModule module, 
             IProgressMonitor monitor) {
-        for (Package pack: 
-                new ArrayList<Package>(module.getPackages())) {
+        ArrayList<Package> copiedPackages = 
+                new ArrayList<Package>(module.getPackages());
+        for (Package pack: copiedPackages) {
             if (!isFiltered(pack)) {
                 for (Declaration dec: pack.getMembers()) {
                     fillDeclarationAndMembers(contentProvider, 
@@ -922,8 +923,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 try {
                     ArrayList<Declaration> copiedMembers = 
                             new ArrayList<Declaration>(dec.getMembers());
-                    for (Declaration member: 
-                            copiedMembers) {
+                    for (Declaration member: copiedMembers) {
                         fillDeclarationAndMembers(contentProvider, 
                                 itemsFilter, module, member);
                     }
