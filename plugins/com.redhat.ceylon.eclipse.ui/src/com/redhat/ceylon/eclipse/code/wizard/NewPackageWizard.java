@@ -52,22 +52,7 @@ public class NewPackageWizard extends Wizard implements INewWizard {
         CeylonPlugin.getInstance().getDialogSettings()
                 .put("sharedPackage", page.isShared());
         IPackageFragment pf = page.getPackageFragment();
-        
-        StringBuilder packageDescriptor = 
-                new StringBuilder();
-        if (page.isShared()) {
-            packageDescriptor.append("shared ");
-        }
-        packageDescriptor
-                .append("package ") 
-                .append(pf.getElementName()) 
-                .append(";")
-                .append(System.lineSeparator());
-        CreateSourceFileOperation op = 
-                new CreateSourceFileOperation(page.getSourceDir(), 
-                        pf, "package", 
-                        page.isIncludePreamble(), 
-                        packageDescriptor.toString());
+        CreateSourceFileOperation op = packageDescriptorOp(pf);
         created = runOperation(op, getContainer());
         if (created) {
             BasicNewResourceWizard.selectAndReveal(op.getFile(), 
@@ -78,6 +63,23 @@ public class NewPackageWizard extends Wizard implements INewWizard {
         else {
             return false;
         }
+    }
+
+    private CreateSourceFileOperation packageDescriptorOp(IPackageFragment pf) {
+        StringBuilder packageDescriptor = 
+                new StringBuilder();
+        if (page.isShared()) {
+            packageDescriptor.append("shared ");
+        }
+        packageDescriptor
+                .append("package ") 
+                .append(pf.getElementName()) 
+                .append(";")
+                .append(System.lineSeparator());
+        return new CreateSourceFileOperation(page.getSourceDir(), 
+                pf, "package", 
+                page.isIncludePreamble(), 
+                packageDescriptor.toString());
     }
 
     @Override
