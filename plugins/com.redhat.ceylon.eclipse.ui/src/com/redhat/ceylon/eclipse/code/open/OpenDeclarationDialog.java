@@ -912,14 +912,18 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (includeDeclaration(module, dec) &&
                 //watch out for dupes!
                 (!module.isProjectModule() || 
-                 !dec.getUnit().getFilename().endsWith(".ceylon"))) {
+                 !dec.getUnit().getFilename()
+                               .endsWith(".ceylon"))) {
             contentProvider.add(new DeclarationProxy(dec), 
                     itemsFilter);
             nameOccurs(dec);
-            if (includeMembers && dec instanceof ClassOrInterface) {
+            if (includeMembers && 
+                    dec instanceof ClassOrInterface) {
                 try {
+                    ArrayList<Declaration> copiedMembers = 
+                            new ArrayList<Declaration>(dec.getMembers());
                     for (Declaration member: 
-                            new ArrayList<Declaration>(dec.getMembers())) {
+                            copiedMembers) {
                         fillDeclarationAndMembers(contentProvider, 
                                 itemsFilter, module, member);
                     }
@@ -935,8 +939,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             ItemsFilter itemsFilter, 
             List<? extends PhasedUnit> units) {
         for (PhasedUnit unit: units) {
-            JDTModule jdtModule = 
-                    (JDTModule) unit.getPackage().getModule();
+            JDTModule jdtModule = (JDTModule) 
+                    unit.getPackage().getModule();
             for (Declaration dec: unit.getDeclarations()) {
                 if (includeDeclaration(jdtModule, dec)) {
                     contentProvider.add(new DeclarationProxy(dec), 
