@@ -576,7 +576,8 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         if (! project.equals(MANAGER.getExternalSourceArchivesProject())) {
             return null;
         }
-        IPath path = resource.getFullPath().makeRelativeTo(project.getFullPath()).makeAbsolute();
+//        IPath path = resource.getFullPath().makeRelativeTo(project.getFullPath()).makeAbsolute();
+        IPath path = new Path(resource.getLocationURI().getPath());
         if (path != null && path.toString().contains(".src!")) {
             return path;
         }
