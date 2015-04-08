@@ -46,7 +46,6 @@ import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -271,9 +270,16 @@ class RefineFormalMembersProposal implements ICompletionProposal,
             Scope scope = node.getScope();
             if (scope instanceof ClassOrInterface) {
                 ClassOrInterface ci = (ClassOrInterface) scope;
+                String name = ci.getName();
+                if (name.startsWith("anonymous#")) {
+                    name = "anonymous class";
+                }
+                else {
+                    name = "'" + name + "'";
+                }
                 String desc = ambiguousError ?
-                        "Refine inherited ambiguous and formal members of '" + ci.getName() + "'":
-                        "Refine inherited formal members of '" + ci.getName() + "'";
+                        "Refine inherited ambiguous and formal members of " + name:
+                        "Refine inherited formal members of " + name;
                 proposals.add(new RefineFormalMembersProposal(node, rootNode, desc));
             }
         }
