@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceStatus;
+import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -31,7 +32,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.internal.core.util.Messages;
@@ -51,19 +51,14 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
     /* Singleton instance */
     private static ExternalSourceArchiveManager MANAGER;
 
-    private ExternalSourceArchiveManager() {
-        // Prevent instantiation
-        // https://bugs.eclipse.org/bugs/show_bug.cgi?id=377806
-        if (Platform.isRunning()) {
-            getSourceArchives();
-        }
+    static {
+        MANAGER = new ExternalSourceArchiveManager();
     }
     
-    public static synchronized ExternalSourceArchiveManager getExternalSourceArchiveManager() {
-        if (MANAGER == null) {
-             MANAGER = new ExternalSourceArchiveManager();
-             ResourcesPlugin.getWorkspace().addResourceChangeListener(MANAGER);
-        }
+    private ExternalSourceArchiveManager() {
+    }
+    
+    public static ExternalSourceArchiveManager getExternalSourceArchiveManager() {
         return MANAGER;
     }
     
@@ -111,22 +106,14 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
     }
 
     private IFolder addSourceArchive(IPath externalSourceArchivePath, IProject externalSourceArchivesProject, boolean scheduleForCreation) {
-        Map<IPath, IResource> knownSourceArchives = getSourceArchives();
-        Object existing = knownSourceArchives.get(externalSourceArchivePath);
-        if (existing != null) {
+        if (archives == null) {
+            return null;
+        }
+        IResource existing = archives.get(externalSourceArchivePath);
+        if (existing != null && existing.exists()) {
             return (IFolder) existing;
         }
-        IFolder result;
-        int counter = 0;
-        do {
-            StringBuilder folderName = new StringBuilder(LINKED_FOLDER_NAME);
-            if (counter > 0) {
-                folderName.append(counter).append('-');
-            }
-            folderName.append(externalSourceArchivePath.lastSegment());
-            result = externalSourceArchivesProject.getFolder(folderName.toString());
-            counter ++;
-        } while (result.exists());
+        IFolder result = externalSourceArchivesProject.getFolder(new Path(externalSourceArchivePath.toString() + "!"));
         if (scheduleForCreation) {
             synchronized(this) {
                 if (pendingSourceArchives == null)
@@ -134,7 +121,7 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
             }
             pendingSourceArchives.add(externalSourceArchivePath);
         }
-        knownSourceArchives.put(externalSourceArchivePath, result);
+        archives.put(externalSourceArchivePath, result);
         return result;
     }
     
@@ -154,11 +141,23 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         return createLinkFolder(externalSourceArchivePath, refreshIfExistAlready, externalSourceArchivesProject, monitor);
     }
 
+    private void createVirtualFolderIfNecessary(IContainer container, IProgressMonitor monitor) throws CoreException {
+        if (container instanceof IFolder && ! container.exists()) {
+            createVirtualFolderIfNecessary(container.getParent(), monitor);
+            ((IFolder) container).create(IResource.VIRTUAL, false, monitor);
+        }
+    }
+    
     private IFolder createLinkFolder(IPath externalSourceArchivePath, boolean refreshIfExistAlready,
                                     IProject externalSourceArchivesProject, IProgressMonitor monitor) throws CoreException {
         
         IFolder result = addSourceArchive(externalSourceArchivePath, externalSourceArchivesProject, false);
-        if (!result.exists()) {
+        URI uri = result.getLocationURI();
+        if (uri == null || !CeylonArchiveFileSystem.SCHEME_CEYLON_ARCHIVE.equals(uri.getScheme())) {
+            createVirtualFolderIfNecessary(result.getParent(), monitor);
+            if (result.exists()) {
+                result.delete(true, monitor);
+            }
             result.createLink(CeylonArchiveFileSystem.toCeylonArchiveURI(externalSourceArchivePath, Path.EMPTY), IResource.ALLOW_MISSING_LOCAL, monitor);
         }
         else if (refreshIfExistAlready)
@@ -190,6 +189,21 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         }
     }
     
+    private void deleteVirtualFolderIfPossible(IContainer container, IProgressMonitor monitor) {
+        try {
+            if (container.exists() 
+                    && container instanceof IFolder
+                    && container.isVirtual() 
+                    && container.members().length == 0) {
+                container.delete(false, monitor);
+                deleteVirtualFolderIfPossible(container.getParent(), monitor);
+            }
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
+    }
+    
+
     public void cleanUp(IProgressMonitor monitor) throws CoreException {
         ArrayList<Entry<IPath, IResource>> toDelete = getSourceArchivesToCleanUp(monitor);
         if (toDelete == null)
@@ -198,6 +212,7 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
             Entry<IPath, IResource> entry = iterator.next();
             IFolder folder = (IFolder) entry.getValue();
             folder.delete(true, monitor);
+            deleteVirtualFolderIfPossible(folder.getParent(), monitor);
             IPath key = (IPath) entry.getKey();
             archives.remove(key);
         }
@@ -207,6 +222,10 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
     }
 
     private ArrayList<Entry<IPath, IResource>> getSourceArchivesToCleanUp(IProgressMonitor monitor) throws CoreException {
+        if (archives == null) {
+            return null;
+        }
+        
         Set<IPath> projectSourcePaths = null;
         for (IProject project : CeylonBuilder.getProjects()) {
             for (JDTModule module : CeylonBuilder.getProjectExternalModules(project)) {
@@ -221,10 +240,9 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         }
         if (projectSourcePaths == null)
             return null;
-        Map<IPath, IResource> knownSourceArchives = getSourceArchives();
         ArrayList<Entry<IPath, IResource>> result = null;
-        synchronized (knownSourceArchives) {
-            Iterator<Entry<IPath, IResource>> iterator = knownSourceArchives.entrySet().iterator();
+        synchronized (archives) {
+            Iterator<Entry<IPath, IResource>> iterator = archives.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<IPath, IResource> entry = iterator.next();
                 IPath path = entry.getKey();
@@ -308,45 +326,90 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
     }
 
     public IFolder getSourceArchive(IPath externalSourceArchivePath) {
-        return (IFolder) getSourceArchives().get(externalSourceArchivePath);
+        return (IFolder) (archives == null ? null : archives.get(externalSourceArchivePath));
     }
+    
+    public void initialize() {
+        final Map<IPath, IResource> tempSourceArchives = new HashMap<>();
+        IProject project = getExternalSourceArchivesProject();
+        try {
+            doInitialize(tempSourceArchives, project);
 
-    private Map<IPath, IResource> getSourceArchives() {
-        if (archives == null) {
-            Map<IPath, IResource> tempSourceArchives = new HashMap<>();
-            IProject project = getExternalSourceArchivesProject();
-            try {
-                if (!project.isAccessible()) {
-                    if (project.exists()) {
-                        // workspace was moved 
-                        openExternalSourceArchivesProject(project, null/*no progress*/);
-                    } else {
-                        // if project doesn't exist, do not open and recreate it as it means that there are no external source archives
-                        return archives = Collections.synchronizedMap(tempSourceArchives);
+            for (IResource value : tempSourceArchives.values()) {
+                if (value.getName().startsWith(LINKED_FOLDER_NAME)) {
+                    try {
+                        project.delete(true, null);
+                        openExternalSourceArchivesProject(project, null);
+                        doInitialize(tempSourceArchives, project);
+                    } catch (CoreException e) {
+                        e.printStackTrace();
                     }
                 }
-                IResource[] members = project.members();
-                for (int i = 0, length = members.length; i < length; i++) {
-                    IResource member = members[i];
-                    if (member.getType() == IResource.FOLDER && member.isLinked() && member.getName().startsWith(LINKED_FOLDER_NAME)) {
-                        String path = member.getLocationURI().getPath();
+            }
+            
+        } catch (CoreException e) {
+            Util.log(e, "Exception while initializing external folders");
+        }
+        archives = Collections.synchronizedMap(tempSourceArchives);
+
+        for (final IProject ceylonProject : CeylonBuilder.getProjects()) {
+            if (CeylonBuilder.isContainerInitialized(ceylonProject)) {
+                // the project container was already initialized
+                //    => restarts an update of the source archives
+                Job refreshProjectExternalSourceArchive = new Job("Update External Ceylon Sources Archives for project " + ceylonProject.getName()) {
+                    protected IStatus run(IProgressMonitor monitor) {
+                        ExternalSourceArchiveManager esam = ExternalSourceArchiveManager.getExternalSourceArchiveManager();
+                        try {
+                            esam.updateProjectSourceArchives(ceylonProject, monitor);
+                        } catch (CoreException e) {
+                            e.printStackTrace();
+                        }
+                        return Status.OK_STATUS;
+                    };
+                };
+                refreshProjectExternalSourceArchive.setRule(ResourcesPlugin.getWorkspace().getRoot());
+                refreshProjectExternalSourceArchive.schedule();
+            }
+        }
+    }
+
+    protected void doInitialize(final Map<IPath, IResource> tempSourceArchives,
+            IProject project) throws CoreException {
+        if (!project.isAccessible()) {
+            if (project.exists()) {
+                // workspace was moved 
+                openExternalSourceArchivesProject(project, null/*no progress*/);
+            } else {
+                // if project doesn't exist, do not open and recreate it as it means that there are no external source archives
+                return;
+            }
+        }
+        project.accept(new IResourceVisitor() {
+            
+            @Override
+            public boolean visit(IResource resource) throws CoreException {
+                if (resource instanceof IFolder
+                        && resource.isLinked()
+                        && ! resource.isVirtual()) {
+                    URI uri = resource.getLocationURI();
+                    if (uri != null && CeylonArchiveFileSystem.SCHEME_CEYLON_ARCHIVE.equals(uri.getScheme())) {
+                        String path = uri.getPath();
                         if (path != null) {
                             if (path.endsWith(CeylonArchiveFileSystem.JAR_SUFFIX)) {
                                 path = path.substring(0, path.length() - 2);
                             }
                             IPath externalSourceArchivePath = new Path(path);
-                            tempSourceArchives.put(externalSourceArchivePath, member);
+                            tempSourceArchives.put(externalSourceArchivePath, resource);
                         }
                     }
+                    return false;
                 }
-            } catch (CoreException e) {
-                Util.log(e, "Exception while initializing external folders");
+
+                return true;
             }
-            archives = Collections.synchronizedMap(tempSourceArchives);
-        }
-        return archives;
+        }, IResource.DEPTH_INFINITE, IContainer.INCLUDE_HIDDEN);
     }
-    
+
     private void runRefreshJob(Collection<IPath> paths) {
         Job[] jobs = Job.getJobManager().find(ResourcesPlugin.FAMILY_MANUAL_REFRESH);
         RefreshJob refreshJob = null;
@@ -410,7 +473,7 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
     }
 
     public IFolder removeSourceArchive(IPath externalSourceArchivePath) {
-        return (IFolder) getSourceArchives().remove(externalSourceArchivePath);
+        return (IFolder) (archives == null ? null : archives.remove(externalSourceArchivePath));
     }
 
     class RefreshJob extends Job {
@@ -486,9 +549,12 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
     }
     
     public static IPath getSourceArchiveFullPath(IFolder sourceArchiveFolder) {
-        for (Entry<IPath, IResource> entry : getExternalSourceArchiveManager().getSourceArchives().entrySet()) {
-            if (entry.getValue().equals(sourceArchiveFolder)) {
-                return entry.getKey();
+        
+        if (MANAGER.archives != null) {
+            for (Entry<IPath, IResource> entry : MANAGER.archives.entrySet()) {
+                if (entry.getValue().equals(sourceArchiveFolder)) {
+                    return entry.getKey();
+                }
             }
         }
         return null;
@@ -510,7 +576,11 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         if (! project.equals(MANAGER.getExternalSourceArchivesProject())) {
             return null;
         }
-        return new Path(resource.getLocationURI().getPath());
+        IPath path = resource.getFullPath().makeRelativeTo(project.getFullPath()).makeAbsolute();
+        if (path != null && path.toString().contains(".src!")) {
+            return path;
+        }
+        return null;
     }
 
     public static IResource toResource(IPath sourceArchiveEntryPath) {
@@ -536,5 +606,21 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         }
         return null;
     }
-
+    
+    public void updateProjectSourceArchives(IProject project, IProgressMonitor monitor) throws CoreException {
+        if (archives != null) {
+            if (CeylonBuilder.allClasspathContainersInitialized()) {
+                cleanUp(monitor);
+            }
+            for (IPath sourceArchivePath : getExternalSourceArchives(CeylonBuilder.getProjectExternalModules(project))) {
+                IFolder sourceArchive = getSourceArchive(sourceArchivePath);
+                if (sourceArchive == null || !sourceArchive.exists()) {
+                    addSourceArchive(sourceArchivePath, true);
+                }
+            }
+            createPendingSourceArchives(monitor);
+        } else {
+            System.out.print("");
+        }
+    }
 }
