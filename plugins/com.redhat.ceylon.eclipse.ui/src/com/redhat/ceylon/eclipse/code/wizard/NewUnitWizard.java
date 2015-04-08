@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.runOperation;
+import static java.lang.Character.isUpperCase;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -57,8 +58,10 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     public boolean performFinish() {
         CreateSourceFileOperation op = 
                 new CreateSourceFileOperation(page.getSourceDir(),
-                        page.getPackageFragment(), page.getUnitName(),
-                        page.isIncludePreamble(), getDeclarationText());
+                        page.getPackageFragment(), 
+                        page.getUnitName(),
+                        page.isIncludePreamble(), 
+                        getDeclarationText());
         if (runOperation(op, getContainer())) {
             IFile file = op.getFile();
             RecentFilesPopup.addToHistory(file);
@@ -74,20 +77,26 @@ public class NewUnitWizard extends Wizard implements INewWizard {
 
     private String getDeclarationText() {
         if (page.isDeclaration()) {
-            String body = pastedText==null ? "{}" : 
-                "{" + System.lineSeparator() + 
-                    pastedText + 
-                    System.lineSeparator() + "}";
-            String imports = importText==null || importText.isEmpty() ? "" :
-                    importText + System.lineSeparator() + System.lineSeparator();
-            String unitName = page.getUnitName().replace('-', '_');
-            int initial = unitName.codePointAt(0);
-            if (Character.isUpperCase(initial)) {
-                return imports + "class " + unitName + "() " + body;
+            String newline = System.lineSeparator();
+            String body = pastedText==null ? 
+                    "{}" : 
+                    "{" + newline + pastedText + newline + "}";
+            String imports;
+            if (importText==null || 
+                    importText.isEmpty()) {
+                imports = "";
             }
             else {
-                return imports + "void " + unitName + "() " + body;
+                imports = importText + newline + newline;
             }
+            String unitName = 
+                    page.getUnitName().replace('-', '_');
+            int initial = unitName.codePointAt(0);
+            String header = 
+                    isUpperCase(initial) ? 
+                            "class " + unitName + "() " : 
+                            "void " + unitName + "() ";
+            return imports + header + body;
         }
         else {
             return pastedText==null ? "" : pastedText;

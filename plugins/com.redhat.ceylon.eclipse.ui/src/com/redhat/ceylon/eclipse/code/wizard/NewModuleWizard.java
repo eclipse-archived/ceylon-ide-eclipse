@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -38,7 +39,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
     private final class CreateModuleOperation extends AbstractOperation {
         
         private IFile result;
-        private List<IUndoableOperation> ops = new ArrayList<IUndoableOperation>(3);
+        private List<IUndoableOperation> ops = 
+                new ArrayList<IUndoableOperation>(3);
         private Map<String, String> imports;
         private Set<String> sharedImports;
         
@@ -58,14 +60,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                 throws ExecutionException {
             
             IPackageFragment pf = page.getPackageFragment();
-            String moduleName = pf.getElementName();
-            boolean preamble = page.isIncludePreamble();
-            String newline = System.getProperty("line.separator");
             
-            String runFunction = "\"Run the module `" + moduleName + "`.\""+newline+
-                    "shared void run() {"+newline+"    "+newline+"}";
-            CreateSourceFileOperation op = new CreateSourceFileOperation(page.getSourceDir(), 
-                    pf, page.getUnitName(), preamble, runFunction);
+            CreateSourceFileOperation op = runFunctionOp(pf);
             ops.add(op);
             IStatus status = op.execute(monitor, info);
             if (!status.isOK()) {
@@ -73,30 +69,14 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             }
             result = op.getFile();
             
-            StringBuilder moduleDescriptor = new StringBuilder("module ").append(moduleName)
-                    .append(" \"").append(page.getVersion()).append("\" {");
-            for (Map.Entry<String,String> entry: imports.entrySet()) {
-                String name = entry.getKey();
-                String version = entry.getValue();
-                boolean shared = sharedImports.contains(name);
-                appendImportStatement(moduleDescriptor, shared, name, version, newline);
-            }
-            if (!imports.isEmpty()) {
-                moduleDescriptor.append(newline);
-            }
-            moduleDescriptor.append("}").append(newline);
-            op = new CreateSourceFileOperation(page.getSourceDir(), pf, "module", 
-                    preamble, moduleDescriptor.toString());
+            op = moduleDescriptorOp(pf);
             status = op.execute(monitor, info);
             ops.add(op);
             if (!status.isOK()) {
                 return status;
             }
             
-            String packageDescriptor = (page.isShared() ? "shared " : "") + 
-                    "package " + moduleName + ";"+newline;
-            op = new CreateSourceFileOperation(page.getSourceDir(), pf, "package", 
-                    preamble, packageDescriptor);
+            op = packageDescriptorOp(pf);
             status = op.execute(monitor, info);
             ops.add(op);
             if (!status.isOK()) {
@@ -105,6 +85,76 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             
             return Status.OK_STATUS;
         }
+
+        private CreateSourceFileOperation packageDescriptorOp(IPackageFragment pf) {
+            String moduleName = pf.getElementName();
+            boolean preamble = page.isIncludePreamble();
+            String newline = System.lineSeparator();
+            StringBuilder packageDescriptor = 
+                    new StringBuilder();
+            if (page.isShared()) {
+                packageDescriptor.append("shared "); 
+            }
+            packageDescriptor
+                    .append("package ")
+                    .append(moduleName)
+                    .append(";")
+                    .append(newline);
+            return new CreateSourceFileOperation(page.getSourceDir(), 
+                    pf, "package", preamble, 
+                    packageDescriptor.toString());
+        }
+
+        private CreateSourceFileOperation moduleDescriptorOp(IPackageFragment pf) {
+            String moduleName = pf.getElementName();
+            boolean preamble = page.isIncludePreamble();
+            String newline = System.lineSeparator();
+            StringBuilder moduleDescriptor = 
+                    new StringBuilder("module ")
+                        .append(moduleName)
+                        .append(" \"")
+                        .append(page.getVersion())
+                        .append("\"")
+                        .append(" {");
+            for (Map.Entry<String,String> entry: 
+                    imports.entrySet()) {
+                String name = entry.getKey();
+                String version = entry.getValue();
+                boolean shared = sharedImports.contains(name);
+                appendImportStatement(moduleDescriptor, 
+                        shared, name, version, newline);
+            }
+            if (!imports.isEmpty()) {
+                moduleDescriptor.append(newline);
+            }
+            moduleDescriptor.append("}").append(newline);
+            return new CreateSourceFileOperation(page.getSourceDir(), 
+                    pf, "module", preamble, 
+                    moduleDescriptor.toString());
+        }
+
+        private CreateSourceFileOperation runFunctionOp(IPackageFragment pf) {
+            String moduleName = pf.getElementName();
+            boolean preamble = page.isIncludePreamble();
+            String newline = System.lineSeparator();
+            String runFunction = 
+                    new StringBuilder()
+                        .append("\"Run the module `")
+                        .append(moduleName)
+                        .append("`.\"")
+                        .append(newline)
+                        .append("shared void run() {")
+                        .append(newline)
+                        .append("    ")
+                        .append(newline)
+                        .append("}")
+                        .toString();
+            
+            return new CreateSourceFileOperation(page.getSourceDir(), 
+                    pf, page.getUnitName(), 
+                    preamble, runFunction);
+        }
+        
         @Override
         public IStatus redo(IProgressMonitor monitor, IAdaptable info)
                 throws ExecutionException {
@@ -162,8 +212,10 @@ public class NewModuleWizard extends Wizard implements INewWizard {
         if (importsPage == null) {
             importsPage = new ImportModulesWizardPage() {
                 IProject getProject() {
-                    return page.getSourceDir()==null ?
-                            null : page.getSourceDir().getResource().getProject();
+                    IPackageFragmentRoot sourceDir = 
+                            page.getSourceDir();
+                    return sourceDir==null ? null : 
+                            sourceDir.getResource().getProject();
                 }
                 @Override
                 Map<String, String> getModules() {

@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Text;
 
 final class NewModuleWizardPage extends NewUnitWizardPage {
     
-    private String version="1.0.0";
+    private String version = "1.0.0";
 
     NewModuleWizardPage() {
         super("New Ceylon Module", 
@@ -74,14 +74,18 @@ final class NewModuleWizardPage extends NewUnitWizardPage {
     }
 
     void createVersionField(Composite composite) {
-        Label versionLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
+        Label versionLabel = 
+                new Label(composite, SWT.LEFT | SWT.WRAP);
         versionLabel.setText("Module version:");
-        GridData lgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GridData lgd = 
+                new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         lgd.horizontalSpan = 1;
         versionLabel.setLayoutData(lgd);
 
-        final Text versionName = new Text(composite, SWT.SINGLE | SWT.BORDER);
-        GridData ngd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        final Text versionName = 
+                new Text(composite, SWT.SINGLE | SWT.BORDER);
+        GridData ngd = 
+                new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         ngd.horizontalSpan = 2;
         ngd.grabExcessHorizontalSpace = true;
         versionName.setLayoutData(ngd);

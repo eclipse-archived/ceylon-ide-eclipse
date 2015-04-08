@@ -33,9 +33,13 @@ class CreateSourceFileOperation extends CreateFileOperation {
     
     private static IFile getFile(IPackageFragmentRoot sourceDir,
             IPackageFragment packageFragment, String unitName) {
-        IPath path = packageFragment.getPath().append(unitName + ".ceylon");
-        final IProject project = getProject(sourceDir);
-        return project.getFile(path.makeRelativeTo(project.getFullPath()));
+        IPath path = 
+                packageFragment.getPath()
+                    .append(unitName + ".ceylon");
+        IProject project = getProject(sourceDir);
+        IPath relativePath = 
+                path.makeRelativeTo(project.getFullPath());
+        return project.getFile(relativePath);
     }
 
     private static IProject getProject(IPackageFragmentRoot sourceDir) {

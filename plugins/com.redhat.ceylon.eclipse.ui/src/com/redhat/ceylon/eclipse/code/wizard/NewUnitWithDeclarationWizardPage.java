@@ -31,7 +31,8 @@ class NewUnitWithDeclarationWizardPage extends NewUnitWizardPage {
         dec.setText("Create toplevel class or method declaration");
         dec.setSelection(declaration);
         dec.setEnabled(true);
-        GridData igd= new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GridData igd = 
+                new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         igd.horizontalSpan = 3;
         igd.grabExcessHorizontalSpace = true;
         dec.setLayoutData(igd);

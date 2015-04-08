@@ -51,16 +51,23 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     public boolean performFinish() {
         CeylonPlugin.getInstance().getDialogSettings()
                 .put("sharedPackage", page.isShared());
-
+        IPackageFragment pf = page.getPackageFragment();
+        
+        StringBuilder packageDescriptor = 
+                new StringBuilder();
+        if (page.isShared()) {
+            packageDescriptor.append("shared ");
+        }
+        packageDescriptor
+                .append("package ") 
+                .append(pf.getElementName()) 
+                .append(";")
+                .append(System.lineSeparator());
         CreateSourceFileOperation op = 
                 new CreateSourceFileOperation(page.getSourceDir(), 
-                        page.getPackageFragment(), "package", 
+                        pf, "package", 
                         page.isIncludePreamble(), 
-                        (page.isShared() ? "shared " : "") + 
-                                "package " + 
-                                page.getPackageFragment().getElementName() + 
-            
-                                ";" + System.lineSeparator());
+                        packageDescriptor.toString());
         created = runOperation(op, getContainer());
         if (created) {
             BasicNewResourceWizard.selectAndReveal(op.getFile(), 
@@ -77,7 +84,8 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     public void addPages() {
         super.addPages();
         if (page == null) {
-            boolean shared = getDialogSettings().getBoolean("sharedPackage");
+            boolean shared = 
+                    getDialogSettings().getBoolean("sharedPackage");
             page = new NewPackageWizardPage(shared);
             page.init(workbench, selection);
         }
