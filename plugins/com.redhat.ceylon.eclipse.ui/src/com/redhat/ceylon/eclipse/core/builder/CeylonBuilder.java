@@ -7,7 +7,6 @@ import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
 import static com.redhat.ceylon.compiler.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
-import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchives;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
@@ -2246,15 +2245,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 modelStates.put(project, ModelState.Parsed);
 
                 ExternalSourceArchiveManager externalArchiveManager = getExternalSourceArchiveManager();
-                if (allClasspathContainersInitialized()) {
-                    externalArchiveManager.cleanUp(monitor);
-                }
-                for (IPath sourceArchivePath : getExternalSourceArchives(getProjectExternalModules(project))) {
-                    if (externalArchiveManager.getSourceArchive(sourceArchivePath) == null) {
-                        externalArchiveManager.addSourceArchive(sourceArchivePath, true);                    
-                    }
-                }
-                externalArchiveManager.createPendingSourceArchives(monitor);
+                externalArchiveManager.updateProjectSourceArchives(project, monitor);
                 
                 for (ICeylonModelListener listener : modelListeners) {
                     listener.modelParsed(project);

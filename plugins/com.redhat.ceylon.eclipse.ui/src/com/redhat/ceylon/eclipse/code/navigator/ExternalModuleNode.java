@@ -37,7 +37,9 @@ public class ExternalModuleNode implements ModuleNode {
             if (sourcePathString != null) {
                 IFolder sourceArchive = getExternalSourceArchiveManager().getSourceArchive(Path.fromOSString(sourcePathString));
                 if (sourceArchive != null && sourceArchive.exists()) {
-                    return ((CeylonArchiveFileStore) ((Resource)sourceArchive).getStore()); 
+                    return ((CeylonArchiveFileStore) ((Resource)sourceArchive).getStore()); // TODO : URGENT : CCE when opening the module in the navigator 
+                    // after the elements are removed from the .projects file and no manual rebuild has been done !!!
+                    // After : test the breakpoints.
                 }
             }
         }

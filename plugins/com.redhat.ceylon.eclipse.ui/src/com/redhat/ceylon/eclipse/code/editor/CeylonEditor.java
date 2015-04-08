@@ -51,6 +51,7 @@ import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_NEXT
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_PREVIOUS;
 
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
 import java.util.Iterator;
@@ -67,6 +68,7 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.ui.actions.IRunToLineTarget;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
@@ -118,11 +120,13 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPropertyListener;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.ContentAssistAction;
@@ -157,7 +161,9 @@ import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -170,7 +176,7 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
  * @author Chris Laffra
  * @author Robert M. Fuhrer
  */
-public class CeylonEditor extends TextEditor {
+public class CeylonEditor extends TextEditor implements ICeylonModelListener {
     
     private static final Pattern TRAILING_WS = 
             Pattern.compile("[ \\t]+$", Pattern.MULTILINE);
@@ -1256,6 +1262,7 @@ public class CeylonEditor extends TextEditor {
         addPropertyListener(editorInputPropertyListener);
         getWorkspace().addResourceChangeListener(moveListener, IResourceChangeEvent.POST_CHANGE);
         getWorkspace().addResourceChangeListener(buildListener, IResourceChangeEvent.POST_BUILD);
+        CeylonBuilder.addModelListener(this);
         
         parserScheduler.schedule();
         
@@ -1364,6 +1371,8 @@ public class CeylonEditor extends TextEditor {
             getWorkspace().removeResourceChangeListener(moveListener);
             moveListener = null;
         }
+        
+        CeylonBuilder.removeModelListener(this);
         
         IDocument document = getParseController().getDocument();
         if (document!=null) {
@@ -1644,6 +1653,13 @@ public class CeylonEditor extends TextEditor {
 
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
+        if (input instanceof FileStoreEditorInput) {
+            IEditorInput fixedInput = fixSourceArchiveInput((FileStoreEditorInput) input);
+            if (fixedInput != null) {
+                input = fixedInput;
+            }
+        }
+        
         if (input instanceof IFileEditorInput) {
             boolean replacedByTheSourceFile = false;
             IFile file = ((IFileEditorInput) input).getFile();
@@ -1714,8 +1730,12 @@ public class CeylonEditor extends TextEditor {
                         if (fullPath != null) {
                             input = EditorUtil.getEditorInput(fullPath);
                         } else {
-                            // Problem => close the editor
-                            input = null;
+                            fullPath = file.getFullPath();
+                            if (fullPath.segmentCount() > 1) {
+                                fullPath = fullPath.removeFirstSegments(1);
+                                fullPath = fullPath.makeAbsolute();
+                            }
+                            input = EditorUtil.getEditorInput(fullPath);
                         }
                     }
                 }
@@ -1847,4 +1867,40 @@ public class CeylonEditor extends TextEditor {
         }
     }
     
+    private SourceArchiveEditorInput fixSourceArchiveInput(FileStoreEditorInput input) {
+        URI uri = input.getURI();
+        System.out.println("FileStoreEditorInput URI : " + uri);
+        if (uri != null) {
+            String path = uri.getPath();
+            if (path.contains(CeylonArchiveFileSystem.JAR_SUFFIX)) {
+                IPath fullPath = new Path(path);
+                System.out.println("FileStoreEditorInput full path : " + fullPath);
+                IEditorInput newInput = EditorUtil.getEditorInput(fullPath);
+                System.out.println("Changed EditorInput : " + newInput + " / " + newInput.getToolTipText());
+                if (newInput instanceof SourceArchiveEditorInput) {
+                    return (SourceArchiveEditorInput) newInput;
+                }
+            }
+        }
+        return null;
+    }
+    
+    @Override
+    public void modelParsed(IProject project) {
+        IEditorInput input = getEditorInput();
+        if (input instanceof FileStoreEditorInput) {
+            final IEditorInput newInput = fixSourceArchiveInput((FileStoreEditorInput) input);
+            if (newInput != null) {
+                IWorkbenchPartSite site = getSite();
+                if (site != null) {
+                    site.getPage().getWorkbenchWindow().getWorkbench().getDisplay().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            setInput(newInput);
+                        }
+                    });
+                }
+            }
+        }
+    }
 }
