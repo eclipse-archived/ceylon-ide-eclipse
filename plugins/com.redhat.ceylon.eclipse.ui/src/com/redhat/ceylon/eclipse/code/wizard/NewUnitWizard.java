@@ -80,12 +80,13 @@ public class NewUnitWizard extends Wizard implements INewWizard {
                     System.lineSeparator() + "}";
             String imports = importText==null || importText.isEmpty() ? "" :
                     importText + System.lineSeparator() + System.lineSeparator();
-            int initial = page.getUnitName().codePointAt(0);
+            String unitName = page.getUnitName().replace('-', '_');
+            int initial = unitName.codePointAt(0);
             if (Character.isUpperCase(initial)) {
-                return imports + "class " + page.getUnitName() + "() " + body;
+                return imports + "class " + unitName + "() " + body;
             }
             else {
-                return imports + "void " + page.getUnitName() + "() " + body;
+                return imports + "void " + unitName + "() " + body;
             }
         }
         else {
