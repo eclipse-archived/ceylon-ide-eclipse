@@ -1409,11 +1409,27 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         for (IFile file : getProjectFiles(project)) {
             try {
-                if (file.findMarkers(PROBLEM_MARKER_ID + ".backend", false, IResource.DEPTH_ZERO).length > 0) {
-                    filesToAddInCompile.add(file);
+                boolean backendErrorOrMissingClassFile = false;
+                for (IMarker marker : file.findMarkers(PROBLEM_MARKER_ID + ".backend", false, IResource.DEPTH_ZERO)) {
+                    Object attribute = marker.getAttribute(IMarker.SEVERITY);
+                    if (attribute instanceof Integer) {
+                        switch (((Integer)attribute).intValue()) {
+                        case IMarker.SEVERITY_ERROR:
+                            // For backend errors
+                        case IMarker.SEVERITY_INFO:
+                            // For missing class files
+                            backendErrorOrMissingClassFile = true;
+                        }
+                        if (backendErrorOrMissingClassFile) {
+                            filesToAddInTypecheck.add(file);
+                            filesToAddInCompile.add(file);
+                            break;
+                        }
+                    }
                 }
             } catch (CoreException e) {
                 e.printStackTrace();
+                filesToAddInTypecheck.add(file);
                 filesToAddInCompile.add(file);
             }
         }

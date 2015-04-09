@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
-import com.redhat.ceylon.compiler.java.launcher.Main;
 import com.redhat.ceylon.compiler.java.launcher.Main.ExitState;
 import com.redhat.ceylon.compiler.java.launcher.Main.ExitState.CeylonState;
 
@@ -104,11 +103,12 @@ final class CompileErrorReporter implements
     public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
         errorReported = true;
         JavaFileObject source = diagnostic.getSource();
+        if (Diagnostic.Kind.NOTE.equals(diagnostic.getKind()) 
+                && diagnostic.toString().startsWith("Note: Created module")) {
+            return;
+        }
         if (source == null) {
-            // no source file
-            if (!diagnostic.toString().startsWith("Note: Created module")) {
-                setupMarker(project, diagnostic);
-            }
+            setupMarker(project, diagnostic);
         } 
         else {
             IPath absolutePath = new Path(source.getName());
