@@ -128,10 +128,11 @@ final class CompileErrorReporter implements
             }
             if(file != null) {
                 if (CeylonBuilder.isCeylon(file)){
+                    int backendErrorSeverity = kindToSeverity(diagnostic.getKind());
                     try {
                         for (IMarker m: file.findMarkers(PROBLEM_MARKER_ID, true, DEPTH_ZERO)) {
-                            int sev = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
-                            if (sev==IMarker.SEVERITY_ERROR) {
+                            int existingSeverity = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
+                            if (existingSeverity >= backendErrorSeverity) {
                                 return;
                             }
                         }
@@ -161,6 +162,18 @@ final class CompileErrorReporter implements
         }
     }
 
+    private int kindToSeverity(Diagnostic.Kind kind) {
+        switch (kind) {
+        case ERROR:
+            return IMarker.SEVERITY_ERROR;
+        case WARNING:
+        case MANDATORY_WARNING:
+            return IMarker.SEVERITY_WARNING;
+        default:
+            return IMarker.SEVERITY_INFO;
+        }
+    }
+    
     private void setupMarker(IResource resource, Diagnostic<? extends JavaFileObject> diagnostic) {
         try {
             long line = diagnostic==null ? -1 : diagnostic.getLineNumber();
@@ -193,17 +206,8 @@ final class CompileErrorReporter implements
                     diagnostic.getMessage(Locale.getDefault());
             marker.setAttribute(IMarker.MESSAGE, message);
             marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-            switch (diagnostic==null ? Diagnostic.Kind.ERROR : diagnostic.getKind()) {
-            case ERROR:
-                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-                break;
-            case WARNING:
-            case MANDATORY_WARNING:
-                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-                break;
-            default:
-                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-            }
+            int severity = kindToSeverity(diagnostic==null ? Diagnostic.Kind.ERROR : diagnostic.getKind());
+            marker.setAttribute(IMarker.SEVERITY, severity);
         }
         catch (CoreException ce) {
             ce.printStackTrace();
