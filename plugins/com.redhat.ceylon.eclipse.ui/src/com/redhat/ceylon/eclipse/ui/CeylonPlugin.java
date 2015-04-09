@@ -14,12 +14,10 @@ import java.util.List;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.eclipse.core.internal.registry.ExtensionRegistry;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.ContributorFactoryOSGi;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IContributor;
@@ -129,11 +127,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         Job refreshExternalSourceArchiveManager = new Job("Load the Ceylon Metamodel for plugin dependencies") {
             protected IStatus run(IProgressMonitor monitor) {
                 ExternalSourceArchiveManager esam = ExternalSourceArchiveManager.getExternalSourceArchiveManager();
-                try {
-                    esam.getExternalSourceArchivesProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-                } catch (CoreException e) {
-                    e.printStackTrace();
-                }
                 esam.initialize();
                 ResourcesPlugin.getWorkspace().addResourceChangeListener(esam);
                 return Status.OK_STATUS;

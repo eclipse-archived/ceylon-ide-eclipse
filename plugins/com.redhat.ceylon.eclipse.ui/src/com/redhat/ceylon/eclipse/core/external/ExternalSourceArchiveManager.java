@@ -390,7 +390,9 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
             public boolean visit(IResource resource) throws CoreException {
                 if (resource instanceof IFolder
                         && resource.isLinked()
-                        && ! resource.isVirtual()) {
+                        && ! resource.isVirtual()
+                        && resource.isSynchronized(IResource.DEPTH_ZERO)
+                        && resource.exists()) {
                     URI uri = resource.getLocationURI();
                     if (uri != null && CeylonArchiveFileSystem.SCHEME_CEYLON_ARCHIVE.equals(uri.getScheme())) {
                         String path = uri.getPath();
@@ -576,10 +578,12 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         if (! project.equals(MANAGER.getExternalSourceArchivesProject())) {
             return null;
         }
-//        IPath path = resource.getFullPath().makeRelativeTo(project.getFullPath()).makeAbsolute();
-        IPath path = new Path(resource.getLocationURI().getPath());
-        if (path != null && path.toString().contains(".src!")) {
-            return path;
+        if (resource.isSynchronized(IResource.DEPTH_ZERO) 
+                && resource.exists()) {
+            IPath path = new Path(resource.getLocationURI().getPath());
+            if (path != null && path.toString().contains(".src!")) {
+                return path;
+            }
         }
         return null;
     }
