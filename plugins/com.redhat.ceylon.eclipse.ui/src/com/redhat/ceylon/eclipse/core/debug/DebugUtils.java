@@ -632,6 +632,8 @@ public class DebugUtils {
     private final static String ABSTRACT_CALLABLE = AbstractCallable.class.getName();
     private final static String LAZY_ITERABLE = LazyIterable.class.getName();
     private final static String CEYLON_BOOLEAN = ceylon.language.Boolean.class.getName();
+    private final static String CEYLON_FALSE = ceylon.language.true_.class.getName();
+    private final static String CEYLON_TRUE = ceylon.language.false_.class.getName();
     private final static String CEYLON_FLOAT = ceylon.language.Float.class.getName();
     private final static String CEYLON_INTEGER = ceylon.language.Integer.class.getName();
     private final static String CEYLON_BYTE = ceylon.language.Byte.class.getName();
@@ -825,7 +827,9 @@ public class DebugUtils {
             return false;
         }
         
-        if (declaringTypeName.equals(CEYLON_BOOLEAN)) {
+        if (declaringTypeName.equals(CEYLON_BOOLEAN) ||
+                declaringTypeName.equals(CEYLON_FALSE) ||
+                declaringTypeName.equals(CEYLON_TRUE)) {
             return true;
         }
         if (declaringTypeName.equals(CEYLON_INTEGER)
