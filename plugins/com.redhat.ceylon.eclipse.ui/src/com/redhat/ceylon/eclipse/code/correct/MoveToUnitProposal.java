@@ -2,20 +2,25 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.canMoveDeclaration;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getDeclarationName;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 
 import java.util.Collection;
 
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.MoveToUnitRefactoringAction;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
-class MoveToUnitProposal implements ICompletionProposal {
+class MoveToUnitProposal implements ICompletionProposal, ICompletionProposalExtension6 {
 
     private final CeylonEditor editor;
     private final String name;
@@ -38,6 +43,15 @@ class MoveToUnitProposal implements ICompletionProposal {
     @Override
     public String getDisplayString() {
         return "Move '" + name + "' to another source file";
+    }
+    
+    @Override
+    public StyledString getStyledDisplayString() {
+        TriggerSequence binding = 
+                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.moveDeclarationToUnit");
+        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        return Highlights.styleProposal(getDisplayString(), false)
+                .append(hint, StyledString.QUALIFIER_STYLER);
     }
 
     @Override
