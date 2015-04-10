@@ -253,6 +253,17 @@ public class JDTModelLoader extends AbstractModelLoader {
         return className;
     }
     
+    private String getToplevelQualifiedName(String fullyQualifiedName) {
+        String pkgName = "";
+        String name = fullyQualifiedName;
+        int lastDot = fullyQualifiedName.lastIndexOf('.');
+        if (lastDot > 0 && lastDot < fullyQualifiedName.length()-1) {
+            pkgName = fullyQualifiedName.substring(0, lastDot);
+            name = fullyQualifiedName.substring(lastDot+1, fullyQualifiedName.length());
+        }
+        return getToplevelQualifiedName(pkgName, name);
+    }
+
     @Override
     public boolean loadPackage(Module module, String packageName, boolean loadDeclarations) {
         synchronized (getLock()) {
@@ -722,16 +733,19 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     public ClassMirror lookupNewClassMirror(Module module, String name) {
         synchronized(getLock()){
-            if (sourceDeclarations.containsKey(name)) {
-                return new SourceClass(sourceDeclarations.get(name));
+            String topLevelPartiallyQuotedName = getToplevelQualifiedName(name);
+            if (sourceDeclarations.containsKey(topLevelPartiallyQuotedName)) {  
+                return new SourceClass(sourceDeclarations.get(topLevelPartiallyQuotedName));
             }
             
-            ClassMirror classMirror = buildClassMirror(name);
-            if (classMirror == null && lastPartHasLowerInitial(name)) {
+            ClassMirror classMirror = buildClassMirror(Util.quoteJavaKeywords(name));
+            if (classMirror == null 
+                    && lastPartHasLowerInitial(name)
+                    && !name.endsWith("_")) {
                 // We have to try the unmunged name first, so that we find the symbol
                 // from the source in preference to the symbol from any 
                 // pre-existing .class file
-                classMirror = buildClassMirror(name+"_");
+                classMirror = buildClassMirror(Util.quoteJavaKeywords(name + "_"));
             }
             
             if(classMirror == null)
@@ -1051,8 +1065,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     public Declaration convertToDeclaration(Module module, String typeName,
             DeclarationType declarationType) {
         synchronized (getLock()) {
-            if (sourceDeclarations.containsKey(typeName)) {
-                return sourceDeclarations.get(typeName).getModelDeclaration();
+            String fqn = getToplevelQualifiedName(typeName);
+            if (sourceDeclarations.containsKey(fqn)) {
+                return sourceDeclarations.get(fqn).getModelDeclaration();
             }
             try {
                 return super.convertToDeclaration(module, typeName, declarationType);
