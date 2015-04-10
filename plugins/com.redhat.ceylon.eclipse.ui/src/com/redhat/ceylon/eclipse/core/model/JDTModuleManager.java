@@ -147,11 +147,19 @@ public class JDTModuleManager extends LazyModuleManager {
         return getModelLoader().findOrCreatePackage(module, pkgName);
     }
 
+    void setModelLoader(JDTModelLoader modelLoader) {
+        this.modelLoader = modelLoader;
+    }
+    
     @Override
     public synchronized JDTModelLoader getModelLoader() {
         if(modelLoader == null){
             Modules modules = getContext().getModules();
-            modelLoader = new JDTModelLoader(this, modules);
+            // the JDTModelLoader sets the reference to itself in the ModuleManager 
+            // at the beginning of its constructor, so that it's not necessary to assign it here
+            // This avoids the weak ref entry of the model loaders static hash map 
+            // to be freed just after it's set at the end of the JDTModelLoader constructor.
+            return new JDTModelLoader(this, modules);
         }
         return modelLoader;
     }
@@ -393,6 +401,7 @@ public class JDTModuleManager extends LazyModuleManager {
                     }
                 }
                 
+                @SuppressWarnings("unchecked")
                 @Override
                 protected PhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
                     if (referencedProject == null) {

@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 
+import org.eclipse.core.internal.utils.Cache;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
@@ -148,6 +149,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     public JDTModelLoader(final JDTModuleManager moduleManager, final Modules modules){
         this.moduleManager = moduleManager;
+        moduleManager.setModelLoader(this);
         this.modules = modules;
         javaProject = moduleManager.getJavaProject();
         if (javaProject != null) {
@@ -776,13 +778,15 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     private static WeakHashMap<IProject, WeakReference<JDTModelLoader>> modelLoaders = new WeakHashMap<>();
+    private static Cache archivesRootsToModelLoaderCache = new Cache(20);
     
     public static JDTModelLoader getModelLoader(IProject project) {
+        JDTModelLoader modelLoader = null;
         WeakReference<JDTModelLoader> modelLoaderRef = modelLoaders.get(project);
         if (modelLoaderRef != null) {
-            return modelLoaderRef.get();
+            modelLoader = modelLoaderRef.get();
         }
-        return null;
+        return modelLoader;
     }
 
     public static JDTModelLoader getModelLoader(IJavaProject javaProject) {
@@ -790,7 +794,51 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     public static JDTModelLoader getModelLoader(IType type) {
-        return type == null ? null : getModelLoader(type.getJavaProject());
+        if (type == null) {
+            return null;
+        }
+        JDTModelLoader modelLoader = getModelLoader(type.getJavaProject());
+        if (modelLoader == null) {
+            IPackageFragmentRoot pfr = (IPackageFragmentRoot) type.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+            if (pfr.isExternal() && pfr.isArchive()) {
+                synchronized (archivesRootsToModelLoaderCache) {
+                    Cache.Entry cacheEntry = archivesRootsToModelLoaderCache.getEntry(pfr.getPath());
+                    if (cacheEntry != null) {
+                        @SuppressWarnings("unchecked")
+                        WeakReference<JDTModelLoader> cachedModelLoaderRef = (WeakReference<JDTModelLoader>) cacheEntry.getCached();
+                        if (cachedModelLoaderRef != null) {
+                            modelLoader = cachedModelLoaderRef.get();
+                        }
+                    }
+                    if (modelLoader == null) {
+                        for (WeakReference<JDTModelLoader> loaderRef : modelLoaders.values()) {
+                            JDTModelLoader loader = loaderRef.get();
+                            if (loader == null) {
+                                continue;
+                            }
+                            JDTModuleManager moduleManager = loader.getModuleManager();
+                            if (moduleManager == null) {
+                                continue;
+                            }
+                            IJavaProject javaProject = moduleManager.getJavaProject();
+                            if (javaProject == null) {
+                                continue;
+                            }
+                            try {
+                                if (javaProject.findPackageFragmentRoot(pfr.getPath()) != null){
+                                    modelLoader = loader;
+                                    archivesRootsToModelLoaderCache.addEntry(pfr.getPath(), new WeakReference<>(modelLoader));
+                                    break;
+                                }
+                            } catch (JavaModelException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return modelLoader;
     }
 
     public static interface ActionOnMethodBinding {
@@ -820,7 +868,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
         JDTModelLoader modelLoader = getModelLoader(typeModel);
         if (modelLoader == null) {
-            throw new ModelResolutionException("The Model Loader corresponding the type '" + typeModel.getFullyQualifiedName() + "' was not available");
+            throw new ModelResolutionException("The Model Loader corresponding to the type '" + typeModel.getFullyQualifiedName() + "' was not available");
         }
         
         synchronized (modelLoader.lookupEnvironmentMutex) {
