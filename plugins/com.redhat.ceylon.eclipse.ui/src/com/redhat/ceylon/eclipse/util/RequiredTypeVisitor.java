@@ -88,9 +88,14 @@ class RequiredTypeVisitor extends Visitor
                 if (params!=null) { 
                     if (params.size()>pos) {
                         Parameter param = params.get(pos);
-                        requiredType = pr.getTypedParameter(param).getFullType();
-                        if (param.isSequenced()) {
-                            requiredType = unit.getIteratedType(requiredType);
+                        if (pr.getDeclaration().getQualifiedNameString().equals("ceylon.language::print")) {
+                            requiredType = unit.getStringDeclaration().getType();
+                        }
+                        else {
+                            requiredType = pr.getTypedParameter(param).getFullType();
+                            if (param.isSequenced()) {
+                                requiredType = unit.getIteratedType(requiredType);
+                            }
                         }
                     }
                     else if (!params.isEmpty()) {
