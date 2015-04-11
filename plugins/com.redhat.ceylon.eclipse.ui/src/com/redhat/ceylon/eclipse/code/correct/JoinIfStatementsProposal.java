@@ -58,7 +58,7 @@ class JoinIfStatementsProposal {
                                         getIndent(outer, doc));
                                 change.addEdit(new DeleteEdit(inner.getStopIndex()+1, 
                                         outer.getStopIndex()-inner.getStopIndex()));
-                                proposals.add(new CorrectionProposal("Join if statements", 
+                                proposals.add(new CorrectionProposal("Join 'if' statements", 
                                         change, null));
                             }
                         }

@@ -62,7 +62,7 @@ class SplitIfStatementProposal {
                             int end = is.getStopIndex()+1;
                             change.addEdit(new InsertEdit(end, ws + "}"));
                             incrementIndent(doc, is, cl, change, indent);
-                            proposals.add(new CorrectionProposal("Split if statement", 
+                            proposals.add(new CorrectionProposal("Split 'if' statement", 
                                     change, null));
                         }
                     }
