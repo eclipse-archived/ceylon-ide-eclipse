@@ -77,6 +77,7 @@ import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentati
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.addImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addReverseIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.addJoinDeclarationProposal;
+import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
@@ -787,6 +788,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addReverseIfElseProposal(doc, proposals, file, statement, rootNode);
             
             addSplitIfStatementProposal(proposals, doc, file, statement);
+            addJoinIfStatementsProposal(proposals, doc, file, statement);
             
             addConvertGetterToMethodProposal(proposals, editor, file, statement);
             addConvertMethodToGetterProposal(proposals, editor, file, statement);
