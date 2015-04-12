@@ -140,7 +140,7 @@ public class CeylonNavigatorLabelProvider extends
                 for (IProject referencedProject: repoNode.project.getReferencedProjects()) {
                     if (referencedProject.isOpen() && CeylonNature.isEnabled(referencedProject)) {
                         if (CeylonBuilder.getCeylonModulesOutputDirectory(referencedProject).getAbsolutePath().equals(displayString)) {
-                            stringToDisplay = "Modules of Referenced Project : " + referencedProject.getName() + "";
+                            stringToDisplay = "Modules of Referenced Project - " + referencedProject.getName() + "";
                             break;
                         }
                     }
@@ -155,7 +155,7 @@ public class CeylonNavigatorLabelProvider extends
                     IPath relativePath = Path.fromPortableString(repo.getUrl().substring(2));
                     IFolder folder = repoNode.project.getFolder(relativePath);
                     if (folder.exists() && folder.getLocation().toFile().getAbsolutePath().equals(displayString)) {
-                        stringToDisplay = "Local Repository : " + relativePath.toString() + "";
+                        stringToDisplay = "Local Repository - " + relativePath.toString() + "";
                         break;
                     }
                 }
