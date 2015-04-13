@@ -76,6 +76,7 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
@@ -670,6 +671,17 @@ public class CeylonParseController {
                 for (PhasedUnit unit: units.getPhasedUnits()) {
                     if (unit.getUnit().getFullPath().equals(path.toString())) {
                         return p;
+                    }
+                }
+            }
+            if (path.toString().contains(CeylonArchiveFileSystem.JAR_SUFFIX)) {
+                for (Module m : CeylonBuilder.getProjectExternalModules(p)) {
+                    if (m instanceof JDTModule) {
+                        String sourceArchivePath = ((JDTModule) m).getSourceArchivePath();
+                        if (sourceArchivePath != null 
+                                && path.toOSString().contains(sourceArchivePath)) {
+                            return p;
+                        }
                     }
                 }
             }
