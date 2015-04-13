@@ -2686,6 +2686,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         task.setTaskListener(new TaskListener() {
             @Override
             public void started(TaskEvent ta) {
+                if (monitor.isCanceled()) {
+                    throw new RuntimeException("Cancelled Java Backend compilation");
+                }
                 if (! ta.getKind().equals(Kind.PARSE) && ! ta.getKind().equals(Kind.ANALYZE)) {
                     return;
                 }
@@ -2705,6 +2708,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             @Override
             public void finished(TaskEvent ta) {
+                if (monitor.isCanceled()) {
+                    throw new RuntimeException("Cancelled Java Backend compilation");
+                }
                 if (! ta.getKind().equals(Kind.PARSE) && ! ta.getKind().equals(Kind.ANALYZE)) {
                     return;
                 }
@@ -3265,7 +3271,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    project.deleteMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_INFINITE);
+                    if (project.findMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_INFINITE).length > 0) {
+                        project.deleteMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_INFINITE);
+                    }
                 }
                 catch (CoreException e) {
                     e.printStackTrace();

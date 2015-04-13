@@ -45,8 +45,10 @@ final class CompileErrorReporter implements
 
     public void failed(final ExitState exitState) {
         Diagnostic<? extends JavaFileObject> diagnostic = null;
-        if (exitState.ceylonState.equals(CeylonState.BUG)
-                || exitState.ceylonState.equals(CeylonState.SYS)) {
+        if (exitState != null 
+                && exitState.ceylonState != null
+                && (exitState.ceylonState.equals(CeylonState.BUG)
+                        || exitState.ceylonState.equals(CeylonState.SYS))) {
             diagnostic = new Diagnostic<JavaFileObject>() {
                 @Override
                 public javax.tools.Diagnostic.Kind getKind() {
