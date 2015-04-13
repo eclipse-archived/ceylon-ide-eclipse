@@ -50,7 +50,6 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
     private Button compileToJs;
     private Button astAwareIncrementalBuidsButton;
     private Button compileToJava;
-    private Button enableExplodeModules;
     private Button offlineButton;
     private Combo verboseText;
     private Button enableBuilderButton;
@@ -66,7 +65,6 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
     @Override
     protected void performDefaults() {
         explodeModules=true;
-        enableExplodeModules.setSelection(true);
         backendJs = false;
         backendJava = true;
         compileToJs.setSelection(false);
@@ -165,11 +163,6 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
         gd3.grabExcessHorizontalSpace=true;
         troubleGroup.setLayoutData(gd3);
         
-        enableExplodeModules = new Button(troubleGroup, SWT.CHECK);
-        enableExplodeModules.setText("Disable Java classes calling Ceylon");
-        enableExplodeModules.setSelection(!explodeModules);
-        enableExplodeModules.setEnabled(builderEnabled&&backendJava);
-        
         astAwareIncrementalBuidsButton = new Button(troubleGroup, SWT.CHECK);
         astAwareIncrementalBuidsButton.setText("Disable structure-aware incremental compilation");
         astAwareIncrementalBuidsButton.setSelection(!astAwareIncrementalBuids);
@@ -239,7 +232,6 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
             public void widgetSelected(SelectionEvent e) {
                 new CeylonNature().addToProject(getSelectedProject());
                 enableBuilderButton.setEnabled(false);
-                enableExplodeModules.setEnabled(true);
                 astAwareIncrementalBuidsButton.setEnabled(true);
                 compileToJs.setEnabled(true);
                 compileToJava.setEnabled(true);
@@ -256,18 +248,10 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
             }
         });
         
-        enableExplodeModules.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                explodeModules = !explodeModules;
-            }
-        });
-        
         compileToJava.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 backendJava = !backendJava;
-                enableExplodeModules.setEnabled(backendJava);
             }
         });
         

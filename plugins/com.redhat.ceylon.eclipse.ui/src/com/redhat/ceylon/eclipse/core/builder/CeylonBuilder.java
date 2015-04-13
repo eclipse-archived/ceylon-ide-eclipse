@@ -2864,9 +2864,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static boolean isExplodeModulesEnabled(IProject project) {
-        Map<String,String> args = getBuilderArgs(project);
-        return args.get("explodeModules")!=null ||
-                args.get("enableJdtClasses")!=null;
+        return compileToJava(project) 
+                && "false".equals(System.getProperty("ceylon.disableExplodeModules", "false"));
     }
 
     public static boolean areAstAwareIncrementalBuildsEnabled(IProject project) {
