@@ -1901,8 +1901,16 @@ public class DocumentationHover extends SourceInfoHover {
                             desc = "Member of";
                         }
                     }
-                    buffer.append(desc + "&nbsp;&nbsp;<tt>" + 
-                            producedTypeLink(qt, unit) + "</tt>.");
+                    String typeDesc;
+                    if (qt.getDeclaration().getName().startsWith("anonymous#")) {
+                        typeDesc = " anonymous class";
+                    }
+                    else {
+                        typeDesc = "&nbsp;&nbsp;" + "<tt>" + 
+                                producedTypeLink(qt, unit) + 
+                                "</tt>";
+                    }
+                    buffer.append(desc + typeDesc + ".");
 //                    HTML.addImageAndLabel(buffer, outer, 
 //                            HTML.fileUrl(getIcon(outer)).toExternalForm(), 
 //                            16, 16, 
