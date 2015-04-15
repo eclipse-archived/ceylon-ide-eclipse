@@ -288,15 +288,16 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     }
                     else if (type instanceof SourceType) {
                         String path = 
-                                type.getCorrespondingResource()
+                                type.getCompilationUnit()
+                                    .getCorrespondingResource()
                                     .getFullPath()
                                     .toPortableString();
                         styledString.append(" - " + path, COUNTER_STYLER);
                     }
-                    //                new SourceMapper(root.getSourceAttachmentPath(), root.getSourceAttachmentRootPath()==null ? null : root.getSourceAttachmentRootPath().toString(), null)
-                    //                .findSource(t, info);
+                    //new SourceMapper(root.getSourceAttachmentPath(), root.getSourceAttachmentRootPath()==null ? null : root.getSourceAttachmentRootPath().toString(), null)
+                    //.findSource(t, info);
                 }
-                catch (JavaModelException e) {
+                catch (Exception e) {
                     e.printStackTrace();
                 }
             }
