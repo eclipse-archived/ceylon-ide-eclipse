@@ -26,6 +26,7 @@ import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.PackageFragment;
+import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
@@ -254,23 +255,44 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             styledString.append(name, TYPE_ID_STYLER);
         }
         if (appendMatchPackage()) {
-            IPackageFragment pkg = (IPackageFragment) je.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
+            IPackageFragment pkg = (IPackageFragment) 
+                    je.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
             styledString.append(" - ", PACKAGE_STYLER)
                         .append(pkg.getElementName(), PACKAGE_STYLER);
             if (appendSourceLocation()) {
                 try {
                     IType type = (IType) je.getAncestor(IJavaElement.TYPE);
-                    IPackageFragmentRoot root = (IPackageFragmentRoot) je.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
-                    IBinaryType info = (IBinaryType) ((BinaryType) type).getElementInfo();
-                    info.getSourceName();
-                    String simpleSourceFileName = ((BinaryType) type).getSourceFileName(info);
-                    PackageFragment pkgFrag = (PackageFragment) type.getPackageFragment();
-                    String rootPath = root.getSourceAttachmentPath().toPortableString();
-                    if (root.getSourceAttachmentRootPath()!=null) {
-                        rootPath += root.getSourceAttachmentRootPath().toPortableString() + '/';
+                    IPackageFragmentRoot root = (IPackageFragmentRoot) 
+                            je.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                    if (type instanceof BinaryType) {
+                        IBinaryType info = (IBinaryType) 
+                                ((BinaryType) type).getElementInfo();
+                        info.getSourceName();
+                        String simpleSourceFileName = 
+                                ((BinaryType) type).getSourceFileName(info);
+                        PackageFragment pkgFrag = 
+                                (PackageFragment) type.getPackageFragment();
+                        String rootPath = 
+                                root.getSourceAttachmentPath()
+                                    .toPortableString();
+                        if (root.getSourceAttachmentRootPath()!=null) {
+                            rootPath += 
+                                    root.getSourceAttachmentRootPath()
+                                        .toPortableString() + '/';
+                        }
+                        String path = 
+                                rootPath + '/' + 
+                                concatWith(pkgFrag.names, 
+                                        simpleSourceFileName, '/');
+                        styledString.append(" - " + path, COUNTER_STYLER);
                     }
-                    String path = rootPath + '/' + concatWith(pkgFrag.names, simpleSourceFileName, '/');
-                    styledString.append(" - " + path, COUNTER_STYLER);
+                    else if (type instanceof SourceType) {
+                        String path = 
+                                type.getCorrespondingResource()
+                                    .getFullPath()
+                                    .toPortableString();
+                        styledString.append(" - " + path, COUNTER_STYLER);
+                    }
                     //                new SourceMapper(root.getSourceAttachmentPath(), root.getSourceAttachmentRootPath()==null ? null : root.getSourceAttachmentRootPath().toString(), null)
                     //                .findSource(t, info);
                 }
