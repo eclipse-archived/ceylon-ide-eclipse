@@ -3079,32 +3079,36 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //    }
 
     /**
-     * Find or create the console with the given name
+     * Find or create the console with the given name, and
+     * bring it to the top
      * @param consoleName
      */
     protected static MessageConsole findConsole() {
-        MessageConsole myConsole= null;
-        final IConsoleManager consoleManager= ConsolePlugin.getDefault().getConsoleManager();
-        IConsole[] consoles= consoleManager.getConsoles();
+        MessageConsole myConsole = null;
+        final IConsoleManager consoleManager = 
+                ConsolePlugin.getDefault().getConsoleManager();
+        IConsole[] consoles = consoleManager.getConsoles();
         for(int i= 0; i < consoles.length; i++) {
-            IConsole console= consoles[i];
+            IConsole console = consoles[i];
             if (console.getName().equals(CEYLON_CONSOLE))
-                myConsole= (MessageConsole) console;
+                myConsole = (MessageConsole) console;
         }
         if (myConsole == null) {
-            myConsole= new MessageConsole(CEYLON_CONSOLE, 
+            myConsole = new MessageConsole(CEYLON_CONSOLE, 
                   CeylonPlugin.getInstance().getImageRegistry()
                       .getDescriptor(CeylonResources.BUILDER));
             consoleManager.addConsoles(new IConsole[] { myConsole });
         }
-//      consoleManager.showConsoleView(myConsole);
+        consoleManager.showConsoleView(myConsole);
         return myConsole;
     }
 
     private static void addTaskMarkers(IFile file, List<CommonToken> tokens) {
         // clearTaskMarkersOn(file);
         for (CommonToken token : tokens) {
-            if (token.getType() == CeylonLexer.LINE_COMMENT || token.getType() == CeylonLexer.MULTI_COMMENT) {
+            int tt = token.getType();
+            if (tt == CeylonLexer.LINE_COMMENT || 
+                tt == CeylonLexer.MULTI_COMMENT) {
                 CeylonTaskUtil.addTaskMarkers(token, file);
             }
         }
