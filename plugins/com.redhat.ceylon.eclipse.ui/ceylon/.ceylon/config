@@ -1,9 +1,14 @@
 
 [compiler]
-source=./source
-resource=./resource
+source=source
+resource=resource
+source=generated-source
 
 [defaults]
 encoding=UTF-8
 flatclasspath=false
 autoexportmavendependencies=false
+overrides=generated-source/overrides.xml
+
+[repositories]
+lookup=flat:./target/repo/plugins

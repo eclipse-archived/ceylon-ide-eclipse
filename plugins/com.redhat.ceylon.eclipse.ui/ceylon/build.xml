@@ -1,14 +1,5 @@
 <project name="Ceylon IDE ceylon module" default="compile">
-    <property name="dist.root.dir"
-        value="${basedir}/../../../../ceylon-dist" />
-    <property name="dist.bin.dir"
-        value="${dist.root.dir}/dist/bin" />
-    <property name="dist.repo.dir"
-        value="${dist.root.dir}/dist/repo" />
-    <property name="dist.libs.dir"
-        value="${dist.root.dir}/dist/lib" />
-    <property name="ceylon.ant.lib"
-        value="${dist.libs.dir}/ceylon-ant.jar" />
+    <property file="build.properties" />
     <property name="ceylon.verbosity"
         value="false" />
     <property name="ceylon.executable"
@@ -17,12 +8,21 @@
     <property name="source.dir"
         value="${basedir}/source" />
 
-    <property name="modules.dir"
+    <property name="generated-source.dir"
+        value="${basedir}/generated-source" />
+
+	<property name="modules.dir"
         value="${basedir}/modules" />
 
     <path id="ant-tasks">
         <pathelement location="${ceylon.ant.lib}" />
     </path>
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${dist.root.dir}/lib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
 
     <typedef
         resource="com/redhat/ceylon/ant/antlib.xml"
@@ -30,20 +30,40 @@
 
     <target name="clean">
         <delete dir="${modules.dir}"/>
-        <delete dir="${basedir}/./exploded"/>
+        <delete dir="${basedir}/.exploded"/>
+        <delete dir="${basedir}/target"/>
+        <delete dir="${basedir}/generated-source"/>
     </target>
     
-    <target name="compile">
+    <reposet id="repos">
+    	<repo url="${modules.dir}"/>
+    	<repo url="flat:${basedir}/target/repo/plugins"/>
+    </reposet>
+	
+	<target name="compile">
+        <ceylon-compile
+            src="${generated-source.dir}"
+            out="${modules.dir}"
+            executable="${ceylon.executable}"
+            verbose="${ceylon.verbosity}"
+            encoding="UTF-8" pack200="true"
+        	mavenoverrides="${basedir}/generated-source/overrides.xml">
+            <moduleset>
+                <module name="com.redhat.ceylon.eclipse.eclipseDependencies" />
+            </moduleset>
+        	<reposet refid="repos"/>
+        </ceylon-compile>
         <ceylon-compile
             src="${source.dir}"
             out="${modules.dir}"
             executable="${ceylon.executable}"
             verbose="${ceylon.verbosity}"
-            encoding="UTF-8" pack200="true">
-            
+            encoding="UTF-8" pack200="true"
+            mavenoverrides="${basedir}/generated-source/overrides.xml">
             <moduleset>
                 <module name="com.redhat.ceylon.eclipse.ui" />
             </moduleset>
+            <reposet refid="repos"/>
         </ceylon-compile>
     </target>
     <target name="compile-tests" depends="compile" unless="${skipTests}">
@@ -52,22 +72,129 @@
             out="${modules.dir}"
             executable="${ceylon.executable}"
             verbose="${ceylon.verbosity}"
-            encoding="UTF-8" pack200="true">
+            encoding="UTF-8" pack200="true"
+            mavenoverrides="${basedir}/generated-source/overrides.xml">
             
             <moduleset>
                 <module name="test.com.redhat.ceylon.eclipse.ui" />
             </moduleset>
+            <reposet refid="repos"/>
         </ceylon-compile>
     </target>
     <target name="test" depends="compile-tests" unless="${skipTests}">
         <ceylon-test
             executable="${ceylon.executable}"
-            verbose="${ceylon.verbosity}">
+            verbose="${ceylon.verbosity}"
+            mavenoverrides="${basedir}/generated-source/overrides.xml">
             
             <moduleset>
                 <module name="com.redhat.ceylon.eclipse.ui" />
                 <module name="test.com.redhat.ceylon.eclipse.ui" />
             </moduleset>
+            <reposet refid="repos"/>
         </ceylon-test>
     </target>
+
+    <property name="moduleFileFolder" value="${basedir}/generated-source/com/redhat/ceylon/eclipse/eclipseDependencies/"/>
+
+	<target name="addModuleImport">
+        <loadproperties>
+            <zipentry zipfile="${currentFile}" name="META-INF/MANIFEST.MF"/>
+             <filterchain>
+                <linecontainsregexp>
+                    <regexp pattern="^(Bundle-SymbolicName|Bundle-Version)"/>
+                </linecontainsregexp>
+                 <replaceregex pattern="\s+$" replace=""/>
+                 <replaceregex pattern=";.+$" replace=""/>
+                 <replaceregex pattern="^\s+" replace=""/>
+              </filterchain>
+        </loadproperties>
+        <if>
+            <isset property="Bundle-SymbolicName"/>
+            <then>
+                <if>
+                    <matches pattern=".*\.source$" string="${Bundle-SymbolicName}"/>
+                    <then>
+                        <propertyregex input="${Bundle-SymbolicName}" regexp="(.*)\.source$" property="RealBundleName" select="\1"/>
+                        <move tofile="${basedir}/target/repo/plugins/${RealBundleName}-${Bundle-Version}.src" file="${currentFile}"/>
+                    </then>
+                    <else>
+                        <echo append="true" file="${moduleFileFolder}/module.ceylon" 
+                            message='    shared import ${Bundle-SymbolicName} "${Bundle-Version}";'/>
+                        <echo append="true" file="${moduleFileFolder}/module.ceylon"><![CDATA[
+]]></echo>
+                        <echo append="true" file="${basedir}/generated-source/overrides.xml" 
+                            message='    &lt;set module="${Bundle-SymbolicName}" version="${Bundle-Version}"/&gt;'/>
+                        <echo append="true" file="${basedir}/generated-source/overrides.xml"><![CDATA[
+]]></echo>
+                        <move tofile="${basedir}/target/repo/plugins/${Bundle-SymbolicName}-${Bundle-Version}.jar" file="${currentFile}"/>
+                    </else>
+                </if>
+            </then>
+        </if>
+    </target>
+
+    <target name="mirrorRequiredBundles">
+        <mkdir dir="${basedir}/target/repo/"/>
+    	<p2.mirror source="http://download.eclipse.org/releases/kepler">
+    	    <slicingOptions includeFeatures="true" 
+    		                includeOptional="false"
+    	    	            includeNonGreedy="false"
+    	    	            followStrict="true"
+    	    	            latestVersionOnly="true"/>
+    		<iu id="org.eclipse.core.expressions" version=""/>
+    		<iu id="org.eclipse.core.expressions.source" version=""/>
+    		<iu id="org.eclipse.core.filesystem" version=""/>
+    		<iu id="org.eclipse.core.filesystem.source" version=""/>
+    		<iu id="org.eclipse.core.resources" version=""/>
+    		<iu id="org.eclipse.core.resources.source" version=""/>
+    		<iu id="org.eclipse.core.runtime" version=""/>
+    		<iu id="org.eclipse.core.runtime.source" version=""/>
+    		<iu query="property[@name='maven-artifactId' @value='org.eclipse.jdt.core']" />
+    		<iu id="org.eclipse.jdt.core.source" version=""/>
+    		<iu id="org.eclipse.text" version=""/>
+    		<iu id="org.eclipse.text.source" version=""/>
+    		<destination compressed="false" location="${basedir}/target/repo/"/>
+    	</p2.mirror>
+    </target>
+	
+	<target name="generate-eclipseDependenciesModule">
+		<mkdir dir="${moduleFileFolder}"/>
+		<echo append="false" file="${moduleFileFolder}/module.ceylon"
+              message='module com.redhat.ceylon.eclipse.eclipseDependencies "${module.com.redhat.ceylon.eclipse.ui.ceylon.version}" {' />
+        <echo append="true" file="${moduleFileFolder}/module.ceylon"><![CDATA[
+]]></echo>
+        <echo append="false" file="${basedir}/generated-source/overrides.xml"
+              message='&lt;overrides xmlns="http://www.ceylon-lang.org/xsd/overrides"&gt;' />
+        <echo append="true" file="${basedir}/generated-source/overrides.xml"><![CDATA[
+]]></echo>
+		<foreach target="addModuleImport" param="currentFile">
+            <path>
+                <fileset dir="${basedir}/target/repo/plugins" includes="**/*.jar"/>
+            </path>
+        </foreach>
+        <echo append="true" file="${moduleFileFolder}/module.ceylon">}</echo>
+        <echo append="true" file="${basedir}/generated-source/overrides.xml"><![CDATA[
+    <remove module="org.eclipse.core.filesystem.java7"/>
+    <remove module="org.eclipse.equinox.common"/>
+    <remove module="org.eclipse.equinox.registry"/>
+    <remove module="org.eclipse.osgi"/>
+    <remove module="org.eclipse.ant.core"/>
+    <remove module="org.eclipse.core.runtime.compatibility.auth"/>
+    <remove module="javax.annotation"/>
+    <remove module="javax.inject"/>
+    <remove module="org.eclipse.core.contenttype"/>
+    <remove module="org.eclipse.core.jobs"/>
+    <remove module="org.eclipse.equinox.app"/>
+    <remove module="org.eclipse.equinox.common"/>
+    <remove module="org.eclipse.equinox.preferences"/>
+    <remove module="org.eclipse.team.core"/>
+    <remove module="com.ibm.icu"/>
+    <remove module="org.eclipse.core.commands"/>
+    <remove module="org.eclipse.core.variables"/>
+    <remove module="org.eclipse.equinox.common"/>
+    <remove module='4.0.0)"'/>
+    <remove module='2.0.0)"'/>
+</overrides>]]></echo>
+	</target>
 </project>

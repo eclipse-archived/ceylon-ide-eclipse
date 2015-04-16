@@ -10,8 +10,9 @@
   <packaging>pom</packaging>
 
   <properties>
-    <platform-version-name>juno</platform-version-name>
-    <tychoVersion>0.20.0</tychoVersion>
+    <platform-version-name>kepler</platform-version-name>
+    <main-software-site>http://download.eclipse.org/releases/${platform-version-name}</main-software-site>
+    <tychoVersion>0.22.0</tychoVersion>
     <scmBranch>trunk</scmBranch>
     <BUILD_ALIAS>Final</BUILD_ALIAS>
     <memoryOptions1>-Xms512m -Xmx1024m -XX:PermSize=256m</memoryOptions1>
@@ -26,7 +27,7 @@
     <repository>
       <id>eclipse</id>
       <layout>p2</layout>
-      <url>http://download.eclipse.org/releases/kepler</url>
+      <url>${main-software-site}</url>
     </repository>
 
    <repository>
@@ -51,6 +52,12 @@
      <id>ceylon-formatter</id>
      <layout>p2</layout>
      <url>file:../ceylon.formatter/osgi/dist</url>     
+   </repository>
+
+   <repository>
+     <id>ceylon-ide-common</id>
+     <layout>p2</layout>
+     <url>file:../ceylon-ide-common/osgi/dist</url>
    </repository>
 
   </repositories>
