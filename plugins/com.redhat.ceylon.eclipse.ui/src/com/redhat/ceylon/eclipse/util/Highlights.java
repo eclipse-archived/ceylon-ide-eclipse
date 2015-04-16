@@ -20,7 +20,6 @@ import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.TextStyle;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
@@ -47,12 +46,18 @@ public class Highlights  {
     public static String MEMBERS = "members";    
     public static String OUTLINE_TYPES = "outlineTypes";    
     
-    private static TextAttribute identifierAttribute, typeAttribute, typeLiteralAttribute, keywordAttribute, numberAttribute, 
-    annotationAttribute, annotationStringAttribute, commentAttribute, stringAttribute, todoAttribute, 
-    semiAttribute, braceAttribute, packageAttribute, interpAttribute, charAttribute, memberAttribute;
+    private static TextAttribute identifierAttribute, 
+            typeAttribute, typeLiteralAttribute, 
+            keywordAttribute, numberAttribute, 
+            annotationAttribute, annotationStringAttribute, 
+            commentAttribute, stringAttribute, todoAttribute, 
+            semiAttribute, braceAttribute, packageAttribute, 
+            interpAttribute, charAttribute, memberAttribute;
     
-    private static TextAttribute text(ColorRegistry colorRegistry, String key, int style) {
-        return new TextAttribute(color(colorRegistry, key), null, style); 
+    private static TextAttribute text(ColorRegistry colorRegistry, 
+            String key, int style) {
+        return new TextAttribute(color(colorRegistry, key), 
+                null, style); 
     }
     
     public static Color color(ColorRegistry colorRegistry, String key) {
@@ -73,7 +78,7 @@ public class Highlights  {
     }
 
     public static ITheme getCurrentTheme() {
-        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+        return getWorkbench().getThemeManager().getCurrentTheme();
     }
     
     public static Color getCurrentThemeColor(String key) {
@@ -223,8 +228,8 @@ public class Highlights  {
         styleJavaType(result, string, TYPE_ID_STYLER);
     }
 
-    public static void styleJavaType(StyledString result, String string,
-            Styler styler) {
+    public static void styleJavaType(StyledString result, 
+            String string, Styler styler) {
         StringTokenizer tokens = 
                 new StringTokenizer(string,
                         " <>,[]?.", true);
@@ -252,7 +257,8 @@ public class Highlights  {
     }
 
     public static StyledString styleProposal(String description, 
-            boolean qualifiedNameIsPath, boolean eliminateQuotes) {
+            boolean qualifiedNameIsPath, 
+            boolean eliminateQuotes) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
                 new StringTokenizer(description, "'\"", true);
@@ -282,7 +288,8 @@ public class Highlights  {
                         }
                     }
                     else {
-                        styleProposal(result, token, qualifiedNameIsPath);
+                        styleProposal(result, token, 
+                                qualifiedNameIsPath);
                     }
                 }
             }
@@ -295,71 +302,93 @@ public class Highlights  {
 
     public static StyledString styleProposal(String description, 
             boolean qualifiedNameIsPath) {
-        return styleProposal(description, qualifiedNameIsPath, true);
+        return styleProposal(description, 
+                qualifiedNameIsPath, true);
     }
 
-    public static final Styler TYPE_STYLER = new Styler() {
+    public static final Styler TYPE_STYLER = 
+            new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, TYPES);
+            textStyle.foreground =
+                    color(colorRegistry, TYPES);
         }
     };
-    public static final Styler MEMBER_STYLER = new Styler() {
+    public static final Styler MEMBER_STYLER = 
+            new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, MEMBERS);
+            textStyle.foreground =
+                    color(colorRegistry, MEMBERS);
         }
     };
-    public static final Styler TYPE_ID_STYLER = new Styler() {
+    public static final Styler TYPE_ID_STYLER = 
+            new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, TYPES);
+            textStyle.foreground =
+                    color(colorRegistry, TYPES);
         }
     };
-    public static final Styler KW_STYLER = new Styler() {
+    public static final Styler KW_STYLER = 
+            new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, KEYWORDS);
+            textStyle.foreground =
+                    color(colorRegistry, KEYWORDS);
         }
     };
-    public static final Styler STRING_STYLER = new Styler() {
+    public static final Styler STRING_STYLER = 
+            new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground=color(colorRegistry, STRINGS);
         }
     };
-    public static final Styler NUM_STYLER = new Styler() {
+    public static final Styler NUM_STYLER = 
+            new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, NUMBERS);
+            textStyle.foreground =
+                    color(colorRegistry, NUMBERS);
         }
     };
-    public static final Styler PACKAGE_STYLER = new Styler() {
+    public static final Styler PACKAGE_STYLER = 
+            new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, PACKAGES);
+            textStyle.foreground =
+                    color(colorRegistry, PACKAGES);
         }
     };
-    public static final Styler ARROW_STYLER = new Styler() {
+    public static final Styler ARROW_STYLER = 
+            new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, OUTLINE_TYPES);
+            textStyle.foreground =
+                    color(colorRegistry, OUTLINE_TYPES);
         }
     };
-    public static final Styler ANN_STYLER = new Styler() {
+    public static final Styler ANN_STYLER = 
+            new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, ANNOTATIONS);
+            textStyle.foreground =
+                    color(colorRegistry, ANNOTATIONS);
         }
     };
-    public static final Styler ID_STYLER = new Styler() {
+    public static final Styler ID_STYLER = 
+            new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, IDENTIFIERS);
+            textStyle.foreground = 
+                    color(colorRegistry, IDENTIFIERS);
         }
     };
     
     private static ColorRegistry colorRegistry = 
-            getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+            getWorkbench().getThemeManager()
+                          .getCurrentTheme()
+                          .getColorRegistry();
         
 }

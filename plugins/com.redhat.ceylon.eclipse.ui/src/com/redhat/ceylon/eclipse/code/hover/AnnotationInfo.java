@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -19,8 +20,9 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 /**
- * An annotation info contains information about an {@link Annotation}
- * It's used as input for the {@link AnnotationInformationControl}
+ * An annotation info contains information about an 
+ * {@link Annotation} It's used as input for the 
+ * {@link AnnotationInformationControl}
  *
  * @since 3.4
  */
@@ -34,7 +36,8 @@ class AnnotationInfo {
     
     private final CeylonEditor editor;
 
-    AnnotationInfo(CeylonEditor editor, Map<Annotation,Position> annotationPositions,
+    AnnotationInfo(CeylonEditor editor, 
+            Map<Annotation,Position> annotationPositions,
             ITextViewer textViewer) {
         this.annotationPositions = annotationPositions;
         this.viewer = textViewer;
@@ -46,23 +49,29 @@ class AnnotationInfo {
     }
 
     /**
-     * Create completion proposals which can resolve the given annotation at
-     * the given position. Returns an empty array if no such proposals exist.
+     * Create completion proposals which can resolve the 
+     * given annotation at the given position. Returns an 
+     * empty array if no such proposals exist.
      *
      * @return the proposals or an empty array
      */
     ICompletionProposal[] getCompletionProposals() {
-        List<ICompletionProposal> list = new ArrayList<ICompletionProposal>();
+        List<ICompletionProposal> list = 
+                new ArrayList<ICompletionProposal>();
         for (Map.Entry<Annotation,Position> e: 
                 getAnnotationPositions().entrySet()) {
             Annotation annotation = e.getKey();
             Position position = e.getValue();
             if (annotation instanceof CeylonAnnotation) {
-                collectAnnotationFixes((CeylonAnnotation) annotation, position, list);
+                CeylonAnnotation ca = 
+                        (CeylonAnnotation) annotation;
+                collectAnnotationFixes(ca, position, list);
             }
             if (annotation instanceof MarkerAnnotation) {
-                for (ICompletionProposal p:
-                    getMarkerAnnotationFixes((MarkerAnnotation) annotation, position)) {
+                MarkerAnnotation ma = 
+                        (MarkerAnnotation) annotation;
+                for (ICompletionProposal p: 
+                    getMarkerAnnotationFixes(ma, position)) {
                     list.add(p);
                 }
             }
@@ -95,23 +104,28 @@ class AnnotationInfo {
         
         CeylonCorrectionProcessor cp = 
                 new CeylonCorrectionProcessor(editor);
-        cp.collectCorrections(quickAssistContext, location, proposals);
+        cp.collectCorrections(quickAssistContext, 
+                location, proposals);
         cp.collectAnnotationCorrections(annotation, 
                 quickAssistContext, location, proposals);
     }
 
-    private ICompletionProposal[] getMarkerAnnotationFixes(MarkerAnnotation markerAnnotation, 
+    private ICompletionProposal[] getMarkerAnnotationFixes(
+            MarkerAnnotation markerAnnotation, 
             Position position) {
         if (markerAnnotation.isQuickFixableStateSet() && 
                 !markerAnnotation.isQuickFixable()) {
             return NO_PROPOSALS;
         }
 
-        TextInvocationContext context = new TextInvocationContext(
-                ((ISourceViewer) this.getViewer()), 
-                position.getOffset(),
-                position.getLength());
-        return new CeylonCorrectionProcessor(markerAnnotation.getMarker())
+        ISourceViewer sourceViewer = 
+                (ISourceViewer) this.getViewer();
+        TextInvocationContext context = 
+                new TextInvocationContext(sourceViewer, 
+                        position.getOffset(),
+                        position.getLength());
+        IMarker marker = markerAnnotation.getMarker();
+        return new CeylonCorrectionProcessor(marker)
                 .computeQuickAssistProposals(context);
     }
 
