@@ -468,10 +468,10 @@ class AnnotationInformationControl
     private Link createCompletionProposalLink(Composite parent,
             final ICompletionProposal proposal) {
         Label proposalImage = new Label(parent, SWT.NONE);
-        GridData gd = 
+        GridData gd1 = 
                 new GridData(SWT.BEGINNING, SWT.CENTER, 
                         false, false);
-        proposalImage.setLayoutData(gd);
+        proposalImage.setLayoutData(gd1);
         Image image = proposal.getImage();
         if (image != null) {
             proposalImage.setImage(image);
@@ -490,7 +490,10 @@ class AnnotationInformationControl
         }
 
         Link proposalLink = new Link(parent, SWT.WRAP);
-        proposalLink.setLayoutData(gd);
+        GridData gd2 = 
+                new GridData(SWT.BEGINNING, SWT.CENTER, 
+                        false, false);
+        proposalLink.setLayoutData(gd2);
         proposalLink.setText("<a>" + 
                 proposal.getDisplayString()
                         .replace("&", "&&") + 
