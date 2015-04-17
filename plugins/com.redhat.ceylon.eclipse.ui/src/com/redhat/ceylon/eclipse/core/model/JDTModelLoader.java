@@ -247,7 +247,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     private String getToplevelQualifiedName(final String pkgName, String name) {
-        if (! Util.isInitialLowerCase(name)) {
+        if (name != null && ! Util.isInitialLowerCase(name)) {
             name = Util.quoteIfJavaKeyword(name);
         }
 
