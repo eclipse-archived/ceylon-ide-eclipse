@@ -48,13 +48,14 @@ import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
 import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugOptionsManager;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import com.redhat.ceylon.eclipse.ui.ceylon;
 
 
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
     public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
     public static final String DIST_PLUGIN_ID = "com.redhat.ceylon.dist";
-    public static final String EMBEDDED_REPO_PLUGIN_ID = "com.redhat.ceylon.dist.repo";
+    public static final String EMBEDDED_REPO_PLUGIN_ID = pluginIds_.;
     public static final String LANGUAGE_ID = "ceylon";
     public static final String EDITOR_ID = PLUGIN_ID + ".editor";
     private static final String[] MODULE_LAUNCHER_LIBRARIES = new String[]{ 

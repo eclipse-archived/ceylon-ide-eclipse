@@ -136,11 +136,12 @@
 
     <target name="mirrorRequiredBundles">
         <mkdir dir="${basedir}/target/repo/"/>
-    	<p2.mirror source="http://download.eclipse.org/releases/kepler">
-    	    <slicingOptions includeFeatures="true" 
+    	<p2.mirror source="http://download.eclipse.org/releases/kepler/"
+    		verbose="true" validate="true">
+    	    <slicingOptions includeFeatures="false" 
     		                includeOptional="false"
-    	    	            includeNonGreedy="false"
-    	    	            followStrict="true"
+    	    	            includeNonGreedy="true"
+    	    	            followStrict="false"
     	    	            latestVersionOnly="true"/>
     		<iu id="org.eclipse.core.expressions" version=""/>
     		<iu id="org.eclipse.core.expressions.source" version=""/>
@@ -150,11 +151,22 @@
     		<iu id="org.eclipse.core.resources.source" version=""/>
     		<iu id="org.eclipse.core.runtime" version=""/>
     		<iu id="org.eclipse.core.runtime.source" version=""/>
-    		<iu query="property[@name='maven-artifactId' @value='org.eclipse.jdt.core']" />
+    		<iu query="property[@name='maven-artifactId' contains(@value='org.eclipse.jdt.core']" />
     		<iu id="org.eclipse.jdt.core.source" version=""/>
     		<iu id="org.eclipse.text" version=""/>
     		<iu id="org.eclipse.text.source" version=""/>
-    		<destination compressed="false" location="${basedir}/target/repo/"/>
+            <iu id="org.eclipse.equinox.common" version=""/>
+            <iu id="org.eclipse.equinox.common.source" version=""/>
+    	    <iu id="org.eclipse.core.jobs"  version=""/>
+    	    <iu id="org.eclipse.core.jobs.source"  version=""/>
+            <iu id="org.eclipse.ui"  version=""/>
+            <iu id="org.eclipse.ui.source"  version=""/>
+            <iu id="org.eclipse.ui.workbench"  version=""/>
+            <iu id="org.eclipse.ui.workbench.source"  version=""/>
+            <iu id="org.eclipse.jface"  version=""/>
+            <iu id="org.eclipse.swt"  version=""/>
+            <iu id="org.eclipse.swt.gtk.linux.x86_64"  version=""/>
+    		<destination append="false" atomic="true" compressed="false" location="${basedir}/target/repo/"/>
     	</p2.mirror>
     </target>
 	
@@ -176,15 +188,14 @@
         <echo append="true" file="${moduleFileFolder}/module.ceylon">}</echo>
         <echo append="true" file="${basedir}/generated-source/overrides.xml"><![CDATA[
     <remove module="org.eclipse.core.filesystem.java7"/>
-    <remove module="org.eclipse.equinox.common"/>
     <remove module="org.eclipse.equinox.registry"/>
+    <remove module="org.eclipse.equinox.bidi"/>
     <remove module="org.eclipse.osgi"/>
     <remove module="org.eclipse.ant.core"/>
     <remove module="org.eclipse.core.runtime.compatibility.auth"/>
     <remove module="javax.annotation"/>
     <remove module="javax.inject"/>
     <remove module="org.eclipse.core.contenttype"/>
-    <remove module="org.eclipse.core.jobs"/>
     <remove module="org.eclipse.equinox.app"/>
     <remove module="org.eclipse.equinox.common"/>
     <remove module="org.eclipse.equinox.preferences"/>
@@ -195,6 +206,13 @@
     <remove module="org.eclipse.equinox.common"/>
     <remove module='4.0.0)"'/>
     <remove module='2.0.0)"'/>
+        	
+    <module module="org.eclipse.core.runtime">
+        <share module="org.eclipse.core.jobs"/>
+    </module>
+    <module module="org.eclipse.core.resources">
+        <share module="org.eclipse.core.runtime"/>
+    </module>
 </overrides>]]></echo>
 	</target>
 </project>
