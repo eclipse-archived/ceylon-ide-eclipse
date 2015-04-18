@@ -23,6 +23,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -35,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
@@ -44,24 +46,30 @@ public class CleanImportsHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) 
             throws ExecutionException {
-        CeylonEditor editor = (CeylonEditor) getCurrentEditor();
-        IDocument doc = editor.getCeylonSourceViewer().getDocument();
+        CeylonEditor editor = 
+                (CeylonEditor) getCurrentEditor();
+        IDocument doc = 
+                editor.getCeylonSourceViewer()
+                      .getDocument();
         cleanImports(editor.getParseController(), doc);
         return null;
     }
 
-    public static void cleanImports(CeylonParseController cpc, IDocument doc) {
+    public static void cleanImports(CeylonParseController cpc, 
+            IDocument doc) {
         if (!isEnabled(cpc)) return;
         Tree.CompilationUnit rootNode = cpc.getRootNode();
         if (rootNode!=null) {
             String imports = imports(rootNode, doc);
+            Tree.ImportList importList = 
+                    rootNode.getImportList();
             if (imports!=null && 
                     !(imports.trim().isEmpty() && 
-                            rootNode.getImportList().getImports().isEmpty())) {
-                Tree.ImportList il = rootNode.getImportList();
+                            importList.getImports().isEmpty())) {
                 int start;
                 int length;
                 String extra;
+                Tree.ImportList il = importList;
                 if (il==null || il.getImports().isEmpty()) {
                     start=0;
                     length=0;
@@ -73,10 +81,13 @@ public class CleanImportsHandler extends AbstractHandler {
                     extra="";
                 }
                 try {
-                    if (!doc.get(start, length).equals(imports+extra)) {
+                    if (!doc.get(start, length)
+                            .equals(imports+extra)) {
                         DocumentChange change = 
-                                new DocumentChange("Organize Imports", doc);
-                        change.setEdit(new ReplaceEdit(start, length, imports+extra));
+                                new DocumentChange("Organize Imports", 
+                                        doc);
+                        change.setEdit(new ReplaceEdit(start, 
+                                length, imports+extra));
                         try {
                             change.perform(new NullProgressMonitor());
                         }
@@ -94,22 +105,27 @@ public class CleanImportsHandler extends AbstractHandler {
 
     public static String imports(Node node, Tree.ImportList til,
             IDocument doc) {
-        List<Declaration> unused = new ArrayList<Declaration>();
+        List<Declaration> unused = 
+                new ArrayList<Declaration>();
         DetectUnusedImportsVisitor duiv = 
                 new DetectUnusedImportsVisitor(unused);
         til.visit(duiv);
         node.visit(duiv);
         return reorganizeImports(til, unused, 
-                Collections.<Declaration>emptyList(), doc);
+                Collections.<Declaration>emptyList(), 
+                doc);
     }
     
-    private static String imports(final Tree.CompilationUnit cu, 
+    private static String imports(Tree.CompilationUnit cu, 
             IDocument doc) {
-        List<Declaration> proposals = new ArrayList<Declaration>();
-        List<Declaration> unused = new ArrayList<Declaration>();
+        List<Declaration> proposals = 
+                new ArrayList<Declaration>();
+        List<Declaration> unused = 
+                new ArrayList<Declaration>();
         new ImportProposalsVisitor(cu, proposals).visit(cu);
         new DetectUnusedImportsVisitor(unused).visit(cu);
-        return reorganizeImports(cu.getImportList(), unused, proposals, doc);
+        return reorganizeImports(cu.getImportList(), 
+                unused, proposals, doc);
     }
     
     public static String imports(List<Declaration> proposed,
@@ -120,7 +136,8 @@ public class CleanImportsHandler extends AbstractHandler {
     }
     
     public static String reorganizeImports(Tree.ImportList til, 
-            List<Declaration> unused, List<Declaration> proposed,
+            List<Declaration> unused, 
+            List<Declaration> proposed,
             IDocument doc) {
         Map<String,List<Tree.Import>> packages = 
                 new TreeMap<String,List<Tree.Import>>();
@@ -138,9 +155,11 @@ public class CleanImportsHandler extends AbstractHandler {
             }
         }
         for (Declaration d: proposed) {
-            String pn = d.getUnit().getPackage().getNameAsString();
+            Package p = d.getUnit().getPackage();
+            String pn = p.getNameAsString();
             if (!packages.containsKey(pn)) {
-                packages.put(pn, Collections.<Tree.Import>emptyList());
+                packages.put(pn, 
+                        Collections.<Tree.Import>emptyList());
             }
         }
         
@@ -157,22 +176,32 @@ public class CleanImportsHandler extends AbstractHandler {
                             hasWildcard, packages);
             if (hasWildcard || !list.isEmpty() || 
                     imports.isEmpty()) { //in this last case there is no existing import, but imports are proposed
-                lastToplevel = appendBreakIfNecessary(lastToplevel, 
-                        packageName, builder, doc);
-                Referenceable packageModel = imports.isEmpty() ?
-                        null : //TODO: what to do in this case? look up the Package where?
-                        imports.get(0).getImportPath().getModel();
-                String escapedPackageName = packageModel instanceof Package ?
-                        escapePackageName((Package) packageModel) : 
-                        packageName;
+                lastToplevel = 
+                        appendBreakIfNecessary(lastToplevel, 
+                                packageName, builder, doc);
+                Referenceable packageModel = 
+                        imports.isEmpty() ?
+                            null : //TODO: what to do in this case? look up the Package where?
+                            imports.get(0).getImportPath()
+                                   .getModel();
+                String escapedPackageName;
+                if (packageModel instanceof Package) {
+                    Package p = (Package) packageModel;
+                    escapedPackageName = 
+                            escapePackageName(p);
+                }
+                else {
+                    escapedPackageName = packageName;
+                }
                 if (builder.length()!=0) {
                     builder.append(delim);
                 }
                 builder.append("import ")
                         .append(escapedPackageName)
                         .append(" {");
-                appendImportElements(packageName, list, unused, 
-                        proposed, hasWildcard, builder, doc);
+                appendImportElements(packageName, 
+                        list, unused, proposed, 
+                        hasWildcard, builder, doc);
                 builder.append(delim).append("}");
             }
         }
@@ -182,7 +211,8 @@ public class CleanImportsHandler extends AbstractHandler {
     private static boolean hasWildcard(List<Tree.Import> imports) {
         boolean hasWildcard = false;
         for (Tree.Import i: imports) {
-            hasWildcard = hasWildcard || 
+            hasWildcard = 
+                    hasWildcard || 
                     i!=null && i.getImportMemberOrTypeList()
                             .getImportWildcard()!=null;
         }
@@ -190,51 +220,59 @@ public class CleanImportsHandler extends AbstractHandler {
     }
 
     private static String appendBreakIfNecessary(String lastToplevel,
-            String currentPackage, StringBuilder builder, IDocument doc) {
-        int di = currentPackage.indexOf('.');
-        String topLevel = di<0 ? 
-                currentPackage:currentPackage.substring(0, di);
-        if (lastToplevel!=null && !topLevel.equals(lastToplevel)) {
+            String currentPackage, StringBuilder builder, 
+            IDocument doc) {
+        int index = currentPackage.indexOf('.');
+        String topLevel = index<0 ? 
+                currentPackage :
+                currentPackage.substring(0, index);
+        if (lastToplevel!=null && 
+                !topLevel.equals(lastToplevel)) {
             builder.append(getDefaultLineDelimiter(doc));
         }
         return topLevel;
     }
 
     private static void appendImportElements(String packageName,
-            List<Tree.ImportMemberOrType> elements, List<Declaration> unused, 
-            List<Declaration> proposed, boolean hasWildcard, 
-            StringBuilder builder, IDocument doc) {
+            List<Tree.ImportMemberOrType> elements, 
+            List<Declaration> unused, 
+            List<Declaration> proposed, 
+            boolean hasWildcard, StringBuilder builder, 
+            IDocument doc) {
         String indent = getDefaultIndent();
+        String delim = getDefaultLineDelimiter(doc);
         for (Tree.ImportMemberOrType i: elements) {
             Declaration d = i.getDeclarationModel();
-            if (d!=null && 
-                    i.getIdentifier().getErrors().isEmpty() &&
-                    i.getErrors().isEmpty()) {
-                builder.append(getDefaultLineDelimiter(doc))
-                        .append(indent);
-                if (!i.getImportModel().getAlias()
-                        .equals(d.getName())) {
-                    String escapedAlias = escapeAliasedName(d, 
-                            i.getImportModel().getAlias());
-                    builder.append(escapedAlias).append("=");
+            if (d!=null && isErrorFree(i)) {
+                builder.append(delim)
+                       .append(indent);
+                String alias = 
+                        i.getImportModel().getAlias();
+                if (!alias.equals(d.getName())) {
+                    String escapedAlias = 
+                            escapeAliasedName(d, alias);
+                    builder.append(escapedAlias)
+                           .append("=");
                 }
                 builder.append(escapeName(d));
-                appendNestedImportElements(i, unused, builder, doc);
+                appendNestedImportElements(i, 
+                        unused, builder, doc);
                 builder.append(",");
             }
         }
         for (Declaration d: proposed) {
-            if (d.getUnit().getPackage().getNameAsString()
+            Package pack = d.getUnit().getPackage();
+            if (pack.getNameAsString()
                     .equals(packageName)) {
-                builder.append(getDefaultLineDelimiter(doc))
+                builder.append(delim)
                        .append(indent);
                 builder.append(escapeName(d)).append(",");
             }
         }
         if (hasWildcard) {
-            builder.append(getDefaultLineDelimiter(doc))
-                    .append(indent)
-                    .append("...");
+            builder.append(delim)
+                   .append(indent)
+                   .append("...");
         }
         else {
             // remove trailing ,
@@ -242,9 +280,12 @@ public class CleanImportsHandler extends AbstractHandler {
         }
     }
 
-    private static void appendNestedImportElements(Tree.ImportMemberOrType imt,
-            List<Declaration> unused, StringBuilder builder, IDocument doc) {
+    private static void appendNestedImportElements(
+            Tree.ImportMemberOrType imt,
+            List<Declaration> unused, StringBuilder builder, 
+            IDocument doc) {
         String indent = getDefaultIndent();
+        String delim = getDefaultLineDelimiter(doc);
         if (imt.getImportMemberOrTypeList()!=null) {
             builder.append(" {");
             boolean found=false;
@@ -252,38 +293,39 @@ public class CleanImportsHandler extends AbstractHandler {
                     imt.getImportMemberOrTypeList()
                             .getImportMemberOrTypes()) {
                 Declaration d = nimt.getDeclarationModel();
-                if (d!=null && 
-                        nimt.getIdentifier().getErrors().isEmpty() &&
-                        nimt.getErrors().isEmpty()) {
+                if (d!=null && isErrorFree(nimt)) {
                     if (!unused.contains(d)) {
                         found=true;
-                        builder.append(getDefaultLineDelimiter(doc))
-                                .append(indent).append(indent);
-                        if (!nimt.getImportModel().getAlias()
-                                .equals(d.getName())) {
-                            String escapedAlias = escapeAliasedName(d, 
-                                    nimt.getImportModel().getAlias());
-                            builder.append(escapedAlias).append("=");
+                        builder.append(delim)
+                               .append(indent)
+                               .append(indent);
+                        String alias = 
+                                nimt.getImportModel().getAlias();
+                        if (!alias.equals(d.getName())) {
+                            String escapedAlias = 
+                                    escapeAliasedName(d, alias);
+                            builder.append(escapedAlias)
+                                   .append("=");
                         }
                         builder.append(escapeName(d))
-                                .append(",");
+                               .append(",");
                     }
                 }
             }
             if (imt.getImportMemberOrTypeList()
                     .getImportWildcard()!=null) {
                 found=true;
-                builder.append(getDefaultLineDelimiter(doc))
-                        .append(indent).append(indent)
-                        .append("...,");
+                builder.append(delim)
+                       .append(indent).append(indent)
+                       .append("...,");
             }
             
             if (found) {
                 // remove trailing ","
                 builder.setLength(builder.length()-1);
-                builder.append(getDefaultLineDelimiter(doc))
-                        .append(indent)
-                        .append('}');   
+                builder.append(delim)
+                       .append(indent)
+                       .append('}');   
             } else {
                 // remove the " {" 
                 builder.setLength(builder.length()-2);
@@ -302,7 +344,8 @@ public class CleanImportsHandler extends AbstractHandler {
     
     private static List<Tree.ImportMemberOrType> getUsedImportElements(
             List<Tree.Import> imports, List<Declaration> unused, 
-            boolean hasWildcard, Map<String, List<Tree.Import>> packages) {
+            boolean hasWildcard, 
+            Map<String, List<Tree.Import>> packages) {
         List<Tree.ImportMemberOrType> list = 
                 new ArrayList<Tree.ImportMemberOrType>();
         for (Tree.Import ti: imports) {
@@ -310,18 +353,16 @@ public class CleanImportsHandler extends AbstractHandler {
                     ti.getImportMemberOrTypeList()
                             .getImportMemberOrTypes()) {
                 Declaration dm = imt.getDeclarationModel();
-                if (dm!=null && 
-                        !hasRealErrors(imt.getIdentifier()) && 
-                        !hasRealErrors(imt)) {
-                    Tree.ImportMemberOrTypeList nimtl = imt.getImportMemberOrTypeList();
+                if (dm!=null && isErrorFree(imt)) {
+                    Tree.ImportMemberOrTypeList nimtl = 
+                            imt.getImportMemberOrTypeList();
                     if (unused.contains(dm)) {
                         if (nimtl!=null) {
                             for (Tree.ImportMemberOrType nimt: 
                                     nimtl.getImportMemberOrTypes()) {
-                                Declaration ndm = nimt.getDeclarationModel();
-                                if (ndm!=null && 
-                                        !hasRealErrors(nimt.getIdentifier()) && 
-                                        !hasRealErrors(nimt)) {
+                                Declaration ndm = 
+                                        nimt.getDeclarationModel();
+                                if (ndm!=null && isErrorFree(nimt)) {
                                     if (!unused.contains(ndm)) {
                                         list.add(imt);
                                         break;
@@ -337,7 +378,8 @@ public class CleanImportsHandler extends AbstractHandler {
                         if (!hasWildcard || 
                                 imt.getAlias()!=null || 
                                 nimtl!=null || 
-                                preventAmbiguityDueWildcards(dm, packages)) {
+                                preventAmbiguityDueWildcards(dm, 
+                                        packages)) {
                             list.add(imt);
                         }
                     }
@@ -347,25 +389,36 @@ public class CleanImportsHandler extends AbstractHandler {
         return list;
     }
     
+    private static boolean isErrorFree(Tree.ImportMemberOrType imt) {
+        return !hasRealErrors(imt.getIdentifier()) && 
+                !hasRealErrors(imt);
+    }
+
     private static boolean preventAmbiguityDueWildcards(Declaration d, 
             Map<String, List<Tree.Import>> importsMap) {
-        Module module = d.getUnit().getPackage().getModule();
-        String containerName = d.getContainer().getQualifiedNameString();
+        Module module = 
+                d.getUnit().getPackage().getModule();
+        String containerName = 
+                d.getContainer().getQualifiedNameString();
 
         for (Map.Entry<String, List<Tree.Import>> importEntry: 
                 importsMap.entrySet()) {
             String packageName = importEntry.getKey();
-            List<Tree.Import> importList = importEntry.getValue();
+            List<Tree.Import> importList = 
+                    importEntry.getValue();
             if (!packageName.equals(containerName) &&
                     hasWildcard(importList)) {
                 Package p2 = module.getPackage(packageName);
                 if (p2 != null) {
-                    Declaration d2 = p2.getMember(d.getName(), null, false);
+                    Declaration d2 = 
+                            p2.getMember(d.getName(), 
+                                    null, false);
                     if (d2!=null && 
                             d2.isToplevel() && 
                             d2.isShared() && 
                             !d2.isAnonymous() && 
-                            !isImportedWithAlias(d2, importList)) {
+                            !isImportedWithAlias(d2, 
+                                    importList)) {
                         return true;
                     }
                 }
@@ -380,8 +433,9 @@ public class CleanImportsHandler extends AbstractHandler {
         for (Tree.Import i: importList) {
             for (Tree.ImportMemberOrType imt: 
                     i.getImportMemberOrTypeList()
-                            .getImportMemberOrTypes()) {
-                if (d.getName().equals(imt.getIdentifier().getText()) && 
+                     .getImportMemberOrTypes()) {
+                String name = imt.getIdentifier().getText();
+                if (d.getName().equals(name) && 
                         imt.getAlias() != null) {
                     return true;
                 }
@@ -391,8 +445,9 @@ public class CleanImportsHandler extends AbstractHandler {
     }
 
     private static String packageName(Tree.Import i) {
-        if (i.getImportPath()!=null) {
-            return formatPath(i.getImportPath().getIdentifiers());
+        ImportPath path = i.getImportPath();
+        if (path!=null) {
+            return formatPath(path.getIdentifiers());
         }
         else {
             return null;
@@ -404,9 +459,11 @@ public class CleanImportsHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (super.isEnabled() && 
                 editor instanceof CeylonEditor &&
-                editor.getEditorInput() instanceof IFileEditorInput) {
+                editor.getEditorInput() 
+                        instanceof IFileEditorInput) {
+            CeylonEditor ce = (CeylonEditor) editor;
             CeylonParseController cpc = 
-                    ((CeylonEditor) editor).getParseController();
+                    ce.getParseController();
             return isEnabled(cpc);
         }
         else {
@@ -416,15 +473,17 @@ public class CleanImportsHandler extends AbstractHandler {
 
     public static boolean isEnabled(CeylonParseController cpc) {
         return cpc!=null && 
-                cpc.getStage().ordinal()>=Stage.TYPE_ANALYSIS.ordinal() && 
+                cpc.getStage().ordinal() >=
+                        Stage.TYPE_ANALYSIS.ordinal() && 
                 cpc.getRootNode()!=null;
     }
     
     public static Declaration select(List<Declaration> proposals) {
-        CeylonEditor editor = (CeylonEditor) getCurrentEditor();
+        CeylonEditor editor = 
+                (CeylonEditor) getCurrentEditor();
+        Shell shell = editor.getSite().getShell();
         ImportSelectionDialog fid = 
-                new ImportSelectionDialog(editor.getSite().getShell(),
-                        proposals);
+                new ImportSelectionDialog(shell, proposals);
         if (fid.open() == Window.OK) {
             return (Declaration) fid.getFirstResult();
         }
