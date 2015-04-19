@@ -720,12 +720,13 @@ public class DocumentationHover extends SourceInfoHover {
     
     private static String escape(String string) {
         return string
-                .replace("\0", "\\{NULL}")
+                .replace("\0", "\\0")
                 .replace("\b", "\\b")
                 .replace("\t", "\\t")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
-                .replace("\f", "\\f");
+                .replace("\f", "\\f")
+                .replace("\u001b", "\\e");
     }
     
     private static String getTermTypeHoverText(Node node, String selectedText, 
