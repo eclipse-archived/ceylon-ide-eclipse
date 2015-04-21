@@ -589,11 +589,16 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addParameterListProposal(file, proposals, node, rootNode);
         	addConstructorProposal(file, proposals, node, rootNode);
         	break;
+        case 1610:
+            addRemoveAnnotationDecProposal(proposals, "shared", project, node);
+            addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
+            break;
         case 1500:
         case 1501:
             addRemoveAnnotationDecProposal(proposals, "variable", project, node);
             break;
         case 1600:
+        case 1601:
             addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
             break;
         case 1700:
