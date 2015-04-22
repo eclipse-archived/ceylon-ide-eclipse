@@ -86,6 +86,10 @@ class UnknownTypeMirror implements TypeMirror {
     public TypeParameterMirror getTypeParameter() {
         return null;
     }
+    @Override
+    public TypeMirror getQualifyingType() {
+        return null;
+    }
 }
 
 public class JDTType implements TypeMirror {
@@ -101,6 +105,8 @@ public class JDTType implements TypeMirror {
     private JDTTypeParameter typeParameter;
     private boolean isPrimitive;
     private boolean isRaw;
+
+    private JDTType qualifyingType;
     
 
     public JDTType(TypeBinding type) {
@@ -147,6 +153,10 @@ public class JDTType implements TypeMirror {
         }
         else  {
             typeArguments = Collections.emptyList();
+        }
+
+        if(type.enclosingType() instanceof ParameterizedTypeBinding){
+            qualifyingType = new JDTType(type.enclosingType());
         }
         
         if (type instanceof ArrayBinding) {
@@ -270,5 +280,10 @@ public class JDTType implements TypeMirror {
     @Override
     public TypeParameterMirror getTypeParameter() {
         return typeParameter;
+    }
+
+    @Override
+    public TypeMirror getQualifyingType() {
+        return qualifyingType;
     }
 }
