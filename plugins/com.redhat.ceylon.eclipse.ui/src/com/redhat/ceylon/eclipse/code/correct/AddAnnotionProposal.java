@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static java.util.Arrays.asList;
 
@@ -27,7 +28,10 @@ import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Constructor;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.IntersectionType;
+import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeAlias;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
@@ -38,7 +42,6 @@ import com.redhat.ceylon.compiler.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 public class AddAnnotionProposal extends CorrectionProposal {
@@ -49,10 +52,10 @@ public class AddAnnotionProposal extends CorrectionProposal {
     private static final List<String> ANNOTATIONS_ON_SEPARATE_LINE = 
             asList("doc", "throws", "see", "tagged");
     
-    private final Declaration dec;
+    private final Referenceable dec;
     private final String annotation;
     
-    AddAnnotionProposal(Declaration dec, String annotation, 
+    AddAnnotionProposal(Referenceable dec, String annotation, 
             String desc, int offset, TextFileChange change, 
             Region selection) {
         super(desc, change, selection);
@@ -78,20 +81,22 @@ public class AddAnnotionProposal extends CorrectionProposal {
     }
 
     private static void addAddAnnotationProposal(Node node, String annotation, 
-            String desc, Declaration dec, Collection<ICompletionProposal> proposals, 
+            String desc, Referenceable dec, Collection<ICompletionProposal> proposals, 
             IProject project) {
-        if (dec!=null && dec.getName()!=null && 
+        if (dec!=null && dec.getNameAsString()!=null && 
                 !(node instanceof Tree.MissingDeclaration)) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
                     FindDeclarationNodeVisitor fdv = 
                             new FindDeclarationNodeVisitor(dec);
                     getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = 
-                            (Tree.Declaration) fdv.getDeclarationNode();
+                    Tree.StatementOrArgument decNode = 
+                            (Tree.StatementOrArgument) 
+                                fdv.getDeclarationNode();
                     if (decNode!=null) {
-                        addAddAnnotationProposal(annotation, desc, dec,
-                                proposals, unit, node, decNode);
+                        addAddAnnotationProposal(annotation, 
+                                desc, dec, proposals, unit, 
+                                node, decNode);
                     }
                     break;
                 }
@@ -99,66 +104,102 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
     }
 
-    private static void addAddAnnotationProposal(String annotation, String desc, 
-            Declaration dec, Collection<ICompletionProposal> proposals, 
-            PhasedUnit unit, Node node, Tree.Declaration decNode) {
+    private static void addAddAnnotationProposal(String annotation, 
+            String desc, Referenceable dec, 
+            Collection<ICompletionProposal> proposals, 
+            PhasedUnit unit, Node node, 
+            Tree.StatementOrArgument decNode) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
-        TextEdit edit = createReplaceAnnotationEdit(annotation, node, change);
+        TextEdit edit = 
+                createReplaceAnnotationEdit(annotation, node, change);
         if (edit==null) {
         	edit = createInsertAnnotationEdit(annotation, decNode, 
-        			EditorUtil.getDocument(change));
+        			getDocument(change));
         }
         change.addEdit(edit);
+        createExplicitTypeEdit(decNode, change);
+        Region selection;
+        if (node!=null && 
+                node.getUnit().equals(decNode.getUnit())) {
+            selection = 
+                    new Region(edit.getOffset(), 
+                            annotation.length());
+        }
+        else {
+            selection = null;
+        }
+        AddAnnotionProposal p = 
+                new AddAnnotionProposal(dec, annotation, 
+                        description(annotation, dec), 
+                        edit.getOffset(), 
+                        change, selection);
+        if (!proposals.contains(p)) {
+            proposals.add(p);
+        }
+    }
+
+    private static void createExplicitTypeEdit(
+            Tree.StatementOrArgument decNode, TextFileChange change) {
         if (decNode instanceof Tree.TypedDeclaration &&
                 !(decNode instanceof Tree.ObjectDefinition)) {
-            Tree.Type type = ((Tree.TypedDeclaration) decNode).getType();
+            Tree.TypedDeclaration tdNode = 
+                    (Tree.TypedDeclaration) decNode;
+            Tree.Type type = tdNode.getType();
             if (type.getToken()!=null &&
                     (type instanceof Tree.FunctionModifier || 
                      type instanceof Tree.ValueModifier)) {
                 ProducedType it = type.getTypeModel();
-                if (it!=null && !(it.getDeclaration() instanceof UnknownType)) {
-                    String explicitType = it.getProducedTypeName();
+                if (it!=null && 
+                        !(it.getDeclaration() instanceof UnknownType)) {
+                    String explicitType = 
+                            it.getProducedTypeName();
                     change.addEdit(new ReplaceEdit(type.getStartIndex(), 
                             type.getText().length(), explicitType));
                 }
             }
         }
-        Region selection;
-        if (node!=null && node.getUnit().equals(decNode.getUnit())) {
-            selection = new Region(edit.getOffset(), annotation.length());
-        }
-        else {
-            selection = null;
-        }
-        Scope container = dec.getContainer();
-        String containerDesc = "";
-        if (container instanceof TypeDeclaration) {
-            String name = ((TypeDeclaration) container).getName();
-            if (name == null && container instanceof Constructor) {
-                Scope cont = container.getContainer();
+    }
+
+    private static String description(String annotation, Referenceable dec) {
+        String description;
+        if (dec instanceof Declaration) {
+            Declaration d = (Declaration) dec;
+            Scope container = d.getContainer();
+            String containerDesc = "";
+            if (container instanceof TypeDeclaration) {
+                TypeDeclaration td = 
+                        (TypeDeclaration) container;
+                String name = td.getName();
+                if (name == null && 
+                        container instanceof Constructor) {
+                    Scope cont = container.getContainer();
+                    if (cont instanceof Declaration) {
+                        name = ((Declaration) cont).getName();
+                    }
+                }
+                containerDesc = " in '" + name + "'";
+            }
+            String name = d.getName();
+            if (name == null && 
+                    dec instanceof Constructor) {
+                Scope cont = d.getContainer();
                 if (cont instanceof Declaration) {
-                    name = ((Declaration) cont).getName();
+                    name = ((Declaration) container).getName();
+                    containerDesc = "";
                 }
             }
-            containerDesc = " in '" + name + "'";
+            description = 
+                    "Make '" + name + "' " + 
+                            annotation + containerDesc;
         }
-        String name = dec.getName();
-        if (name == null && dec instanceof Constructor) {
-            Scope cont = dec.getContainer();
-            if (cont instanceof Declaration) {
-                name = ((Declaration) container).getName();
-                containerDesc = "";
-            }
+        else  {
+            description = "Make package '" + 
+                    dec.getNameAsString() + "' " + 
+                    annotation;
         }
-        String description = 
-                "Make '" + name + "' " + annotation + containerDesc;
-        AddAnnotionProposal p = new AddAnnotionProposal(dec, annotation, 
-        		description, edit.getOffset(), change, selection);
-        if (!proposals.contains(p)) {
-            proposals.add(p);
-        }
+        return description;
     }
 
 	private static ReplaceEdit createReplaceAnnotationEdit(String annotation,
@@ -173,14 +214,15 @@ public class AddAnnotionProposal extends CorrectionProposal {
 		else {
 			return null;
 		}
-		Tree.AnnotationList annotationList = getAnnotationList(node);
+		Tree.AnnotationList annotationList = 
+		        getAnnotationList(node);
 		if (annotationList != null) {
 			for (Tree.Annotation ann:
 				annotationList.getAnnotations()) {
 				if (toRemove.equals(getAnnotationIdentifier(ann))) {
-					return new ReplaceEdit(ann.getStartIndex(), 
-							ann.getStopIndex()+1-ann.getStartIndex(),
-							annotation);
+					Integer start = ann.getStartIndex();
+                    int length = ann.getStopIndex()+1-start;
+                    return new ReplaceEdit(start, length, annotation);
 				}
 			}
 		}
@@ -189,11 +231,13 @@ public class AddAnnotionProposal extends CorrectionProposal {
 
     public static InsertEdit createInsertAnnotationEdit(String newAnnotation, 
             Node node, IDocument doc) {
-        String newAnnotationName = getAnnotationWithoutParam(newAnnotation);
+        String newAnnotationName = 
+                getAnnotationWithoutParam(newAnnotation);
 
         Tree.Annotation prevAnnotation = null;
         Tree.Annotation nextAnnotation = null;
-        Tree.AnnotationList annotationList = getAnnotationList(node);
+        Tree.AnnotationList annotationList = 
+                getAnnotationList(node);
         if (annotationList != null) {
             for (Tree.Annotation annotation:
                     annotationList.getAnnotations()) {
@@ -209,21 +253,26 @@ public class AddAnnotionProposal extends CorrectionProposal {
 
         int nextNodeStartIndex;
         if (nextAnnotation != null) {
-            nextNodeStartIndex = nextAnnotation.getStartIndex();
+            nextNodeStartIndex = 
+                    nextAnnotation.getStartIndex();
         }
         else {
             if (node instanceof Tree.AnyAttribute || 
                 node instanceof Tree.AnyMethod ) {
+                Tree.TypedDeclaration tdn = 
+                        (Tree.TypedDeclaration) node;
                 nextNodeStartIndex = 
-                        ((Tree.TypedDeclaration) node).getType().getStartIndex();
+                        tdn.getType().getStartIndex();
             }
             else if (node instanceof Tree.ObjectDefinition ) {
                 nextNodeStartIndex = 
-                        ((CommonToken) node.getMainToken()).getStartIndex();
+                        ((CommonToken) node.getMainToken())
+                                .getStartIndex();
             }
             else if (node instanceof Tree.ClassOrInterface) {
                 nextNodeStartIndex = 
-                        ((CommonToken) node.getMainToken()).getStartIndex();
+                        ((CommonToken) node.getMainToken())
+                                .getStartIndex();
             }
             else {
                 nextNodeStartIndex = node.getStartIndex();
@@ -260,20 +309,23 @@ public class AddAnnotionProposal extends CorrectionProposal {
     public static Tree.AnnotationList getAnnotationList(Node node) {
         Tree.AnnotationList annotationList = null;
         if (node instanceof Tree.Declaration) {
-            annotationList = 
-                    ((Tree.Declaration) node).getAnnotationList();
+            Tree.Declaration tdn = 
+                    (Tree.Declaration) node;
+            annotationList = tdn.getAnnotationList();
         }
         else if (node instanceof Tree.ModuleDescriptor) {
-            annotationList = 
-                    ((Tree.ModuleDescriptor) node).getAnnotationList();
+            Tree.ModuleDescriptor mdn = 
+                    (Tree.ModuleDescriptor) node;
+            annotationList = mdn.getAnnotationList();
         }
         else if (node instanceof Tree.PackageDescriptor) {
-            annotationList = 
-                    ((Tree.PackageDescriptor) node).getAnnotationList();
+            Tree.PackageDescriptor pdn = 
+                    (Tree.PackageDescriptor) node;
+            annotationList = pdn.getAnnotationList();
         }
         else if (node instanceof Tree.Assertion) {
-            annotationList = 
-                    ((Tree.Assertion) node).getAnnotationList();
+            Tree.Assertion an = (Tree.Assertion) node;
+            annotationList = an.getAnnotationList();
         }
         return annotationList;
     }
@@ -281,9 +333,10 @@ public class AddAnnotionProposal extends CorrectionProposal {
     public static String getAnnotationIdentifier(Tree.Annotation annotation) {
         String annotationName = null;
         if (annotation != null) {
-            if (annotation.getPrimary() instanceof Tree.BaseMemberExpression) {
+            Tree.Primary primary = annotation.getPrimary();
+            if (primary instanceof Tree.BaseMemberExpression) {
                 Tree.BaseMemberExpression bme = 
-                        (Tree.BaseMemberExpression) annotation.getPrimary();
+                        (Tree.BaseMemberExpression) primary;
                 annotationName = bme.getIdentifier().getText();
             }
         }
@@ -318,13 +371,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
     
     static void addMakeActualDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
-        Declaration dec;
-        if (node instanceof Tree.Declaration) {
-            dec = ((Tree.Declaration) node).getDeclarationModel();
-        }
-        else {
-            dec = (Declaration) node.getScope();
-        }
+        Declaration dec = annotatedNode(node);
         boolean shared = dec.isShared();
         addAddAnnotationProposal(node, 
         		shared ? "actual" : "shared actual", 
@@ -332,20 +379,36 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 dec, proposals, project);
     }
 
+    private static Declaration annotatedNode(Node node) {
+        Declaration dec;
+        if (node instanceof Tree.Declaration) {
+            Tree.Declaration dn = (Tree.Declaration) node;
+            dec = dn.getDeclarationModel();
+        }
+        else {
+            dec = (Declaration) node.getScope();
+        }
+        return dec;
+    }
+
     static void addMakeDefaultProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         
         Declaration d;
         if (node instanceof Tree.Declaration) {
-            Tree.Declaration decNode = (Tree.Declaration) node;
+            Tree.Declaration decNode = 
+                    (Tree.Declaration) node;
             d = decNode.getDeclarationModel();
         }
         if (node instanceof Tree.SpecifierStatement) {
-            Tree.SpecifierStatement specNode = (Tree.SpecifierStatement) node;
+            Tree.SpecifierStatement specNode = 
+                    (Tree.SpecifierStatement) node;
             d = specNode.getRefined();
         }
         else if (node instanceof Tree.BaseMemberExpression) {
-            d = ((Tree.BaseMemberExpression) node).getDeclaration();
+            Tree.BaseMemberExpression bme = 
+                    (Tree.BaseMemberExpression) node;
+            d = bme.getDeclaration();
         }
         else {
             return;
@@ -379,13 +442,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
 
     static void addMakeDefaultDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
-    	Declaration dec;
-        if (node instanceof Tree.Declaration) {
-            dec = ((Tree.Declaration) node).getDeclarationModel();
-        }
-        else {
-            dec = (Declaration) node.getScope();
-        }
+    	Declaration dec = annotatedNode(node);
         addAddAnnotationProposal(node, 
                 dec.isShared() ? "default" : "shared default", 
                 dec.isShared() ? "Make Default" : "Make Shared Default", 
@@ -394,13 +451,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
 
     static void addMakeFormalDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
-    	Declaration dec;
-        if (node instanceof Tree.Declaration) {
-            dec = ((Tree.Declaration) node).getDeclarationModel();
-        }
-        else {
-            dec = (Declaration) node.getScope();
-        }
+    	Declaration dec = annotatedNode(node);
         addAddAnnotationProposal(node, 
                 dec.isShared() ? "formal" : "shared formal",
                 dec.isShared() ? "Make Formal" : "Make Shared Formal",
@@ -409,13 +460,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
 
     static void addMakeAbstractDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
-        Declaration dec;
-        if (node instanceof Tree.Declaration) {
-            dec = ((Tree.Declaration) node).getDeclarationModel();
-        }
-        else {
-            dec = (Declaration) node.getScope();
-        }
+        Declaration dec = annotatedNode(node);
         if (dec instanceof Class) {
             addAddAnnotationProposal(node, 
             		"abstract", "Make Abstract", 
@@ -427,8 +472,9 @@ public class AddAnnotionProposal extends CorrectionProposal {
             IProject project, Node node) {
         Declaration dec;
         if (node instanceof Tree.Declaration) {
+            Tree.Declaration dn = (Tree.Declaration) node;
             Scope container = 
-                    ((Tree.Declaration) node).getDeclarationModel().getContainer();
+                    dn.getDeclarationModel().getContainer();
             if (container instanceof Declaration) {
                 dec = (Declaration) container;
             }
@@ -448,23 +494,29 @@ public class AddAnnotionProposal extends CorrectionProposal {
             IProject project, Node node) {
         Tree.Term term;
         if (node instanceof Tree.AssignmentOp) {
-            term = ((Tree.AssignOp) node).getLeftTerm();
+            Tree.AssignOp ao = (Tree.AssignOp) node;
+            term = ao.getLeftTerm();
         }
         else if (node instanceof Tree.UnaryOperatorExpression) {
-            term = ((Tree.PrefixOperatorExpression) node).getTerm();
+            Tree.PrefixOperatorExpression poe = 
+                    (Tree.PrefixOperatorExpression) node;
+            term = poe.getTerm();
         }
         else if (node instanceof Tree.MemberOrTypeExpression) {
             term = (Tree.MemberOrTypeExpression) node;
         }
         else if (node instanceof Tree.SpecifierStatement) {
-            term = ((Tree.SpecifierStatement) node).getBaseMemberExpression();
+            Tree.SpecifierStatement ss = 
+                    (Tree.SpecifierStatement) node;
+            term = ss.getBaseMemberExpression();
         }
         else {
             return;
         }
         if (term instanceof Tree.MemberOrTypeExpression) {
-            Declaration dec = 
-                    ((Tree.MemberOrTypeExpression) term).getDeclaration();
+            Tree.MemberOrTypeExpression mte = 
+                    (Tree.MemberOrTypeExpression) term;
+            Declaration dec = mte.getDeclaration();
             if (dec instanceof Value) {
                 if (((Value) dec).getOriginalDeclaration()==null) {
                     addAddAnnotationProposal(node, 
@@ -478,7 +530,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
     static void addMakeVariableDecProposal(Collection<ICompletionProposal> proposals,
             IProject project, Tree.Declaration node) {
         final Declaration dec = node.getDeclarationModel();
-        if (dec instanceof Value && node instanceof Tree.AttributeDeclaration) {
+        if (dec instanceof Value && 
+                node instanceof Tree.AttributeDeclaration) {
             final Value v = (Value) dec;
             if (!v.isVariable() && !v.isTransient()) {
                 addAddAnnotationProposal(node, 
@@ -501,7 +554,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 }
             }
         }
-        GetInitializedVisitor v = new GetInitializedVisitor();
+        GetInitializedVisitor v = 
+                new GetInitializedVisitor();
         v.visit(cu);
         addAddAnnotationProposal(node, 
         		"variable", "Make Variable",
@@ -511,10 +565,12 @@ public class AddAnnotionProposal extends CorrectionProposal {
     static void addMakeSharedProposalForSupertypes(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         if (node instanceof Tree.ClassOrInterface) {
-            Tree.ClassOrInterface c = (Tree.ClassOrInterface) node;
-
+            Tree.ClassOrInterface cin = 
+                    (Tree.ClassOrInterface) node;
+            ClassOrInterface ci = cin.getDeclarationModel();
+            
             ProducedType extendedType = 
-                    c.getDeclarationModel().getExtendedType();
+                    ci.getExtendedType();
             if (extendedType!=null) {
                 addMakeSharedProposal(proposals, project, 
                         extendedType.getDeclaration());
@@ -526,7 +582,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
             }
             
             List<ProducedType> satisfiedTypes = 
-                    c.getDeclarationModel().getSatisfiedTypes();
+                    ci.getSatisfiedTypes();
             if (satisfiedTypes!=null) {
                 for (ProducedType satisfiedType: satisfiedTypes) {
                     addMakeSharedProposal(proposals, project, 
@@ -544,8 +600,10 @@ public class AddAnnotionProposal extends CorrectionProposal {
     static void addMakeRefinedSharedProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         if (node instanceof Tree.Declaration) {
-            Declaration refined = ((Tree.Declaration) node).getDeclarationModel()
-                    .getRefinedDeclaration();
+            Tree.Declaration tdn = (Tree.Declaration) node;
+            Declaration refined = 
+                    tdn.getDeclarationModel()
+                        .getRefinedDeclaration();
             if (refined.isDefault() || refined.isFormal()) {
                 addMakeSharedProposal(proposals, project, refined);
             }
@@ -559,7 +617,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
     
     static void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
-        Declaration dec = null;
+        Referenceable dec = null;
         List<ProducedType> typeArgumentList = null;
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
             Tree.StaticMemberOrTypeExpression qmte = 
@@ -572,50 +630,63 @@ public class AddAnnotionProposal extends CorrectionProposal {
             dec = st.getDeclarationModel();
         }
         else if (node instanceof Tree.OptionalType) {
-            Tree.OptionalType ot = (Tree.OptionalType) node;
+            Tree.OptionalType ot = 
+                    (Tree.OptionalType) node;
             if (ot.getDefiniteType() instanceof Tree.SimpleType) {
-                Tree.SimpleType st = (Tree.SimpleType) ot.getDefiniteType();
+                Tree.SimpleType st = (Tree.SimpleType) 
+                        ot.getDefiniteType();
                 dec = st.getDeclarationModel();
             }
         }
         else if (node instanceof Tree.IterableType) {
             Tree.IterableType it = (Tree.IterableType) node;
             if (it.getElementType() instanceof Tree.SimpleType) {
-                Tree.SimpleType st = (Tree.SimpleType) it.getElementType();
+                Tree.SimpleType st = (Tree.SimpleType) 
+                        it.getElementType();
                 dec = st.getDeclarationModel();
             }
         }
         else if (node instanceof Tree.SequenceType) {
             Tree.SequenceType qt = (Tree.SequenceType) node;
             if (qt.getElementType() instanceof Tree.SimpleType) {
-                Tree.SimpleType st = (Tree.SimpleType) qt.getElementType();
+                Tree.SimpleType st = (Tree.SimpleType) 
+                        qt.getElementType();
                 dec = st.getDeclarationModel();
             }
         }
         else if (node instanceof Tree.ImportMemberOrType) {
-            Tree.ImportMemberOrType imt = (Tree.ImportMemberOrType) node;
+            Tree.ImportMemberOrType imt = 
+                    (Tree.ImportMemberOrType) node;
             dec = imt.getDeclarationModel();
         }
+        else if (node instanceof Tree.ImportPath) {
+            Tree.ImportPath ip = 
+                    (Tree.ImportPath) node;
+            dec = ip.getModel();
+        }
         else if (node instanceof Tree.TypedDeclaration) {
-            Tree.TypedDeclaration td = ((Tree.TypedDeclaration) node);
-            if (td.getDeclarationModel() != null) {
-                ProducedType pt = td.getDeclarationModel().getType();
+            Tree.TypedDeclaration tdn = 
+                    (Tree.TypedDeclaration) node;
+            TypedDeclaration td = tdn.getDeclarationModel();
+            if (td!=null) {
+                ProducedType pt = td.getType();
                 dec = pt.getDeclaration();
                 typeArgumentList = pt.getTypeArgumentList();
             }
         }
         else if (node instanceof Tree.Parameter) {
-            Tree.Parameter parameter = ((Tree.Parameter) node);
-            if (parameter.getParameterModel()!=null && 
-                    parameter.getParameterModel().getType()!=null) {
-                ProducedType pt = parameter.getParameterModel().getType();
+            Tree.Parameter parameter = 
+                    (Tree.Parameter) node;
+            Parameter param = parameter.getParameterModel();
+            if (param!=null && param.getType()!=null) {
+                ProducedType pt = param.getType();
                 dec = pt.getDeclaration();
                 typeArgumentList = pt.getTypeArgumentList();
             }
         }
         addMakeSharedProposal(proposals, project, dec);
         if (typeArgumentList != null) {
-            for (ProducedType typeArgument : typeArgumentList) {
+            for (ProducedType typeArgument: typeArgumentList) {
                 addMakeSharedProposal(proposals, project, 
                         typeArgument.getDeclaration());
             }
@@ -623,7 +694,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
     }
     
     static void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
-            IProject project, Declaration dec) {
+            IProject project, Referenceable dec) {
         if (dec!=null) {
             if (dec instanceof UnionType) {
                 List<ProducedType> caseTypes = 
@@ -654,9 +725,16 @@ public class AddAnnotionProposal extends CorrectionProposal {
             else if (dec instanceof TypedDeclaration || 
                        dec instanceof ClassOrInterface || 
                        dec instanceof TypeAlias) {
-                if (!dec.isShared()) {
+                if (!((Declaration) dec).isShared()) {
                     addAddAnnotationProposal(null, 
                     		"shared", "Make Shared", 
+                            dec, proposals, project);
+                }
+            }
+            else if (dec instanceof Package) {
+                if (!((Package) dec).isShared()) {
+                    addAddAnnotationProposal(null, 
+                            "shared", "Make Shared", 
                             dec, proposals, project);
                 }
             }
@@ -666,10 +744,11 @@ public class AddAnnotionProposal extends CorrectionProposal {
     static void addMakeSharedDecProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         if (node instanceof Tree.Declaration) {
-            Declaration d = ((Tree.Declaration) node).getDeclarationModel();
+            Tree.Declaration dn = (Tree.Declaration) node;
             addAddAnnotationProposal(node, 
             		"shared", "Make Shared",  
-                    d, proposals, project);
+                    dn.getDeclarationModel(), 
+                    proposals, project);
         }
     }
     

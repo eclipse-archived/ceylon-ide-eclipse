@@ -487,6 +487,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 400:
         case 401:
+        case 402:
             addMakeSharedProposal(proposals, project, node);
             break;
         case 500:
