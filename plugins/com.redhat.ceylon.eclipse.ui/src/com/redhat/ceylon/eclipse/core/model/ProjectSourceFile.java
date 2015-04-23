@@ -16,8 +16,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
-import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.CompilationUnitDelta;
-import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.DeltaBuilderFactory;
+import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
+import com.redhat.ceylon.ide.common.model.delta.DeltaBuilderFactory;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 

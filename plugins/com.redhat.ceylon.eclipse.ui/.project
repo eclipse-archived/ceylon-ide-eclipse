@@ -20,8 +20,18 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>com.redhat.ceylon.eclipse.ui.ceylonBuilder</name>
+			<arguments>
+				<dictionary>
+					<key>systemRepo</key>
+					<value></value>
+				</dictionary>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
+		<nature>com.redhat.ceylon.eclipse.ui.ceylonNature</nature>
 		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>

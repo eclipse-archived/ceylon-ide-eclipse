@@ -1,0 +1,7 @@
+<project default="jar">
+	<target name="jar">
+		<jar destfile="target/ceylonRepo/com.redhat.ceylon.eclipse.ui.jdt.debug.fragment-current.jar">
+			<fileset dir="${basedir}/target/classes" includes="**/*"/>
+		</jar>
+	</target>
+</project>

@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
-
 public class ProjectChangeListener implements IResourceChangeListener {
     
     @Override
@@ -30,6 +29,7 @@ public class ProjectChangeListener implements IResourceChangeListener {
                     }
                     if (resource instanceof IProject && delta.getKind()==IResourceDelta.REMOVED) {
                         CeylonBuilder.removeProject((IProject) resource);
+                        ceylonModelGetter_.ceylonModelGetter().addProject((IProject) resource); 
                     }
                     else if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
                         final IProject project = (IProject) resource;

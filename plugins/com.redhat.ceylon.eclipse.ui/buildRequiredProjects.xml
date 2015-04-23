@@ -1,0 +1,30 @@
+<project name="RequiredProject" default="build-and-update-in-ide">
+    <target name="update-in-ide">
+        <ant dir="../../../ceylon-dist/" antfile="build.xml" target="ide-quick"/>
+        <ant dir="../../../ceylon-sdk/" antfile="build.xml" target="ide-quick"/>
+        <ant dir="../../../ceylon.formatter/" antfile="build.xml" target="ide-quick"/>
+        <ant dir="../../../ceylon-ide-common/" antfile="build.xml" target="ide-quick"/>
+    </target>
+    <target name="build-and-update-in-ide">
+        <ant dir="../../../ceylon-dist" antfile="build.xml">
+            <target name="clean"/>
+            <target name="publish-all"/>
+            <target name="ide-quick"/>
+        </ant>
+        <ant dir="../../../ceylon-sdk" antfile="build.xml">
+            <target name="clean"/>
+            <target name="publish"/>
+            <target name="ide-quick"/>
+        </ant>
+        <ant dir="../../../ceylon.formatter" antfile="build.xml">
+            <target name="clean"/>
+            <target name="publish"/>
+            <target name="ide-quick"/>
+        </ant>
+        <ant dir="../../../ceylon-ide-common" antfile="build.xml">
+            <target name="clean"/>
+            <target name="publish"/>
+            <target name="ide-quick"/>
+        </ant>
+    </target>
+</project>

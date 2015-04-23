@@ -3,16 +3,15 @@ package com.redhat.ceylon.eclipse.ui;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.io.input.ReaderInputStream;
 import org.eclipse.core.internal.registry.ExtensionRegistry;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -48,14 +47,13 @@ import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
 import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugOptionsManager;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.eclipse.ui.ceylon;
 
 
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
     public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
     public static final String DIST_PLUGIN_ID = "com.redhat.ceylon.dist";
-    public static final String EMBEDDED_REPO_PLUGIN_ID = pluginIds_.;
+    public static final String EMBEDDED_REPO_PLUGIN_ID = "com.redhat.ceylon.dist.repo";
     public static final String LANGUAGE_ID = "ceylon";
     public static final String EDITOR_ID = PLUGIN_ID + ".editor";
     private static final String[] MODULE_LAUNCHER_LIBRARIES = new String[]{ 
@@ -139,7 +137,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         refreshExternalSourceArchiveManager.schedule();
         
         CeylonDebugOptionsManager.getDefault().startup();
-        InputStream contributionStream = new ReaderInputStream(new StringReader(
+        InputStream contributionStream = new ByteArrayInputStream(new String(
                 "<plugin>\n" +
                 "<extension point=\"org.eclipse.wst.xml.core.catalogContributions\">\n" +
                 "  <catalogContribution>\n" +
@@ -148,7 +146,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                         + "uri=\"platform:/plugin/" + PLUGIN_ID + "/META-INF/overrides.xsd\"/>\n" + 
                 "  </catalogContribution>\n"+
                 "</extension>\n" +
-                "</plugin>"));
+                "</plugin>").getBytes("ASCII"));
 
         IExtensionRegistry reg = RegistryFactory.getRegistry();
         Object key = ((ExtensionRegistry) reg).getTemporaryUserToken();

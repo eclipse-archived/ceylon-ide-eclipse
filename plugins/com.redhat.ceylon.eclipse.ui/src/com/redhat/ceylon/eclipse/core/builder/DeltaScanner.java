@@ -29,7 +29,7 @@ import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.CompilationUnitDelta;
+import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
 
 final class DeltaScanner implements IResourceDeltaVisitor {
     private final BooleanHolder mustDoFullBuild;

@@ -2,3 +2,9 @@ target
 .settings
 **/*.index
 
+/modules/
+/.exploded/
+/generated-source/
+/.exploded/
+/.exploded/
+/.exploded/

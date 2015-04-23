@@ -9,6 +9,57 @@
     </parent>
     <artifactId>com.redhat.ceylon.eclipse.ui</artifactId>
 
+    <properties>
+        <dependenciesToFetch>
+            org.eclipse.core.expressions,
+            org.eclipse.core.filesystem,
+            org.eclipse.core.resources,
+            org.eclipse.core.runtime,
+            org.eclipse.text,
+            org.eclipse.jdt.core,
+            org.eclipse.jdt.ui,
+            org.eclipse.equinox.preferences,
+            org.eclipse.equinox.common,
+            org.eclipse.equinox.registry,
+            org.eclipse.core.jobs,
+            org.eclipse.ui,
+            org.eclipse.ui.workbench,
+            org.eclipse.jface, 
+            org.eclipse.jface.text,
+            org.eclipse.osgi,
+            org.eclipse.swt,
+            org.eclipse.swt.gtk.linux.x86_64,
+            org.eclipse.ui,
+            org.eclipse.ui.intro,
+            org.eclipse.jface.text,
+            org.eclipse.ui.editors,
+            org.eclipse.ui.workbench.texteditor,
+            org.eclipse.ltk.core.refactoring,
+            org.eclipse.ltk.ui.refactoring,
+            org.eclipse.text,
+            org.eclipse.ui.ide,
+            org.eclipse.search,
+            org.eclipse.ui.console,
+            org.eclipse.ui.views,
+            org.eclipse.core.filesystem,
+            org.eclipse.core.commands,
+            org.eclipse.compare,
+            org.eclipse.debug.core,
+            org.eclipse.debug.ui,
+            org.eclipse.jdt.debug,
+            org.eclipse.jdt.launching,
+            org.eclipse.jdt.debug.ui,
+            org.eclipse.ui.cheatsheets,
+            org.eclipse.zest.core,
+            org.eclipse.draw2d,
+            org.eclipse.zest.layouts,
+            org.eclipse.ui.navigator,
+            org.eclipse.ui.navigator.resources,
+            org.eclipse.ui.views.properties.tabbed,
+            org.eclipse.help
+        </dependenciesToFetch>
+    </properties>
+    
     <packaging>eclipse-plugin</packaging>
     <build>
         <plugins>
@@ -21,7 +72,7 @@
                         <phase>clean</phase>
                         <configuration>
                             <target>
-                                <ant dir="${project.basedir}/ceylon"
+                                <ant dir="${project.basedir}"
                                     target="clean" />
                             </target>
                         </configuration>
@@ -29,14 +80,30 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+                  <execution>
+                    <id>get-jdt-debug-version</id>
+                    <phase>initialize</phase>
+                    <goals>
+                      <goal>run</goal>
+                    </goals>
+                    <configuration>
+                      <exportAntProperties>true</exportAntProperties>
+                      <target>
+                        <dependencyfilesets prefix="mydeps."/>
+                        <pathconvert pathsep="" property="jdtVersion" refid="mydeps.p2.eclipse-plugin:org.eclipse.jdt.debug:jar:jdimodel.jar">
+                            <mapper type="regexp" from="org\.eclipse\.jdt\.debug-(.+)\.jar/jdimodel.jar" to="\1"/>
+                        </pathconvert>
+                      </target>
+                    </configuration>
+                  </execution>
                     <execution>
                         <id>compileCeylonModule</id>
-                        <phase>generate-sources</phase>
+                        <phase>process-sources</phase>
                         <configuration>
                             <target>
-                                <ant dir="${project.basedir}/ceylon"
+                                <ant dir="${project.basedir}"
                                     target="generate-eclipseDependenciesModule" />
-                                <ant dir="${project.basedir}/ceylon"
+                                <ant dir="${project.basedir}"
                                     target="compile" />
                             </target>
                         </configuration>
@@ -49,7 +116,7 @@
                         <phase>test</phase>
                         <configuration>
                             <target>
-                                <ant dir="${project.basedir}/ceylon"
+                                <ant dir="${project.basedir}"
                                     target="test" />
                             </target>
                         </configuration>
@@ -67,31 +134,37 @@
                     <overWriteIfNewer>true</overWriteIfNewer>
                     <overWriteReleases>true</overWriteReleases>
                     <overWriteSnapshots>true</overWriteSnapshots>
-                    <includeArtifactIds>
-                        org.eclipse.core.expressions,
-                        org.eclipse.core.filesystem,
-                        org.eclipse.core.resources,
-                        org.eclipse.core.runtime,
-                        org.eclipse.text,
-                        org.eclipse.jdt.core</includeArtifactIds>
-                    <outputDirectory>${project.basedir}/ceylon/target/repo/plugins</outputDirectory>
+                    <outputDirectory>${project.basedir}/target/repo/plugins</outputDirectory>
                 </configuration>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
-                        <phase>initialize</phase>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <excludeClassifiers>jdi.jar,jdimodel.jar</excludeClassifiers>
+                            <includeArtifactIds>${dependenciesToFetch}</includeArtifactIds>
+                        </configuration>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>copy-sources-of-dependencies</id>
-                        <phase>initialize</phase>
+                        <id>copy</id>
+                        <phase>generate-sources</phase>
                         <configuration>
-                            <classifier>sources</classifier>
+                            <excludeClassifiers>jdi.jar,jdimodel.jar</excludeClassifiers>
+                            <artifactItems>
+                                <artifactItem>
+                                  <groupId>p2.osgi.bundle</groupId>
+                                  <artifactId>org.eclipse.jdt.debug</artifactId>
+                                  <version>${jdtVersion}</version>
+                                  <type>jar</type>
+                                  <outputDirectory>${project.basedir}/target/repo/plugins</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
                         </configuration>
                         <goals>
-                            <goal>copy-dependencies</goal>
+                            <goal>copy</goal>
                         </goals>
                     </execution>
                 </executions>

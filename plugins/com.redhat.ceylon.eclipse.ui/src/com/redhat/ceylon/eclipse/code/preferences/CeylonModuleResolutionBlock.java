@@ -4,9 +4,9 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.openInEditor;
 import static org.eclipse.jface.layout.GridDataFactory.fillDefaults;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 
-import java.io.StringReader;
+import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.io.input.ReaderInputStream;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -338,14 +338,14 @@ public class CeylonModuleResolutionBlock {
                                 "An 'overrides.xml' file already exists in this folder.");
                         return;
                     }
-                    StringReader content = 
-                            new StringReader(
-                                "<overrides\n" +
-                                "    xmlns=\"http://www.ceylon-lang.org/xsd/overrides\">\n" + 
-                                "</overrides>");
-                    overridesResource.create(
-                            new ReaderInputStream(content), 
-                            true, null);
+                    try {
+                        overridesResource.create(new ByteArrayInputStream(
+                                ("<overrides xmlns=\"http://www.ceylon-lang.org/xsd/overrides\">\n" + 
+                                "</overrides>").getBytes("ASCII")), true, null);
+                    } catch (UnsupportedEncodingException e1) {
+                        e1.printStackTrace();
+                    }
+                    final IFile fileToOpen = overridesResource;
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override
                         public void run() {
