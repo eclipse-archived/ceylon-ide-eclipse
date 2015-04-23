@@ -113,11 +113,11 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
+import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -162,6 +162,7 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -720,22 +721,49 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.SwitchClause sc = (Tree.SwitchClause) node;
             Tree.SwitchStatement ss = (Tree.SwitchStatement) 
                     findStatement(rootNode, node);
-            Tree.Expression e = sc.getSwitched().getExpression();
+            Tree.Expression e = 
+                    sc.getSwitched().getExpression();
             if (e!=null) {
                 ProducedType type = e.getTypeModel();
                 if (type!=null) {
-                    for (Tree.CaseClause cc: ss.getSwitchCaseList().getCaseClauses()) {
+                    Tree.SwitchCaseList scl = 
+                            ss.getSwitchCaseList();
+                    for (Tree.CaseClause cc: 
+                            scl.getCaseClauses()) {
                         Tree.CaseItem item = cc.getCaseItem();
                         if (item instanceof Tree.IsCase) {
-                            Tree.Type t = ((Tree.IsCase) item).getType();
-                            if (t!=null && 
-                                    !isTypeUnknown(t.getTypeModel())) {
-                                type = type.minus(t.getTypeModel());
+                            Tree.IsCase ic = 
+                                    (Tree.IsCase) item;
+                            Tree.Type tn = ic.getType();
+                            if (tn!=null) {
+                                ProducedType t = 
+                                        tn.getTypeModel();
+                                if (!isTypeUnknown(t)) {
+                                    type = type.minus(t);
+                                }
+                            }
+                        }
+                        else if (item instanceof Tree.MatchCase) {
+                            Tree.MatchCase ic = 
+                                    (Tree.MatchCase) item;
+                            Tree.ExpressionList il = 
+                                    ic.getExpressionList();
+                            for (Tree.Expression ex: 
+                                il.getExpressions()) {
+                                if (ex!=null) {
+                                    ProducedType t = 
+                                            ex.getTypeModel();
+                                    if (t!=null && 
+                                            !isTypeUnknown(t)) {
+                                        type = type.minus(t);
+                                    }
+                                }
                             }
                         }
                     }
                     TextFileChange tfc = 
-                            new TextFileChange("Add Cases", file);
+                            new TextFileChange("Add Cases", 
+                                    file);
                     IDocument doc = getDocument(tfc);
                     String text = "";
                     List<ProducedType> list;
@@ -743,20 +771,26 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                         list = type.getCaseTypes();
                     }
                     else {
-                        list = Collections.singletonList(type);
+                        list = singletonList(type);
                     }
                     for (ProducedType pt: list) {
+                        String is = 
+                                pt.getDeclaration()
+                                    .isAnonymous() ? 
+                                "" : "is ";
+                        Unit unit = rootNode.getUnit();
                         text += getDefaultLineDelimiter(doc) + 
                                 getIndent(node, doc) +
-                                "case (is " + 
-                                pt.getProducedTypeName(rootNode.getUnit()) +
+                                "case (" +
+                                is + 
+                                pt.getProducedTypeName(unit) +
                                 ") {}"; 
                     }
                     int offset = getNodeEndOffset(ss);
-                    tfc.setEdit(new InsertEdit(offset, 
-                            text));
-                    proposals.add(new CorrectionProposal("Add missing 'case' clauses", 
-                            tfc, new Region(offset+text.length()-1, 0)));
+                    tfc.setEdit(new InsertEdit(offset, text));
+                    proposals.add(new CorrectionProposal(
+                            "Add missing 'case' clauses", tfc, 
+                            new Region(offset+text.length()-1, 0)));
                 }
             }
         }
