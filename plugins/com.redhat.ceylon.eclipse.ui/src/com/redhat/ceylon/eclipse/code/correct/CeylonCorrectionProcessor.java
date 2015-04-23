@@ -11,6 +11,7 @@ package com.redhat.ceylon.eclipse.code.correct;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
+import static com.redhat.ceylon.compiler.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeAbstractDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeActualDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeContainerAbstractProposal;
@@ -116,6 +117,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -158,6 +160,7 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -681,6 +684,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 10000:
             addElseProposal(file, rootNode, proposals, node);
+            addCasesProposal(file, rootNode, proposals, node);
             break;
         }
     }
@@ -704,6 +708,57 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     text));
             proposals.add(new CorrectionProposal("Add 'else' clause", 
                     tfc, new Region(offset+text.length()-1, 0)));
+        }
+        
+    }
+
+    private void addCasesProposal(IFile file, 
+            Tree.CompilationUnit rootNode,
+            Collection<ICompletionProposal> proposals, 
+            Node node) {
+        if (node instanceof Tree.SwitchClause) {
+            Tree.SwitchClause sc = (Tree.SwitchClause) node;
+            Tree.SwitchStatement ss = (Tree.SwitchStatement) 
+                    findStatement(rootNode, node);
+            Tree.Expression e = sc.getSwitched().getExpression();
+            if (e!=null) {
+                ProducedType type = e.getTypeModel();
+                if (type!=null) {
+                    for (Tree.CaseClause cc: ss.getSwitchCaseList().getCaseClauses()) {
+                        Tree.CaseItem item = cc.getCaseItem();
+                        if (item instanceof Tree.IsCase) {
+                            Tree.Type t = ((Tree.IsCase) item).getType();
+                            if (t!=null && 
+                                    !isTypeUnknown(t.getTypeModel())) {
+                                type = type.minus(t.getTypeModel());
+                            }
+                        }
+                    }
+                    TextFileChange tfc = 
+                            new TextFileChange("Add Cases", file);
+                    IDocument doc = getDocument(tfc);
+                    String text = "";
+                    List<ProducedType> list;
+                    if (type.getCaseTypes()!=null) {
+                        list = type.getCaseTypes();
+                    }
+                    else {
+                        list = Collections.singletonList(type);
+                    }
+                    for (ProducedType pt: list) {
+                        text += getDefaultLineDelimiter(doc) + 
+                                getIndent(node, doc) +
+                                "case (is " + 
+                                pt.getProducedTypeName(rootNode.getUnit()) +
+                                ") {}"; 
+                    }
+                    int offset = getNodeEndOffset(ss);
+                    tfc.setEdit(new InsertEdit(offset, 
+                            text));
+                    proposals.add(new CorrectionProposal("Add missing 'case' clauses", 
+                            tfc, new Region(offset+text.length()-1, 0)));
+                }
+            }
         }
         
     }
