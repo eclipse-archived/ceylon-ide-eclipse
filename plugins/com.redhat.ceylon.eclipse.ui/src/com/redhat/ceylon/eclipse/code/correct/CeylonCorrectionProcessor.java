@@ -102,12 +102,15 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_WARNING;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findBinaryOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 
 import java.util.ArrayList;
@@ -676,36 +679,72 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 9200:
             addChangeRefiningParametersProposal(file, rootNode, proposals, node);
             break;
+        case 10000:
+            addElseProposal(file, rootNode, proposals, node);
+            break;
         }
     }
 
-    void addTypeParameterProposal(IFile file, Tree.CompilationUnit rootNode,
-            Collection<ICompletionProposal> proposals, Node node) {
+    private void addElseProposal(IFile file, 
+            Tree.CompilationUnit rootNode,
+            Collection<ICompletionProposal> proposals, 
+            Node node) {
+        if (node instanceof Tree.SwitchClause) {
+            Tree.SwitchStatement ss = (Tree.SwitchStatement) 
+                    findStatement(rootNode, node);
+            TextFileChange tfc = 
+                    new TextFileChange("Add Else", file);
+            IDocument doc = getDocument(tfc);
+            String text = 
+                    getDefaultLineDelimiter(doc) + 
+                    getIndent(node, doc) + 
+                    "else {}";
+            int offset = getNodeEndOffset(ss);
+            tfc.setEdit(new InsertEdit(offset, 
+                    text));
+            proposals.add(new CorrectionProposal("Add 'else' clause", 
+                    tfc, new Region(offset+text.length()-1, 0)));
+        }
+        
+    }
+
+    void addTypeParameterProposal(IFile file, 
+            Tree.CompilationUnit rootNode,
+            Collection<ICompletionProposal> proposals, 
+            Node node) {
         Tree.TypeConstraint tcn = (Tree.TypeConstraint) node;
         TypeParameter tp = tcn.getDeclarationModel();
         Tree.Declaration decNode = (Tree.Declaration) 
-                getReferencedNodeInUnit(tp.getDeclaration(), rootNode);
+                getReferencedNodeInUnit(tp.getDeclaration(), 
+                        rootNode);
         Tree.TypeParameterList tpl;
         if (decNode instanceof Tree.ClassOrInterface) {
-            tpl = ((Tree.ClassOrInterface) decNode).getTypeParameterList();
+            Tree.ClassOrInterface ci = 
+                    (Tree.ClassOrInterface) decNode;
+            tpl = ci.getTypeParameterList();
         }
         else if (decNode instanceof Tree.AnyMethod) {
-            tpl = ((Tree.AnyMethod) decNode).getTypeParameterList();
+            Tree.AnyMethod am = (Tree.AnyMethod) decNode;
+            tpl = am.getTypeParameterList();
         }
         else if (decNode instanceof Tree.TypeAliasDeclaration) {
-            tpl = ((Tree.TypeAliasDeclaration) decNode).getTypeParameterList();
+            Tree.TypeAliasDeclaration ad = 
+                    (Tree.TypeAliasDeclaration) decNode;
+            tpl = ad.getTypeParameterList();
         }
         else {
             return;
         }
-        TextFileChange tfc = new TextFileChange("Add Type Parameter", file);
+        TextFileChange tfc = 
+                new TextFileChange("Add Type Parameter", file);
         InsertEdit edit;
         if (tpl==null) {
             edit = new InsertEdit(decNode.getIdentifier().getStopIndex()+1, 
                     "<" + tp.getName() + ">");
         }
         else {
-            edit = new InsertEdit(tpl.getStopIndex(), ", " + tp.getName());
+            edit = new InsertEdit(tpl.getStopIndex(), 
+                    ", " + tp.getName());
         }
         tfc.setEdit(edit);
         proposals.add(new CorrectionProposal("Add '" + tp.getName() + 
