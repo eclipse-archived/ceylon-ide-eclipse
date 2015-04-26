@@ -18,7 +18,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonRepoPropertiesPage extends PropertyPage {
     
-    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.repos";
+    public static final String ID = 
+            CeylonPlugin.PLUGIN_ID + ".preferences.repos";
 
     private CeylonRepoConfigBlock block;
 
@@ -29,25 +30,35 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
         }
 
         IProject project = getSelectedProject();
-        CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
+        CeylonProjectConfig projectConfig = 
+                CeylonProjectConfig.get(project);
         projectConfig.setOutputRepo(block.getOutputRepo());
-        projectConfig.setProjectLocalRepos(block.getProjectLocalRepos());
-        projectConfig.setProjectRemoteRepos(block.getProjectRemoteRepos());
-        projectConfig.setProjectSuppressWarningsEnum(getSuppressedWarnings(project));
-        projectConfig.setProjectOverrides(block.getOverrides());
-        projectConfig.setProjectFlatClasspath(block.getFlatClasspath());
-        projectConfig.setProjectAutoExportMavenDependencies(block.getAutoExportMavenDependencies());
+        projectConfig.setProjectLocalRepos(
+                block.getProjectLocalRepos());
+        projectConfig.setProjectRemoteRepos(
+                block.getProjectRemoteRepos());
+        projectConfig.setProjectSuppressWarningsEnum(
+                getSuppressedWarnings(project));
+        projectConfig.setProjectOverrides(
+                block.getOverrides());
+        projectConfig.setProjectFlatClasspath(
+                block.getFlatClasspath());
+        projectConfig.setProjectAutoExportMavenDependencies(
+                block.getAutoExportMavenDependencies());
         projectConfig.save();
         
         if (CeylonNature.isEnabled(project)) {
-            boolean explodeModules = isExplodeModulesEnabled(project);
+            boolean explodeModules = 
+                    isExplodeModulesEnabled(project);
             boolean compileJs = compileToJs(project);
             boolean compileJava = compileToJava(project);
-            boolean astAwareIncrementalBuildsEnabled = areAstAwareIncrementalBuildsEnabled(project);
+            boolean astAwareIncrementalBuildsEnabled = 
+                    areAstAwareIncrementalBuildsEnabled(project);
             String verbose = getVerbose(project);
-            new CeylonNature(block.getSystemRepo(), explodeModules,
-                    compileJava, compileJs, astAwareIncrementalBuildsEnabled, verbose
-                    ).addToProject(project);      
+            new CeylonNature(block.getSystemRepo(), 
+                    explodeModules, compileJava, compileJs, 
+                    astAwareIncrementalBuildsEnabled, 
+                    verbose).addToProject(project);      
         }
         return true;
     }
@@ -61,23 +72,26 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
     @Override
     protected Control createContents(Composite composite) {
         IProject project = getSelectedProject();
-        boolean isCeylonNatureEnabled = project.isOpen() && CeylonNature.isEnabled(project);
-        
-        block = new CeylonRepoConfigBlock(new CeylonRepoConfigBlock.ValidationCallback() {
+        block = new CeylonRepoConfigBlock(
+                new CeylonRepoConfigBlock.ValidationCallback() {
             @Override
-            public void validationResultChange(boolean isValid, String message) {
+            public void validationResultChange
+                    (boolean isValid, String message) {
                 setValid(isValid);
                 setErrorMessage(message);
             }
         });
         block.initContents(composite);
-        block.initState(project, isCeylonNatureEnabled);
+        block.initState(project, 
+                project.isOpen() && 
+                CeylonNature.isEnabled(project));
 
         return composite;
     }
 
     private IProject getSelectedProject() {
-        return (IProject) getElement().getAdapter(IProject.class);
+        return (IProject) 
+                getElement().getAdapter(IProject.class);
     }
 
 }
