@@ -934,7 +934,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                 dec.isStaticallyImportable()) &&
                         (!(scope instanceof Constructor) || 
                                 ol!=EXTENDS || 
-                                scope.getContainer().isInherited(dec))) {
+                                isDelegatableConstructor(scope, dec))) {
                     for (Declaration d: overloads(dec)) {
                         ProducedReference pr = isMember ? 
                                 getQualifiedProducedReference(node, d) :
@@ -952,7 +952,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                 dec instanceof Functional) &&
                         (!(scope instanceof Constructor) || 
                                 ol!=EXTENDS || 
-                                scope.getContainer().isInherited(dec))) {
+                                isDelegatableConstructor(scope, dec))) {
                     if (ol==DOCLINK) {
                         addDocLinkProposal(offset, prefix, 
                                 cpc, result, dec, scope);
@@ -1034,6 +1034,28 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
         }
         return result.toArray(new ICompletionProposal[result.size()]);
+    }
+
+    private static boolean isDelegatableConstructor(Scope scope, Declaration dec) {
+        if (dec instanceof Constructor) {
+            Scope container = dec.getContainer();
+            Scope outerScope = scope.getContainer();
+            if (container==null || outerScope==null) {
+                return false;
+            }
+            else if (outerScope.equals(container)) {
+                return !scope.equals(dec); //local constructor
+            }
+            else {
+                TypeDeclaration id =
+                        scope.getInheritingDeclaration(dec);
+                return id!=null &&
+                        id.equals(scope.getContainer()); //inherited constructor
+            }
+        }
+        else {
+            return false;
+        }
     }
 
     private static boolean isProposable(Node node, 
