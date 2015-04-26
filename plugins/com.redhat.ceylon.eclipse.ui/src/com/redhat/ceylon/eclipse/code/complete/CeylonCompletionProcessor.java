@@ -859,7 +859,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 !(node instanceof Tree.InitializerParameter) &&
                 isMemberNameProposable(offset, node, memberOp)) {
             //member names we can refine
-            Tree.Type dnt = ((Tree.TypedDeclaration) node).getType();
+            Tree.TypedDeclaration td = 
+                    (Tree.TypedDeclaration) node;
+            Tree.Type dnt = td.getType();
             if (dnt!=null && dnt.getTypeModel()!=null) {
                 ProducedType t = dnt.getTypeModel();
                 addRefinementProposals(offset, sortedProposals, 
@@ -891,7 +893,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
             
             boolean isPackageOrModuleDescriptor = 
-                    isModuleDescriptor(cpc) || isPackageDescriptor(cpc);
+                    isModuleDescriptor(cpc) || 
+                    isPackageDescriptor(cpc);
             for (DeclarationWithProximity dwp: sortedProposals) {
                 Declaration dec = dwp.getDeclaration();
             try {
@@ -1051,6 +1054,17 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         scope.getInheritingDeclaration(dec);
                 return id!=null &&
                         id.equals(scope.getContainer()); //inherited constructor
+            }
+        }
+        else if (dec instanceof Class) {
+            Scope outerScope = scope.getContainer();
+            if (outerScope instanceof Class) {
+                Class c = (Class) outerScope;
+                Class sup = c.getExtendedTypeDeclaration();
+                return sup!=null && sup.equals(dec); 
+            }
+            else {
+                return false;
             }
         }
         else {
@@ -1247,7 +1261,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             OccurrenceLocation ol, Scope scope, Unit unit, 
             ProducedType requiredType, int previousTokenType) {
         Declaration dec = dwp.getDeclaration();
-        return (ol!=EXTENDS || dec instanceof Class && !((Class) dec).isFinal() && !(scope instanceof Constructor) || 
+        return (ol!=EXTENDS || dec instanceof Class && !((Class) dec).isFinal() || 
                                dec instanceof Constructor && !((Class) dec.getContainer()).isFinal()) && 
                (ol!=CLASS_ALIAS || dec instanceof Class) &&
                (ol!=SATISFIES || dec instanceof Interface) &&
