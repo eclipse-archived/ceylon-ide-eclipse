@@ -7,12 +7,19 @@ import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 import java.io.StringReader;
 
 import org.apache.commons.io.input.ReaderInputStream;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.internal.ui.wizards.buildpaths.FolderSelectionDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -26,10 +33,11 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.model.WorkbenchContentProvider;
+import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 
@@ -125,9 +133,9 @@ public class CeylonModuleResolutionBlock {
     }
 
     private final String overridesTextWithoutLink = 
-            "Overrides XML file (customize module resolution)";
+            "Module overrides file (customize module resolution)";
     private final String overridesTextWithLink = 
-            "Overrides <a>XML file</a> (customize module resolution)";
+            "Module <a>overrides file</a> (customize module resolution)";
     
     public void initContents(Composite parent) {
 //        final Group resolutionGroup = new Group(parent, SWT.NONE);
@@ -139,7 +147,7 @@ public class CeylonModuleResolutionBlock {
                 new Link(parent, SWT.LEFT | SWT.WRAP);
         overridesLabel.setText(overridesTextWithoutLink);
         overridesLabel.setToolTipText(
-                "Specifies the xml file to use to load module overrides");
+                "Choose the XML file used to specify module overrides");
         overridesLabel.setLayoutData(swtDefaults()
                 .span(2, 1)
                 .grab(true, false)
@@ -148,22 +156,21 @@ public class CeylonModuleResolutionBlock {
         overridesLabel.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                IPath overridesPath = 
+                final IPath overridesPath = 
                         new Path(overridesText.getText());
                 if (overridesPath.isAbsolute()) {
-                    final IPath pathToOpen = overridesPath;
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                openInEditor(pathToOpen, true);
+                                openInEditor(overridesPath, true);
                             } catch (PartInitException e) {
                                 e.printStackTrace();
                             }
                         }
                     });
                 } else {
-                    IFile overridesResource = 
+                    final IFile overridesResource = 
                             project.getFile(overridesPath);
                     try {
                         overridesResource.refreshLocal(
@@ -172,12 +179,11 @@ public class CeylonModuleResolutionBlock {
                     } catch (CoreException e1) {
                         e1.printStackTrace();
                     }
-                    final IFile fileToOpen = overridesResource;
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                openInEditor(fileToOpen, true);
+                                openInEditor(overridesResource, true);
                             } catch (PartInitException e) {
                                 e.printStackTrace();
                             }
@@ -289,9 +295,36 @@ public class CeylonModuleResolutionBlock {
         overridesCreateButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                Shell shell = composite.getShell();
+
+                FolderSelectionDialog dialog = 
+                        new FolderSelectionDialog(shell, 
+                                new WorkbenchLabelProvider(), 
+                                new WorkbenchContentProvider());
+                dialog.setTitle("Select Folder");
+                dialog.setMessage("Select a folder to contain the module overrides file:");
+                dialog.setAllowMultiple(false);
+                dialog.addFilter(new ViewerFilter() {
+                    @Override
+                    public boolean select(Viewer viewer, 
+                            Object parentElement, 
+                            Object element) {
+                        return (element instanceof IFolder ||
+                                element instanceof IProject) &&
+                                ((IContainer) element).getProject()
+                                    .equals(project);
+                    }
+                });
+                dialog.setInput(project.getParent());
+                dialog.setInitialSelection(project);
+                if (dialog.open()==Window.CANCEL) {
+                    return;
+                }
+                IContainer folder = (IContainer) 
+                        dialog.getFirstResult();
                 try {
-                    IFile overridesResource = 
-                            project.getFile("overrides.xml");
+                    final IFile overridesResource = 
+                            folder.getFile(Path.fromPortableString("overrides.xml"));
                     try {
                         overridesResource.refreshLocal(
                                 IResource.DEPTH_ZERO, 
@@ -299,37 +332,37 @@ public class CeylonModuleResolutionBlock {
                     } catch (CoreException e1) {
                         e1.printStackTrace();
                     }
-                    Shell shell = composite.getShell();
                     if (overridesResource.exists()) {
-                        MessageBox box = 
-                                new MessageBox(shell, 
-                                        SWT.ICON_ERROR | SWT.OK);
-                        box.setText("Overrides file creation");
-                        box.setMessage("The Overrides.xml already exists at the root of the project");
-                        box.open();
+                        MessageDialog.openError(shell, 
+                                "Overrides File Creation", 
+                                "An 'overrides.xml' file already exists in this folder.");
                         return;
                     }
-                    overridesResource.create(new ReaderInputStream(new StringReader(
-                            "<overrides xmlns=\"http://www.ceylon-lang.org/xsd/overrides\">\n" + 
-                            "</overrides>")), true, null);
-                    final IFile fileToOpen = overridesResource;
+                    StringReader content = 
+                            new StringReader(
+                                "<overrides\n" +
+                                "    xmlns=\"http://www.ceylon-lang.org/xsd/overrides\">\n" + 
+                                "</overrides>");
+                    overridesResource.create(
+                            new ReaderInputStream(content), 
+                            true, null);
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                openInEditor(fileToOpen, true);
+                                openInEditor(overridesResource, true);
                             } catch (PartInitException e) {
                                 e.printStackTrace();
                             }
                         }
                     });
-                    overridesText.setText("overrides.xml");
-                    MessageBox box = 
-                            new MessageBox(shell, 
-                                    SWT.ICON_INFORMATION | SWT.OK);
-                    box.setText("Overrides file creation");
-                    box.setMessage("The Overrides.xml was created");
-                    box.open();
+                    String path = 
+                            overridesResource.getProjectRelativePath()
+                                .toPortableString();
+                    overridesText.setText(path);
+                    MessageDialog.openInformation(shell, 
+                            "Overrides File Creation", 
+                            "The 'overrides.xml' file was created.");
                 } catch (CoreException e1) {
                     e1.printStackTrace();
                 }
