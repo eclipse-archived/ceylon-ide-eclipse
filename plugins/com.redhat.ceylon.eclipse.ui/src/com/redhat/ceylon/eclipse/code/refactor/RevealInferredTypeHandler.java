@@ -43,35 +43,50 @@ public class RevealInferredTypeHandler extends AbstractHandler {
         IEditorPart ce = getCurrentEditor();
         if (!(ce instanceof CeylonEditor)) return false;
         CeylonEditor editor = (CeylonEditor) ce;
-        List<Tree.LocalModifier> localModifiers = new ArrayList<Tree.LocalModifier>();
-        List<Tree.ValueIterator> valueIterators = new ArrayList<Tree.ValueIterator>();
+        List<Tree.LocalModifier> localModifiers = 
+                new ArrayList<Tree.LocalModifier>();
+        List<Tree.ValueIterator> valueIterators = 
+                new ArrayList<Tree.ValueIterator>();
 
-        findCandidatesForRevelation(editor, localModifiers, valueIterators);
+        findCandidatesForRevelation(editor, localModifiers, 
+                valueIterators);
 
-        return !localModifiers.isEmpty() || !valueIterators.isEmpty();
+        return !localModifiers.isEmpty() || 
+                !valueIterators.isEmpty();
     }
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        CeylonEditor editor = (CeylonEditor) getCurrentEditor();
-        Tree.CompilationUnit rootNode = editor.getParseController().getRootNode();
+    public Object execute(ExecutionEvent event) 
+            throws ExecutionException {
+        CeylonEditor editor = (CeylonEditor) 
+                getCurrentEditor();
+        Tree.CompilationUnit rootNode = 
+                editor.getParseController().getRootNode();
 
         Set<Declaration> imports = new HashSet<Declaration>();
-        List<Tree.LocalModifier> localModifiers = new ArrayList<Tree.LocalModifier>();
-        List<Tree.ValueIterator> valueIterators = new ArrayList<Tree.ValueIterator>();
+        List<Tree.LocalModifier> localModifiers = 
+                new ArrayList<Tree.LocalModifier>();
+        List<Tree.ValueIterator> valueIterators = 
+                new ArrayList<Tree.ValueIterator>();
 
-        findCandidatesForRevelation(editor, localModifiers, valueIterators);
+        findCandidatesForRevelation(editor, localModifiers, 
+                valueIterators);
 
-        if( !localModifiers.isEmpty() || !valueIterators.isEmpty() ) {
-            TextChange tfc = new TextFileChange("Reveal Inferred Types", 
-                    ((IFileEditorInput) editor.getEditorInput()).getFile());
+        if( !localModifiers.isEmpty() || 
+                !valueIterators.isEmpty() ) {
+            IFileEditorInput input = (IFileEditorInput) 
+                    editor.getEditorInput();
+            TextChange tfc = 
+                    new TextFileChange("Reveal Inferred Types", 
+                            input.getFile());
             tfc.setEdit(new MultiTextEdit());
             tfc.initializeValidationData(null);
 
             for (Tree.LocalModifier localModifier : localModifiers) {
                 if( localModifier.getStartIndex() != null && 
                         localModifier.getTypeModel() != null ) {
-                    ProducedType pt = localModifier.getTypeModel();
+                    ProducedType pt = 
+                            localModifier.getTypeModel();
                     tfc.addEdit(new ReplaceEdit(
                             localModifier.getStartIndex(), 
                             localModifier.getText().length(), 
@@ -81,16 +96,20 @@ public class RevealInferredTypeHandler extends AbstractHandler {
             }
 
             for (Tree.ValueIterator valueIterator : valueIterators) {
-                Tree.Variable variable = valueIterator.getVariable();
+                Tree.Variable variable = 
+                        valueIterator.getVariable();
                 if( variable != null 
                         && variable.getStartIndex() != null 
                         && variable.getType() != null 
                         && variable.getType().getTypeModel() != null ) {
-                    ProducedType pt = variable.getType().getTypeModel();
+                    ProducedType pt = 
+                            variable.getType().getTypeModel();
                     tfc.addEdit(new InsertEdit(
                             variable.getStartIndex(), 
                             pt.getProducedTypeName() + " "));
-                    importType(imports,  variable.getType().getTypeModel(), rootNode);
+                    importType(imports,  
+                            variable.getType().getTypeModel(), 
+                            rootNode);
                 }
             }
             
@@ -98,9 +117,12 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                 IDocument doc = tfc.getCurrentDocument(null);
                 applyImports(tfc, imports, rootNode, doc);
 
-                PerformChangeOperation changeOperation = new PerformChangeOperation(tfc);
-                changeOperation.setUndoManager(getUndoManager(), "Reveal Inferred Types");
-                getWorkspace().run(changeOperation, new NullProgressMonitor());
+                PerformChangeOperation changeOperation = 
+                        new PerformChangeOperation(tfc);
+                changeOperation.setUndoManager(getUndoManager(), 
+                        "Reveal Inferred Types");
+                getWorkspace().run(changeOperation, 
+                        new NullProgressMonitor());
             }
             catch (CoreException ce) {
                 throw new ExecutionException("Error reveal inferred types", ce);
@@ -115,21 +137,27 @@ public class RevealInferredTypeHandler extends AbstractHandler {
             final List<Tree.ValueIterator> valueIterators) {
         if (editor!=null &&  
                 editor.getParseController()!=null) {
-            final Tree.CompilationUnit rootNode = editor.getParseController().getRootNode();
-            final ITextSelection selection = getSelection(editor);
+            final Tree.CompilationUnit rootNode = 
+                    editor.getParseController().getRootNode();
+            final ITextSelection selection = 
+                    getSelection(editor);
             if (rootNode==null || selection==null) {
                 return;
             }
             final int selectionStart = selection.getOffset();
-            final int selectionStop = selection.getOffset() + selection.getLength();
+            final int selectionStop = 
+                    selection.getOffset() + 
+                    selection.getLength();
 
             rootNode.visit(new Visitor() {
 
                 @Override
                 public void visit(Tree.TypedDeclaration typedDeclaration) {
                     if( isInSelection(typedDeclaration) ) {
-                        Tree.Type type = typedDeclaration.getType();
-                        if( type instanceof Tree.LocalModifier && type.getToken() != null ) {
+                        Tree.Type type = 
+                                typedDeclaration.getType();
+                        if( type instanceof Tree.LocalModifier 
+                                && type.getToken() != null ) {
                             localModifiers.add((LocalModifier) type);                                
                         }
                     }
@@ -139,7 +167,8 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                 @Override
                 public void visit(Tree.ValueIterator valueIterator) {
                     if (isInSelection(valueIterator)) {
-                        Tree.Variable variable = valueIterator.getVariable();
+                        Tree.Variable variable = 
+                                valueIterator.getVariable();
                         Tree.Type type = variable.getType();
                         if (type instanceof Tree.ValueModifier) {
                             valueIterators.add(valueIterator);
@@ -153,7 +182,8 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                     Integer stopIndex = node.getStopIndex();
                     if (startIndex != null && stopIndex != null) {
                         if (selection.getLength() == 0 /* if selection is empty, process whole file */ ||
-                           (startIndex >= selectionStart && stopIndex <= selectionStop) ) {
+                           (startIndex >= selectionStart 
+                               && stopIndex <= selectionStop) ) {
                             return true;
                         }
                     }
