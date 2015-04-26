@@ -146,7 +146,8 @@ public class RevealInferredTypeHandler extends AbstractHandler {
             if (rootNode==null || selection==null) {
                 return;
             }
-            final int selectionStart = selection.getOffset();
+            final int selectionStart = 
+                    selection.getOffset();
             final int selectionStop = 
                     selection.getOffset() + 
                     selection.getLength();
