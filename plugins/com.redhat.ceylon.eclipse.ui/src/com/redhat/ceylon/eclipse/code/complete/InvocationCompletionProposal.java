@@ -168,24 +168,35 @@ class InvocationCompletionProposal extends CompletionProposal {
             OccurrenceLocation ol, String typeArgs, boolean isMember) {
         if (dec instanceof Functional) {
             Unit unit = cpc.getRootNode().getUnit();
-            boolean isAbstractClass = 
-                    dec instanceof Class && ((Class) dec).isAbstract();
+            boolean isAbstract = 
+                    dec instanceof TypeDeclaration && 
+                    ((TypeDeclaration) dec).isAbstract();
             Functional fd = (Functional) dec;
             List<ParameterList> pls = fd.getParameterLists();
             if (!pls.isEmpty()) {
                 ParameterList parameterList = pls.get(0);
-                List<Parameter> ps = parameterList.getParameters();
-                String inexactMatches = getPreferences().getString(INEXACT_MATCHES);
-                boolean exact = (typeArgs==null ? prefix : prefix.substring(0,prefix.length()-typeArgs.length()))
-                        .equalsIgnoreCase(dec.getName(unit));
-                boolean positional = exact ||
-                                     "both".equals(inexactMatches) || 
-                                     "positional".equals(inexactMatches);
-                boolean named = exact ||
-                                "both".equals(inexactMatches);
+                List<Parameter> ps = 
+                        parameterList.getParameters();
+                String inexactMatches = 
+                        getPreferences()
+                            .getString(INEXACT_MATCHES);
+                boolean exact = 
+                        prefixWithoutTypeArgs(prefix, typeArgs)
+                            .equalsIgnoreCase(dec.getName(unit));
+                boolean positional = 
+                        exact ||
+                        "both".equals(inexactMatches) || 
+                        "positional".equals(inexactMatches);
+                boolean named = 
+                        exact ||
+                        "both".equals(inexactMatches);
                 if (positional && 
-                        (!isAbstractClass || ol==EXTENDS || ol==CLASS_ALIAS)) {
-                    if (ps.size()!=getParameters(parameterList, false, false).size()) {
+                        parameterList.isPositionalParametersSupported() &&
+                        (!isAbstract || 
+                                ol==EXTENDS || ol==CLASS_ALIAS)) {
+                    List<Parameter> parameters = 
+                            getParameters(parameterList, false, false);
+                    if (ps.size()!=parameters.size()) {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
                                 getPositionalInvocationDescriptionFor(dec, ol, pr, unit, false, typeArgs), 
                                 getPositionalInvocationTextFor(dec, ol, pr, unit, false, typeArgs), dec,
@@ -197,11 +208,15 @@ class InvocationCompletionProposal extends CompletionProposal {
                             pr, scope, cpc, true, true, false, isMember, null));
                 }
                 if (named && 
-                        (!isAbstractClass && ol!=EXTENDS && ol!=CLASS_ALIAS &&
+                        parameterList.isNamedParametersSupported() &&
+                        (!isAbstract && 
+                                ol!=EXTENDS && ol!=CLASS_ALIAS &&
                                 !fd.isOverloaded())) {
                     //if there is at least one parameter, 
                     //suggest a named argument invocation
-                    if (ps.size()!=getParameters(parameterList, false, true).size()) {
+                    List<Parameter> parameters = 
+                            getParameters(parameterList, false, true);
+                    if (ps.size()!=parameters.size()) {
                         result.add(new InvocationCompletionProposal(offset, prefix, 
                                 getNamedInvocationDescriptionFor(dec, pr, unit, false, typeArgs), 
                                 getNamedInvocationTextFor(dec, pr, unit, false, typeArgs), dec,
@@ -215,6 +230,16 @@ class InvocationCompletionProposal extends CompletionProposal {
                     }
                 }
             }
+        }
+    }
+
+    private static String prefixWithoutTypeArgs(String prefix, String typeArgs) {
+        if (typeArgs==null) {
+            return prefix;
+        }
+        else {
+            return prefix.substring(0, 
+                    prefix.length()-typeArgs.length());
         }
     }
     
