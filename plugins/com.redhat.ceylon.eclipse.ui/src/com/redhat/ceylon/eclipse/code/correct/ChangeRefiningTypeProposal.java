@@ -27,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedReference;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
+import com.redhat.ceylon.compiler.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -76,20 +77,27 @@ public class ChangeRefiningTypeProposal {
             Tree.CompilationUnit cu, 
             Collection<ICompletionProposal> proposals,
             Node node) {
-        Tree.Declaration decNode = 
-                (Tree.Declaration) Nodes.findStatement(cu, node);
+        Tree.Declaration decNode = (Tree.Declaration) 
+                Nodes.findStatement(cu, node);
         Tree.ParameterList list;
         if (decNode instanceof Tree.AnyMethod) {
-            list = ((Tree.AnyMethod) decNode).getParameterLists().get(0);
+            Tree.AnyMethod am = (Tree.AnyMethod) decNode;
+            list = am.getParameterLists().get(0);
         }
         else if (decNode instanceof Tree.AnyClass) {
-            list = ((Tree.AnyClass) decNode).getParameterList();
+            Tree.AnyClass ac = (Tree.AnyClass) decNode;
+            list = ac.getParameterList();
         }
         else {
             return;
         }
         Declaration dec = decNode.getDeclarationModel();
         Declaration rd = dec.getRefinedDeclaration();
+        if (dec==rd) {
+            rd = dec.getContainer()
+                    .getDirectMember(dec.getName(), 
+                            null, false);
+        }
         if (rd instanceof Functional && dec instanceof Functional) {
             List<ParameterList> rdPls = 
                     ((Functional) rd).getParameterLists();
@@ -102,12 +110,20 @@ public class ChangeRefiningTypeProposal {
                     rdPls.get(0).getParameters();
             List<Parameter> dpl =
                     decPls.get(0).getParameters();
-            TypeDeclaration decContainer =
-                    (TypeDeclaration) dec.getContainer();
-            TypeDeclaration rdContainer =
-                    (TypeDeclaration) rd.getContainer();
-            ProducedType supertype =
-                    decContainer.getType().getSupertype(rdContainer);
+            Scope decContainer = dec.getContainer();
+            Scope rdContainer = rd.getContainer();
+            ProducedType supertype;
+            if (decContainer instanceof TypeDeclaration &&
+                    rdContainer instanceof TypeDeclaration) {
+                TypeDeclaration dctd = 
+                        (TypeDeclaration) decContainer;
+                TypeDeclaration rdctd = 
+                        (TypeDeclaration) rdContainer;
+                supertype = dctd.getType().getSupertype(rdctd);
+            }
+            else {
+                supertype = null;
+            }
             ProducedReference pr =
                     rd.getProducedReference(supertype, 
                             Collections.<ProducedType>emptyList());
@@ -116,14 +132,15 @@ public class ChangeRefiningTypeProposal {
                     new TextFileChange("Fix Refining Parameter List", file);
             change.setEdit(new MultiTextEdit());
             Unit unit = decNode.getUnit();
-            Set<Declaration> declarations = new HashSet<Declaration>();
+            Set<Declaration> declarations = 
+                    new HashSet<Declaration>();
             for (int i=0; i<params.size(); i++) {
                 Tree.Parameter p = params.get(i);
                 if (rdpl.size()<=i) {
-                    Integer start = i==0 ? 
+                    int start = i==0 ? 
                             list.getStartIndex()+1 : 
                             params.get(i-1).getStopIndex()+1;
-                    Integer stop = params.get(params.size()-1).getStopIndex()+1;
+                    int stop = params.get(params.size()-1).getStopIndex()+1;
                     change.addEdit(new DeleteEdit(start, stop-start));
                     break;
                 }
