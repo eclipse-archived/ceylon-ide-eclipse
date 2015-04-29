@@ -42,6 +42,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.BackendSupport;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
 import com.redhat.ceylon.compiler.typechecker.model.Constructor;
@@ -69,9 +71,19 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 public class ChangeParametersInputPage extends UserInputWizardPage {
     
     private StyledText signatureText;
+    private final BackendSupport backendSupport;
 
     public ChangeParametersInputPage(String name) {
         super(name);
+        // FIXME this should really come from the ModuleManager
+        // or at least depend on the backends that are enabled
+        // in the project configuration
+        backendSupport = new BackendSupport() {
+            @Override
+            public boolean supportsBackend(Backend backend) {
+                return true;
+            }
+        };
     }
     
     private boolean isDefaulted(List<Parameter> parameterModels, 
@@ -621,7 +633,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 }
             });
             parameters.visit(new TypeVisitor(unit));
-            parameters.visit(new ExpressionVisitor(unit));
+            parameters.visit(new ExpressionVisitor(unit, backendSupport));
             
             setErrorMessage(null);
             
