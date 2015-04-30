@@ -779,30 +779,36 @@ public class DocumentationHover extends SourceInfoHover {
             }
         }
         else if (node instanceof Tree.NaturalLiteral) {
-            buffer.append("<br/>")
-                .append("<code style='color:")
-                .append(toHex(getCurrentThemeColor(NUMBERS)))
-                .append("'>");
-            String text = node.getText().replace("_", "");
-            switch (text.charAt(0)) {
-            case '#':
-                buffer.append(parseLong(text.substring(1),16));
-                break;
-            case '$':
-                buffer.append(parseLong(text.substring(1),2));
-                break;
-            default:
-                buffer.append(parseLong(text));
+            try {
+                buffer.append("<br/>")
+                    .append("<code style='color:")
+                    .append(toHex(getCurrentThemeColor(NUMBERS)))
+                    .append("'>");
+                String text = node.getText().replace("_", "");
+                switch (text.charAt(0)) {
+                case '#':
+                    buffer.append(parseLong(text.substring(1),16));
+                    break;
+                case '$':
+                    buffer.append(parseLong(text.substring(1),2));
+                    break;
+                default:
+                    buffer.append(parseLong(text));
+                }
+                buffer.append("</code>");
             }
-            buffer.append("</code>");
+            catch (NumberFormatException nfe) {}
         }
         else if (node instanceof Tree.FloatLiteral) {
-            buffer.append("<br/>")
-                .append("<code style='color:")
-                .append(toHex(getCurrentThemeColor(NUMBERS)))
-                .append("'>")
-                .append(parseDouble(node.getText().replace("_", "")))
-                .append("</code>");
+            try {
+                buffer.append("<br/>")
+                    .append("<code style='color:")
+                    .append(toHex(getCurrentThemeColor(NUMBERS)))
+                    .append("'>")
+                    .append(parseDouble(node.getText().replace("_", "")))
+                    .append("</code>");
+            }
+            catch (NumberFormatException nfe) {}
         }
         if (selectedText!=null) {
             buffer.append("<br/>")
