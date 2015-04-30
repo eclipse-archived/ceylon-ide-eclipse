@@ -36,8 +36,9 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static java.lang.Character.codePointCount;
-import static java.lang.Float.parseFloat;
+import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
+import static java.lang.Long.parseLong;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
@@ -785,13 +786,13 @@ public class DocumentationHover extends SourceInfoHover {
             String text = node.getText().replace("_", "");
             switch (text.charAt(0)) {
             case '#':
-                buffer.append(parseInt(text.substring(1),16));
+                buffer.append(parseLong(text.substring(1),16));
                 break;
             case '$':
-                buffer.append(parseInt(text.substring(1),2));
+                buffer.append(parseLong(text.substring(1),2));
                 break;
             default:
-                buffer.append(parseInt(text));
+                buffer.append(parseLong(text));
             }
             buffer.append("</code>");
         }
@@ -800,7 +801,7 @@ public class DocumentationHover extends SourceInfoHover {
                 .append("<code style='color:")
                 .append(toHex(getCurrentThemeColor(NUMBERS)))
                 .append("'>")
-                .append(parseFloat(node.getText().replace("_", "")))
+                .append(parseDouble(node.getText().replace("_", "")))
                 .append("</code>");
         }
         if (selectedText!=null) {
