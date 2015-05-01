@@ -996,8 +996,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 regex = regex.trim();
                 if (!regex.isEmpty()) {
                     filters.add(Pattern.compile(regex));
-                    if (regex.endsWith("::*")) {
-                        regex = regex.substring(0, regex.length()-3);
+                    if (regex.endsWith("::.*")) {
+                        regex = regex.substring(0, regex.length()-4);
                     }
                     if (!regex.contains("::")) {
                         packageFilters.add(Pattern.compile(regex));
@@ -1033,7 +1033,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private boolean isFiltered(Package pack) {
         if (!packageFilters.isEmpty()) {
             String name = pack.getNameAsString();
-            for (Pattern filter: filters) {
+            for (Pattern filter: packageFilters) {
                 if (filter.matcher(name).matches()) {
                     return true;
                 }
