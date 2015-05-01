@@ -850,7 +850,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             TypeChecker typeChecker = 
                     getProjectTypeChecker(project);
             fill(contentProvider, itemsFilter, 
-                    typeChecker.getPhasedUnits().getPhasedUnits());
+                    typeChecker.getPhasedUnits()
+                        .getPhasedUnits());
             monitor.worked(1);
             if (monitor.isCanceled()) break;
             Modules modules = 
@@ -923,7 +924,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         @Override
         public int hashCode() {
-            return declaration.hashCode() + location.hashCode();
+            return declaration.hashCode() + 
+                    location.hashCode();
         }
     }
 
@@ -934,8 +936,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (includeDeclaration(module, dec) &&
                 //watch out for dupes!
                 (!module.isProjectModule() || 
-                 !dec.getUnit().getFilename()
-                               .endsWith(".ceylon"))) {
+                 !dec.getUnit()
+                     .getFilename()
+                     .endsWith(".ceylon"))) {
             contentProvider.add(new DeclarationProxy(dec), 
                     itemsFilter);
             nameOccurs(dec);
@@ -1132,7 +1135,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private static String repositoryPath = 
-            CeylonPlugin.getInstance().getCeylonRepository().getPath();
+            CeylonPlugin.getInstance()
+                .getCeylonRepository()
+                    .getPath();
     
     private static String getLocation(Declaration declaration) {
         Unit unit = declaration.getUnit();
@@ -1145,7 +1150,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 unit instanceof JavaCompilationUnit) {
                 IResourceAware sourceFile = 
                         (IResourceAware) unit;
-                return sourceFile.getFileResource().getFullPath()
+                return sourceFile.getFileResource()
+                        .getFullPath()
                         .toPortableString();
             }
             else {
@@ -1231,7 +1237,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         Action configureAction = 
                 new Action("Configure Filters and Labels...",
-                        CeylonPlugin.getInstance().getImageRegistry()
+                        CeylonPlugin.getInstance()
+                            .getImageRegistry()
                                 .getDescriptor(CONFIG_LABELS)) {
             @Override
             public void run() {
