@@ -135,6 +135,9 @@ public class CeylonNavigatorLabelProvider extends
         if (stringToDisplay == null && CeylonProjectConfig.get(repoNode.project).getMergedRepositories().getUserRepoDir().getAbsolutePath().equals(displayString)) {
             stringToDisplay = "Imported Modules";
         }
+        if (stringToDisplay == null && displayString.startsWith("[Maven]")) {
+            stringToDisplay = "Maven Modules - " + displayString.substring(7).trim();
+        }
         if (stringToDisplay == null) {
             try {
                 for (IProject referencedProject: repoNode.project.getReferencedProjects()) {
