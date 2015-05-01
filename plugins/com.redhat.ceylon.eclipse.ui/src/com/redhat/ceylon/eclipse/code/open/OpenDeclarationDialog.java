@@ -320,9 +320,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 if (declaration.isClassOrInterfaceMember()) {
                     String typePattern = pattern.substring(0,loc);
                     String memberPattern = pattern.substring(loc+1);
+                    Declaration type = (Declaration) 
+                            declaration.getContainer();
                     return isNameMatching(memberPattern, declaration) &&
-                            isNameMatching(typePattern, (Declaration) 
-                                    declaration.getContainer());
+                            isNameMatching(typePattern, type);
                 }
                 else {
                     return false;
@@ -865,8 +866,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                         (!excludeOracleJDK || 
                                 !isOracleJDKModule(moduleName)) &&
                             searchedArchives.add(uniqueIdentifier(module))) {
-                        fill(contentProvider, 
-                                itemsFilter, module, monitor);
+                        fill(contentProvider, itemsFilter, 
+                                module, monitor);
                         monitor.worked(1);
                         if (monitor.isCanceled()) break;
                     }

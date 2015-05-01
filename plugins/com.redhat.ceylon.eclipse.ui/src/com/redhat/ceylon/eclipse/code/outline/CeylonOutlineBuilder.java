@@ -12,7 +12,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -36,12 +35,14 @@ public class CeylonOutlineBuilder extends Visitor {
                 !(that instanceof Tree.Variable/* && 
                         ((Tree.Variable) that).getType() instanceof SyntheticVariable*/)) {
             if (that instanceof Tree.AnyAttribute) {
+                Tree.AnyAttribute a = 
+                        (Tree.AnyAttribute) that;
                 TypedDeclaration att = 
-                        ((Tree.AnyAttribute) that).getDeclarationModel();
+                        a.getDeclarationModel();
                 if (att==null || 
                         !att.isShared() && 
                         !att.isToplevel() &&
-                        !(att.getContainer() instanceof ClassOrInterface)) {
+                        !att.isClassOrInterfaceMember()) {
                     return;
                 }
             }
@@ -95,7 +96,8 @@ public class CeylonOutlineBuilder extends Visitor {
     
     @Override
     public void visit(Tree.ImportList that) {
-        if (!((Tree.ImportList) that).getImports().isEmpty()) {
+        Tree.ImportList il = (Tree.ImportList) that;
+        if (!il.getImports().isEmpty()) {
             pushSubItem(that, IMPORT_LIST_CATEGORY);
             super.visitAny(that);
             popSubItem();
@@ -109,7 +111,8 @@ public class CeylonOutlineBuilder extends Visitor {
         if (cpc==null) return null;
         IFile file = cpc.getProject()==null || 
                 cpc.getPath()==null ? null :
-                    cpc.getProject().getFile(cpc.getPath());
+                    cpc.getProject()
+                        .getFile(cpc.getPath());
         Tree.CompilationUnit rootNode = cpc.getRootNode();
         if (rootNode==null || 
             rootNode.getUnit()==null || 
@@ -117,13 +120,17 @@ public class CeylonOutlineBuilder extends Visitor {
             return null;
         }
         if (rootNode.getUnit() instanceof CeylonUnit) {
+            CeylonUnit unit = 
+                    (CeylonUnit) rootNode.getUnit();
             PhasedUnit phasedUnit = 
-                    ((CeylonUnit) rootNode.getUnit()).getPhasedUnit();
-            if (phasedUnit == null || ! phasedUnit.isFullyTyped()) {
+                    unit.getPhasedUnit();
+            if (phasedUnit == null || 
+                    !phasedUnit.isFullyTyped()) {
                 return null;
             }
         } 
-        CeylonOutlineNode modelRoot = createTopItem(rootNode, file);
+        CeylonOutlineNode modelRoot = 
+                createTopItem(rootNode, file);
         itemStack.push(modelRoot);
         try {
             Unit unit = rootNode.getUnit();
@@ -131,7 +138,8 @@ public class CeylonOutlineBuilder extends Visitor {
                 !unit.getFilename().equals("module.ceylon")) { //it looks a bit funny to have two nodes representing the module
                 ModuleNode moduleNode = new ModuleNode();
                 Module module = unit.getPackage().getModule();
-                moduleNode.setModuleName(module.getNameAsString());
+                String mname = module.getNameAsString();
+                moduleNode.setModuleName(mname);
                 moduleNode.setVersion(module.getVersion());
                 createSubItem(moduleNode, PACKAGE_CATEGORY, 
                         file==null ? null : file.getParent());
@@ -140,7 +148,9 @@ public class CeylonOutlineBuilder extends Visitor {
                 !unit.getFilename().equals("module.ceylon") &&
                 !unit.getFilename().equals("package.ceylon")) { //it looks a bit funny to have two nodes representing the package
                 PackageNode packageNode = new PackageNode();
-                String pname = unit.getPackage().getQualifiedNameString();
+                String pname = 
+                        unit.getPackage()
+                            .getQualifiedNameString();
                 packageNode.setPackageName(pname);
                 createSubItem(packageNode, PACKAGE_CATEGORY, 
                         file==null ? null : file.getParent());
