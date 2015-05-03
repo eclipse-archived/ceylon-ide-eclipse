@@ -183,7 +183,7 @@ public class ConvertSwitchToIfProposal {
                             Tree.Type t = ic.getType();
                             int start = t.getStartIndex();
                             int len = t.getStopIndex()-start+1;
-                            type = doc.get(start, len);
+                            type = "is " + doc.get(start, len);
                         }
                         catch (Exception e) {
                             e.printStackTrace();
@@ -193,11 +193,26 @@ public class ConvertSwitchToIfProposal {
                     else if (condition instanceof Tree.ExistsCondition) {
                         Tree.ExistsCondition ec = 
                                 (Tree.ExistsCondition) condition;
-                        type = ec.getNot() ? "Null" : "Object";
+                        type = ec.getNot() ? "null" : "is Object";
                         try {
                             Tree.Statement v = ec.getVariable();
                             int start = v.getStartIndex();
                             int len = v.getStopIndex()-start+1;
+                            var = doc.get(start, len);
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            return;
+                        }
+                    }
+                    else if (condition instanceof Tree.BooleanCondition) {
+                        Tree.BooleanCondition ec = 
+                                (Tree.BooleanCondition) condition;
+                        type = "true";
+                        try {
+                            Tree.Expression e = ec.getExpression();
+                            int start = e.getStartIndex();
+                            int len = e.getStopIndex()-start+1;
                             var = doc.get(start, len);
                         }
                         catch (Exception e) {
@@ -215,7 +230,7 @@ public class ConvertSwitchToIfProposal {
                     tfc.addEdit(new ReplaceEdit(is.getStartIndex(),
                             cl.getStopIndex()-is.getStartIndex()+1, 
                             "switch (" + var + ")" + newline +
-                            "case (is " + type +")"));
+                            "case (" + type +")"));
                     Tree.ElseClause ec = is.getElseClause();
                     if (ec==null) {
                         tfc.addEdit(new InsertEdit(is.getStopIndex()+1, 
