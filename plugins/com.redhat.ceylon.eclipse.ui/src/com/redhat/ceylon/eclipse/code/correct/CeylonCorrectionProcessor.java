@@ -54,6 +54,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertIfElseToThenElse.add
 import static com.redhat.ceylon.eclipse.code.correct.ConvertMethodToGetterProposal.addConvertMethodToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertFromVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertToVerbatimProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertIfToSwitchProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertSwitchToIfProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertThenElseToIfElse.addConvertToIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToBlockProposal.addConvertToBlockProposal;
@@ -923,6 +924,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addReverseIfElseProposal(doc, proposals, file, statement, rootNode);
             
             addConvertSwitchToIfProposal(proposals, doc, file, statement);
+            addConvertIfToSwitchProposal(proposals, doc, file, statement);
             
             addSplitIfStatementProposal(proposals, doc, file, statement);
             addJoinIfStatementsProposal(proposals, doc, file, statement);
