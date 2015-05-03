@@ -162,11 +162,13 @@ public class ConvertSwitchToIfProposal {
                 if (conditions.size()==1) {
                     Tree.Condition condition = 
                             conditions.get(0);
+                    
+                    String var;
+                    String type;
                     if (condition instanceof Tree.IsCondition) {
                         Tree.IsCondition ic = 
                                 (Tree.IsCondition) condition;
                         if (ic.getNot()) return;
-                        String var;
                         try {
                             Tree.Variable v = ic.getVariable();
                             int start = v.getStartIndex();
@@ -177,7 +179,6 @@ public class ConvertSwitchToIfProposal {
                             e.printStackTrace();
                             return;
                         }
-                        String type;
                         try {
                             Tree.Type t = ic.getType();
                             int start = t.getStartIndex();
@@ -188,45 +189,64 @@ public class ConvertSwitchToIfProposal {
                             e.printStackTrace();
                             return;
                         }
-                        String newline = 
-                                getDefaultLineDelimiter(doc) +
-                                getIndent(is, doc);
-                        tfc.addEdit(new ReplaceEdit(is.getStartIndex(),
-                                cl.getStopIndex()-is.getStartIndex()+1, 
-                                "switch (" + var + ")" + newline +
-                                "case (is " + type +")"));
-                        Tree.ElseClause ec = is.getElseClause();
-                        if (ec==null) {
-                            tfc.addEdit(new InsertEdit(is.getStopIndex()+1, 
-                                    newline + "else {}"));
-                        }
-                        else {
-                            Tree.Block b = ec.getBlock();
-                            if (b.getMainToken()==null) {
-                                int start = b.getStartIndex();
-                                int end = b.getStopIndex()+1;
-                                tfc.addEdit(new InsertEdit(start, 
-                                        "{" + newline + 
-                                        getDefaultIndent()));
-                                try {
-                                    for (int line=doc.getLineOfOffset(start)+1;
-                                            line<=doc.getLineOfOffset(end);
-                                            line++) {
-                                        tfc.addEdit(new InsertEdit(doc.getLineOffset(line),
-                                                getDefaultIndent()));
-                                    }
-                                }
-                                catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                tfc.addEdit(new InsertEdit(end, 
-                                        newline + "}"));
-                            }
-                        }
-                        proposals.add(new CorrectionProposal(
-                                "Convert 'if' to 'switch'", tfc,
-                                new Region(is.getStartIndex(), 0)));
                     }
+                    else if (condition instanceof Tree.ExistsCondition) {
+                        Tree.ExistsCondition ec = 
+                                (Tree.ExistsCondition) condition;
+                        type = ec.getNot() ? "Null" : "Object";
+                        try {
+                            Tree.Statement v = ec.getVariable();
+                            int start = v.getStartIndex();
+                            int len = v.getStopIndex()-start+1;
+                            var = doc.get(start, len);
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            return;
+                        }
+                    }
+                    else {
+                        return;
+                    }
+                    
+                    String newline = 
+                            getDefaultLineDelimiter(doc) +
+                            getIndent(is, doc);
+                    tfc.addEdit(new ReplaceEdit(is.getStartIndex(),
+                            cl.getStopIndex()-is.getStartIndex()+1, 
+                            "switch (" + var + ")" + newline +
+                            "case (is " + type +")"));
+                    Tree.ElseClause ec = is.getElseClause();
+                    if (ec==null) {
+                        tfc.addEdit(new InsertEdit(is.getStopIndex()+1, 
+                                newline + "else {}"));
+                    }
+                    else {
+                        Tree.Block b = ec.getBlock();
+                        if (b.getMainToken()==null) {
+                            int start = b.getStartIndex();
+                            int end = b.getStopIndex()+1;
+                            tfc.addEdit(new InsertEdit(start, 
+                                    "{" + newline + 
+                                    getDefaultIndent()));
+                            try {
+                                for (int line=doc.getLineOfOffset(start)+1;
+                                        line<=doc.getLineOfOffset(end);
+                                        line++) {
+                                    tfc.addEdit(new InsertEdit(doc.getLineOffset(line),
+                                            getDefaultIndent()));
+                                }
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            tfc.addEdit(new InsertEdit(end, 
+                                    newline + "}"));
+                        }
+                    }
+                    proposals.add(new CorrectionProposal(
+                            "Convert 'if' to 'switch'", tfc,
+                            new Region(is.getStartIndex(), 0)));
                 }
             }
         }
