@@ -38,31 +38,37 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 class InvertIfElseProposal extends CorrectionProposal {
     
     InvertIfElseProposal(int offset, TextChange change) {
-        super("Invert 'if' 'else' statement", change, new Region(offset, 0));
+        super("Invert 'if' 'else' statement", change, 
+                new Region(offset, 0));
     }
     
     static void addReverseIfElseProposal(IDocument doc,
-                Collection<ICompletionProposal> proposals, IFile file,
-                final Statement statement, Tree.CompilationUnit cu) {
+                Collection<ICompletionProposal> proposals, 
+                IFile file, final Statement statement, 
+                Tree.CompilationUnit cu) {
         try {
-            Tree.IfStatement ifStmt;
-            if (statement instanceof Tree.IfStatement) {
+            IfStatement ifStmt;
+            if (statement instanceof IfStatement) {
                 ifStmt = (IfStatement) statement;
             }
             else {
                 class FindIf extends Visitor {
-                    Tree.IfStatement result;
+                    IfStatement result;
                     @Override
-                    public void visit(Tree.IfStatement that) {
+                    public void visit(IfStatement that) {
                         super.visit(that);
                         if (that.getIfClause()!=null &&
-                                that.getIfClause().getBlock()
-                                .getStatements().contains(statement)) {
+                                that.getIfClause()
+                                    .getBlock()
+                                    .getStatements()
+                                    .contains(statement)) {
                             result = that;
                         }
                         if (that.getElseClause()!=null &&
-                                that.getElseClause().getBlock()
-                                .getStatements().contains(statement)) {
+                                that.getElseClause()
+                                    .getBlock()
+                                    .getStatements()
+                                    .contains(statement)) {
                             result = that;
                         }
                     }
@@ -82,9 +88,12 @@ class InvertIfElseProposal extends CorrectionProposal {
             }
             IfClause ifClause = ifStmt.getIfClause();
             Block ifBlock = ifClause.getBlock();
-            Block elseBlock = ifStmt.getElseClause().getBlock();
-            List<Condition> conditions = ifClause.getConditionList()
-                    .getConditions();
+            Block elseBlock = 
+                    ifStmt.getElseClause()
+                        .getBlock();
+            List<Condition> conditions = 
+                    ifClause.getConditionList()
+                        .getConditions();
             if (conditions.size()!=1) {
                 return;
             }
@@ -97,15 +106,21 @@ class InvertIfElseProposal extends CorrectionProposal {
             } else if (term.equals("(false)")) {
                 test = "true";
             } else if (ifCondition instanceof BooleanCondition) {
-                BooleanCondition boolCond = (BooleanCondition) ifCondition;
+                BooleanCondition boolCond = 
+                        (BooleanCondition) ifCondition;
                 Term bt = boolCond.getExpression().getTerm();
                 if (bt instanceof NotOp) {
-                    test = removeEnclosingParenthesis(getTerm(doc, ((NotOp) bt).getTerm()));
+                    String t = getTerm(doc, 
+                            ((NotOp) bt).getTerm());
+                    test = removeEnclosingParenthesis(t);
                 } else if (bt instanceof EqualityOp) {
-                    test = getInvertedEqualityTest(doc, (EqualityOp)bt);
+                    test = getInvertedEqualityTest(doc, 
+                            (EqualityOp)bt);
                 } else if (bt instanceof ComparisonOp) {
-                    test = getInvertedComparisonTest(doc, (ComparisonOp)bt);
-                } else if (! (bt instanceof Tree.OperatorExpression) || bt instanceof Tree.UnaryOperatorExpression) {
+                    test = getInvertedComparisonTest(doc, 
+                            (ComparisonOp)bt);
+                } else if (! (bt instanceof Tree.OperatorExpression) 
+                        || bt instanceof Tree.UnaryOperatorExpression) {
                     term = removeEnclosingParenthesis(term);
                 }
             } else {
@@ -124,44 +139,48 @@ class InvertIfElseProposal extends CorrectionProposal {
             String delim = getDefaultLineDelimiter(doc);
 
             String elseStr = getTerm(doc, elseBlock);
-            elseStr = addEnclosingBraces(elseStr, baseIndent, 
-                    indent, delim);
+            elseStr = addEnclosingBraces(elseStr, 
+                    baseIndent, indent, delim);
             test = removeEnclosingParenthesis(test);
 
             StringBuilder replace = new StringBuilder();
             replace.append("if (").append(test).append(") ")
                     .append(elseStr);
-                    if (isElseOnOwnLine(doc, ifBlock, elseBlock)) {
-                        replace.append(delim)
-                                .append(baseIndent);
-                    } else {
-                        replace.append(" ");
-                    }
-                    replace.append("else ")
-                    .append(getTerm(doc, ifBlock));
+            if (isElseOnOwnLine(doc, ifBlock, elseBlock)) {
+                replace.append(delim)
+                    .append(baseIndent);
+            } else {
+                replace.append(" ");
+            }
+            replace.append("else ")
+                .append(getTerm(doc, ifBlock));
 
-            TextChange change = new TextFileChange("Invert If Else", file);
+            TextChange change = 
+                    new TextFileChange("Invert If Else", 
+                            file);
             change.setEdit(new ReplaceEdit(ifStmt.getStartIndex(), 
-                    ifStmt.getStopIndex() - ifStmt.getStartIndex() + 1, replace.toString()));
+                    ifStmt.getStopIndex() - ifStmt.getStartIndex() + 1, 
+                    replace.toString()));
             proposals.add(new InvertIfElseProposal(ifStmt.getStartIndex(), change));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static String getInvertedEqualityTest(IDocument doc, EqualityOp eqyalityOp)
+    private static String getInvertedEqualityTest(IDocument doc, 
+                EqualityOp equalityOp)
             throws BadLocationException {
-        String op;
-        if (eqyalityOp instanceof EqualOp) {
-            op = " != ";
-        } else {
-            op = " == ";
-        }
-        return getTerm(doc, eqyalityOp.getLeftTerm()) + op + getTerm(doc, eqyalityOp.getRightTerm());
+        String op = 
+                equalityOp instanceof EqualOp ? 
+                        " != " : " == ";
+        return getTerm(doc, 
+                equalityOp.getLeftTerm()) + op + 
+                getTerm(doc, equalityOp.getRightTerm());
     }
 
-    private static String getInvertedComparisonTest(IDocument doc, ComparisonOp compOp)
-            throws BadLocationException {
+    private static String getInvertedComparisonTest(IDocument doc, 
+            ComparisonOp compOp)
+                    throws BadLocationException {
         String op;
         if (compOp instanceof LargerOp) {
             op = " <= ";
@@ -172,19 +191,24 @@ class InvertIfElseProposal extends CorrectionProposal {
         } else if (compOp instanceof SmallAsOp) {
             op = " > ";
         } else {
-            throw new RuntimeException("Unknown Comarision op " + compOp);
+            throw new RuntimeException("Unknown Comparision op " + 
+                    compOp);
         }
-        return getTerm(doc, compOp.getLeftTerm()) + op + getTerm(doc, compOp.getRightTerm());
+        return getTerm(doc, 
+                compOp.getLeftTerm()) + op + 
+                getTerm(doc, compOp.getRightTerm());
     }
 
 
-    private static boolean isElseOnOwnLine(IDocument doc, Block ifBlock,
-            Block elseBlock) throws BadLocationException {
-        return doc.getLineOfOffset(ifBlock.getStopIndex()) != doc.getLineOfOffset(elseBlock.getStartIndex());
+    private static boolean isElseOnOwnLine(IDocument doc, 
+            Block ifBlock, Block elseBlock) 
+                    throws BadLocationException {
+        return doc.getLineOfOffset(ifBlock.getStopIndex()) != 
+                doc.getLineOfOffset(elseBlock.getStartIndex());
     }
 
-    private static String addEnclosingBraces(String s, String baseIndent, 
-            String indent, String delim) {
+    private static String addEnclosingBraces(String s, 
+            String baseIndent, String indent, String delim) {
         if (s.charAt(0) != '{') {
             return "{" + delim + baseIndent + 
                     indent + indent(s, indent, delim) + 
@@ -195,7 +219,8 @@ class InvertIfElseProposal extends CorrectionProposal {
     
     private static String indent(String s, String indentation,
             String delim) {
-        return s.replaceAll(delim+"(\\s*)", delim+"$1" + indentation);
+        return s.replaceAll(delim+"(\\s*)", 
+                delim+"$1" + indentation);
     }
 
     private static String removeEnclosingParenthesis(String s) {
@@ -215,7 +240,9 @@ class InvertIfElseProposal extends CorrectionProposal {
         return s;
     }
     
-    private static String getTerm(IDocument doc, Node node) throws BadLocationException {
-        return doc.get(node.getStartIndex(), node.getStopIndex() - node.getStartIndex() + 1);
+    private static String getTerm(IDocument doc, Node node) 
+            throws BadLocationException {
+        return doc.get(node.getStartIndex(), 
+                node.getStopIndex() - node.getStartIndex() + 1);
     }
 }
