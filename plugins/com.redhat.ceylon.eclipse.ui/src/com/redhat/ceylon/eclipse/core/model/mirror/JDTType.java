@@ -156,7 +156,7 @@ public class JDTType implements TypeMirror {
         }
 
         if(type.enclosingType() instanceof ParameterizedTypeBinding){
-            qualifyingType = new JDTType(type.enclosingType());
+            qualifyingType = toTypeMirror(type.enclosingType(), type, this, originatingTypes);
         }
         
         if (type instanceof ArrayBinding) {
