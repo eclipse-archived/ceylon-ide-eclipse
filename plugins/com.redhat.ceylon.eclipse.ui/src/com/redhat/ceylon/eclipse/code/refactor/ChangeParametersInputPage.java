@@ -632,7 +632,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     super.visit(that);
                 }
             });
-            parameters.visit(new TypeVisitor(unit));
+            parameters.visit(new TypeVisitor(unit, backendSupport));
             parameters.visit(new ExpressionVisitor(unit, backendSupport));
             
             setErrorMessage(null);

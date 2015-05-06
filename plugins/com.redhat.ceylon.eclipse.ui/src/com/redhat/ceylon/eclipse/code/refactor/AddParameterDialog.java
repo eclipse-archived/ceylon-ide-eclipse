@@ -194,7 +194,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                     super.visitAny(that);
                 }
             });
-            staticType.visit(new TypeVisitor(unit));
+            staticType.visit(new TypeVisitor(unit, backendSupport));
             staticType.visit(new ExpressionVisitor(unit, backendSupport));
             
             errorLabel.setVisible(false);
@@ -283,7 +283,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                     super.visit(that);
                 }
             });
-            parameters.visit(new TypeVisitor(unit));
+            parameters.visit(new TypeVisitor(unit, backendSupport));
             parameters.visit(new ExpressionVisitor(unit, backendSupport));
             
             errorLabel.setVisible(false);
