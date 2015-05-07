@@ -47,6 +47,7 @@ import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.loader.model.LazyModuleManager;
@@ -500,5 +501,14 @@ public class JDTModuleManager extends LazyModuleManager {
     public void visitedModule(Module module, boolean forCompiledModule) {
         if(forCompiledModule && AbstractModelLoader.isJDKModule(module.getNameAsString()))
             modelLoader.addJDKModuleToClassPath(module);
+    }
+    
+    @Override
+    public boolean supportsBackend(Backend backend) {
+        if (backend == Backend.Java)
+            return CeylonBuilder.compileToJava(javaProject.getProject());
+        if (backend == Backend.JavaScript)
+            return CeylonBuilder.compileToJs(javaProject.getProject());
+        return false;
     }
 }
