@@ -228,14 +228,14 @@ class SplitDeclarationProposal extends CorrectionProposal {
 	            }
 	        }
 	        if (decNode instanceof Tree.Variable &&
-	                statement instanceof Tree.IfStatement) {
+	                statement instanceof Tree.ControlStatement) {
 	            Tree.Variable varNode = 
                         (Tree.Variable) decNode;
                 Tree.SpecifierExpression sie = 
                         varNode.getSpecifierExpression();
                 if (sie!=null) {
                     addSplitDeclarationProposal(doc, varNode, 
-                            (Tree.IfStatement) statement, 
+                            (Tree.ControlStatement) statement, 
                             cu, file, proposals);
                 }
 	        }
@@ -243,7 +243,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
 	}
 
     private static void addSplitDeclarationProposal(IDocument doc,
-            Tree.Variable varNode, Tree.IfStatement statement, 
+            Tree.Variable varNode, Tree.ControlStatement statement, 
             Tree.CompilationUnit cu, IFile file, 
             Collection<ICompletionProposal> proposals) {
         Tree.SpecifierExpression sie = 
