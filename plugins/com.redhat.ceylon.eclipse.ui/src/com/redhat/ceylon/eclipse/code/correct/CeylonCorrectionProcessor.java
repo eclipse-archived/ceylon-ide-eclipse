@@ -909,7 +909,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addConvertToClassProposal(proposals, declaration, editor);
             addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
-            addSplitDeclarationProposals(proposals, doc, file, rootNode, declaration);
+            addSplitDeclarationProposals(proposals, doc, file, rootNode, declaration, statement);
             addJoinDeclarationProposal(proposals, rootNode, statement, file);
             addParameterProposals(proposals, file, rootNode, declaration, editor);
             
