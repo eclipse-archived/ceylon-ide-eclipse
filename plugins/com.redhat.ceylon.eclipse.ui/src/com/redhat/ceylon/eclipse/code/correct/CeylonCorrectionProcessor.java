@@ -162,6 +162,9 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.model.NamedArgumentList;
+import com.redhat.ceylon.compiler.typechecker.model.Parameter;
+import com.redhat.ceylon.compiler.typechecker.model.ParameterList;
 import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
 import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.model.Unit;
@@ -689,6 +692,73 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addElseProposal(file, rootNode, proposals, node);
             addCasesProposal(file, rootNode, proposals, node);
             break;
+        case 11000:
+            addNamedArgumentsProposal(file, rootNode, proposals, node);
+            break;
+        }
+    }
+
+    private void addNamedArgumentsProposal(IFile file,
+            Tree.CompilationUnit rootNode,
+            Collection<ICompletionProposal> proposals, 
+            Node node) {
+        if (node instanceof Tree.NamedArgumentList) {
+            TextFileChange tfc = 
+                    new TextFileChange("Add Named Arguments", 
+                            file);
+            IDocument doc = EditorUtil.getDocument(tfc);
+            tfc.setEdit(new MultiTextEdit());
+            Tree.NamedArgumentList nal =
+                    (Tree.NamedArgumentList) node;
+            NamedArgumentList args = 
+                    nal.getNamedArgumentList();
+            int start = nal.getStartIndex();
+            int stop = nal.getStopIndex();
+            int loc = start+1;
+            String sep = " ";
+            List<Tree.NamedArgument> nas = 
+                    nal.getNamedArguments();
+            if (!nas.isEmpty()) {
+                Tree.NamedArgument last = 
+                        nas.get(nas.size()-1);
+                loc = last.getStopIndex()+1;
+                try {
+                    int firstLine = 
+                            doc.getLineOfOffset(start);
+                    int lastLine = 
+                            doc.getLineOfOffset(stop);
+                    if (firstLine!=lastLine) {
+                        sep = getDefaultLineDelimiter(doc) + 
+                                getIndent(last, doc);
+                    }
+                }
+                catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
+            }
+            ParameterList params = args.getParameterList();
+            String result = null;
+            boolean multipleResults = false;
+            for (Parameter param: params.getParameters()) {
+                if (!param.isDefaulted() &&
+                    !args.getArgumentNames()
+                        .contains(param.getName())) {
+                    multipleResults = result!=null;
+                    result = param.getName();
+                    tfc.addEdit(new InsertEdit(loc, 
+                            sep + param.getName() + 
+                            " = nothing;"));
+                }
+            }
+            if (loc==stop) {
+                tfc.addEdit(new InsertEdit(stop, " "));
+            }
+            String name = multipleResults ?
+                "Fill in missing named arguments" :
+                "Fill in missing named argument '" 
+                    + result + "'";
+            proposals.add(new CorrectionProposal(name, tfc, 
+                    new Region(loc, 0)));
         }
     }
 
