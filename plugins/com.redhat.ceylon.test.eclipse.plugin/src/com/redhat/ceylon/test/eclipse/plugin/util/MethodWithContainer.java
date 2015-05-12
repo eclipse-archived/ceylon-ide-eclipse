@@ -1,7 +1,7 @@
 package com.redhat.ceylon.test.eclipse.plugin.util;
 
-import com.redhat.ceylon.compiler.typechecker.model.Method;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
 public class MethodWithContainer {
 

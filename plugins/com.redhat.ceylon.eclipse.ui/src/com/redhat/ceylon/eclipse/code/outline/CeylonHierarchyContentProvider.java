@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.compiler.typechecker.model.Util.getInterveningRefinements;
-import static com.redhat.ceylon.compiler.typechecker.model.Util.getSignature;
-import static com.redhat.ceylon.compiler.typechecker.model.Util.isAbstraction;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
+import static com.redhat.ceylon.model.typechecker.model.Util.getInterveningRefinements;
+import static com.redhat.ceylon.model.typechecker.model.Util.getSignature;
+import static com.redhat.ceylon.model.typechecker.model.Util.isAbstraction;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -22,23 +22,23 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 
-import com.redhat.ceylon.cmr.api.JDKUtils;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
-import com.redhat.ceylon.compiler.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.ProducedType;
-import com.redhat.ceylon.compiler.typechecker.model.Scope;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.model.TypeParameter;
-import com.redhat.ceylon.compiler.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
+import com.redhat.ceylon.model.cmr.JDKUtils;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypeParameter;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public final class CeylonHierarchyContentProvider
         implements ITreeContentProvider {
@@ -323,9 +323,9 @@ public final class CeylonHierarchyContentProvider
                 JDTModelLoader modelLoader = getModelLoader(typeChecker);
                 Module module = modelLoader.getLoadedModule(name, version);
                 if (module!=null) { //TODO: check this with David ... could we use JDTModule.getReferencingModules()?
-                    ModuleManager moduleManager = 
-                            typeChecker.getPhasedUnits().getModuleManager();
-                    allModules.addAll(moduleManager.getCompiledModules());
+                    ModuleSourceMapper moduleSourceMapper = 
+                            typeChecker.getPhasedUnits().getModuleSourceMapper();
+                    allModules.addAll(moduleSourceMapper.getCompiledModules());
                 }
             }
             

@@ -5,7 +5,7 @@ import java.util.Map;
 import org.eclipse.swt.dnd.ByteArrayTransfer;
 import org.eclipse.swt.dnd.TransferData;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 public class ImportsTransfer extends ByteArrayTransfer {
     

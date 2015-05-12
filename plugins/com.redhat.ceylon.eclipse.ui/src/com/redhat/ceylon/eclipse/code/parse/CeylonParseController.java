@@ -49,16 +49,17 @@ import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
+import com.redhat.ceylon.model.typechecker.util.ModuleManager;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
 import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Modules;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Modules;
+import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
@@ -80,6 +81,7 @@ import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
+import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper;
 import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
@@ -482,16 +484,18 @@ public class CeylonParseController {
         
         JDTModuleManager moduleManager = (JDTModuleManager) 
                 typeChecker.getPhasedUnits().getModuleManager();
+        JDTModuleSourceMapper moduleSourceMapper = (JDTModuleSourceMapper) 
+                typeChecker.getPhasedUnits().getModuleSourceMapper();
         if (builtPhasedUnit instanceof ProjectPhasedUnit) {
             phasedUnit = 
                     new EditedPhasedUnit(file, srcDir, cu, pkg, 
-                            moduleManager, typeChecker, tokens, 
+                            moduleManager, moduleSourceMapper, typeChecker, tokens, 
                             (ProjectPhasedUnit) builtPhasedUnit);  
         }
         else {
             phasedUnit = 
                     new EditedPhasedUnit(file, srcDir, cu, pkg, 
-                    moduleManager, typeChecker, tokens, null);
+                    moduleManager, moduleSourceMapper, typeChecker, tokens, null);
             moduleManager.getModelLoader()
                          .setupSourceFileObjects(asList(phasedUnit));
         }
@@ -559,6 +563,11 @@ public class CeylonParseController {
                     @Override
                     public ModuleManager createModuleManager(Context context) {
                         return new JDTModuleManager(context, javaProject);
+                    }
+
+                    @Override
+                    public ModuleSourceMapper createModuleManagerUtil(Context context, ModuleManager moduleManager) {
+                        return new JDTModuleSourceMapper(context, javaProject, (JDTModuleManager) moduleManager);
                     }
                 })
                 .usageWarnings(showWarnings);

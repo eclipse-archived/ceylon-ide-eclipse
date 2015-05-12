@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.cmr.api.Repository;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.model.cmr.Repository;
 
 public class RepositoryNode {
     private String displayString;

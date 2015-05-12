@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
 import org.eclipse.search.ui.text.Match;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 

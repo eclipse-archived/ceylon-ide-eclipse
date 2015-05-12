@@ -9,8 +9,8 @@ import java.util.List;
 
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 class BasicCompletionProposal extends CompletionProposal {

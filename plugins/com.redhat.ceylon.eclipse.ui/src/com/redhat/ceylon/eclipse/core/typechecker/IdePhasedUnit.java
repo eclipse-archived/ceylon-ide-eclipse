@@ -6,11 +6,13 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
+import com.redhat.ceylon.model.typechecker.util.ModuleManager;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 
 public abstract class IdePhasedUnit extends PhasedUnit {
@@ -19,8 +21,9 @@ public abstract class IdePhasedUnit extends PhasedUnit {
 
     public IdePhasedUnit(VirtualFile unitFile, VirtualFile srcDir,
             CompilationUnit cu, Package p, ModuleManager moduleManager,
+            ModuleSourceMapper moduleSourceMapper,
             TypeChecker typeChecker, List<CommonToken> tokenStream) {
-        super(unitFile, srcDir, cu, p, moduleManager, typeChecker.getContext(), tokenStream);
+        super(unitFile, srcDir, cu, p, moduleManager, moduleSourceMapper, typeChecker.getContext(), tokenStream);
         typeCheckerRef = new WeakReference<TypeChecker>(typeChecker);
     }
     
@@ -35,9 +38,9 @@ public abstract class IdePhasedUnit extends PhasedUnit {
         return typeCheckerRef.get();
     }
     
-    protected Unit createUnit() {
-        Unit oldUnit = getUnit();
-        Unit newUnit = newUnit();
+    protected TypecheckerUnit createUnit() {
+        TypecheckerUnit oldUnit = getUnit();
+        TypecheckerUnit newUnit = newUnit();
         if (oldUnit != null) {
             newUnit.setFilename(oldUnit.getFilename());
             newUnit.setFullPath(oldUnit.getFullPath());
@@ -49,5 +52,5 @@ public abstract class IdePhasedUnit extends PhasedUnit {
     }
     
 
-    protected abstract Unit newUnit();
+    protected abstract TypecheckerUnit newUnit();
 }

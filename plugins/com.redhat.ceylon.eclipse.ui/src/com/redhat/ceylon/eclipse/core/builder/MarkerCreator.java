@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKE
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
@@ -55,7 +55,7 @@ public class MarkerCreator extends ErrorVisitor {
                 CeylonBuilder.SOURCE
             };
         try {
-            file.createMarker(message instanceof ModuleManager.ModuleDependencyAnalysisError ?
+            file.createMarker(message instanceof ModuleSourceMapper.ModuleDependencyAnalysisError ?
                     MODULE_DEPENDENCY_PROBLEM_MARKER_ID:PROBLEM_MARKER_ID)
                 .setAttributes(attributeNames, values);
         } 

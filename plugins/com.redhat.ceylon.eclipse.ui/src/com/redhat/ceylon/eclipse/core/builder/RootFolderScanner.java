@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
-import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
+import static com.redhat.ceylon.model.typechecker.model.Util.formatPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isCompilable;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 
@@ -19,11 +19,12 @@ import org.eclipse.core.runtime.SubMonitor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
+import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 
@@ -31,6 +32,7 @@ final class RootFolderScanner implements IResourceVisitor {
     private final Module defaultModule;
     private final JDTModelLoader modelLoader;
     private final JDTModuleManager moduleManager;
+    private final JDTModuleSourceMapper moduleSourceMapper;
     private final IFolderVirtualFile rootDir;
     private final TypeChecker typeChecker;
     private final List<IFile> scannedFiles;
@@ -43,7 +45,7 @@ final class RootFolderScanner implements IResourceVisitor {
     
 
     RootFolderScanner(RootFolderType rootFolderType, Module defaultModule, JDTModelLoader modelLoader,
-            JDTModuleManager moduleManager, IFolderVirtualFile rootDir, TypeChecker typeChecker,
+            JDTModuleManager moduleManager, JDTModuleSourceMapper moduleSourceMapper, IFolderVirtualFile rootDir, TypeChecker typeChecker,
             List<IFile> scannedFiles, PhasedUnits phasedUnits, SubMonitor monitor) {
         this.rootFolderType = rootFolderType;
         this.isInResourceForlder = rootFolderType.equals(RootFolderType.RESOURCE);
@@ -51,6 +53,7 @@ final class RootFolderScanner implements IResourceVisitor {
         this.defaultModule = defaultModule;
         this.modelLoader = modelLoader;
         this.moduleManager = moduleManager;
+        this.moduleSourceMapper = moduleSourceMapper;
         this.rootDir = rootDir;
         this.typeChecker = typeChecker;
         this.scannedFiles = scannedFiles;
@@ -122,7 +125,7 @@ final class RootFolderScanner implements IResourceVisitor {
                         if (CeylonBuilder.isCeylon(file)) {
                             ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
                             try {
-                                PhasedUnit newPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, 
+                                PhasedUnit newPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, moduleSourceMapper,
                                         typeChecker, virtualFile, rootDir, pkg);
                                 phasedUnits.addPhasedUnit(virtualFile, newPhasedUnit);
                             } 

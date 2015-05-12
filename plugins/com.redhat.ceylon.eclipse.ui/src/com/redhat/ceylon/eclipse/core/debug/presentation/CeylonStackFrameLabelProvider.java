@@ -16,7 +16,7 @@ import org.eclipse.jdt.internal.debug.ui.variables.JavaStackFrameLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.swt.graphics.RGB;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIThread;
 
 public class CeylonStackFrameLabelProvider extends JavaStackFrameLabelProvider {

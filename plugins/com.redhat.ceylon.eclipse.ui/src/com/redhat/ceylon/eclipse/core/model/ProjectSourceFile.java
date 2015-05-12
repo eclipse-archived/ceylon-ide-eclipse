@@ -7,9 +7,10 @@ import org.eclipse.core.resources.IProject;
 
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
+import com.redhat.ceylon.model.typechecker.util.ModuleManager;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
@@ -54,6 +55,7 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
                 final ResourceVirtualFile virtualSrcDir = ResourceVirtualFile.createResourceVirtualFile(modelPhaseUnit.getSourceFolderResource());
                 final TypeChecker currentTypechecker = modelPhaseUnit.getTypeChecker();
                 final ModuleManager currentModuleManager = currentTypechecker.getPhasedUnits().getModuleManager();
+                final ModuleSourceMapper currentModuleSourceMapper = currentTypechecker.getPhasedUnits().getModuleSourceMapper();
                 Package singleSourceUnitPackage = new SingleSourceUnitPackage(getPackage(), virtualSrcFile.getPath());
                 PhasedUnit lastPhasedUnit = new CeylonSourceParser<PhasedUnit>() {
                     
@@ -73,6 +75,7 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
                         return new PhasedUnit(virtualSrcFile, 
                                 virtualSrcDir, cu, pkg, 
                                 currentModuleManager, 
+                                currentModuleSourceMapper,
                                 currentTypechecker.getContext(),
                                 tokenStream.getTokens()) {
                             @Override

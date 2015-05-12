@@ -57,28 +57,11 @@ import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.PackageFragment;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
-import com.redhat.ceylon.cmr.api.ArtifactResult;
-import com.redhat.ceylon.cmr.api.ArtifactResultType;
-import com.redhat.ceylon.cmr.api.ImportType;
-import com.redhat.ceylon.cmr.api.JDKUtils;
-import com.redhat.ceylon.cmr.api.PathFilter;
-import com.redhat.ceylon.cmr.api.Repository;
-import com.redhat.ceylon.cmr.api.RepositoryException;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.api.VisibilityType;
-import com.redhat.ceylon.compiler.loader.model.LazyModule;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
 import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
-import com.redhat.ceylon.compiler.typechecker.model.Modules;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.model.Util;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -86,16 +69,34 @@ import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
-import com.redhat.ceylon.eclipse.core.model.JDTModuleManager.ExternalModulePhasedUnits;
+import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper.ExternalModulePhasedUnits;
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.TraversalAction;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
+import com.redhat.ceylon.model.cmr.ArtifactResult;
+import com.redhat.ceylon.model.cmr.ArtifactResultType;
+import com.redhat.ceylon.model.cmr.ImportType;
+import com.redhat.ceylon.model.cmr.JDKUtils;
+import com.redhat.ceylon.model.cmr.PathFilter;
+import com.redhat.ceylon.model.cmr.Repository;
+import com.redhat.ceylon.model.cmr.RepositoryException;
+import com.redhat.ceylon.model.cmr.VisibilityType;
+import com.redhat.ceylon.model.loader.model.LazyModule;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.ModuleImport;
+import com.redhat.ceylon.model.typechecker.model.Modules;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.model.typechecker.model.Util;
 
 public class JDTModule extends LazyModule {
     private JDTModuleManager moduleManager;
+    private JDTModuleSourceMapper moduleSourceMapper;
     private List<IPackageFragmentRoot> packageFragmentRoots;
     private File artifact;
     private String repositoryDisplayString = "";
@@ -113,8 +114,9 @@ public class JDTModule extends LazyModule {
     private ArtifactResultType artifactType = ArtifactResultType.OTHER;
     private Exception resolutionException = null;
     
-    public JDTModule(JDTModuleManager jdtModuleManager, List<IPackageFragmentRoot> packageFragmentRoots) {
+    public JDTModule(JDTModuleManager jdtModuleManager, JDTModuleSourceMapper jdtModuleSourceMapper, List<IPackageFragmentRoot> packageFragmentRoots) {
         this.moduleManager = jdtModuleManager;
+        this.moduleSourceMapper = jdtModuleSourceMapper;
         this.packageFragmentRoots = packageFragmentRoots;
     }
 
@@ -423,6 +425,9 @@ public class JDTModule extends LazyModule {
         return moduleManager;
     }
 
+    public JDTModuleSourceMapper getModuleSourceMapper() {
+        return moduleSourceMapper;
+    }
     
     @Override
     public List<Package> getAllVisiblePackages() {
@@ -535,7 +540,7 @@ public class JDTModule extends LazyModule {
     }
     
     public boolean isDefaultModule() {
-        return this.equals(moduleManager.getContext().getModules().getDefaultModule());
+        return this.equals(moduleManager.getModules().getDefaultModule());
     }
     
     public boolean isProjectModule() {
@@ -760,7 +765,7 @@ public class JDTModule extends LazyModule {
                     if (isSourceArchive()) {
                         ClosableVirtualFile sourceArchive = null;
                         try {
-                            sourceArchive = moduleManager.getContext().getVfs().getFromZipFile(new File(sourceArchivePath));
+                            sourceArchive = moduleSourceMapper.getContext().getVfs().getFromZipFile(new File(sourceArchivePath));
                             for (String relativePathToAdd : originalUnitsToAdd) {
                                 VirtualFile archiveEntry = null;
                                 archiveEntry = searchInSourceArchive(
@@ -873,9 +878,10 @@ public class JDTModule extends LazyModule {
         if (pkg != null) {
             try {
                 JDTModuleManager moduleManager = getModuleManager();
+                JDTModuleSourceMapper moduleSourceMapper = getModuleSourceMapper();
                 ClosableVirtualFile sourceArchive = null;
                 try {
-                    sourceArchive = moduleManager.getContext().getVfs().getFromZipFile(sourceArchiveFile);
+                    sourceArchive = moduleSourceMapper.getContext().getVfs().getFromZipFile(sourceArchiveFile);
                     
                     String ceylonSourceUnitRelativePath = sourceUnitRelativePath; 
                     if (sourceUnitRelativePath.endsWith(".java")) {
@@ -898,7 +904,7 @@ public class JDTModule extends LazyModule {
                         tokens.addAll(tokenStream.getTokens());
                         if(originalProject == null) {
                             phasedUnit = new ExternalPhasedUnit(archiveEntry, sourceArchive, cu, 
-                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, CeylonBuilder.getProjectTypeChecker(project), tokens) {
+                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens) {
                                 @Override
                                 protected boolean reuseExistingDescriptorModels() {                                    
                                     return true;
@@ -906,7 +912,7 @@ public class JDTModule extends LazyModule {
                             };
                         } else {
                             phasedUnit = new CrossProjectPhasedUnit(archiveEntry, sourceArchive, cu, 
-                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, CeylonBuilder.getProjectTypeChecker(project), tokens, originalProject) {
+                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens, originalProject) {
                                 @Override
                                 protected boolean reuseExistingDescriptorModels() {                                    
                                     return true;

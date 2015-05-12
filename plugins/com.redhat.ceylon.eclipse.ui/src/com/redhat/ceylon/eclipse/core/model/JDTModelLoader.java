@@ -93,31 +93,14 @@ import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
-import com.redhat.ceylon.cmr.api.ArtifactResult;
+import com.redhat.ceylon.common.JVMModuleUtil;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
+import com.redhat.ceylon.compiler.java.loader.AnnotationLoader;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
-import com.redhat.ceylon.compiler.java.util.Timer;
 import com.redhat.ceylon.compiler.java.util.Util;
-import com.redhat.ceylon.compiler.loader.AbstractModelLoader;
-import com.redhat.ceylon.compiler.loader.ModelResolutionException;
 import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
-import com.redhat.ceylon.compiler.loader.TypeParser;
-import com.redhat.ceylon.compiler.loader.mirror.ClassMirror;
-import com.redhat.ceylon.compiler.loader.mirror.MethodMirror;
-import com.redhat.ceylon.compiler.loader.model.LazyClass;
-import com.redhat.ceylon.compiler.loader.model.LazyInterface;
-import com.redhat.ceylon.compiler.loader.model.LazyMethod;
-import com.redhat.ceylon.compiler.loader.model.LazyModule;
-import com.redhat.ceylon.compiler.loader.model.LazyPackage;
-import com.redhat.ceylon.compiler.loader.model.LazyValue;
-import com.redhat.ceylon.compiler.typechecker.context.Context;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.Class;
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Modules;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
@@ -129,6 +112,31 @@ import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTMethod;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceDeclarationHolder;
+import com.redhat.ceylon.model.cmr.ArtifactResult;
+import com.redhat.ceylon.model.loader.AbstractModelLoader;
+import com.redhat.ceylon.model.loader.JvmBackendUtil;
+import com.redhat.ceylon.model.loader.ModelResolutionException;
+import com.redhat.ceylon.model.loader.Timer;
+import com.redhat.ceylon.model.loader.TypeParser;
+import com.redhat.ceylon.model.loader.mirror.ClassMirror;
+import com.redhat.ceylon.model.loader.mirror.MethodMirror;
+import com.redhat.ceylon.model.loader.model.AnnotationProxyClass;
+import com.redhat.ceylon.model.loader.model.AnnotationProxyMethod;
+import com.redhat.ceylon.model.loader.model.LazyClass;
+import com.redhat.ceylon.model.loader.model.LazyInterface;
+import com.redhat.ceylon.model.loader.model.LazyMethod;
+import com.redhat.ceylon.model.loader.model.LazyModule;
+import com.redhat.ceylon.model.loader.model.LazyPackage;
+import com.redhat.ceylon.model.loader.model.LazyValue;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Modules;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.model.typechecker.model.UnknownType;
+import com.redhat.ceylon.model.typechecker.model.UnknownType.ErrorReporter;
 
 /**
  * A model loader which uses the JDT model.
@@ -146,8 +154,11 @@ public class JDTModelLoader extends AbstractModelLoader {
     private final Object lookupEnvironmentMutex = new Object();
     private boolean mustResetLookupEnvironment = false;
     private Set<Module> modulesInClassPath = new HashSet<Module>();
+    private AnnotationLoader annotationLoader;
+    private JDTModuleSourceMapper moduleSourceMapper;
     
-    public JDTModelLoader(final JDTModuleManager moduleManager, final Modules modules){
+    public JDTModelLoader(final JDTModuleManager moduleManager, JDTModuleSourceMapper moduleSourceMapper, final Modules modules){
+        this.moduleSourceMapper = moduleSourceMapper;
         this.moduleManager = moduleManager;
         moduleManager.setModelLoader(this);
         this.modules = modules;
@@ -166,6 +177,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         if (javaProject != null) {
             modelLoaders.put(javaProject.getProject(), new WeakReference<JDTModelLoader>(this));
         }
+        annotationLoader = new AnnotationLoader(this, typeFactory);
     }
 
     public JDTModuleManager getModuleManager() {
@@ -247,7 +259,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     private String getToplevelQualifiedName(final String pkgName, String name) {
-        if (name != null && ! Util.isInitialLowerCase(name)) {
+        if (name != null && ! JvmBackendUtil.isInitialLowerCase(name)) {
             name = Util.quoteIfJavaKeyword(name);
         }
 
@@ -740,14 +752,14 @@ public class JDTModelLoader extends AbstractModelLoader {
                 return new SourceClass(sourceDeclarations.get(topLevelPartiallyQuotedName));
             }
             
-            ClassMirror classMirror = buildClassMirror(Util.quoteJavaKeywords(name));
+            ClassMirror classMirror = buildClassMirror(JVMModuleUtil.quoteJavaKeywords(name));
             if (classMirror == null 
                     && lastPartHasLowerInitial(name)
                     && !name.endsWith("_")) {
                 // We have to try the unmunged name first, so that we find the symbol
                 // from the source in preference to the symbol from any 
                 // pre-existing .class file
-                classMirror = buildClassMirror(Util.quoteJavaKeywords(name + "_"));
+                classMirror = buildClassMirror(JVMModuleUtil.quoteJavaKeywords(name + "_"));
             }
             
             if(classMirror == null)
@@ -1197,8 +1209,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     public void setModuleAndPackageUnits() {
-        Context context = getModuleManager().getContext();
-        for (Module module : context.getModules().getListOfModules()) {
+        for (Module module : moduleManager.getModules().getListOfModules()) {
             if (module instanceof JDTModule) {
                 JDTModule jdtModule = (JDTModule) module;
                 if (jdtModule.isCeylonBinaryArchive()) {
@@ -1349,7 +1360,7 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     public class PackageTypeFactory extends TypeFactory {
         public PackageTypeFactory(Package pkg) {
-            super(moduleManager.getContext());
+            super(moduleSourceMapper.getContext());
             assert (pkg != null);
             setPackage(pkg);
         }
@@ -1358,7 +1369,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     public class GlobalTypeFactory extends TypeFactory {
         public GlobalTypeFactory() {
-            super(moduleManager.getContext());
+            super(moduleSourceMapper.getContext());
         }
 
         @Override
@@ -1484,7 +1495,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    protected Module findModuleForClassMirror(ClassMirror classMirror) {
+    public Module findModuleForClassMirror(ClassMirror classMirror) {
         String pkgName = getPackageNameForQualifiedClassName(classMirror);
         return lookupModuleByPackageName(pkgName);
     }
@@ -1535,5 +1546,37 @@ public class JDTModelLoader extends AbstractModelLoader {
         } else {
             return false;
         }
+    }
+
+    @Override
+    protected void makeInteropAnnotationConstructorInvocation(AnnotationProxyMethod arg0, AnnotationProxyClass arg1, List<Parameter> arg2) {
+        annotationLoader.makeInterorAnnotationConstructorInvocation(arg0, arg1, arg2);
+    }
+
+    @Override
+    protected ErrorReporter makeModelErrorReporter(Module arg0, String arg1) {
+        return new ModuleErrorAttacherRunnable(moduleSourceMapper, arg0, arg1);
+    }
+
+    public static class ModuleErrorAttacherRunnable extends UnknownType.ErrorReporter {
+
+        private Module module;
+        private ModuleSourceMapper moduleSourceMapper;
+
+        public ModuleErrorAttacherRunnable(ModuleSourceMapper moduleSourceMapper, Module module, String message) {
+            super(message);
+            this.moduleSourceMapper = moduleSourceMapper;
+            this.module = module;
+        }
+
+        @Override
+        public void reportError() {
+            moduleSourceMapper.attachErrorToOriginalModuleImport(module, getMessage());
+        }
+    }
+
+    @Override
+    protected void setAnnotationConstructor(LazyMethod arg0, MethodMirror arg1) {
+        annotationLoader.setAnnotationConstructor(arg0, arg1);
     }
 }

@@ -10,15 +10,16 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
+import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
 public class ProjectPhasedUnit extends IdePhasedUnit {
     private IFolder sourceFolderResource;
@@ -26,8 +27,9 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
     
     public ProjectPhasedUnit(ResourceVirtualFile unitFile, ResourceVirtualFile srcDir,
             CompilationUnit cu, Package p, ModuleManager moduleManager,
+            ModuleSourceMapper moduleSourceMapper,
             TypeChecker typeChecker, List<CommonToken> tokenStream) {
-        super(unitFile, srcDir, cu, p, moduleManager, typeChecker, tokenStream);
+        super(unitFile, srcDir, cu, p, moduleManager, moduleSourceMapper, typeChecker, tokenStream);
         sourceFolderResource = (IFolder) srcDir.getResource();
         srcDir.getResource().getProject();
     }
@@ -51,7 +53,7 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
     }
 
     @Override
-    protected Unit newUnit() {
+    protected TypecheckerUnit newUnit() {
         return new ProjectSourceFile(this);
     }
     

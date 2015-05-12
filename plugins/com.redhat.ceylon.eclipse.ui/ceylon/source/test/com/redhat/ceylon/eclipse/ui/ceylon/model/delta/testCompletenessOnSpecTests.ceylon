@@ -9,7 +9,7 @@ import com.redhat.ceylon.compiler.typechecker {
 import java.io {
     File
 }
-import com.redhat.ceylon.compiler.typechecker.analyzer {
+import com.redhat.ceylon.model.typechecker.util {
     ModuleManager {
         moduleDescriptorFileName=MODULE_FILE,
         packageDescriptorFileName=PACKAGE_FILE

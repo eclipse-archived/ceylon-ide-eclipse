@@ -22,9 +22,9 @@ package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import java.util.Map;
 
-import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
-import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
-import com.redhat.ceylon.compiler.loader.mirror.VariableMirror;
+import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
+import com.redhat.ceylon.model.loader.mirror.TypeMirror;
+import com.redhat.ceylon.model.loader.mirror.VariableMirror;
 
 public class JDTVariable implements VariableMirror {
 

@@ -29,7 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.io {
     VFS,
     VirtualFile
 }
-import com.redhat.ceylon.compiler.typechecker.model {
+import com.redhat.ceylon.model.typechecker.model {
     Module
 }
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta {

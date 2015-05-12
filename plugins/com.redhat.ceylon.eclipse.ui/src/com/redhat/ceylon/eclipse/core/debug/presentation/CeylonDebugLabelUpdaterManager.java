@@ -6,8 +6,8 @@ import java.util.regex.Pattern;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.internal.debug.ui.DebugUIMessages;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Functional;
 
 public class CeylonDebugLabelUpdaterManager {
     static CeylonDebugLabelUpdater stackFrameUpdater = new StackFrameLabelUpdater();

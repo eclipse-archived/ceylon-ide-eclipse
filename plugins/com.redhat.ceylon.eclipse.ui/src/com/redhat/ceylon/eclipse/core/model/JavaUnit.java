@@ -7,7 +7,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
-import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Package;
 
 public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IResourceAware {
     

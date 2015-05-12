@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.core.model;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.util.ModuleManager;
+import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 

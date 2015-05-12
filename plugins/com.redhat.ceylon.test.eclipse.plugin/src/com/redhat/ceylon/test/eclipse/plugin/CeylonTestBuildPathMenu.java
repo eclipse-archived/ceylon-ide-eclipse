@@ -20,9 +20,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.actions.ActionGroup;
 
-import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerActionGroup;
 import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
+import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.test.eclipse.plugin.util.AddCeylonTestImport;
 import com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
 

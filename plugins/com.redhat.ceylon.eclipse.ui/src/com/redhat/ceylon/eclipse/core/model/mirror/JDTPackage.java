@@ -22,7 +22,7 @@ package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
 
-import com.redhat.ceylon.compiler.loader.mirror.PackageMirror;
+import com.redhat.ceylon.model.loader.mirror.PackageMirror;
 
 public class JDTPackage implements PackageMirror {
 

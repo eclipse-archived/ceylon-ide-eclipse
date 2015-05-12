@@ -28,8 +28,8 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.ListenableDirectedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 
 class CleaningRunnable implements Runnable {
     final ReferenceQueue<Module> removedModules = new ReferenceQueue<>();

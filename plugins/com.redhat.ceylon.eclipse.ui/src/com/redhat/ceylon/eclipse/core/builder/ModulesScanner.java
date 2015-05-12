@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
-import static com.redhat.ceylon.compiler.typechecker.model.Util.formatPath;
+import static com.redhat.ceylon.model.typechecker.model.Util.formatPath;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 
 import java.util.Arrays;
@@ -15,14 +15,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleManager;
+import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.model.Module;
-import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
+import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
@@ -31,17 +32,19 @@ final class ModulesScanner implements IResourceVisitor {
     private final Module defaultModule;
     private final JDTModelLoader modelLoader;
     private final JDTModuleManager moduleManager;
+    private final JDTModuleSourceMapper moduleSourceMapper;
     private final ResourceVirtualFile srcDir;
     private final TypeChecker typeChecker;
     private Module module;
     private SubMonitor monitor;
 
     ModulesScanner(Module defaultModule, JDTModelLoader modelLoader,
-            JDTModuleManager moduleManager, ResourceVirtualFile srcDir, 
+            JDTModuleManager moduleManager, JDTModuleSourceMapper moduleSourceMapper, ResourceVirtualFile srcDir, 
             TypeChecker typeChecker, SubMonitor monitor) {
         this.defaultModule = defaultModule;
         this.modelLoader = modelLoader;
         this.moduleManager = moduleManager;
+        this.moduleSourceMapper = moduleSourceMapper;
         this.srcDir = srcDir;
         this.typeChecker = typeChecker;
         this.monitor = monitor;
@@ -53,7 +56,7 @@ final class ModulesScanner implements IResourceVisitor {
         if (resource.equals(srcDir.getResource())) {
             IFile moduleFile = ((IFolder) resource).getFile(ModuleManager.MODULE_FILE);
             if (moduleFile.exists()) {
-                moduleManager.addTopLevelModuleError();
+                moduleSourceMapper.addTopLevelModuleError();
             }
             return true;
         }
@@ -91,7 +94,7 @@ final class ModulesScanner implements IResourceVisitor {
                 final ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
                 try {
                     PhasedUnit tempPhasedUnit = null;
-                    tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, 
+                    tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, moduleSourceMapper, 
                             typeChecker, virtualFile, srcDir, pkg);
                     tempPhasedUnit = new CeylonSourceParser<ProjectPhasedUnit>() {
                         @Override
@@ -107,7 +110,7 @@ final class ModulesScanner implements IResourceVisitor {
                         @Override
                         protected ProjectPhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
                             return new ProjectPhasedUnit(virtualFile, srcDir, cu, pkg, 
-                                    moduleManager, typeChecker, tokenStream.getTokens()) {
+                                    moduleManager, moduleSourceMapper, typeChecker, tokenStream.getTokens()) {
                                 protected boolean reuseExistingDescriptorModels() {
                                     return true;
                                 };

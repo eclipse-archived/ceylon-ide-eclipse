@@ -23,9 +23,9 @@ import java.util.Map;
 
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 
-import com.redhat.ceylon.compiler.loader.mirror.AnnotationMirror;
-import com.redhat.ceylon.compiler.loader.mirror.FieldMirror;
-import com.redhat.ceylon.compiler.loader.mirror.TypeMirror;
+import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
+import com.redhat.ceylon.model.loader.mirror.FieldMirror;
+import com.redhat.ceylon.model.loader.mirror.TypeMirror;
 
 public class JDTField implements FieldMirror {
 

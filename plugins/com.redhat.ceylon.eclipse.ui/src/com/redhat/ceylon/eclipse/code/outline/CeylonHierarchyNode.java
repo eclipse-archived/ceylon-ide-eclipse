@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import java.util.Arrays;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 
 class CeylonHierarchyNode 

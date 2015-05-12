@@ -1,4 +1,4 @@
-import com.redhat.ceylon.compiler.typechecker.model {
+import com.redhat.ceylon.model.typechecker.model {
     Declaration,
     Unit,
     Module,

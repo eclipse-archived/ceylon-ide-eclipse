@@ -43,7 +43,7 @@ import org.eclipse.ui.part.Page;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
-import com.redhat.ceylon.compiler.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.code.editor.ImportsTransfer;
 import com.redhat.ceylon.eclipse.code.editor.SourceTransfer;
 import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
