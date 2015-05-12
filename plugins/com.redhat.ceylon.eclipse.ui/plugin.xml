@@ -3018,7 +3018,7 @@
             <adapter type="com.redhat.ceylon.eclipse.core.model.IUnit"/>
             <adapter type="com.redhat.ceylon.eclipse.core.model.IJavaModelAware"/>
             <adapter type="com.redhat.ceylon.eclipse.core.model.JDTModule"/>
-            <adapter type="com.redhat.ceylon.compiler.typechecker.model.Package"/>
+            <adapter type="com.redhat.ceylon.model.typechecker.model.Package"/>
 		</factory>
 
 		<factory 
@@ -3035,7 +3035,7 @@
             <adapter type="com.redhat.ceylon.eclipse.core.model.IUnit"/>
             <adapter type="com.redhat.ceylon.eclipse.core.model.IResourceAware"/>
             <adapter type="com.redhat.ceylon.eclipse.core.model.JDTModule"/>
-            <adapter type="com.redhat.ceylon.compiler.typechecker.model.Package"/>
+            <adapter type="com.redhat.ceylon.model.typechecker.model.Package"/>
 		</factory>
    </extension>     	
 
