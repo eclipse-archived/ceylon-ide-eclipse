@@ -7,6 +7,8 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.openInEditor;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 
+import java.util.List;
+
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -19,14 +21,18 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
+import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 
 public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
@@ -112,7 +118,50 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                             }
                         }
                         else {
-                            return null;
+                            boolean hasFoundAJavaImplementation = false;
+                            if (dec.isNative()) {
+                                if (declarationUnit instanceof EditedSourceFile) {
+                                    ProjectSourceFile projectSourceFile = ((EditedSourceFile)declarationUnit).getOriginalSourceFile();
+                                    if (projectSourceFile != null) {
+
+                                        Declaration modelDeclaration = null;
+                                        for (Declaration packageDeclaration : projectSourceFile.getPackage().getMembers()) {
+                                            if (packageDeclaration.isNative()) {
+                                                List<Declaration> packageDeclarationOverloads = AbstractModelLoader.getOverloads(packageDeclaration);
+                                                for (Declaration packageDeclarationOverload : packageDeclarationOverloads) {
+                                                    if (packageDeclarationOverload.equals(dec)) {
+                                                        modelDeclaration = packageDeclarationOverload;
+                                                        break;
+                                                    }
+                                                }
+                                                if (modelDeclaration != null) {
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        
+                                        if (modelDeclaration != null) {
+                                            dec = modelDeclaration;
+                                            declarationUnit = projectSourceFile;
+                                        }
+                                    }
+                                }
+                                List<Declaration> overloads = AbstractModelLoader.getOverloads(dec);
+                                for (Declaration overload : overloads) {
+                                    if (Backend.Java.nativeAnnotation.equals(overload.getNative())) {
+                                        if (overload.getUnit() instanceof IJavaModelAware) {
+                                            dec = overload;
+                                            declarationUnit = dec.getUnit();
+                                            jp = ((IJavaModelAware)declarationUnit).getTypeRoot().getJavaProject();
+                                            hasFoundAJavaImplementation = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!hasFoundAJavaImplementation) {
+                                    return null;
+                                }
+                            }
                         }
                     }
                     else {
