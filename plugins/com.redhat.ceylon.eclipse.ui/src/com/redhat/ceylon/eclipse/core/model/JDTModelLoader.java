@@ -104,6 +104,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
@@ -128,6 +129,7 @@ import com.redhat.ceylon.model.loader.model.LazyMethod;
 import com.redhat.ceylon.model.loader.model.LazyModule;
 import com.redhat.ceylon.model.loader.model.LazyPackage;
 import com.redhat.ceylon.model.loader.model.LazyValue;
+import com.redhat.ceylon.model.typechecker.model.Annotation;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -1404,6 +1406,27 @@ public class JDTModelLoader extends AbstractModelLoader {
                         @Override
                         public void loadFromSource(Tree.Declaration decl) {
                             if (decl.getIdentifier()!=null) {
+                                List<Annotation> annotations = new LinkedList<>();
+                                for (Tree.Annotation annotation : decl.getAnnotationList().getAnnotations()) {
+                                    String text = annotation.getPrimary().getToken().getText();
+                                    if (text != null && text.equals("native")) {
+                                        Tree.PositionalArgumentList pal = annotation.getPositionalArgumentList();
+                                        if (pal != null) {
+                                            List<PositionalArgument> pas = pal.getPositionalArguments();
+                                            boolean jvmBackend = false;
+                                            if (pas != null && !pas.isEmpty()) {
+                                                PositionalArgument backendArg = pas.get(0);
+                                                String argText = backendArg.getEndToken().getText();
+                                                if ("\"jvm\"".equals(argText)) {
+                                                    jvmBackend = true;
+                                                }
+                                            }
+                                            if (!jvmBackend) {
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
                                 String fqn = getToplevelQualifiedName(pkgName, decl.getIdentifier().getText());
                                 if (! sourceDeclarations.containsKey(fqn)) {
                                     sourceDeclarations.put(fqn, new SourceDeclarationHolder(unit, decl, isSourceToCompile));
