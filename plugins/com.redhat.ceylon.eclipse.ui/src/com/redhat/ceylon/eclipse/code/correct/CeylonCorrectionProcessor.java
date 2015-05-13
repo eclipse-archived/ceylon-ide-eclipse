@@ -169,6 +169,7 @@ import com.redhat.ceylon.model.typechecker.model.ProducedType;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -185,6 +186,42 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 public class CeylonCorrectionProcessor extends QuickAssistAssistant 
         implements IQuickAssistProcessor {
     
+    private static final class CollectWarningsToSuppressVisitor 
+            extends Visitor implements NaturalVisitor {
+        private final StringBuilder sb;
+        private final StyledString ss;
+
+        private CollectWarningsToSuppressVisitor
+                (StringBuilder sb, StyledString ss) {
+            this.sb = sb;
+            this.ss = ss;
+        }
+
+        @Override
+        public void visitAny(Node node) {
+            for (Message m: node.getErrors()) {
+                if (m instanceof UsageWarning) {
+                    UsageWarning warning = (UsageWarning) m;
+                    String warningName = 
+                            warning.getWarningName();
+                    if (!sb.toString().contains(warningName)) {
+                        if (sb.length()>0) {
+                            sb.append(", ");
+                            ss.append(", ");
+                        }
+                        sb.append('"')
+                          .append(warningName)
+                          .append('"');
+                        ss.append('"', STRING_STYLER)
+                          .append(warningName, STRING_STYLER)
+                          .append('"', STRING_STYLER);
+                    }
+                }
+            }
+            super.visitAny(node);
+        }
+    }
+
     private CeylonEditor editor; //may only be used for quick assists!!!
     private Tree.CompilationUnit model;
     private IFile file; //may only be used for markers!
@@ -1318,30 +1355,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             final StringBuilder sb = new StringBuilder();
             final StyledString ss = 
                     new StyledString("Suppress warnings of type ");
-            new Visitor() {
-                @Override
-                public void visitAny(Node node) {
-                    for (Message m: node.getErrors()) {
-                        if (m instanceof UsageWarning) {
-                            UsageWarning warning = (UsageWarning) m;
-                            String warningName = warning.getWarningName();
-                            if (!sb.toString().contains(warningName)) {
-                                if (sb.length()>0) {
-                                    sb.append(", ");
-                                    ss.append(", ");
-                                }
-                                sb.append('"')
-                                  .append(warningName)
-                                  .append('"');
-                                ss.append('"', STRING_STYLER)
-                                  .append(warningName, STRING_STYLER)
-                                  .append('"', STRING_STYLER);
-                            }
-                        }
-                    }
-                    super.visitAny(node);
-                }
-            }.visit(st);
+            new CollectWarningsToSuppressVisitor(sb, ss).visit(st);
             String ws = 
                     Indents.getDefaultLineDelimiter(doc) +
                     Indents.getIndent(st, doc);
