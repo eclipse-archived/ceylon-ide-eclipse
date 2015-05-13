@@ -22,10 +22,8 @@ package com.redhat.ceylon.eclipse.core.model;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IProject;
@@ -67,13 +65,7 @@ import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 public class JDTModuleSourceMapper extends LazyModuleSourceMapper {
 
     private IJavaProject javaProject;
-    private Set<String> sourceModules;
     private TypeChecker typeChecker;
-    private boolean loadDependenciesFromModelLoaderFirst;
-
-    public Set<String> getSourceModules() {
-        return sourceModules;
-    }
 
     public IJavaProject getJavaProject() {
         return javaProject;
@@ -82,15 +74,6 @@ public class JDTModuleSourceMapper extends LazyModuleSourceMapper {
     public JDTModuleSourceMapper(Context context, IJavaProject javaProject, JDTModuleManager moduleManager) {
         super(context, moduleManager);
         this.javaProject = javaProject;
-        if (javaProject == null) {
-            loadDependenciesFromModelLoaderFirst = false;
-        } else {
-            loadDependenciesFromModelLoaderFirst = CeylonBuilder.loadDependenciesFromModelLoaderFirst(javaProject.getProject());
-        }
-        sourceModules = new HashSet<String>();
-        if (! loadDependenciesFromModelLoaderFirst) {
-            sourceModules.add(Module.LANGUAGE_MODULE_NAME);
-        }
         // OK this sucks, but it's the best I could find :(
         moduleManager.setModuleSourceMapper(this);
     }
@@ -127,7 +110,7 @@ public class JDTModuleSourceMapper extends LazyModuleSourceMapper {
         if (! getModuleManager().isModuleLoadedFromCompiledSource(module.getNameAsString())) {
             File file = artifact.artifact();
             if (artifact.artifact().getName().endsWith(".src")) {
-                sourceModules.add(module.getNameAsString());
+                getModuleManager().getSourceModules().add(module.getNameAsString());
                 file = new File(file.getAbsolutePath().replaceAll("\\.src$", ".car"));
             }
         }
@@ -144,7 +127,7 @@ public class JDTModuleSourceMapper extends LazyModuleSourceMapper {
     @Override
     public void visitModuleFile() {
         Package currentPkg = getCurrentPackage();
-        sourceModules.add(currentPkg.getNameAsString());
+        getModuleManager().getSourceModules().add(currentPkg.getNameAsString());
         super.visitModuleFile();
     }
     
@@ -257,10 +240,6 @@ public class JDTModuleSourceMapper extends LazyModuleSourceMapper {
 
     public void setTypeChecker(TypeChecker typeChecker) {
         this.typeChecker = typeChecker;
-    }
-
-    public boolean isLoadDependenciesFromModelLoaderFirst() {
-        return loadDependenciesFromModelLoaderFirst;
     }
 
     public JDTModule getArchiveModuleFromSourcePath(String sourceUnitPath) {
