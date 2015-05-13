@@ -36,11 +36,6 @@
 			<type>2</type>
 			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-common/src</locationURI>
 		</link>
-        <link>
-            <name>sourcesCeylonProjects/ceylon-model</name>
-            <type>2</type>
-            <locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-model/src</locationURI>
-        </link>
 		<link>
 			<name>sourcesCeylonProjects/ceylon-compiler</name>
 			<type>2</type>
@@ -50,6 +45,11 @@
 			<name>sourcesCeylonProjects/ceylon-js</name>
 			<type>2</type>
 			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-js/src</locationURI>
+		</link>
+		<link>
+			<name>sourcesCeylonProjects/ceylon-model</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/ceylon-model/src</locationURI>
 		</link>
 		<link>
 			<name>sourcesCeylonProjects/ceylon-module-resolver</name>

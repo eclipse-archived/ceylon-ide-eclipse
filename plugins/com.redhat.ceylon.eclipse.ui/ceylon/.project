@@ -14,12 +14,8 @@
 			<name>com.redhat.ceylon.eclipse.ui.ceylonBuilder</name>
 			<arguments>
 				<dictionary>
-					<key>explodeModules</key>
-					<value>true</value>
-				</dictionary>
-				<dictionary>
 					<key>systemRepo</key>
-					<value></value>
+					<value>/home/david/.ceylon/repo</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
