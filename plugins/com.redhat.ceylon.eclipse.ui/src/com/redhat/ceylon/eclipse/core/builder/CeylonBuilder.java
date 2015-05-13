@@ -2094,6 +2094,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
                 JDTModuleSourceMapper moduleSourceMapper = (JDTModuleSourceMapper) phasedUnits.getModuleSourceMapper();
                 moduleManager.setTypeChecker(typeChecker);
+                moduleSourceMapper.setTypeChecker(typeChecker);
                 Context context = typeChecker.getContext();
                 JDTModelLoader modelLoader = (JDTModelLoader) moduleManager.getModelLoader();
                 Module defaultModule = context.getModules().getDefaultModule();

@@ -611,6 +611,9 @@ public class CeylonParseController {
         JDTModuleManager moduleManager = 
                 (JDTModuleManager) phasedUnits.getModuleManager();
         moduleManager.setTypeChecker(tc);
+        JDTModuleSourceMapper moduleSourceMapper = 
+                (JDTModuleSourceMapper) phasedUnits.getModuleSourceMapper();
+        moduleSourceMapper.setTypeChecker(tc);
         Context context = tc.getContext();
         JDTModelLoader modelLoader = 
                 (JDTModelLoader) moduleManager.getModelLoader();
