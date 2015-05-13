@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.typechecker;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.WeakHashMap;
@@ -18,6 +19,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
+import com.redhat.ceylon.model.loader.AbstractModelLoader;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
@@ -86,7 +89,42 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
             return; // Nothing to do : the PhasedUnit is already installed in the typechecker
         }
         if (oldPhasedUnit != null) {
-            getUnit().getDependentsOf().addAll(oldPhasedUnit.getUnit().getDependentsOf());
+            ProjectSourceFile oldSourceFile = (ProjectSourceFile) oldPhasedUnit.getUnit();
+            getUnit().getDependentsOf().addAll(oldSourceFile.getDependentsOf());
+            Declaration declarationToClean = null;
+            for (Declaration packageDeclaration : oldSourceFile.getPackage().getMembers()) {
+                if (packageDeclaration.isNative()) {
+                    List<Declaration> packageDeclarationOverloads = AbstractModelLoader.getOverloads(packageDeclaration);
+                    for (Declaration packageDeclarationOverload : packageDeclarationOverloads) {
+                        if (packageDeclarationOverload.getUnit() == oldSourceFile) {
+                            declarationToClean = packageDeclarationOverload;
+                            break;
+                        }
+                    }
+                    if (declarationToClean != null) {
+                        break;
+                    }
+                }
+            }
+            if (declarationToClean != null) {
+                List<Declaration> overloadsToClean = AbstractModelLoader.getOverloads(declarationToClean);
+                for (Declaration overloadToClean : overloadsToClean) {
+                    if (overloadToClean == declarationToClean) {
+                        continue;
+                    }
+                    List<Declaration> overloadOverloads = AbstractModelLoader.getOverloads(overloadToClean);
+                    
+                    List<Declaration> newOverloadOverloads = new ArrayList<>(3);
+                    for (Declaration overloadOverload : overloadOverloads) {
+                        if (overloadOverload == declarationToClean) {
+                            continue;
+                        }
+                        newOverloadOverloads.add(overloadOverload);
+                    }
+                    AbstractModelLoader.setOverloads(overloadToClean, newOverloadOverloads);
+                }
+            }
+
             Iterator<EditedPhasedUnit> workingCopies = oldPhasedUnit.getWorkingCopies(); 
             while (workingCopies.hasNext()) {
                 addWorkingCopy(workingCopies.next());
