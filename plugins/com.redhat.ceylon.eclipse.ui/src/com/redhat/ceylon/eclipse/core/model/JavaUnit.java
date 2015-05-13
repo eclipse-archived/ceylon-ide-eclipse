@@ -4,10 +4,17 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
+import com.redhat.ceylon.compiler.loader.ModelResolutionException;
+import com.redhat.ceylon.compiler.loader.ModelLoader.DeclarationType;
+import com.redhat.ceylon.compiler.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.model.Package;
+import com.redhat.ceylon.compiler.typechecker.model.Unit;
 
 public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IResourceAware {
     
@@ -65,6 +72,33 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
         JDTModule module = (JDTModule) p.getModule();
         for (JDTModule moduleInReferencingProject : module.getModuleInReferencingProjects()) {
         	moduleInReferencingProject.removedOriginalUnit(getRelativePath());
+        }
+    }
+
+    public void update() {
+        remove();
+        Package p = getPackage();
+        assert p.getModule() instanceof JDTModule;
+        JDTModule module = (JDTModule) p.getModule();
+        JDTModelLoader modelLoader = module.getModelLoader();
+        
+        ITypeRoot typeRoot = getTypeRoot();
+        IType primaryType = typeRoot.findPrimaryType();
+        if (primaryType != null && modelLoader != null) {
+            try {
+                Declaration d = modelLoader.convertToDeclaration(module, 
+                        primaryType.getFullyQualifiedName(), DeclarationType.TYPE);
+                Unit newUnit = d.getUnit();
+                assert newUnit instanceof JavaUnit;
+                JavaUnit newJavaUnit = (JavaUnit) newUnit;
+                newJavaUnit.getDependentsOf().addAll(getDependentsOf());
+                for (JDTModule moduleInReferencingProject : module.getModuleInReferencingProjects()) {
+                    moduleInReferencingProject.addedOriginalUnit(getRelativePath());
+                }
+                
+            } catch(ModelResolutionException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

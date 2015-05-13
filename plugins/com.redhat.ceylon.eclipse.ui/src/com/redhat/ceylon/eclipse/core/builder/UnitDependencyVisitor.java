@@ -90,7 +90,8 @@ public class UnitDependencyVisitor extends Visitor {
                             }
                         }
                         else if (declarationUnit instanceof ExternalSourceFile) {
-                            // Don't manage them : they cannot change ... Well they might if we were using these dependencies to manage module 
+                            // Don't manage them : they cannot change ... 
+                            // TODO : Well they might if we were using these dependencies to manage module 
                             // removal. But since module removal triggers a classpath container update and so a full build, it's not necessary.
                             // Might change in the future 
                         }

@@ -415,7 +415,7 @@ public class JDTModule extends LazyModule {
     }
 
     @Override
-    protected JDTModelLoader getModelLoader() {
+    public JDTModelLoader getModelLoader() {
         return moduleManager.getModelLoader();
     }
 
