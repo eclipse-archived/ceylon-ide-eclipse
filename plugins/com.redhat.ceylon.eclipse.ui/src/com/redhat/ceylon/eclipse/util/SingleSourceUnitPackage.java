@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.typechecker.model.Annotation;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
@@ -13,6 +14,7 @@ import com.redhat.ceylon.model.typechecker.model.ProducedType;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 
 public class SingleSourceUnitPackage extends com.redhat.ceylon.model.typechecker.model.Package {
@@ -38,6 +40,16 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.model.typechecker
             return true;
         }
         Unit unit = modelDeclaration.getUnit();
+        if (modelDeclaration.isNative()) {
+            List<Declaration> overloads = AbstractModelLoader.getOverloads(modelDeclaration);
+            if (overloads != null) {
+                for (Declaration overload : overloads) {
+                    if (mustSearchInSourceFile(overload.getUnit())) {
+                        return true;
+                    }
+                }
+            }
+        }
         return mustSearchInSourceFile(unit);
     }
 
