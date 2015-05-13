@@ -26,6 +26,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 
+import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
@@ -37,6 +38,7 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Util;
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -44,7 +46,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpressi
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 
 public class Nodes {
 
@@ -525,6 +531,44 @@ public class Nodes {
             return null;
         }
         else {
+            if (model instanceof Declaration) {
+                Declaration decl = (Declaration) model;
+                Unit unit = decl.getUnit();
+                if (unit != null 
+                        && ! unit.getFilename().toLowerCase().endsWith(".ceylon")) {
+                    boolean foundTheCeylonDeclaration = false;
+                    if (unit instanceof CeylonBinaryUnit) {
+                        JDTModule module = ((JDTModule)unit.getPackage().getModule());
+                        ExternalPhasedUnit externalPhasedUnit = module.getPhasedUnitFromRelativePath(
+                                module.getCeylonDeclarationFile(
+                                        module.toSourceUnitRelativePath(unit.getRelativePath())));
+                        ExternalSourceFile sourceFile = externalPhasedUnit.getUnit();
+                        if (sourceFile != null) {
+                            for (Declaration sourceDecl : sourceFile.getDeclarations()) {
+                                if (sourceDecl.getQualifiedNameString().equals(decl.getQualifiedNameString())) {
+                                    model = sourceDecl;
+                                    foundTheCeylonDeclaration = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (! foundTheCeylonDeclaration) {
+                        if (decl.isNative() 
+                                && unit != null 
+                                && ! unit.getFilename().toLowerCase().endsWith(".ceylon")) {
+                            List<Declaration> overloads = AbstractModelLoader.getOverloads((Declaration)model);
+                            for (Declaration overload : overloads) {
+                                if (Backend.None.nativeAnnotation.equals(overload.getNative())) {
+                                    model = overload;
+                                    foundTheCeylonDeclaration = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             FindReferencedNodeVisitor visitor = 
                     new FindReferencedNodeVisitor(model);
             rootNode.visit(visitor);
