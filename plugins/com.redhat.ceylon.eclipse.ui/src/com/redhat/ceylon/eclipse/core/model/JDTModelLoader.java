@@ -93,6 +93,7 @@ import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.common.JVMModuleUtil;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.loader.AnnotationLoader;
@@ -1406,26 +1407,9 @@ public class JDTModelLoader extends AbstractModelLoader {
                         @Override
                         public void loadFromSource(Tree.Declaration decl) {
                             if (decl.getIdentifier()!=null) {
-                                List<Annotation> annotations = new LinkedList<>();
-                                for (Tree.Annotation annotation : decl.getAnnotationList().getAnnotations()) {
-                                    String text = annotation.getPrimary().getToken().getText();
-                                    if (text != null && text.equals("native")) {
-                                        Tree.PositionalArgumentList pal = annotation.getPositionalArgumentList();
-                                        if (pal != null) {
-                                            List<PositionalArgument> pas = pal.getPositionalArguments();
-                                            boolean jvmBackend = false;
-                                            if (pas != null && !pas.isEmpty()) {
-                                                PositionalArgument backendArg = pas.get(0);
-                                                String argText = backendArg.getEndToken().getText();
-                                                if ("\"jvm\"".equals(argText)) {
-                                                    jvmBackend = true;
-                                                }
-                                            }
-                                            if (!jvmBackend) {
-                                                return;
-                                            }
-                                        }
-                                    }
+                                if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isNativeFor(
+                                        decl, Backend.Java.nativeAnnotation)) {
+                                    return;
                                 }
                                 String fqn = getToplevelQualifiedName(pkgName, decl.getIdentifier().getText());
                                 if (! sourceDeclarations.containsKey(fqn)) {
@@ -1601,5 +1585,28 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected void setAnnotationConstructor(LazyMethod arg0, MethodMirror arg1) {
         annotationLoader.setAnnotationConstructor(arg0, arg1);
+    }
+
+    protected boolean isNativeFor(Tree.Declaration decl,
+            String searchedBackend) {
+        boolean isNativeForSearchedBackend = false;
+        for (Tree.Annotation annotation : decl.getAnnotationList().getAnnotations()) {
+            String text = annotation.getPrimary().getToken().getText();
+            if (text != null && text.equals("native")) {
+                Tree.PositionalArgumentList pal = annotation.getPositionalArgumentList();
+                if (pal != null) {
+                    List<PositionalArgument> pas = pal.getPositionalArguments();
+                    if (pas != null && !pas.isEmpty()) {
+                        PositionalArgument backendArg = pas.get(0);
+                        String argText = backendArg.getEndToken().getText();
+                        if (("\""+ searchedBackend + "\"").equals(argText)) {
+                            isNativeForSearchedBackend = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return isNativeForSearchedBackend;
     }
 }
