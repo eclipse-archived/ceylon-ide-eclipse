@@ -106,6 +106,8 @@ import com.redhat.ceylon.cmr.api.Overrides;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
+import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.BackendSupport;
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.log.Logger;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
@@ -176,6 +178,7 @@ import com.redhat.ceylon.model.loader.mirror.ClassMirror;
 import com.redhat.ceylon.model.typechecker.context.ProducedTypeCache;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -2243,16 +2246,26 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         if (module instanceof JDTModule) {
                             JDTModule jdtModule = (JDTModule) module;
                             if (jdtModule.isCeylonArchive()) {
-                                File artifact = getProjectRepositoryManager(project).getArtifact(
-                                        new ArtifactContext(
-                                                jdtModule.getNameAsString(), 
-                                                jdtModule.getVersion(), 
-                                                ArtifactContext.JS));
-                                if (artifact == null) {
-                                    moduleSourceMapper.attachErrorToOriginalModuleImport(jdtModule, 
-                                            "module not available for JavaScript platform: '" + 
-                                                    module.getNameAsString() + "' \"" + 
-                                                    module.getVersion() + "\"");
+                                List<ModuleImport> importedModuleImports = new ArrayList<>();
+                                for(ModuleImport moduleImport : moduleSourceMapper.retrieveModuleImports(jdtModule)) {
+                                    if (! Backend.Java.nativeAnnotation.equals(moduleImport.getNative())) {
+                                        importedModuleImports.add(moduleImport);
+                                    }
+                                }
+                                if (! importedModuleImports.isEmpty()) {
+                                    File artifact = getProjectRepositoryManager(project).getArtifact(
+                                            new ArtifactContext(
+                                                    jdtModule.getNameAsString(), 
+                                                    jdtModule.getVersion(), 
+                                                    ArtifactContext.JS));
+                                    if (artifact == null) {
+                                        for (ModuleImport importInError : importedModuleImports) {
+                                            moduleSourceMapper.attachErrorToModuleImport(importInError, 
+                                                    "module not available for JavaScript platform: '" + 
+                                                            module.getNameAsString() + "' \"" + 
+                                                            module.getVersion() + "\"");
+                                        }
+                                    }
                                 }
                             }
                         }
