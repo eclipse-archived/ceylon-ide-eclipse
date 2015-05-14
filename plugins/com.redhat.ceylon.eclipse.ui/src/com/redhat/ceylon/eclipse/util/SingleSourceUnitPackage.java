@@ -40,16 +40,6 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.model.typechecker
             return true;
         }
         Unit unit = modelDeclaration.getUnit();
-        if (modelDeclaration.isNative()) {
-            List<Declaration> overloads = AbstractModelLoader.getOverloads(modelDeclaration);
-            if (overloads != null) {
-                for (Declaration overload : overloads) {
-                    if (mustSearchInSourceFile(overload.getUnit())) {
-                        return true;
-                    }
-                }
-            }
-        }
         return mustSearchInSourceFile(unit);
     }
 

@@ -1407,6 +1407,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                         @Override
                         public void loadFromSource(Tree.Declaration decl) {
                             if (decl.getIdentifier()!=null) {
+
                                 if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isNativeFor(
                                         decl, Backend.Java.nativeAnnotation)) {
                                     return;
