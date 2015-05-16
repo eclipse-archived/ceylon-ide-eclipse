@@ -276,14 +276,17 @@ public class LinkedModeCompletionProposal
             return new ICompletionProposal[0];
         }
         TypeDeclaration td = type.getDeclaration();
-        List<TypeDeclaration> supertypes = isTypeUnknown(type) ?
-                Collections.<TypeDeclaration>emptyList() :
-                td.getSupertypeDeclarations();
+        List<TypeDeclaration> supertypes = 
+                isTypeUnknown(type) || 
+                type.isTypeConstructor() ?
+                    Collections.<TypeDeclaration>emptyList() :
+                    td.getSupertypeDeclarations();
 
         int size = supertypes.size();
         if (includeValue) size++;
-        if (td instanceof UnionType || 
-            td instanceof IntersectionType) {
+        if (type.isTypeConstructor() ||
+                td instanceof UnionType || 
+                td instanceof IntersectionType) {
             size++;
         }
         
@@ -301,8 +304,9 @@ public class LinkedModeCompletionProposal
                 }
             };
         }
-        if (td instanceof UnionType || 
-            td instanceof IntersectionType) {
+        if (type.isTypeConstructor() ||
+                td instanceof UnionType || 
+                td instanceof IntersectionType) {
             typeProposals[i++] = 
                     new LinkedModeCompletionProposal(type, unit, offset, 0) {
                 @Override

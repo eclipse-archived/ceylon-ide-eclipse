@@ -1,11 +1,11 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
+import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,12 +26,13 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.IntersectionType;
 import com.redhat.ceylon.model.typechecker.model.ProducedType;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.UnionType;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class TypeProposal implements ICompletionProposal, 
         ICompletionProposalExtension2 {
@@ -149,14 +150,17 @@ class TypeProposal implements ICompletionProposal,
             Tree.CompilationUnit rootNode, String kind) {
         
         TypeDeclaration td = infType.getDeclaration();
-        List<TypeDeclaration> supertypes = isTypeUnknown(infType) ?
-                Collections.<TypeDeclaration>emptyList() :
-                td.getSupertypeDeclarations();
+        List<TypeDeclaration> supertypes = 
+                isTypeUnknown(infType) || 
+                infType.isTypeConstructor() ?
+                    Collections.<TypeDeclaration>emptyList() :
+                    td.getSupertypeDeclarations();
         
         int size = supertypes.size();
         if (kind!=null) size++;
-        if (td instanceof UnionType || 
-            td instanceof IntersectionType) {
+        if (infType.isTypeConstructor() ||
+                td instanceof UnionType || 
+                td instanceof IntersectionType) {
             size++;
         }
         
@@ -167,12 +171,14 @@ class TypeProposal implements ICompletionProposal,
             proposals[i++] =
                     new TypeProposal(offset, null, kind, kind, rootNode);
         }
-        if (td instanceof UnionType || 
+        Unit unit = rootNode.getUnit();
+        if (infType.isTypeConstructor() ||
+                td instanceof UnionType || 
                 td instanceof IntersectionType) {
             proposals[i++] = 
                     new TypeProposal(offset, infType, 
-                            infType.getProducedTypeNameInSource(rootNode.getUnit()), 
-                            infType.getProducedTypeName(rootNode.getUnit()), 
+                            infType.getProducedTypeNameInSource(unit), 
+                            infType.getProducedTypeName(unit), 
                             rootNode);
         }
         for (int j=supertypes.size()-1; j>=0; j--) {
@@ -180,8 +186,8 @@ class TypeProposal implements ICompletionProposal,
                     infType.getSupertype(supertypes.get(j));
             proposals[i++] = 
                     new TypeProposal(offset, type, 
-                            type.getProducedTypeNameInSource(rootNode.getUnit()), 
-                            type.getProducedTypeName(rootNode.getUnit()), 
+                            type.getProducedTypeNameInSource(unit), 
+                            type.getProducedTypeName(unit), 
                             rootNode);
         }
         return new ProposalPosition(document, offset, length, 
