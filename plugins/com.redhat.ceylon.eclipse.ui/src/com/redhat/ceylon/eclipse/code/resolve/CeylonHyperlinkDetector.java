@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -11,9 +12,13 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Overloadable;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
@@ -47,7 +52,14 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public String getHyperlinkText() {
-            return "Ceylon Declaration";
+            Backend supportedBackend = supportedBackend();
+            return "Ceylon Declaration" + 
+                    (supportedBackend == null ? 
+                            "" : 
+                            " - " +
+                            (Backend.None.equals(supportedBackend) ? 
+                                    "native header" :
+                                        supportedBackend.name() + " backend implementation"));
         }
 
         @Override
@@ -78,7 +90,34 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                     return null;
                 }
                 else {
-                    Node r = getReferencedNode(node);
+                    Referenceable referenceable = getReferencedModel(node);
+                    if (referenceable instanceof Declaration) {
+                        Declaration d = (Declaration) referenceable;
+                        if (d.isNative() && (d instanceof Overloadable)) {
+                            if (supportedBackend() == null) {
+                                return null;
+                            }
+                            Overloadable overloadable = (Overloadable) d;
+                            Declaration selectedOverload = null;
+                            for (Declaration overload : overloadable.getOverloads()) {
+                                Backend overloadBackend = Backend.fromAnnotation(overload.getNative());
+                                if (overloadBackend != null 
+                                        && overloadBackend.equals(supportedBackend())) {
+                                    selectedOverload = overload;
+                                    break;
+                                }
+                            }
+                            if (selectedOverload == null) {
+                                return null;
+                            }
+                            referenceable = selectedOverload;
+                        } else {
+                            if (supportedBackend() != null) {
+                                return null;
+                            }
+                        }
+                    }
+                    Node r = getReferencedNode(referenceable);
                     if (r==null) {
                         return null;
                     }
@@ -88,5 +127,9 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                 }
             }
         }
+    }
+
+    public Backend supportedBackend() {
+        return null;
     }
 }
