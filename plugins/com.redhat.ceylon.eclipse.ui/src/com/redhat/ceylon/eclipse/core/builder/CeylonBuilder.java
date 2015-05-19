@@ -107,7 +107,6 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.common.BackendSupport;
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.log.Logger;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
@@ -2485,19 +2484,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         List<File> forJavaBackend = new ArrayList<File>();
         List<File> forJavascriptBackend = new ArrayList<File>();
-        List<File> resources = new ArrayList<File>();
+        List<File> javaResources = new ArrayList<File>();
+        List<File> javaScriptResources = new ArrayList<File>();
         for (IFile file : filesToCompile) {
-        	if (isInSourceFolder(file)) {
-                if(isCeylon(file)) {
-                    forJavaBackend.add(file.getLocation().toFile());
-                }
-                if(isJava(file)) {
-                    forJavaBackend.add(file.getLocation().toFile());
+    	    Module module = getModule(file);
+    	    String nativeBakend = null; 
+    	    if (module != null) {
+    	        nativeBakend = module.getNative();
+    	    }
+    	    if (nativeBakend == null 
+    	            || nativeBakend.equals(Backend.Java.nativeAnnotation)) {
+                if (isInSourceFolder(file)) {
+                    if(isCeylon(file) || isJava(file)) {
+                        forJavaBackend.add(file.getLocation().toFile());
+                    }
+        	    }
+                if (isResourceFile(file)) {
+                    javaResources.add(file.getLocation().toFile());
                 }
         	}
-            if (isResourceFile(file)) {
-                resources.add(file.getLocation().toFile());
-            }
         }
 
         // For the moment the JSCompiler doesn't support partial compilation of a module
@@ -2506,30 +2511,41 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         // in the loop above
         if (compileToJs(project)) {
             for (IFile file : getProjectFiles(project)) {
-            	if (isInSourceFolder(file)) {
-                    if(isCeylon(file) || isJavascript(file)) {
-                        forJavascriptBackend.add(file.getLocation().toFile());
+                Module module = getModule(file);
+                String nativeBakend = null; 
+                if (module != null) {
+                    nativeBakend = module.getNative();
+                }
+                if (nativeBakend == null 
+                        || nativeBakend.equals(Backend.JavaScript.nativeAnnotation)) {
+                    if (isInSourceFolder(file)) {
+                        if(isCeylon(file) || isJavascript(file)) {
+                            forJavascriptBackend.add(file.getLocation().toFile());
+                        }
                     }
-            	}
+                    if (isResourceFile(file)) {
+                        javaScriptResources.add(file.getLocation().toFile());
+                    }
+                }
             }
         }
 
         PrintWriter printWriter = new PrintWriter(verbose==null ? System.out : getConsoleStream(), true);
         boolean success = true;
         //Compile JS first
-        if ((forJavascriptBackend.size() + resources.size() > 0) && compileToJs(project)) {
+        if ((forJavascriptBackend.size() + javaScriptResources.size() > 0) && compileToJs(project)) {
             success = compileJs(project, typeChecker, js_srcdir, js_rsrcdir, js_repos,
-                    js_verbose, js_outRepo, printWriter, ! compileToJava(project),
-                    forJavascriptBackend, resources);
+                    js_verbose, js_outRepo, printWriter, true,
+                    forJavascriptBackend, javaScriptResources);
         }
-        if ((forJavaBackend.size() + resources.size() > 0) && compileToJava(project)) {
+        if ((forJavaBackend.size() + javaResources.size() > 0) && compileToJava(project)) {
             // For Java don't stop compiling when encountering errors
             options.add("-continue");
             // always add the java files, otherwise ceylon code won't see them 
             // and they won't end up in the archives (src/car)
             success = success & compile(project, javaProject, options,
             		unitsTypecheckedIncrementally,
-                    forJavaBackend, resources, typeChecker, printWriter, monitor);
+                    forJavaBackend, javaResources, typeChecker, printWriter, monitor);
         }
         
         if (! compileToJs(project) &&
@@ -3861,6 +3877,17 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 return asSourceModule(moduleFolder);
             }
         } catch (JavaModelException e) {
+        }
+        return null;
+    }
+
+    public static JDTModule getModule(IFile file) {
+        Package p = getPackage(file);
+        if (p != null) {
+            Module m = p.getModule();
+            if (m instanceof JDTModule) {
+                return (JDTModule) m;
+            }
         }
         return null;
     }
