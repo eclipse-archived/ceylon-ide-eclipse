@@ -19,6 +19,7 @@ import static org.eclipse.jdt.core.search.SearchPattern.createOrPattern;
 import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 import static org.eclipse.jdt.internal.core.util.Util.getUnresolvedJavaElement;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMemberValuePair;
@@ -50,7 +52,9 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.core.JavaElement;
 import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
+import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase.Prefix;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
@@ -60,12 +64,17 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Method;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
+import com.redhat.ceylon.model.typechecker.model.Overloadable;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Specification;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnResolvedGeneratedType;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
@@ -692,6 +701,26 @@ public class JavaSearch {
             return null;
         }
         IMember declarationElement = toCeylonDeclarationElement((IMember)javaElement);
+        Declaration javaSourceTypeDeclaration = javaSourceElementToTypeDeclaration(
+                javaElement, 
+                javaElement.getJavaProject().getProject());
+        if (javaSourceTypeDeclaration.isNative() && javaSourceTypeDeclaration instanceof Overloadable) {
+            for (Declaration overload : ((Overloadable) javaSourceTypeDeclaration).getOverloads()) {
+                if (Backend.None.nativeAnnotation.equals(overload.getNative())) {
+                    if (elementEqualsDeclaration(declarationElement, overload)) {
+                        return overload;
+                    }
+                    Unit overloadUnit = overload.getUnit();
+                    if (overloadUnit instanceof CeylonUnit) {
+                        PhasedUnit phasedUnit = ((CeylonUnit) overloadUnit).getPhasedUnit();
+                        if (phasedUnit != null) {
+                            phasedUnits = Arrays.asList(phasedUnit);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         for (PhasedUnit pu: phasedUnits) {
             for (Declaration declaration: pu.getDeclarations()) {
                 if (elementEqualsDeclaration(declarationElement, declaration)) {
@@ -748,17 +777,57 @@ public class JavaSearch {
     public static boolean isCeylonDeclaration(IJavaElement javaElement) {
         IProject project = 
                 javaElement.getJavaProject().getProject();
+        IJavaModelAware unit = CeylonBuilder.getUnit(javaElement);
         IPath path = javaElement.getPath();
         if (path!=null) {
-            String extension = path.getFileExtension();
-            if (extension!=null && extension.equals("car") ||
+            if (unit instanceof CeylonBinaryUnit ||
                     (isExplodeModulesEnabled(project)
                             && getCeylonClassesOutputFolder(project)
                                     .getFullPath().isPrefixOf(path))) {
                 return true;
             }
+            
+            Declaration decl = javaSourceElementToTypeDeclaration(javaElement, project);
+            if (decl != null) {
+                return true;
+            }
         }
         return false;
+    }
+
+    private static Declaration javaSourceElementToTypeDeclaration(
+            IJavaElement javaElement, IProject project) {
+        if (javaElement instanceof IMember) {
+            IMember member = (IMember) javaElement;
+            if (member.getTypeRoot() instanceof ICompilationUnit) {
+                IType javaType = null;
+                if (member instanceof IType) {
+                    javaType = (IType) member;
+                } else {
+                    IJavaElement parent = member.getParent();
+                    while (parent instanceof IMember) {
+                        if (parent instanceof IType) {
+                            javaType = (IType) parent;
+                            break;
+                        }
+                        parent = parent.getParent();
+                    }
+                }
+                if (javaType != null) {
+                    JDTModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(project);
+                    if (modelLoader != null) {
+                        IJavaModelAware javaUnit = CeylonBuilder.getUnit(javaType);
+                        if (javaUnit != null) {
+                            JDTModule module = javaUnit.getModule();
+                            if (module != null) {
+                                return modelLoader.convertToDeclaration(module, javaType.getFullyQualifiedName('.'), DeclarationType.TYPE);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     
