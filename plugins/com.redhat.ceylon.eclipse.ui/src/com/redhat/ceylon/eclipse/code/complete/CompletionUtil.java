@@ -160,7 +160,7 @@ public class CompletionUtil {
         boolean ok = true;
         for (ProducedType ub: upperBounds) {
             if (!t.isSubtypeOf(ub) &&
-                    !(ub.containsTypeParameters() &&
+                    !(ub.involvesTypeParameters() &&
                             t.getDeclaration().inherits(ub.getDeclaration()))) {
                 ok = false;
                 break;
