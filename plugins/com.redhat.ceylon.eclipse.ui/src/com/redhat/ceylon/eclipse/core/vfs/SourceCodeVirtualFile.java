@@ -46,6 +46,11 @@ public class SourceCodeVirtualFile implements VirtualFile {
         return path;
     }
     
+    @Override
+    public int compareTo(VirtualFile other) {
+        return getPath().compareTo(other.getPath());
+    }
+
     public InputStream getInputStream() {
         return stream;
     }

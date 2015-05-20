@@ -63,6 +63,11 @@ public abstract class ResourceVirtualFile implements VirtualFile {
     public String getPath() {
         return path.toString();
     }
+    
+    @Override
+    public int compareTo(VirtualFile other) {
+        return getPath().compareTo(other.getPath());
+    }
 
     /**
      * @return the resource

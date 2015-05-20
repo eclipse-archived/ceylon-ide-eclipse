@@ -25,6 +25,11 @@ public class TemporaryFile implements VirtualFile {
     }
     
     @Override
+    public int compareTo(VirtualFile other) {
+        return getPath().compareTo(other.getPath());
+    }
+
+    @Override
     public String getName() {
         return "";
     }
