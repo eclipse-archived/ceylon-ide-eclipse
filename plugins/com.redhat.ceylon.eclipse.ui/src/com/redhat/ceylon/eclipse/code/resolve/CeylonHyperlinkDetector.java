@@ -6,6 +6,8 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 
+import java.util.List;
+
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -93,23 +95,25 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                     Referenceable referenceable = getReferencedModel(node);
                     if (referenceable instanceof Declaration) {
                         Declaration d = (Declaration) referenceable;
+                        Declaration selectedOverload = null;
                         if (d.isNative() && (d instanceof Overloadable)) {
-                            if (supportedBackend() == null) {
-                                return null;
-                            }
-                            Overloadable overloadable = (Overloadable) d;
-                            Declaration selectedOverload = null;
-                            for (Declaration overload : overloadable.getOverloads()) {
-                                Backend overloadBackend = Backend.fromAnnotation(overload.getNative());
-                                if (overloadBackend != null 
-                                        && overloadBackend.equals(supportedBackend())) {
-                                    selectedOverload = overload;
-                                    break;
+                                Overloadable overloadable = (Overloadable) d;
+                                List<Declaration> overloads = overloadable.getOverloads();
+                                if (overloads != null) {
+                                    if (supportedBackend() == null) {
+                                        return null;
+                                    }
+                                    for (Declaration overload : overloads) {
+                                        Backend overloadBackend = Backend.fromAnnotation(overload.getNative());
+                                        if (overloadBackend != null 
+                                                && overloadBackend.equals(supportedBackend())) {
+                                            selectedOverload = overload;
+                                            break;
+                                        }
+                                    }
                                 }
-                            }
-                            if (selectedOverload == null) {
-                                return null;
-                            }
+                        }
+                        if (selectedOverload != null) {
                             referenceable = selectedOverload;
                         } else {
                             if (supportedBackend() != null) {

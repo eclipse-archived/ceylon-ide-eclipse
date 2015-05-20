@@ -705,17 +705,20 @@ public class JavaSearch {
                 javaElement, 
                 javaElement.getJavaProject().getProject());
         if (javaSourceTypeDeclaration.isNative() && javaSourceTypeDeclaration instanceof Overloadable) {
-            for (Declaration overload : ((Overloadable) javaSourceTypeDeclaration).getOverloads()) {
-                if (Backend.None.nativeAnnotation.equals(overload.getNative())) {
-                    if (elementEqualsDeclaration(declarationElement, overload)) {
-                        return overload;
-                    }
-                    Unit overloadUnit = overload.getUnit();
-                    if (overloadUnit instanceof CeylonUnit) {
-                        PhasedUnit phasedUnit = ((CeylonUnit) overloadUnit).getPhasedUnit();
-                        if (phasedUnit != null) {
-                            phasedUnits = Arrays.asList(phasedUnit);
-                            break;
+            List<Declaration> overloads = ((Overloadable)javaSourceTypeDeclaration).getOverloads();
+            if (overloads != null) {
+                for (Declaration overload : overloads) {
+                    if (Backend.None.nativeAnnotation.equals(overload.getNative())) {
+                        if (elementEqualsDeclaration(declarationElement, overload)) {
+                            return overload;
+                        }
+                        Unit overloadUnit = overload.getUnit();
+                        if (overloadUnit instanceof CeylonUnit) {
+                            PhasedUnit phasedUnit = ((CeylonUnit) overloadUnit).getPhasedUnit();
+                            if (phasedUnit != null) {
+                                phasedUnits = Arrays.asList(phasedUnit);
+                                break;
+                            }
                         }
                     }
                 }

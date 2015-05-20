@@ -90,10 +90,13 @@ public class EditedPhasedUnit extends IdePhasedUnit {
             
             for (Declaration modelDecl : projectSourceFile.getPackage().getMembers()) {
                 if (modelDecl.isNative() && modelDecl instanceof Overloadable) {
-                    for (Declaration anyOverload : ((Overloadable)modelDecl).getOverloads()) {
-                        if (anyOverload.equals(currentDeclaration) 
-                                && projectSourceFile.equals(anyOverload.getUnit())) {
-                            return overload == anyOverload;
+                    List<Declaration> overloads = ((Overloadable)modelDecl).getOverloads();
+                    if (overloads != null) {
+                        for (Declaration anyOverload : overloads) {
+                            if (anyOverload.equals(currentDeclaration) 
+                                    && projectSourceFile.equals(anyOverload.getUnit())) {
+                                return overload == anyOverload;
+                            }
                         }
                     }
                 }
