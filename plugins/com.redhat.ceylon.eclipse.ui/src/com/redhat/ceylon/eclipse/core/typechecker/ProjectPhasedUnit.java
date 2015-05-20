@@ -91,39 +91,6 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         if (oldPhasedUnit != null) {
             ProjectSourceFile oldSourceFile = (ProjectSourceFile) oldPhasedUnit.getUnit();
             getUnit().getDependentsOf().addAll(oldSourceFile.getDependentsOf());
-            Declaration declarationToClean = null;
-            for (Declaration packageDeclaration : oldSourceFile.getPackage().getMembers()) {
-                if (packageDeclaration.isNative()) {
-                    List<Declaration> packageDeclarationOverloads = AbstractModelLoader.getOverloads(packageDeclaration);
-                    for (Declaration packageDeclarationOverload : packageDeclarationOverloads) {
-                        if (packageDeclarationOverload.getUnit() == oldSourceFile) {
-                            declarationToClean = packageDeclarationOverload;
-                            break;
-                        }
-                    }
-                    if (declarationToClean != null) {
-                        break;
-                    }
-                }
-            }
-            if (declarationToClean != null) {
-                List<Declaration> overloadsToClean = AbstractModelLoader.getOverloads(declarationToClean);
-                for (Declaration overloadToClean : overloadsToClean) {
-                    if (overloadToClean == declarationToClean) {
-                        continue;
-                    }
-                    List<Declaration> overloadOverloads = AbstractModelLoader.getOverloads(overloadToClean);
-                    
-                    List<Declaration> newOverloadOverloads = new ArrayList<>(3);
-                    for (Declaration overloadOverload : overloadOverloads) {
-                        if (overloadOverload == declarationToClean) {
-                            continue;
-                        }
-                        newOverloadOverloads.add(overloadOverload);
-                    }
-                    AbstractModelLoader.setOverloads(overloadToClean, newOverloadOverloads);
-                }
-            }
 
             Iterator<EditedPhasedUnit> workingCopies = oldPhasedUnit.getWorkingCopies(); 
             while (workingCopies.hasNext()) {
@@ -153,6 +120,37 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         if (typechecker == null) {
             return;
         }
+
+        List<Declaration> declarationsToClean = new ArrayList<>();
+        for (Declaration packageDeclaration : getPackage().getMembers()) {
+            if (packageDeclaration.isNative()) {
+                List<Declaration> packageDeclarationOverloads = AbstractModelLoader.getOverloads(packageDeclaration);
+                for (Declaration packageDeclarationOverload : packageDeclarationOverloads) {
+                    if (packageDeclarationOverload.getUnit() == getUnit()) {
+                        declarationsToClean.add(packageDeclarationOverload);
+                    }
+                }
+            }
+        }
+        for (Declaration declarationToClean : declarationsToClean) {
+            List<Declaration> overloadsToClean = AbstractModelLoader.getOverloads(declarationToClean);
+            for (Declaration overloadToClean : overloadsToClean) {
+                if (overloadToClean == declarationToClean) {
+                    continue;
+                }
+                List<Declaration> overloadOverloads = AbstractModelLoader.getOverloads(overloadToClean);
+                
+                List<Declaration> newOverloadOverloads = new ArrayList<>(3);
+                for (Declaration overloadOverload : overloadOverloads) {
+                    if (overloadOverload == declarationToClean) {
+                        continue;
+                    }
+                    newOverloadOverloads.add(overloadOverload);
+                }
+                AbstractModelLoader.setOverloads(overloadToClean, newOverloadOverloads);
+            }
+        }
+
         PhasedUnits phasedUnits = typechecker.getPhasedUnits();
         phasedUnits.removePhasedUnitForRelativePath(getPathRelativeToSrcDir()); // remove also the ProjectSourceFile (unit) from the Package
         JDTModule module = (JDTModule) getPackage().getModule();
