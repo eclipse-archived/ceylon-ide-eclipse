@@ -129,13 +129,16 @@ final class CompileErrorReporter implements
                         .getFileForLocation(new Path(source.getName()));
             }
             if(file != null) {
+                long diagnosticLineNumber = diagnostic.getLineNumber();
                 if (CeylonBuilder.isCeylon(file)){
                     int backendErrorSeverity = kindToSeverity(diagnostic.getKind());
                     try {
                         for (IMarker m: file.findMarkers(PROBLEM_MARKER_ID, true, DEPTH_ZERO)) {
-                            int existingSeverity = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
-                            if (existingSeverity >= backendErrorSeverity) {
-                                return;
+                            if (m.getAttribute(IMarker.LINE_NUMBER, -1) == diagnosticLineNumber) {
+                                int existingSeverity = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
+                                if (existingSeverity >= backendErrorSeverity) {
+                                    return;
+                                }
                             }
                         }
                     } 
@@ -147,9 +150,11 @@ final class CompileErrorReporter implements
                 if (CeylonBuilder.isJava(file)){
                     try {
                         for (IMarker m: file.findMarkers(JAVA_MODEL_PROBLEM_MARKER, false, DEPTH_ZERO)) {
-                            int sev = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
-                            if (sev==IMarker.SEVERITY_ERROR) {
-                                return;
+                            if (m.getAttribute(IMarker.LINE_NUMBER, -1) == diagnosticLineNumber) {
+                                int sev = ((Integer) m.getAttribute(IMarker.SEVERITY)).intValue();
+                                if (sev==IMarker.SEVERITY_ERROR) {
+                                    return;
+                                }
                             }
                         }
                     } 
@@ -195,10 +200,12 @@ final class CompileErrorReporter implements
             if (line>=0) {
                 //Javac doesn't have line number info for certain errors
                 marker.setAttribute(IMarker.LINE_NUMBER, (int) line);
+                long startPosition = diagnostic.getStartPosition() + 1;
+                long endPosition = diagnostic.getEndPosition() + 2;
                 marker.setAttribute(IMarker.CHAR_START, 
-                        (int) diagnostic.getStartPosition());
+                        (int) startPosition);
                 marker.setAttribute(IMarker.CHAR_END, 
-                        (int) diagnostic.getEndPosition());
+                        (int) endPosition);
             }
             if (markerId.equals(JAVA_MODEL_PROBLEM_MARKER)) {
                 marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
