@@ -71,6 +71,7 @@ PhasedUnit? createPhasedUnit(String contents, String path) {
         shared actual JList<VirtualFile> children => emptyList<VirtualFile>();
         shared actual Boolean folder => false;
         shared actual InputStream inputStream => ByteArrayInputStream(javaString(contents + " ").bytes);
+        shared actual Integer compareTo(VirtualFile t) => 0;
     }
     
     class TestDirectory(String path) extends TestVirtualFile(path) {
@@ -95,6 +96,9 @@ PhasedUnit? createPhasedUnit(String contents, String path) {
                 return file;
             }
         }
+        
+        shared actual Integer compareTo(VirtualFile? t) => 0;
+        
     }
 
     
