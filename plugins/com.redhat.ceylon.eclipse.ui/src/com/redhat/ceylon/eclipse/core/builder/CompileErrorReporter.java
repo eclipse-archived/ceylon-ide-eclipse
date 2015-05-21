@@ -200,8 +200,8 @@ final class CompileErrorReporter implements
             if (line>=0) {
                 //Javac doesn't have line number info for certain errors
                 marker.setAttribute(IMarker.LINE_NUMBER, (int) line);
-                long startPosition = diagnostic.getStartPosition() + 1;
-                long endPosition = diagnostic.getEndPosition() + 2;
+                long startPosition = diagnostic.getStartPosition();
+                long endPosition = diagnostic.getEndPosition() + 1;
                 marker.setAttribute(IMarker.CHAR_START, 
                         (int) startPosition);
                 marker.setAttribute(IMarker.CHAR_END, 
