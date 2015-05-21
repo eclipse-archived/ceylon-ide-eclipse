@@ -22,7 +22,8 @@ import com.redhat.ceylon.model.typechecker.util {
     ProducedTypeNamePrinter
 }
 import com.redhat.ceylon.compiler.typechecker.context {
-    PhasedUnit
+    PhasedUnit,
+    TypecheckerUnit
 }
 import com.redhat.ceylon.model.typechecker.model {
     ModelDeclaration=Declaration,
@@ -277,6 +278,16 @@ shared class DeltaBuilderFactory(
             => empty;
     }
 
+    function sameBackend([Ast.AnnotationList, TypecheckerUnit] oldNode, [Ast.AnnotationList, TypecheckerUnit] newNode)
+            => let (String? oldNative = Util.getNativeBackend(*oldNode),
+                    String? newNative = Util.getNativeBackend(*newNode))
+                    if (exists oldNative, exists newNative)
+                    then oldNative == newNative
+                    else
+                        if (oldNative is Null && newNative is Null)
+                        then true
+                        else false;
+
     class ModuleDescriptorDeltaBuilder(Ast.ModuleDescriptor oldNode, Ast.ModuleDescriptor? newNode, NodeComparisonListener? nodeComparisonListener)
             extends DeltaBuilder(oldNode, newNode) {
         variable value changes = ArrayList<ModuleDescriptorDelta.PossibleChange>();
@@ -328,11 +339,13 @@ shared class DeltaBuilderFactory(
 
         shared actual void calculateLocalChanges() {
             assert(exists newNode);
-            if (formatPath(oldNode.importPath.identifiers) != formatPath(newNode.importPath.identifiers)) {
-                changes.add(structuralChange);
-                return;
-            }
-            if (oldNode.version.text != newNode.version.text) {
+            if (any {
+                oldNode.version.text != newNode.version.text,
+                formatPath(oldNode.importPath.identifiers) != formatPath(newNode.importPath.identifiers),
+                !sameBackend(
+                    [oldNode.annotationList, oldNode.unit],
+                    [newNode.annotationList, newNode.unit])
+            }) {
                 changes.add(structuralChange);
                 return;
             }
@@ -388,7 +401,14 @@ shared class DeltaBuilderFactory(
 
             function isOptional(Ast.ImportModule descriptor)
                     => Util.hasAnnotation(descriptor.annotationList, "optional", descriptor.unit);
-            if (isOptional(oldNode) != isOptional(newNode)) {
+
+
+            if (any{
+                    isOptional(oldNode) != isOptional(newNode),
+                    !sameBackend(
+                        [oldNode.annotationList, oldNode.unit],
+                        [newNode.annotationList, newNode.unit])
+                }) {
                 change = structuralChange;
                 return;
             }
