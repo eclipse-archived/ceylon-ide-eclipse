@@ -218,7 +218,8 @@ public class CodeCompletions {
             Unit unit, String indent, boolean containsNewline, 
             StringBuilder result) {
         if (d instanceof Functional) {
-            for (TypeParameter tp: ((Functional) d).getTypeParameters()) {
+            Functional fun = (Functional) d;
+            for (TypeParameter tp: fun.getTypeParameters()) {
                 List<ProducedType> sts = tp.getSatisfiedTypes();
                 if (!sts.isEmpty()) {
                     result.append(extraIndent(extraIndent(indent, containsNewline), 
@@ -233,8 +234,13 @@ public class CodeCompletions {
                         else {
                             result.append("&");
                         }
-                        result.append(st.substitute(pr.getTypeArguments())
-                                .getProducedTypeNameInSource(unit));
+                        if (pr instanceof ProducedType) {
+                            st = st.substitute((ProducedType) pr);
+                        }
+                        else {
+                            st = st.substitute((ProducedTypedReference) pr);
+                        }
+                        result.append(st.getProducedTypeNameInSource(unit));
                     }
                 }
             }

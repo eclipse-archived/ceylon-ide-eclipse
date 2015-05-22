@@ -363,7 +363,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                     for (ProducedType stTypeParamSatisfiedType: 
                             stTypeParam.getSatisfiedTypes()) {
                         stTypeParamSatisfiedType = 
-                                stTypeParamSatisfiedType.substitute(substitutions);
+                                stTypeParamSatisfiedType.substitute(substitutions, null);
     
                         boolean isMissing = true;
     
