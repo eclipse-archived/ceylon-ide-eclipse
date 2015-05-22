@@ -235,7 +235,7 @@ public class CeylonParseController {
             }
             
             if (path.isAbsolute()) {
-                for (final IProject p: getProjects()) {
+                for (IProject p: getProjects()) {
                     if (project != null && project != p) continue;
                     
                     JDTModuleManager moduleManager = (JDTModuleManager) 
@@ -244,34 +244,42 @@ public class CeylonParseController {
                     if (module != null) {
                         builtPhasedUnit = module.getPhasedUnit(path);
                         if (builtPhasedUnit != null) {
-                            project = p;
-                            phasedUnit = builtPhasedUnit;
-                            typeChecker = builtPhasedUnit.getTypeChecker();
-                            rootNode = builtPhasedUnit.getCompilationUnit();
-                            tokens = builtPhasedUnit.getTokens();
-                            stage = SYNTACTIC_ANALYSIS;
-                            if (stager!=null) {
-                                stager.afterStage(LEXICAL_ANALYSIS, monitor);
-                                stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
+                            if (project == p) {
+                                break;
                             }
-                            
-                            useTypechecker(phasedUnit, new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (showWarnings(p)) {
-                                        phasedUnit.analyseUsage();
-                                    }
-                                }
-                            });
-                            
-                            stage = TYPE_ANALYSIS;
-                            if (stager!=null) {
-                                stager.afterStage(FOR_OUTLINE, monitor);
-                                stager.afterStage(TYPE_ANALYSIS, monitor);
+                            if (module.isCeylonBinaryArchive()) {
+                                project = p;
+                                break;
                             }
-                            return;
                         }
                     }
+                }
+                if (builtPhasedUnit != null) {
+                    phasedUnit = builtPhasedUnit;
+                    typeChecker = builtPhasedUnit.getTypeChecker();
+                    rootNode = builtPhasedUnit.getCompilationUnit();
+                    tokens = builtPhasedUnit.getTokens();
+                    stage = SYNTACTIC_ANALYSIS;
+                    if (stager!=null) {
+                        stager.afterStage(LEXICAL_ANALYSIS, monitor);
+                        stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
+                    }
+                    final IProject finalProject = project;
+                    useTypechecker(phasedUnit, new Runnable() {
+                        @Override
+                        public void run() {
+                            if (showWarnings(finalProject)) {
+                                phasedUnit.analyseUsage();
+                            }
+                        }
+                    });
+                    
+                    stage = TYPE_ANALYSIS;
+                    if (stager!=null) {
+                        stager.afterStage(FOR_OUTLINE, monitor);
+                        stager.afterStage(TYPE_ANALYSIS, monitor);
+                    }
+                    return;
                 }
             }
         }

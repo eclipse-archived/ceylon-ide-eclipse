@@ -147,14 +147,16 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                     }
                                 }
                                 List<Declaration> overloads = AbstractModelLoader.getOverloads(dec);
-                                for (Declaration overload : overloads) {
-                                    if (Backend.Java.nativeAnnotation.equals(overload.getNative())) {
-                                        if (overload.getUnit() instanceof IJavaModelAware) {
-                                            dec = overload;
-                                            declarationUnit = dec.getUnit();
-                                            jp = ((IJavaModelAware)declarationUnit).getTypeRoot().getJavaProject();
-                                            hasFoundAJavaImplementation = true;
-                                            break;
+                                if (overloads != null) {
+                                    for (Declaration overload : overloads) {
+                                        if (Backend.Java.nativeAnnotation.equals(overload.getNative())) {
+                                            if (overload.getUnit() instanceof IJavaModelAware) {
+                                                dec = overload;
+                                                declarationUnit = dec.getUnit();
+                                                jp = ((IJavaModelAware)declarationUnit).getTypeRoot().getJavaProject();
+                                                hasFoundAJavaImplementation = true;
+                                                break;
+                                            }
                                         }
                                     }
                                 }
