@@ -883,6 +883,11 @@
             name="Quick Assist - Assign To Local"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Destructure expression"
+            id="com.redhat.ceylon.eclipse.ui.action.destructure"
+            name="Quick Assist - Destructure Expression"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Print expression"
             id="com.redhat.ceylon.eclipse.ui.action.print"
             name="Quick Assist - Print Expression"/>
@@ -1016,6 +1021,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.correct.AssignToLocalHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.assignToLocal"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.correct.DestructureHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.destructure"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.correct.PrintHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.print"/>
@@ -1202,6 +1210,11 @@
             sequence="M1+2 L"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.action.assignToLocal"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 D"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.action.destructure"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
             sequence="M1+2 P"
