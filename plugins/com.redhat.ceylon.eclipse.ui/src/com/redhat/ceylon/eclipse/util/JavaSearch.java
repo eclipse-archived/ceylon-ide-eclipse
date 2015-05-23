@@ -704,7 +704,7 @@ public class JavaSearch {
         Declaration javaSourceTypeDeclaration = javaSourceElementToTypeDeclaration(
                 javaElement, 
                 javaElement.getJavaProject().getProject());
-        if (javaSourceTypeDeclaration.isNative() && javaSourceTypeDeclaration instanceof Overloadable) {
+        if (javaSourceTypeDeclaration instanceof Overloadable && javaSourceTypeDeclaration.isNative()) {
             List<Declaration> overloads = ((Overloadable)javaSourceTypeDeclaration).getOverloads();
             if (overloads != null) {
                 for (Declaration overload : overloads) {
