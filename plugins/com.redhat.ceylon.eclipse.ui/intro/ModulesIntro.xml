@@ -19,7 +19,7 @@
             We need to be in the Ceylon Perspective. Select
             <b>Window > Open Perspective > Other ... > Ceylon</b> from the menu bar at the
             top of the workbench, or click below. (If you're already in the
-            Java perspective, you can skip this step.)
+            Ceylon perspective, you can skip this step.)
         </description>
     </item>
 
@@ -58,16 +58,18 @@
             the module descriptor, just before the closing brace:
             <br/>
             <br/>
-            <b>import ceylon.math "0.3.3";</b>
+            <b>import ceylon.math "1.1.0";</b>
             <br/>
             <br/>
-            Remember to save the file.
+            Remember to save the file. You may have to adjust the version number here to the 
+            version number of Ceylon you are using. <b>ceylon.math</b> is part of the Ceylon SDK 
+            and has the same versioning scheme as the language.
             <br/>
             <br/>
             Alternatively, you can add this dependency by selecting your
             module in the Ceylon Explorer and then selecting
-            <b>File > Properties</b>, clicking <b>Add imports...</b>,
-            and choosing the module "ceylon.math" in the popup
+            <b>File > Properties</b>, selecting <b>Ceylon Module</b>, 
+            clicking <b>Add imports...</b>, and choosing the module "ceylon.math" in the popup
             dialog. 
         </description>
     </item>
@@ -103,8 +105,12 @@
             the module repository.
             <br/>
             <br/> 
-            You can now run the module on the Ceylon module runtime using 
-            the <b>ceylon</b> command line tool.
+            If you have installed the Ceylon command line tools (and the paths to 
+            Ceylon runtime and repository are correctly set), you can  
+            run the module via the systems command line: 
+            <br/>
+            <br/>
+            <b>ceylon run dice</b>
         </description>
         <command
               required="false"
