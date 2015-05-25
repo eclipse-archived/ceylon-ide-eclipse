@@ -1,15 +1,15 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.compiler.java.codegen.CodegenUtil.getJavaNameOfDeclaration;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_ATTRIBUTE_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_CEYLON_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_LOCAL_DECLARATION_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_METHOD_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_NAME_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_OBJECT_ANNOTATION;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.CLASS_AND_INTERFACE;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.FIELD;
@@ -54,22 +54,9 @@ import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
 import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
-import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
-import com.redhat.ceylon.model.loader.NamingBase.Prefix;
-import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Overloadable;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.Specification;
-import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
@@ -78,6 +65,18 @@ import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnResolvedGeneratedType;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
+import com.redhat.ceylon.model.loader.NamingBase.Prefix;
+import com.redhat.ceylon.model.loader.NamingBase.Suffix;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Modules;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Specification;
+import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.model.typechecker.model.Value;
 
 public class JavaSearch {
 
@@ -704,8 +703,8 @@ public class JavaSearch {
         Declaration javaSourceTypeDeclaration = javaSourceElementToTypeDeclaration(
                 javaElement, 
                 javaElement.getJavaProject().getProject());
-        if (javaSourceTypeDeclaration instanceof Overloadable && javaSourceTypeDeclaration.isNative()) {
-            List<Declaration> overloads = ((Overloadable)javaSourceTypeDeclaration).getOverloads();
+        if (javaSourceTypeDeclaration.isNative()) {
+            List<Declaration> overloads = javaSourceTypeDeclaration.getOverloads();
             if (overloads != null) {
                 for (Declaration overload : overloads) {
                     if (Backend.None.nativeAnnotation.equals(overload.getNative())) {

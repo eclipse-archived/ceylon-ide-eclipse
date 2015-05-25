@@ -17,7 +17,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Overloadable;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
@@ -89,8 +88,8 @@ public class EditedPhasedUnit extends IdePhasedUnit {
             }
             
             for (Declaration modelDecl : projectSourceFile.getPackage().getMembers()) {
-                if (modelDecl.isNative() && modelDecl instanceof Overloadable) {
-                    List<Declaration> overloads = ((Overloadable)modelDecl).getOverloads();
+                if (modelDecl.isNative()) {
+                    List<Declaration> overloads = modelDecl.getOverloads();
                     if (overloads != null) {
                         for (Declaration anyOverload : overloads) {
                             if (anyOverload.equals(currentDeclaration) 

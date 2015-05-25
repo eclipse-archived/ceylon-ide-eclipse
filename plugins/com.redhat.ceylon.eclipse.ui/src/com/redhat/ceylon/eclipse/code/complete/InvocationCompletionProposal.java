@@ -211,7 +211,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                         parameterList.isNamedParametersSupported() &&
                         (!isAbstract && 
                                 ol!=EXTENDS && ol!=CLASS_ALIAS &&
-                                !fd.isOverloaded())) {
+                                !dec.isOverloaded())) {
                     //if there is at least one parameter, 
                     //suggest a named argument invocation
                     List<Parameter> parameters = 

@@ -3,8 +3,8 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 
 import java.util.List;
 
@@ -19,7 +19,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Overloadable;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 
@@ -95,37 +94,21 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                     Referenceable referenceable = 
                             getReferencedModel(node);
                     if (referenceable instanceof Declaration) {
-                        Declaration d = 
-                                (Declaration) referenceable;
-                        Declaration selectedOverload = null;
-                        if (d.isNative() && 
-                                (d instanceof Overloadable)) {
-                                Overloadable overloadable = 
-                                        (Overloadable) d;
-                                List<Declaration> overloads = 
-                                        overloadable.getOverloads();
-                                if (overloads != null) {
-                                    if (supportedBackend() == null) {
-                                        return null;
-                                    }
-                                    for (Declaration overload: overloads) {
-                                        Backend overloadBackend = 
-                                                Backend.fromAnnotation(
-                                                        overload.getNative());
-                                        if (overloadBackend != null && 
-                                                overloadBackend.equals(
-                                                        supportedBackend())) {
-                                            selectedOverload = overload;
-                                            break;
-                                        }
-                                    }
-                                }
-                        }
-                        if (selectedOverload != null) {
-                            referenceable = selectedOverload;
+                        Declaration dec = 
+                                (Declaration) 
+                                    referenceable;
+                        Backend backend = supportedBackend();
+                        if (dec.isNative()) {
+                            if (backend==null) {
+                                return null;
+                            }
+                            else {
+                                referenceable = 
+                                        resolveNativeOverload(dec);
+                            }
                         }
                         else {
-                            if (supportedBackend() != null) {
+                            if (backend!=null) {
                                 return null;
                             }
                         }
@@ -140,6 +123,25 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                 }
             }
         }
+    }
+
+    private Declaration resolveNativeOverload(Declaration dec) {
+        List<Declaration> overloads = dec.getOverloads();
+        if (overloads!=null) {
+            Backend backend = supportedBackend();
+            if (backend!=null) {
+                for (Declaration overload: overloads) {
+                    Backend overloadBackend = 
+                            Backend.fromAnnotation(
+                                    overload.getNative());
+                    if (overloadBackend!=null && 
+                            overloadBackend.equals(backend)) {
+                        return overload;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public Backend supportedBackend() {
