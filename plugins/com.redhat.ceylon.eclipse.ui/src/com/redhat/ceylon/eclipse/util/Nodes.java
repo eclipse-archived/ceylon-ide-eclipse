@@ -540,16 +540,22 @@ public class Nodes {
                     boolean foundTheCeylonDeclaration = false;
                     if (unit instanceof CeylonBinaryUnit) {
                         JDTModule module = ((JDTModule)unit.getPackage().getModule());
-                        ExternalPhasedUnit externalPhasedUnit = module.getPhasedUnitFromRelativePath(
-                                module.getCeylonDeclarationFile(
-                                        module.toSourceUnitRelativePath(unit.getRelativePath())));
-                        ExternalSourceFile sourceFile = externalPhasedUnit.getUnit();
-                        if (sourceFile != null) {
-                            for (Declaration sourceDecl : sourceFile.getDeclarations()) {
-                                if (sourceDecl.getQualifiedNameString().equals(decl.getQualifiedNameString())) {
-                                    model = sourceDecl;
-                                    foundTheCeylonDeclaration = true;
-                                    break;
+                        String sourceRelativePath = module.toSourceUnitRelativePath(unit.getRelativePath());
+                        if (sourceRelativePath != null) {
+                            String ceylonSourceRelativePath = module.getCeylonDeclarationFile(sourceRelativePath);
+                            if (ceylonSourceRelativePath != null) {
+                                ExternalPhasedUnit externalPhasedUnit = module.getPhasedUnitFromRelativePath(ceylonSourceRelativePath);
+                                if (externalPhasedUnit != null) {
+                                    ExternalSourceFile sourceFile = externalPhasedUnit.getUnit();
+                                    if (sourceFile != null) {
+                                        for (Declaration sourceDecl : sourceFile.getDeclarations()) {
+                                            if (sourceDecl.getQualifiedNameString().equals(decl.getQualifiedNameString())) {
+                                                model = sourceDecl;
+                                                foundTheCeylonDeclaration = true;
+                                                break;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
