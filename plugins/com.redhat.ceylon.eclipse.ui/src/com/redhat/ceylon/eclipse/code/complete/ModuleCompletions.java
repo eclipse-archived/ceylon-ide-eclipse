@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
@@ -9,6 +8,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
+import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,16 +28,12 @@ import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -45,6 +41,10 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.model.cmr.JDKUtils;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class ModuleCompletions {
     
@@ -295,10 +295,9 @@ public class ModuleCompletions {
             Tree.ImportModuleList iml = md.get(0).getImportModuleList();
             if (iml!=null) {
                 for (Tree.ImportModule im: iml.getImportModules()) {
-                    if (im.getImportPath()!=null) {
-                        if (formatPath(im.getImportPath().getIdentifiers()).equals(mod)) {
-                            return true;
-                        }
+                    String path = getImportedName(im);
+                    if (path!=null && path.equals(mod)) {
+                        return true;
                     }
                 }
             }

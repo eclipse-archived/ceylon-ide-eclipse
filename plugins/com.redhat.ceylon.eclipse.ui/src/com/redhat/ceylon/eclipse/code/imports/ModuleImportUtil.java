@@ -1,10 +1,13 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
-import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 import static java.util.Collections.singletonMap;
 
 import java.util.List;
@@ -20,18 +23,16 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
-import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class ModuleImportUtil {
 
@@ -100,8 +101,9 @@ public class ModuleImportUtil {
         for (String moduleName: moduleNames) {
             for (Tree.ImportModule im: compilationUnit.getModuleDescriptors().get(0)
                     .getImportModuleList().getImportModules()) {
-                String importedName = im.getImportPath().getModel().getNameAsString();
-                if (importedName.equals(moduleName)) {
+                String importedName = getImportedName(im);
+                if (importedName!=null &&
+                        importedName.equals(moduleName)) {
                     if (!removeSharedAnnotation(textFileChange, doc, im.getAnnotationList())) {
                         textFileChange.addEdit(new InsertEdit(im.getStartIndex(), 
                                 "shared "));
@@ -239,14 +241,14 @@ public class ModuleImportUtil {
         if (iml==null) return null;
         ImportModule prev = null;
         for (ImportModule im: iml.getImportModules()) {
-            ImportPath ip = im.getImportPath();
+            String ip = getImportedName(im);
             if (ip!=null && 
-                    formatPath(ip.getIdentifiers()).equals(moduleName)) {
-                int startOffset = Nodes.getNodeStartOffset(im);
-                int length = Nodes.getNodeLength(im);
+                    ip.equals(moduleName)) {
+                int startOffset = getNodeStartOffset(im);
+                int length = getNodeLength(im);
                 //TODO: handle whitespace for first import in list
                 if (prev!=null) {
-                    int endOffset = Nodes.getNodeEndOffset(prev);
+                    int endOffset = getNodeEndOffset(prev);
                     length += startOffset-endOffset;
                     startOffset = endOffset;
                 }
@@ -262,10 +264,10 @@ public class ModuleImportUtil {
         ImportModuleList iml = getImportList(unit);    
         if (iml==null) return null;
         for (ImportModule im: iml.getImportModules()) {
-            ImportPath ip = im.getImportPath();
+            String ip = getImportedName(im);
             if (ip!=null && 
-                    formatPath(ip.getIdentifiers()).equals(moduleName)) {
-                int startOffset = Nodes.getNodeStartOffset(im);
+                    ip.equals(moduleName)) {
+                int startOffset = getNodeStartOffset(im);
                 return new InsertEdit(startOffset, "shared ");
             }
         }

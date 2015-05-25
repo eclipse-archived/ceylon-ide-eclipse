@@ -1,10 +1,19 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -16,14 +25,6 @@ import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Setter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Import;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
     
@@ -299,8 +300,9 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
     public void visit(ImportModule that) {
         super.visit(that);
         if (declaration instanceof Module) {
-            if (formatPath(that.getImportPath().getIdentifiers())
-                    .equals(declaration.getNameAsString())) {
+            String path = getImportedName(that);
+            if (path!=null &&
+                    path.equals(declaration.getNameAsString())) {
                 nodes.add(that);
             }
         }

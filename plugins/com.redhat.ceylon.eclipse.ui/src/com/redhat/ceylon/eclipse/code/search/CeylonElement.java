@@ -8,20 +8,21 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StyledString;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Package;
 
 public class CeylonElement {
     
@@ -85,14 +86,16 @@ public class CeylonElement {
                     '/' + node.getUnit().getFilename();
         }
         else if (node instanceof Tree.Import) {
+            String name = getImportedName((Tree.Import) node);
             qualifiedName = node.getUnit().getPackage().getNameAsString() + 
                     '/' + node.getUnit().getFilename() + 
-                    '#' + ((Tree.Import) node).getImportPath().getModel().getNameAsString();
+                    '#' + name;
         }
         else if (node instanceof Tree.ImportModule) {
+            String name = getImportedName((Tree.ImportModule) node);
             qualifiedName = node.getUnit().getPackage().getNameAsString() + 
                     '/' + node.getUnit().getFilename() + 
-                    '@' + ((Tree.ImportModule) node).getImportPath().getModel().getNameAsString();
+                    '@' + name;
         }
     }
     

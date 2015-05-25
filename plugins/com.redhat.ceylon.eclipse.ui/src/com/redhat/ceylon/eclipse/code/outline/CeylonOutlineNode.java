@@ -37,12 +37,12 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class CeylonOutlineNode implements IAdaptable {
     
@@ -317,7 +317,8 @@ public class CeylonOutlineNode implements IAdaptable {
                 String path;
                 Unit unit = treeNode.getUnit();
                 if (unit instanceof SourceFile) {
-                    path = ((SourceFile) unit).getRelativePath();
+                    SourceFile sf = (SourceFile) unit;
+                    path = sf.getRelativePath();
                 }
                 else {
                     path = unit.getFilename();
@@ -325,29 +326,35 @@ public class CeylonOutlineNode implements IAdaptable {
                 return "@root:" + path; 
             case PACKAGE_CATEGORY:
                 if (treeNode instanceof PackageNode) {
-                    String packageName = 
-                            ((PackageNode) treeNode).getPackageName();
+                    PackageNode pn = (PackageNode) treeNode;
+                    String packageName = pn.getPackageName();
                     return "@package:" + packageName;
                 }
                 else {
-                    String moduleName = 
-                            ((ModuleNode) treeNode).getModuleName();
+                    ModuleNode mn = (ModuleNode) treeNode;
+                    String moduleName = mn.getModuleName();
                     return "@module:" + moduleName;
                 }
             case UNIT_CATEGORY:
-                return "@unit:" + treeNode.getUnit().getFilename();
+                return "@unit:" + 
+                    treeNode.getUnit().getFilename();
             case IMPORT_LIST_CATEGORY:
-                return "@importlist:" + treeNode.getUnit().getFilename();
+                return "@importlist:" + 
+                    treeNode.getUnit().getFilename();
             case DEFAULT_CATEGORY:
             default:
                 if (treeNode instanceof Tree.Import) {
+                    Tree.Import imp = (Tree.Import) treeNode;
                     Tree.ImportPath packageName = 
-                            ((Tree.Import) treeNode).getImportPath();
-                    return "@import:" + pathToName(packageName, treeNode);
+                            imp.getImportPath();
+                    return "@import:" + 
+                        pathToName(packageName, treeNode);
                 }
                 else if (treeNode instanceof Tree.Declaration) {
+                    Tree.Declaration dec = 
+                            (Tree.Declaration) treeNode;
                     Tree.Identifier id = 
-                            ((Tree.Declaration) treeNode).getIdentifier();
+                            dec.getIdentifier();
                     String name = id==null ? 
                             String.valueOf(identityHashCode(treeNode)) : 
                             id.getText();
@@ -359,23 +366,36 @@ public class CeylonOutlineNode implements IAdaptable {
                     }
                 }
                 else if (treeNode instanceof Tree.ImportModule) {
-                    Tree.ImportPath moduleName = 
-                            ((Tree.ImportModule) treeNode).getImportPath();
-                    return "@importmodule:" + pathToName(moduleName, treeNode);
+                    Tree.ImportModule im = 
+                            (Tree.ImportModule) treeNode;
+                    Tree.QuotedLiteral ql = im.getQuotedLiteral();
+                    if (ql!=null) {
+                        return "@importmodule:" + ql.getText();
+                    }
+                    else {
+                        Tree.ImportPath moduleName = im.getImportPath();
+                        return "@importmodule:" + 
+                            pathToName(moduleName, treeNode);
+                    }
                 }
                 else if (treeNode instanceof Tree.ModuleDescriptor) {
-                    Tree.ImportPath moduleName = 
-                            ((Tree.ModuleDescriptor) treeNode).getImportPath();
-                    return "@moduledescriptor:" + pathToName(moduleName, treeNode);
+                    Tree.ModuleDescriptor md = 
+                            (Tree.ModuleDescriptor) treeNode;
+                    Tree.ImportPath moduleName = md.getImportPath();
+                    return "@moduledescriptor:" + 
+                        pathToName(moduleName, treeNode);
                 }
                 else if (treeNode instanceof Tree.PackageDescriptor) {
-                    Tree.ImportPath packageName = 
-                            ((Tree.PackageDescriptor) treeNode).getImportPath();
-                    return "@packagedescriptor:" + pathToName(packageName, treeNode);
+                    Tree.PackageDescriptor pd = 
+                            (Tree.PackageDescriptor) treeNode;
+                    Tree.ImportPath packageName = pd.getImportPath();
+                    return "@packagedescriptor:" + 
+                        pathToName(packageName, treeNode);
                 }
                 else if (treeNode instanceof Tree.SpecifierStatement) {
-                    Tree.Identifier id = 
-                            getIdentifier((Tree.SpecifierStatement) treeNode);
+                    Tree.SpecifierStatement ss = 
+                            (Tree.SpecifierStatement) treeNode;
+                    Tree.Identifier id = getIdentifier(ss);
                     String name = id==null ? 
                             String.valueOf(identityHashCode(treeNode)) : 
                             id.getText();

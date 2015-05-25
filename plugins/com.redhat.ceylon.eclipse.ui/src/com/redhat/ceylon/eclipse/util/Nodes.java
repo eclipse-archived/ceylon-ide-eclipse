@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isOverloadedVersion;
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
@@ -12,6 +10,9 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_E
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+import static com.redhat.ceylon.model.typechecker.model.Util.isOverloadedVersion;
+import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -26,18 +27,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Util;
 import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -51,6 +40,18 @@ import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.model.loader.AbstractModelLoader;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypeParameter;
+import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.model.typechecker.model.Util;
 
 public class Nodes {
 
@@ -837,6 +838,30 @@ public class Nodes {
                 new FindOccurrenceLocationVisitor(offset, node);
         cu.visit(visitor);
         return visitor.getOccurrenceLocation();
+    }
+
+    public static String getImportedName(Tree.ImportModule im) {
+        Tree.ImportPath ip = im.getImportPath();
+        Tree.QuotedLiteral ql = im.getQuotedLiteral();
+        if (ip!=null) {
+            return formatPath(ip.getIdentifiers());
+        }
+        else if (ql!=null) {
+            return ql.getText();
+        }
+        else {
+            return null;
+        }
+    }
+
+    public static String getImportedName(Tree.Import i) {
+        Tree.ImportPath ip = i.getImportPath();
+        if (ip!=null) {
+            return formatPath(ip.getIdentifiers());
+        }
+        else {
+            return null;
+        }
     }
 
 }

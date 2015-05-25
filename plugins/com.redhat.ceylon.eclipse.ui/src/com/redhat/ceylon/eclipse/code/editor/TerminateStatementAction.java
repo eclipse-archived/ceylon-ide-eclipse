@@ -261,7 +261,8 @@ final class TerminateStatementAction extends Action {
             @Override 
             public void visit(Tree.ImportModule that) {
                 super.visit(that);
-                if (that.getImportPath()!=null) {
+                if (that.getImportPath()!=null || 
+                    that.getQuotedLiteral()!=null) {
                     terminate(that, CeylonLexer.SEMICOLON, ";");
                 }
                 if (that.getVersion()==null) {
