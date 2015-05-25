@@ -68,6 +68,7 @@ import org.eclipse.ui.PartInitException;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Import;
 import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
@@ -831,7 +832,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
     						node.getStopIndex()<selection.getOffset()+selection.getLength();
     			}
     			void addDeclaration(Declaration d, Tree.Identifier id) {
-    				if (d!=null && id!=null && d.isToplevel()) {
+    				if (d!=null && id!=null && d.isToplevel() &&
+    				        !(d instanceof NothingType)) {
     					String pname = 
     					        d.getUnit().getPackage()
     					            .getNameAsString();
