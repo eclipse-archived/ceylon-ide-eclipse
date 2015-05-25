@@ -27,10 +27,12 @@ import static java.lang.Character.isWhitespace;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -65,18 +67,18 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.PartInitException;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Import;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.NothingType;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Import;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.NothingType;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
@@ -825,21 +827,26 @@ public class CeylonSourceViewer extends ProjectionViewer {
     		Tree.CompilationUnit cu = controller.getRootNode();
     		final IRegion selection = editor.getSelection();
     		class SelectedImportsVisitor extends Visitor {
+    		    Set<Declaration> copied = 
+    		            new HashSet<Declaration>();
     			Map<Declaration,String> results = 
     			        new HashMap<Declaration,String>();
     			boolean inSelection(Node node) {
     				return node.getStartIndex()>=selection.getOffset() &&
     						node.getStopIndex()<selection.getOffset()+selection.getLength();
     			}
-    			void addDeclaration(Declaration d, Tree.Identifier id) {
-    				if (d!=null && id!=null && d.isToplevel() &&
-    				        !(d instanceof NothingType)) {
+    			void addDeclaration(Declaration dec, 
+    			        Tree.Identifier id) {
+    				if (dec!=null && id!=null && 
+    				        dec.isToplevel() &&
+    				        !(dec instanceof NothingType) &&
+    				        !copied.contains(dec)) {
     					String pname = 
-    					        d.getUnit().getPackage()
+    					        dec.getUnit().getPackage()
     					            .getNameAsString();
     					if (!pname.isEmpty() &&
     							!pname.equals(Module.LANGUAGE_MODULE_NAME)) {
-    						results.put(d, id.getText());
+    						results.put(dec, id.getText());
     					}
     				}
     			}
@@ -866,6 +873,15 @@ public class CeylonSourceViewer extends ProjectionViewer {
     							that.getIdentifier());
     				}
     				super.visit(that);
+    			}
+    			@Override 
+    			public void visit(Tree.Declaration that) {
+    			    if (inSelection(that)) {
+    			        Declaration dec = 
+    			                that.getDeclarationModel();
+                        copied.add(dec);
+    			        results.remove(dec);
+    			    }
     			}
     		}
     		SelectedImportsVisitor v = 
