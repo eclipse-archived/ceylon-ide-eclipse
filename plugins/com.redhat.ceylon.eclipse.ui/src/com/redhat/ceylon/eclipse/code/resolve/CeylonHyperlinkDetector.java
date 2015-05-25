@@ -92,21 +92,29 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                     return null;
                 }
                 else {
-                    Referenceable referenceable = getReferencedModel(node);
+                    Referenceable referenceable = 
+                            getReferencedModel(node);
                     if (referenceable instanceof Declaration) {
-                        Declaration d = (Declaration) referenceable;
+                        Declaration d = 
+                                (Declaration) referenceable;
                         Declaration selectedOverload = null;
-                        if (d.isNative() && (d instanceof Overloadable)) {
-                                Overloadable overloadable = (Overloadable) d;
-                                List<Declaration> overloads = overloadable.getOverloads();
+                        if (d.isNative() && 
+                                (d instanceof Overloadable)) {
+                                Overloadable overloadable = 
+                                        (Overloadable) d;
+                                List<Declaration> overloads = 
+                                        overloadable.getOverloads();
                                 if (overloads != null) {
                                     if (supportedBackend() == null) {
                                         return null;
                                     }
-                                    for (Declaration overload : overloads) {
-                                        Backend overloadBackend = Backend.fromAnnotation(overload.getNative());
-                                        if (overloadBackend != null 
-                                                && overloadBackend.equals(supportedBackend())) {
+                                    for (Declaration overload: overloads) {
+                                        Backend overloadBackend = 
+                                                Backend.fromAnnotation(
+                                                        overload.getNative());
+                                        if (overloadBackend != null && 
+                                                overloadBackend.equals(
+                                                        supportedBackend())) {
                                             selectedOverload = overload;
                                             break;
                                         }
@@ -115,7 +123,8 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                         }
                         if (selectedOverload != null) {
                             referenceable = selectedOverload;
-                        } else {
+                        }
+                        else {
                             if (supportedBackend() != null) {
                                 return null;
                             }
