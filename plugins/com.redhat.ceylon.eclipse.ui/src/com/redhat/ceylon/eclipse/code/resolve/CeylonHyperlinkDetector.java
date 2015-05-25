@@ -127,8 +127,13 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
     private Declaration resolveNativeOverload(Declaration dec) {
         List<Declaration> overloads = dec.getOverloads();
-        if (overloads!=null) {
-            Backend backend = supportedBackend();
+        Backend backend = supportedBackend();
+        if (overloads == null) {
+            if (backend==Backend.None) {
+                return dec;
+            }
+        }
+        else {
             if (backend!=null) {
                 for (Declaration overload: overloads) {
                     Backend overloadBackend = 
