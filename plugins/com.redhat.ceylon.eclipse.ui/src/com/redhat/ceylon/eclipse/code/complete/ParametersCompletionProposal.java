@@ -43,8 +43,14 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Functional;
@@ -57,13 +63,6 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.Escaping;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.eclipse.util.LinkedMode;
 
 class ParametersCompletionProposal extends CompletionProposal {
     
@@ -718,7 +717,7 @@ class ParametersCompletionProposal extends CompletionProposal {
             if (type!=null) {
                 TypeDeclaration td = type.getDeclaration();
                 Interface cd = unit.getCallableDeclaration();
-                if (td instanceof ClassOrInterface &&
+                if (type.isClassOrInterface() &&
                         td.equals(cd)) {
                     final List<ProducedType> argTypes = 
                             unit.getCallableArgumentTypes(type);
@@ -732,27 +731,27 @@ class ParametersCompletionProposal extends CompletionProposal {
                         ProducedType argType = argTypes.get(i);
                         if (desc.length()>1) desc.append(", ");
                         if (text.length()>1) text.append(", ");
-                        TypeDeclaration atd = argType.getDeclaration();
-                        if (atd instanceof ClassOrInterface &&
-                                atd.equals(cd)) {
+                        if (argType.isClassOrInterface() &&
+                                argType.getDeclaration()
+                                    .equals(cd)) {
                             String anon = 
                                     anonFunctionHeader(argType, unit);
                             text.append(anon)
                                 .append(" => ");
                             desc.append(anon)
                                 .append(" => ");
-                            ProducedType rt = unit.getCallableReturnType(argType);
-                            argTypes.set(i, rt);
-                            atd = rt==null ? null : rt.getDeclaration();
+                            argType = unit.getCallableReturnType(argType);
+                            argTypes.set(i, argType);
                         }
                         else if (paramTypes) {
                             desc.append(argType.getProducedTypeName(unit))
                                 .append(' ');
                         }
                         String name;
-                        if (atd instanceof ClassOrInterface||
-                                atd instanceof TypeParameter) {
-                            String n = atd.getName(unit);
+                        if (argType.isClassOrInterface() ||
+                            argType.isTypeParameter()) {
+                            String n = argType.getDeclaration()
+                                    .getName(unit);
                             name = Escaping.toInitialLowercase(n);
                         }
                         else {

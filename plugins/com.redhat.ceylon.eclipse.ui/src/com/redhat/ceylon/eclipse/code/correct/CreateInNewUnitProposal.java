@@ -29,20 +29,16 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.IntersectionType;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.NothingType;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.UnionType;
-import com.redhat.ceylon.model.typechecker.model.UnknownType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.refactor.CreateUnitChange;
 import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 
 class CreateInNewUnitProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -179,19 +175,19 @@ class CreateInNewUnitProposal implements ICompletionProposal,
 
     private static void resolveImports(List<Declaration> imports, ProducedType pt) {
         if (pt!=null) {
-            TypeDeclaration td = pt.getDeclaration();
-            if (td instanceof UnknownType ||
-                    td instanceof NothingType) {
+            if (pt.isUnknown() || pt.isNothing()) {
                 //nothing to do
             }
-            else if (td instanceof UnionType) {
+            else if (pt.isUnion()) {
                 resolveImports(imports, pt.getCaseTypes());
             }
-            else if (td instanceof IntersectionType) {
+            else if (pt.isIntersection()) {
                 resolveImports(imports, pt.getSatisfiedTypes());
             }
-            else if (td instanceof TypeParameter) {
-                TypeParameter typeParam = (TypeParameter) td;
+            else if (pt.isTypeParameter()) {
+                TypeParameter typeParam = 
+                        (TypeParameter) 
+                            pt.getDeclaration();
                 if (typeParam.isConstrained()) {
                     resolveImports(imports, typeParam.getCaseTypes());
                     resolveImports(imports, typeParam.getSatisfiedTypes());
@@ -201,6 +197,7 @@ class CreateInNewUnitProposal implements ICompletionProposal,
                 }
             }
             else {
+                TypeDeclaration td = pt.getDeclaration();
                 resolveImports(imports, pt.getTypeArgumentList());
                 Package p = td.getUnit().getPackage();
                 if (!p.getQualifiedNameString().isEmpty() && 

@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.intersectionType;
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
@@ -11,6 +9,8 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_CLASS;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.model.typechecker.model.Util.intersectionType;
+import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,20 +21,18 @@ import java.util.Set;
 
 import org.eclipse.swt.graphics.Image;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.IntersectionType;
 import com.redhat.ceylon.model.typechecker.model.ProducedReference;
 import com.redhat.ceylon.model.typechecker.model.ProducedType;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 
 class ObjectClassDefinitionGenerator extends DefinitionGenerator {
     
@@ -324,21 +322,20 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             return null;
         }
         else {
-            TypeDeclaration rtd = returnType.getDeclaration();
-            if (rtd instanceof Class) {
+            if (returnType.isClass()) {
                 return " extends " + returnType.getProducedTypeName() + "()"; //TODO: supertype arguments!
             }
-            else if (rtd instanceof Interface) {
+            else if (returnType.isInterface()) {
                 return " satisfies " + returnType.getProducedTypeName();
             }
-            else if (rtd instanceof IntersectionType) {
+            else if (returnType.isIntersection()) {
                 String extendsClause = "";
                 StringBuilder satisfiesClause = new StringBuilder();
-                for (ProducedType st: rtd.getSatisfiedTypes()) {
-                    if (st.getDeclaration() instanceof Class) {
+                for (ProducedType st: returnType.getSatisfiedTypes()) {
+                    if (st.isClass()) {
                         extendsClause = " extends " + st.getProducedTypeName() + "()"; //TODO: supertype arguments!
                     }
-                    else if (st.getDeclaration() instanceof Interface) {
+                    else if (st.isInterface()) {
                         if (satisfiesClause.length()==0) {
                             satisfiesClause.append(" satisfies ");
                         }
@@ -361,19 +358,22 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             return true;
         }
         else {
-            TypeDeclaration rtd = returnType.getDeclaration();
-            if (rtd.getCaseTypes()!=null) {
+            if (returnType.getCaseTypes()!=null) {
                 return false;
             }
-            if (rtd instanceof Class) {
-                return !rtd.isFinal();
+            if (returnType.isClass()) {
+                return !returnType.getDeclaration().isFinal();
             }
-            else if (rtd instanceof Interface) {
-                return !rtd.equals(rtd.getUnit().getCallableDeclaration());
+            else if (returnType.isInterface()) {
+                Unit unit = returnType.getDeclaration().getUnit();
+                return !returnType.getDeclaration()
+                        .equals(unit.getCallableDeclaration());
             }
-            else if (rtd instanceof IntersectionType) {
-                for (ProducedType st: rtd.getSatisfiedTypes()) {
-                    if (!isValidSupertype(st)) return false;
+            else if (returnType.isIntersection()) {
+                for (ProducedType st: returnType.getSatisfiedTypes()) {
+                    if (!isValidSupertype(st)) {
+                        return false;
+                    }
                 }
                 return true;
             }
@@ -388,17 +388,17 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             return false;
         }
         else {
-            TypeDeclaration rtd = returnType.getDeclaration();
-            if (rtd instanceof Class) {
-                return returnType.getSupertype(rtd.getUnit().getBasicDeclaration())==null;
+            Unit unit = returnType.getDeclaration().getUnit();
+            if (returnType.isClass()) {
+                return returnType.getSupertype(unit.getBasicDeclaration())==null;
             }
-            else if (rtd instanceof Interface) {
+            else if (returnType.isInterface()) {
                 return false;
             }
-            else if (rtd instanceof IntersectionType) {
-                for (ProducedType st: rtd.getSatisfiedTypes()) {
-                    if (st.getDeclaration() instanceof Class) {
-                        return returnType.getSupertype(rtd.getUnit().getBasicDeclaration())==null;
+            else if (returnType.isIntersection()) {
+                for (ProducedType st: returnType.getSatisfiedTypes()) {
+                    if (st.isClass()) {
+                        return returnType.getSupertype(unit.getBasicDeclaration())==null;
                     }
                 }
                 return false;

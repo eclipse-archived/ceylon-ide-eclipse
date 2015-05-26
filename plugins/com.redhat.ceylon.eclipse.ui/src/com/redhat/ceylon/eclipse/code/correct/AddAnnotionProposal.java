@@ -23,11 +23,14 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.IntersectionType;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ProducedType;
@@ -36,13 +39,8 @@ import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.UnionType;
 import com.redhat.ceylon.model.typechecker.model.UnknownType;
 import com.redhat.ceylon.model.typechecker.model.Value;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 
 public class AddAnnotionProposal extends CorrectionProposal {
     
@@ -693,49 +691,58 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
     }
     
-    static void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
-            IProject project, Referenceable dec) {
-        if (dec!=null) {
-            if (dec instanceof UnionType) {
-                List<ProducedType> caseTypes = 
-                        ((UnionType) dec).getCaseTypes();
-                for (ProducedType caseType: caseTypes) {
-                        addMakeSharedProposal(proposals, project, 
-                                caseType.getDeclaration());
+    static void addMakeSharedProposal(
+            Collection<ICompletionProposal> proposals, 
+            IProject project, ProducedType type) {
+        if (type!=null) {
+            if (type.isUnion()) {
+                for (ProducedType caseType: 
+                        type.getCaseTypes()) {
+                    addMakeSharedProposal(proposals, 
+                            project, caseType);
                     for (ProducedType typeArgument: 
-                            caseType.getTypeArgumentList()) {
-                        addMakeSharedProposal(proposals, project, 
-                                typeArgument.getDeclaration());
+                        caseType.getTypeArgumentList()) {
+                        addMakeSharedProposal(proposals, 
+                                project, typeArgument);
                     }
                 }
             }
-            else if (dec instanceof IntersectionType) {
-                List<ProducedType> satisfiedTypes = 
-                        ((IntersectionType) dec).getSatisfiedTypes();
-                for (ProducedType satisfiedType: satisfiedTypes) {
-                    addMakeSharedProposal(proposals, project,
-                            satisfiedType.getDeclaration());
+            else if (type.isIntersection()) {
+                for (ProducedType satisfiedType: 
+                        type.getSatisfiedTypes()) {
+                    addMakeSharedProposal(proposals, 
+                            project, satisfiedType);
                     for (ProducedType typeArgument: 
                             satisfiedType.getTypeArgumentList()) {
-                        addMakeSharedProposal(proposals, project,
-                                typeArgument.getDeclaration());
+                        addMakeSharedProposal(proposals, 
+                                project, typeArgument);
                     }
                 }
             }
-            else if (dec instanceof TypedDeclaration || 
-                       dec instanceof ClassOrInterface || 
-                       dec instanceof TypeAlias) {
-                if (!((Declaration) dec).isShared()) {
+            else {
+                addMakeSharedProposal(proposals, project, 
+                        type.getDeclaration());
+            }
+        }
+    }
+    static void addMakeSharedProposal(
+            Collection<ICompletionProposal> proposals, 
+                IProject project, Referenceable ref) {
+        if (ref!=null) {
+            if (ref instanceof TypedDeclaration || 
+                ref instanceof ClassOrInterface || 
+                ref instanceof TypeAlias) {
+                if (!((Declaration) ref).isShared()) {
                     addAddAnnotationProposal(null, 
                     		"shared", "Make Shared", 
-                            dec, proposals, project);
+                            ref, proposals, project);
                 }
             }
-            else if (dec instanceof Package) {
-                if (!((Package) dec).isShared()) {
+            else if (ref instanceof Package) {
+                if (!((Package) ref).isShared()) {
                     addAddAnnotationProposal(null, 
                             "shared", "Make Shared", 
-                            dec, proposals, project);
+                            ref, proposals, project);
                 }
             }
         }

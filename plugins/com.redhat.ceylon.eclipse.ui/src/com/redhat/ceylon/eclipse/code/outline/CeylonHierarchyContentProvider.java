@@ -351,74 +351,112 @@ public final class CeylonHierarchyContentProvider
             Declaration root = declaration;
             depthInHierarchy = 0;
             if (declaration instanceof TypeDeclaration) {
-                TypeDeclaration dec = (TypeDeclaration) declaration;
+                TypeDeclaration dec = 
+                        (TypeDeclaration) declaration;
                 while (dec!=null) {
                     depthInHierarchy++;
                     root = dec;
-                    ClassOrInterface superDec = dec.getExtendedTypeDeclaration();
-                    if (superDec!=null) {
-                        if (!dec.getSatisfiedTypeDeclarations().isEmpty()) {
-                            getSubtypePathNode(superDec).setNonUnique(true);
+                    ProducedType extended = 
+                            dec.getExtendedType();
+                    if (extended!=null) {
+                        TypeDeclaration superDec = 
+                                extended.getDeclaration();
+                        if (!extended.getSatisfiedTypes().isEmpty()) {
+                            getSubtypePathNode(superDec)
+                                .setNonUnique(true);
                         }
-                        getSubtypePathNode(superDec).addChild(getSubtypePathNode(dec));
+                        getSubtypePathNode(superDec)
+                            .addChild(getSubtypePathNode(dec));
+                        dec = superDec;
                     }
-                    dec = superDec;
+                    else {
+                        dec = null;
+                    }
                 }
             }
             else if (declaration instanceof TypedDeclaration) {
                 Declaration memberDec = declaration;
-                Declaration refinedDeclaration = declaration.getRefinedDeclaration();
+                Declaration refinedDeclaration = 
+                        declaration.getRefinedDeclaration();
                 Scope container = declaration.getContainer();
                 if (container instanceof TypeDeclaration) {
-                    TypeDeclaration dec = (TypeDeclaration) container;
-                    List<ProducedType> signature = getSignature(declaration);
+                    TypeDeclaration dec = 
+                            (TypeDeclaration) container;
+                    List<ProducedType> signature = 
+                            getSignature(declaration);
                     depthInHierarchy++;
                     root = memberDec;
                     //first walk up the superclass hierarchy
+                    String dn = declaration.getName();
                     while (dec!=null) {
-                        ClassOrInterface superDec = dec.getExtendedTypeDeclaration();
-                        if (superDec!=null) {
+                        TypeDeclaration mc = 
+                                (TypeDeclaration) 
+                                    memberDec.getContainer();
+                        TypeDeclaration rc = 
+                                (TypeDeclaration) 
+                                    refinedDeclaration.getContainer();
+                        ProducedType extended = 
+                                dec.getExtendedType();
+                        if (extended==null) {
+                            dec = null;
+                        }
+                        else {
+                            TypeDeclaration superDec = 
+                                    extended.getDeclaration();
                             Declaration superMemberDec = 
-                                    superDec.getDirectMember(declaration.getName(), signature, false);
+                                    superDec.getDirectMember(dn, 
+                                            signature, false);
                             if (superMemberDec!=null && 
                                     !isAbstraction(superMemberDec) &&
                                     superMemberDec.getRefinedDeclaration()
                                     .equals(refinedDeclaration)) {
                                 List<Declaration> directlyInheritedMembers = 
-                                        getInterveningRefinements(declaration.getName(), signature, 
+                                        getInterveningRefinements(dn, 
+                                                signature, 
                                                 refinedDeclaration,
-                                                (TypeDeclaration) memberDec.getContainer(), superDec);
+                                                mc, superDec);
                                 List<Declaration> all = 
-                                        getInterveningRefinements(declaration.getName(), signature, 
+                                        getInterveningRefinements(dn, 
+                                                signature, 
                                                 refinedDeclaration,
-                                                (TypeDeclaration) memberDec.getContainer(), 
-                                                (TypeDeclaration) refinedDeclaration.getContainer());
+                                                mc, rc);
                                 for (Declaration d: all) {
-                                    TypeDeclaration dtd = (TypeDeclaration) d.getContainer();
+                                    TypeDeclaration dtd = 
+                                            (TypeDeclaration) 
+                                                d.getContainer();
                                     if (!superDec.inherits(dtd)) {
-                                        getSubtypePathNode(superMemberDec).setNonUnique(true);
+                                        getSubtypePathNode(superMemberDec)
+                                            .setNonUnique(true);
                                     }
                                 }
                                 directlyInheritedMembers.remove(superMemberDec);
                                 if (directlyInheritedMembers.size()>0) {
-                                    getSubtypePathNode(superMemberDec).setNonUnique(true);
+                                    getSubtypePathNode(superMemberDec)
+                                        .setNonUnique(true);
                                 }
-                                getSubtypePathNode(superMemberDec).addChild(getSubtypePathNode(memberDec));
+                                getSubtypePathNode(superMemberDec)
+                                    .addChild(getSubtypePathNode(memberDec));
                                 depthInHierarchy++;
                                 root = superMemberDec;
                                 memberDec = superMemberDec;
                             }
                             //TODO else add an "empty" node to the hierarchy like in JDT
+                            dec = superDec;
                         }
-                        dec = superDec;
                     }
                     //now look at the very top of the hierarchy, even if it is an interface
                     if (!memberDec.equals(refinedDeclaration)) {
+                        TypeDeclaration mc = 
+                                (TypeDeclaration) 
+                                    memberDec.getContainer();
+                        TypeDeclaration rc = 
+                                (TypeDeclaration) 
+                                refinedDeclaration.getContainer();
                         List<Declaration> directlyInheritedMembers = 
-                                getInterveningRefinements(declaration.getName(), signature, 
+                                getInterveningRefinements(dn, 
+                                        signature, 
                                         declaration.getRefinedDeclaration(),
-                                        (TypeDeclaration) memberDec.getContainer(), 
-                                        (TypeDeclaration) refinedDeclaration.getContainer());
+                                        mc, rc);
                         directlyInheritedMembers.remove(refinedDeclaration);
                         if (directlyInheritedMembers.size()>1) {
                             //multiple intervening interfaces
@@ -431,12 +469,15 @@ public final class CeylonHierarchyContentProvider
                         else if (directlyInheritedMembers.size()==1) {
                             //exactly one intervening interface
                             Declaration idec = directlyInheritedMembers.get(0);
-                            getSubtypePathNode(idec).addChild(getSubtypePathNode(memberDec));
-                            getSubtypePathNode(refinedDeclaration).addChild(getSubtypePathNode(idec));
+                            getSubtypePathNode(idec)
+                                .addChild(getSubtypePathNode(memberDec));
+                            getSubtypePathNode(refinedDeclaration)
+                                .addChild(getSubtypePathNode(idec));
                         }
                         else {
                             //no intervening interfaces
-                            getSubtypePathNode(refinedDeclaration).addChild(getSubtypePathNode(memberDec));
+                            getSubtypePathNode(refinedDeclaration)
+                                .addChild(getSubtypePathNode(memberDec));
                         }
                         root = refinedDeclaration;
                     }
@@ -449,9 +490,11 @@ public final class CeylonHierarchyContentProvider
             
             if (monitor.isCanceled()) return;
             
-            IEditorPart part = site.getPage().getActiveEditor();
+            IEditorPart part = 
+                    site.getPage().getActiveEditor();
             
-            List<ProducedType> signature = getSignature(declaration);
+            List<ProducedType> signature = 
+                    getSignature(declaration);
             int ps = packages.size();
             for (Package p: packages) { //workaround CME
                 int ms = p.getMembers().size();
@@ -465,42 +508,7 @@ public final class CeylonHierarchyContentProvider
                             if (d instanceof ClassOrInterface || 
                                     d instanceof TypeParameter) {
                                 try {
-                                    if (declaration instanceof TypeDeclaration) {
-                                        TypeDeclaration td = (TypeDeclaration) d;
-                                        if (!(td instanceof TypeParameter)) {
-                                            ClassOrInterface etd = 
-                                                    td.getExtendedTypeDeclaration();
-                                            if (etd!=null) {
-                                                add(td, etd);
-                                            }
-                                            for (TypeDeclaration std: 
-                                                td.getSatisfiedTypeDeclarations()) {
-                                                add(td, std);
-                                            }
-                                        }
-                                    }
-                                    else if (declaration instanceof TypedDeclaration) {
-                                        Declaration refinedDeclaration = declaration.getRefinedDeclaration();
-                                        TypeDeclaration td = (TypeDeclaration) d;
-                                        Declaration dec = 
-                                                td.getDirectMember(declaration.getName(), signature, false);
-                                        if (dec!=null && dec.getRefinedDeclaration()!=null &&
-                                                dec.getRefinedDeclaration().equals(refinedDeclaration)) {
-                                            List<Declaration> refinements = 
-                                                    getInterveningRefinements(declaration.getName(), signature,
-                                                            refinedDeclaration, td,
-                                                            (TypeDeclaration) refinedDeclaration.getContainer());
-                                            //TODO: keep the directly refined declarations in the model
-                                            //      (get the typechecker to set this up)
-                                            for (Declaration candidate: refinements) {
-                                                if (getInterveningRefinements(declaration.getName(), signature,
-                                                        refinedDeclaration, td,
-                                                        (TypeDeclaration) candidate.getContainer()).size()==1) {
-                                                    add(dec, candidate);
-                                                }
-                                            }
-                                        }
-                                    }
+                                    addDeclaration(signature, d);
                                 }
                                 catch (Exception e) {
                                     System.err.println(d.getQualifiedNameString());
@@ -520,17 +528,80 @@ public final class CeylonHierarchyContentProvider
             monitor.done();
         }
 
-        private Declaration replaceWithCurrentEditorDeclaration(IEditorPart part, 
-                Package p, Declaration d) {
+        void addDeclaration(List<ProducedType> signature, 
+                Declaration dec) {
+            if (declaration instanceof TypeDeclaration) {
+                TypeDeclaration td = (TypeDeclaration) dec;
+                if (!(td instanceof TypeParameter)) {
+                    ProducedType et = td.getExtendedType();
+                    if (et!=null) {
+                        add(td, et.getDeclaration());
+                    }
+                    for (ProducedType st: 
+                            td.getSatisfiedTypes()) {
+                        if (st!=null) {
+                            add(td, st.getDeclaration());
+                        }
+                    }
+                }
+            }
+            else if (declaration instanceof TypedDeclaration) {
+                Declaration refinedDeclaration = 
+                        declaration.getRefinedDeclaration();
+                TypeDeclaration td = 
+                        (TypeDeclaration) dec;
+                String name = declaration.getName();
+                Declaration member = 
+                        td.getDirectMember(name, 
+                                signature, false);
+                if (member!=null) {
+                    Declaration rd = 
+                            member.getRefinedDeclaration();
+                    if (rd!=null && 
+                            rd.equals(refinedDeclaration)) {
+                        TypeDeclaration rdc = 
+                                (TypeDeclaration) 
+                                    refinedDeclaration.getContainer();
+                        List<Declaration> refinements = 
+                                getInterveningRefinements(name, 
+                                        signature, 
+                                        refinedDeclaration, 
+                                        td, rdc);
+                        //TODO: keep the directly refined declarations in the model
+                        //      (get the typechecker to set this up)
+                        for (Declaration candidate: refinements) {
+                            TypeDeclaration cc = 
+                                    (TypeDeclaration) 
+                                        candidate.getContainer();
+                            List<Declaration> refs = 
+                                    getInterveningRefinements(name, 
+                                            signature, 
+                                            refinedDeclaration, 
+                                            td, cc);
+                            if (refs.size()==1) {
+                                add(member, candidate);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private Declaration replaceWithCurrentEditorDeclaration(
+                IEditorPart part, Package p, Declaration d) {
             if (part instanceof CeylonEditor && part.isDirty()) {
+                CeylonEditor editor = (CeylonEditor) part;
                 CompilationUnit rootNode = 
-                        ((CeylonEditor) part).getParseController()
+                        editor.getParseController()
                                 .getRootNode();
                 if (rootNode!=null) {
                     Unit unit = rootNode.getUnit();
-                    if (unit!=null && unit.getPackage().equals(p)) {
+                    if (unit!=null && 
+                            unit.getPackage().equals(p)) {
+                        String name = 
+                                d.getQualifiedNameString();
                         Declaration result = 
-                                getDeclarationInUnit(d.getQualifiedNameString(), unit);
+                                getDeclarationInUnit(name, unit);
                         if (result!=null) {
                             return result;
                         }

@@ -344,7 +344,8 @@ public class OutlinePopup extends TreeViewPopup {
                 if (element instanceof CeylonOutlineNode) {
                     if (mode) {
                         boolean includeParameters =
-                                !getPreferences().getBoolean(PARAMS_IN_OUTLINES);
+                                !getPreferences()
+                                    .getBoolean(PARAMS_IN_OUTLINES);
                         CeylonOutlineNode node = 
                                 (CeylonOutlineNode) element;
                         CompilationUnit rootNode = 
@@ -362,7 +363,8 @@ public class OutlinePopup extends TreeViewPopup {
                         else if (treeNode instanceof ObjectDefinition) {
                             ObjectDefinition od = 
                                     (ObjectDefinition) treeNode;
-                            td = od.getDeclarationModel().getTypeDeclaration();
+                            td = od.getDeclarationModel()
+                                    .getTypeDeclaration();
                         }
                         else {
                             return super.getChildren(element);
@@ -379,10 +381,12 @@ public class OutlinePopup extends TreeViewPopup {
                             }
                         }
                         Collection<DeclarationWithProximity> members = 
-                                td.getMatchingMemberDeclarations(rootNode.getUnit(), 
+                                td.getMatchingMemberDeclarations(
+                                        rootNode.getUnit(), 
                                         td, filter, 0).values();
                         for (DeclarationWithProximity dwp: members) {
-                            for (Declaration dec: overloads(dwp.getDeclaration())) {
+                            for (Declaration dec: 
+                                    overloads(dwp.getDeclaration())) {
                                 if (!(dec instanceof TypeParameter)) {
                                     if (includeParameters || !dec.isParameter()) {
                                         list.add(dec);

@@ -26,9 +26,13 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.IntersectionType;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ProducedType;
@@ -36,12 +40,6 @@ import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.UnionType;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
@@ -197,19 +195,19 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void collectExtractedTypeParameters(ProducedType pt) {
-        TypeDeclaration d = pt.getDeclaration();
-        if (d instanceof TypeParameter) {
+        if (pt.isTypeParameter()) {
+            TypeDeclaration d = pt.getDeclaration();
             extractedTypeParameters.add((TypeParameter) d);
-            for (ProducedType st : d.getSatisfiedTypes()) {
+            for (ProducedType st : pt.getSatisfiedTypes()) {
                 collectExtractedTypeParameters(st);
             }
         }
-        else if (d instanceof UnionType) {
+        else if (pt.isUnion()) {
             for (ProducedType ct : pt.getCaseTypes()) {
                 collectExtractedTypeParameters(ct);
             }
         }
-        else if (d instanceof IntersectionType) {
+        else if (pt.isIntersection()) {
             for (ProducedType st : pt.getSatisfiedTypes()) {
                 collectExtractedTypeParameters(st);
             }

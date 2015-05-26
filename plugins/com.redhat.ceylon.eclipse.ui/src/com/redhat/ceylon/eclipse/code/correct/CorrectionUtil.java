@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,17 +10,18 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Method;
 import com.redhat.ceylon.model.typechecker.model.ProducedType;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.model.typechecker.model.Value;
 
 class CorrectionUtil {
     
@@ -71,13 +72,19 @@ class CorrectionUtil {
     
     static Tree.Body getClassOrInterfaceBody(Tree.Declaration decNode) {
         if (decNode instanceof Tree.ClassDefinition) {
-            return ((Tree.ClassDefinition) decNode).getClassBody();
+            Tree.ClassDefinition cd = 
+                    (Tree.ClassDefinition) decNode;
+            return cd.getClassBody();
         }
         else if (decNode instanceof Tree.InterfaceDefinition){
-            return ((Tree.InterfaceDefinition) decNode).getInterfaceBody();
+            Tree.InterfaceDefinition id = 
+                    (Tree.InterfaceDefinition) decNode;
+            return id.getInterfaceBody();
         }
         else if (decNode instanceof Tree.ObjectDefinition){
-            return ((Tree.ObjectDefinition) decNode).getClassBody();
+            Tree.ObjectDefinition od = 
+                    (Tree.ObjectDefinition) decNode;
+            return od.getClassBody();
         }
         else {
             return null;
@@ -87,7 +94,9 @@ class CorrectionUtil {
     static Tree.CompilationUnit getRootNode(PhasedUnit unit) {
         IEditorPart ce = getCurrentEditor();
         if (ce instanceof CeylonEditor) {
-            CeylonParseController cpc = ((CeylonEditor) ce).getParseController();
+            CeylonEditor editor = (CeylonEditor) ce;
+            CeylonParseController cpc = 
+                    editor.getParseController();
             if (cpc!=null) {
                 Tree.CompilationUnit rn = cpc.getRootNode();
                 if (rn!=null) {
@@ -107,7 +116,8 @@ class CorrectionUtil {
             if( missingSatisfiedTypesText.length() != 0 ) {
                 missingSatisfiedTypesText.append(" & ");
             }
-            missingSatisfiedTypesText.append(missingSatisfiedType.getProducedTypeName());   
+            missingSatisfiedTypesText.append(
+                    missingSatisfiedType.getProducedTypeName());   
         }
         return missingSatisfiedTypesText.toString();
     }
@@ -116,67 +126,74 @@ class CorrectionUtil {
         if (isTypeUnknown(t)) {
             return "nothing";
         }
-        TypeDeclaration tn = t.getDeclaration();
-        if(tn.isAlias()){
-            return defaultValue(unit, tn.getExtendedType());
-        }
-        boolean isClass = tn instanceof Class;
         if (unit.isOptionalType(t)) {
             return "null";
         }
-        else if (isClass &&
-                tn.equals(unit.getBooleanDeclaration())) {
-            return "false";
+        if (t.isTypeAlias() || 
+                t.isClassOrInterface() &&
+                t.getDeclaration().isAlias()){
+            return defaultValue(unit, 
+                    t.getExtendedType());
         }
-        else if (isClass &&
-                tn.equals(unit.getIntegerDeclaration())) {
-            return "0";
-        }
-        else if (isClass &&
-                tn.equals(unit.getFloatDeclaration())) {
-            return "0.0";
-        }
-        else if (isClass &&
-                tn.equals(unit.getStringDeclaration())) {
-            return "\"\"";
-        }
-        else if (isClass &&
-                tn.equals(unit.getByteDeclaration())) {
-            return "0.byte";
-        }
-        else if (isClass &&
-                tn.equals(unit.getTupleDeclaration())) {
-            final int minimumLength = unit.getTupleMinimumLength(t);
-            final List<ProducedType> tupleTypes = unit.getTupleElementTypes(t);
-            final StringBuilder sb = new StringBuilder();
-            for(int i = 0 ; i < minimumLength ; i++){
-                sb.append(sb.length() == 0 ? "[" : ", ");
-                ProducedType currentType = tupleTypes.get(i);
-                if(unit.isSequentialType(currentType)){
-                    currentType = unit.getSequentialElementType(currentType);
+        if (t.isClass()) {
+            TypeDeclaration c = t.getDeclaration();
+            if (c.equals(unit.getBooleanDeclaration())) {
+                return "false";
+            }
+            else if (c.equals(unit.getIntegerDeclaration())) {
+                return "0";
+            }
+            else if (c.equals(unit.getFloatDeclaration())) {
+                return "0.0";
+            }
+            else if (c.equals(unit.getStringDeclaration())) {
+                return "\"\"";
+            }
+            else if (c.equals(unit.getByteDeclaration())) {
+                return "0.byte";
+            }
+            else if (c.equals(unit.getTupleDeclaration())) {
+                final int minimumLength = 
+                        unit.getTupleMinimumLength(t);
+                final List<ProducedType> tupleTypes = 
+                        unit.getTupleElementTypes(t);
+                final StringBuilder sb = new StringBuilder();
+                for(int i = 0 ; i < minimumLength ; i++){
+                    sb.append(sb.length() == 0 ? "[" : ", ");
+                    ProducedType currentType = 
+                            tupleTypes.get(i);
+                    if(unit.isSequentialType(currentType)){
+                        currentType = 
+                                unit.getSequentialElementType(currentType);
+                    }
+                    sb.append(defaultValue(unit, currentType));
                 }
-                sb.append(defaultValue(unit, currentType));
+                sb.append(']');
+                return sb.toString();
+            } 
+            else if (unit.isSequentialType(t)) {
+                final StringBuilder sb = new StringBuilder();
+                sb.append('[');
+                if (!unit.getEmptyType().isSubtypeOf(t)) {
+                    sb.append(defaultValue(unit, 
+                            unit.getSequentialElementType(t)));
+                }
+                sb.append(']');
+                return sb.toString();
             }
-            sb.append(']');
-            return sb.toString();
-        } 
-        else if (unit.isSequentialType(t)) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append('[');
-            if (!unit.getEmptyDeclaration().getType().isSubtypeOf(t)) {
-                sb.append(defaultValue(unit, unit.getSequentialElementType(t)));
+            else if (unit.isIterableType(t)) {
+                final StringBuilder sb = new StringBuilder();
+                sb.append('{');
+                if (!unit.getEmptyType().isSubtypeOf(t)) {
+                    sb.append(defaultValue(unit, 
+                            unit.getIteratedType(t)));
+                }
+                sb.append('}');
+                return sb.toString();
             }
-            sb.append(']');
-            return sb.toString();
-        }
-        else if (unit.isIterableType(t)) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append('{');
-            if (!unit.getEmptyDeclaration().getType().isSubtypeOf(t)) {
-                sb.append(defaultValue(unit, unit.getIteratedType(t)));
+            else {
+                return "nothing";
             }
-            sb.append('}');
-            return sb.toString();
         }
         else {
             return "nothing";
@@ -211,7 +228,8 @@ class CorrectionUtil {
         String desc = "'" + dec.getName() + "'";
         Scope container = dec.getContainer();
         if (container instanceof TypeDeclaration) {
-            desc += " in '" + ((TypeDeclaration) container).getName() + "'";
+            TypeDeclaration td = (TypeDeclaration) container;
+            desc += " in '" + td.getName() + "'";
         }
         return desc;
     }
@@ -219,17 +237,19 @@ class CorrectionUtil {
     static Node getBeforeParenthesisNode(Tree.Declaration decNode) {
         Node n = decNode.getIdentifier();
         if (decNode instanceof Tree.TypeDeclaration) {
+            Tree.TypeDeclaration td = 
+                    (Tree.TypeDeclaration) decNode;
             Tree.TypeParameterList tpl = 
-                    ((Tree.TypeDeclaration) decNode)
+                    td
                             .getTypeParameterList();
             if (tpl!=null) {
                 n = tpl;
             }
         }
         if (decNode instanceof Tree.AnyMethod) {
+            Tree.AnyMethod am = (Tree.AnyMethod) decNode;
             Tree.TypeParameterList tpl = 
-                    ((Tree.AnyMethod) decNode)
-                            .getTypeParameterList();
+                    am.getTypeParameterList();
             if (tpl!=null) {
                 n = tpl;
             }
@@ -248,25 +268,31 @@ class CorrectionUtil {
                 if (st instanceof Tree.AttributeDeclaration) {
                     Tree.AttributeDeclaration ad = 
                             (Tree.AttributeDeclaration) st;
-                    if (ad.getSpecifierOrInitializerExpression()==null &&
-                            !ad.getDeclarationModel().isFormal()) {
-                        uninitialized.add(ad.getDeclarationModel());
+                    if (ad.getSpecifierOrInitializerExpression()==null) {
+                        Value v = ad.getDeclarationModel();
+                        if (!v.isFormal()) {
+                            uninitialized.add(v);
+                        }
                     }
                 }
                 else if (st instanceof Tree.MethodDeclaration) {
                     Tree.MethodDeclaration md = 
                             (Tree.MethodDeclaration) st;
-                    if (md.getSpecifierExpression()==null &&
-                            !md.getDeclarationModel().isFormal()) {
-                        uninitialized.add(md.getDeclarationModel());
+                    if (md.getSpecifierExpression()==null) {
+                        Method m = md.getDeclarationModel();
+                        if (!m.isFormal()) {
+                            uninitialized.add(m);
+                        }
                     }
                 }
                 else if (st instanceof Tree.SpecifierStatement) {
                     Tree.SpecifierStatement ss = 
                             (Tree.SpecifierStatement) st;
-                    Tree.Term bme = ss.getBaseMemberExpression();
-                    if (bme instanceof Tree.BaseMemberExpression) {
-                        uninitialized.remove(((Tree.BaseMemberExpression) bme).getDeclaration());
+                    Tree.Term term = ss.getBaseMemberExpression();
+                    if (term instanceof Tree.BaseMemberExpression) {
+                        Tree.BaseMemberExpression bme = 
+                                (Tree.BaseMemberExpression) term;
+                        uninitialized.remove(bme.getDeclaration());
                     }
                 }
             }

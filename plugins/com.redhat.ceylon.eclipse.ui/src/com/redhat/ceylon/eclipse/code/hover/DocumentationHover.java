@@ -2197,18 +2197,22 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
 
-    private static String description(Declaration dec, Node node, 
-            ProducedReference pr, CeylonParseController cpc, Unit unit) {
+    private static String description(Declaration dec, 
+            Node node,  ProducedReference pr, 
+            CeylonParseController cpc, Unit unit) {
         if (pr==null) {
             pr = getProducedReference(dec, node);
         }
-        StringBuffer description = 
-                new StringBuffer(getDocDescriptionFor(dec, pr, unit));
+        String doc = getDocDescriptionFor(dec, pr, unit);
+        StringBuffer description = new StringBuffer(doc);
         if (dec instanceof TypeDeclaration) {
             TypeDeclaration td = (TypeDeclaration) dec;
-            if (td.isAlias() && td.getExtendedType()!=null) {
-                description.append(" => ")
-                    .append(td.getExtendedType().getProducedTypeName());
+            if (td.isAlias()) {
+                ProducedType et = td.getExtendedType();
+                if (et!=null) {
+                    description.append(" => ")
+                        .append(et.getProducedTypeName());
+                }
             }
         }
         if (dec instanceof Value && !isVariable(dec) ||

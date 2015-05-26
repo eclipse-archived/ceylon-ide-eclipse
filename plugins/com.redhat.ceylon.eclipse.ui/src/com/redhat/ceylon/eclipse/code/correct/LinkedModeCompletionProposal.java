@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
+import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,12 +25,10 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.model.typechecker.model.IntersectionType;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.ProducedType;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.UnionType;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class LinkedModeCompletionProposal 
         implements ICompletionProposal, 
@@ -285,8 +283,8 @@ public class LinkedModeCompletionProposal
         int size = supertypes.size();
         if (includeValue) size++;
         if (type.isTypeConstructor() ||
-                td instanceof UnionType || 
-                td instanceof IntersectionType) {
+                type.isUnion() || 
+                type.isIntersection()) {
             size++;
         }
         
@@ -305,8 +303,8 @@ public class LinkedModeCompletionProposal
             };
         }
         if (type.isTypeConstructor() ||
-                td instanceof UnionType || 
-                td instanceof IntersectionType) {
+                type.isUnion() || 
+                type.isIntersection()) {
             typeProposals[i++] = 
                     new LinkedModeCompletionProposal(type, unit, offset, 0) {
                 @Override

@@ -318,16 +318,22 @@ class CreateProposal extends InitializerProposal {
         return null;
     }
     
-    private static ClassOrInterface findClassContainer(Declaration declarationModel) {
+    private static ClassOrInterface findClassContainer(
+            Declaration declarationModel) {
         do {
-            if(declarationModel == null)
+            if (declarationModel == null) {
                 return null;
-            if(declarationModel instanceof ClassOrInterface)
+            }
+            if (declarationModel instanceof ClassOrInterface) {
                 return (ClassOrInterface) declarationModel;
-            if(declarationModel.getContainer() instanceof Declaration)
-                declarationModel = (Declaration)declarationModel.getContainer();
-            else
+            }
+            Scope container = declarationModel.getContainer();
+            if (container instanceof Declaration) {
+                declarationModel = (Declaration) container;
+            }
+            else {
                 return null;
+            }
         }
         while(true);
     }

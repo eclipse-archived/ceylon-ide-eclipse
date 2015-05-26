@@ -335,11 +335,11 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             if (fav.parameter != null) {
                 ProducedType type = fav.parameter.getType();
                 if (type!=null && type.getDeclaration()!=null) {
-                    if (type.getDeclaration() instanceof ClassOrInterface) {
+                    if (type.isClassOrInterface()) {
                         missingSatisfiedTypes.add(type);
                     }
-                    else if (type.getDeclaration() instanceof IntersectionType) {
-                        for (ProducedType it: type.getDeclaration().getSatisfiedTypes()) {
+                    else if (type.isIntersection()) {
+                        for (ProducedType it: type.getSatisfiedTypes()) {
                             if (!typeDec.inherits(it.getDeclaration())) {
                                 missingSatisfiedTypes.add(it);
                             }

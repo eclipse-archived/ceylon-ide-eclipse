@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.util.Escaping.toInitialLowercase;
+
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,18 +10,15 @@ import java.util.Set;
 
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.IntersectionType;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.ProducedType;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.UnionType;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public abstract class DefinitionGenerator {
     
@@ -36,15 +35,19 @@ public abstract class DefinitionGenerator {
     abstract Tree.CompilationUnit getRootNode();
     abstract Node getNode();
     
-    static void appendParameters(LinkedHashMap<String,ProducedType> parameters,
+    static void appendParameters(
+            LinkedHashMap<String,ProducedType> parameters,
             StringBuffer buffer, TypeDeclaration supertype) {
         if (parameters.isEmpty()) {
             buffer.append("()");
         }
         else {
             buffer.append("(");
-            for (Map.Entry<String,ProducedType> e: parameters.entrySet()) {
-                Declaration member = supertype.getMember(e.getKey(), null, false);
+            for (Map.Entry<String,ProducedType> e: 
+                    parameters.entrySet()) {
+                Declaration member = 
+                        supertype.getMember(e.getKey(), 
+                                null, false);
                 if (member==null || !member.isFormal()) {
                     buffer.append(e.getValue().getProducedTypeName()).append(" ");
                 }
@@ -60,30 +63,36 @@ public abstract class DefinitionGenerator {
         LinkedHashMap<String,ProducedType> types = 
                 new LinkedHashMap<String,ProducedType>();
         int i=0;
-        for (Tree.PositionalArgument pa: pal.getPositionalArguments()) {
+        for (Tree.PositionalArgument pa: 
+                pal.getPositionalArguments()) {
             if (pa instanceof Tree.ListedArgument) {
-                Tree.Expression e = 
-                        ((Tree.ListedArgument) pa).getExpression();
+                Tree.ListedArgument la = 
+                        (Tree.ListedArgument) pa;
+                Tree.Expression e = la.getExpression();
                 ProducedType et = e.getTypeModel();
                 String name;
                 ProducedType t;
+                Unit unit = pa.getUnit();
                 if (et == null) {
-                    t = pa.getUnit().getAnythingDeclaration().getType();
+                    t = unit.getAnythingType();
                     name = "arg";
                 }
                 else {
-                    t = pa.getUnit().denotableType(et);
-                    if (e.getTerm() instanceof Tree.StaticMemberOrTypeExpression) {
+                    t = unit.denotableType(et);
+                    Tree.Term term = e.getTerm();
+                    if (term instanceof Tree.StaticMemberOrTypeExpression) {
+                        Tree.StaticMemberOrTypeExpression smte = 
+                                (Tree.StaticMemberOrTypeExpression) 
+                                    term;
                         String id = 
-                                ((Tree.StaticMemberOrTypeExpression) e.getTerm())
-                                        .getIdentifier().getText();
-                        name = Escaping.toInitialLowercase(id);
+                                smte.getIdentifier().getText();
+                        name = toInitialLowercase(id);
                     }
                     else {
-                        if (et.getDeclaration() instanceof ClassOrInterface || 
-                            et.getDeclaration() instanceof TypeParameter) {
+                        if (et.isClassOrInterface() || 
+                            et.isTypeParameter()) {
                             String tn = et.getDeclaration().getName();
-                            name = Escaping.toInitialLowercase(tn);
+                            name = toInitialLowercase(tn);
                         }
                         else {
                             name = "arg";
@@ -109,14 +118,16 @@ public abstract class DefinitionGenerator {
                 Tree.SpecifiedArgument na = 
                         (Tree.SpecifiedArgument) a;
                 Tree.Expression e = 
-                        na.getSpecifierExpression().getExpression();
+                        na.getSpecifierExpression()
+                            .getExpression();
                 String name = na.getIdentifier().getText();
                 ProducedType t;
+                Unit unit = a.getUnit();
                 if (e==null) {
-                    t = a.getUnit().getAnythingDeclaration().getType();
+                    t = unit.getAnythingType();
                 }
                 else {
-                    t = a.getUnit().denotableType(e.getTypeModel());
+                    t = unit.denotableType(e.getTypeModel());
                 }
                 if (types.containsKey(name)) {
                     name = name + ++i;
@@ -127,8 +138,10 @@ public abstract class DefinitionGenerator {
         return types;
     }
 
-    static void appendTypeParams(List<TypeParameter> typeParams, 
-            StringBuilder typeParamDef, StringBuilder typeParamConstDef, 
+    static void appendTypeParams(
+            List<TypeParameter> typeParams, 
+            StringBuilder typeParamDef, 
+            StringBuilder typeParamConstDef, 
             TypeParameter typeParam) {
         if (typeParams.contains(typeParam)) {
             return;
@@ -143,9 +156,10 @@ public abstract class DefinitionGenerator {
             typeParamDef.append("out ");
         }
         typeParamDef.append(typeParam.getName());
-        if (typeParam.isDefaulted() && typeParam.getDefaultTypeArgument() != null) {
+        ProducedType dta = typeParam.getDefaultTypeArgument();
+        if (typeParam.isDefaulted() && dta != null) {
             typeParamDef.append("=");
-            typeParamDef.append(typeParam.getDefaultTypeArgument().getProducedTypeName());
+            typeParamDef.append(dta.getProducedTypeName());
         }
         typeParamDef.append(",");
         
@@ -153,8 +167,10 @@ public abstract class DefinitionGenerator {
             typeParamConstDef.append(" given ");
             typeParamConstDef.append(typeParam.getName());
     
-            List<ProducedType> satisfiedTypes = typeParam.getSatisfiedTypes();
-            if (satisfiedTypes != null && !satisfiedTypes.isEmpty()) {
+            List<ProducedType> satisfiedTypes = 
+                    typeParam.getSatisfiedTypes();
+            if (satisfiedTypes != null && 
+                    !satisfiedTypes.isEmpty()) {
                 typeParamConstDef.append(" satisfies ");
                 boolean firstSatisfiedType = true;
                 for (ProducedType satisfiedType : satisfiedTypes) {
@@ -167,7 +183,8 @@ public abstract class DefinitionGenerator {
                 }
             }
     
-            List<ProducedType> caseTypes = typeParam.getCaseTypes();
+            List<ProducedType> caseTypes = 
+                    typeParam.getCaseTypes();
             if (caseTypes != null && !caseTypes.isEmpty()) {
                 typeParamConstDef.append(" of ");
                 boolean firstCaseType = true;
@@ -182,11 +199,14 @@ public abstract class DefinitionGenerator {
             }
             
             if (typeParam.getParameterLists() != null) {
-                for (ParameterList paramList : typeParam.getParameterLists()) {
-                    if (paramList != null && paramList.getParameters() != null) {
+                for (ParameterList paramList : 
+                        typeParam.getParameterLists()) {
+                    if (paramList != null && 
+                            paramList.getParameters() != null) {
                         typeParamConstDef.append("(");
                         boolean firstParam = true;
-                        for (Parameter param : paramList.getParameters()) {
+                        for (Parameter param : 
+                                paramList.getParameters()) {
                             if (firstParam) {
                                 firstParam = false;
                             } else {
@@ -207,26 +227,32 @@ public abstract class DefinitionGenerator {
             StringBuilder typeParamDef, StringBuilder typeParamConstDef, 
             ProducedType pt) {
         if (pt != null) {
-            if (pt.getDeclaration() instanceof UnionType) {
-                DefinitionGenerator.appendTypeParams(typeParams, typeParamDef, typeParamConstDef, 
-                        ((UnionType) pt.getDeclaration()).getCaseTypes());
+            if (pt.isUnion()) {
+                DefinitionGenerator.appendTypeParams(typeParams, 
+                        typeParamDef, typeParamConstDef, 
+                        pt.getCaseTypes());
             }
-            else if (pt.getDeclaration() instanceof IntersectionType) {
-                DefinitionGenerator.appendTypeParams(typeParams, typeParamDef, typeParamConstDef, 
-                        ((IntersectionType) pt.getDeclaration()).getSatisfiedTypes());
+            else if (pt.isIntersection()) {
+                DefinitionGenerator.appendTypeParams(typeParams, 
+                        typeParamDef, typeParamConstDef, 
+                        pt.getSatisfiedTypes());
             }
-            else if (pt.getDeclaration() instanceof TypeParameter) {
-                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, 
+            else if (pt.isTypeParameter()) {
+                appendTypeParams(typeParams, 
+                        typeParamDef, typeParamConstDef, 
                         (TypeParameter) pt.getDeclaration());
             }
         }
     }
 
-    static void appendTypeParams(List<TypeParameter> typeParams, StringBuilder typeParamDef, 
-            StringBuilder typeParamConstDef, Collection<ProducedType> parameterTypes) {
+    static void appendTypeParams(List<TypeParameter> typeParams, 
+            StringBuilder typeParamDef, 
+            StringBuilder typeParamConstDef, 
+            Collection<ProducedType> parameterTypes) {
         if (parameterTypes != null) {
             for (ProducedType pt: parameterTypes) {
-                appendTypeParams(typeParams, typeParamDef, typeParamConstDef, pt);
+                appendTypeParams(typeParams, typeParamDef, 
+                        typeParamConstDef, pt);
             }
         }
     }

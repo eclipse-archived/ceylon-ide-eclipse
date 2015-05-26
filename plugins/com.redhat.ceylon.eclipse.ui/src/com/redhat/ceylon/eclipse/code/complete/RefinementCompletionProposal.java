@@ -155,8 +155,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 
     public static ProducedReference getRefinedProducedReference(ProducedType superType, 
             Declaration d) {
-        if (superType.getDeclaration() instanceof IntersectionType) {
-            for (ProducedType pt: superType.getDeclaration().getSatisfiedTypes()) {
+        if (superType.isIntersection()) {
+            for (ProducedType pt: superType.getSatisfiedTypes()) {
                 ProducedReference result = getRefinedProducedReference(pt, d);
                 if (result!=null) return result;
             }

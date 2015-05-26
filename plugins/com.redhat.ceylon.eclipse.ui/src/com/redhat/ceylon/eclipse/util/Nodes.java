@@ -28,6 +28,7 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 
 import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -41,15 +42,12 @@ import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ProducedType;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Util;
 
@@ -693,25 +691,28 @@ public class Nodes {
         }
 
         if (identifyingNode instanceof Tree.Term) {
-            ProducedType type = ((Tree.Term) node).getTypeModel();
+            Tree.Term term = (Tree.Term) node;
+            ProducedType type = term.getTypeModel();
             if (!Util.isTypeUnknown(type)) {
                 if (!unplural) {
-                    TypeDeclaration d = type.getDeclaration();
-                    if (d instanceof ClassOrInterface || 
-                            d instanceof TypeParameter) {
-                        addNameProposals(names, false, d.getName());
+                    if (type.isClassOrInterface() || 
+                        type.isTypeParameter()) {
+                        addNameProposals(names, false, 
+                                type.getDeclaration()
+                                    .getName());
                     }
                 }
-                if (node.getUnit().isIterableType(type)) {
+                Unit unit = node.getUnit();
+                if (unit.isIterableType(type)) {
                     ProducedType iteratedType = 
-                            node.getUnit().getIteratedType(type);
+                            unit.getIteratedType(type);
                     if (iteratedType!=null) {
-                        TypeDeclaration itd = 
-                                iteratedType.getDeclaration();
-                        if (itd instanceof ClassOrInterface || 
-                                itd instanceof TypeParameter) {
-                            addNameProposals(names, true&&!unplural, 
-                                    itd.getName());
+                        if (iteratedType.isClassOrInterface() || 
+                            iteratedType.isTypeParameter()) {
+                            addNameProposals(names, 
+                                    true && !unplural, 
+                                    iteratedType.getDeclaration()
+                                        .getName());
                         }
                     }
                 }

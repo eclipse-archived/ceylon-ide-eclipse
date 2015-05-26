@@ -159,8 +159,8 @@ class TypeProposal implements ICompletionProposal,
         int size = supertypes.size();
         if (kind!=null) size++;
         if (infType.isTypeConstructor() ||
-                td instanceof UnionType || 
-                td instanceof IntersectionType) {
+                infType.isUnion() || 
+                infType.isIntersection()) {
             size++;
         }
         
@@ -173,8 +173,8 @@ class TypeProposal implements ICompletionProposal,
         }
         Unit unit = rootNode.getUnit();
         if (infType.isTypeConstructor() ||
-                td instanceof UnionType || 
-                td instanceof IntersectionType) {
+                infType.isUnion() || 
+                infType.isIntersection()) {
             proposals[i++] = 
                     new TypeProposal(offset, infType, 
                             infType.getProducedTypeNameInSource(unit), 

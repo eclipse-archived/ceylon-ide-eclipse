@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isAbstraction;
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
@@ -100,6 +98,8 @@ import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.VALUE_REF;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
+import static com.redhat.ceylon.model.typechecker.model.Util.isAbstraction;
+import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isLetter;
 import static java.util.Collections.emptyMap;
@@ -133,6 +133,15 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
@@ -153,18 +162,8 @@ import com.redhat.ceylon.model.typechecker.model.TypeAlias;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.UnionType;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.Escaping;
-import com.redhat.ceylon.eclipse.util.Nodes;
-import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 
 public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
@@ -1291,26 +1290,26 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 
     private static boolean isValueCaseOfSwitch(ProducedType requiredType,
             Declaration dec) {
-        TypeDeclaration rtd = requiredType==null ? 
-                null: requiredType.getDeclaration();
-        if (rtd instanceof UnionType) {
-            for (ProducedType td: rtd.getCaseTypes()) {
-                if (isValueCaseOfSwitch(td, dec)) return true;
+        if (requiredType!=null && requiredType.isUnion()) {
+            for (ProducedType td: requiredType.getCaseTypes()) {
+                if (isValueCaseOfSwitch(td, dec)) {
+                    return true;
+                }
             }
             return false;
         }
         else {
             return isAnonymousClassValue(dec) && 
-                    (rtd==null || ((TypedDeclaration) dec).getTypeDeclaration().inherits(rtd));
+                    (requiredType==null || 
+                    ((TypedDeclaration) dec).getTypeDeclaration()
+                        .inherits(requiredType.getDeclaration()));
         }
     }
 
     private static boolean isTypeCaseOfSwitch(ProducedType requiredType,
             Declaration dec) {
-        TypeDeclaration rtd = requiredType==null ? 
-                null : requiredType.getDeclaration();
-        if (rtd instanceof UnionType) {
-            for (ProducedType td: rtd.getCaseTypes()) {
+        if (requiredType!=null && requiredType.isUnion()) {
+            for (ProducedType td: requiredType.getCaseTypes()) {
                 if (isTypeCaseOfSwitch(td, dec)) {
                     return true;
                 }
@@ -1319,7 +1318,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else {
             return dec instanceof TypeDeclaration && 
-                    (rtd==null || ((TypeDeclaration) dec).inherits(rtd));
+                    (requiredType==null || 
+                    ((TypeDeclaration) dec)
+                        .inherits(requiredType.getDeclaration()));
         }
     }
 
