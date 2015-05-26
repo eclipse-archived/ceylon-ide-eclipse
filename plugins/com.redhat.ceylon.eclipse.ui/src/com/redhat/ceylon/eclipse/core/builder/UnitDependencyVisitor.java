@@ -36,34 +36,62 @@ public class UnitDependencyVisitor extends Visitor {
     
     private void storeDependency(ProducedType type) {
         if (type!=null) {
+            if (type.isClassOrInterface() || type.isTypeAlias()) {
+                if (!createDependency(type.getDeclaration())) {
+                    return;
+                }
+            }
             ProducedType et = type.getExtendedType();
             storeDependency(et);
-            for (ProducedType st: type.getSatisfiedTypes()) {
+            List<ProducedType> satisfiedTypes = 
+                    type.getSatisfiedTypes();
+            for (ProducedType st: satisfiedTypes) {
                 storeDependency(st);
             }
-            for (ProducedType ct: type.getCaseTypes()) {
-                storeDependency(ct);
-            }
-            if (type.isClassOrInterface() || type.isTypeAlias()) {
-                storeDependency(type.getDeclaration());
+            List<ProducedType> caseTypes = 
+                    type.getCaseTypes();
+            if (caseTypes!=null) {
+                for (ProducedType ct: caseTypes) {
+                    storeDependency(ct);
+                }
             }
         }
     }
-    private void storeDependency(Declaration d) {
-        if (d!=null && !alreadyDone.contains(d)) {
-            alreadyDone.add(d);
-            if (d instanceof TypeDeclaration) {
-                storeDependency(((TypeDeclaration) d).getType());
-            }
-            if (d instanceof TypedDeclaration) {
-                //TODO: is this really necessary?
-                storeDependency(((TypedDeclaration) d).getType());
-            }
-            Declaration rd = d.getRefinedDeclaration();
-            if (rd!=d) {
-                storeDependency(rd); //this one is needed for default arguments, I think
-            }
-            Unit declarationUnit = d.getUnit();
+    
+    private void storeDependency(Declaration dec) {
+        if (dec instanceof TypeDeclaration) {
+            storeDependency((TypeDeclaration) dec); 
+        }
+        else if (dec instanceof TypedDeclaration) {
+            storeDependency((TypedDeclaration) dec); 
+        }
+    }
+
+    private void storeDependency(TypedDeclaration dec) {
+        storeDependency(dec.getType());
+        //TODO: parameters!
+        Declaration rd = dec.getRefinedDeclaration();
+        if (rd!=dec && rd instanceof TypedDeclaration) {
+            storeDependency((TypedDeclaration) rd); //this one is needed for default arguments, I think
+        }
+        createDependency(dec);
+    }
+
+    private void storeDependency(TypeDeclaration dec) {
+        TypeDeclaration typeDeclaration = 
+                (TypeDeclaration) dec;
+        storeDependency(typeDeclaration.getType());
+        Declaration rd = dec.getRefinedDeclaration();
+        if (rd!=dec && rd instanceof TypeDeclaration) {
+            storeDependency((TypeDeclaration) rd); //this one is needed for default arguments, I think
+        }
+        createDependency(dec);
+    }
+
+    boolean createDependency(Declaration dec) {
+        if (dec!=null && !alreadyDone.contains(dec)) {
+            alreadyDone.add(dec);
+            Unit declarationUnit = dec.getUnit();
             if (declarationUnit != null && 
                     !(declarationUnit instanceof TypeFactory)) {
                 String moduleName = 
@@ -135,6 +163,10 @@ public class UnitDependencyVisitor extends Visitor {
                     }
                 }
             }
+            return true;
+        }
+        else {
+            return false;
         }
     }
     
