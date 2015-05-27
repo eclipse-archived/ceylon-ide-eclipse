@@ -991,9 +991,9 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (d instanceof TypeDeclaration && !dwp.isUnimported()) {
                 TypeDeclaration td = (TypeDeclaration) d;
                 ProducedType t = td.getType();
-                if (td.getTypeParameters().isEmpty() && 
+                if (!t.isNothing() &&
+                        td.getTypeParameters().isEmpty() && 
                         !td.isAnnotation() &&
-                        !(td instanceof NothingType) &&
                         !td.inherits(td.getUnit().getExceptionDeclaration())) {
                     if (td.getUnit().getPackage().getNameAsString()
                             .equals(Module.LANGUAGE_MODULE_NAME)) {

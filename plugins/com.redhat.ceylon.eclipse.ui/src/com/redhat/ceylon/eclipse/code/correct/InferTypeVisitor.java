@@ -37,8 +37,7 @@ class InferredType {
                 ProducedType it = 
                         intersectionType(generalizedType, 
                                 pt, unit);
-                if (!(it.getDeclaration() 
-                        instanceof NothingType)) {
+                if (!it.isNothing()) {
                     generalizedType = it;
                 }
             }
