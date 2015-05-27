@@ -389,7 +389,7 @@ public class DebugUtils {
                                             }
                                         }
                                         if (typeDescriptor instanceof IJavaObject && ! (typeDescriptor instanceof JDINullValue)) {
-                                            producedType = metamodelType.sendMessage("getProducedType", "(Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;)Lcom/redhat/ceylon/compiler/typechecker/model/ProducedType;", new IJavaValue[] {typeDescriptor}, innerThread);
+                                            producedType = metamodelType.sendMessage("getProducedType", "(Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;)Lcom/redhat/ceylon/model/typechecker/model/ProducedType;", new IJavaValue[] {typeDescriptor}, innerThread);
                                         }
                                     }
                                 }
@@ -418,7 +418,7 @@ public class DebugUtils {
                     IJavaThread innerThread, IProgressMonitor monitor)
             throws DebugException {
                 if (producedType instanceof IJavaObject && ! (producedType instanceof JDINullValue)) {
-                    IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("getProducedTypeName", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lcom/redhat/ceylon/compiler/typechecker/model/ProducedType;");
+                    IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("getProducedTypeName", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lcom/redhat/ceylon/model/typechecker/model/ProducedType;");
                     return producedTypeName;
                 }
                 return null;
@@ -569,7 +569,7 @@ public class DebugUtils {
             @Override
             public void run(IJavaThread innerThread, IProgressMonitor monitor,
                     EvaluationListener listener) throws DebugException {
-                IJavaValue qualifiedStringValue = jdiDeclaration.sendMessage("getQualifiedNameString", "()Ljava/lang/String;", new IJavaValue[0], innerThread, "Lcom/redhat/ceylon/compiler/typechecker/model/Declaration;");
+                IJavaValue qualifiedStringValue = jdiDeclaration.sendMessage("getQualifiedNameString", "()Ljava/lang/String;", new IJavaValue[0], innerThread, "Lcom/redhat/ceylon/model/typechecker/model/Declaration;");
                 listener.finished(qualifiedStringValue);
             }
         };
