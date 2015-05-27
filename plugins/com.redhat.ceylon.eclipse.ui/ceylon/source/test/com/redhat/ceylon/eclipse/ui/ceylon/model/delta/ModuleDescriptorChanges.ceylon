@@ -214,7 +214,7 @@ test void makeModuleImportNonNative() {
             childrenDeltas = {
                 ModuleImportDeltaMockup {
                     changedElementString = "ModuleImport[imported, 2.0.0]";
-                    changes = [ madeInvisibleOutsideScope ];
+                    changes = [ structuralChange ];
                 }
             };
         };
@@ -243,7 +243,7 @@ test void changeModuleImportNativeBackend() {
             childrenDeltas = {
                 ModuleImportDeltaMockup {
                     changedElementString = "ModuleImport[imported, 2.0.0]";
-                    changes = [ madeInvisibleOutsideScope ];
+                    changes = [ structuralChange ];
                 }
             };
         };

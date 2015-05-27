@@ -11,15 +11,15 @@ import ceylon.interop.java {
     javaClassFromInstance
 }
 
-import com.redhat.ceylon.compiler.typechecker.analyzer {
-    AnalysisError
-}
 import com.redhat.ceylon.model.typechecker.util {
     ModuleManager {
         moduleDescriptorFileName=MODULE_FILE,
         packageDescriptorFileName=PACKAGE_FILE
     },
     ProducedTypeNamePrinter
+}
+import com.redhat.ceylon.compiler.typechecker.analyzer {
+    AnalysisError
 }
 import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit,
@@ -44,6 +44,9 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 }
 import java.util {
     JList=List
+}
+import ceylon.language.meta {
+    typeLiteral
 }
 
 shared interface NodeComparisonListener {
@@ -678,11 +681,12 @@ shared class DeltaBuilderFactory(
                         return true;
                     }
                 }
+                assert(! typeLiteral<NodeType>().exactly(typeLiteral<Nothing>()));
                 // Don't search For Changes
                 return false;
             }
 
-            Boolean hasChanges = lookForChanges {
+            Boolean hasChanges = lookForChanges<Ast.Declaration> {
                 function between(Ast.Declaration oldNode, Ast.Declaration newNode) {
                     assert(exists oldDeclaration = oldNode.declarationModel);
                     assert(exists newDeclaration = newNode.declarationModel);
@@ -692,7 +696,7 @@ shared class DeltaBuilderFactory(
                     return any {
                         oldAnnotations != newAnnotations,
                         !errorListsEquals(oldNode.errors, newNode.errors),
-                        lookForChanges {
+                        lookForChanges<Ast.Constructor> {
                             function between(Ast.Constructor oldConstructor, Ast.Constructor newConstructor) {
                                 return any {
                                     nodesDiffer(oldConstructor.delegatedConstructor, newConstructor.delegatedConstructor, "delegatedConstructor"),
@@ -700,11 +704,11 @@ shared class DeltaBuilderFactory(
                                 };
                             }
                         },
-                        lookForChanges {
+                        lookForChanges<Ast.TypedDeclaration> {
                             function between(Ast.TypedDeclaration oldTyped, Ast.TypedDeclaration newTyped) {
                                 return any {
                                     nodesDiffer(oldTyped.type, newTyped.type, "type"),
-                                    lookForChanges {
+                                    lookForChanges<Ast.AnyMethod> {
                                         function between(Ast.AnyMethod oldMethod, Ast.AnyMethod newMethod) {
                                             return any {
                                                 nodesDiffer(oldMethod.typeConstraintList, newMethod.typeConstraintList, "typeConstraintList"),
@@ -720,7 +724,7 @@ shared class DeltaBuilderFactory(
                                             };
                                         }
                                     },
-                                    lookForChanges {
+                                    lookForChanges<Ast.ObjectDefinition> {
                                         function between(Ast.ObjectDefinition oldObject, Ast.ObjectDefinition newObject) {
                                             return any {
                                                 nodesDiffer(oldObject.extendedType, newObject.extendedType, "extendedType"),
@@ -728,7 +732,7 @@ shared class DeltaBuilderFactory(
                                             };
                                         }
                                     },
-                                    lookForChanges {
+                                    lookForChanges<Ast.Variable> {
                                         function between(Ast.Variable oldVariable, Ast.Variable newVariable) {
                                             return any {
                                                 oldVariable.parameterLists.size() != oldVariable.parameterLists.size(),
@@ -745,22 +749,22 @@ shared class DeltaBuilderFactory(
                                 };
                             }
                         },
-                        lookForChanges {
+                        lookForChanges<Ast.TypeDeclaration> {
                             function between(Ast.TypeDeclaration oldType, Ast.TypeDeclaration newType) {
                                 return any {
                                     nodesDiffer(oldType.caseTypes, newType.caseTypes, "caseTypes"),
                                     nodesDiffer(oldType.satisfiedTypes, newType.satisfiedTypes, "satisfiedTypes"),
                                     nodesDiffer(oldType.typeParameterList, newType.typeParameterList, "typeParameterList"),
-                                    lookForChanges {
+                                    lookForChanges<Ast.ClassOrInterface> {
                                         function between(Ast.ClassOrInterface oldClassOrInterface, Ast.ClassOrInterface newClassOrInterface) {
                                             return any {
                                                 nodesDiffer(oldClassOrInterface.typeConstraintList, newClassOrInterface.typeConstraintList, "typeConstraintList"),
-                                                lookForChanges {
+                                                lookForChanges<Ast.AnyClass> {
                                                     function between(Ast.AnyClass oldClass, Ast.AnyClass newClass) {
                                                         return any {
                                                             nodesDiffer(oldClass.extendedType, newClass.extendedType, "extendedType"),
                                                             nodesDiffer(oldClass.parameterList, newClass.parameterList, "parameterList"),
-                                                            lookForChanges {
+                                                            lookForChanges<Ast.ClassDeclaration> {
                                                                 function between(Ast.ClassDeclaration oldClassDecl, Ast.ClassDeclaration newClassDecl) {
                                                                     return any {
                                                                         nodesDiffer(oldClassDecl.classSpecifier, newClassDecl.classSpecifier, "classSpecifier")
@@ -770,17 +774,17 @@ shared class DeltaBuilderFactory(
                                                         };
                                                     }
                                                 },
-                                                lookForChanges {
+                                                lookForChanges<Ast.AnyInterface> {
                                                     function between(Ast.AnyInterface oldInterface, Ast.AnyInterface newInterface) {
                                                         return any {
-                                                            lookForChanges {
+                                                            lookForChanges<Ast.InterfaceDeclaration> {
                                                                 function between(Ast.InterfaceDeclaration oldInterfaceDecl, Ast.InterfaceDeclaration newInterfaceDecl) {
                                                                     return any {
                                                                         nodesDiffer(oldInterfaceDecl.typeSpecifier, newInterfaceDecl.typeSpecifier, "typeSpecifier")
                                                                     };
                                                                 }
                                                             },
-                                                            lookForChanges {
+                                                            lookForChanges<Ast.InterfaceDefinition> {
                                                                 function between(Ast.InterfaceDefinition oldInterface, Ast.InterfaceDefinition newInterface) {
                                                                     listener?.comparedNodes(oldInterface.\idynamic.string, newInterface.\idynamic.string, oldNode, "dynamic");
                                                                     return oldInterface.\idynamic != newInterface.\idynamic;
@@ -792,7 +796,7 @@ shared class DeltaBuilderFactory(
                                             };
                                         }
                                     },
-                                    lookForChanges {
+                                    lookForChanges<Ast.TypeAliasDeclaration> {
                                         function between(Ast.TypeAliasDeclaration oldTypeAliasDeclaration, Ast.TypeAliasDeclaration newTypeAliasDeclaration) {
                                             return any {
                                                 nodesDiffer(oldTypeAliasDeclaration.typeConstraintList, newTypeAliasDeclaration.typeConstraintList, "typeConstraintList"),
@@ -800,7 +804,7 @@ shared class DeltaBuilderFactory(
                                             };
                                         }
                                     },
-                                    lookForChanges {
+                                    lookForChanges<Ast.TypeConstraint> {
                                         function between(Ast.TypeConstraint oldTypeConstraint, Ast.TypeConstraint newTypeConstraint) {
                                             return any {
                                                 nodesDiffer(oldTypeConstraint.abstractedType, newTypeConstraint.abstractedType, "abstractedType"),
@@ -811,7 +815,7 @@ shared class DeltaBuilderFactory(
                                 };
                             }
                         },
-                        lookForChanges {
+                        lookForChanges<Ast.TypeParameterDeclaration> {
                             function between(Ast.TypeParameterDeclaration oldTypeParameter, Ast.TypeParameterDeclaration newTypeParameter) {
                                 return any {
                                     nodesDiffer(oldTypeParameter.typeSpecifier, newTypeParameter.typeSpecifier, "typeSpecifier"),

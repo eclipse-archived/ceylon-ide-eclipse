@@ -58,7 +58,7 @@ shared void testCompletenessOnSpecTests() {
         compare {
             oldPhasedUnit = phasedUnit;
             newPhasedUnit = phasedUnit;
-            expectedDelta = RegularCompilationUnitDeltaMockup(unit.string, [], []);
+            expectedDelta = RegularCompilationUnitDeltaMockup("Unit[``unit.filename``]", [], []);
             deltaBuilderFactory = DeltaBuilderFactory(true);
         };
     }
