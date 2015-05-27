@@ -43,6 +43,7 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
+import com.redhat.ceylon.model.typechecker.model.ProducedType;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
@@ -201,12 +202,12 @@ public class CeylonTestUtil {
                 }
             }
         }
-        TypeDeclaration et = t.getExtendedTypeDeclaration();
+        ProducedType et = t.getExtendedType();
         if (et != null) {
-            getAllMethods(c, et, members);
+            getAllMethods(c, et.getDeclaration(), members);
         }
-        for (TypeDeclaration st : t.getSatisfiedTypeDeclarations()) {
-            getAllMethods(c, st, members);
+        for (ProducedType st : t.getSatisfiedTypes()) {
+            getAllMethods(c, st.getDeclaration(), members);
         }
     }
     
