@@ -1059,8 +1059,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             Scope outerScope = scope.getContainer();
             if (outerScope instanceof Class) {
                 Class c = (Class) outerScope;
-                Class sup = c.getExtendedTypeDeclaration();
-                return sup!=null && sup.equals(dec); 
+                ProducedType sup = c.getExtendedType();
+                return sup!=null && 
+                        sup.getDeclaration().equals(dec); 
             }
             else {
                 return false;
