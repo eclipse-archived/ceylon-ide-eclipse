@@ -30,6 +30,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1095,7 +1096,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private String uniqueIdentifier(JDTModule module) {
         return module.getArtifact()==null ?
                 module.getNameAsString() + '#' + module.getVersion() :
-                module.getArtifact().getAbsolutePath();
+                new File(module.getSourceArchivePath()).getAbsolutePath();
     }
 
     private static String getModule(Declaration dec) {
