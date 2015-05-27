@@ -78,10 +78,11 @@ public class AddAnnotionProposal extends CorrectionProposal {
         return dec.hashCode();
     }
 
-    private static void addAddAnnotationProposal(Node node, String annotation, 
-            String desc, Referenceable dec, Collection<ICompletionProposal> proposals, 
+    private static void addAddAnnotationProposal(Node node, 
+            String annotation, String desc, Referenceable dec, 
+            Collection<ICompletionProposal> proposals, 
             IProject project) {
-        if (dec!=null && dec.getNameAsString()!=null && 
+        if (dec!=null && 
                 !(node instanceof Tree.MissingDeclaration)) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
@@ -102,19 +103,21 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
     }
 
-    private static void addAddAnnotationProposal(String annotation, 
-            String desc, Referenceable dec, 
+    private static void addAddAnnotationProposal(
+            String annotation, String desc, Referenceable dec, 
             Collection<ICompletionProposal> proposals, 
             PhasedUnit unit, Node node, 
             Tree.StatementOrArgument decNode) {
         IFile file = getFile(unit);
-        TextFileChange change = new TextFileChange(desc, file);
+        TextFileChange change = 
+                new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
         TextEdit edit = 
-                createReplaceAnnotationEdit(annotation, node, change);
+                createReplaceAnnotationEdit(annotation, 
+                        node, change);
         if (edit==null) {
-        	edit = createInsertAnnotationEdit(annotation, decNode, 
-        			getDocument(change));
+        	edit = createInsertAnnotationEdit(annotation, 
+        	        decNode, getDocument(change));
         }
         change.addEdit(edit);
         createExplicitTypeEdit(decNode, change);

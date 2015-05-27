@@ -535,9 +535,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addRemoveAnnotationProposal(node, "formal", proposals, project);
             break;
         case 400:
-        case 401:
         case 402:
             addMakeSharedProposal(proposals, project, node);
+            break;
+        case 705:
+            addMakeSharedDecProposal(proposals, project, node);
             break;
         case 500:
         case 510:
