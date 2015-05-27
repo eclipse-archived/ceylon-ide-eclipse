@@ -249,7 +249,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static <T> T doWithCeylonModelCaching(final Callable<T> action) 
             throws CoreException {
-        boolean was = ProducedTypeCache.setEnabled(true);
+        Boolean was = ProducedTypeCache.setEnabled(true);
         try {
             return action.call();
         } catch(CoreException ce) {
