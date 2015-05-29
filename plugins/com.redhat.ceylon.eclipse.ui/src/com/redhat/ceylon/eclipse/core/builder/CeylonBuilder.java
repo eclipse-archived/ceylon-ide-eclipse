@@ -2953,7 +2953,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static EnumSet<Warning> getSuppressedWarnings(IProject project) {
-        if (project==null) {
+        if (project==null || ! project.isAccessible()) {
             return EnumSet.noneOf(Warning.class);
         }
         else {
