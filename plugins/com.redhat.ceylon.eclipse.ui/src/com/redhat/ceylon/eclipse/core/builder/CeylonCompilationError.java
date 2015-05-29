@@ -20,8 +20,10 @@ import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
+import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 
 //This is bullshit. The IDE should have a nice way of converting
 //compilation units into objects that can be shown in the problems
@@ -117,7 +119,8 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
 
     @Override
     public javax.tools.Diagnostic.Kind getKind() {
-        return Diagnostic.Kind.ERROR;
+        return (err instanceof AnalysisError ||
+                    err instanceof UnexpectedError) ? Diagnostic.Kind.ERROR : Diagnostic.Kind.WARNING;
     }
 
     @Override

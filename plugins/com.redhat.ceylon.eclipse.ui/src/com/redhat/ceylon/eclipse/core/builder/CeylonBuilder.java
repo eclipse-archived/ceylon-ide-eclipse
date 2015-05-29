@@ -135,6 +135,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
@@ -2645,15 +2646,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (!jsc.generate()) {
                 CompileErrorReporter errorReporter = null;
                 //Report backend errors
+                boolean failed = false;
                 for (Message e : jsc.getErrors()) {
-                    if (e instanceof UnexpectedError) {
+                    if (e instanceof AnalysisMessage) {
+                        if (e instanceof UnexpectedError) {
+                            failed = true;
+                        }
                         if (errorReporter == null) {
                             errorReporter = new CompileErrorReporter(project);
                         }
-                        errorReporter.report(new CeylonCompilationError(project, (UnexpectedError)e));
+                        errorReporter.report(new CeylonCompilationError(project, (AnalysisMessage)e));
                     }
                 }
-                if (errorReporter != null) {
+                if (failed) {
                     //System.out.println("Ceylon-JS compiler failed for " + project.getName());
                     errorReporter.failed();
                 }
