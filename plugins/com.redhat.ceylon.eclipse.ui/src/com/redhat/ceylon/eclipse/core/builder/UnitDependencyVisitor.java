@@ -234,4 +234,19 @@ public class UnitDependencyVisitor extends Visitor {
         super.visit(that);
     }
     
+    public void visit(Tree.Declaration that) {
+        Declaration decl = that.getDeclarationModel();
+        if (decl.isNative()) {
+            List<Declaration> overloads = decl.getOverloads();
+            if (overloads != null) {
+                for (Declaration overload : overloads) {
+                    if (overload == decl) {
+                        continue;
+                    }
+                    createDependency(overload);
+                }
+            }
+        }
+        super.visit(that);
+    }
 }
