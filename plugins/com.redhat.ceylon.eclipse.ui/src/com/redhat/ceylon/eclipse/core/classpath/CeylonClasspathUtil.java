@@ -23,15 +23,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
+import net.lingala.zip4j.model.ZipParameters;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -315,37 +314,34 @@ public final class CeylonClasspathUtil {
                     }
                 }
                 try {
-                    FileUtil.copy(ceylonSourceArchive.getParentFile(), 
-                            new File(ceylonSourceArchive.getName()), 
-                            cacheDirectory, 
-                            new File(sourceArchivePath));
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-                if (cachedJavaArchive.exists()) {
-                    Set<String> entriesToDelete = new HashSet<String>();
-                    ZipFile zipFile = null;
+                    ZipFile oldzipFile = new ZipFile(ceylonSourceArchive);
+                    cachedJavaArchive.getParentFile().mkdirs();
+                    ZipFile newzipFile = new ZipFile(cachedJavaArchive);
+                    File temp = new File(cacheDirectory, "void");
                     try {
-                        zipFile = new ZipFile(cachedJavaArchive);
-                        
-                        for (FileHeader header : (List<FileHeader>) zipFile.getFileHeaders()) {
-                            if (!header.isDirectory()) {
-                                String sourceFile = header.getFileName();
-                                if (sourceFile != null && ! sourceFile.endsWith(".java")) {
-                                    entriesToDelete.add(sourceFile);
-                                }
+                        temp.createNewFile();
+                    } catch(IOException e) {
+                        e.printStackTrace();
+                    }
+                    ZipParameters zipParams = new ZipParameters();
+                    newzipFile.createZipFile(temp, zipParams);
+                    for (FileHeader header : (List<FileHeader>) oldzipFile.getFileHeaders()) {
+                        String sourceFile = header.getFileName();
+                        if (!header.isDirectory()) {
+                            if (sourceFile != null && ! sourceFile.endsWith(".java")) {
+                                continue;
                             }
                         }
-
-                        for (String entryToDelete : entriesToDelete) {
-                            zipFile.removeFile(entryToDelete);
-                        }
-                        return cachedJavaArchive;
-                    } catch (ZipException e) {
-                        e.printStackTrace();
-                        FileUtil.deleteQuietly(cachedJavaArchive);
-                        return null;
+                        ZipParameters parameters = new ZipParameters();
+                        parameters.setFileNameInZip(header.getFileName());
+                        parameters.setSourceExternalStream(true);
+                        newzipFile.addStream(oldzipFile.getInputStream(header), parameters);
                     }
+                    return cachedJavaArchive;
+                } catch (ZipException e) {
+                    e.printStackTrace();
+                    FileUtil.deleteQuietly(cachedJavaArchive);
+                    return null;
                 }
             }
         }
