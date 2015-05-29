@@ -21,11 +21,13 @@
 package com.redhat.ceylon.eclipse.core.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -35,6 +37,10 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import net.lingala.zip4j.exception.ZipException;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
@@ -73,6 +79,7 @@ import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper.ExternalModule
 import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.TraversalAction;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
@@ -104,6 +111,7 @@ public class JDTModule extends LazyModule {
                                                                     // But in the future we might remove the strong reference in the typeChecker and use strong references here, which would be 
                                                                     // much more modular (think of several versions of a module imported in a non-shared way in the same projet).
     private PhasedUnitMap<ExternalPhasedUnit, SoftReference<ExternalPhasedUnit>> binaryModulePhasedUnits;
+    private List<String> sourceRelativePaths = new ArrayList<>();
     private Properties classesToSources = new Properties();
     private Map<String, String> javaImplFilesToCeylonDeclFiles = new HashMap<String, String>();
     private String sourceArchivePath = null;
@@ -135,8 +143,7 @@ public class JDTModule extends LazyModule {
         final String fullPathPrefix = sourceArchivePath + "!/"; 
         
         public BinaryPhasedUnits() {
-            for (Object value : classesToSources.values()) {
-                String sourceRelativePath = (String) value;
+            for (String sourceRelativePath : sourceRelativePaths) {
                 putRelativePath(sourceRelativePath);
             }
         }
@@ -220,6 +227,34 @@ public class JDTModule extends LazyModule {
         
     };
     
+    private void fillSourceRelativePaths() throws ZipException {
+        classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
+        sourceRelativePaths.clear();
+        ZipFile sourceArchive;
+        try {
+            sourceArchive = new ZipFile(sourceArchivePath);
+            if (sourceArchive != null) {
+                try {
+                    Enumeration<? extends ZipEntry> entries = sourceArchive.entries();
+                    while(entries.hasMoreElements()) {
+                        ZipEntry entry = entries.nextElement();
+                        sourceRelativePaths.add(entry.getName());
+                    }
+                    
+                } finally {
+                    sourceArchive.close();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            sourceRelativePaths.clear();
+            for (Object value : classesToSources.values()) {
+                sourceRelativePaths.add((String)value);
+            }
+        }
+        javaImplFilesToCeylonDeclFiles = CarUtils.searchCeylonFilesForJavaImplementations(classesToSources, new File(sourceArchivePath));
+    }
+    
     synchronized void setArtifact(ArtifactResult artifactResult) {
         artifact = artifactResult.artifact();
         repositoryDisplayString = artifactResult.repositoryDisplayString();
@@ -237,8 +272,7 @@ public class JDTModule extends LazyModule {
             String carPath = artifact.getPath();
             sourceArchivePath = carPath.substring(0, carPath.length()-ArtifactContext.CAR.length()) + ArtifactContext.SRC;
             try {
-                classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
-                javaImplFilesToCeylonDeclFiles = CarUtils.searchCeylonFilesForJavaImplementations(classesToSources, new File(sourceArchivePath));
+                fillSourceRelativePaths();
             } catch (Exception e) {
                 CeylonPlugin.getInstance().getLog().log(new Status(IStatus.WARNING, CeylonPlugin.PLUGIN_ID, "Cannot find the source archive for the Ceylon binary module " + getSignature(), e));
             }
@@ -248,8 +282,7 @@ public class JDTModule extends LazyModule {
         if (isSourceArchive()) {
             sourceArchivePath = artifact.getPath();
             try {
-                classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
-                javaImplFilesToCeylonDeclFiles = CarUtils.searchCeylonFilesForJavaImplementations(classesToSources, artifact);                
+                fillSourceRelativePaths();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -792,8 +825,7 @@ public class JDTModule extends LazyModule {
                         }
                     }
                     
-                    classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
-                    javaImplFilesToCeylonDeclFiles = CarUtils.searchCeylonFilesForJavaImplementations(classesToSources, new File(sourceArchivePath));                
+                    fillSourceRelativePaths();
                     
                     originalUnitsToRemove.clear();
                     originalUnitsToAdd.clear();
@@ -906,16 +938,29 @@ public class JDTModule extends LazyModule {
                             phasedUnit = new ExternalPhasedUnit(archiveEntry, sourceArchive, cu, 
                                     new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens) {
                                 @Override
-                                protected boolean reuseExistingDescriptorModels() {                                    
-                                    return true;
+                                protected boolean isAllowedToChangeModel(Declaration declaration) {
+                                    return !IdePhasedUnit.isCentralModelDeclaration(declaration);
                                 }
+
+                                @Override
+                                public void scanDeclarations() {
+                                    super.scanDeclarations();
+                                    IdePhasedUnit.addCentralModelOverloads(getUnit());
+                                }
+                                
                             };
                         } else {
                             phasedUnit = new CrossProjectPhasedUnit(archiveEntry, sourceArchive, cu, 
                                     new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens, originalProject) {
                                 @Override
-                                protected boolean reuseExistingDescriptorModels() {                                    
-                                    return true;
+                                protected boolean isAllowedToChangeModel(Declaration declaration) {
+                                    return !IdePhasedUnit.isCentralModelDeclaration(declaration);
+                                }
+
+                                @Override
+                                public void scanDeclarations() {
+                                    super.scanDeclarations();
+                                    IdePhasedUnit.addCentralModelOverloads(getUnit());
                                 }
                             };
                         }

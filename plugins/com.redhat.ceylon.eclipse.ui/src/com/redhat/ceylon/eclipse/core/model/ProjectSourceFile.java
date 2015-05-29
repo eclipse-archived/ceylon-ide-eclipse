@@ -10,8 +10,10 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.eclipse.ui.ceylon.model.delta.CompilationUnitDelta;
@@ -79,8 +81,14 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
                                 currentTypechecker.getContext(),
                                 tokenStream.getTokens()) {
                             @Override
-                            protected boolean reuseExistingDescriptorModels() {
-                                return true;
+                            protected boolean isAllowedToChangeModel(Declaration declaration) {
+                                return ! IdePhasedUnit.isCentralModelDeclaration(declaration);
+                            }
+
+                            @Override
+                            public void scanDeclarations() {
+                                super.scanDeclarations();
+                                IdePhasedUnit.addCentralModelOverloads(getUnit());
                             }
                         };
                     }

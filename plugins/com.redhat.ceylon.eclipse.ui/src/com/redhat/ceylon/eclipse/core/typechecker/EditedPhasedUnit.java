@@ -71,10 +71,10 @@ public class EditedPhasedUnit extends IdePhasedUnit {
     }
     
     @Override
-    protected boolean reuseExistingDescriptorModels() {
-        return true;
+    public boolean isAllowedToChangeModel(Declaration declaration) {
+        return !IdePhasedUnit.isCentralModelDeclaration(declaration);
     }
-    
+
     @Override
     public boolean shouldIgnoreOverload(Declaration overload,
             Declaration currentDeclaration) {
@@ -103,4 +103,11 @@ public class EditedPhasedUnit extends IdePhasedUnit {
         }
         return false;
     }
+    
+    @Override
+    public void scanDeclarations() {
+        super.scanDeclarations();
+        IdePhasedUnit.addCentralModelOverloads(getUnit());
+    }
+    
 }

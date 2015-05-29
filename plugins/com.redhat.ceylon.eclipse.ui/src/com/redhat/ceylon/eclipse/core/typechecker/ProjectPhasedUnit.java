@@ -143,30 +143,17 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         for (Declaration packageDeclaration : getPackage().getMembers()) {
             if (packageDeclaration.isNative()) {
                 List<Declaration> packageDeclarationOverloads = AbstractModelLoader.getOverloads(packageDeclaration);
-                for (Declaration packageDeclarationOverload : packageDeclarationOverloads) {
-                    if (packageDeclarationOverload.getUnit() == getUnit()) {
-                        declarationsToClean.add(packageDeclarationOverload);
+                if (packageDeclarationOverloads != null) {
+                    for (Declaration packageDeclarationOverload : packageDeclarationOverloads) {
+                        if (packageDeclarationOverload.getUnit() == getUnit()) {
+                            declarationsToClean.add(packageDeclarationOverload);
+                        }
                     }
                 }
             }
         }
         for (Declaration declarationToClean : declarationsToClean) {
-            List<Declaration> overloadsToClean = AbstractModelLoader.getOverloads(declarationToClean);
-            for (Declaration overloadToClean : overloadsToClean) {
-                if (overloadToClean == declarationToClean) {
-                    continue;
-                }
-                List<Declaration> overloadOverloads = AbstractModelLoader.getOverloads(overloadToClean);
-                
-                List<Declaration> newOverloadOverloads = new ArrayList<>(3);
-                for (Declaration overloadOverload : overloadOverloads) {
-                    if (overloadOverload == declarationToClean) {
-                        continue;
-                    }
-                    newOverloadOverloads.add(overloadOverload);
-                }
-                AbstractModelLoader.setOverloads(overloadToClean, newOverloadOverloads);
-            }
+            removeDeclarationFromOverloads(declarationToClean);
         }
 
         PhasedUnits phasedUnits = typechecker.getPhasedUnits();
@@ -174,6 +161,31 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         JDTModule module = (JDTModule) getPackage().getModule();
         for (JDTModule moduleInReferencingProject : module.getModuleInReferencingProjects()) {
         	moduleInReferencingProject.removedOriginalUnit(getPathRelativeToSrcDir());
+        }
+    }
+
+    protected void removeDeclarationFromOverloads(Declaration declarationToClean) {
+        List<Declaration> overloadsToClean = AbstractModelLoader.getOverloads(declarationToClean);
+        if (overloadsToClean == null) {
+            return;
+        }
+        for (Declaration overloadToClean : overloadsToClean) {
+            if (overloadToClean == declarationToClean) {
+                continue;
+            }
+            List<Declaration> overloadOverloads = AbstractModelLoader.getOverloads(overloadToClean);
+            
+            List<Declaration> newOverloadOverloads = new ArrayList<>(3);
+            for (Declaration overloadOverload : overloadOverloads) {
+                if (overloadOverload == declarationToClean) {
+                    continue;
+                }
+                newOverloadOverloads.add(overloadOverload);
+            }
+            AbstractModelLoader.setOverloads(overloadToClean, newOverloadOverloads);
+        }
+        for (Declaration member : declarationToClean.getMembers()) {
+            removeDeclarationFromOverloads(member);
         }
     }
 }
