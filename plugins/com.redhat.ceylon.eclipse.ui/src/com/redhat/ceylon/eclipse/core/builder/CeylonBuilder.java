@@ -2535,7 +2535,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         //Compile JS first
         if ((forJavascriptBackend.size() + javaScriptResources.size() > 0) && compileToJs(project)) {
             success = compileJs(project, typeChecker, js_srcdir, js_rsrcdir, js_repos,
-                    js_verbose, js_outRepo, printWriter, true,
+                    js_verbose, js_outRepo, printWriter, 
+                    /*!compileToJava(project) uncomment isntead of true 
+					when https://github.com/ceylon/ceylon-compiler/issues/2175 is fixed */true,
                     forJavascriptBackend, javaScriptResources);
         }
         if ((forJavaBackend.size() + javaResources.size() > 0) && compileToJava(project)) {
@@ -2549,7 +2551,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         
         if (! compileToJs(project) &&
-        		! compileToJava(project) &&
+        		/*! compileToJava(project) &&*/ // TODO : uncomment when https://github.com/ceylon/ceylon-compiler/issues/2175 is fixed
         		modulesOutputDir != null) {
         	EclipseLogger logger = new EclipseLogger();
 			RepositoryManager outRepo = repoManager()
