@@ -268,6 +268,7 @@ public class CeylonParseController {
                     useTypechecker(phasedUnit, new Runnable() {
                         @Override
                         public void run() {
+                            phasedUnit.analyseTypes();
                             if (showWarnings(finalProject)) {
                                 phasedUnit.analyseUsage();
                             }
