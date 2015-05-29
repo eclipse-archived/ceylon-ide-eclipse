@@ -2168,6 +2168,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         final long totalNumberOfModules = numberOfModulesNotAlreadySearched + moduleValidator.numberOfModulesAlreadySearched();
                         final long oneModuleWork = maxModuleValidatorWork / totalNumberOfModules;
                         final int workRemaining = (int) ((double)numberOfModulesNotAlreadySearched * oneModuleWork);
+                        if(validatorProgress.isCanceled()) {
+                            throw new OperationCanceledException("Interrupted the retrieving of module : " + module.getSignature());
+                        }
                         validatorProgress.setWorkRemaining(workRemaining);
                         artifactContext.setCallback(new ArtifactCallback() {
                             SubMonitor artifactProgress = null;
@@ -2209,6 +2212,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             public void error(File localFile, Throwable t) {
                                 localFile.delete();
                                 artifactProgress.setWorkRemaining(0);
+                                if (t instanceof OperationCanceledException) {
+                                   throw (OperationCanceledException)t;
+                                }
                             }
                             @Override
                             public void done(File arg0) {
@@ -2220,6 +2226,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     @Override
                     public void resolvingModuleArtifact(Module module,
                             ArtifactResult artifactResult) {
+                        if (validatorProgress.isCanceled()) {
+                            throw new OperationCanceledException("Interrupted the resolving of module : " + module.getSignature());
+                        }
                         long numberOfModulesNotAlreadySearched = moduleValidator.numberOfModulesNotAlreadySearched();
                         validatorProgress.setWorkRemaining((int) (numberOfModulesNotAlreadySearched * 100
                                                                    / (numberOfModulesNotAlreadySearched + moduleValidator.numberOfModulesAlreadySearched())));
