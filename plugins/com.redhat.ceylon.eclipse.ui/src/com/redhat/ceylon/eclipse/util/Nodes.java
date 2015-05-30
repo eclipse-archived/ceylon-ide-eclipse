@@ -43,9 +43,9 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -438,8 +438,8 @@ public class Nodes {
             }
         }
         Referenceable dec = getReferencedDeclaration(node);
-        if (dec instanceof MethodOrValue) {
-            MethodOrValue mv = (MethodOrValue) dec;
+        if (dec instanceof FunctionOrValue) {
+            FunctionOrValue mv = (FunctionOrValue) dec;
             if (mv.isShortcutRefinement()) {
                 dec = mv.getRefinedDeclaration();
             }
@@ -692,7 +692,7 @@ public class Nodes {
 
         if (identifyingNode instanceof Tree.Term) {
             Tree.Term term = (Tree.Term) node;
-            ProducedType type = term.getTypeModel();
+            Type type = term.getTypeModel();
             if (!Util.isTypeUnknown(type)) {
                 if (!unplural) {
                     if (type.isClassOrInterface() || 
@@ -704,7 +704,7 @@ public class Nodes {
                 }
                 Unit unit = node.getUnit();
                 if (unit.isIterableType(type)) {
-                    ProducedType iteratedType = 
+                    Type iteratedType = 
                             unit.getIteratedType(type);
                     if (iteratedType!=null) {
                         if (iteratedType.isClassOrInterface() || 
@@ -826,7 +826,7 @@ public class Nodes {
                     result.append(", ");
                 }
                 if (p instanceof Tree.InitializerParameter) {
-                    ProducedType type = 
+                    Type type = 
                             p.getParameterModel().getType();
                     if (!isTypeUnknown(type)) {
                         result.append(type.getProducedTypeNameInSource(unit))

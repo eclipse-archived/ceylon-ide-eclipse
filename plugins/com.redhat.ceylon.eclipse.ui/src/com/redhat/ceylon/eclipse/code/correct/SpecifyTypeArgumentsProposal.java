@@ -10,7 +10,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
@@ -40,7 +40,7 @@ public class SpecifyTypeArgumentsProposal extends CorrectionProposal {
                 typeArguments.getTypeModels()!=null &&
                 !typeArguments.getTypeModels().isEmpty()) {
             StringBuilder builder = new StringBuilder("<");
-            for (ProducedType arg: typeArguments.getTypeModels()) {
+            for (Type arg: typeArguments.getTypeModels()) {
                 if (isTypeUnknown(arg)) {
                     return;
                 }

@@ -62,12 +62,12 @@ import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Method;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -109,7 +109,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             CeylonParseController cpc, IDocument doc, 
             List<ICompletionProposal> result, boolean preamble) {
         boolean isInterface = scope instanceof Interface;
-        ProducedReference pr = getRefinedProducedReference(scope, dec);
+        Reference pr = getRefinedProducedReference(scope, dec);
         Unit unit = node.getUnit();
         result.add(new RefinementCompletionProposal(offset, prefix, pr,
                 getRefinementDescriptionFor(dec, pr, unit), 
@@ -122,7 +122,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     static void addNamedArgumentProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             Declaration dec, Scope scope) {
-        //TODO: type argument substitution using the ProducedReference of the primary node
+        //TODO: type argument substitution using the Reference of the primary node
         Unit unit = cpc.getRootNode().getUnit();
         result.add(new RefinementCompletionProposal(offset, prefix, 
                 dec.getReference(), //TODO: this needs to do type arg substitution
@@ -134,9 +134,9 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     static void addInlineFunctionProposal(int offset, Declaration dec, 
             Scope scope, Node node, String prefix, CeylonParseController cpc, 
             IDocument doc, List<ICompletionProposal> result) {
-        //TODO: type argument substitution using the ProducedReference of the primary node
+        //TODO: type argument substitution using the Reference of the primary node
         if (dec.isParameter()) {
-            Parameter p = ((MethodOrValue) dec).getInitializerParameter();
+            Parameter p = ((FunctionOrValue) dec).getInitializerParameter();
             Unit unit = node.getUnit();
             result.add(new RefinementCompletionProposal(offset, prefix, 
                     dec.getReference(), //TODO: this needs to do type arg substitution
@@ -147,33 +147,33 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
     }
 
-    public static ProducedReference getRefinedProducedReference(Scope scope, 
+    public static Reference getRefinedProducedReference(Scope scope, 
             Declaration d) {
         return refinedProducedReference(scope.getDeclaringType(d), d);
     }
 
-    public static ProducedReference getRefinedProducedReference(ProducedType superType, 
+    public static Reference getRefinedProducedReference(Type superType, 
             Declaration d) {
         if (superType.isIntersection()) {
-            for (ProducedType pt: superType.getSatisfiedTypes()) {
-                ProducedReference result = getRefinedProducedReference(pt, d);
+            for (Type pt: superType.getSatisfiedTypes()) {
+                Reference result = getRefinedProducedReference(pt, d);
                 if (result!=null) return result;
             }
             return null; //never happens?
         }
         else {
-            ProducedType declaringType = 
+            Type declaringType = 
                     superType.getDeclaration().getDeclaringType(d);
             if (declaringType==null) return null;
-            ProducedType outerType = 
+            Type outerType = 
                     superType.getSupertype(declaringType.getDeclaration());
             return refinedProducedReference(outerType, d);
         }
     }
     
-    private static ProducedReference refinedProducedReference(ProducedType outerType, 
+    private static Reference refinedProducedReference(Type outerType, 
             Declaration d) {
-        List<ProducedType> params = new ArrayList<ProducedType>();
+        List<Type> params = new ArrayList<Type>();
         if (d instanceof Generic) {
             for (TypeParameter tp: ((Generic) d).getTypeParameters()) {
                 params.add(tp.getType());
@@ -184,13 +184,13 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     
     private final CeylonParseController cpc;
     private final Declaration declaration;
-    private final ProducedReference pr;
+    private final Reference pr;
     private final boolean fullType;
     private final Scope scope;
     private boolean explicitReturnType;
 
     private RefinementCompletionProposal(int offset, String prefix, 
-            ProducedReference pr, String desc, String text, 
+            Reference pr, String desc, String text, 
             CeylonParseController cpc, Declaration dec, Scope scope,
             boolean fullType, boolean explicitReturnType) {
         super(offset, prefix, getRefinementIcon(dec), desc, text);
@@ -218,7 +218,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         return result;
     }
     
-    private ProducedType getType() {
+    private Type getType() {
         return fullType ?
                 pr.getFullType() :
                 pr.getType();
@@ -324,7 +324,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     
     private void addProposals(final int loc, 
             List<ICompletionProposal> props, String prefix) {
-        ProducedType type = getType();
+        Type type = getType();
         if (type==null) return;
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
@@ -350,7 +350,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         continue;
                     }
                 }
-                ProducedType vt = value.getType();
+                Type vt = value.getType();
                 if (vt!=null && !vt.isNothing() &&
                     ((td instanceof TypeParameter) && 
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
@@ -358,16 +358,16 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     props.add(new NestedCompletionProposal(d, loc));
                 }
             }
-            if (d instanceof Method && !d.equals(declaration)) {
+            if (d instanceof Function && !d.equals(declaration)) {
                 if (!d.isAnnotation()) {
-                    Method method = (Method) d;
+                    Function method = (Function) d;
                     if (d.getUnit().getPackage().getNameAsString()
                             .equals(Module.LANGUAGE_MODULE_NAME)) {
                         if (isIgnoredLanguageModuleMethod(method)) {
                             continue;
                         }
                     }
-                    ProducedType mt = method.getType();
+                    Type mt = method.getType();
                     if (mt!=null && !mt.isNothing() &&
                         ((td instanceof TypeParameter) && 
                             isInBounds(((TypeParameter)td).getSatisfiedTypes(), mt) || 
@@ -385,7 +385,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                             continue;
                         }
                     }
-                    ProducedType ct = clazz.getType();
+                    Type ct = clazz.getType();
                     if (ct!=null && !ct.isNothing() &&
                             ((td instanceof TypeParameter) && 
                                     isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 

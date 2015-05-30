@@ -37,13 +37,13 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Import;
-import com.redhat.ceylon.model.typechecker.model.Method;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
@@ -449,29 +449,29 @@ public class ImportProposals {
     
     public static void importTypes(
             Set<Declaration> declarations, 
-            Collection<ProducedType> types, 
+            Collection<Type> types, 
             Tree.CompilationUnit rootNode) {
         if (types==null) return;
-        for (ProducedType type: types) {
+        for (Type type: types) {
             importType(declarations, type, rootNode);
         }
     }
     
     public static void importType(
             Set<Declaration> declarations, 
-            ProducedType type, 
+            Type type, 
             Tree.CompilationUnit rootNode) {
         if (type!=null) {
             if (type.isUnknown() || type.isNothing()) {
                 //nothing to do
             }
             else if (type.isUnion()) {
-                for (ProducedType t: type.getCaseTypes()) {
+                for (Type t: type.getCaseTypes()) {
                     importType(declarations, t, rootNode);
                 }
             }
             else if (type.isIntersection()) {
-                for (ProducedType t: type.getSatisfiedTypes()) {
+                for (Type t: type.getSatisfiedTypes()) {
                     importType(declarations, t, rootNode);
                 }
             }
@@ -482,7 +482,7 @@ public class ImportProposals {
                 if (type.isClassOrInterface() && 
                         td.isToplevel()) {
                     importDeclaration(declarations, td, rootNode);
-                    for (ProducedType arg: 
+                    for (Type arg: 
                             type.getTypeArgumentList()) {
                         importType(declarations, arg, rootNode);
                     }
@@ -532,7 +532,7 @@ public class ImportProposals {
                     fun.getParameterLists();
             if (!pls.isEmpty()) {
                 for (Parameter p: pls.get(0).getParameters()) {
-                    MethodOrValue pm = p.getModel();
+                    FunctionOrValue pm = p.getModel();
                     importParameterTypes(pm, cu, decs);
                 }
             }            
@@ -543,8 +543,8 @@ public class ImportProposals {
             Declaration dec,
             Tree.CompilationUnit cu, 
             HashSet<Declaration> decs) {
-        if (dec instanceof Method) {
-            Method m = (Method) dec;
+        if (dec instanceof Function) {
+            Function m = (Function) dec;
             for (ParameterList ppl: m.getParameterLists()) {
                 for (Parameter pp: ppl.getParameters()) {
                     importSignatureTypes(pp.getModel(), 

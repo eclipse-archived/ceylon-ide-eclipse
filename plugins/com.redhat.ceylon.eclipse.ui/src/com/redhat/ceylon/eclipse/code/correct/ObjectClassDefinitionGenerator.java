@@ -28,8 +28,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -42,8 +42,8 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
     private final CompilationUnit rootNode;
     private final String desc;
     private final Image image;
-    private final ProducedType returnType;
-    private final LinkedHashMap<String, ProducedType> parameters;
+    private final Type returnType;
+    private final LinkedHashMap<String, Type> parameters;
    
 
     @Override
@@ -52,12 +52,12 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
     }
     
     @Override
-    ProducedType getReturnType() {
+    Type getReturnType() {
         return returnType;
     }
     
     @Override
-    LinkedHashMap<String, ProducedType> getParameters() {
+    LinkedHashMap<String, Type> getParameters() {
         return parameters;
     }
     
@@ -86,8 +86,8 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             Tree.CompilationUnit rootNode,
             String desc,
             Image image,
-            ProducedType returnType,
-            LinkedHashMap<String, ProducedType> paramTypes) {
+            Type returnType,
+            LinkedHashMap<String, Type> paramTypes) {
         this.brokenName = brokenName;
         this.isUpperCase = Character.isUpperCase(brokenName.codePointAt(0));
         this.node = node;
@@ -265,7 +265,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
 
     private void appendRefinementText(String indent, String delim,
             StringBuffer def, String defIndent, Declaration d) {
-        ProducedReference pr = 
+        Reference pr = 
                 getRefinedProducedReference(returnType, d);
         String text = getRefinementTextFor(d, pr, node.getUnit(), 
                 false, null, "", false);
@@ -282,9 +282,9 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         FindArgumentsVisitor fav = new FindArgumentsVisitor(node);
         rootNode.visit(fav);
         Unit unit = node.getUnit();
-        ProducedType returnType = unit.denotableType(fav.expectedType);
+        Type returnType = unit.denotableType(fav.expectedType);
         StringBuilder params = new StringBuilder();
-        LinkedHashMap<String, ProducedType> paramTypes = getParameters(fav);
+        LinkedHashMap<String, Type> paramTypes = getParameters(fav);
         if (returnType!=null) {
             if(unit.isOptionalType(returnType)){
                 returnType = returnType.eliminateNull();
@@ -317,7 +317,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         }
     }
 
-    private static String supertypeDeclaration(ProducedType returnType) {
+    private static String supertypeDeclaration(Type returnType) {
         if (isTypeUnknown(returnType)) {
             return null;
         }
@@ -331,7 +331,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             else if (returnType.isIntersection()) {
                 String extendsClause = "";
                 StringBuilder satisfiesClause = new StringBuilder();
-                for (ProducedType st: returnType.getSatisfiedTypes()) {
+                for (Type st: returnType.getSatisfiedTypes()) {
                     if (st.isClass()) {
                         extendsClause = " extends " + st.getProducedTypeName() + "()"; //TODO: supertype arguments!
                     }
@@ -353,7 +353,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         }
     }
 
-    private static boolean isValidSupertype(ProducedType returnType) {
+    private static boolean isValidSupertype(Type returnType) {
         if (isTypeUnknown(returnType)) {
             return true;
         }
@@ -370,7 +370,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                         .equals(unit.getCallableDeclaration());
             }
             else if (returnType.isIntersection()) {
-                for (ProducedType st: returnType.getSatisfiedTypes()) {
+                for (Type st: returnType.getSatisfiedTypes()) {
                     if (!isValidSupertype(st)) {
                         return false;
                     }
@@ -383,7 +383,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         }
     }
 
-    private static boolean isNotBasic(ProducedType returnType) {
+    private static boolean isNotBasic(Type returnType) {
         if (isTypeUnknown(returnType)) {
             return false;
         }
@@ -396,7 +396,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                 return false;
             }
             else if (returnType.isIntersection()) {
-                for (ProducedType st: returnType.getSatisfiedTypes()) {
+                for (Type st: returnType.getSatisfiedTypes()) {
                     if (st.isClass()) {
                         return returnType.getSupertype(unit.getBasicDeclaration())==null;
                     }

@@ -32,7 +32,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -43,7 +43,7 @@ import com.redhat.ceylon.eclipse.util.LinkedMode;
 public class SpecifyTypeProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
 
-    private final ProducedType infType;
+    private final Type infType;
     private final String desc;
     private final Tree.Type typeNode;
     private CeylonEditor editor;
@@ -51,7 +51,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
     private Point selection;
     
     private SpecifyTypeProposal(String desc, Tree.Type type,
-            Tree.CompilationUnit cu, ProducedType infType, 
+            Tree.CompilationUnit cu, Type infType, 
             CeylonEditor editor) {
         this.desc = desc;
         this.typeNode = type;
@@ -128,7 +128,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
         InferredType result = inferType(cu, type);
         List<SpecifyTypeProposal> list = 
                 new ArrayList<SpecifyTypeProposal>(2);
-        ProducedType declaredType = type.getTypeModel();
+        Type declaredType = type.getTypeModel();
         if (!isTypeUnknown(declaredType)) {
             if (!isTypeUnknown(result.generalizedType) &&
                     (isTypeUnknown(result.inferredType) || 

@@ -33,7 +33,7 @@ import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
@@ -151,7 +151,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
             if (type.getToken()!=null &&
                     (type instanceof Tree.FunctionModifier || 
                      type instanceof Tree.ValueModifier)) {
-                ProducedType it = type.getTypeModel();
+                Type it = type.getTypeModel();
                 if (it!=null && 
                         !(it.getDeclaration() instanceof UnknownType)) {
                     String explicitType = 
@@ -570,25 +570,25 @@ public class AddAnnotionProposal extends CorrectionProposal {
                     (Tree.ClassOrInterface) node;
             ClassOrInterface ci = cin.getDeclarationModel();
             
-            ProducedType extendedType = 
+            Type extendedType = 
                     ci.getExtendedType();
             if (extendedType!=null) {
                 addMakeSharedProposal(proposals, project, 
                         extendedType.getDeclaration());
-                for (ProducedType typeArgument:
+                for (Type typeArgument:
                         extendedType.getTypeArgumentList()) {
                     addMakeSharedProposal(proposals, project, 
                             typeArgument.getDeclaration());
                 }
             }
             
-            List<ProducedType> satisfiedTypes = 
+            List<Type> satisfiedTypes = 
                     ci.getSatisfiedTypes();
             if (satisfiedTypes!=null) {
-                for (ProducedType satisfiedType: satisfiedTypes) {
+                for (Type satisfiedType: satisfiedTypes) {
                     addMakeSharedProposal(proposals, project, 
                             satisfiedType.getDeclaration());
-                    for (ProducedType typeArgument: 
+                    for (Type typeArgument: 
                             satisfiedType.getTypeArgumentList()) {
                         addMakeSharedProposal(proposals, project, 
                                 typeArgument.getDeclaration());
@@ -619,7 +619,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
     static void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Referenceable dec = null;
-        List<ProducedType> typeArgumentList = null;
+        List<Type> typeArgumentList = null;
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
             Tree.StaticMemberOrTypeExpression qmte = 
                     (Tree.StaticMemberOrTypeExpression) node;
@@ -670,7 +670,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
                     (Tree.TypedDeclaration) node;
             TypedDeclaration td = tdn.getDeclarationModel();
             if (td!=null) {
-                ProducedType pt = td.getType();
+                Type pt = td.getType();
                 dec = pt.getDeclaration();
                 typeArgumentList = pt.getTypeArgumentList();
             }
@@ -680,14 +680,14 @@ public class AddAnnotionProposal extends CorrectionProposal {
                     (Tree.Parameter) node;
             Parameter param = parameter.getParameterModel();
             if (param!=null && param.getType()!=null) {
-                ProducedType pt = param.getType();
+                Type pt = param.getType();
                 dec = pt.getDeclaration();
                 typeArgumentList = pt.getTypeArgumentList();
             }
         }
         addMakeSharedProposal(proposals, project, dec);
         if (typeArgumentList != null) {
-            for (ProducedType typeArgument: typeArgumentList) {
+            for (Type typeArgument: typeArgumentList) {
                 addMakeSharedProposal(proposals, project, 
                         typeArgument.getDeclaration());
             }
@@ -696,14 +696,14 @@ public class AddAnnotionProposal extends CorrectionProposal {
     
     static void addMakeSharedProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, ProducedType type) {
+            IProject project, Type type) {
         if (type!=null) {
             if (type.isUnion()) {
-                for (ProducedType caseType: 
+                for (Type caseType: 
                         type.getCaseTypes()) {
                     addMakeSharedProposal(proposals, 
                             project, caseType);
-                    for (ProducedType typeArgument: 
+                    for (Type typeArgument: 
                         caseType.getTypeArgumentList()) {
                         addMakeSharedProposal(proposals, 
                                 project, typeArgument);
@@ -711,11 +711,11 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 }
             }
             else if (type.isIntersection()) {
-                for (ProducedType satisfiedType: 
+                for (Type satisfiedType: 
                         type.getSatisfiedTypes()) {
                     addMakeSharedProposal(proposals, 
                             project, satisfiedType);
-                    for (ProducedType typeArgument: 
+                    for (Type typeArgument: 
                             satisfiedType.getTypeArgumentList()) {
                         addMakeSharedProposal(proposals, 
                                 project, typeArgument);

@@ -23,8 +23,8 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
@@ -34,7 +34,7 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 class AddParameterProposal extends InitializerProposal {
     
 	private AddParameterProposal(Declaration d, Declaration dec, 
-	        ProducedType type, int offset, int len, TextChange change, 
+	        Type type, int offset, int len, TextChange change, 
 	        int exitPos, CeylonEditor editor) {
         super("Add '" + d.getName() + "' to parameter list of '" + dec.getName() + "'", 
                 change, dec, type, new Region(offset, len), ADD_CORR, exitPos, editor);
@@ -45,7 +45,7 @@ class AddParameterProposal extends InitializerProposal {
             Tree.TypedDeclaration decNode, 
             Tree.SpecifierOrInitializerExpression sie, Node node,
             CeylonEditor editor) {
-        MethodOrValue dec = (MethodOrValue) decNode.getDeclarationModel();
+        FunctionOrValue dec = (FunctionOrValue) decNode.getDeclarationModel();
         if (dec==null) return;
         if (dec.getInitializerParameter()==null && !dec.isFormal()) {
             TextChange change = new TextFileChange("Add Parameter", file);
@@ -136,7 +136,7 @@ class AddParameterProposal extends InitializerProposal {
             change.addEdit(new InsertEdit(offset, param));
             Tree.Type type = decNode.getType();
             int shift=0;
-            ProducedType paramType;
+            Type paramType;
             if (type instanceof Tree.LocalModifier) {
                 Integer typeOffset = type.getStartIndex();
                 paramType = type.getTypeModel();

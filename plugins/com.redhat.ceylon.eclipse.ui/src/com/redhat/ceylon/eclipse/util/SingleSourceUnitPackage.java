@@ -10,7 +10,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Import;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -54,13 +54,13 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.model.typechecker
      
     @Override
     public Declaration getDirectMember(String name,
-            List<ProducedType> signature, boolean ellipsis) {
+            List<Type> signature, boolean ellipsis) {
         Declaration modelMember = modelPackage.getDirectMember(name, signature, ellipsis);
         return mustSearchInSourceFile(modelMember)  ? super.getDirectMember(name, signature, ellipsis) : modelMember;
     }
     
     @Override
-    public Declaration getMember(String name, List<ProducedType> signature,
+    public Declaration getMember(String name, List<Type> signature,
             boolean ellipsis) {
         Declaration modelMember = modelPackage.getMember(name, signature, ellipsis);
         return mustSearchInSourceFile(modelMember) ? super.getMember(name, signature, ellipsis) : modelMember;
@@ -103,7 +103,7 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.model.typechecker
     }
 
     @Override
-    public ProducedType getDeclaringType(Declaration modelDeclaration) {
+    public Type getDeclaringType(Declaration modelDeclaration) {
         return mustSearchInSourceFile(modelDeclaration) ? super.getDeclaringType(modelDeclaration) : modelPackage.getDeclaringType(modelDeclaration);
     }
 
@@ -126,7 +126,7 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.model.typechecker
 
     @Override
     public Declaration getMemberOrParameter(Unit modelUnit, String name,
-            List<ProducedType> signature, boolean ellipsis) {
+            List<Type> signature, boolean ellipsis) {
         Declaration modelMember = modelPackage.getMemberOrParameter(modelUnit, name, signature, ellipsis);
         return mustSearchInSourceFile(modelMember) ? super.getMemberOrParameter(modelUnit, name, signature, ellipsis) : modelMember;
     }

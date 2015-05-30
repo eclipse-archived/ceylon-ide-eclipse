@@ -30,8 +30,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Generic;
-import com.redhat.ceylon.model.typechecker.model.Method;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 
@@ -161,7 +161,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         Declaration d = decl==null ? null : 
             decl.getDeclarationModel();
         if (d == null || d.isActual() ||
-                !(d instanceof Method || 
+                !(d instanceof Function || 
                   d instanceof ClassOrInterface)) {
             return;
         }
@@ -182,7 +182,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         
         class FindTypeParameterConstraintVisitor 
                 extends Visitor {
-            List<ProducedType> result;
+            List<Type> result;
             @Override
             public void visit(Tree.SimpleType that) {
                 super.visit(that);

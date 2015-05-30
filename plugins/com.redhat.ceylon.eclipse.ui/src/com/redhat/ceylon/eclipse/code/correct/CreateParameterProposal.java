@@ -39,13 +39,13 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Type;
 
 class CreateParameterProposal extends InitializerProposal {
     
     CreateParameterProposal(String def, String desc, 
-            Declaration dec, ProducedType type,
+            Declaration dec, Type type,
             Image image, int offset, TextFileChange change,
             int exitPos) {
         super(desc, change, dec, type, 
@@ -59,7 +59,7 @@ class CreateParameterProposal extends InitializerProposal {
             Declaration dec, PhasedUnit unit,
             Tree.Declaration decNode, 
             Tree.ParameterList paramList, 
-            ProducedType returnType, 
+            Type returnType, 
             Set<Declaration> imports, Node node) {
         IFile file = getFile(unit);
         TextFileChange change = 
@@ -82,7 +82,7 @@ class CreateParameterProposal extends InitializerProposal {
             Image image, Declaration dec, PhasedUnit unit,
             Tree.Declaration decNode, 
             Tree.ParameterList paramList, Tree.Body body, 
-            ProducedType returnType, Node node) {
+            Type returnType, Node node) {
         IFile file = getFile(unit);
         TextFileChange change = 
                 new TextFileChange("Add Attribute", file);
@@ -174,10 +174,10 @@ class CreateParameterProposal extends InitializerProposal {
         if (prim instanceof Tree.MemberOrTypeExpression) {
             Tree.MemberOrTypeExpression mte = 
                     (Tree.MemberOrTypeExpression) prim;
-            ProducedReference pr = mte.getTarget();
+            Reference pr = mte.getTarget();
             if (pr!=null) {
                 Declaration d = pr.getDeclaration();
-                ProducedType t=null;
+                Type t=null;
                 String parameterName=null;
                 if (node instanceof Tree.Term) {
                     t = ((Tree.Term) node).getTypeModel();
@@ -259,7 +259,7 @@ class CreateParameterProposal extends InitializerProposal {
     private static void addCreateParameterProposals(
             Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, 
-            Declaration typeDec, ProducedType t,
+            Declaration typeDec, Type t,
             Node node) {
         if (typeDec!=null && typeDec instanceof Functional) {
             for (PhasedUnit unit: getUnits(project)) {
@@ -294,7 +294,7 @@ class CreateParameterProposal extends InitializerProposal {
     private static void addCreateParameterAndAttributeProposals(
             Collection<ICompletionProposal> proposals,
             IProject project, String pdef, String adef, 
-            String desc, Declaration typeDec, ProducedType t,
+            String desc, Declaration typeDec, Type t,
             Node node) {
         if (typeDec instanceof ClassOrInterface) {
             for (PhasedUnit unit: getUnits(project)) {

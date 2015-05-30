@@ -2555,7 +2555,7 @@ public abstract class FilteredItemsSelectionDialog extends
          * Used for <code>getFilteredItems()</code> method canceling (when the
          * job that invoked the method was canceled).
          * <p>
-         * Method canceling could be based (only) on monitor canceling
+         * Function canceling could be based (only) on monitor canceling
          * unfortunately sometimes the method <code>getFilteredElements()</code>
          * could be run with a null monitor, the <code>reset</code> flag have
          * to be left intact.

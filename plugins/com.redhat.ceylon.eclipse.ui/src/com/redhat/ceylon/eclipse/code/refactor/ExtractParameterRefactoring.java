@@ -24,7 +24,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -35,7 +35,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     
     private String newName;
     private Tree.Declaration methodOrClass;
-    private ProducedType type;
+    private Type type;
 
     private static class FindFunctionVisitor 
             extends Visitor 
@@ -314,8 +314,8 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     }
 
     private int addType(TextChange tfc, IDocument doc, 
-            ProducedType tm, StringBuilder builder) {
-        ProducedType type = node.getUnit().denotableType(tm);
+            Type tm, StringBuilder builder) {
+        Type type = node.getUnit().denotableType(tm);
         HashSet<Declaration> decs = new HashSet<Declaration>();
         importType(decs, type, rootNode);
         int il = applyImports(tfc, decs, rootNode, doc);
@@ -331,7 +331,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         return newName;
     }
 
-    ProducedType getType() {
+    Type getType() {
         return type;
     }
 

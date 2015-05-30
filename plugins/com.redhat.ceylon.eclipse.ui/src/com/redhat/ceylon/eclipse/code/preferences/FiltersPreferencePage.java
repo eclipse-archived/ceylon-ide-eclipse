@@ -48,7 +48,7 @@ import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -354,7 +354,7 @@ public abstract class FiltersPreferencePage
         else if (d instanceof Interface) {
             return "(Interface)";
         }
-        else if (d instanceof Method) {
+        else if (d instanceof Function) {
             return "(Function)";
         }
         else if (d instanceof Value) {

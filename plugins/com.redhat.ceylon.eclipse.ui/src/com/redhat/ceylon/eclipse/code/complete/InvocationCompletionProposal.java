@@ -68,14 +68,14 @@ import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
-import com.redhat.ceylon.model.typechecker.model.ProducedTypedReference;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypedReference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -106,7 +106,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     static void addReferenceProposal(int offset, String prefix, 
             final CeylonParseController cpc, List<ICompletionProposal> result, 
             Declaration dec, Scope scope, boolean isMember, 
-            ProducedReference pr, OccurrenceLocation ol) {
+            Reference pr, OccurrenceLocation ol) {
         Unit unit = cpc.getRootNode().getUnit();
         //proposal with type args
         if (dec instanceof Generic) {
@@ -133,23 +133,23 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     static void addSecondLevelProposal(int offset, String prefix, 
             final CeylonParseController cpc, List<ICompletionProposal> result, 
-            Declaration dec, Scope scope, boolean isMember, ProducedReference pr,
-            ProducedType requiredType, OccurrenceLocation ol) {
+            Declaration dec, Scope scope, boolean isMember, Reference pr,
+            Type requiredType, OccurrenceLocation ol) {
         if (!(dec instanceof Functional) && 
             !(dec instanceof TypeDeclaration)) {
             //add qualified member proposals 
             Unit unit = cpc.getRootNode().getUnit();
-            ProducedType type = pr.getType();
+            Type type = pr.getType();
             if (isTypeUnknown(type)) return;
             Collection<DeclarationWithProximity> members = 
                     type.getDeclaration().getMatchingMemberDeclarations(unit, scope, "", 0).values();
             for (DeclarationWithProximity ndwp: members) {
                 final Declaration m = ndwp.getDeclaration();
                 if (m instanceof TypedDeclaration) { //TODO: member Class would also be useful! 
-                    final ProducedTypedReference ptr = 
+                    final TypedReference ptr = 
                             type.getTypedMember((TypedDeclaration) m, 
-                                    Collections.<ProducedType>emptyList());
-                    ProducedType mt = ptr.getType();
+                                    Collections.<Type>emptyList());
+                    Type mt = ptr.getType();
                     if (mt!=null && 
                             (requiredType==null || mt.isSubtypeOf(requiredType))) {
                         result.add(new InvocationCompletionProposal(offset, prefix,
@@ -164,7 +164,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     static void addInvocationProposals(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
-            Declaration dec, ProducedReference pr, Scope scope,
+            Declaration dec, Reference pr, Scope scope,
             OccurrenceLocation ol, String typeArgs, boolean isMember) {
         if (dec instanceof Functional) {
             Unit unit = cpc.getRootNode().getUnit();
@@ -329,10 +329,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                             ((Functional) dec).getParameterLists();
                     if (!pls.isEmpty()) {
                         for (Parameter p: pls.get(0).getParameters()) {
-                            MethodOrValue pm = p.getModel();
-                            if (pm instanceof Method) {
+                            FunctionOrValue pm = p.getModel();
+                            if (pm instanceof Function) {
                                 for (ParameterList ppl: 
-                                        ((Method) pm).getParameterLists()) {
+                                        ((Function) pm).getParameterLists()) {
                                     for (Parameter pp: ppl.getParameters()) {
                                         importSignatureTypes(pp.getModel(), cu, decs);
                                     }
@@ -595,7 +595,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     private final CeylonParseController cpc;
     private final Declaration declaration;
-    private final ProducedReference producedReference;
+    private final Reference producedReference;
     private final Scope scope;
     private final boolean includeDefaulted;
     private final boolean namedInvocation;
@@ -605,7 +605,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     private InvocationCompletionProposal(int offset, String prefix, 
             String desc, String text, Declaration dec,
-            ProducedReference producedReference, Scope scope, 
+            Reference producedReference, Scope scope, 
             CeylonParseController cpc, boolean includeDefaulted,
             boolean positionalInvocation, boolean namedInvocation, 
             boolean qualified, Declaration qualifyingValue) {
@@ -840,7 +840,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         if (p.getModel().isDynamicallyTyped()) {
             return;
         }
-        ProducedType type = 
+        Type type = 
                 producedReference.getTypedParameter(p).getType();
         if (type==null) return;
         Unit unit = getUnit();
@@ -863,7 +863,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 
     private void addValueArgumentProposal(Parameter p, final int loc,
             List<ICompletionProposal> props, int index, boolean last,
-            ProducedType type, Unit unit, DeclarationWithProximity dwp,
+            Type type, Unit unit, DeclarationWithProximity dwp,
             DeclarationWithProximity qualifier) {
         if (qualifier==null && dwp.isUnimported()) {
             return;
@@ -882,7 +882,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     return;
                 }
             }
-            ProducedType vt = value.getType();
+            Type vt = value.getType();
             if (vt!=null && !vt.isNothing()) {
                 if (vt.isSubtypeOf(type) ||
                         (td instanceof TypeParameter) && 
@@ -904,15 +904,15 @@ class InvocationCompletionProposal extends CompletionProposal {
                 }
             }
         }
-        if (d instanceof Method) {
+        if (d instanceof Function) {
             if (!d.isAnnotation()) {
-                Method method = (Method) d;
+                Function method = (Function) d;
                 if (isInLanguageModule) {
                     if (isIgnoredLanguageModuleMethod(method)) {
                         return;
                     }
                 }
-                ProducedType mt = method.getType();
+                Type mt = method.getType();
                 if (mt!=null && !mt.isNothing() &&
                         ((td instanceof TypeParameter) && 
                                 isInBounds(((TypeParameter) td).getSatisfiedTypes(), mt) || 
@@ -933,7 +933,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                         return;
                     }
                 }
-                ProducedType ct = clazz.getType();
+                Type ct = clazz.getType();
                 if (ct!=null && !ct.isNothing() &&
                         ((td instanceof TypeParameter) && 
                                 isInBounds(((TypeParameter) td).getSatisfiedTypes(), ct) || 
@@ -950,7 +950,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     }
 
     private void addLiteralProposals(final int loc,
-            List<ICompletionProposal> props, int index, ProducedType type,
+            List<ICompletionProposal> props, int index, Type type,
             Unit unit) {
         TypeDeclaration dtd = unit.getDefiniteType(type).getDeclaration();
         if (dtd instanceof Class) {
@@ -990,7 +990,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             Declaration d = dwp.getDeclaration();
             if (d instanceof TypeDeclaration && !dwp.isUnimported()) {
                 TypeDeclaration td = (TypeDeclaration) d;
-                ProducedType t = td.getType();
+                Type t = td.getType();
                 if (!t.isNothing() &&
                         td.getTypeParameters().isEmpty() && 
                         !td.isAnnotation() &&
@@ -1038,7 +1038,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     static final class ParameterInfo 
             extends InvocationCompletionProposal {
         private ParameterInfo(int offset, Declaration dec, 
-                ProducedReference producedReference,
+                Reference producedReference,
                 Scope scope, CeylonParseController cpc, 
                 boolean namedInvocation) {
             super(offset, "", "show parameters", "", dec, 
@@ -1149,7 +1149,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             implements IContextInformation {
         
         private final Declaration declaration;
-        private final ProducedReference producedReference;
+        private final Reference producedReference;
         private final ParameterList parameterList;
         private final int argumentListOffset;
         private final Unit unit;
@@ -1158,7 +1158,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         private final boolean namedInvocation;
         
         private ParameterContextInformation(Declaration declaration,
-                ProducedReference producedReference, Unit unit,
+                Reference producedReference, Unit unit,
                 ParameterList parameterList, int argumentListOffset, 
                 boolean includeDefaulted, boolean namedInvocation) {
 //                boolean inLinkedMode
@@ -1202,7 +1202,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                         result.append(p.getName());
                     }
                     else {
-                        ProducedTypedReference pr = 
+                        TypedReference pr = 
                                 producedReference.getTypedParameter(p);
                         appendParameterContextInfo(result, pr, p, unit, 
                                 namedInvocation, isListedValues);

@@ -23,7 +23,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -33,7 +33,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
     private String newName;
     private boolean explicitType;
     private boolean getter;
-    private ProducedType type;
+    private Type type;
     private boolean canBeInferred;
     
     public ExtractValueRefactoring(IEditorPart editor) {
@@ -192,7 +192,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         this.getter = !getter;
     }
 
-    ProducedType getType() {
+    Type getType() {
         return type;
     }
     

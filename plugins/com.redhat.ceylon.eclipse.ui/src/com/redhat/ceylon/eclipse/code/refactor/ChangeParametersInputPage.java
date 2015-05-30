@@ -62,9 +62,9 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
@@ -168,10 +168,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             @Override
             public void update(ViewerCell cell) {
                 Parameter p = (Parameter) cell.getElement();
-                MethodOrValue model = p.getModel();
+                FunctionOrValue model = p.getModel();
                 StyledString styledString = new StyledString();
-                ProducedType fullType = model.getProducedReference(null, 
-                        Collections.<ProducedType>emptyList()).getFullType();
+                Type fullType = model.getProducedReference(null, 
+                        Collections.<Type>emptyList()).getFullType();
                 appendTypeName(styledString, fullType);
                 cell.setImage(getImageForDeclaration(fullType.getDeclaration()));
                 cell.setText(styledString.toString());
@@ -304,7 +304,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 super.update(cell);
             }
             public String getText(Object element) {
-                MethodOrValue model = ((Parameter) element).getModel();
+                FunctionOrValue model = ((Parameter) element).getModel();
                 if (isDefaulted(parameterModels, (Parameter) element)) {
                     return refactoring.getDefaultArgs().get(model);
                 }
@@ -324,7 +324,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
             @Override
             protected Object getValue(Object element) {
-                MethodOrValue model = ((Parameter) element).getModel();
+                FunctionOrValue model = ((Parameter) element).getModel();
                 if (isDefaulted(parameterModels, (Parameter) element)) {
                     String arg = refactoring.getDefaultArgs().get(model);
                     return arg==null ? "" : arg;
@@ -337,7 +337,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             protected void setValue(Object element, Object value) {
                 updateArgument((Parameter) element, (String) value,
                         refactoring);
-                MethodOrValue model = ((Parameter) element).getModel();
+                FunctionOrValue model = ((Parameter) element).getModel();
                 refactoring.getDefaultArgs().put(model, 
                         (String) value);
                 viewer.update(element, null);
@@ -469,7 +469,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                         refactoring.node, refactoring.project, names);
                 if (dialog.open()==Window.OK) {
                     String name = dialog.getName();
-                    ProducedType type = dialog.getType();
+                    Type type = dialog.getType();
                     String arg = dialog.getArgument();
                     Value model = new Value();
                     model.setType(type);

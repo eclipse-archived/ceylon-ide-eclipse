@@ -22,7 +22,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -47,12 +47,12 @@ class DestructureProposal extends LocalProposal {
         Unit unit = expanse.getUnit();
         String text;
         if (isTupleType()) {
-            List<ProducedType> elementTypes = 
+            List<Type> elementTypes = 
                     unit.getTupleElementTypes(type);
             StringBuilder builder = new StringBuilder();
             Set<String> used = new HashSet<String>();
             for (int i = 0; i<elementTypes.size(); i++) {
-                ProducedType elementType = elementTypes.get(i);
+                Type elementType = elementTypes.get(i);
                 if (builder.length()!=0) builder.append(", "); 
                 String name = Escaping.toInitialLowercase(elementType.getDeclaration().getName(unit));
                 if (!used.add(name)) {
@@ -84,8 +84,8 @@ class DestructureProposal extends LocalProposal {
         return change;
     }
 
-    static String[] getItemProposals(Unit unit, ProducedType type) {
-        ProducedType itemType = unit.getValueType(type);
+    static String[] getItemProposals(Unit unit, Type type) {
+        Type itemType = unit.getValueType(type);
         String itemName = Escaping.toInitialLowercase(itemType.getDeclaration().getName(unit));
         Set<String> itemMore = new LinkedHashSet<String>();
         itemMore.add("item");
@@ -94,8 +94,8 @@ class DestructureProposal extends LocalProposal {
         return itemMore.toArray(new String[0]);
     }
 
-    static String[] getKeyProposals(Unit unit, ProducedType type) {
-        ProducedType keyType = unit.getKeyType(type);
+    static String[] getKeyProposals(Unit unit, Type type) {
+        Type keyType = unit.getKeyType(type);
         String keyName = Escaping.toInitialLowercase(keyType.getDeclaration().getName(unit));
         Set<String> keyMore = new LinkedHashSet<String>();
         keyMore.add("key");
@@ -135,7 +135,7 @@ class DestructureProposal extends LocalProposal {
     }
     
     @Override
-    boolean isEnabled(ProducedType resultType) {
+    boolean isEnabled(Type resultType) {
         if (node==null || node.getUnit()==null) return false; 
         Class td = node.getUnit().getTupleDeclaration();
         Class ed = node.getUnit().getEntryDeclaration();

@@ -36,7 +36,7 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 
@@ -165,15 +165,15 @@ class CreateInNewUnitProposal implements ICompletionProposal,
     }
     
     private static void resolveImports(List<Declaration> imports, 
-            Collection<ProducedType> producedTypes) {
+            Collection<Type> producedTypes) {
         if (producedTypes!=null) {
-            for (ProducedType pt : producedTypes) {
+            for (Type pt : producedTypes) {
                 resolveImports(imports, pt);
             }
         }
     }
 
-    private static void resolveImports(List<Declaration> imports, ProducedType pt) {
+    private static void resolveImports(List<Declaration> imports, Type pt) {
         if (pt!=null) {
             if (pt.isUnknown() || pt.isNothing()) {
                 //nothing to do

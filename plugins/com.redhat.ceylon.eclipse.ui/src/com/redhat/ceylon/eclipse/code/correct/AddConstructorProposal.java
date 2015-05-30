@@ -22,8 +22,8 @@ import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -69,9 +69,9 @@ public class AddConstructorProposal extends CorrectionProposal {
                     if (params.length()!=0) {
                         params.append(", ");
                     }
-                    ProducedReference pr = 
+                    Reference pr = 
                             dec.getProducedReference(null, 
-                                    Collections.<ProducedType>emptyList());
+                                    Collections.<Type>emptyList());
                     String type = 
                             pr.getFullType().getProducedTypeName(unit);
                     String name = dec.getName();
@@ -166,7 +166,7 @@ public class AddConstructorProposal extends CorrectionProposal {
             else if (s instanceof Tree.ObjectDefinition) {
                 Tree.ObjectDefinition o = (Tree.ObjectDefinition) s;
                 if (o.getExtendedType()!=null) {
-                    ProducedType et = o.getExtendedType().getType().getTypeModel();
+                    Type et = o.getExtendedType().getType().getTypeModel();
                     if (et!=null 
                             && !et.getDeclaration().equals(unit.getObjectDeclaration())
                             && !et.getDeclaration().equals(unit.getBasicDeclaration())) {

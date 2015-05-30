@@ -15,8 +15,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -110,9 +110,9 @@ class CorrectionUtil {
         return unit.getCompilationUnit();
     }
     
-    static String asIntersectionTypeString(List<ProducedType> types) {
+    static String asIntersectionTypeString(List<Type> types) {
         StringBuffer missingSatisfiedTypesText = new StringBuffer();
-        for( ProducedType missingSatisfiedType: types ) {
+        for( Type missingSatisfiedType: types ) {
             if( missingSatisfiedTypesText.length() != 0 ) {
                 missingSatisfiedTypesText.append(" & ");
             }
@@ -122,7 +122,7 @@ class CorrectionUtil {
         return missingSatisfiedTypesText.toString();
     }
     
-    static String defaultValue(Unit unit, ProducedType t) {
+    static String defaultValue(Unit unit, Type t) {
         if (isTypeUnknown(t)) {
             return "nothing";
         }
@@ -155,12 +155,12 @@ class CorrectionUtil {
             else if (c.equals(unit.getTupleDeclaration())) {
                 final int minimumLength = 
                         unit.getTupleMinimumLength(t);
-                final List<ProducedType> tupleTypes = 
+                final List<Type> tupleTypes = 
                         unit.getTupleElementTypes(t);
                 final StringBuilder sb = new StringBuilder();
                 for(int i = 0 ; i < minimumLength ; i++){
                     sb.append(sb.length() == 0 ? "[" : ", ");
-                    ProducedType currentType = 
+                    Type currentType = 
                             tupleTypes.get(i);
                     if(unit.isSequentialType(currentType)){
                         currentType = 
@@ -279,7 +279,7 @@ class CorrectionUtil {
                     Tree.MethodDeclaration md = 
                             (Tree.MethodDeclaration) st;
                     if (md.getSpecifierExpression()==null) {
-                        Method m = md.getDeclarationModel();
+                        Function m = md.getDeclarationModel();
                         if (!m.isFormal()) {
                             uninitialized.add(m);
                         }

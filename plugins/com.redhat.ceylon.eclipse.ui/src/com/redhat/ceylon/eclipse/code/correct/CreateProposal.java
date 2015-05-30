@@ -33,7 +33,7 @@ import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -46,7 +46,7 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 class CreateProposal extends InitializerProposal {
     
     private CreateProposal(String def, String desc, 
-            Scope scope, Unit unit, ProducedType returnType,
+            Scope scope, Unit unit, Type returnType,
             Image image, int offset, TextFileChange change,
             int exitPos, boolean isObjectOrClass) {
         super(desc, change, scope, unit, returnType, 

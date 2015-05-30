@@ -16,7 +16,7 @@ import java.util.Set;
 import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -34,8 +34,8 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
     private final CompilationUnit rootNode;
     private final String desc;
     private final Image image;
-    private final ProducedType returnType;
-    private final LinkedHashMap<String, ProducedType> parameters;
+    private final Type returnType;
+    private final LinkedHashMap<String, Type> parameters;
     private final Boolean isVariable;
     
     @Override
@@ -44,12 +44,12 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
     }
     
     @Override
-    ProducedType getReturnType() {
+    Type getReturnType() {
         return returnType;
     }
     
     @Override
-    LinkedHashMap<String, ProducedType> getParameters() {
+    LinkedHashMap<String, Type> getParameters() {
         return parameters;
     }
     
@@ -78,8 +78,8 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
             Tree.CompilationUnit rootNode,
             String desc,
             Image image,
-            ProducedType returnType,
-            LinkedHashMap<String, ProducedType> paramTypes,
+            Type returnType,
+            LinkedHashMap<String, Type> paramTypes,
             Boolean isVariable) {
         this.brokenName = brokenName;
         this.node = node;
@@ -195,11 +195,11 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
         if (isUpperCase) return null;
         FindValueFunctionVisitor fav = new FindValueFunctionVisitor(node);
         rootNode.visit(fav);
-        ProducedType et = fav.expectedType;
+        Type et = fav.expectedType;
         final boolean isVoid = et==null;
-        ProducedType returnType = isVoid ? null : node.getUnit().denotableType(et);
+        Type returnType = isVoid ? null : node.getUnit().denotableType(et);
         StringBuilder params = new StringBuilder();
-        LinkedHashMap<String, ProducedType> paramTypes = getParameters(fav);
+        LinkedHashMap<String, Type> paramTypes = getParameters(fav);
         if (paramTypes!=null) {         
             String desc = "function '" + brokenName + params + "'";
             return new ValueFunctionDefinitionGenerator(brokenName, node, rootNode, 

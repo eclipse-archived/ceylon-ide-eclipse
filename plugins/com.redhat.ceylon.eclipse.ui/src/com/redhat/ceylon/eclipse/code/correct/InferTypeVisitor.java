@@ -8,8 +8,8 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -25,16 +25,16 @@ class InferredType {
         
     }
     
-    ProducedType inferredType;
-    ProducedType generalizedType;
+    Type inferredType;
+    Type generalizedType;
     
-    void intersect(ProducedType pt) {
+    void intersect(Type pt) {
         if (!isTypeUnknown(pt)) {
             if (generalizedType==null) {
                 generalizedType = pt;
             }
             else {
-                ProducedType it = 
+                Type it = 
                         intersectionType(generalizedType, 
                                 pt, unit);
                 if (!it.isNothing()) {
@@ -44,7 +44,7 @@ class InferredType {
         }
     }
     
-    void union(ProducedType pt) {
+    void union(Type pt) {
         if (!isTypeUnknown(pt)) {
             if (inferredType==null) {
                 inferredType = pt;
@@ -86,7 +86,7 @@ class InferTypeVisitor extends Visitor {
                         (Tree.BaseMemberExpression) term;
                 Declaration d = bme.getDeclaration();
                 if (d!=null && d.equals(dec)) {
-                    ProducedType t = 
+                    Type t = 
                             that.getType().getTypeModel();
                     result.intersect(t);
                 }
@@ -114,7 +114,7 @@ class InferTypeVisitor extends Visitor {
                         (Tree.BaseMemberExpression) term;
                 Declaration d = bme.getDeclaration();
                 if (d!=null && d.equals(dec)) {
-                    ProducedType t = 
+                    Type t = 
                             that.getType().getTypeModel();
                     result.intersect(t);
                 }
@@ -176,10 +176,10 @@ class InferTypeVisitor extends Visitor {
         }
     }
     
-    private ProducedReference pr;
+    private Reference pr;
     
     @Override public void visit(Tree.InvocationExpression that) {
-        ProducedReference opr=null;
+        Reference opr=null;
         Tree.Primary primary = that.getPrimary();
         if (primary!=null) {
             if (primary instanceof Tree.MemberOrTypeExpression) {
@@ -202,7 +202,7 @@ class InferTypeVisitor extends Visitor {
             if (d!=null && d.equals(dec)) {
                 Parameter p = that.getParameter();
                 if (p!=null && pr!=null) {
-                    ProducedType ft = 
+                    Type ft = 
                             pr.getTypedParameter(p)
                                 .getFullType();
                     if (p.isSequenced()) {
@@ -225,12 +225,12 @@ class InferTypeVisitor extends Visitor {
                 Parameter p = that.getParameter();
                 if (p!=null && pr!=null) {
                     //TODO: is this correct?
-                    ProducedType ft = 
+                    Type ft = 
                             pr.getTypedParameter(p)
                                 .getFullType();
-                    ProducedType et = 
+                    Type et = 
                             unit.getIteratedType(ft);
-                    ProducedType it = 
+                    Type it = 
                             unit.getIterableType(et);
                     result.intersect(it);
                 }
@@ -250,7 +250,7 @@ class InferTypeVisitor extends Visitor {
             if (d!=null && d.equals(dec)) {
                 Parameter p = that.getParameter();
                 if (p!=null && pr!=null) {
-                    ProducedType ft = 
+                    Type ft = 
                             pr.getTypedParameter(p)
                                 .getFullType();
                     result.intersect(ft);
@@ -295,7 +295,7 @@ class InferTypeVisitor extends Visitor {
                         that.getDeclaration()
                             .getRefinedDeclaration()
                             .getContainer();
-                ProducedType st = 
+                Type st = 
                         that.getTarget()
                             .getQualifyingType()
                             .getSupertype(td);
@@ -311,8 +311,8 @@ class InferTypeVisitor extends Visitor {
         if (primary instanceof Tree.BaseMemberExpression) {
             Declaration bmed = ((Tree.BaseMemberExpression) primary).getDeclaration();
             if (bmed!=null && bmed.equals(dec)) {
-                ProducedType kt = that.getKeyVariable().getType().getTypeModel();
-                ProducedType vt = that.getValueVariable().getType().getTypeModel();
+                Type kt = that.getKeyVariable().getType().getTypeModel();
+                Type vt = that.getValueVariable().getType().getTypeModel();
                 result.intersect(that.getUnit().getIterableType(that.getUnit().getEntryType(kt, vt)));
             }
         }
@@ -329,10 +329,10 @@ class InferTypeVisitor extends Visitor {
                     (Tree.BaseMemberExpression) primary;
             Declaration bmed = bme.getDeclaration();
             if (bmed!=null && bmed.equals(dec)) {
-                ProducedType vt = 
+                Type vt = 
                         that.getVariable().getType()
                             .getTypeModel();
-                ProducedType it = unit.getIterableType(vt);
+                Type it = unit.getIterableType(vt);
                 result.intersect(it);
             }
         }
@@ -347,7 +347,7 @@ class InferTypeVisitor extends Visitor {
                     (Tree.BaseMemberExpression) primary;
             Declaration bmed = bme.getDeclaration();
             if (bmed!=null && bmed.equals(dec)) {
-                ProducedType bt = 
+                Type bt = 
                         unit.getBooleanDeclaration()
                             .getType();
                 result.intersect(bt);
@@ -369,11 +369,11 @@ class InferTypeVisitor extends Visitor {
                         (Tree.BaseMemberExpression) primary;
                 Declaration bmed = bme.getDeclaration();
                 if (bmed!=null && bmed.equals(dec)) {
-                    ProducedType vt = 
+                    Type vt = 
                             var.getType().getTypeModel();
-                    ProducedType et = 
+                    Type et = 
                             unit.getSequentialElementType(vt);
-                    ProducedType st = 
+                    Type st = 
                             unit.getSequentialType(et);
                     result.intersect(st);
                 }
@@ -492,9 +492,9 @@ class InferTypeVisitor extends Visitor {
                     (Tree.BaseMemberExpression) lhs;
             Declaration bmed = bme.getDeclaration();
             if (bmed!=null && bmed.equals(dec)) {
-                ProducedType st = 
+                Type st = 
                         lhs.getTypeModel().getSupertype(sd);
-                ProducedType at = 
+                Type at = 
                         st.getTypeArguments().get(0);
                 result.intersect(at);
             }

@@ -14,7 +14,7 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
@@ -122,7 +122,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                     StringBuilder body = new StringBuilder();
                     String indent = getIndent(node, doc);
                     Unit unit = node.getUnit();
-                    for (ProducedType pt: v.getType().getCaseTypes()) {
+                    for (Type pt: v.getType().getCaseTypes()) {
                         body.append(indent).append("case (");
                         if (pt.getDeclaration().isAnonymous()) {
                             body.append(pt.getDeclaration().getName(unit));

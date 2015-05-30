@@ -12,7 +12,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -54,7 +54,7 @@ public class ExpandTypeProposal extends CorrectionProposal {
         node.visit(ftv);
         Tree.Type result = ftv.result;
         if (result!=null) {
-            ProducedType type = result.getTypeModel();
+            Type type = result.getTypeModel();
             int start = result.getStartIndex();
             int len = result.getStopIndex()-start+1;
             String text;

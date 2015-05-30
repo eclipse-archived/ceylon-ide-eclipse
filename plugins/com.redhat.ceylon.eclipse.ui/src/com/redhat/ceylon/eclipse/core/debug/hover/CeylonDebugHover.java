@@ -76,8 +76,8 @@ import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Value;
@@ -392,7 +392,7 @@ public class CeylonDebugHover extends SourceInfoHover {
                         break;
                     } else if (((ClassOrInterface)objectDeclaration).inherits(searchedClassDeclaration)) {
                         if (!(searchedDeclaration instanceof TypeParameter)) {
-                            searchedDeclaration = objectDeclaration.getMember(searchedDeclaration.getName(), Collections.<ProducedType>emptyList(), false);
+                            searchedDeclaration = objectDeclaration.getMember(searchedDeclaration.getName(), Collections.<Type>emptyList(), false);
                         }
                         break;
                     }
@@ -639,7 +639,7 @@ public class CeylonDebugHover extends SourceInfoHover {
         return null;
     }
     
-    private static IJavaObject makeConsistentWithModel(CeylonJDIDebugTarget debugTarget, IJavaValue primaryJdiValue, ProducedType modelProducedType) throws DebugException {
+    private static IJavaObject makeConsistentWithModel(CeylonJDIDebugTarget debugTarget, IJavaValue primaryJdiValue, Type modelProducedType) throws DebugException {
         IJavaType jdiType = primaryJdiValue.getJavaType();
 
         IJavaObject primaryJdiObject = null;
@@ -692,7 +692,7 @@ public class CeylonDebugHover extends SourceInfoHover {
             String variableName = Naming.Prefix.$reified$ + typeParameter.getName();
             if (container.equals(frameMethodDeclaration)) {
                 return findCeylonVariable(frame, variableName, false);
-            } else if (container instanceof MethodOrValue && ! frame.isStatic()) {
+            } else if (container instanceof FunctionOrValue && ! frame.isStatic()) {
                 return findCeylonCapturedVariable(frame, variableName, false);
             } else if (container instanceof ClassOrInterface){
                 if (!frame.isStatic()) {
@@ -722,7 +722,7 @@ public class CeylonDebugHover extends SourceInfoHover {
                 String variableName = declaration.getName();
                 if (container.equals(frameMethodDeclaration)) {
                     return unBoxIfVariableBoxed(findCeylonVariable(frame, variableName));
-                } else if (container instanceof MethodOrValue && ! frame.isStatic()) {
+                } else if (container instanceof FunctionOrValue && ! frame.isStatic()) {
                     return unBoxIfVariableBoxed(findCeylonCapturedVariable(frame, variableName));
                 } else if (container instanceof ClassOrInterface && ! (declaration instanceof TypeParameter)){
                     if (!frame.isStatic()) {

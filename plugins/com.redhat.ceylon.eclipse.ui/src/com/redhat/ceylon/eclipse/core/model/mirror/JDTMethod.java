@@ -304,7 +304,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                         }
                     }
                     if (method == null) {
-                        throw new ModelResolutionException("Method '" + readableName + "' not found in the binding of class '" + declaringClassModel.getFullyQualifiedName() + "'");
+                        throw new ModelResolutionException("Function '" + readableName + "' not found in the binding of class '" + declaringClassModel.getFullyQualifiedName() + "'");
                     }
 
                     bindingRef = new WeakReference<MethodBinding>(method);

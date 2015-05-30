@@ -29,7 +29,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -87,7 +87,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
             for (Tree.LocalModifier localModifier : localModifiers) {
                 if( localModifier.getStartIndex() != null && 
                         localModifier.getTypeModel() != null ) {
-                    ProducedType pt = 
+                    Type pt = 
                             localModifier.getTypeModel();
                     tfc.addEdit(new ReplaceEdit(
                             localModifier.getStartIndex(), 
@@ -104,7 +104,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                         && variable.getStartIndex() != null 
                         && variable.getType() != null 
                         && variable.getType().getTypeModel() != null ) {
-                    ProducedType pt = 
+                    Type pt = 
                             variable.getType().getTypeModel();
                     tfc.addEdit(new InsertEdit(
                             variable.getStartIndex(), 

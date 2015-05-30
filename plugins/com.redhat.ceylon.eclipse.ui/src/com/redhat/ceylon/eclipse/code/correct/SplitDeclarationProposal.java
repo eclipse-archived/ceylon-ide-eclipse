@@ -24,7 +24,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -171,7 +171,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
         }
         int il;
         if (type instanceof Tree.LocalModifier) {
-            ProducedType infType = type.getTypeModel();
+            Type infType = type.getTypeModel();
             String explicitType;
             if (infType==null) {
                 explicitType = "Object";

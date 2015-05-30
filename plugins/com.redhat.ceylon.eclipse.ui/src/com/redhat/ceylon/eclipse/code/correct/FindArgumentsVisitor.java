@@ -4,7 +4,7 @@ import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
 import static com.redhat.ceylon.model.typechecker.model.Util.producedType;
 import static com.redhat.ceylon.model.typechecker.model.Util.unionType;
 
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
@@ -18,8 +18,8 @@ class FindArgumentsVisitor extends Visitor
     Tree.MemberOrTypeExpression smte;
     Tree.NamedArgumentList namedArgs;
     Tree.PositionalArgumentList positionalArgs;
-    ProducedType currentType;
-    ProducedType expectedType;
+    Type currentType;
+    Type expectedType;
     boolean found = false;
     boolean inEnumeration = false;
     
@@ -46,7 +46,7 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.NamedArgument that) {
-        ProducedType ct = currentType;
+        Type ct = currentType;
         currentType = that.getParameter()==null ? 
                 null : that.getParameter().getType();
         super.visit(that);
@@ -60,7 +60,7 @@ class FindArgumentsVisitor extends Visitor
             inEnumeration = true;
         }
         else {
-            ProducedType ct = currentType;
+            Type ct = currentType;
             currentType = that.getParameter()==null ? 
                     null : that.getParameter().getType();
             super.visit(that);
@@ -97,7 +97,7 @@ class FindArgumentsVisitor extends Visitor
     public void visit(Tree.ExistsCondition that) {
         Tree.Statement st = that.getVariable();
         if (st instanceof Tree.Variable) {
-            ProducedType varType = 
+            Type varType = 
                     ((Tree.Variable) st).getType().getTypeModel();
             currentType = that.getUnit().getOptionalType(varType);
         }
@@ -108,7 +108,7 @@ class FindArgumentsVisitor extends Visitor
     public void visit(Tree.NonemptyCondition that) {
         Tree.Statement st = that.getVariable();
         if (st instanceof Tree.Variable) {
-            ProducedType varType = 
+            Type varType = 
                     ((Tree.Variable) st).getType().getTypeModel();
             currentType = that.getUnit().getEmptyType(varType);
         }
@@ -117,7 +117,7 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.Exists that) {
-        ProducedType oit = currentType;
+        Type oit = currentType;
         currentType = that.getUnit().getAnythingDeclaration().getType();
         super.visit(that);
         currentType = oit;
@@ -125,29 +125,29 @@ class FindArgumentsVisitor extends Visitor
     @Override
     public void visit(Tree.Nonempty that) {
         Unit unit = that.getUnit();
-        ProducedType oit = currentType;
+        Type oit = currentType;
         currentType = unit.getSequentialType(unit.getAnythingDeclaration().getType());
         super.visit(that);
         currentType = oit;
     }
     @Override
     public void visit(Tree.SatisfiesCondition that) {
-        ProducedType objectType = that.getUnit().getObjectDeclaration().getType();
+        Type objectType = that.getUnit().getObjectDeclaration().getType();
         currentType = objectType;
         super.visit(that);
         currentType = null;
     }
     @Override
     public void visit(Tree.ValueIterator that) {
-        ProducedType varType = that.getVariable().getType().getTypeModel();
+        Type varType = that.getVariable().getType().getTypeModel();
         currentType = that.getUnit().getIterableType(varType);
         super.visit(that);
         currentType = null;
     }
     /*@Override
     public void visit(Tree.PatternIterator that) {
-        ProducedType keyType = that.getKeyVariable().getType().getTypeModel();
-        ProducedType valueType = that.getValueVariable().getType().getTypeModel();
+        Type keyType = that.getKeyVariable().getType().getTypeModel();
+        Type valueType = that.getValueVariable().getType().getTypeModel();
         currentType = that.getUnit().getIterableType(that.getUnit()
                 .getEntryType(keyType, valueType));
         super.visit(that);
@@ -181,7 +181,7 @@ class FindArgumentsVisitor extends Visitor
         Unit unit = that.getUnit();
         if (currentType!=null &&
                 currentType.getDeclaration().equals(unit.getEntryDeclaration())) {
-            ProducedType oit = currentType;
+            Type oit = currentType;
             currentType = unit.getKeyType(oit);
             if (that.getLeftTerm()!=null) {
                 that.getLeftTerm().visit(this);
@@ -193,7 +193,7 @@ class FindArgumentsVisitor extends Visitor
             currentType = oit;
         }
         else {
-            ProducedType oit = currentType;
+            Type oit = currentType;
             currentType = that.getUnit().getObjectDeclaration().getType();
             super.visit(that);
             currentType = oit;
@@ -203,13 +203,13 @@ class FindArgumentsVisitor extends Visitor
         Unit unit = that.getUnit();
         if (currentType!=null &&
                 unit.isIterableType(currentType)) {
-            ProducedType oit = currentType;
+            Type oit = currentType;
             currentType = unit.getIteratedType(oit);
             super.visit(that);
             currentType = oit;
         }
         else {
-            ProducedType oit = currentType;
+            Type oit = currentType;
             currentType = that.getUnit().getObjectDeclaration().getType();
             super.visit(that);
             currentType = oit;
@@ -219,13 +219,13 @@ class FindArgumentsVisitor extends Visitor
         Unit unit = that.getUnit();
         if (currentType!=null &&
                 unit.isIterableType(currentType)) {
-            ProducedType oit = currentType;
+            Type oit = currentType;
             currentType = unit.getIteratedType(oit);
             super.visit(that);
             currentType = oit;
         }
         else {
-            ProducedType oit = currentType;
+            Type oit = currentType;
             currentType = that.getUnit().getObjectDeclaration().getType();
             super.visit(that);
             currentType = oit;
@@ -235,8 +235,8 @@ class FindArgumentsVisitor extends Visitor
         Unit unit = that.getUnit();
         Tree.ElementOrRange eor = that.getElementOrRange();
         Tree.Primary primary = that.getPrimary();
-        ProducedType oit = currentType;
-        ProducedType indexType = unit.getObjectDeclaration().getType();
+        Type oit = currentType;
+        Type indexType = unit.getObjectDeclaration().getType();
         if (eor instanceof Tree.Element) {
             Tree.Expression e = ((Tree.Element) eor).getExpression();
             if (e!=null && !isTypeUnknown(e.getTypeModel())) {
@@ -262,7 +262,7 @@ class FindArgumentsVisitor extends Visitor
         currentType = unit.getObjectDeclaration().getType();
         if (primary!=null && !isTypeUnknown(primary.getTypeModel())) {
             //TODO: move this to Unit!
-            ProducedType supertype = primary.getTypeModel()
+            Type supertype = primary.getTypeModel()
                     .getSupertype(unit.getCorrespondenceDeclaration());
             if (supertype!=null && !supertype.getTypeArgumentList().isEmpty()) {
                 currentType = supertype.getTypeArgumentList().get(0);
@@ -275,28 +275,28 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override public void visit(Tree.LogicalOp that) {
         Unit unit = that.getUnit();
-        ProducedType oit = currentType;
+        Type oit = currentType;
         currentType = unit.getBooleanDeclaration().getType();
         super.visit(that);
         currentType = oit;
     }
     @Override public void visit(Tree.BitwiseOp that) {
         Unit unit = that.getUnit();
-        ProducedType oit = currentType;
+        Type oit = currentType;
         currentType = unit.getSetType(unit.getObjectDeclaration().getType()).getType();
         super.visit(that);
         currentType = oit;
     }
     @Override public void visit(Tree.NotOp that) {
         Unit unit = that.getUnit();
-        ProducedType oit = currentType;
+        Type oit = currentType;
         currentType = unit.getBooleanDeclaration().getType();
         super.visit(that);
         currentType = oit;
     }
     @Override public void visit(Tree.InOp that) {
         Unit unit = that.getUnit();
-        ProducedType oit = currentType;
+        Type oit = currentType;
         currentType = unit.getObjectDeclaration().getType();
         if (that.getLeftTerm()!=null) {
             that.getLeftTerm().visit(this);
@@ -311,7 +311,7 @@ class FindArgumentsVisitor extends Visitor
         Unit unit = that.getUnit();
         if (currentType!=null &&
                 unit.isIterableType(currentType)) {
-            ProducedType oit = currentType;
+            Type oit = currentType;
             boolean oie = inEnumeration;
             inEnumeration = true;
             currentType = unit.getIteratedType(oit);
@@ -320,7 +320,7 @@ class FindArgumentsVisitor extends Visitor
             inEnumeration = oie;
         }
         else {
-            ProducedType oit = currentType;
+            Type oit = currentType;
             currentType = that.getUnit().getAnythingDeclaration().getType();
             super.visit(that);
             currentType = oit;
@@ -330,7 +330,7 @@ class FindArgumentsVisitor extends Visitor
         Unit unit = that.getUnit();
         if (currentType!=null &&
                 unit.isIterableType(currentType)) {
-            ProducedType oit = currentType;
+            Type oit = currentType;
             boolean oie = inEnumeration;
             inEnumeration = true;
             currentType = unit.getIteratedType(oit);
@@ -339,7 +339,7 @@ class FindArgumentsVisitor extends Visitor
             inEnumeration = oie;
         }
         else {
-            ProducedType oit = currentType;
+            Type oit = currentType;
             currentType = that.getUnit().getAnythingDeclaration().getType();
             super.visit(that);
             currentType = oit;
@@ -363,7 +363,7 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.AssignmentOp that) {
-        ProducedType ct = currentType;
+        Type ct = currentType;
         Tree.Term leftTerm = that.getLeftTerm();
         Tree.Term rightTerm = that.getRightTerm();
         if (leftTerm!=null && rightTerm!=null) {
@@ -397,7 +397,7 @@ class FindArgumentsVisitor extends Visitor
     }
     @Override
     public void visit(Tree.FunctionArgument that) {
-        ProducedType ct = currentType;
+        Type ct = currentType;
         currentType = null;
         super.visit(that);
         currentType = ct;

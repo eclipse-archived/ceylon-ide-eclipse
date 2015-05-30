@@ -9,7 +9,7 @@ import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
 
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.correct.LinkedModeImporter;
@@ -81,7 +81,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     protected abstract String[] getNameProposals();
 
 	protected void addTypePosition(IDocument document,
-            ProducedType type, int offset, int length) {
+            Type type, int offset, int length) {
         Tree.CompilationUnit rootNode = 
                 editor.getParseController().getRootNode();
         Unit unit = rootNode.getUnit();

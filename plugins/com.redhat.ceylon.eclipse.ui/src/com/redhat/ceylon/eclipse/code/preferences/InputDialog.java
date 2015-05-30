@@ -113,7 +113,7 @@ public class InputDialog extends Dialog {
     }
 
     /*
-     * (non-Javadoc) Method declared on Dialog.
+     * (non-Javadoc) Function declared on Dialog.
      */
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.OK_ID) {
@@ -157,7 +157,7 @@ public class InputDialog extends Dialog {
     }
 
     /*
-     * (non-Javadoc) Method declared on Dialog.
+     * (non-Javadoc) Function declared on Dialog.
      */
     protected Control createDialogArea(Composite parent) {
         // create composite

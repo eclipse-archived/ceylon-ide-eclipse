@@ -14,7 +14,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -83,7 +83,7 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
                 String type;
                 if (attrDecl.getType() instanceof ValueModifier) {
                     ValueModifier valueModifier = (ValueModifier) attrDecl.getType();
-                    ProducedType typeModel = valueModifier.getTypeModel();
+                    Type typeModel = valueModifier.getTypeModel();
                     if (typeModel==null) return;
                     type = typeModel.getProducedTypeName();
                     

@@ -22,10 +22,10 @@ import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -156,9 +156,9 @@ public class CompletionUtil {
         return line;
     }
 
-    public static boolean isInBounds(List<ProducedType> upperBounds, ProducedType t) {
+    public static boolean isInBounds(List<Type> upperBounds, Type t) {
         boolean ok = true;
-        for (ProducedType ub: upperBounds) {
+        for (Type ub: upperBounds) {
             if (!t.isSubtypeOf(ub) &&
                     !(ub.involvesTypeParameters() &&
                             t.getDeclaration().inherits(ub.getDeclaration()))) {
@@ -207,7 +207,7 @@ public class CompletionUtil {
                 name.equals("finished");
     }
 
-    public static boolean isIgnoredLanguageModuleMethod(Method method) {
+    public static boolean isIgnoredLanguageModuleMethod(Function method) {
         String name = method.getName();
         return name.equals("className") || 
                 name.equals("flatten") || 
@@ -311,13 +311,13 @@ public class CompletionUtil {
         }
     }
 
-    static String anonFunctionHeader(ProducedType requiredType,
+    static String anonFunctionHeader(Type requiredType,
             Unit unit) {
         StringBuilder text = new StringBuilder();
         text.append("(");
         boolean first = true;
         char c = 'a';
-        for (ProducedType paramType: 
+        for (Type paramType: 
                 unit.getCallableArgumentTypes(requiredType)) {
             if (first) {
                 first = false;

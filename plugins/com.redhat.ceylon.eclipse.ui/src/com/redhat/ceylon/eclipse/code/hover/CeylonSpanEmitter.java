@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.hover;
 
 import com.github.rjeschke.txtmark.SpanEmitter;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -53,7 +53,7 @@ final class CeylonSpanEmitter implements SpanEmitter {
         }
         out.append(linkDescription);
         if (hasNoPlainText) {
-            if (decl instanceof Method) {
+            if (decl instanceof Function) {
                 out.append("()");
             }
             out.append("</code>");

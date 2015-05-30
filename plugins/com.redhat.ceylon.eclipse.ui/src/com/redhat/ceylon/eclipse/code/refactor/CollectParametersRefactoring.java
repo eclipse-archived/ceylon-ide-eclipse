@@ -24,7 +24,7 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -40,8 +40,8 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     private int parameterListIndex;
     private List<Tree.Parameter> parameters = 
             new ArrayList<Tree.Parameter>();
-    private Set<MethodOrValue> models = 
-            new HashSet<MethodOrValue>();
+    private Set<FunctionOrValue> models = 
+            new HashSet<FunctionOrValue>();
     private int firstParam=-1;
     private int lastParam;
     
@@ -387,7 +387,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     private void refactorDec(final TextChange tfc, final String paramName,
             Tree.ParameterList pl, Node body) {
         List<Tree.Parameter> ps = pl.getParameters();
-        final Set<MethodOrValue> params = new HashSet<MethodOrValue>();
+        final Set<FunctionOrValue> params = new HashSet<FunctionOrValue>();
         boolean allDefaulted = true;
         for (int i=firstParam; i<ps.size()&&i<=lastParam; i++) {
             Parameter p = ps.get(i).getParameterModel();
@@ -411,7 +411,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     }
 
     private void refactorLocalRefs(final TextChange tfc,
-            final String paramName, final Set<MethodOrValue> params, Node node) {
+            final String paramName, final Set<FunctionOrValue> params, Node node) {
         node.visit(new Visitor() {
             @Override
             public void visit(Tree.BaseMemberExpression that) {

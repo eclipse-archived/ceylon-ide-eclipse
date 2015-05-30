@@ -31,7 +31,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
@@ -131,12 +131,12 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             TypeDeclaration dec = 
                     (TypeDeclaration) 
                         declaration.getContainer();
-            List<ProducedType> signature = 
+            List<Type> signature = 
                     getSignature(declaration);
             Declaration refined = 
                     declaration.getRefinedDeclaration();
             while (dec!=null) {
-                ProducedType extended = 
+                Type extended = 
                         dec.getExtendedType();
                 if (extended!=null) {
                     TypeDeclaration superDec = 

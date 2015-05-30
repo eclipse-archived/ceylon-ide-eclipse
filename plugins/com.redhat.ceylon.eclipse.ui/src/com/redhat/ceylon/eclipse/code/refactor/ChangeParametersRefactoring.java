@@ -39,7 +39,7 @@ import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -134,16 +134,16 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 
     private final List<Parameter> parameters;
 
-    private Map<MethodOrValue, String> arguments = 
-            new HashMap<MethodOrValue, String>();
-    private final Map<MethodOrValue, String> defaultArgs = 
-            new HashMap<MethodOrValue, String>();
-    private final Map<MethodOrValue, String> originalDefaultArgs = 
-            new HashMap<MethodOrValue, String>();
-    private final Map<MethodOrValue, String> paramLists = 
-            new HashMap<MethodOrValue, String>();
+    private Map<FunctionOrValue, String> arguments = 
+            new HashMap<FunctionOrValue, String>();
+    private final Map<FunctionOrValue, String> defaultArgs = 
+            new HashMap<FunctionOrValue, String>();
+    private final Map<FunctionOrValue, String> originalDefaultArgs = 
+            new HashMap<FunctionOrValue, String>();
+    private final Map<FunctionOrValue, String> paramLists = 
+            new HashMap<FunctionOrValue, String>();
 
-    public Map<MethodOrValue, String> getDefaultArgs() {
+    public Map<FunctionOrValue, String> getDefaultArgs() {
         return defaultArgs;
     }
 
@@ -167,7 +167,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         return names;
     }
 
-    public Map<MethodOrValue, String> getArguments() {
+    public Map<FunctionOrValue, String> getArguments() {
         return arguments;
     }
 
@@ -228,7 +228,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                         for (Tree.Parameter p: pl.getParameters()) {
                             Tree.SpecifierOrInitializerExpression sie = 
                                     getDefaultArgSpecifier(p);
-                            MethodOrValue pm = 
+                            FunctionOrValue pm = 
                                     p.getParameterModel().getModel();
                             if (sie != null) {
                                 defaultArgs.put(pm,
@@ -427,7 +427,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                         String id) {
                     if (ref.isParameter()) {
                         return isSameParameter(param, 
-                                ((MethodOrValue) ref).getInitializerParameter());
+                                ((FunctionOrValue) ref).getInitializerParameter());
                     }
                     else {
                         return false;
@@ -743,7 +743,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             .getProducedTypeName(unit) + 
                         ' ' + newName;
                 if (defaulted.get(i) && !actual) {
-                    MethodOrValue model = 
+                    FunctionOrValue model = 
                             addedParameter.getModel();
                     paramString += " = " + defaultArgs.get(model);
                 }

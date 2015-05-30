@@ -19,7 +19,7 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -90,25 +90,25 @@ public class ExportModuleImportProposal implements ICompletionProposal,
         }
         if (node instanceof Tree.ClassOrInterface) {
             Tree.ClassOrInterface c = (Tree.ClassOrInterface) node;
-            ProducedType extendedType = 
+            Type extendedType = 
                     c.getDeclarationModel().getExtendedType();
             if (extendedType!=null) {
                 addExportModuleImportProposal(proposals, project, 
                         unit, extendedType.getDeclaration());
-                for (ProducedType typeArgument:
+                for (Type typeArgument:
                         extendedType.getTypeArgumentList()) {
                     addExportModuleImportProposal(proposals, project, 
                             unit, typeArgument.getDeclaration());
                 }
             }
             
-            List<ProducedType> satisfiedTypes = 
+            List<Type> satisfiedTypes = 
                     c.getDeclarationModel().getSatisfiedTypes();
             if (satisfiedTypes!=null) {
-                for (ProducedType satisfiedType: satisfiedTypes) {
+                for (Type satisfiedType: satisfiedTypes) {
                     addExportModuleImportProposal(proposals, project, 
                             unit, satisfiedType.getDeclaration());
-                    for (ProducedType typeArgument: 
+                    for (Type typeArgument: 
                             satisfiedType.getTypeArgumentList()) {
                         addExportModuleImportProposal(proposals, project, 
                                 unit, typeArgument.getDeclaration());
@@ -117,10 +117,10 @@ public class ExportModuleImportProposal implements ICompletionProposal,
             }
         }
         else if (node instanceof Tree.Type) {
-            ProducedType type = ((Tree.Type) node).getTypeModel();
+            Type type = ((Tree.Type) node).getTypeModel();
             addExportModuleImportProposal(proposals, project, 
                     unit, type.getDeclaration());
-            for (ProducedType typeArgument:
+            for (Type typeArgument:
                     type.getTypeArgumentList()) {
                 addExportModuleImportProposal(proposals, project, 
                         unit, typeArgument.getDeclaration());

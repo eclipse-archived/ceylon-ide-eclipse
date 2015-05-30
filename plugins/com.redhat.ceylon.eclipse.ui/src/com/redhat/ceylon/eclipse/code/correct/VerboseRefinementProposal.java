@@ -14,7 +14,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -36,7 +36,7 @@ class VerboseRefinementProposal extends CorrectionProposal {
                 Tree.Expression e = ss.getSpecifierExpression().getExpression();
                 if (e!=null && !isTypeUnknown(e.getTypeModel())) {
                     Unit unit = ss.getUnit();
-                    ProducedType t = unit.denotableType(e.getTypeModel());
+                    Type t = unit.denotableType(e.getTypeModel());
                     HashSet<Declaration> decs = new HashSet<Declaration>();
                     ImportProposals.importType(decs, t, cu);
                     applyImports(change, decs, cu, EditorUtil.getDocument(change));

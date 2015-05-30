@@ -16,13 +16,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class LinkedModeImporter implements ILinkedModeListener {
     
-    private ProducedType type;
+    private Type type;
     private IDocument document;
     private CeylonEditor editor;
 
@@ -66,7 +66,7 @@ public class LinkedModeImporter implements ILinkedModeListener {
     @Override
     public void resume(LinkedModeModel model, int flags) {}
 
-    public void setImportedType(ProducedType type) {
+    public void setImportedType(Type type) {
         this.type = type;
     }
 

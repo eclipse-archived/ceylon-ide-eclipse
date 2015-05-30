@@ -4,7 +4,7 @@ import org.antlr.runtime.CommonToken;
 
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -12,7 +12,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 public class Types {
 
-    public static ProducedType getResultType(Declaration d) {
+    public static Type getResultType(Declaration d) {
         if (d instanceof TypeDeclaration) {
             if (d instanceof Class) {
                 if (!((Class) d).isAbstract()) {
@@ -29,7 +29,7 @@ public class Types {
         }
     }
 
-    public static ProducedType getRequiredType(Tree.CompilationUnit rootNode,
+    public static Type getRequiredType(Tree.CompilationUnit rootNode,
             Node node, CommonToken token) {
         RequiredTypeVisitor rtv = new RequiredTypeVisitor(node, token);
         rtv.visit(rootNode);

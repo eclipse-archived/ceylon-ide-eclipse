@@ -35,7 +35,7 @@ import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -194,26 +194,26 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void collectExtractedTypeParameters(ProducedType pt) {
+    private void collectExtractedTypeParameters(Type pt) {
         if (pt.isTypeParameter()) {
             TypeDeclaration d = pt.getDeclaration();
             extractedTypeParameters.add((TypeParameter) d);
-            for (ProducedType st : pt.getSatisfiedTypes()) {
+            for (Type st : pt.getSatisfiedTypes()) {
                 collectExtractedTypeParameters(st);
             }
         }
         else if (pt.isUnion()) {
-            for (ProducedType ct : pt.getCaseTypes()) {
+            for (Type ct : pt.getCaseTypes()) {
                 collectExtractedTypeParameters(ct);
             }
         }
         else if (pt.isIntersection()) {
-            for (ProducedType st : pt.getSatisfiedTypes()) {
+            for (Type st : pt.getSatisfiedTypes()) {
                 collectExtractedTypeParameters(st);
             }
         }
         if (pt.getTypeArgumentList() != null) {
-            for (ProducedType ta : pt.getTypeArgumentList()) {
+            for (Type ta : pt.getTypeArgumentList()) {
                 collectExtractedTypeParameters(ta);
             }
         }

@@ -9,8 +9,8 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -25,7 +25,7 @@ public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
         }
         
         Tree.Term term = (Tree.Term) node;
-        ProducedType type = term.getTypeModel();
+        Type type = term.getTypeModel();
         Interface id = type.getDeclaration().getUnit().getIterableDeclaration();
         if( type.getSupertype(id) == null ) {
             return;
@@ -35,7 +35,7 @@ public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
         fiv.visit(cu);
         if (fiv.parameter == null || 
             !(fiv.parameter.isParameter()) ||
-            !((MethodOrValue) fiv.parameter).getInitializerParameter().isSequenced()) {
+            !((FunctionOrValue) fiv.parameter).getInitializerParameter().isSequenced()) {
             return;
         }
         

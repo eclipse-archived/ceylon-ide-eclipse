@@ -35,7 +35,7 @@ import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -243,7 +243,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                         Node node = Nodes.findToplevelStatement(cu, 
                                 Nodes.findNode(cu, (ITextSelection) selection));
                         if (node instanceof Tree.AnyMethod) {
-                            Method method = 
+                            Function method = 
                                     ((Tree.AnyMethod) node).getDeclarationModel();
                             if (method!=null && 
                                     method.isShared() &&
@@ -350,7 +350,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                     Node node = Nodes.findToplevelStatement(cu, 
                             Nodes.findNode(cu,selection));
                     if (node instanceof Tree.AnyMethod) {
-                        Method method = 
+                        Function method = 
                                 ((Tree.AnyMethod) node).getDeclarationModel();
                         if (method!=null && 
                                 method.isShared() &&

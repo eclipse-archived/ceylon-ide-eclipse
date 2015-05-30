@@ -11,7 +11,7 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -71,7 +71,7 @@ public class FindAssignmentsAction extends AbstractFindAction {
     @Override
     boolean isValidSelection() {
         //TODO: invalid for getters with no matching setter
-        return declaration instanceof MethodOrValue ||
+        return declaration instanceof FunctionOrValue ||
         		declaration instanceof ClassOrInterface ||
         		declaration instanceof TypeAlias ||
         		declaration instanceof TypeParameter;

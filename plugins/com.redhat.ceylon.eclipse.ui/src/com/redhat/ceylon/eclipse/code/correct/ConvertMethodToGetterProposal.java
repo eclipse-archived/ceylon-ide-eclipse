@@ -16,7 +16,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
@@ -27,7 +27,7 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
 
     public static void addConvertMethodToGetterProposal(Collection<ICompletionProposal> proposals, 
             CeylonEditor editor, IFile file, Node node) {
-        Method method = null;
+        Function method = null;
         Tree.Type type = null;
 
         if (node instanceof Tree.MethodDefinition) {
@@ -50,7 +50,7 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
     }
 
     private static void addConvertMethodToGetterProposal(Collection<ICompletionProposal> proposals, 
-            CeylonEditor editor, IFile file, Method method, Tree.Type type) {
+            CeylonEditor editor, IFile file, Function method, Tree.Type type) {
         try {
             RenameRefactoring refactoring = new RenameRefactoring(editor) {
                 @Override
@@ -113,7 +113,7 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
         }
     }
 
-    private ConvertMethodToGetterProposal(Change change, Method method) {
+    private ConvertMethodToGetterProposal(Change change, Function method) {
         super("Convert method '" + method.getName() + "()' to getter", 
                 change, null, CHANGE);
     }

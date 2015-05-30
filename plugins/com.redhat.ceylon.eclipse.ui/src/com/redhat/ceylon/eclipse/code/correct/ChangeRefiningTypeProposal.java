@@ -25,8 +25,8 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -51,12 +51,12 @@ public class ChangeRefiningTypeProposal {
                         (TypeDeclaration) dec.getContainer();
                 TypeDeclaration rdContainer =
                         (TypeDeclaration) rd.getContainer();
-                ProducedType supertype =
+                Type supertype =
                         decContainer.getType().getSupertype(rdContainer);
-                ProducedReference pr =
+                Reference pr =
                         rd.getProducedReference(supertype, 
-                                Collections.<ProducedType>emptyList());
-                ProducedType t = pr.getType();
+                                Collections.<Type>emptyList());
+                Type t = pr.getType();
                 String type = t.getProducedTypeNameInSource(decNode.getUnit());
                 Set<Declaration> declarations = new HashSet<Declaration>();
                 importType(declarations, t, cu);
@@ -112,7 +112,7 @@ public class ChangeRefiningTypeProposal {
                     decPls.get(0).getParameters();
             Scope decContainer = dec.getContainer();
             Scope rdContainer = rd.getContainer();
-            ProducedType supertype;
+            Type supertype;
             if (decContainer instanceof TypeDeclaration &&
                     rdContainer instanceof TypeDeclaration) {
                 TypeDeclaration dctd = 
@@ -124,9 +124,9 @@ public class ChangeRefiningTypeProposal {
             else {
                 supertype = null;
             }
-            ProducedReference pr =
+            Reference pr =
                     rd.getProducedReference(supertype, 
-                            Collections.<ProducedType>emptyList());
+                            Collections.<Type>emptyList());
             List<Tree.Parameter> params = list.getParameters();
             TextFileChange change =
                     new TextFileChange("Fix Refining Parameter List", file);
@@ -146,9 +146,9 @@ public class ChangeRefiningTypeProposal {
                 }
                 else {
                     Parameter rdp = rdpl.get(i);
-                    ProducedType pt = 
+                    Type pt = 
                             pr.getTypedParameter(rdp).getFullType();
-                    ProducedType dt = 
+                    Type dt = 
                             dpl.get(i).getModel()
                                 .getTypedReference().getFullType();
                     if (!dt.isExactly(pt)) {
@@ -168,7 +168,7 @@ public class ChangeRefiningTypeProposal {
                         buf.append(", ");
                     }
                     appendParameterText(buf, pr, rdp, unit);
-                    ProducedType pt = 
+                    Type pt = 
                             pr.getTypedParameter(rdp).getFullType();
                     importType(declarations, pt, cu);
                 }

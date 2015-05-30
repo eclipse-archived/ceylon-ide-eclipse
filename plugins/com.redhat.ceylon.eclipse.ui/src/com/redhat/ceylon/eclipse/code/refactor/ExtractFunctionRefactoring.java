@@ -44,7 +44,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -80,7 +80,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.Type that) {
             super.visit(that);
-            ProducedType type = that.getTypeModel();
+            Type type = that.getTypeModel();
             if (type!=null) {
                 if (type.isClassOrInterface()) {
                     TypeDeclaration td = 
@@ -319,7 +319,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     private TypedDeclaration resultDeclaration;
     private List<Tree.Statement> statements;
     List<Tree.Return> returns;
-    private ProducedType returnType;
+    private Type returnType;
 
     public ExtractFunctionRefactoring(IEditorPart editor) {
         super(editor);
@@ -554,7 +554,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             addLocalType(dec, 
                     unit.denotableType(bme.getTypeModel()), 
                     localTypes, 
-                    new ArrayList<ProducedType>());
+                    new ArrayList<Type>());
         }
         
         StringBuilder params = new StringBuilder();
@@ -609,7 +609,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                             .append(t.getName())
                             .append(" satisfies ");
                     boolean firstConstraint = true;
-                    for (ProducedType pt: t.getSatisfiedTypes()) {
+                    for (Type pt: t.getSatisfiedTypes()) {
                         if (firstConstraint) {
                             firstConstraint = false;
                         }
@@ -719,16 +719,16 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     unit.denotableType(
                             bme.getTypeModel()), 
                             localTypes, 
-                            new ArrayList<ProducedType>());
+                            new ArrayList<Type>());
         }
         for (Tree.Statement s: statements) {
             new Visitor() {
                 public void visit(Tree.TypeArgumentList that) {
-                    for (ProducedType pt: that.getTypeModels()) {
+                    for (Type pt: that.getTypeModels()) {
                         addLocalType(dec, 
                                 unit.denotableType(pt), 
                                 localTypes, 
-                                new ArrayList<ProducedType>());
+                                new ArrayList<Type>());
                     }
                 }
             }.visit(s);
@@ -789,7 +789,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         if (!localTypes.isEmpty()) {
             for (TypeDeclaration t: localTypes) {
                 typeParams += t.getName() + ", ";
-                List<ProducedType> sts = 
+                List<Type> sts = 
                         t.getSatisfiedTypes();
                 if (!sts.isEmpty()) {
                     constraints += extraIndent + 
@@ -797,7 +797,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                             "given " + 
                             t.getName() + 
                             " satisfies ";
-                    for (ProducedType pt: sts) {
+                    for (Type pt: sts) {
                         constraints += 
                                 pt.getProducedTypeNameInSource(unit) + "&";
                     }
@@ -814,8 +814,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         }
         else if (!returns.isEmpty())  {
             UnionType ut = new UnionType(unit);
-            List<ProducedType> list = 
-                    new ArrayList<ProducedType>();
+            List<Type> list = 
+                    new ArrayList<Type>();
             for (Tree.Return r: returns) {
                 addToUnion(list, 
                         r.getExpression().getTypeModel());
@@ -926,8 +926,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         return statements;
     }
 
-    private void addLocalType(Declaration dec, ProducedType type,
-            List<TypeDeclaration> localTypes, List<ProducedType> visited) {
+    private void addLocalType(Declaration dec, Type type,
+            List<TypeDeclaration> localTypes, List<Type> visited) {
         if (visited.contains(type)) {
             return;
         }
@@ -947,10 +947,10 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 localTypes.add(td);
             }
         }
-        for (ProducedType pt: type.getSatisfiedTypes()) {
+        for (Type pt: type.getSatisfiedTypes()) {
             addLocalType(dec, pt, localTypes, visited);
         }
-        for (ProducedType pt: type.getTypeArgumentList()) {
+        for (Type pt: type.getTypeArgumentList()) {
             addLocalType(dec, pt, localTypes, visited);
         }
     }
@@ -968,7 +968,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         this.explicitType = !explicitType;
     }
 
-    ProducedType getType() {
+    Type getType() {
         return returnType;
     }
     

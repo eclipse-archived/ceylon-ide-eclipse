@@ -20,7 +20,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -56,9 +56,9 @@ public class DeleteRefactoring extends AbstractRefactoring {
                             refinedDeclaration instanceof TypedDeclaration) {
                         //if it's a reference to a refining method or value
                         //we can safely delete unless it refines the return type
-                        ProducedType type = 
+                        Type type = 
                                 ((TypedDeclaration) declaration).getType();
-                        ProducedType refinedType = 
+                        Type refinedType = 
                                 ((TypedDeclaration) refinedDeclaration).getType();
                         return type!=null && refinedType!=null && 
                                 !type.isExactly(refinedType);

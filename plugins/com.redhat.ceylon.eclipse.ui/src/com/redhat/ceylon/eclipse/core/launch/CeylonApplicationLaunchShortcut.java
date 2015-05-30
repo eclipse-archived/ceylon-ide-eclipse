@@ -59,7 +59,7 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -131,7 +131,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                     if (selection instanceof ITextSelection) {
                         Node node = Nodes.findToplevelStatement(cu, Nodes.findNode(cu, (ITextSelection) selection));
                         if (node instanceof Tree.AnyMethod) {
-                            Method method = ((Tree.AnyMethod) node).getDeclarationModel();
+                            Function method = ((Tree.AnyMethod) node).getDeclarationModel();
                             if (method.isToplevel() && 
                                     method.isShared() &&
                                     !method.getParameterLists().isEmpty() &&
@@ -174,8 +174,8 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                         if (!d.isToplevel() || !d.isShared()) {
                             candidateDeclaration = false;
                         }
-                        if (d instanceof Method) {
-                            Method methodDecl = (Method) d;
+                        if (d instanceof Function) {
+                            Function methodDecl = (Function) d;
                             if (!methodDecl.getParameterLists().isEmpty() && 
                                     !methodDecl.getParameterLists().get(0).getParameters().isEmpty()) {
                                 candidateDeclaration = false;
@@ -535,8 +535,8 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                 configurationName += "class ";
             }
             else {
-                if (declarationToRun instanceof Method) {
-                    Method method = (Method) declarationToRun;
+                if (declarationToRun instanceof Function) {
+                    Function method = (Function) declarationToRun;
                     if (method.isDeclaredVoid()) {
                         configurationName += "void ";
                     }
@@ -566,7 +566,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     private String getJavaClassName(Declaration declaration) {
         
         String name = declClassName(declaration.getQualifiedNameString());
-        if(declaration instanceof Method)
+        if(declaration instanceof Function)
             name += "_";
         return name;
     }

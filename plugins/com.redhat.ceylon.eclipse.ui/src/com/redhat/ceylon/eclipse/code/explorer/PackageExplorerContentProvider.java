@@ -112,7 +112,7 @@ public class PackageExplorerContentProvider extends StandardJavaElementContentPr
     }
 
     /* (non-Javadoc)
-     * Method declared on IElementChangedListener.
+     * Function declared on IElementChangedListener.
      */
     public void elementChanged(final ElementChangedEvent event) {
         final ArrayList<Runnable> runnables= new ArrayList<Runnable>();
@@ -214,7 +214,7 @@ public class PackageExplorerContentProvider extends StandardJavaElementContentPr
     }
 
     /* (non-Javadoc)
-     * Method declared on IContentProvider.
+     * Function declared on IContentProvider.
      */
     @Override
     public void dispose() {
@@ -459,7 +459,7 @@ public class PackageExplorerContentProvider extends StandardJavaElementContentPr
     }
 
     /* (non-Javadoc)
-     * Method declared on IContentProvider.
+     * Function declared on IContentProvider.
      */
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {

@@ -49,7 +49,7 @@ public class ConvertGetterToMethodProposal extends CorrectionProposal {
             RenameRefactoring refactoring = new RenameRefactoring(editor) {
                 @Override
                 public String getName() {
-                    return "Convert Getter to Method";
+                    return "Convert Getter to Function";
                 };
             };
             refactoring.setNewName(getter.getName() + "()");
@@ -67,7 +67,7 @@ public class ConvertGetterToMethodProposal extends CorrectionProposal {
             }
             
             if (type instanceof Tree.ValueModifier) {
-                TextFileChange tfc = new TextFileChange("Convert Getter to Method", file);
+                TextFileChange tfc = new TextFileChange("Convert Getter to Function", file);
                 tfc.setEdit(new ReplaceEdit(type.getStartIndex(), 
                         type.getStopIndex() - type.getStartIndex() + 1, 
                         "function"));

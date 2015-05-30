@@ -37,13 +37,13 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
 public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
     
     private String name; 
-    private ProducedType type;
+    private Type type;
     private String argument;
     private Node node;
     private Set<String> parameterNames;
@@ -80,7 +80,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         return name;
     }
     
-    public ProducedType getType() {
+    public Type getType() {
         return type;
     }
     

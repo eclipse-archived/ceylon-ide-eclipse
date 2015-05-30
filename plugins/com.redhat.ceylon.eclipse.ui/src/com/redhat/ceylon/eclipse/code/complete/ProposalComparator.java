@@ -7,15 +7,15 @@ import java.util.Comparator;
 
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.NothingType;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
 final class ProposalComparator 
         implements Comparator<DeclarationWithProximity> {
     private final String prefix;
-    private final ProducedType type;
+    private final Type type;
 
-    ProposalComparator(String prefix, ProducedType type) {
+    ProposalComparator(String prefix, Type type) {
         this.prefix = prefix;
         this.type = type;
     }
@@ -33,8 +33,8 @@ final class ProposalComparator
             if (ybt&&!xbt) {
                 return -1;
             }
-            ProducedType xtype = getResultType(x.getDeclaration());
-            ProducedType ytype = getResultType(y.getDeclaration());
+            Type xtype = getResultType(x.getDeclaration());
+            Type ytype = getResultType(y.getDeclaration());
             boolean xbottom = xtype!=null && xtype.isNothing();
             boolean ybottom = ytype!=null && ytype.isNothing();
             if (xbottom && !ybottom) {

@@ -44,7 +44,7 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -144,8 +144,8 @@ public class LaunchHelper {
         if (!d.isToplevel() || !d.isShared()) {
             candidateDeclaration = false;
         }
-        if (d instanceof Method) {
-            Method methodDecl = (Method) d;
+        if (d instanceof Function) {
+            Function methodDecl = (Function) d;
             if (!methodDecl.getParameterLists().isEmpty() && 
                     !methodDecl.getParameterLists().get(0)
                             .getParameters().isEmpty()) {

@@ -10,7 +10,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
+import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -41,7 +41,7 @@ public class TypeArgumentListCompletions {
                         null : that.getTypeArguments().getStartIndex();
                 if (startIndex!=null && startIndex2!=null &&
                     startIndex.intValue()==startIndex2.intValue()) {
-                    ProducedReference pr = that.getTarget();
+                    Reference pr = that.getTarget();
                     Declaration d = that.getDeclaration();
                     if (d instanceof Functional && pr!=null) {
                         try {

@@ -69,7 +69,7 @@ import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase.Prefix;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -89,7 +89,7 @@ public class JavaSearch {
         catch (IllegalArgumentException iae) {
             return null;
         }
-        if (declaration instanceof Method) {
+        if (declaration instanceof Function) {
             return createPattern(pattern, METHOD, 
                     limitTo, R_EXACT_MATCH);
         }
@@ -411,7 +411,7 @@ public class JavaSearch {
                 try {
                     if (!(typeOrMethod instanceof IType
                             && ((IType)typeOrMethod).isAnonymous()
-                            && (declaration instanceof Method)
+                            && (declaration instanceof Function)
                             && ! isCeylonObject(typeOrMethod)
                             && AbstractCallable.class.getName()
                                 .equals(((IType) typeOrMethod).getSuperclassName()))) {

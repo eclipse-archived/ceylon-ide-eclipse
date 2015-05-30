@@ -33,7 +33,7 @@ import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -356,7 +356,7 @@ public final class CeylonHierarchyContentProvider
                 while (dec!=null) {
                     depthInHierarchy++;
                     root = dec;
-                    ProducedType extended = 
+                    Type extended = 
                             dec.getExtendedType();
                     if (extended!=null) {
                         TypeDeclaration superDec = 
@@ -382,7 +382,7 @@ public final class CeylonHierarchyContentProvider
                 if (container instanceof TypeDeclaration) {
                     TypeDeclaration dec = 
                             (TypeDeclaration) container;
-                    List<ProducedType> signature = 
+                    List<Type> signature = 
                             getSignature(declaration);
                     depthInHierarchy++;
                     root = memberDec;
@@ -395,7 +395,7 @@ public final class CeylonHierarchyContentProvider
                         TypeDeclaration rc = 
                                 (TypeDeclaration) 
                                     refinedDeclaration.getContainer();
-                        ProducedType extended = 
+                        Type extended = 
                                 dec.getExtendedType();
                         if (extended==null) {
                             dec = null;
@@ -493,7 +493,7 @@ public final class CeylonHierarchyContentProvider
             IEditorPart part = 
                     site.getPage().getActiveEditor();
             
-            List<ProducedType> signature = 
+            List<Type> signature = 
                     getSignature(declaration);
             int ps = packages.size();
             for (Package p: packages) { //workaround CME
@@ -528,16 +528,16 @@ public final class CeylonHierarchyContentProvider
             monitor.done();
         }
 
-        void addDeclaration(List<ProducedType> signature, 
+        void addDeclaration(List<Type> signature, 
                 Declaration dec) {
             if (declaration instanceof TypeDeclaration) {
                 TypeDeclaration td = (TypeDeclaration) dec;
                 if (!(td instanceof TypeParameter)) {
-                    ProducedType et = td.getExtendedType();
+                    Type et = td.getExtendedType();
                     if (et!=null) {
                         add(td, et.getDeclaration());
                     }
-                    for (ProducedType st: 
+                    for (Type st: 
                             td.getSatisfiedTypes()) {
                         if (st!=null) {
                             add(td, st.getDeclaration());

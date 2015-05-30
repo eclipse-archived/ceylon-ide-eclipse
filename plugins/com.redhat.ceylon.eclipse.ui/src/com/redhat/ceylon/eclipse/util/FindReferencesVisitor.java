@@ -19,7 +19,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Setter;
@@ -62,7 +62,7 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
             //default constructor
             Constructor constructor =
                     (Constructor) declaration;
-            ProducedType extended = 
+            Type extended = 
                     constructor.getExtendedType();
             if (extended!=null) {
                 declaration = extended.getDeclaration();
@@ -277,7 +277,7 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
         
     @Override
     public void visit(Tree.SimpleType that) {
-        ProducedType type = that.getTypeModel();
+        Type type = that.getTypeModel();
         if (type!=null && isReference(type.getDeclaration(), 
                 id(that.getIdentifier()))) {
             nodes.add(that);

@@ -18,7 +18,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -34,7 +34,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
 
     protected int offset;
     protected int exitPos;
-    protected ProducedType type;
+    protected Type type;
     protected String initialName;
     protected String[] nameProposals;
     protected final int currentOffset;
@@ -63,7 +63,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
         Tree.Statement st = findStatement(rootNode, node);
         Node expression;
         Node expanse;
-        ProducedType resultType;
+        Type resultType;
         if (st instanceof Tree.ExpressionStatement) {
             Tree.Expression e = 
                     ((Tree.ExpressionStatement) st).getExpression();
@@ -233,7 +233,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
         this.currentOffset = currentOffset;
     }
     
-    boolean isEnabled(ProducedType resultType) {
+    boolean isEnabled(Type resultType) {
         return true;
     }
 
@@ -242,7 +242,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
         if (st instanceof Tree.ExpressionStatement) {
             Tree.Expression e = 
                     ((Tree.ExpressionStatement) st).getExpression();
-            ProducedType resultType = e.getTypeModel();
+            Type resultType = e.getTypeModel();
             if (e.getTerm() instanceof Tree.InvocationExpression) {
                 Tree.Primary primary = 
                         ((Tree.InvocationExpression) e.getTerm()).getPrimary();
@@ -277,7 +277,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
                     dec.getAnnotationList().getAnnotations();
             Tree.AnonymousAnnotation aa = 
                     dec.getAnnotationList().getAnonymousAnnotation();
-            ProducedType resultType;
+            Type resultType;
             if (aa!=null && currentOffset<=aa.getStopIndex()+1) {
                 if (aa.getEndToken().getLine()==line) {
                     return false;

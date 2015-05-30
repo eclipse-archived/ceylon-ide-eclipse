@@ -14,7 +14,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -34,7 +34,7 @@ public class JoinDeclarationProposal {
             if (term instanceof Tree.BaseMemberExpression) {
                 final Declaration dec = 
                         ((Tree.BaseMemberExpression) term).getDeclaration();
-                if (dec instanceof MethodOrValue) {
+                if (dec instanceof FunctionOrValue) {
                     class FindBodyVisitor extends Visitor {
                         @Override
                         public void visit(Tree.Body that) {

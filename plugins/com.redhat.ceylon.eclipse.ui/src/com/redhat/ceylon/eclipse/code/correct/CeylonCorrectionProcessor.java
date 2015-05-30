@@ -165,7 +165,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.NamedArgumentList;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
@@ -835,7 +835,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.Expression e = 
                     sc.getSwitched().getExpression();
             if (e!=null) {
-                ProducedType type = e.getTypeModel();
+                Type type = e.getTypeModel();
                 if (type!=null) {
                     Tree.SwitchCaseList scl = 
                             ss.getSwitchCaseList();
@@ -847,7 +847,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                                     (Tree.IsCase) item;
                             Tree.Type tn = ic.getType();
                             if (tn!=null) {
-                                ProducedType t = 
+                                Type t = 
                                         tn.getTypeModel();
                                 if (!isTypeUnknown(t)) {
                                     type = type.minus(t);
@@ -862,7 +862,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                             for (Tree.Expression ex: 
                                 il.getExpressions()) {
                                 if (ex!=null) {
-                                    ProducedType t = 
+                                    Type t = 
                                             ex.getTypeModel();
                                     if (t!=null && 
                                             !isTypeUnknown(t)) {
@@ -877,14 +877,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                                     file);
                     IDocument doc = getDocument(tfc);
                     String text = "";
-                    List<ProducedType> list;
+                    List<Type> list;
                     if (type.getCaseTypes()!=null) {
                         list = type.getCaseTypes();
                     }
                     else {
                         list = singletonList(type);
                     }
-                    for (ProducedType pt: list) {
+                    for (Type pt: list) {
                         String is = 
                                 pt.getDeclaration()
                                     .isAnonymous() ? 

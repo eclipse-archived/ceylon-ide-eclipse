@@ -22,7 +22,7 @@ import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.IntersectionType;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Value;
@@ -72,13 +72,13 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
         boolean isTypeParam = typeDec instanceof TypeParameter;
 
-        List<ProducedType> missingSatisfiedTypes = 
+        List<Type> missingSatisfiedTypes = 
                 determineMissingSatisfiedTypes(cu, node, typeDec);
         if (!isTypeParam) {
-            for (Iterator<ProducedType> it = 
+            for (Iterator<Type> it = 
                     missingSatisfiedTypes.iterator();
                     it.hasNext();) {
-                ProducedType pt = it.next();
+                Type pt = it.next();
                 if (!(pt.getDeclaration() instanceof Interface)) {
                     it.remove();
                 }
@@ -293,9 +293,9 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             }
         }
         else if (node instanceof Tree.Term) {
-//            ProducedType type = node.getUnit()
+//            Type type = node.getUnit()
 //                    .denotableType(((Tree.Term)node).getTypeModel());
-            ProducedType type = ((Tree.Term) node).getTypeModel();
+            Type type = ((Tree.Term) node).getTypeModel();
             if (type != null) {
                 typeDec = type.getDeclaration();
             }
@@ -325,21 +325,21 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         return null;
     }
 
-    private static List<ProducedType> determineMissingSatisfiedTypes(CompilationUnit cu, 
+    private static List<Type> determineMissingSatisfiedTypes(CompilationUnit cu, 
             Node node, TypeDeclaration typeDec) {
-        List<ProducedType> missingSatisfiedTypes = 
-                new ArrayList<ProducedType>();
+        List<Type> missingSatisfiedTypes = 
+                new ArrayList<Type>();
         if (node instanceof Tree.Term) {
             FindInvocationVisitor fav = new FindInvocationVisitor(node);
             fav.visit(cu);
             if (fav.parameter != null) {
-                ProducedType type = fav.parameter.getType();
+                Type type = fav.parameter.getType();
                 if (type!=null && type.getDeclaration()!=null) {
                     if (type.isClassOrInterface()) {
                         missingSatisfiedTypes.add(type);
                     }
                     else if (type.isIntersection()) {
-                        for (ProducedType it: type.getSatisfiedTypes()) {
+                        for (Type it: type.getSatisfiedTypes()) {
                             if (!typeDec.inherits(it.getDeclaration())) {
                                 missingSatisfiedTypes.add(it);
                             }
@@ -352,22 +352,22 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             List<TypeParameter> stTypeParams = 
                     determineSatisfiedTypesTypeParams(cu, node, typeDec);
             if (!stTypeParams.isEmpty()) {
-                ProducedType typeParamType = typeDec.getType();
-                Map<TypeParameter, ProducedType> substitutions = 
-                        new HashMap<TypeParameter, ProducedType>();
+                Type typeParamType = typeDec.getType();
+                Map<TypeParameter, Type> substitutions = 
+                        new HashMap<TypeParameter, Type>();
                 for (TypeParameter stTypeParam : stTypeParams) {
                     substitutions.put(stTypeParam, typeParamType);
                 }
     
                 for (TypeParameter stTypeParam : stTypeParams) {
-                    for (ProducedType stTypeParamSatisfiedType: 
+                    for (Type stTypeParamSatisfiedType: 
                             stTypeParam.getSatisfiedTypes()) {
                         stTypeParamSatisfiedType = 
                                 stTypeParamSatisfiedType.substitute(substitutions, null);
     
                         boolean isMissing = true;
     
-                        for (ProducedType typeParamSatisfiedType: 
+                        for (Type typeParamSatisfiedType: 
                                 typeDec.getSatisfiedTypes()) {
                             if (stTypeParamSatisfiedType.isSupertypeOf(typeParamSatisfiedType)) {
                                 isMissing = false;
@@ -376,7 +376,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                         }
     
                         if (isMissing) {
-                            for(ProducedType missingSatisfiedType: 
+                            for(Type missingSatisfiedType: 
                                     missingSatisfiedTypes) {
                                 if( missingSatisfiedType.isExactly(stTypeParamSatisfiedType) ) {
                                     isMissing = false;
@@ -446,7 +446,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             List<Tree.Type> stTypeArguments = 
                     args.getTypes();
             for (int i=0; i<stTypeArguments.size(); i++) {
-                ProducedType stTypeArgument = 
+                Type stTypeArgument = 
                         stTypeArguments.get(i).getTypeModel();
                 if (stTypeArgument!=null && 
                         typeParam.equals(stTypeArgument.getDeclaration())) {
@@ -468,7 +468,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         if (args instanceof Tree.TypeArgumentList) {
             List<Tree.Type> stTypeArguments = ((Tree.TypeArgumentList) args).getTypes();
             for (int i=0; i<stTypeArguments.size(); i++) {
-                ProducedType stTypeArgument = 
+                Type stTypeArgument = 
                         stTypeArguments.get(i).getTypeModel();
                 if (stTypeArgument!=null && 
                         typeParam.equals(stTypeArgument.getDeclaration())) {

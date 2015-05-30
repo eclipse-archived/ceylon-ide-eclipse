@@ -93,7 +93,7 @@ public class ClassPathDetector implements IResourceProxyVisitor {
     }
 
     /**
-     * Method detectClasspath.
+     * Function detectClasspath.
      * 
      * @param monitor The progress monitor (not null)
      * @throws CoreException in case of any failure

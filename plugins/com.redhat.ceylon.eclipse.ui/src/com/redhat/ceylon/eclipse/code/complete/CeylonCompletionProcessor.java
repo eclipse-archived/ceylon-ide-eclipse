@@ -150,13 +150,13 @@ import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.ImportList;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Method;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
@@ -358,7 +358,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         //      an expression, since RequiredTypeVisitor
         //      doesn't know how to search up the tree for
         //      the containing InvocationExpression
-        ProducedType requiredType = 
+        Type requiredType = 
                 getRequiredType(rn, node, adjustedToken);
         
         String prefix = "";
@@ -775,7 +775,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             final Node node, CommonToken token, 
             boolean memberOp, IDocument doc, 
             boolean secondLevel, boolean inDoc,
-            ProducedType requiredType, int previousTokenType, 
+            Type requiredType, int previousTokenType, 
             int tokenType) {
         
         final List<ICompletionProposal> result = 
@@ -823,14 +823,14 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 node instanceof Tree.QualifiedTypeExpression)) {
             
             //member names we can refine
-            ProducedType t=null;
+            Type t=null;
             if (node instanceof Tree.Type) {
                 t = ((Tree.Type) node).getTypeModel();
             }
             else if (node instanceof Tree.BaseTypeExpression) {
                 Tree.BaseTypeExpression bte = 
                         (Tree.BaseTypeExpression) node;
-                ProducedReference target = bte.getTarget();
+                Reference target = bte.getTarget();
                 if (target!=null) {
                     t = target.getType();
                 }
@@ -838,7 +838,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             else if (node instanceof Tree.QualifiedTypeExpression) {
                 Tree.QualifiedTypeExpression qte = 
                         (Tree.QualifiedTypeExpression) node;
-                ProducedReference target = qte.getTarget();
+                Reference target = qte.getTarget();
                 if (target!=null) {
                     t = target.getType();
                 }
@@ -862,7 +862,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     (Tree.TypedDeclaration) node;
             Tree.Type dnt = td.getType();
             if (dnt!=null && dnt.getTypeModel()!=null) {
-                ProducedType t = dnt.getTypeModel();
+                Type t = dnt.getTypeModel();
                 addRefinementProposals(offset, sortedProposals, 
                         cpc, scope, node, doc,secondLevel, 
                         result, ol, t, true);
@@ -913,7 +913,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 if (isPackageOrModuleDescriptor && !inDoc && 
                         ol!=META && (ol==null || !ol.reference) &&
                     (!dec.isAnnotation() || 
-                            !(dec instanceof Method))) {
+                            !(dec instanceof Function))) {
                     continue;
                 }
                 
@@ -938,7 +938,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                 ol!=EXTENDS || 
                                 isDelegatableConstructor(scope, dec))) {
                     for (Declaration d: overloads(dec)) {
-                        ProducedReference pr = isMember ? 
+                        Reference pr = isMember ? 
                                 getQualifiedProducedReference(node, d) :
                                 getRefinedProducedReference(scope, d);
                         addInvocationProposals(offset, prefix, cpc, result, 
@@ -970,7 +970,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         }
                     }
                     else {
-                        ProducedReference pr = isMember ? 
+                        Reference pr = isMember ? 
                                 getQualifiedProducedReference(node, dec) :
                                 getRefinedProducedReference(scope, dec);
                         if (secondLevel) {
@@ -979,7 +979,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                     pr, requiredType, ol);
                         }
                         else {
-                            if (!(dec instanceof Method) || 
+                            if (!(dec instanceof Function) || 
                                     !isAbstraction(dec) || 
                                     !noParamsFollow) {
                                 addReferenceProposal(offset, prefix, 
@@ -1059,7 +1059,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             Scope outerScope = scope.getContainer();
             if (outerScope instanceof Class) {
                 Class c = (Class) outerScope;
-                ProducedType sup = c.getExtendedType();
+                Type sup = c.getExtendedType();
                 return sup!=null && 
                         sup.getDeclaration().equals(dec); 
             }
@@ -1079,7 +1079,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else if (dec instanceof Value) {
             Value val = (Value) dec;
-            ProducedType type = val.getType();
+            Type type = val.getType();
             if (val.isVariable() || val.isTransient() || 
                 val.isDefault() || val.isFormal() ||
                 isTypeUnknown(type)) {
@@ -1105,7 +1105,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     private static void addAnonFunctionProposal(int offset, 
-            ProducedType requiredType, 
+            Type requiredType, 
             List<ICompletionProposal> result, 
             Unit unit) {
         String text = anonFunctionHeader(requiredType, unit);
@@ -1134,7 +1134,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             Declaration dec) {
         return (ol==VALUE_REF || !(dec instanceof Value) || 
                     ((Value)dec).getTypeDeclaration().isAnonymous()) &&
-            (ol==FUNCTION_REF || !(dec instanceof Method)) &&
+            (ol==FUNCTION_REF || !(dec instanceof Function)) &&
             (ol==ALIAS_REF || !(dec instanceof TypeAlias)) &&
             (ol==TYPE_PARAMETER_REF || !(dec instanceof TypeParameter)) &&
             //note: classes and interfaces are almost always proposable 
@@ -1147,12 +1147,12 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             CeylonParseController cpc, Scope scope, 
             Node node, IDocument doc, boolean filter,
             final List<ICompletionProposal> result, 
-            OccurrenceLocation ol, ProducedType t, 
+            OccurrenceLocation ol, Type t, 
             boolean preamble) {
         for (DeclarationWithProximity dwp: set) {
             Declaration dec = dwp.getDeclaration();
-            if (!filter && dec instanceof MethodOrValue) {
-                MethodOrValue m = (MethodOrValue) dec;
+            if (!filter && dec instanceof FunctionOrValue) {
+                FunctionOrValue m = (FunctionOrValue) dec;
                 for (Declaration d: overloads(dec)) {
                     if (isRefinementProposable(d, ol, scope) &&
                             t.isSubtypeOf(m.getType())) {
@@ -1232,7 +1232,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             OccurrenceLocation ol, Scope scope) {
         return ol==null && 
                 (dec.isDefault() || dec.isFormal()) &&
-                (dec instanceof MethodOrValue || dec instanceof Class) && 
+                (dec instanceof FunctionOrValue || dec instanceof Class) && 
                 scope instanceof ClassOrInterface &&
                 ((ClassOrInterface) scope).isInheritedFromSupertype(dec);
     }
@@ -1249,17 +1249,17 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                  ol==EXTENDS && dec instanceof Constructor && !((Class) dec.getContainer()).isFinal() && 
                          ((Class) dec.getContainer()).getTypeParameters().isEmpty() ||
                  ol==CLASS_ALIAS && dec instanceof Class ||
-                 ol==PARAMETER_LIST && dec instanceof Method && 
+                 ol==PARAMETER_LIST && dec instanceof Function && 
                          dec.isAnnotation()) &&
                 dwp.getNamedArgumentList()==null &&
-                (!dec.isAnnotation() || !(dec instanceof Method) || 
-                        !((Method) dec).getParameterLists().isEmpty() &&
-                        !((Method) dec).getParameterLists().get(0).getParameters().isEmpty());
+                (!dec.isAnnotation() || !(dec instanceof Function) || 
+                        !((Function) dec).getParameterLists().isEmpty() &&
+                        !((Function) dec).getParameterLists().get(0).getParameters().isEmpty());
     }
 
     private static boolean isProposable(DeclarationWithProximity dwp, 
             OccurrenceLocation ol, Scope scope, Unit unit, 
-            ProducedType requiredType, int previousTokenType) {
+            Type requiredType, int previousTokenType) {
         Declaration dec = dwp.getDeclaration();
         return (ol!=EXTENDS || dec instanceof Class && !((Class) dec).isFinal() || 
                                dec instanceof Constructor && !((Class) dec.getContainer()).isFinal()) && 
@@ -1271,7 +1271,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                (ol!=CATCH || isExceptionType(unit, dec)) &&
                (ol!=PARAMETER_LIST ||
                        dec instanceof TypeDeclaration || 
-                       dec instanceof Method && dec.isAnnotation() || //i.e. an annotation 
+                       dec instanceof Function && dec.isAnnotation() || //i.e. an annotation 
                        dec instanceof Value && dec.getContainer().equals(scope)) && //a parameter ref
                (ol!=IMPORT || !dwp.isUnimported()) &&
                (ol!=CASE || isCaseOfSwitch(requiredType, dec, previousTokenType)) &&
@@ -1281,7 +1281,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                dwp.getNamedArgumentList()==null;
     }
 
-    private static boolean isCaseOfSwitch(ProducedType requiredType,
+    private static boolean isCaseOfSwitch(Type requiredType,
             Declaration dec, int previousTokenType) {
         return previousTokenType==IS_OP &&
                 isTypeCaseOfSwitch(requiredType, dec) || 
@@ -1289,10 +1289,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 isValueCaseOfSwitch(requiredType, dec);
     }
 
-    private static boolean isValueCaseOfSwitch(ProducedType requiredType,
+    private static boolean isValueCaseOfSwitch(Type requiredType,
             Declaration dec) {
         if (requiredType!=null && requiredType.isUnion()) {
-            for (ProducedType td: requiredType.getCaseTypes()) {
+            for (Type td: requiredType.getCaseTypes()) {
                 if (isValueCaseOfSwitch(td, dec)) {
                     return true;
                 }
@@ -1307,10 +1307,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
     }
 
-    private static boolean isTypeCaseOfSwitch(ProducedType requiredType,
+    private static boolean isTypeCaseOfSwitch(Type requiredType,
             Declaration dec) {
         if (requiredType!=null && requiredType.isUnion()) {
-            for (ProducedType td: requiredType.getCaseTypes()) {
+            for (Type td: requiredType.getCaseTypes()) {
                 if (isTypeCaseOfSwitch(td, dec)) {
                     return true;
                 }
@@ -1349,9 +1349,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         return scope==d.getNamedArgumentList();
     }
 
-    private static ProducedReference getQualifiedProducedReference(Node node, 
+    private static Reference getQualifiedProducedReference(Node node, 
             Declaration d) {
-        ProducedType pt;
+        Type pt;
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte = 
                     (Tree.QualifiedMemberOrTypeExpression) node;
@@ -1370,11 +1370,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             pt = pt.getSupertype(container);
         }
         return d.getProducedReference(pt, 
-                Collections.<ProducedType>emptyList());
+                Collections.<Type>emptyList());
     }
 
     private static Set<DeclarationWithProximity> 
-    sortProposals(String prefix, ProducedType type, 
+    sortProposals(String prefix, Type type, 
             Map<String, DeclarationWithProximity> proposals) {
         Set<DeclarationWithProximity> set = 
                 new TreeSet<DeclarationWithProximity>(
@@ -1396,7 +1396,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte = 
                     (Tree.QualifiedMemberOrTypeExpression) node;
-            ProducedType type = getPrimaryType(qmte);
+            Type type = getPrimaryType(qmte);
             if (!qmte.getStaticMethodReference() && 
                     !isTypeUnknown(type)) {
                 return collectUnaryFunctions(type, 
@@ -1405,7 +1405,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
         }
         else if (memberOp && node instanceof Tree.Term) {
-            ProducedType type = null;
+            Type type = null;
             if (node instanceof Tree.Term) {
                 type = ((Tree.Term) node).getTypeModel();
             } 
@@ -1422,16 +1422,16 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     public static Map<String, DeclarationWithProximity> 
-    collectUnaryFunctions(ProducedType type, 
+    collectUnaryFunctions(Type type, 
             Map<String, DeclarationWithProximity> candidates) {
         Map<String,DeclarationWithProximity> matches = 
                 new HashMap<String, DeclarationWithProximity>();
         for (Map.Entry<String,DeclarationWithProximity> e: 
                 candidates.entrySet()) {
             Declaration declaration = e.getValue().getDeclaration();
-            if (declaration instanceof Method && 
+            if (declaration instanceof Function && 
                     !declaration.isAnnotation()) {
-                Method m = (Method) declaration;
+                Function m = (Function) declaration;
                 List<ParameterList> pls = m.getParameterLists();
                 if (!pls.isEmpty()) {
                     ParameterList pl = pls.get(0);
@@ -1443,7 +1443,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                 unary = false;
                             }
                         }
-                        ProducedType t = params.get(0).getType();
+                        Type t = params.get(0).getType();
                         if (unary && !isTypeUnknown(t) && 
                                 type.isSubtypeOf(t)) {
                             matches.put(e.getKey(), e.getValue());
@@ -1463,7 +1463,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             Tree.MemberLiteral ml = (Tree.MemberLiteral) node;
             Tree.StaticType mlt = ml.getType();
             if (mlt!=null) {
-                ProducedType type = mlt.getTypeModel();
+                Type type = mlt.getTypeModel();
                 if (type!=null) {
                     return type.resolveAliases()
                             .getDeclaration()
@@ -1484,7 +1484,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         .getMatchingDirectDeclarations(prefix, 0);
             }
             if (tlt!=null) {
-                ProducedType type = tlt.getTypeModel();
+                Type type = tlt.getTypeModel();
                 if (type!=null) {
                     return type.resolveAliases()
                             .getDeclaration()
@@ -1500,7 +1500,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte = 
                     (Tree.QualifiedMemberOrTypeExpression) node;
-            ProducedType type = getPrimaryType(qmte);
+            Type type = getPrimaryType(qmte);
             if (qmte.getStaticMethodReference()) {
                 type = unit.getCallableReturnType(type);
             }
@@ -1537,7 +1537,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         else if (node instanceof Tree.QualifiedType) {
             Tree.QualifiedType type = 
                     (Tree.QualifiedType) node;
-            ProducedType t = 
+            Type t = 
                     type.getOuterType().getTypeModel();
             if (t!=null) {
                 return t.resolveAliases().getDeclaration()
@@ -1565,7 +1565,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         else if (memberOp && 
                 (node instanceof Tree.Term || 
                  node instanceof Tree.DocLink)) {
-            ProducedType type = null;
+            Type type = null;
             if (node instanceof Tree.DocLink) {
                 Tree.DocLink docLink = (Tree.DocLink) node;
                 Declaration d = docLink.getBase();
@@ -1609,9 +1609,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
     }
 
-    private static ProducedType getPrimaryType(
+    private static Type getPrimaryType(
             Tree.QualifiedMemberOrTypeExpression qme) {
-        ProducedType type = 
+        Type type = 
                 qme.getPrimary().getTypeModel();
         if (type==null) {
             return null;

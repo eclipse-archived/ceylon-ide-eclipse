@@ -16,7 +16,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -54,9 +54,9 @@ class AssignToForProposal extends LocalProposal {
         return change;
     }
 
-    ProducedType getEntryType(Unit unit) {
+    Type getEntryType(Unit unit) {
         Class ed = unit.getEntryDeclaration();
-        ProducedType est = unit.getIteratedType(type).getSupertype(ed);
+        Type est = unit.getIteratedType(type).getSupertype(ed);
         return est;
     }
     
@@ -67,7 +67,7 @@ class AssignToForProposal extends LocalProposal {
     
     protected void addLinkedPositions(IDocument document, Unit unit)
             throws BadLocationException {
-        ProducedType entryType = getEntryType(unit);
+        Type entryType = getEntryType(unit);
         if (entryType==null) {
             ProposalPosition namePosition = 
             		new ProposalPosition(document, offset+5, initialName.length(), 0,
@@ -99,7 +99,7 @@ class AssignToForProposal extends LocalProposal {
     }
     
     @Override
-    boolean isEnabled(ProducedType resultType) {
+    boolean isEnabled(Type resultType) {
         return resultType!=null &&
                 rootNode.getUnit().isIterableType(resultType);
     }

@@ -55,9 +55,9 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -152,10 +152,10 @@ class ParametersCompletionProposal extends CompletionProposal {
                             ((Functional) dec).getParameterLists();
                     if (!pls.isEmpty()) {
                         for (Parameter p: pls.get(0).getParameters()) {
-                            MethodOrValue pm = p.getModel();
-                            if (pm instanceof Method) {
+                            FunctionOrValue pm = p.getModel();
+                            if (pm instanceof Function) {
                                 for (ParameterList ppl: 
-                                        ((Method) pm).getParameterLists()) {
+                                        ((Function) pm).getParameterLists()) {
                                     for (Parameter pp: ppl.getParameters()) {
                                         importSignatureTypes(pp.getModel(), cu, decs);
                                     }
@@ -417,12 +417,12 @@ class ParametersCompletionProposal extends CompletionProposal {
     }
     
     private final CeylonParseController cpc;
-    private final List<ProducedType> argTypes;
+    private final List<Type> argTypes;
     private final Scope scope;
     
     ParametersCompletionProposal(int offset, 
             String desc, String text, 
-            List<ProducedType> argTypes, 
+            List<Type> argTypes, 
             Scope scope, CeylonParseController cpc) {
         super(offset, "", LARGE_CORRECTION_IMAGE, 
                 desc, text);
@@ -557,7 +557,7 @@ class ParametersCompletionProposal extends CompletionProposal {
         }
     }
 
-    private void addValueArgumentProposals(ProducedType type, final int loc,
+    private void addValueArgumentProposals(Type type, final int loc,
             int first, List<ICompletionProposal> props, int index) {
         if (type==null) return;
         Unit unit = getUnit();
@@ -580,7 +580,7 @@ class ParametersCompletionProposal extends CompletionProposal {
 
     private void addValueArgumentProposal(final int loc,
             List<ICompletionProposal> props, int index,
-            ProducedType type, Unit unit, DeclarationWithProximity dwp,
+            Type type, Unit unit, DeclarationWithProximity dwp,
             DeclarationWithProximity qualifier) {
         if (qualifier==null && dwp.isUnimported()) {
             return;
@@ -599,7 +599,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                     return;
                 }
             }
-            ProducedType vt = value.getType();
+            Type vt = value.getType();
             if (vt!=null && !vt.isNothing()) {
                 if (vt.isSubtypeOf(type) ||
                         (td instanceof TypeParameter) && 
@@ -621,15 +621,15 @@ class ParametersCompletionProposal extends CompletionProposal {
                 }
             }
         }
-        if (d instanceof Method) {
+        if (d instanceof Function) {
             if (!d.isAnnotation()) {
-                Method method = (Method) d;
+                Function method = (Function) d;
                 if (isInLanguageModule) {
                     if (isIgnoredLanguageModuleMethod(method)) {
                         return;
                     }
                 }
-                ProducedType mt = method.getType();
+                Type mt = method.getType();
                 if (mt!=null && !mt.isNothing() &&
                         ((td instanceof TypeParameter) && 
                                 isInBounds(((TypeParameter) td).getSatisfiedTypes(), mt) || 
@@ -650,7 +650,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                         return;
                     }
                 }
-                ProducedType ct = clazz.getType();
+                Type ct = clazz.getType();
                 if (ct!=null && !ct.isNothing() &&
                         ((td instanceof TypeParameter) && 
                                 isInBounds(((TypeParameter) td).getSatisfiedTypes(), ct) || 
@@ -667,7 +667,7 @@ class ParametersCompletionProposal extends CompletionProposal {
     }
 
     private void addLiteralProposals(final int loc,
-            List<ICompletionProposal> props, int index, ProducedType type,
+            List<ICompletionProposal> props, int index, Type type,
             Unit unit) {
         TypeDeclaration dtd = unit.getDefiniteType(type).getDeclaration();
         if (dtd instanceof Class) {
@@ -712,14 +712,14 @@ class ParametersCompletionProposal extends CompletionProposal {
             final List<ICompletionProposal> result, CeylonParseController cpc) {
         if (!(node instanceof Tree.StaticMemberOrTypeExpression) || 
                 !(((Tree.StaticMemberOrTypeExpression) node).getDeclaration() instanceof Functional)) {
-            ProducedType type = ((Tree.Term) node).getTypeModel();
+            Type type = ((Tree.Term) node).getTypeModel();
             Unit unit = node.getUnit();
             if (type!=null) {
                 TypeDeclaration td = type.getDeclaration();
                 Interface cd = unit.getCallableDeclaration();
                 if (type.isClassOrInterface() &&
                         td.equals(cd)) {
-                    final List<ProducedType> argTypes = 
+                    final List<Type> argTypes = 
                             unit.getCallableArgumentTypes(type);
                     boolean paramTypes = 
                             getPreferences().getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
@@ -728,7 +728,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                     desc.append('(');
                     text.append('(');
                     for (int i = 0; i < argTypes.size(); i++) {
-                        ProducedType argType = argTypes.get(i);
+                        Type argType = argTypes.get(i);
                         if (desc.length()>1) desc.append(", ");
                         if (text.length()>1) text.append(", ");
                         if (argType.isClassOrInterface() &&

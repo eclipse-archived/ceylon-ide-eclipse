@@ -8,7 +8,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
@@ -69,7 +69,7 @@ public final class ExtractParameterLinkedMode
                 refactoring.refRegion.getOffset(),
                 refactoring.refRegion.getLength());
         
-        ProducedType type = refactoring.getType();
+        Type type = refactoring.getType();
         if (!isTypeUnknown(type)) {
             addTypePosition(document, type, 
                     refactoring.typeRegion.getOffset(), 

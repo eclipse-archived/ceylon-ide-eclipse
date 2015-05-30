@@ -62,7 +62,7 @@ public class NavigateActionGroup extends ActionGroup {
     }
 
     /* (non-Javadoc)
-     * Method declared in ActionGroup
+     * Function declared in ActionGroup
      */
     @Override
     public void dispose() {
@@ -72,7 +72,7 @@ public class NavigateActionGroup extends ActionGroup {
     }
 
     /* (non-Javadoc)
-     * Method declared in ActionGroup
+     * Function declared in ActionGroup
      */
     @Override
     public void fillActionBars(IActionBars actionBars) {
@@ -82,7 +82,7 @@ public class NavigateActionGroup extends ActionGroup {
     }
 
     /* (non-Javadoc)
-     * Method declared in ActionGroup
+     * Function declared in ActionGroup
      */
     @Override
     public void fillContextMenu(IMenuManager menu) {
@@ -93,7 +93,7 @@ public class NavigateActionGroup extends ActionGroup {
     }
 
     /* (non-Javadoc)
-     * Method declared in ActionGroup
+     * Function declared in ActionGroup
      */
     @Override
     public void setContext(ActionContext context) {
@@ -103,7 +103,7 @@ public class NavigateActionGroup extends ActionGroup {
     }
 
     /* (non-Javadoc)
-     * Method declared in ActionGroup
+     * Function declared in ActionGroup
      */
     @Override
     public void updateActionBars() {

@@ -13,7 +13,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -37,7 +37,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
         String desc = "Convert => to block";
         if (decNode instanceof Tree.MethodDeclaration) {
             Tree.MethodDeclaration md = (Tree.MethodDeclaration) decNode;
-            Method dm = md.getDeclarationModel();
+            Function dm = md.getDeclarationModel();
             if (dm==null || dm.isParameter()) return;
             isVoid = dm.isDeclaredVoid();
             List<Tree.ParameterList> pls = md.getParameterLists();
@@ -64,7 +64,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
         }
         else if (decNode instanceof Tree.MethodArgument) {
             Tree.MethodArgument ma = (Tree.MethodArgument) decNode;
-            Method dm = ma.getDeclarationModel();
+            Function dm = ma.getDeclarationModel();
             if (dm==null) return;
             isVoid = dm.isDeclaredVoid();
             if (ma.getType().getToken()==null) {
@@ -88,7 +88,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
         }
         else if (decNode instanceof Tree.FunctionArgument) {
             Tree.FunctionArgument fun = (Tree.FunctionArgument) decNode;
-            Method dm = fun.getDeclarationModel();
+            Function dm = fun.getDeclarationModel();
             if (dm==null) return;
             isVoid = dm.isDeclaredVoid();
             List<Tree.ParameterList> pls = fun.getParameterLists();

@@ -65,10 +65,6 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeVariance;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
@@ -77,11 +73,11 @@ import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.IntersectionType;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -293,10 +289,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (n instanceof ModuleNode) {
             return CEYLON_MODULE;
         }
-        else if (n instanceof PackageDescriptor) {
+        else if (n instanceof Tree.PackageDescriptor) {
             return CEYLON_PACKAGE;
         }
-        else if (n instanceof ModuleDescriptor) {
+        else if (n instanceof Tree.ModuleDescriptor) {
             return CEYLON_MODULE;
         }
         else if (n instanceof Tree.CompilationUnit) {
@@ -424,14 +420,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return CEYLON_TYPE_PARAMETER;
         }
         else if (d.isParameter()) {
-            if (d instanceof Method) {
+            if (d instanceof Function) {
                 return CEYLON_PARAMETER_METHOD;
             }
             else {
                 return CEYLON_PARAMETER;
             }
         }
-        else if (d instanceof Method) {
+        else if (d instanceof Function) {
             if (shared) {
                 return CEYLON_METHOD;
             }
@@ -555,7 +551,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             if (type!=null && 
                     !(type instanceof Tree.DynamicModifier) &&
                     !(type instanceof Tree.VoidModifier)) {
-                ProducedType tm = type.getTypeModel();
+                Type tm = type.getTypeModel();
                 if (!isTypeUnknown(tm)) {
                     label.append(" ∊ ");
                     appendTypeName(label, tm, ARROW_STYLER);
@@ -635,7 +631,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.TypedDeclaration td = 
                     (Tree.TypedDeclaration) node;
             String kind;
-            Type type = td.getType();
+            Tree.Type type = td.getType();
             if (type instanceof Tree.DynamicModifier) {
                 kind = "dynamic";
             }
@@ -842,12 +838,12 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             if (type instanceof Tree.DynamicModifier) {
                 return result.append("dynamic", KW_STYLER);
             }
-            ProducedType tm = type.getTypeModel();
+            Type tm = type.getTypeModel();
             if (tm!=null && !isTypeUnknown(tm)) {
                 if (type instanceof Tree.SequencedType) {
                     Tree.SequencedType st = 
                             (Tree.SequencedType) type;
-                    ProducedType itm = 
+                    Type itm = 
                             type.getUnit()
                                 .getIteratedType(tm);
                     if (itm!=null) {
@@ -960,7 +956,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 int i=0;
                 for (Tree.TypeParameterDeclaration p: 
                         tpl.getTypeParameterDeclarations()) {
-                    TypeVariance var = p.getTypeVariance();
+                    Tree.TypeVariance var = p.getTypeVariance();
                     if (var!=null) {
                         label.append(var.getText(), KW_STYLER)
                             .append(" "); 
@@ -1003,12 +999,12 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
 
     public static void appendTypeName(StyledString result, 
-            ProducedType type) {
+            Type type) {
         appendTypeName(result, type, TYPE_STYLER);
     }
     
     public static void appendTypeName(StyledString result, 
-            ProducedType type, 
+            Type type, 
             Styler styler) {
         try {
             String typeName = type.getProducedTypeName();

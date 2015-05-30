@@ -16,7 +16,7 @@ import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -47,7 +47,7 @@ final class DeclareLocalProposal extends CorrectionProposal {
 
     public void apply(IDocument document) {
         super.apply(document);
-        ProducedType type = term.getTypeModel();
+        Type type = term.getTypeModel();
         if (type!=null && editor!=null) {
             LinkedModeModel linkedModeModel = new LinkedModeModel();
             ProposalPosition typePosition = 

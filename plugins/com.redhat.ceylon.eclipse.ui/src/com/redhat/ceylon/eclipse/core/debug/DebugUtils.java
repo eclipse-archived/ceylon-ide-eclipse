@@ -58,7 +58,7 @@ import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.LazyProducedType;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -337,11 +337,11 @@ public class DebugUtils {
 
                                 IJavaValue producedType = null;
                                 IJavaValue typeDescriptor = null;
-                                if (typeName.contains("ProducedType")) {
+                                if (typeName.contains("Type")) {
                                     try {
-                                        Class<?> producedTypeClass = ProducedType.class.getClassLoader().loadClass(javaValue.getReferenceTypeName());
+                                        Class<?> producedTypeClass = Type.class.getClassLoader().loadClass(javaValue.getReferenceTypeName());
                                         if (producedTypeClass != null &&
-                                                ProducedType.class.isAssignableFrom(producedTypeClass)) {
+                                                Type.class.isAssignableFrom(producedTypeClass)) {
                                             producedType = javaValue;
                                         }
                                     } catch (ClassNotFoundException e) {
@@ -389,7 +389,7 @@ public class DebugUtils {
                                             }
                                         }
                                         if (typeDescriptor instanceof IJavaObject && ! (typeDescriptor instanceof JDINullValue)) {
-                                            producedType = metamodelType.sendMessage("getProducedType", "(Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;)Lcom/redhat/ceylon/model/typechecker/model/ProducedType;", new IJavaValue[] {typeDescriptor}, innerThread);
+                                            producedType = metamodelType.sendMessage("getProducedType", "(Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;)Lcom/redhat/ceylon/model/typechecker/model/Type;", new IJavaValue[] {typeDescriptor}, innerThread);
                                         }
                                     }
                                 }
@@ -418,7 +418,7 @@ public class DebugUtils {
                     IJavaThread innerThread, IProgressMonitor monitor)
             throws DebugException {
                 if (producedType instanceof IJavaObject && ! (producedType instanceof JDINullValue)) {
-                    IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("getProducedTypeName", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lcom/redhat/ceylon/model/typechecker/model/ProducedType;");
+                    IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("getProducedTypeName", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lcom/redhat/ceylon/model/typechecker/model/Type;");
                     return producedTypeName;
                 }
                 return null;
@@ -461,11 +461,11 @@ public class DebugUtils {
         return toModelDeclaration(evaluationThread, debugTarget, jdiDeclaration);
     }
     
-    public static ProducedType getModelProducedType(IJavaObject jdiObject) throws DebugException {
+    public static Type getModelProducedType(IJavaObject jdiObject) throws DebugException {
         return getModelProducedType(jdiObject, null);
     }   
     
-    private static ProducedType getModelProducedType(IJavaObject jdiObject, IJavaThread evaluationThread) throws DebugException {
+    private static Type getModelProducedType(IJavaObject jdiObject, IJavaThread evaluationThread) throws DebugException {
         IJavaObject jdiProducedType = getJdiProducedType(jdiObject);
 
         if (! (jdiProducedType instanceof JDIObjectValue)) {
@@ -476,11 +476,11 @@ public class DebugUtils {
     }
 
     
-    public static ProducedType toModelProducedType(IJavaObject jdiProducedType) throws DebugException {
+    public static Type toModelProducedType(IJavaObject jdiProducedType) throws DebugException {
         return toModelProducedType(jdiProducedType, null);
     }   
     
-    private static ProducedType toModelProducedType(IJavaObject jdiProducedType, IJavaThread evaluationThread) throws DebugException {
+    private static Type toModelProducedType(IJavaObject jdiProducedType, IJavaThread evaluationThread) throws DebugException {
         if (! (jdiProducedType instanceof JDIObjectValue)) {
             return null;
         }
@@ -495,7 +495,7 @@ public class DebugUtils {
             Unit unit = declaration.getUnit();
             final TypeDeclaration typeDeclaration = (TypeDeclaration) declaration;
             final List<TypeParameter> typeParameters = typeDeclaration.getTypeParameters();
-            final List<ProducedType> typeArguments = new ArrayList<>(typeParameters.size());
+            final List<Type> typeArguments = new ArrayList<>(typeParameters.size());
             ProducedTypeAction<IJavaValue> produceTypeAction = new ProducedTypeAction<IJavaValue>() {
                 @Override
                 public IJavaValue doOnProducedType(IJavaObject producedType,
@@ -513,7 +513,7 @@ public class DebugUtils {
                             for (i = 0; i<intSize; i++) {
                                 IJavaValue childTypeValue = ((IJavaObject)producedTypeList).sendMessage("get", "(I)Ljava/lang/Object;", new IJavaValue[] {debugTarget.newValue(i)}, innerThread, null);
                                 if (childTypeValue instanceof IJavaObject) {
-                                    ProducedType childType = toModelProducedType((IJavaObject)childTypeValue, innerThread);
+                                    Type childType = toModelProducedType((IJavaObject)childTypeValue, innerThread);
                                     if (childType == null) {
                                         break;
                                     }
@@ -536,14 +536,14 @@ public class DebugUtils {
             }
             if (result instanceof IJavaPrimitiveValue &&
                     ((IJavaPrimitiveValue) result).getBooleanValue()) {
-                final Map<TypeParameter, ProducedType> typeArgumentMap = new HashMap<>();
+                final Map<TypeParameter, Type> typeArgumentMap = new HashMap<>();
                 for (int i = 0; i< typeParameters.size(); i++) {
                     typeArgumentMap.put(typeParameters.get(i), typeArguments.get(i));
                 }
                 return new LazyProducedType(unit) {
 
                     @Override
-                    public Map<TypeParameter, ProducedType> initTypeArguments() {
+                    public Map<TypeParameter, Type> initTypeArguments() {
                         return typeArgumentMap;
                     }
 

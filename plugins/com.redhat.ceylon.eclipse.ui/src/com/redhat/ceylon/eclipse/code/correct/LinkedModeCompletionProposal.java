@@ -26,7 +26,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
@@ -115,7 +115,7 @@ public class LinkedModeCompletionProposal
         regionChars = "\\";
     }
     
-    private LinkedModeCompletionProposal(ProducedType type,
+    private LinkedModeCompletionProposal(Type type,
             Unit unit, int offset, int position) {
         this(type.getProducedTypeName(unit), 
                 offset, 
@@ -268,7 +268,7 @@ public class LinkedModeCompletionProposal
     }
     
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
-            Unit unit, final ProducedType type, boolean includeValue, String kind,
+            Unit unit, final Type type, boolean includeValue, String kind,
             final LinkedModeImporter importer) {
         if (type==null) {
             return new ICompletionProposal[0];
@@ -315,7 +315,7 @@ public class LinkedModeCompletionProposal
             };
         }
         for (int j=supertypes.size()-1; j>=0; j--) {
-            final ProducedType supertype = 
+            final Type supertype = 
                     type.getSupertype(supertypes.get(j));
             typeProposals[i++] = 
                     new LinkedModeCompletionProposal(supertype, unit, offset, 0) {
@@ -330,18 +330,18 @@ public class LinkedModeCompletionProposal
     }
 
     public static ICompletionProposal[] getCaseTypeProposals(int offset, 
-            Unit unit, ProducedType type) {
+            Unit unit, Type type) {
         if (type==null) {
             return new ICompletionProposal[0];
         }
-        List<ProducedType> caseTypes = type.getCaseTypes();
+        List<Type> caseTypes = type.getCaseTypes();
         if (caseTypes==null) {
             return new ICompletionProposal[0];
         }
         ICompletionProposal[] typeProposals = 
                 new ICompletionProposal[caseTypes.size()];
         for (int i=0; i<caseTypes.size(); i++) {
-            ProducedType ct = caseTypes.get(i);
+            Type ct = caseTypes.get(i);
             typeProposals[i] = 
                     new LinkedModeCompletionProposal(ct, unit, offset, 0);
         }

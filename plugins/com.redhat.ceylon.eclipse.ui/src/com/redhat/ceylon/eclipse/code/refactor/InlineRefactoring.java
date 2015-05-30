@@ -30,8 +30,8 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -75,13 +75,13 @@ public class InlineRefactoring extends AbstractRefactoring {
         return  declaration!=null &&
                 project != null &&
                 inSameProject(declaration) &&
-                declaration instanceof MethodOrValue &&
+                declaration instanceof FunctionOrValue &&
                 !declaration.isParameter() &&
                 !(declaration instanceof Setter) &&
                 !declaration.isDefault() &&
                 !declaration.isFormal() &&
-                (((MethodOrValue)declaration).getTypeDeclaration()!=null) &&
-                (!((MethodOrValue)declaration).getTypeDeclaration().isAnonymous()) &&
+                (((FunctionOrValue)declaration).getTypeDeclaration()!=null) &&
+                (!((FunctionOrValue)declaration).getTypeDeclaration().isAnonymous()) &&
                 (declaration.isToplevel() || !declaration.isShared() ||
                         (!declaration.isFormal() && !declaration.isDefault() && !declaration.isActual())) &&
                 (!declaration.getUnit().equals(rootNode.getUnit()) || 
@@ -154,18 +154,18 @@ public class InlineRefactoring extends AbstractRefactoring {
             List<Tree.Statement> statements = 
                     methodDefinition.getBlock().getStatements();
             if (statements.size()!=1) {
-                return createFatalErrorStatus("Method body is not a single statement: " + 
+                return createFatalErrorStatus("Function body is not a single statement: " + 
                         declaration.getName());
             }
             if (methodDefinition.getType() instanceof Tree.VoidModifier) {
                 if (!(statements.get(0) instanceof Tree.ExpressionStatement)) {
-                    return createFatalErrorStatus("Method body is not an expression: " + 
+                    return createFatalErrorStatus("Function body is not an expression: " + 
                             declaration.getName());
                 }
             }
             else {
                 if (!(statements.get(0) instanceof Tree.Return)) {
-                    return createFatalErrorStatus("Method body is not a return statement: " + 
+                    return createFatalErrorStatus("Function body is not a return statement: " + 
                             declaration.getName());
                 }
             }
@@ -489,7 +489,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             	 Declaration d = that.getDeclaration();
             	 if (!that.getDirectlyInvoked() && inlineRef(that, d)) {
             		 StringBuilder text = new StringBuilder();
-            		 Method dec = declaration.getDeclarationModel();
+            		 Function dec = declaration.getDeclarationModel();
             		 if (dec.isDeclaredVoid()) {
             			 text.append("void ");
             		 }
@@ -591,7 +591,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         if (dec.isParameter() && ie!=null && 
                 it instanceof Tree.BaseMemberOrTypeExpression) {
             Parameter param = 
-                    ((MethodOrValue) dec).getInitializerParameter();
+                    ((FunctionOrValue) dec).getInitializerParameter();
             if (param.getDeclaration().equals(declaration)) {
                 boolean sequenced = param.isSequenced();
                 if (ie.getPositionalArgumentList()!=null) {

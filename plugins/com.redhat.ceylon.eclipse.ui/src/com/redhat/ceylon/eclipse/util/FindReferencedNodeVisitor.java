@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Setter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -24,8 +24,8 @@ class FindReferencedNodeVisitor extends Visitor {
     
     private boolean isDeclaration(Declaration dec) {
         if (dec!=null && dec.equals(declaration)) {
-            if (declaration instanceof Method) {
-                Method method = (Method) declaration;
+            if (declaration instanceof Function) {
+                Function method = (Function) declaration;
                 if (method.isOverloaded()) {
                     return method==dec;
                 }

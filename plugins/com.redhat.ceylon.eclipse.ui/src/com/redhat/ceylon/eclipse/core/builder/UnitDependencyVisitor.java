@@ -19,7 +19,7 @@ import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -34,24 +34,24 @@ public class UnitDependencyVisitor extends Visitor {
         alreadyDone = new HashSet<Declaration>();
     }
     
-    private void storeDependency(ProducedType type) {
+    private void storeDependency(Type type) {
         if (type!=null) {
             if (type.isClassOrInterface() || type.isTypeAlias()) {
                 if (!createDependency(type.getDeclaration())) {
                     return;
                 }
             }
-            ProducedType et = type.getExtendedType();
+            Type et = type.getExtendedType();
             storeDependency(et);
-            List<ProducedType> satisfiedTypes = 
+            List<Type> satisfiedTypes = 
                     type.getSatisfiedTypes();
-            for (ProducedType st: satisfiedTypes) {
+            for (Type st: satisfiedTypes) {
                 storeDependency(st);
             }
-            List<ProducedType> caseTypes = 
+            List<Type> caseTypes = 
                     type.getCaseTypes();
             if (caseTypes!=null) {
-                for (ProducedType ct: caseTypes) {
+                for (Type ct: caseTypes) {
                     storeDependency(ct);
                 }
             }
@@ -218,9 +218,9 @@ public class UnitDependencyVisitor extends Visitor {
     @Override
     public void visit(Tree.TypeArguments that) {
         //TODO: is this really necessary?
-        List<ProducedType> types = that.getTypeModels();
+        List<Type> types = that.getTypeModels();
         if (types!=null) {
-            for (ProducedType type: types) {
+            for (Type type: types) {
                 storeDependency(type);
             }
         }

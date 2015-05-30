@@ -29,7 +29,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.IntersectionType;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.UnionType;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -37,14 +37,14 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 class TypeProposal implements ICompletionProposal, 
         ICompletionProposalExtension2 {
     
-    private final ProducedType type;
+    private final Type type;
     private final int offset;
     private final String text;
     private final Tree.CompilationUnit rootNode;
     private Point selection;
     private String description;
 
-    private TypeProposal(int offset, ProducedType type,
+    private TypeProposal(int offset, Type type,
             String text, String desc, 
             Tree.CompilationUnit rootNode) {
         this.type = type;
@@ -146,7 +146,7 @@ class TypeProposal implements ICompletionProposal,
     }
 
     static ProposalPosition getTypeProposals(IDocument document, 
-            int offset, int length, ProducedType infType,
+            int offset, int length, Type infType,
             Tree.CompilationUnit rootNode, String kind) {
         
         TypeDeclaration td = infType.getDeclaration();
@@ -182,7 +182,7 @@ class TypeProposal implements ICompletionProposal,
                             rootNode);
         }
         for (int j=supertypes.size()-1; j>=0; j--) {
-            ProducedType type = 
+            Type type = 
                     infType.getSupertype(supertypes.get(j));
             proposals[i++] = 
                     new TypeProposal(offset, type, 

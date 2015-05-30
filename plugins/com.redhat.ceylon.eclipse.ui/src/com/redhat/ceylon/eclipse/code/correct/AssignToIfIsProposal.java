@@ -14,7 +14,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -72,7 +72,7 @@ class AssignToIfIsProposal extends LocalProposal {
     }
 
     @Override
-    boolean isEnabled(ProducedType resultType) {
+    boolean isEnabled(Type resultType) {
         return true;
     }
 

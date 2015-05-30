@@ -14,11 +14,10 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
-import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Value;
 
 class AssertExistsDeclarationProposal extends CorrectionProposal {
     
@@ -38,7 +37,7 @@ class AssertExistsDeclarationProposal extends CorrectionProposal {
                 sie==null || sie.getExpression()==null) { 
             return;
         }
-        ProducedType siet = sie.getExpression().getTypeModel();
+        Type siet = sie.getExpression().getTypeModel();
         String existsOrNonempty;
         String desc;
         if (isTypeUnknown(siet)) {
@@ -66,7 +65,7 @@ class AssertExistsDeclarationProposal extends CorrectionProposal {
         TextChange change = new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
 
-        Type type = decNode.getType();
+        Tree.Type type = decNode.getType();
         Integer typeOffset = type.getStartIndex();
         Integer typeLen = type.getStopIndex()-typeOffset+1;
         change.addEdit(new ReplaceEdit(typeOffset, typeLen, 

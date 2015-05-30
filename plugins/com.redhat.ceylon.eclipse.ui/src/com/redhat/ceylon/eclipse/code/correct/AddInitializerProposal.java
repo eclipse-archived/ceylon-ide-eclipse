@@ -12,7 +12,7 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -30,7 +30,7 @@ class AddInitializerProposal extends InitializerProposal {
     private static void addInitializerProposal(Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.TypedDeclaration decNode, Tree.SpecifierOrInitializerExpression sie) {
-        MethodOrValue dec = (MethodOrValue) decNode.getDeclarationModel();
+        FunctionOrValue dec = (FunctionOrValue) decNode.getDeclarationModel();
         if (dec==null) return;
         if (dec.getInitializerParameter()==null && !dec.isFormal()) {
             TextChange change = new TextFileChange("Add Initializer", file);

@@ -93,16 +93,16 @@ import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Method;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
-import com.redhat.ceylon.model.typechecker.model.ProducedTypedReference;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypedReference;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
@@ -660,7 +660,7 @@ public class DocumentationHover extends SourceInfoHover {
     private static String getInferredTypeHoverText(Node node, 
             IProject project) {
         Tree.LocalModifier local = (Tree.LocalModifier) node;
-        ProducedType t = local.getTypeModel();
+        Type t = local.getTypeModel();
         if (t==null) return null;
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
@@ -688,7 +688,7 @@ public class DocumentationHover extends SourceInfoHover {
     private static String getTypeHoverText(Node node, String selectedText, 
             IDocument doc, IProject project) {
         Tree.Type type = (Tree.Type) node;
-        ProducedType t = type.getTypeModel();
+        Type t = type.getTypeModel();
         if (t==null) return null;
 //        String expr = "";
 //        try {
@@ -733,7 +733,7 @@ public class DocumentationHover extends SourceInfoHover {
     private static String getTermTypeHoverText(Node node, String selectedText, 
             IDocument doc, IProject project) {
         Tree.Term term = (Tree.Term) node;
-        ProducedType t = term.getTypeModel();
+        Type t = term.getTypeModel();
         if (t==null) return null;
 //        String expr = "";
 //        try {
@@ -956,20 +956,20 @@ public class DocumentationHover extends SourceInfoHover {
                 return "type_alias.gif";
             }
             else if (dec.isParameter()) {
-                if (dec instanceof Method) {
+                if (dec instanceof Function) {
                     return "methpro_obj.gif";
                 }
                 else {
                     return "field_protected_obj.gif";
                 }
             }
-            else if (dec instanceof Method) {
+            else if (dec instanceof Function) {
                 String icon = dec.isShared() ?
                         "public_co.gif" : 
                         "private_co.gif";
                 return decorateFunctionIcon(dec, icon);
             }
-            else if (dec instanceof MethodOrValue) {
+            else if (dec instanceof FunctionOrValue) {
                 return dec.isShared() ?
                         "field_public_obj.gif" : 
                         "field_private_obj.gif";
@@ -1407,12 +1407,12 @@ public class DocumentationHover extends SourceInfoHover {
     }
     
     public static String getDocumentationFor(CeylonParseController controller, 
-            Declaration dec, ProducedReference pr) {
+            Declaration dec, Reference pr) {
         return getDocumentationFor(controller, dec, null, pr);
     }
     
     private static String getDocumentationFor(CeylonParseController controller, 
-            Declaration dec, Node node, ProducedReference pr) {
+            Declaration dec, Node node, Reference pr) {
         if (dec==null) return null;
         if (dec instanceof Value) {
             TypeDeclaration val = 
@@ -1446,7 +1446,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static void addMainDescription(StringBuilder buffer,
-            Declaration dec, Node node, ProducedReference pr, 
+            Declaration dec, Node node, Reference pr, 
             CeylonParseController cpc, Unit unit) {
         StringBuilder buf = new StringBuilder();
         if (dec.isShared()) buf.append("shared&nbsp;");
@@ -1495,8 +1495,8 @@ public class DocumentationHover extends SourceInfoHover {
                     if (mem.getName()==null) {
                         continue;
                     }
-                    if (mem instanceof Method && 
-                            ((Method) mem).isOverloaded()) {
+                    if (mem instanceof Function && 
+                            ((Function) mem).isOverloaded()) {
                         continue;
                     }
                     if (mem.isShared()) {
@@ -1527,7 +1527,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static boolean addInheritanceInfo(Declaration dec,
-            Node node, ProducedReference pr, StringBuilder buffer,
+            Node node, Reference pr, StringBuilder buffer,
             Unit unit) {
         buffer.append("<p><div style='padding-left:20px'>");
         boolean obj=false;
@@ -1559,7 +1559,7 @@ public class DocumentationHover extends SourceInfoHover {
                     (TypeDeclaration) rd.getContainer();
             ClassOrInterface outer = 
                     (ClassOrInterface) dec.getContainer();
-            ProducedType sup = 
+            Type sup = 
                     getQualifyingType(node, outer)
                         .getSupertype(superclass);
             String icon = rd.isFormal() ? 
@@ -1586,7 +1586,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static void appendParameters(Declaration dec, 
-            ProducedReference pr, Unit unit, 
+            Reference pr, Unit unit, 
             StringBuilder result/*, CeylonParseController cpc*/) {
         if (dec instanceof Functional) {
             List<ParameterList> plists = 
@@ -1614,21 +1614,21 @@ public class DocumentationHover extends SourceInfoHover {
     }
     
     private static void appendParameter(StringBuilder result,
-            ProducedReference pr, Parameter p, Unit unit) {
+            Reference pr, Parameter p, Unit unit) {
         result.append("<tt>");
         if (p.getModel() == null) {
             result.append(p.getName());
             result.append("</tt>");
         }
         else {
-            ProducedTypedReference ppr = pr==null ? 
+            TypedReference ppr = pr==null ? 
                     null : pr.getTypedParameter(p);
             if (p.isDeclaredVoid()) {
                 result.append(HTML.keyword("void"));
             }
             else {
                 if (ppr!=null) {
-                    ProducedType pt = ppr.getType();
+                    Type pt = ppr.getType();
                     if (p.isSequenced() && pt!=null) {
                         pt = p.getDeclaration().getUnit()
                                 .getSequentialElementType(pt);
@@ -1638,7 +1638,7 @@ public class DocumentationHover extends SourceInfoHover {
                         result.append(p.isAtLeastOne()?'+':'*');
                     }
                 }
-                else if (p.getModel() instanceof Method) {
+                else if (p.getModel() instanceof Function) {
                     result.append(HTML.keyword("function"));
                 }
                 else {
@@ -1653,7 +1653,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
     
     private static void addParameters(CeylonParseController cpc,
-            Declaration dec, Node node, ProducedReference pr, 
+            Declaration dec, Node node, Reference pr, 
             StringBuilder buffer, Unit unit) {
         if (dec instanceof Functional) {
             if (pr==null) {
@@ -1666,7 +1666,7 @@ public class DocumentationHover extends SourceInfoHover {
                 if (!pl.getParameters().isEmpty()) {
                     buffer.append("<p>");
                     for (Parameter p: pl.getParameters()) {
-                        MethodOrValue model = p.getModel();
+                        FunctionOrValue model = p.getModel();
                         if (model!=null) {
                             StringBuilder param = new StringBuilder();
                             param.append("accepts&nbsp;&nbsp;");
@@ -1696,13 +1696,13 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static void addReturnType(Declaration dec, StringBuilder buffer,
-            Node node, ProducedReference pr, boolean obj, Unit unit) {
+            Node node, Reference pr, boolean obj, Unit unit) {
         if (dec instanceof TypedDeclaration && !obj) {
             if (pr==null) {
                 pr = getProducedReference(dec, node);
             }
             if (pr==null) return;
-            ProducedType ret = pr.getType();
+            Type ret = pr.getType();
             if (ret!=null) {
                 buffer.append("<p>");
                 StringBuilder buf = 
@@ -1745,20 +1745,20 @@ public class DocumentationHover extends SourceInfoHover {
     private static ProducedTypeNamePrinter PRINTER = printer(true);
     private static ProducedTypeNamePrinter VERBOSE_PRINTER = printer(false);
     
-    private static String producedTypeLink(ProducedType pt, Unit unit) {
+    private static String producedTypeLink(Type pt, Unit unit) {
         return PRINTER.getProducedTypeName(pt, unit);
     }
 
-    private static List<ProducedType> getTypeParameters(Declaration dec) {
+    private static List<Type> getTypeParameters(Declaration dec) {
         if (dec instanceof Functional) {
             List<TypeParameter> typeParameters = 
                     ((Functional) dec).getTypeParameters();
             if (typeParameters.isEmpty()) {
-                return Collections.<ProducedType>emptyList();
+                return Collections.<Type>emptyList();
             }
             else {
-                List<ProducedType> list = 
-                        new ArrayList<ProducedType>();
+                List<Type> list = 
+                        new ArrayList<Type>();
                 for (TypeParameter p: typeParameters) {
                     list.add(p.getType());
                 }
@@ -1766,11 +1766,11 @@ public class DocumentationHover extends SourceInfoHover {
             }
         }
         else {
-            return Collections.<ProducedType>emptyList();
+            return Collections.<Type>emptyList();
         }
     }
 
-    private static ProducedReference getProducedReference(Declaration dec,
+    private static Reference getProducedReference(Declaration dec,
             Node node) {
         if (node instanceof Tree.TypeDeclaration) {
             return ((TypeDeclaration) dec).getType();
@@ -1785,7 +1785,7 @@ public class DocumentationHover extends SourceInfoHover {
             //a member declaration - unfortunately there is 
             //nothing matching TypeDeclaration.getType() for
             //TypedDeclarations!
-            ProducedType qt;
+            Type qt;
             if (dec.isClassOrInterfaceMember()) {
                 ClassOrInterface ci = (ClassOrInterface) 
                         dec.getContainer();
@@ -1831,7 +1831,7 @@ public class DocumentationHover extends SourceInfoHover {
         Unit unit = node==null ? null : node.getUnit();
         buffer.append("<p>");
         if (dec.isParameter()) {
-            MethodOrValue mv = (MethodOrValue) dec;
+            FunctionOrValue mv = (FunctionOrValue) dec;
             Parameter ip = mv.getInitializerParameter();
             Declaration pd = ip.getDeclaration();
             if (pd.getName()==null) {
@@ -1873,7 +1873,7 @@ public class DocumentationHover extends SourceInfoHover {
             if (dec.isClassOrInterfaceMember()) {
                 ClassOrInterface outer = 
                         (ClassOrInterface) dec.getContainer();
-                ProducedType qt = 
+                Type qt = 
                         getQualifyingType(node, outer);
                 if (qt!=null) {
                     String desc;
@@ -1893,12 +1893,12 @@ public class DocumentationHover extends SourceInfoHover {
                             desc = "Attribute of";
                         }
                     }
-                    else if (dec instanceof Method) {
+                    else if (dec instanceof Function) {
                         if (dec.isStaticallyImportable()) {
                             desc = "Static method of";
                         }
                         else {
-                            desc = "Method of";
+                            desc = "Function of";
                         }
                     }
                     else {
@@ -1940,7 +1940,7 @@ public class DocumentationHover extends SourceInfoHover {
         else if (pd instanceof Interface) {
             buffer.append(" interface");
         }
-        else if (pd instanceof Method) {
+        else if (pd instanceof Function) {
             if (pd.isClassOrInterfaceMember()) {
                 buffer.append(" method");
             }
@@ -1984,7 +1984,7 @@ public class DocumentationHover extends SourceInfoHover {
         buffer.append("</p>");
     }
     
-    private static ProducedType getQualifyingType(Node node,
+    private static Type getQualifyingType(Node node,
             ClassOrInterface outer) {
         if (outer == null) {
             return null;
@@ -1992,7 +1992,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (node instanceof Tree.MemberOrTypeExpression) {
             Tree.MemberOrTypeExpression mte = 
                     (Tree.MemberOrTypeExpression) node;
-            ProducedReference pr = mte.getTarget();
+            Reference pr = mte.getTarget();
             if (pr!=null) {
                 return pr.getQualifyingType();
             }
@@ -2055,7 +2055,7 @@ public class DocumentationHover extends SourceInfoHover {
                     dec.getName() + "</tt></span>",
                     20, 2);
         }
-        if (dec instanceof MethodOrValue ||
+        if (dec instanceof FunctionOrValue ||
             dec instanceof TypeParameter) {
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("search_ref_obj.png").toExternalForm(), 
@@ -2082,22 +2082,22 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static void documentInheritance(TypeDeclaration dec, 
-            Node node, ProducedReference pr, StringBuilder buffer,
+            Node node, Reference pr, StringBuilder buffer,
             Unit unit) {
         if (pr==null) {
             pr = getProducedReference(dec, node);
         }
-        ProducedType type;
-        if (pr instanceof ProducedType) {
-            type = (ProducedType) pr;
+        Type type;
+        if (pr instanceof Type) {
+            type = (Type) pr;
         }
         else {
             type = dec.getType();
         }
-        List<ProducedType> cts = type.getCaseTypes();
+        List<Type> cts = type.getCaseTypes();
         if (cts!=null) {
             StringBuilder cases = new StringBuilder();
-            for (ProducedType ct: cts) {
+            for (Type ct: cts) {
                 if (cases.length()>0) {
                     cases.append(" | ");
                 }
@@ -2115,7 +2115,7 @@ public class DocumentationHover extends SourceInfoHover {
                     20, 2);
         }
         if (dec instanceof Class) {
-            ProducedType sup = type.getExtendedType();
+            Type sup = type.getExtendedType();
             if (sup!=null) {
                 HTML.addImageAndLabel(buffer, sup.getDeclaration(), 
                         HTML.fileUrl("superclass.gif").toExternalForm(), 
@@ -2126,10 +2126,10 @@ public class DocumentationHover extends SourceInfoHover {
                         20, 2);
             }
         }
-        List<ProducedType> sts = type.getSatisfiedTypes();
+        List<Type> sts = type.getSatisfiedTypes();
         if (!sts.isEmpty()) {
             StringBuilder satisfies = new StringBuilder();
-            for (ProducedType st: sts) {
+            for (Type st: sts) {
                 if (satisfies.length()>0) {
                     satisfies.append(" &amp; ");
                 }
@@ -2146,7 +2146,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
     
     private static void documentTypeParameters(Declaration dec, 
-            Node node, ProducedReference pr, StringBuilder buffer,
+            Node node, Reference pr, StringBuilder buffer,
             Unit unit) {
         if (pr==null) {
             pr = getProducedReference(dec, node);
@@ -2163,7 +2163,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
         for (TypeParameter tp: typeParameters) {
             StringBuilder bounds = new StringBuilder();
-            for (ProducedType st: tp.getSatisfiedTypes()) {
+            for (Type st: tp.getSatisfiedTypes()) {
                 if (bounds.length() == 0) {
                     bounds.append(" satisfies ");
                 }
@@ -2178,7 +2178,7 @@ public class DocumentationHover extends SourceInfoHover {
                 arg = liveValue;
             }
             else {
-                ProducedType typeArg = pr==null ? 
+                Type typeArg = pr==null ? 
                         null : pr.getTypeArguments().get(tp);
                 if (typeArg!=null && 
                         !tp.getType().isExactly(typeArg)) {
@@ -2198,7 +2198,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static String description(Declaration dec, 
-            Node node,  ProducedReference pr, 
+            Node node,  Reference pr, 
             CeylonParseController cpc, Unit unit) {
         if (pr==null) {
             pr = getProducedReference(dec, node);
@@ -2208,7 +2208,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (dec instanceof TypeDeclaration) {
             TypeDeclaration td = (TypeDeclaration) dec;
             if (td.isAlias()) {
-                ProducedType et = td.getExtendedType();
+                Type et = td.getExtendedType();
                 if (et!=null) {
                     description.append(" => ")
                         .append(et.getProducedTypeName());
@@ -2216,7 +2216,7 @@ public class DocumentationHover extends SourceInfoHover {
             }
         }
         if (dec instanceof Value && !isVariable(dec) ||
-                dec instanceof Method) {
+                dec instanceof Function) {
             description.append(getInitialValueDescription(dec, cpc));
         }
         
@@ -2237,7 +2237,7 @@ public class DocumentationHover extends SourceInfoHover {
                     if (typeDescriptor!=null) {
                         IJavaObject jdiProducedType = 
                                 getJdiProducedType(typeDescriptor.getValue());
-                        ProducedType producedType = 
+                        Type producedType = 
                                 toModelProducedType(jdiProducedType);
                         if (producedType != null) {
                             return new StringBuilder()

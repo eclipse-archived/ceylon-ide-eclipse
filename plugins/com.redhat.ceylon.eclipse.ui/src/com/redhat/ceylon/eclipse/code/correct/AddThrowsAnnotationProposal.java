@@ -14,7 +14,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
@@ -23,7 +23,7 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
     
     public static void addThrowsAnnotationProposal(Collection<ICompletionProposal> proposals, 
             Tree.Statement statement, Tree.CompilationUnit cu, IFile file, IDocument doc) {
-        ProducedType exceptionType = determineExceptionType(statement);
+        Type exceptionType = determineExceptionType(statement);
         if (exceptionType == null) {
             return;
         }
@@ -54,16 +54,16 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
         }
     }
 
-    private static ProducedType determineExceptionType(Tree.Statement statement) {
-        ProducedType exceptionType = null;
+    private static Type determineExceptionType(Tree.Statement statement) {
+        Type exceptionType = null;
     
         if (statement instanceof Tree.Throw) {
-            ProducedType ceylonLangExceptionType = statement.getUnit().getExceptionDeclaration().getType();
+            Type ceylonLangExceptionType = statement.getUnit().getExceptionDeclaration().getType();
             Tree.Expression throwExpression = ((Tree.Throw) statement).getExpression();
             if (throwExpression == null) {
                 exceptionType = ceylonLangExceptionType;
             } else {
-                ProducedType throwExpressionType = throwExpression.getTypeModel();
+                Type throwExpressionType = throwExpression.getTypeModel();
                 if ( throwExpressionType != null && 
                      throwExpressionType.isSubtypeOf(ceylonLangExceptionType) ) {
                     exceptionType = throwExpressionType;
@@ -81,7 +81,7 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
         return fcv.getDeclaration();
     }
 
-    private static boolean isAlreadyPresent(Tree.Declaration throwContainer, ProducedType exceptionType) {
+    private static boolean isAlreadyPresent(Tree.Declaration throwContainer, Type exceptionType) {
         Tree.AnnotationList annotationList = throwContainer.getAnnotationList();
         if (annotationList != null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
@@ -99,7 +99,7 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
                                 if (term instanceof Tree.MemberOrTypeExpression) {
                                     Declaration declaration = ((Tree.MemberOrTypeExpression) term).getDeclaration();
                                     if (declaration instanceof TypeDeclaration) {
-                                        ProducedType type = ((TypeDeclaration) declaration).getType();
+                                        Type type = ((TypeDeclaration) declaration).getType();
                                         if (exceptionType.isExactly(type)) {
                                             return true;
                                         }
@@ -114,7 +114,7 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
         return false;
     }
 
-    private AddThrowsAnnotationProposal(Change change, ProducedType exceptionType, int offset, String declName) {
+    private AddThrowsAnnotationProposal(Change change, Type exceptionType, int offset, String declName) {
         super("Add throws annotation to '" + declName + "'", change, new Region(offset, 0));
     }
     

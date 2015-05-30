@@ -10,11 +10,10 @@ import java.util.Set;
 
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -108,7 +107,7 @@ public class MemberNameCompletions {
             proposals.add("iterable");
         }
         else if (node instanceof Tree.TupleType) {
-            List<Type> ets = ((Tree.TupleType) node).getElementTypes();
+            List<Tree.Type> ets = ((Tree.TupleType) node).getElementTypes();
             if (ets.size()==1) {
                 Tree.Type et = ets.get(0);
                 if (et instanceof Tree.SequencedType) {
@@ -146,16 +145,16 @@ public class MemberNameCompletions {
         }
     }
 
-    private static ProducedType getLiteralType(Node node,
+    private static Type getLiteralType(Node node,
             Tree.StaticMemberOrTypeExpression typeExpression) {
         Unit unit = node.getUnit();
-        ProducedType pt = typeExpression.getTypeModel();
+        Type pt = typeExpression.getTypeModel();
         return unit.isCallableType(pt) ?
                 unit.getCallableReturnType(pt) : pt;
     }
 
     private static void addProposals(Set<String> proposals,
-            Tree.Identifier identifier, ProducedType type) {
+            Tree.Identifier identifier, Type type) {
         addNameProposals(proposals, false, identifier.getText());
         if (!isTypeUnknown(type) &&
                 identifier.getUnit().isIterableType(type)) {
@@ -164,7 +163,7 @@ public class MemberNameCompletions {
     }
 
     private static void addPluralProposals(Set<String> proposals,
-            Tree.Identifier identifier, ProducedType type) {
+            Tree.Identifier identifier, Type type) {
         addNameProposals(proposals, true, 
                 identifier.getUnit().getIteratedType(type)
                         .getDeclaration().getName());

@@ -32,9 +32,9 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -140,13 +140,13 @@ class InitializerProposal extends CorrectionProposal {
 
     private CeylonEditor editor;
     
-    private final ProducedType type;
+    private final Type type;
     private final Scope scope;
     private final Unit unit;
     private final int exitPos;
     
     InitializerProposal(String name, Change change,
-            Declaration declaration, ProducedType type, 
+            Declaration declaration, Type type, 
             Region selection, Image image, int exitPos, 
             CeylonEditor editor) {
         super(name, change, selection, image);
@@ -158,7 +158,7 @@ class InitializerProposal extends CorrectionProposal {
     }
 
     InitializerProposal(String name, Change change,
-            Scope scope, Unit unit, ProducedType type, 
+            Scope scope, Unit unit, Type type, 
             Region selection, Image image, int exitPos, 
             CeylonEditor editor) {
         super(name, change, selection, image);
@@ -243,7 +243,7 @@ class InitializerProposal extends CorrectionProposal {
                         continue;
                     }
                 }
-                ProducedType vt = value.getType();
+                Type vt = value.getType();
                 if (vt!=null && !vt.isNothing() &&
                     ((td instanceof TypeParameter) && 
                         isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
@@ -252,16 +252,16 @@ class InitializerProposal extends CorrectionProposal {
                             getImageForDeclaration(d)));
                 }
             }
-            if (d instanceof Method) {
+            if (d instanceof Function) {
                 if (!d.isAnnotation()) {
-                    Method method = (Method) d;
+                    Function method = (Function) d;
                     if (d.getUnit().getPackage().getNameAsString()
                             .equals(Module.LANGUAGE_MODULE_NAME)) {
                         if (isIgnoredLanguageModuleMethod(method)) {
                             continue;
                         }
                     }
-                    ProducedType mt = method.getType();
+                    Type mt = method.getType();
                     if (mt!=null && !mt.isNothing() &&
                             ((td instanceof TypeParameter) && 
                                     isInBounds(((TypeParameter)td).getSatisfiedTypes(), mt) || 
@@ -283,7 +283,7 @@ class InitializerProposal extends CorrectionProposal {
                             continue;
                         }
                     }
-                    ProducedType ct = clazz.getType();
+                    Type ct = clazz.getType();
                     if (ct!=null && !ct.isNothing() &&
                             ((td instanceof TypeParameter) && 
                                     isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 

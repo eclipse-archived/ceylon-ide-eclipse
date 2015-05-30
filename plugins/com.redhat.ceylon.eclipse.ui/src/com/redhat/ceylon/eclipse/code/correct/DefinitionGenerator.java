@@ -15,7 +15,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -29,21 +29,21 @@ public abstract class DefinitionGenerator {
     abstract Set<Declaration> getImports();
     abstract String getBrokenName();
     abstract String getDescription();
-    abstract ProducedType getReturnType();
-    abstract LinkedHashMap<String, ProducedType> getParameters();
+    abstract Type getReturnType();
+    abstract LinkedHashMap<String, Type> getParameters();
     abstract Image getImage();
     abstract Tree.CompilationUnit getRootNode();
     abstract Node getNode();
     
     static void appendParameters(
-            LinkedHashMap<String,ProducedType> parameters,
+            LinkedHashMap<String,Type> parameters,
             StringBuffer buffer, TypeDeclaration supertype) {
         if (parameters.isEmpty()) {
             buffer.append("()");
         }
         else {
             buffer.append("(");
-            for (Map.Entry<String,ProducedType> e: 
+            for (Map.Entry<String,Type> e: 
                     parameters.entrySet()) {
                 Declaration member = 
                         supertype.getMember(e.getKey(), 
@@ -58,10 +58,10 @@ public abstract class DefinitionGenerator {
         }
     }
 
-    static LinkedHashMap<String,ProducedType> 
+    static LinkedHashMap<String,Type> 
     getParametersFromPositionalArgs(Tree.PositionalArgumentList pal) {
-        LinkedHashMap<String,ProducedType> types = 
-                new LinkedHashMap<String,ProducedType>();
+        LinkedHashMap<String,Type> types = 
+                new LinkedHashMap<String,Type>();
         int i=0;
         for (Tree.PositionalArgument pa: 
                 pal.getPositionalArguments()) {
@@ -69,9 +69,9 @@ public abstract class DefinitionGenerator {
                 Tree.ListedArgument la = 
                         (Tree.ListedArgument) pa;
                 Tree.Expression e = la.getExpression();
-                ProducedType et = e.getTypeModel();
+                Type et = e.getTypeModel();
                 String name;
-                ProducedType t;
+                Type t;
                 Unit unit = pa.getUnit();
                 if (et == null) {
                     t = unit.getAnythingType();
@@ -108,10 +108,10 @@ public abstract class DefinitionGenerator {
         return types;
     }
 
-    static LinkedHashMap<String,ProducedType> 
+    static LinkedHashMap<String,Type> 
     getParametersFromNamedArgs(Tree.NamedArgumentList nal) {
-        LinkedHashMap<String,ProducedType> types = 
-                new LinkedHashMap<String,ProducedType>();
+        LinkedHashMap<String,Type> types = 
+                new LinkedHashMap<String,Type>();
         int i=0;
         for (Tree.NamedArgument a: nal.getNamedArguments()) {
             if (a instanceof Tree.SpecifiedArgument) {
@@ -121,7 +121,7 @@ public abstract class DefinitionGenerator {
                         na.getSpecifierExpression()
                             .getExpression();
                 String name = na.getIdentifier().getText();
-                ProducedType t;
+                Type t;
                 Unit unit = a.getUnit();
                 if (e==null) {
                     t = unit.getAnythingType();
@@ -156,7 +156,7 @@ public abstract class DefinitionGenerator {
             typeParamDef.append("out ");
         }
         typeParamDef.append(typeParam.getName());
-        ProducedType dta = typeParam.getDefaultTypeArgument();
+        Type dta = typeParam.getDefaultTypeArgument();
         if (typeParam.isDefaulted() && dta != null) {
             typeParamDef.append("=");
             typeParamDef.append(dta.getProducedTypeName());
@@ -167,13 +167,13 @@ public abstract class DefinitionGenerator {
             typeParamConstDef.append(" given ");
             typeParamConstDef.append(typeParam.getName());
     
-            List<ProducedType> satisfiedTypes = 
+            List<Type> satisfiedTypes = 
                     typeParam.getSatisfiedTypes();
             if (satisfiedTypes != null && 
                     !satisfiedTypes.isEmpty()) {
                 typeParamConstDef.append(" satisfies ");
                 boolean firstSatisfiedType = true;
-                for (ProducedType satisfiedType : satisfiedTypes) {
+                for (Type satisfiedType : satisfiedTypes) {
                     if (firstSatisfiedType) {
                         firstSatisfiedType = false;
                     } else {
@@ -183,12 +183,12 @@ public abstract class DefinitionGenerator {
                 }
             }
     
-            List<ProducedType> caseTypes = 
+            List<Type> caseTypes = 
                     typeParam.getCaseTypes();
             if (caseTypes != null && !caseTypes.isEmpty()) {
                 typeParamConstDef.append(" of ");
                 boolean firstCaseType = true;
-                for (ProducedType caseType : caseTypes) {
+                for (Type caseType : caseTypes) {
                     if (firstCaseType) {
                         firstCaseType = false;
                     } else {
@@ -225,7 +225,7 @@ public abstract class DefinitionGenerator {
 
     static void appendTypeParams(List<TypeParameter> typeParams, 
             StringBuilder typeParamDef, StringBuilder typeParamConstDef, 
-            ProducedType pt) {
+            Type pt) {
         if (pt != null) {
             if (pt.isUnion()) {
                 DefinitionGenerator.appendTypeParams(typeParams, 
@@ -248,16 +248,16 @@ public abstract class DefinitionGenerator {
     static void appendTypeParams(List<TypeParameter> typeParams, 
             StringBuilder typeParamDef, 
             StringBuilder typeParamConstDef, 
-            Collection<ProducedType> parameterTypes) {
+            Collection<Type> parameterTypes) {
         if (parameterTypes != null) {
-            for (ProducedType pt: parameterTypes) {
+            for (Type pt: parameterTypes) {
                 appendTypeParams(typeParams, typeParamDef, 
                         typeParamConstDef, pt);
             }
         }
     }
 
-    static LinkedHashMap<String,ProducedType> getParameters(
+    static LinkedHashMap<String,Type> getParameters(
             FindArgumentsVisitor fav) {
         if (fav.positionalArgs!=null) {
             return getParametersFromPositionalArgs(fav.positionalArgs);

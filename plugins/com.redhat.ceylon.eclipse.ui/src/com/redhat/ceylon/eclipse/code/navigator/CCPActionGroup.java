@@ -284,7 +284,7 @@ public class CCPActionGroup extends ActionGroup {
 	}
 
 	/* (non-Javadoc)
-	 * Method declared in ActionGroup
+	 * Function declared in ActionGroup
 	 */
 	@Override
 	public void fillActionBars(IActionBars actionBars) {
@@ -300,7 +300,7 @@ public class CCPActionGroup extends ActionGroup {
 	}
 
 	/* (non-Javadoc)
-	 * Method declared in ActionGroup
+	 * Function declared in ActionGroup
 	 */
 	@Override
 	public void fillContextMenu(IMenuManager menu) {

@@ -44,7 +44,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.MethodOrValue;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -279,7 +279,7 @@ public class RenameRefactoring extends AbstractRefactoring {
             runSearch(pm, searchEngine, searchPattern, projects, requestor);
         }
         if (anonymous ||
-                declaration instanceof MethodOrValue && 
+                declaration instanceof FunctionOrValue && 
                 declaration.isToplevel()) {
             int loc = pattern.lastIndexOf('.');
             SearchPattern searchPattern = createPattern(pattern.substring(0, loc), 

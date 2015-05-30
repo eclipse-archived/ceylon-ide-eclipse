@@ -12,8 +12,8 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.ProducedReference;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -26,12 +26,12 @@ class RequiredTypeVisitor extends Visitor
         implements NaturalVisitor {
     
     private Node node;
-    private ProducedType requiredType = null;
-    private ProducedType finalResult = null;
-    private ProducedReference namedArgTarget = null;
+    private Type requiredType = null;
+    private Type finalResult = null;
+    private Reference namedArgTarget = null;
     private Token token;
     
-    public ProducedType getType() {
+    public Type getType() {
         return finalResult;
     }
     
@@ -53,8 +53,8 @@ class RequiredTypeVisitor extends Visitor
         if (that.getPrimary()!=null) {
             that.getPrimary().visit(this);
         }
-        ProducedType ort = requiredType;
-        ProducedReference onat = namedArgTarget;
+        Type ort = requiredType;
+        Reference onat = namedArgTarget;
         Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
         Unit unit = that.getUnit();
         if (pal!=null) {
@@ -82,7 +82,7 @@ class RequiredTypeVisitor extends Visitor
                     }
                 }
             }
-            ProducedReference pr = getTarget(that);
+            Reference pr = getTarget(that);
             if (pr!=null) {
                 List<Parameter> params = getParameters(pr);
                 if (params!=null) { 
@@ -136,7 +136,7 @@ class RequiredTypeVisitor extends Visitor
         namedArgTarget = onat;
     }
 
-    private static ProducedReference getTarget(Tree.InvocationExpression that) {
+    private static Reference getTarget(Tree.InvocationExpression that) {
         Tree.Primary p = that.getPrimary();
         if (p instanceof Tree.MemberOrTypeExpression) {
             return ((Tree.MemberOrTypeExpression) p).getTarget();
@@ -146,7 +146,7 @@ class RequiredTypeVisitor extends Visitor
         }
     }
     
-    private static List<Parameter> getParameters(ProducedReference pr) {
+    private static List<Parameter> getParameters(Reference pr) {
         Declaration declaration = pr.getDeclaration();
         if (declaration instanceof Functional) {
             List<ParameterList> pls = ((Functional) declaration).getParameterLists();
@@ -159,7 +159,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.SpecifiedArgument that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         Parameter p = that.getParameter();
         if (p!=null) {
             if (namedArgTarget!=null) {
@@ -175,7 +175,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.ForIterator that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = that.getUnit()
                 .getIterableType(that.getUnit()
                         .getAnythingDeclaration().getType());
@@ -185,7 +185,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.SpecifierStatement that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = that.getBaseMemberExpression().getTypeModel();
         super.visit(that);
         requiredType = ort;
@@ -193,9 +193,9 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.SwitchStatement that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         Tree.SwitchClause switchClause = that.getSwitchClause();
-        ProducedType srt = that.getUnit().getAnythingDeclaration().getType();
+        Type srt = that.getUnit().getAnythingDeclaration().getType();
         if (switchClause!=null) {
             switchClause.visit(this);
             Tree.Expression e = 
@@ -233,7 +233,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.AnnotationList that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = null;
         super.visit(that);
         requiredType = ort;
@@ -241,7 +241,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.AttributeDeclaration that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = that.getType().getTypeModel();
         super.visit(that);
         requiredType = ort;
@@ -249,7 +249,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.MethodDeclaration that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = that.getType().getTypeModel();
         super.visit(that);
         requiredType = ort;
@@ -257,7 +257,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.FunctionArgument that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = that.getType().getTypeModel();
         super.visit(that);
         requiredType = ort;
@@ -265,7 +265,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.AssignmentOp that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = that.getLeftTerm().getTypeModel();
         super.visit(that);
         requiredType = ort;
@@ -273,7 +273,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.Return that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = getResultType(that.getDeclaration());
         super.visit(that);
         requiredType = ort;
@@ -281,7 +281,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.Throw that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = that.getUnit().getExceptionDeclaration().getType();
         super.visit(that);
         requiredType = ort;
@@ -289,7 +289,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.ConditionList that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = that.getUnit().getBooleanDeclaration().getType();
         super.visit(that);
         requiredType = ort;
@@ -297,7 +297,7 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.ResourceList that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         Unit unit = that.getUnit();
         requiredType = unionType(unit.getDestroyableDeclaration().getType(), 
                 unit.getObtainableDeclaration().getType(), unit);
@@ -307,14 +307,14 @@ class RequiredTypeVisitor extends Visitor
     
     @Override
     public void visit(Tree.StringLiteral that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         super.visit(that); // pass on
         requiredType = ort;
     }
     
     @Override
     public void visit(Tree.DocLink that) {
-        ProducedType ort = requiredType;
+        Type ort = requiredType;
         requiredType = getResultType(that.getBase());
         if (requiredType == null && that.getBase()!=null) {
             requiredType = that.getBase().getReference().getFullType();

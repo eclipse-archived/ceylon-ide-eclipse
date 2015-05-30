@@ -27,8 +27,8 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.IntersectionType;
-import com.redhat.ceylon.model.typechecker.model.Method;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -48,7 +48,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         
     static void addChangeTypeProposal(Node node, ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, Declaration dec, 
-            ProducedType newType, IFile file, Tree.CompilationUnit cu) {
+            Type newType, IFile file, Tree.CompilationUnit cu) {
         if (node.getStartIndex() == null || node.getStopIndex() == null) {
             return;
         }
@@ -143,9 +143,9 @@ class ChangeTypeProposal extends CorrectionProposal {
             node = ((Tree.Expression) node).getTerm();
         }
         if (node instanceof Tree.Term) {
-            ProducedType t = ((Tree.Term) node).getTypeModel();
+            Type t = ((Tree.Term) node).getTypeModel();
             if (t==null) return;
-            ProducedType type = node.getUnit().denotableType(t);
+            Type type = node.getUnit().denotableType(t);
             FindInvocationVisitor fav = new FindInvocationVisitor(node);
             fav.visit(cu);
             TypedDeclaration td = fav.parameter;
@@ -172,12 +172,12 @@ class ChangeTypeProposal extends CorrectionProposal {
     }
     
     private static void addChangeTypeProposals(Collection<ICompletionProposal> proposals,
-            ProblemLocation problem, IProject project, Node node, ProducedType type, 
+            ProblemLocation problem, IProject project, Node node, Type type, 
             Declaration dec, boolean intersect) {
         if (dec!=null) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
-                    ProducedType t = null;
+                    Type t = null;
                     Node typeNode = null;
                     
                     if (dec instanceof TypeParameter) {
@@ -202,7 +202,7 @@ class ChangeTypeProposal extends CorrectionProposal {
                     
                     //TODO: fix this condition to properly distinguish
                     //      between a method reference and an invocation
-                    if (dec instanceof Method && 
+                    if (dec instanceof Function && 
                             node.getUnit().isCallableType(type)) {
                         type = node.getUnit().getCallableReturnType(type);
                     }
@@ -213,7 +213,7 @@ class ChangeTypeProposal extends CorrectionProposal {
                         addChangeTypeProposal(typeNode, problem, 
                                 proposals, dec, type, file, rootNode);
                         if (t != null) {
-                            ProducedType newType = intersect ? 
+                            Type newType = intersect ? 
                                     intersectionType(t, type, unit.getUnit()) : 
                                     unionType(t, type, unit.getUnit());
                             if (!newType.isExactly(t) && !newType.isExactly(type)) {

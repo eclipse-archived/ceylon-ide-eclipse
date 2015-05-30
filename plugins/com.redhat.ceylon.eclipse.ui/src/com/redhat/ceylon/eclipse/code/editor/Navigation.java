@@ -35,7 +35,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -357,8 +357,8 @@ public class Navigation {
 
     public static IJavaElement getJavaElement(Declaration declaration)
             throws JavaModelException {
-        if (declaration instanceof Method && declaration.isAnnotation()) {
-            declaration = ((Method) declaration).getTypeDeclaration();
+        if (declaration instanceof Function && declaration.isAnnotation()) {
+            declaration = ((Function) declaration).getTypeDeclaration();
         }
         if (declaration.getUnit() instanceof IJavaModelAware) {
             final IJavaModelAware javaModelAware = 
