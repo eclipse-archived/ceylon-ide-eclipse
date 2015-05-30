@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isAbstraction;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;

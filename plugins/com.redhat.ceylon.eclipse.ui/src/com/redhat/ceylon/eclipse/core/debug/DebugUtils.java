@@ -411,14 +411,14 @@ public class DebugUtils {
         return null;
     }
     
-    public static String getProducedTypeName(IValue value) throws DebugException {
+    public static String asString(IValue value) throws DebugException {
         IJavaValue reifiedTypeNameValue = doOnJdiProducedType(value, new ProducedTypeAction<IJavaValue>() {
             @Override
             public IJavaValue doOnProducedType(IJavaObject producedType,
                     IJavaThread innerThread, IProgressMonitor monitor)
             throws DebugException {
                 if (producedType instanceof IJavaObject && ! (producedType instanceof JDINullValue)) {
-                    IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("getProducedTypeName", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lcom/redhat/ceylon/model/typechecker/model/Type;");
+                    IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("asString", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lcom/redhat/ceylon/model/typechecker/model/Type;");
                     return producedTypeName;
                 }
                 return null;

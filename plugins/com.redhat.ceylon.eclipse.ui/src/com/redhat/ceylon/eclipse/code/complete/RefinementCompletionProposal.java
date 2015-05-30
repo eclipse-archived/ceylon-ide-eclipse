@@ -24,7 +24,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINE
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
-import static com.redhat.ceylon.model.typechecker.model.Util.isNameMatching;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static java.lang.Character.isJavaIdentifierPart;
 
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         @Override
         public String getInformationDisplayString() {
             if (declaration instanceof TypedDeclaration) {
-                return getType().getProducedTypeName(getUnit());
+                return getType().asString(getUnit());
             }
             else {
                 return null;

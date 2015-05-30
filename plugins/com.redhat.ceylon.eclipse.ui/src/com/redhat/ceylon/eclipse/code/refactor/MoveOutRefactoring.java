@@ -149,7 +149,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     private StringBuilder renderText(Tree.TypeDeclaration owner, 
             String indent, String originalIndent, String delim) {
         String qtype = owner.getDeclarationModel().getType()
-                .getProducedTypeNameInSource(declaration.getUnit());
+                .asSourceCodeString(declaration.getUnit());
         StringBuilder sb = new StringBuilder();
         if (declaration instanceof Tree.AnyMethod) {
             Tree.AnyMethod md = (Tree.AnyMethod) declaration;

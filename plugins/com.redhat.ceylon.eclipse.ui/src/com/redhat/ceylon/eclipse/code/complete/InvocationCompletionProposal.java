@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterContextInfo;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;

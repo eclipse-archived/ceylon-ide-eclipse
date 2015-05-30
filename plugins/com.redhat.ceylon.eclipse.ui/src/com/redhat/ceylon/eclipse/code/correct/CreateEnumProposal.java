@@ -134,12 +134,12 @@ class CreateEnumProposal extends CorrectionProposal {
                         if (p instanceof Tree.ParameterDeclaration) {
                             Tree.TypedDeclaration td = 
                                     ((Tree.ParameterDeclaration) p).getTypedDeclaration();
-                            result.append(td.getType().getTypeModel().getProducedTypeName()) 
+                            result.append(td.getType().getTypeModel().asString()) 
                                     .append(" ")
                                     .append(td.getIdentifier().getText());
                         }
                         else if (p instanceof Tree.InitializerParameter) {
-                            result.append(p.getParameterModel().getType().getProducedTypeName()) 
+                            result.append(p.getParameterModel().getType().asString()) 
                                 .append(" ")
                                 .append(((Tree.InitializerParameter) p).getIdentifier().getText());
                         }

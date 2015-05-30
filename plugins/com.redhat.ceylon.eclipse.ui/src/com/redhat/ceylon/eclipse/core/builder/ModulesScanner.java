@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.formatPath;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.formatPath;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 
 import java.util.Arrays;

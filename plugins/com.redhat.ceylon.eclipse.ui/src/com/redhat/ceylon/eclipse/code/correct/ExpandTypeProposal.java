@@ -16,7 +16,7 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.model.typechecker.util.ProducedTypeNamePrinter;
+import com.redhat.ceylon.model.typechecker.util.TypePrinter;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class ExpandTypeProposal extends CorrectionProposal {
@@ -66,8 +66,8 @@ public class ExpandTypeProposal extends CorrectionProposal {
                 return;
             }
             String unabbreviated = 
-                    new ProducedTypeNamePrinter(false)
-                        .getProducedTypeName(type, node.getUnit());
+                    new TypePrinter(false)
+                        .print(type, node.getUnit());
             if (!unabbreviated.equals(text)) {
                 TextChange change = new TextFileChange("Expand Type", file);
                 change.setEdit(new ReplaceEdit(start, len, unabbreviated));

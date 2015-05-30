@@ -233,7 +233,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                 errorLabel.setVisible(true);
                 return false;
             }
-            String typeExpression = type==null ? "Anything" : type.getProducedTypeName(unit);
+            String typeExpression = type==null ? "Anything" : type.asString(unit);
             String parameterName = name==null ? "something" : name;
             String paramDeclaration = "(" + typeExpression + " " + parameterName + " = " + text + ")";
             

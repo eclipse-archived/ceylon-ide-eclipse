@@ -740,7 +740,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 Unit unit = list.getUnit();
                 paramString = 
                         addedParameter.getType()
-                            .getProducedTypeName(unit) + 
+                            .asString(unit) + 
                         ' ' + newName;
                 if (defaulted.get(i) && !actual) {
                     FunctionOrValue model = 

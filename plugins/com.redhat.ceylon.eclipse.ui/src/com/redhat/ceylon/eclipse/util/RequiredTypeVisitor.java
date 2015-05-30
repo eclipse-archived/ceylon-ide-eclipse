@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.unionType;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.unionType;
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
 
 import java.util.List;

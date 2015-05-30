@@ -57,7 +57,7 @@ public class ChangeRefiningTypeProposal {
                         rd.getProducedReference(supertype, 
                                 Collections.<Type>emptyList());
                 Type t = pr.getType();
-                String type = t.getProducedTypeNameInSource(decNode.getUnit());
+                String type = t.asSourceCodeString(decNode.getUnit());
                 Set<Declaration> declarations = new HashSet<Declaration>();
                 importType(declarations, t, cu);
                 TextFileChange change = 
@@ -155,7 +155,7 @@ public class ChangeRefiningTypeProposal {
                         change.addEdit(new ReplaceEdit(p.getStartIndex(), 
                                 p.getStopIndex()-p.getStartIndex()+1, 
                                 //TODO: better handling for callable parameters
-                                pt.getProducedTypeNameInSource(unit) + " " + rdp.getName()));
+                                pt.asSourceCodeString(unit) + " " + rdp.getName()));
                         importType(declarations, pt, cu);
                     }
                 }

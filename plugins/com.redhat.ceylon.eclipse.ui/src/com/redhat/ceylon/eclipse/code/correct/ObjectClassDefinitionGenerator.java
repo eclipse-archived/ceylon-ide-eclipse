@@ -9,8 +9,8 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_CLASS;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.model.typechecker.model.Util.intersectionType;
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.intersectionType;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -323,17 +323,17 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         }
         else {
             if (returnType.isClass()) {
-                return " extends " + returnType.getProducedTypeName() + "()"; //TODO: supertype arguments!
+                return " extends " + returnType.asString() + "()"; //TODO: supertype arguments!
             }
             else if (returnType.isInterface()) {
-                return " satisfies " + returnType.getProducedTypeName();
+                return " satisfies " + returnType.asString();
             }
             else if (returnType.isIntersection()) {
                 String extendsClause = "";
                 StringBuilder satisfiesClause = new StringBuilder();
                 for (Type st: returnType.getSatisfiedTypes()) {
                     if (st.isClass()) {
-                        extendsClause = " extends " + st.getProducedTypeName() + "()"; //TODO: supertype arguments!
+                        extendsClause = " extends " + st.asString() + "()"; //TODO: supertype arguments!
                     }
                     else if (st.isInterface()) {
                         if (satisfiesClause.length()==0) {
@@ -342,7 +342,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                         else {
                             satisfiesClause.append(" & ");
                         }
-                        satisfiesClause.append(st.getProducedTypeName());
+                        satisfiesClause.append(st.asString());
                     }
                 }
                 return extendsClause+satisfiesClause;

@@ -11,7 +11,7 @@ package com.redhat.ceylon.eclipse.code.correct;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeAbstractDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeActualDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeContainerAbstractProposal;
@@ -894,7 +894,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                                 getIndent(node, doc) +
                                 "case (" +
                                 is + 
-                                pt.getProducedTypeName(unit) +
+                                pt.asString(unit) +
                                 ") {}"; 
                     }
                     int offset = getNodeEndOffset(ss);

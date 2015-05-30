@@ -16,7 +16,7 @@ import com.redhat.ceylon.model.typechecker.util {
         moduleDescriptorFileName=MODULE_FILE,
         packageDescriptorFileName=PACKAGE_FILE
     },
-    ProducedTypeNamePrinter
+    TypePrinter
 }
 import com.redhat.ceylon.compiler.typechecker.analyzer {
     AnalysisError
@@ -57,7 +57,7 @@ shared interface NodeComparisonListener {
 shared class DeltaBuilderFactory(
     Boolean compareAnalysisErrors = false) {
 
-    object producedTypeNamePrinter extends ProducedTypeNamePrinter(true, true, true, true, false) {
+    object producedTypeNamePrinter extends TypePrinter(true, true, true, true, false) {
         printQualifier() => true;
         printFullyQualified() => true;
     }
@@ -579,7 +579,7 @@ shared class DeltaBuilderFactory(
                         title => (node is Ast.StaticType) then "Type" else node.nodeType;
                         void action() {
                             if (exists type = node.typeModel) {
-                                builder.append(producedTypeNamePrinter.getProducedTypeName(type, node.unit));
+                                builder.append(producedTypeNamePrinter.print(type, node.unit));
                             }
                         }
                     };

@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -117,9 +117,9 @@ public class LinkedModeCompletionProposal
     
     private LinkedModeCompletionProposal(Type type,
             Unit unit, int offset, int position) {
-        this(type.getProducedTypeName(unit), 
+        this(type.asString(unit), 
                 offset, 
-                type.getProducedTypeNameInSource(unit), 
+                type.asSourceCodeString(unit), 
                 position, 
                 getImageForDeclaration(type.getDeclaration()));
     }

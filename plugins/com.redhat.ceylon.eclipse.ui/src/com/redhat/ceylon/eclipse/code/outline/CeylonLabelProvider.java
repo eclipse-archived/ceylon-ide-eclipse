@@ -17,7 +17,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
@@ -1007,7 +1007,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Type type, 
             Styler styler) {
         try {
-            String typeName = type.getProducedTypeName();
+            String typeName = type.asString();
             StringTokenizer tokens = 
                     new StringTokenizer(typeName,
                             "|&?[]{}*+=-<>(),. ",true);

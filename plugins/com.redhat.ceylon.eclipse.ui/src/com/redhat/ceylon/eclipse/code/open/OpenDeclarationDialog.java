@@ -2,8 +2,8 @@ package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.model.cmr.JDKUtils.isJDKModule;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
-import static com.redhat.ceylon.model.typechecker.model.Util.isNameMatching;
-import static com.redhat.ceylon.model.typechecker.model.Util.isOverloadedVersion;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;

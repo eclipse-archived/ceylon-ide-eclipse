@@ -146,7 +146,7 @@ class AddParameterProposal extends InitializerProposal {
                     paramType = type.getUnit().getObjectDeclaration().getType();
                 }
                 else {
-                    explicitType = paramType.getProducedTypeName();
+                    explicitType = paramType.asString();
                     HashSet<Declaration> decs = new HashSet<Declaration>();
                     importType(decs, paramType, cu);
                     shift = applyImports(change, decs, cu, doc);

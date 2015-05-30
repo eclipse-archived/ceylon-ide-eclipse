@@ -215,7 +215,7 @@ class CreateParameterProposal extends InitializerProposal {
                     String defaultValue = 
                             defaultValue(prim.getUnit(), t);
                     String parameterType = 
-                            t.getProducedTypeName();
+                            t.asString();
                     String def = parameterType + " " + 
                             parameterName + 
                             " = " + defaultValue;

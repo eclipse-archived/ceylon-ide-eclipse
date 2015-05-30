@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REVEAL;
 
 import java.util.Collection;
@@ -47,7 +47,7 @@ public class SpecifyTypeArgumentsProposal extends CorrectionProposal {
                 if (builder.length()!=1) {
                     builder.append(",");
                 }
-                builder.append(arg.getProducedTypeNameInSource(node.getUnit()));
+                builder.append(arg.asSourceCodeString(node.getUnit()));
             }
             builder.append(">");
             TextFileChange change = new TextFileChange("Specify Explicit Type Arguments", file);

@@ -114,7 +114,7 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnonymousAnnotation;
-import com.redhat.ceylon.model.typechecker.util.ProducedTypeNamePrinter;
+import com.redhat.ceylon.model.typechecker.util.TypePrinter;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
 import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
@@ -699,9 +699,9 @@ public class DocumentationHover extends SourceInfoHover {
 //        }
         Unit unit = node.getUnit();
         String abbreviated = 
-                PRINTER.getProducedTypeName(t,unit);
+                PRINTER.print(t,unit);
         String unabbreviated = 
-                VERBOSE_PRINTER.getProducedTypeName(t,unit);
+                VERBOSE_PRINTER.print(t,unit);
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
         HTML.addImageAndLabel(buffer, null, 
@@ -1719,8 +1719,8 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
 
-    private static ProducedTypeNamePrinter printer(boolean abbreviate) { 
-        return new ProducedTypeNamePrinter(abbreviate, true, false, true, false) {
+    private static TypePrinter printer(boolean abbreviate) { 
+        return new TypePrinter(abbreviate, true, false, true, false) {
             @Override
             protected String getSimpleDeclarationName(Declaration declaration, Unit unit) {
                 return "<a " + HTML.link(declaration) + ">" + 
@@ -1742,11 +1742,11 @@ public class DocumentationHover extends SourceInfoHover {
         };
     }
     
-    private static ProducedTypeNamePrinter PRINTER = printer(true);
-    private static ProducedTypeNamePrinter VERBOSE_PRINTER = printer(false);
+    private static TypePrinter PRINTER = printer(true);
+    private static TypePrinter VERBOSE_PRINTER = printer(false);
     
     private static String producedTypeLink(Type pt, Unit unit) {
-        return PRINTER.getProducedTypeName(pt, unit);
+        return PRINTER.print(pt, unit);
     }
 
     private static List<Type> getTypeParameters(Declaration dec) {
@@ -2211,7 +2211,7 @@ public class DocumentationHover extends SourceInfoHover {
                 Type et = td.getExtendedType();
                 if (et!=null) {
                     description.append(" => ")
-                        .append(et.getProducedTypeName());
+                        .append(et.asString());
                 }
             }
         }

@@ -11,8 +11,8 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_L
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
-import static com.redhat.ceylon.model.typechecker.model.Util.isOverloadedVersion;
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -49,7 +49,7 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Util;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 
 public class Nodes {
 
@@ -693,7 +693,7 @@ public class Nodes {
         if (identifyingNode instanceof Tree.Term) {
             Tree.Term term = (Tree.Term) node;
             Type type = term.getTypeModel();
-            if (!Util.isTypeUnknown(type)) {
+            if (!isTypeUnknown(type)) {
                 if (!unplural) {
                     if (type.isClassOrInterface() || 
                         type.isTypeParameter()) {
@@ -829,7 +829,7 @@ public class Nodes {
                     Type type = 
                             p.getParameterModel().getType();
                     if (!isTypeUnknown(type)) {
-                        result.append(type.getProducedTypeNameInSource(unit))
+                        result.append(type.asSourceCodeString(unit))
                               .append(" ");
                     }
                 }

@@ -175,14 +175,14 @@ import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
-import com.redhat.ceylon.model.typechecker.context.ProducedTypeCache;
+import com.redhat.ceylon.model.typechecker.context.TypeCache;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Util;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TaskEvent;
@@ -245,12 +245,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static final String SOURCE = "Ceylon";
     
     static {
-        ProducedTypeCache.setEnabledByDefault(false);
+        TypeCache.setEnabledByDefault(false);
     }
     
     public static <T> T doWithCeylonModelCaching(final Callable<T> action) 
             throws CoreException {
-        Boolean was = ProducedTypeCache.setEnabled(true);
+        Boolean was = TypeCache.setEnabled(true);
         try {
             return action.call();
         } catch(CoreException ce) {
@@ -262,7 +262,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new RuntimeException(e);
             }
         } finally {
-            ProducedTypeCache.setEnabled(was);
+            TypeCache.setEnabled(was);
         }
     }
     
@@ -3743,7 +3743,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 IPath rootRelativePath = resource.getFullPath().makeRelativeTo(rootFolder.getFullPath());
                 JDTModelLoader modelLoader = getProjectModelLoader(resource.getProject());
                 if (modelLoader != null) {
-                    return modelLoader.findPackage(Util.formatPath(Arrays.asList(rootRelativePath.segments()), '.'));
+                    return modelLoader.findPackage(ModelUtil.formatPath(Arrays.asList(rootRelativePath.segments()), '.'));
                 }
             }
             return null;

@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isOverloadedVersion;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
@@ -39,7 +39,7 @@ import com.redhat.ceylon.model.typechecker.model.ImportList;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Util;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -111,7 +111,7 @@ public class PackageCompletions {
                 List<ICompletionProposal> proposals = 
                         new ArrayList<ICompletionProposal>();
                 for (final Declaration d: candidate.getMembers()) {
-                    if (Util.isResolvable(d) && d.isShared() && 
+                    if (ModelUtil.isResolvable(d) && d.isShared() && 
                             !isOverloadedVersion(d)) {
                         proposals.add(new ICompletionProposal() {
                             @Override

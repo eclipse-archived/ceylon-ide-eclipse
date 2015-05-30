@@ -92,7 +92,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                     tfc.addEdit(new ReplaceEdit(
                             localModifier.getStartIndex(), 
                             localModifier.getText().length(), 
-                            pt.getProducedTypeNameInSource(unit)));
+                            pt.asSourceCodeString(unit)));
                     importType(imports, pt, rootNode);
                 }
             }
@@ -108,7 +108,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                             variable.getType().getTypeModel();
                     tfc.addEdit(new InsertEdit(
                             variable.getStartIndex(), 
-                            pt.getProducedTypeNameInSource(unit) + " "));
+                            pt.asSourceCodeString(unit) + " "));
                     importType(imports,  
                             variable.getType().getTypeModel(), 
                             rootNode);

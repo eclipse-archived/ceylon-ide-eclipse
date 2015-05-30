@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes;
@@ -131,7 +131,7 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
                     def.append("function");
                 }
                 else {
-                    def.append(returnType.getProducedTypeNameInSource(unit));
+                    def.append(returnType.asSourceCodeString(unit));
                 }
             }
             def.append(" ")
@@ -165,7 +165,7 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
                     def.append("value");
                 }
                 else {
-                    def.append(returnType.getProducedTypeNameInSource(unit));
+                    def.append(returnType.asSourceCodeString(unit));
                 }
             }
             def.append(" ")

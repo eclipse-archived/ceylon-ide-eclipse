@@ -8,7 +8,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
-import static com.redhat.ceylon.model.typechecker.model.Util.addToUnion;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.addToUnion;
 import static java.util.Collections.singletonList;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
@@ -50,7 +50,7 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.UnionType;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Util;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
 public class ExtractFunctionRefactoring extends AbstractRefactoring {
@@ -252,7 +252,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             }
         }
         private boolean isDefinedLocally(Declaration dec) {
-            return !Util.contains(dec.getScope(), 
+            return !ModelUtil.contains(dec.getScope(), 
                     scope.getScope().getContainer());
         }
     }
@@ -576,7 +576,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 }
                 else {
                     params.append(unit.denotableType(bme.getTypeModel())
-                            .getProducedTypeNameInSource(unit));
+                            .asSourceCodeString(unit));
                 }
                 String name = bme.getIdentifier().getText();
                 params.append(" ").append(name);
@@ -616,7 +616,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                         else {
                             constraints.append("&");
                         }
-                        constraints.append(pt.getProducedTypeNameInSource(unit));
+                        constraints.append(pt.asSourceCodeString(unit));
                     }
                 }
             }
@@ -636,7 +636,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 il = 0;
             }
             else if (explicitType || dec.isToplevel()) {
-                type = returnType.getProducedTypeNameInSource(unit);
+                type = returnType.asSourceCodeString(unit);
                 HashSet<Declaration> decs = new HashSet<Declaration>();
                 importType(decs, returnType, rootNode);
                 il = applyImports(tfc, decs, rootNode, doc);
@@ -765,7 +765,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                     }
                     else {
                         params += unit.denotableType(bme.getTypeModel())
-                                .getProducedTypeNameInSource(unit);
+                                .asSourceCodeString(unit);
                     }
                     params += " " + bme.getIdentifier().getText() + ", ";
                     args += bme.getIdentifier().getText() + ", ";
@@ -799,7 +799,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                             " satisfies ";
                     for (Type pt: sts) {
                         constraints += 
-                                pt.getProducedTypeNameInSource(unit) + "&";
+                                pt.asSourceCodeString(unit) + "&";
                     }
                     constraints = 
                             constraints.substring(0, 
@@ -833,7 +833,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 content = "dynamic";
             }
             else if (explicitType||dec.isToplevel()) {
-                content = returnType.getProducedTypeNameInSource(unit);
+                content = returnType.asSourceCodeString(unit);
                 HashSet<Declaration> already = 
                         new HashSet<Declaration>();
                 importType(already, returnType, rootNode);
@@ -853,7 +853,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
                 !resultDeclaration.isVariable()) { //TODO: wrong condition, check if initialized!
             content += extraIndent +
                 resultDeclaration.getType()
-                    .getProducedTypeNameInSource(unit) +
+                    .asSourceCodeString(unit) +
                 " " + resultDeclaration.getName() + ";";
         }
         Tree.Statement last = 
@@ -892,7 +892,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
             if (result instanceof Tree.AttributeDeclaration) {
                 if (resultDeclaration.isShared()) {
                     modifs = "shared " + 
-                            returnType.getProducedTypeNameInSource(unit) + 
+                            returnType.asSourceCodeString(unit) + 
                             " ";
                 }
                 else {

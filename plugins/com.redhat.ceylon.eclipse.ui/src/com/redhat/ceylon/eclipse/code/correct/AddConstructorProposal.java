@@ -73,7 +73,7 @@ public class AddConstructorProposal extends CorrectionProposal {
                             dec.getProducedReference(null, 
                                     Collections.<Type>emptyList());
                     String type = 
-                            pr.getFullType().getProducedTypeName(unit);
+                            pr.getFullType().asString(unit);
                     String name = dec.getName();
                     params.append(type)
                           .append(" ")

@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultValueDescription;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
@@ -240,7 +240,7 @@ public class CodeCompletions {
                         else {
                             st = st.substitute((TypedReference) pr);
                         }
-                        result.append(st.getProducedTypeNameInSource(unit));
+                        result.append(st.asSourceCodeString(unit));
                     }
                 }
             }
@@ -452,7 +452,7 @@ public class CodeCompletions {
                             if (p.isSequenced()) {
                                 pt = unit.getSequentialElementType(pt);
                             }
-                            result.append(pt.getProducedTypeName(unit));
+                            result.append(pt.asString(unit));
                             if (p.isSequenced()) {
                                 result.append(p.isAtLeastOne()?'+':'*');
                             }
@@ -530,7 +530,7 @@ public class CodeCompletions {
                         }
                         else {
                             if (paramTypes && !isTypeUnknown(p.getType())) {
-                                String ptn = p.getType().getProducedTypeName(unit);
+                                String ptn = p.getType().asString(unit);
                                 result.append(ptn).append(" ");
                             }
                             else {
@@ -562,7 +562,7 @@ public class CodeCompletions {
                         }
                         else {
                             if (paramTypes && !isTypeUnknown(p.getType())) {
-                                String ptn = p.getType().getProducedTypeName(unit);
+                                String ptn = p.getType().asString(unit);
                                 result.append(ptn).append(" ");
                             }
                             result.append(name)
@@ -657,7 +657,7 @@ public class CodeCompletions {
                                 }
                             }
                         }
-                        result.append(arg.getProducedTypeName(unit));
+                        result.append(arg.asString(unit));
                     }
                 }
                 result.append(">");
@@ -751,8 +751,8 @@ public class CodeCompletions {
                 type = new UnknownType(unit).getType();
             }
             String typeName = descriptionOnly ? 
-                    type.getProducedTypeName(unit) :
-                    type.getProducedTypeNameInSource(unit);
+                    type.asString(unit) :
+                    type.asSourceCodeString(unit);
             if (td.isDynamicallyTyped()) {
                 result.append("dynamic");
             }
@@ -1169,7 +1169,7 @@ public class CodeCompletions {
             Type type = ppr.getType();
             if (isListedValues && namedInvocation) {
                 Type et = unit.getIteratedType(type);
-                typeName = et.getProducedTypeName(unit);
+                typeName = et.asString(unit);
                 if (unit.isEntryType(et)) {
                     typeName = '<' + typeName + '>';
                 }
@@ -1177,14 +1177,14 @@ public class CodeCompletions {
             }
             else if (p.isSequenced() && !namedInvocation) {
                 Type et = unit.getSequentialElementType(type);
-                typeName = et.getProducedTypeName(unit);
+                typeName = et.asString(unit);
                 if (unit.isEntryType(et)) {
                     typeName = '<' + typeName + '>';
                 }
                 typeName += p.isAtLeastOne() ? '+' : '*';
             }
             else {
-                typeName = type.getProducedTypeName(unit);
+                typeName = type.asString(unit);
             }
             result.append(typeName).append(" ").append(p.getName());
             appendParametersDescription(p.getModel(), ppr, unit, result);
@@ -1225,7 +1225,7 @@ public class CodeCompletions {
                                     appendDeclarationName(p.getModel(), result);
                                 }
                                 appendParametersDescription(p.getModel(), result, names, types);
-                                /*result.append(p.getType().getProducedTypeName(), TYPE_STYLER)
+                                /*result.append(p.getType().asString(), TYPE_STYLER)
                                     .append(" ").append(p.getName(), ID_STYLER);
                                 if (p instanceof FunctionalParameter) {
                                     result.append("(");
@@ -1233,7 +1233,7 @@ public class CodeCompletions {
                                     List<Parameter> fpl = fp.getParameterLists().get(0).getParameters();
                                     int len2 = fpl.size(), j=0;
                                     for (Parameter pp: fpl) {
-                                        result.append(pp.getType().getProducedTypeName(), TYPE_STYLER)
+                                        result.append(pp.getType().asString(), TYPE_STYLER)
                                             .append(" ").append(pp.getName(), ID_STYLER);
                                         if (++j<len2) result.append(", ");
                                     }

@@ -325,7 +325,7 @@ public class CompletionUtil {
             else {
                 text.append(", ");
             }
-            text.append(paramType.getProducedTypeNameInSource(unit))
+            text.append(paramType.asSourceCodeString(unit))
                 .append(" ")
                 .append(c++);
         }

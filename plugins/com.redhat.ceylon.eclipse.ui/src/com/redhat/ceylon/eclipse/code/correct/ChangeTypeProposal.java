@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.intersectionType;
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
-import static com.redhat.ceylon.model.typechecker.model.Util.unionType;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.intersectionType;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.unionType;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
@@ -64,7 +64,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         importType(decs, newType, cu);
         int il=applyImports(change, decs, cu, doc);
         String newTypeName = 
-                newType.getProducedTypeNameInSource(cu.getUnit());
+                newType.asSourceCodeString(cu.getUnit());
         change.addEdit(new ReplaceEdit(offset, length, 
                 newTypeName));
         String name;
@@ -80,7 +80,7 @@ class ChangeTypeProposal extends CorrectionProposal {
             name = "'" + dec.getName() + "'";
         }
         proposals.add(new ChangeTypeProposal(problem, name, 
-                newType.getProducedTypeName(cu.getUnit()), 
+                newType.asString(cu.getUnit()), 
                 offset+il, newTypeName.length(), change));
     }
     

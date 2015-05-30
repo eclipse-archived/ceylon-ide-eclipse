@@ -6,9 +6,9 @@ import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.T
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
-import static com.redhat.ceylon.model.typechecker.model.Util.getInterveningRefinements;
-import static com.redhat.ceylon.model.typechecker.model.Util.getSignature;
-import static com.redhat.ceylon.model.typechecker.model.Util.isAbstraction;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getSignature;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 
 import java.util.Iterator;
 import java.util.List;

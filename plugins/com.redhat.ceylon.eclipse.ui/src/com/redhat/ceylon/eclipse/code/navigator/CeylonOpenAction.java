@@ -42,7 +42,7 @@ import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Util;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
@@ -122,7 +122,7 @@ public class CeylonOpenAction extends OpenAction {
                                         for (IProject project : CeylonBuilder.getProjects()) {
                                             for (JDTModule module : CeylonBuilder.getProjectExternalModules(project)) {
                                                 if (archivePath.equals(module.getSourceArchivePath())) {
-                                                    String className = Util.formatPath(Arrays.asList(entryPath.removeFileExtension().segments()));
+                                                    String className = ModelUtil.formatPath(Arrays.asList(entryPath.removeFileExtension().segments()));
                                                     IType classToDisplay = JavaCore.create(project).findType(className);
                                                     if (classToDisplay != null) {
                                                         elementToOpen = classToDisplay;

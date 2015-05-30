@@ -744,7 +744,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                             argTypes.set(i, argType);
                         }
                         else if (paramTypes) {
-                            desc.append(argType.getProducedTypeName(unit))
+                            desc.append(argType.asString(unit))
                                 .append(' ');
                         }
                         String name;

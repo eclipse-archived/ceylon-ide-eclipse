@@ -85,7 +85,7 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
                     ValueModifier valueModifier = (ValueModifier) attrDecl.getType();
                     Type typeModel = valueModifier.getTypeModel();
                     if (typeModel==null) return;
-                    type = typeModel.getProducedTypeName();
+                    type = typeModel.asString();
                     
                 } else {
                     type = getTerm(doc, attrDecl.getType());

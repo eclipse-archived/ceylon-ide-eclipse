@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,7 +117,7 @@ class CorrectionUtil {
                 missingSatisfiedTypesText.append(" & ");
             }
             missingSatisfiedTypesText.append(
-                    missingSatisfiedType.getProducedTypeName());   
+                    missingSatisfiedType.asString());   
         }
         return missingSatisfiedTypesText.toString();
     }

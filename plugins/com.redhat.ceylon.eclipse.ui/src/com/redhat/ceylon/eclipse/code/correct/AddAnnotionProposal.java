@@ -155,7 +155,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 if (it!=null && 
                         !(it.getDeclaration() instanceof UnknownType)) {
                     String explicitType = 
-                            it.getProducedTypeName();
+                            it.asString();
                     change.addEdit(new ReplaceEdit(type.getStartIndex(), 
                             type.getText().length(), explicitType));
                 }

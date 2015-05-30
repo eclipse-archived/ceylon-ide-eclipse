@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
@@ -80,7 +80,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
                     importType(decs, infType, rootNode);
                     int il = applyImports(change, decs, rootNode, document);
                     String typeName = 
-                            infType.getProducedTypeNameInSource(rootNode.getUnit());
+                            infType.asSourceCodeString(rootNode.getUnit());
                     change.addEdit(new ReplaceEdit(offset, length, typeName));
                     change.perform(new NullProgressMonitor());
                     offset += il;
@@ -200,7 +200,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        String type = infType.getProducedTypeName(rootNode.getUnit());
+        String type = infType.asString(rootNode.getUnit());
         return desc + " '" + type + "'";
     }
 

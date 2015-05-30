@@ -42,7 +42,7 @@ public class CeylonContentProviderFilter {
                         String typeParameterName = name.substring(Naming.Prefix.$reified$.toString().length());
                         JDIDebugTarget debugTarget = (JDIDebugTarget) variable.getDebugTarget();
                         IJavaValue value = (IJavaValue) variable.getValue();
-                        String reifiedTypeName = DebugUtils.getProducedTypeName(value);
+                        String reifiedTypeName = DebugUtils.asString(value);
                         if (reifiedTypeName != null) {
                             typeParameters.put(typeParameterName, new JDIValue(debugTarget, debugTarget.getVM().mirrorOf(reifiedTypeName)) {
                                 IVariable[] variables = new IVariable[0];

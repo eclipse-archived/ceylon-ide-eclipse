@@ -99,7 +99,7 @@ import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Util;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 
 public class JDTModule extends LazyModule {
     private JDTModuleManager moduleManager;
@@ -884,7 +884,7 @@ public class JDTModule extends LazyModule {
     private Package getPackageFromRelativePath(
             String relativePathOfClassToRemove) {
         List<String> pathElements = Arrays.asList(relativePathOfClassToRemove.split("/"));
-        String packageName = Util.formatPath(pathElements.subList(0, pathElements.size()-1));
+        String packageName = ModelUtil.formatPath(pathElements.subList(0, pathElements.size()-1));
         Package p = findPackageNoLazyLoading(packageName);
         return p;
     }

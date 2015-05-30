@@ -583,7 +583,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
 //                setErrorMessage("Missing argument expression");
 //                return false;
             }
-            String typeExpression = parameter.getType().getProducedTypeName();
+            String typeExpression = parameter.getType().asString();
             String parameterName = parameter.getName();
             String paramDeclaration = "(" + typeExpression + " " + parameterName + " = " + text + ")";
             

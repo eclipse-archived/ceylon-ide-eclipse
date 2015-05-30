@@ -319,7 +319,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         HashSet<Declaration> decs = new HashSet<Declaration>();
         importType(decs, type, rootNode);
         int il = applyImports(tfc, decs, rootNode, doc);
-        builder.append(type.getProducedTypeNameInSource(rootNode.getUnit()));
+        builder.append(type.asSourceCodeString(rootNode.getUnit()));
         return il;
     }
 

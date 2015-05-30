@@ -49,7 +49,7 @@ public abstract class DefinitionGenerator {
                         supertype.getMember(e.getKey(), 
                                 null, false);
                 if (member==null || !member.isFormal()) {
-                    buffer.append(e.getValue().getProducedTypeName()).append(" ");
+                    buffer.append(e.getValue().asString()).append(" ");
                 }
                 buffer.append(e.getKey()).append(", ");
             }
@@ -159,7 +159,7 @@ public abstract class DefinitionGenerator {
         Type dta = typeParam.getDefaultTypeArgument();
         if (typeParam.isDefaulted() && dta != null) {
             typeParamDef.append("=");
-            typeParamDef.append(dta.getProducedTypeName());
+            typeParamDef.append(dta.asString());
         }
         typeParamDef.append(",");
         
@@ -179,7 +179,7 @@ public abstract class DefinitionGenerator {
                     } else {
                         typeParamConstDef.append("&");
                     }
-                    typeParamConstDef.append(satisfiedType.getProducedTypeName());
+                    typeParamConstDef.append(satisfiedType.asString());
                 }
             }
     
@@ -194,7 +194,7 @@ public abstract class DefinitionGenerator {
                     } else {
                         typeParamConstDef.append("|");
                     }
-                    typeParamConstDef.append(caseType.getProducedTypeName());
+                    typeParamConstDef.append(caseType.asString());
                 }
             }
             
@@ -212,7 +212,7 @@ public abstract class DefinitionGenerator {
                             } else {
                                 typeParamConstDef.append(",");
                             }
-                            typeParamConstDef.append(param.getType().getProducedTypeName());
+                            typeParamConstDef.append(param.getType().asString());
                             typeParamConstDef.append(" ");
                             typeParamConstDef.append(param.getName());
                         }

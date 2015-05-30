@@ -129,7 +129,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                         }
                         else {
                             body.append("is ")
-                                .append(pt.getProducedTypeNameInSource(unit));
+                                .append(pt.asSourceCodeString(unit));
                         }
                         body.append(") {}")
                             .append(getDefaultLineDelimiter(doc));

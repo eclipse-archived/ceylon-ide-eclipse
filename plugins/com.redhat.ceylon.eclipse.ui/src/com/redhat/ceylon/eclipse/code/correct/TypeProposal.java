@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
-import static com.redhat.ceylon.model.typechecker.model.Util.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -177,8 +177,8 @@ class TypeProposal implements ICompletionProposal,
                 infType.isIntersection()) {
             proposals[i++] = 
                     new TypeProposal(offset, infType, 
-                            infType.getProducedTypeNameInSource(unit), 
-                            infType.getProducedTypeName(unit), 
+                            infType.asSourceCodeString(unit), 
+                            infType.asString(unit), 
                             rootNode);
         }
         for (int j=supertypes.size()-1; j>=0; j--) {
@@ -186,8 +186,8 @@ class TypeProposal implements ICompletionProposal,
                     infType.getSupertype(supertypes.get(j));
             proposals[i++] = 
                     new TypeProposal(offset, type, 
-                            type.getProducedTypeNameInSource(unit), 
-                            type.getProducedTypeName(unit), 
+                            type.asSourceCodeString(unit), 
+                            type.asString(unit), 
                             rootNode);
         }
         return new ProposalPosition(document, offset, length, 

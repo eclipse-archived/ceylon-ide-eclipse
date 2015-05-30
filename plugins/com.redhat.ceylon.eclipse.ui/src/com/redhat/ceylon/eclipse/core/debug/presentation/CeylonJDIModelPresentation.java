@@ -100,7 +100,7 @@ public class CeylonJDIModelPresentation extends JDIModelPresentation {
             return "Null";
         }
         
-        String result = DebugUtils.getProducedTypeName(value);
+        String result = DebugUtils.asString(value);
         if(result == null || result.isEmpty()) {
             result = getQualifiedName(value.getReferenceTypeName());
         }

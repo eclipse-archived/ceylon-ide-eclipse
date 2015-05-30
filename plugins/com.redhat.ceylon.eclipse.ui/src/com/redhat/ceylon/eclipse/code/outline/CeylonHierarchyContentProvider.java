@@ -4,9 +4,9 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
-import static com.redhat.ceylon.model.typechecker.model.Util.getInterveningRefinements;
-import static com.redhat.ceylon.model.typechecker.model.Util.getSignature;
-import static com.redhat.ceylon.model.typechecker.model.Util.isAbstraction;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getSignature;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
