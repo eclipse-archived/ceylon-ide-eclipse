@@ -1,14 +1,14 @@
 package com.redhat.ceylon.test.eclipse.plugin.util;
 
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
 public class MethodWithContainer {
 
     private final TypeDeclaration container;
-    private final Method method;
+    private final Function method;
 
-    public MethodWithContainer(TypeDeclaration container, Method method) {
+    public MethodWithContainer(TypeDeclaration container, Function method) {
         this.method = method;
         this.container = container;
     }
@@ -17,7 +17,7 @@ public class MethodWithContainer {
         return container;
     }
 
-    public Method getMethod() {
+    public Function getMethod() {
         return method;
     }
 

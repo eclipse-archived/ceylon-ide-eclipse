@@ -55,7 +55,7 @@ import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
@@ -207,8 +207,8 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
                                     clazz.getQualifiedNameString()));
                         }
                     }
-                    else if (d instanceof Method) {
-                        Method method = (Method) d;
+                    else if (d instanceof Function) {
+                        Function method = (Function) d;
                         if (isTestable(method)) {
                             entries.add(CeylonTestLaunchConfigEntry.build(project, method.isShared() ? METHOD : METHOD_LOCAL,
                                     method.getQualifiedNameString()));
@@ -238,7 +238,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         node = fcv.getDeclaration();
 
         if (node instanceof Tree.AnyMethod) {
-            Method method = ((Tree.AnyMethod) node).getDeclarationModel();
+            Function method = ((Tree.AnyMethod) node).getDeclarationModel();
             if (method.getContainer() instanceof Class && isTestable(new MethodWithContainer((Class)method.getContainer(), method))) {
                 if (method.isMember()) {
                     names.add(((Declaration) method.getContainer()).getName() + "." + method.getName());

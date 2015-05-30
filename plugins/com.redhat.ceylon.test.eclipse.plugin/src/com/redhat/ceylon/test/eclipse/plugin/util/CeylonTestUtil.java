@@ -38,12 +38,12 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.model.typechecker.model.Annotation;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
-import com.redhat.ceylon.model.typechecker.model.ProducedType;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
@@ -164,8 +164,8 @@ public class CeylonTestUtil {
 				d = extractAnonymousClassIfRequired(d);
 				if (d != null) {
 					Declaration m = d.getMember(methodName, null, false);
-					if( m instanceof Method && d instanceof Class ) {
-					    result = new MethodWithContainer((Class)d, (Method)m);
+					if( m instanceof Function && d instanceof Class ) {
+					    result = new MethodWithContainer((Class)d, (Function)m);
 					}
 				}
 			} else {
@@ -188,8 +188,8 @@ public class CeylonTestUtil {
 
     private static void getAllMethods(ClassOrInterface c, TypeDeclaration t, List<MethodWithContainer> members) {
         for (Declaration d : t.getMembers()) {
-            if (d instanceof Method) {
-                Method m = (Method) d;
+            if (d instanceof Function) {
+                Function m = (Function) d;
                 boolean contains = false;
                 for (MethodWithContainer member : members) {
                     if (member.getMethod().getName().equals(m.getName())) {
@@ -202,11 +202,11 @@ public class CeylonTestUtil {
                 }
             }
         }
-        ProducedType et = t.getExtendedType();
+        Type et = t.getExtendedType();
         if (et != null) {
             getAllMethods(c, et.getDeclaration(), members);
         }
-        for (ProducedType st : t.getSatisfiedTypes()) {
+        for (Type st : t.getSatisfiedTypes()) {
             getAllMethods(c, st.getDeclaration(), members);
         }
     }
@@ -237,8 +237,8 @@ public class CeylonTestUtil {
         else if( element instanceof Class ) {
             return isTestableClass((Class) element);
         }
-        else if( element instanceof Method ) {
-            return isTestableMethod((Method) element, null);
+        else if( element instanceof Function ) {
+            return isTestableMethod((Function) element, null);
         }
         else if( element instanceof MethodWithContainer ) {
             MethodWithContainer m = (MethodWithContainer) element;
@@ -259,7 +259,7 @@ public class CeylonTestUtil {
         return false;
     }
 
-    private static boolean isTestableMethod(Method method, TypeDeclaration container) {
+    private static boolean isTestableMethod(Function method, TypeDeclaration container) {
         boolean isTestableMethod = false;
         if (method.isToplevel() || (container instanceof Class && isTestableClass((Class) container))) {
             if (method.isDeclaredVoid() && !method.isFormal() && containsTestAnnotation(method) ) {
@@ -269,7 +269,7 @@ public class CeylonTestUtil {
         return isTestableMethod;
     }
     
-    private static boolean containsTestAnnotation(Method method) {
+    private static boolean containsTestAnnotation(Function method) {
         List<Annotation> annotations = method.getAnnotations();
         for (Annotation annotation : annotations) {
             if (annotation.getName().equals("test")) {

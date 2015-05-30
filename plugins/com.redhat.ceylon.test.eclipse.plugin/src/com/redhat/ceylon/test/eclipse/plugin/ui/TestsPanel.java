@@ -75,7 +75,7 @@ import org.eclipse.swt.widgets.Composite;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
@@ -394,8 +394,8 @@ public class TestsPanel extends Composite {
     			launchName = clazz.getName();
     			entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL, clazz.getQualifiedNameString()));
     		}
-    		else if (result instanceof Method) {
-    			Method method = (Method) result;
+    		else if (result instanceof Function) {
+    		    Function method = (Function) result;
     			launchName = (method.isMember() ? ((Declaration) method.getContainer()).getName() + "." : "") + method.getName();
     			entries.add(CeylonTestLaunchConfigEntry.build(project, method.isShared() ? METHOD : METHOD_LOCAL, method.getQualifiedNameString()));
     		}

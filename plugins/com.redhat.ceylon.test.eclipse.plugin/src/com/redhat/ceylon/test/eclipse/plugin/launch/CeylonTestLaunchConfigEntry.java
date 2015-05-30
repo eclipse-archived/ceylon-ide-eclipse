@@ -17,7 +17,7 @@ import org.eclipse.jface.viewers.TreePath;
 
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Method;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Scope;
@@ -69,8 +69,8 @@ public class CeylonTestLaunchConfigEntry {
             Class clazz = (Class) lastSegment;
             entry.type = clazz.isShared() ? Type.CLASS : Type.CLASS_LOCAL; 
             entry.modPkgDeclName = clazz.getQualifiedNameString();
-        } else if (lastSegment instanceof Method) {
-            Method method = (Method) lastSegment;
+        } else if (lastSegment instanceof Function) {
+            Function method = (Function) lastSegment;
             entry.type = method.isShared() ? Type.METHOD : Type.METHOD_LOCAL;
             entry.modPkgDeclName = method.getQualifiedNameString();
         } else if( lastSegment instanceof MethodWithContainer ) {
@@ -207,7 +207,7 @@ public class CeylonTestLaunchConfigEntry {
         if( !(d instanceof Class) && (type == Type.CLASS || type == Type.CLASS_LOCAL) ) {
             errorMessage = msg(CeylonTestMessages.errorCanNotFindDeclaration, modPkgDeclName, projectName);            
         }
-        if( !(d instanceof Method) && (type == Type.METHOD || type == Type.METHOD_LOCAL) ) {
+        if( !(d instanceof Function) && (type == Type.METHOD || type == Type.METHOD_LOCAL) ) {
             errorMessage = msg(CeylonTestMessages.errorCanNotFindDeclaration, modPkgDeclName, projectName);            
         }
     }
