@@ -617,6 +617,7 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
             if (CeylonBuilder.allClasspathContainersInitialized()) {
                 cleanUp(monitor);
             }
+            //TODO: this line can NPE!!
             for (IPath sourceArchivePath : getExternalSourceArchives(CeylonBuilder.getProjectExternalModules(project))) {
                 IFolder sourceArchive = getSourceArchive(sourceArchivePath);
                 if (sourceArchive == null || !sourceArchive.exists()) {

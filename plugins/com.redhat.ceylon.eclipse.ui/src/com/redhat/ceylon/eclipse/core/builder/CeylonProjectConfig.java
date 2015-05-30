@@ -82,6 +82,7 @@ public class CeylonProjectConfig {
     }
 
     private void initMergedConfig() {
+        //TODO: this line can NPE!
         mergedConfig = CeylonConfig.createFromLocalDir(project.getLocation().toFile());
         mergedRepositories = Repositories.withConfig(mergedConfig);
     }
