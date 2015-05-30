@@ -27,7 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.context {
 }
 import com.redhat.ceylon.model.typechecker.model {
     ModelDeclaration=Declaration,
-    Method,
+    Function,
     ModuleImport,
     Module
 }
@@ -602,7 +602,7 @@ shared class DeltaBuilderFactory(
                 }
 
                 shared actual void visitIdentifier(Ast.Identifier node) {
-                    if (is Method method = node.scope,
+                    if (is Function method = node.scope,
                         method.parameter,
                         method.nameAsString != node.text) {
                         // parameters of a method functional parameter are not
