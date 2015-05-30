@@ -24,7 +24,6 @@ import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.util.MethodWithContainer;
 
-@SuppressWarnings("unchecked")
 public class CeylonTestLaunchConfigEntry {
 
     private static final String TYPE_SEPARATOR = "=";
