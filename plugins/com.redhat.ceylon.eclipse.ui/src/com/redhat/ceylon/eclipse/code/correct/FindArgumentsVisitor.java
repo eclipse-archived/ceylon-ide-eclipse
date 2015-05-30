@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.producedType;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.appliedType;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.unionType;
 
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -254,7 +254,7 @@ class FindArgumentsVisitor extends Visitor
                 indexType = u.getTypeModel();
             }
         }
-        currentType = producedType(unit.getCorrespondenceDeclaration(), 
+        currentType = appliedType(unit.getCorrespondenceDeclaration(), 
                 indexType, unit.getDefiniteType(currentType));
         if (primary!=null) {
             primary.visit(this);

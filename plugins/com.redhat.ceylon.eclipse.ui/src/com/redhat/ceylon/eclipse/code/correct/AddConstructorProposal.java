@@ -70,7 +70,7 @@ public class AddConstructorProposal extends CorrectionProposal {
                         params.append(", ");
                     }
                     Reference pr = 
-                            dec.getProducedReference(null, 
+                            dec.appliedReference(null, 
                                     Collections.<Type>emptyList());
                     String type = 
                             pr.getFullType().asString(unit);

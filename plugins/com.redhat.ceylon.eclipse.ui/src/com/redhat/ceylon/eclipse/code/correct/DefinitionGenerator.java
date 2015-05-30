@@ -13,8 +13,6 @@ import org.eclipse.swt.graphics.Image;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -198,28 +196,6 @@ public abstract class DefinitionGenerator {
                 }
             }
             
-            if (typeParam.getParameterLists() != null) {
-                for (ParameterList paramList : 
-                        typeParam.getParameterLists()) {
-                    if (paramList != null && 
-                            paramList.getParameters() != null) {
-                        typeParamConstDef.append("(");
-                        boolean firstParam = true;
-                        for (Parameter param : 
-                                paramList.getParameters()) {
-                            if (firstParam) {
-                                firstParam = false;
-                            } else {
-                                typeParamConstDef.append(",");
-                            }
-                            typeParamConstDef.append(param.getType().asString());
-                            typeParamConstDef.append(" ");
-                            typeParamConstDef.append(param.getName());
-                        }
-                        typeParamConstDef.append(")");
-                    }
-                }
-            }
         }        
     }
 

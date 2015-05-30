@@ -54,7 +54,7 @@ public class ChangeRefiningTypeProposal {
                 Type supertype =
                         decContainer.getType().getSupertype(rdContainer);
                 Reference pr =
-                        rd.getProducedReference(supertype, 
+                        rd.appliedReference(supertype, 
                                 Collections.<Type>emptyList());
                 Type t = pr.getType();
                 String type = t.asSourceCodeString(decNode.getUnit());
@@ -125,7 +125,7 @@ public class ChangeRefiningTypeProposal {
                 supertype = null;
             }
             Reference pr =
-                    rd.getProducedReference(supertype, 
+                    rd.appliedReference(supertype, 
                             Collections.<Type>emptyList());
             List<Tree.Parameter> params = list.getParameters();
             TextFileChange change =

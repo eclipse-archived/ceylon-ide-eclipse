@@ -1657,7 +1657,7 @@ public class DocumentationHover extends SourceInfoHover {
             StringBuilder buffer, Unit unit) {
         if (dec instanceof Functional) {
             if (pr==null) {
-                pr = getProducedReference(dec, node);
+                pr = appliedReference(dec, node);
             }
             if (pr==null) return;
             List<ParameterList> pls = 
@@ -1699,7 +1699,7 @@ public class DocumentationHover extends SourceInfoHover {
             Node node, Reference pr, boolean obj, Unit unit) {
         if (dec instanceof TypedDeclaration && !obj) {
             if (pr==null) {
-                pr = getProducedReference(dec, node);
+                pr = appliedReference(dec, node);
             }
             if (pr==null) return;
             Type ret = pr.getType();
@@ -1770,7 +1770,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
 
-    private static Reference getProducedReference(Declaration dec,
+    private static Reference appliedReference(Declaration dec,
             Node node) {
         if (node instanceof Tree.TypeDeclaration) {
             return ((TypeDeclaration) dec).getType();
@@ -1794,7 +1794,7 @@ public class DocumentationHover extends SourceInfoHover {
             else {
                 qt = null;
             }
-            return dec.getProducedReference(qt,
+            return dec.appliedReference(qt,
                     getTypeParameters(dec));
         }
     }
@@ -2085,7 +2085,7 @@ public class DocumentationHover extends SourceInfoHover {
             Node node, Reference pr, StringBuilder buffer,
             Unit unit) {
         if (pr==null) {
-            pr = getProducedReference(dec, node);
+            pr = appliedReference(dec, node);
         }
         Type type;
         if (pr instanceof Type) {
@@ -2149,7 +2149,7 @@ public class DocumentationHover extends SourceInfoHover {
             Node node, Reference pr, StringBuilder buffer,
             Unit unit) {
         if (pr==null) {
-            pr = getProducedReference(dec, node);
+            pr = appliedReference(dec, node);
         }
         List<TypeParameter> typeParameters;
         if (dec instanceof Functional) {
@@ -2201,7 +2201,7 @@ public class DocumentationHover extends SourceInfoHover {
             Node node,  Reference pr, 
             CeylonParseController cpc, Unit unit) {
         if (pr==null) {
-            pr = getProducedReference(dec, node);
+            pr = appliedReference(dec, node);
         }
         String doc = getDocDescriptionFor(dec, pr, unit);
         StringBuffer description = new StringBuffer(doc);

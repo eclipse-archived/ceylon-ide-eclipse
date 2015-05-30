@@ -1369,7 +1369,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     (TypeDeclaration) d.getContainer();
             pt = pt.getSupertype(container);
         }
-        return d.getProducedReference(pt, 
+        return d.appliedReference(pt, 
                 Collections.<Type>emptyList());
     }
 

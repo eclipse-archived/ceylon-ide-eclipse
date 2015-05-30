@@ -170,7 +170,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 Parameter p = (Parameter) cell.getElement();
                 FunctionOrValue model = p.getModel();
                 StyledString styledString = new StyledString();
-                Type fullType = model.getProducedReference(null, 
+                Type fullType = model.appliedReference(null, 
                         Collections.<Type>emptyList()).getFullType();
                 appendTypeName(styledString, fullType);
                 cell.setImage(getImageForDeclaration(fullType.getDeclaration()));

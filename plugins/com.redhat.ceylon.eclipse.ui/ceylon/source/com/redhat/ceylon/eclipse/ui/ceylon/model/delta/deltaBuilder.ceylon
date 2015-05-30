@@ -806,10 +806,7 @@ shared class DeltaBuilderFactory(
                                     },
                                     lookForChanges<Ast.TypeConstraint> {
                                         function between(Ast.TypeConstraint oldTypeConstraint, Ast.TypeConstraint newTypeConstraint) {
-                                            return any {
-                                                nodesDiffer(oldTypeConstraint.abstractedType, newTypeConstraint.abstractedType, "abstractedType"),
-                                                nodesDiffer(oldTypeConstraint.parameterList, newTypeConstraint.parameterList, "parameterList")
-                                            };
+                                            return nodesDiffer(oldTypeConstraint.abstractedType, newTypeConstraint.abstractedType, "abstractedType");
                                         }
                                     }
                                 };

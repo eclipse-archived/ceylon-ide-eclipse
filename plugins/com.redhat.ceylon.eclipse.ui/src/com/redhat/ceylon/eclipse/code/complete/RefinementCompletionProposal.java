@@ -179,7 +179,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 params.add(tp.getType());
             }
         }
-        return d.getProducedReference(outerType, params);
+        return d.appliedReference(outerType, params);
     }
     
     private final CeylonParseController cpc;
