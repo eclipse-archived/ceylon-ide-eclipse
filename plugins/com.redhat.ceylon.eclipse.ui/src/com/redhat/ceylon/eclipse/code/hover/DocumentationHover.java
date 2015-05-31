@@ -92,6 +92,7 @@ import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
@@ -1750,9 +1751,9 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static List<Type> getTypeParameters(Declaration dec) {
-        if (dec instanceof Functional) {
+        if (dec instanceof Generic) {
             List<TypeParameter> typeParameters = 
-                    ((Functional) dec).getTypeParameters();
+                    ((Generic) dec).getTypeParameters();
             if (typeParameters.isEmpty()) {
                 return Collections.<Type>emptyList();
             }
@@ -2152,11 +2153,8 @@ public class DocumentationHover extends SourceInfoHover {
             pr = appliedReference(dec, node);
         }
         List<TypeParameter> typeParameters;
-        if (dec instanceof Functional) {
-            typeParameters = ((Functional) dec).getTypeParameters();
-        }
-        else if (dec instanceof Interface) {
-            typeParameters = ((Interface) dec).getTypeParameters();
+        if (dec instanceof Generic) {
+            typeParameters = ((Generic) dec).getTypeParameters();
         }
         else {
             typeParameters = Collections.emptyList();

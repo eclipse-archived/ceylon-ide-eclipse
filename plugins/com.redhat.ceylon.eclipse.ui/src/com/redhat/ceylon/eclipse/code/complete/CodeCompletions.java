@@ -217,9 +217,9 @@ public class CodeCompletions {
     private static void appendConstraints(Declaration d, Reference pr,
             Unit unit, String indent, boolean containsNewline, 
             StringBuilder result) {
-        if (d instanceof Functional) {
-            Functional fun = (Functional) d;
-            for (TypeParameter tp: fun.getTypeParameters()) {
+        if (d instanceof Generic) {
+            Generic generic = (Generic) d;
+            for (TypeParameter tp: generic.getTypeParameters()) {
                 List<Type> sts = tp.getSatisfiedTypes();
                 if (!sts.isEmpty()) {
                     result.append(extraIndent(extraIndent(indent, containsNewline), 
