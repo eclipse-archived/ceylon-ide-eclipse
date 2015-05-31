@@ -36,7 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     AstAbstractNode=Node,
     Visitor,
     VisitorAdaptor,
-    Util {
+    TreeUtil {
         formatPath
     },
     Message,
@@ -264,7 +264,7 @@ shared class DeltaBuilderFactory(
             }
 
             function isShared(Ast.PackageDescriptor descriptor)
-                    => Util.hasAnnotation(descriptor.annotationList, "shared", descriptor.unit);
+                    => TreeUtil.hasAnnotation(descriptor.annotationList, "shared", descriptor.unit);
 
             value sharedBefore = isShared(oldNode);
             value sharedNow = isShared(newNode);
@@ -282,8 +282,8 @@ shared class DeltaBuilderFactory(
     }
 
     function sameBackend([Ast.AnnotationList, TypecheckerUnit] oldNode, [Ast.AnnotationList, TypecheckerUnit] newNode)
-            => let (String? oldNative = Util.getNativeBackend(*oldNode),
-                    String? newNative = Util.getNativeBackend(*newNode))
+            => let (String? oldNative = TreeUtil.getNativeBackend(*oldNode),
+                    String? newNative = TreeUtil.getNativeBackend(*newNode))
                     if (exists oldNative, exists newNative)
                     then oldNative == newNative
                     else
@@ -331,7 +331,7 @@ shared class DeltaBuilderFactory(
             changes.add(ModuleImportAdded(
                 importedModuleName(newChild),
                 newChild.version.text.trim('"'.equals),
-                Util.hasAnnotation(newChild.annotationList, "shared", newChild.unit)
+                TreeUtil.hasAnnotation(newChild.annotationList, "shared", newChild.unit)
                 then visibleOutside else invisibleOutside
             ));
         }
@@ -403,7 +403,7 @@ shared class DeltaBuilderFactory(
             assert(exists newNode);
 
             function isOptional(Ast.ImportModule descriptor)
-                    => Util.hasAnnotation(descriptor.annotationList, "optional", descriptor.unit);
+                    => TreeUtil.hasAnnotation(descriptor.annotationList, "optional", descriptor.unit);
 
 
             if (any{
@@ -417,7 +417,7 @@ shared class DeltaBuilderFactory(
             }
 
             function isShared(Ast.ImportModule descriptor)
-                    => Util.hasAnnotation(descriptor.annotationList, "shared", descriptor.unit);
+                    => TreeUtil.hasAnnotation(descriptor.annotationList, "shared", descriptor.unit);
 
             value sharedBefore = isShared(oldNode);
             value sharedNow = isShared(newNode);
@@ -555,7 +555,7 @@ shared class DeltaBuilderFactory(
         shared Boolean hasStructuralChanges(Ast.Declaration oldAstDeclaration, Ast.Declaration newAstDeclaration, NodeComparisonListener? listener) {
 
             ModelDeclaration? identifierToDeclaration(Ast.Identifier id)
-                    => id.unit?.getImport(Util.name(id))?.declaration;
+                    => id.unit?.getImport(TreeUtil.name(id))?.declaration;
 
             object nodeSigner extends VisitorAdaptor() {
                 variable value builder = StringBuilder();
@@ -636,7 +636,7 @@ shared class DeltaBuilderFactory(
                 if (exists declaration) {
                     return declaration.name;
                 }
-                return Util.name(identifier);
+                return TreeUtil.name(identifier);
             }
 
             Set<String> annotationsAsStringSet(Ast.AnnotationList annotationList) {

@@ -28,7 +28,7 @@ import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Util;
+import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
@@ -323,7 +323,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                 if (p instanceof Tree.ParameterDeclaration) {
                     Tree.TypedDeclaration ptd = 
                             ((Tree.ParameterDeclaration) p).getTypedDeclaration();
-                    if (Util.hasAnnotation(ptd.getAnnotationList(), 
+                    if (TreeUtil.hasAnnotation(ptd.getAnnotationList(), 
                             "shared", ptd.getUnit())) {
                         addShared = false;
                     }

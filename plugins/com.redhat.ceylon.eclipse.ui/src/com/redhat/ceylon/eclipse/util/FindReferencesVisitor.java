@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.compiler.typechecker.tree.Util.formatPath;
+import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 
 import java.util.HashSet;
