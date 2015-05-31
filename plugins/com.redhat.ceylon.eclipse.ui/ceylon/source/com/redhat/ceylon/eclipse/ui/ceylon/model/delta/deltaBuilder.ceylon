@@ -37,7 +37,9 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Visitor,
     VisitorAdaptor,
     TreeUtil {
-        formatPath
+        formatPath,
+        hasAnnotation,
+        getNativeBackend
     },
     Message,
     NaturalVisitor
@@ -264,7 +266,7 @@ shared class DeltaBuilderFactory(
             }
 
             function isShared(Ast.PackageDescriptor descriptor)
-                    => TreeUtil.hasAnnotation(descriptor.annotationList, "shared", descriptor.unit);
+                    => hasAnnotation(descriptor.annotationList, "shared", descriptor.unit);
 
             value sharedBefore = isShared(oldNode);
             value sharedNow = isShared(newNode);
@@ -282,8 +284,8 @@ shared class DeltaBuilderFactory(
     }
 
     function sameBackend([Ast.AnnotationList, TypecheckerUnit] oldNode, [Ast.AnnotationList, TypecheckerUnit] newNode)
-            => let (String? oldNative = TreeUtil.getNativeBackend(*oldNode),
-                    String? newNative = TreeUtil.getNativeBackend(*newNode))
+            => let (String? oldNative = getNativeBackend(*oldNode),
+                    String? newNative = getNativeBackend(*newNode))
                     if (exists oldNative, exists newNative)
                     then oldNative == newNative
                     else
@@ -331,7 +333,7 @@ shared class DeltaBuilderFactory(
             changes.add(ModuleImportAdded(
                 importedModuleName(newChild),
                 newChild.version.text.trim('"'.equals),
-                TreeUtil.hasAnnotation(newChild.annotationList, "shared", newChild.unit)
+                hasAnnotation(newChild.annotationList, "shared", newChild.unit)
                 then visibleOutside else invisibleOutside
             ));
         }
@@ -403,7 +405,7 @@ shared class DeltaBuilderFactory(
             assert(exists newNode);
 
             function isOptional(Ast.ImportModule descriptor)
-                    => TreeUtil.hasAnnotation(descriptor.annotationList, "optional", descriptor.unit);
+                    => hasAnnotation(descriptor.annotationList, "optional", descriptor.unit);
 
 
             if (any{
@@ -417,7 +419,7 @@ shared class DeltaBuilderFactory(
             }
 
             function isShared(Ast.ImportModule descriptor)
-                    => TreeUtil.hasAnnotation(descriptor.annotationList, "shared", descriptor.unit);
+                    => hasAnnotation(descriptor.annotationList, "shared", descriptor.unit);
 
             value sharedBefore = isShared(oldNode);
             value sharedNow = isShared(newNode);
