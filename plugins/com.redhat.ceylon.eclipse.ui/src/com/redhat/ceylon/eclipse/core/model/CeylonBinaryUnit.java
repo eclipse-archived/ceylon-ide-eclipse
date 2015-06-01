@@ -72,10 +72,12 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
         return phasedUnit != null ? createPhasedUnitRef(phasedUnit) : null;
     }
 
+    @Override
     public String getSourceRelativePath() {
         return getModule().toSourceUnitRelativePath(getRelativePath());
     }
-
+    
+    @Override
     public String getCeylonSourceRelativePath() {
         return getModule().getCeylonDeclarationFile(getSourceRelativePath());
     }
@@ -89,7 +91,15 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
         return sourceArchivePath + "!/" + getSourceRelativePath();
     }
 
-
+    @Override
+    public String getCeylonSourceFullPath() {
+        String sourceArchivePath = getModule().getSourceArchivePath();
+        if (sourceArchivePath == null) {
+            return null;
+        }
+        return sourceArchivePath + "!/" + getCeylonSourceRelativePath();
+    }
+    
     @Override
     public IJavaElement toJavaElement(Declaration ceylonDeclaration) {
         return new CeylonToJavaMatcher(this).searchInClass(ceylonDeclaration);

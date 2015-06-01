@@ -26,7 +26,10 @@ public abstract class CeylonUnit extends IdeUnit {
     }
     
     abstract public String getSourceFullPath();
+    abstract public String getCeylonSourceFullPath();
     abstract public String getCeylonFileName();
+    abstract public String getSourceRelativePath();
+    abstract public String getCeylonSourceRelativePath();
     
     public Tree.CompilationUnit getCompilationUnit() {
         IdePhasedUnit pu = getPhasedUnit();

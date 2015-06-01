@@ -20,6 +20,21 @@ public abstract class SourceFile extends CeylonUnit {
     }
 
     @Override
+    public String getSourceRelativePath() {
+        return getRelativePath();
+    }
+
+    @Override
+    public String getCeylonSourceRelativePath() {
+        return getRelativePath();
+    }
+    
+    @Override
+    public String getCeylonSourceFullPath() {
+        return getSourceFullPath();
+    }
+
+    @Override
     public String getCeylonFileName() {
         return getFilename();
     }

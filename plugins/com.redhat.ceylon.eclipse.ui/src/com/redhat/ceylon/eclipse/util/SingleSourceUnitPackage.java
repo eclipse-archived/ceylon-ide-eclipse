@@ -44,7 +44,7 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.model.typechecker
     private boolean mustSearchInSourceFile(Unit modelUnit) {
         if (modelUnit instanceof CeylonUnit) {
             CeylonUnit ceylonUnit = (CeylonUnit) modelUnit;
-            String fullPathOfModelSourceUnit = ceylonUnit.getSourceFullPath();
+            String fullPathOfModelSourceUnit = ceylonUnit.getCeylonSourceFullPath();
             if (fullPathOfModelSourceUnit != null && fullPathOfModelSourceUnit.equals(fullPathOfSourceUnitToTypecheck)) {
                 return true;
             }

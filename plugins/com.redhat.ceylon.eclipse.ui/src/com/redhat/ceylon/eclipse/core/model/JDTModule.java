@@ -144,6 +144,12 @@ public class JDTModule extends LazyModule {
         
         public BinaryPhasedUnits() {
             for (String sourceRelativePath : sourceRelativePaths) {
+                if (sourceRelativePath.endsWith(".java")) {
+                    String ceylonRelativePath = javaImplFilesToCeylonDeclFiles.get(sourceRelativePath);
+                    if (ceylonRelativePath != null) {
+                        sourceRelativePath = ceylonRelativePath;
+                    }
+                }
                 putRelativePath(sourceRelativePath);
             }
         }
@@ -157,11 +163,11 @@ public class JDTModule extends LazyModule {
         @Override
         public ExternalPhasedUnit getPhasedUnit(String path) {
             if (! phasedUnitPerPath.containsKey(path)) {
-                if (path.endsWith(".ceylon")) {
+                if (path.endsWith(".java")) {
                     // Case of a Ceylon file with a Java implementation, the classesToSources key is the Java source file.
-                    String javaFileRelativePath = getJavaImplementationFile(path.replace(sourceArchivePath + "!/", ""));                        
-                    if (javaFileRelativePath != null) {
-                        return super.getPhasedUnit(sourceArchivePath + "!/" + javaFileRelativePath);
+                    String ceylonFileRelativePath = getCeylonDeclarationFile(path.replace(sourceArchivePath + "!/", ""));
+                    if (ceylonFileRelativePath != null) {
+                        return super.getPhasedUnit(sourceArchivePath + "!/" + ceylonFileRelativePath);
                     }
                 }
                 return null;
@@ -175,11 +181,11 @@ public class JDTModule extends LazyModule {
                 relativePath = relativePath.substring(1);
             }
             if (! relativePathToPath.containsKey(relativePath)) {
-                if (relativePath.endsWith(".ceylon")) {
+                if (relativePath.endsWith(".java")) {
                     // Case of a Ceylon file with a Java implementation, the classesToSources key is the Java source file.
-                    String javaFileRelativePath = getJavaImplementationFile(relativePath);                        
-                    if (javaFileRelativePath != null) {
-                        return super.getPhasedUnitFromRelativePath(javaFileRelativePath);
+                    String ceylonFileRelativePath = getCeylonDeclarationFile(relativePath);
+                    if (ceylonFileRelativePath != null) {
+                        return super.getPhasedUnitFromRelativePath(ceylonFileRelativePath);
                     }
                 }
                 return null;
@@ -915,54 +921,49 @@ public class JDTModule extends LazyModule {
                 try {
                     sourceArchive = moduleSourceMapper.getContext().getVfs().getFromZipFile(sourceArchiveFile);
                     
-                    String ceylonSourceUnitRelativePath = sourceUnitRelativePath; 
-                    if (sourceUnitRelativePath.endsWith(".java")) {
-                        ceylonSourceUnitRelativePath = javaImplFilesToCeylonDeclFiles.get(sourceUnitRelativePath);
-                    }
-
-                    VirtualFile archiveEntry = null;
-                    if (ceylonSourceUnitRelativePath != null) {
-                        archiveEntry = searchInSourceArchive(
+                    String ceylonSourceUnitRelativePath = getCeylonDeclarationFile(sourceUnitRelativePath);
+                    if (ceylonSourceUnitRelativePath !=null) {
+                        String ceylonSourceUnitFullPath = sourceArchivePath + "!/" + ceylonSourceUnitRelativePath; 
+                        VirtualFile archiveEntry = searchInSourceArchive(
                                 ceylonSourceUnitRelativePath, sourceArchive);
-                    }
-                    
-                    if (archiveEntry != null) {
-                        IProject project = moduleManager.getJavaProject().getProject();
-                        CeylonLexer lexer = new CeylonLexer(NewlineFixingStringStream.fromStream(archiveEntry.getInputStream(), project.getDefaultCharset()));
-                        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-                        CeylonParser parser = new CeylonParser(tokenStream);
-                        Tree.CompilationUnit cu = parser.compilationUnit();
-                        List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
-                        tokens.addAll(tokenStream.getTokens());
-                        if(originalProject == null) {
-                            phasedUnit = new ExternalPhasedUnit(archiveEntry, sourceArchive, cu, 
-                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens) {
-                                @Override
-                                protected boolean isAllowedToChangeModel(Declaration declaration) {
-                                    return !IdePhasedUnit.isCentralModelDeclaration(declaration);
-                                }
+                        if (archiveEntry != null) {
+                            IProject project = moduleManager.getJavaProject().getProject();
+                            CeylonLexer lexer = new CeylonLexer(NewlineFixingStringStream.fromStream(archiveEntry.getInputStream(), project.getDefaultCharset()));
+                            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+                            CeylonParser parser = new CeylonParser(tokenStream);
+                            Tree.CompilationUnit cu = parser.compilationUnit();
+                            List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
+                            tokens.addAll(tokenStream.getTokens());
+                            if(originalProject == null) {
+                                phasedUnit = new ExternalPhasedUnit(archiveEntry, sourceArchive, cu, 
+                                        new SingleSourceUnitPackage(pkg, ceylonSourceUnitFullPath), moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens) {
+                                    @Override
+                                    protected boolean isAllowedToChangeModel(Declaration declaration) {
+                                        return !IdePhasedUnit.isCentralModelDeclaration(declaration);
+                                    }
 
-                                @Override
-                                public void scanDeclarations() {
-                                    super.scanDeclarations();
-                                    IdePhasedUnit.addCentralModelOverloads(getUnit());
-                                }
-                                
-                            };
-                        } else {
-                            phasedUnit = new CrossProjectPhasedUnit(archiveEntry, sourceArchive, cu, 
-                                    new SingleSourceUnitPackage(pkg, sourceUnitFullPath), moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens, originalProject) {
-                                @Override
-                                protected boolean isAllowedToChangeModel(Declaration declaration) {
-                                    return !IdePhasedUnit.isCentralModelDeclaration(declaration);
-                                }
+                                    @Override
+                                    public void scanDeclarations() {
+                                        super.scanDeclarations();
+                                        IdePhasedUnit.addCentralModelOverloads(getUnit());
+                                    }
+                                    
+                                };
+                            } else {
+                                phasedUnit = new CrossProjectPhasedUnit(archiveEntry, sourceArchive, cu, 
+                                        new SingleSourceUnitPackage(pkg, ceylonSourceUnitFullPath), moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens, originalProject) {
+                                    @Override
+                                    protected boolean isAllowedToChangeModel(Declaration declaration) {
+                                        return !IdePhasedUnit.isCentralModelDeclaration(declaration);
+                                    }
 
-                                @Override
-                                public void scanDeclarations() {
-                                    super.scanDeclarations();
-                                    IdePhasedUnit.addCentralModelOverloads(getUnit());
-                                }
-                            };
+                                    @Override
+                                    public void scanDeclarations() {
+                                        super.scanDeclarations();
+                                        IdePhasedUnit.addCentralModelOverloads(getUnit());
+                                    }
+                                };
+                            }
                         }
                     }
                 } catch (Exception e) {
