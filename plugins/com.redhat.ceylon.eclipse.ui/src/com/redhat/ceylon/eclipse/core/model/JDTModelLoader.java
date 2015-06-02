@@ -125,12 +125,11 @@ import com.redhat.ceylon.model.loader.mirror.MethodMirror;
 import com.redhat.ceylon.model.loader.model.AnnotationProxyClass;
 import com.redhat.ceylon.model.loader.model.AnnotationProxyMethod;
 import com.redhat.ceylon.model.loader.model.LazyClass;
+import com.redhat.ceylon.model.loader.model.LazyFunction;
 import com.redhat.ceylon.model.loader.model.LazyInterface;
-import com.redhat.ceylon.model.loader.model.LazyMethod;
 import com.redhat.ceylon.model.loader.model.LazyModule;
 import com.redhat.ceylon.model.loader.model.LazyPackage;
 import com.redhat.ceylon.model.loader.model.LazyValue;
-import com.redhat.ceylon.model.typechecker.model.Annotation;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -1474,9 +1473,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     @Override
-    protected LazyMethod makeToplevelMethod(ClassMirror classMirror) {
+    protected LazyFunction makeToplevelMethod(ClassMirror classMirror) {
         if (classMirror instanceof SourceClass) {
-            return (LazyMethod) (((SourceClass) classMirror).getModelDeclaration());
+            return (LazyFunction) (((SourceClass) classMirror).getModelDeclaration());
         }
         return super.makeToplevelMethod(classMirror);
     }
@@ -1584,7 +1583,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     @Override
-    protected void setAnnotationConstructor(LazyMethod arg0, MethodMirror arg1) {
+    protected void setAnnotationConstructor(LazyFunction arg0, MethodMirror arg1) {
         annotationLoader.setAnnotationConstructor(arg0, arg1);
     }
 

@@ -20,8 +20,8 @@ import com.redhat.ceylon.model.loader.model.FieldValue;
 import com.redhat.ceylon.model.loader.model.JavaBeanValue;
 import com.redhat.ceylon.model.loader.model.JavaMethod;
 import com.redhat.ceylon.model.loader.model.LazyClass;
+import com.redhat.ceylon.model.loader.model.LazyFunction;
 import com.redhat.ceylon.model.loader.model.LazyInterface;
-import com.redhat.ceylon.model.loader.model.LazyMethod;
 import com.redhat.ceylon.model.loader.model.LazyValue;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Scope;
@@ -143,8 +143,8 @@ public class CeylonToJavaMatcher {
     private IJavaElement visit(IMethod javaMethod) {
         IBindingProvider mirror = null;
         
-        if (ceylonDeclaration instanceof LazyMethod) {
-            mirror = (IBindingProvider) ((LazyMethod) ceylonDeclaration).getMethodMirror();
+        if (ceylonDeclaration instanceof LazyFunction) {
+            mirror = (IBindingProvider) ((LazyFunction) ceylonDeclaration).getMethodMirror();
         }
         if (ceylonDeclaration instanceof JavaMethod) {
             mirror = (IBindingProvider) ((JavaMethod) ceylonDeclaration).mirror;

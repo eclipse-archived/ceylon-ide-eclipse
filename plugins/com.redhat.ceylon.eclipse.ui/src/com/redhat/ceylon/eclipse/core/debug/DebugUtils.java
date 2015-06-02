@@ -56,7 +56,7 @@ import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.LazyProducedType;
+import com.redhat.ceylon.model.typechecker.model.LazyType;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
@@ -540,7 +540,7 @@ public class DebugUtils {
                 for (int i = 0; i< typeParameters.size(); i++) {
                     typeArgumentMap.put(typeParameters.get(i), typeArguments.get(i));
                 }
-                return new LazyProducedType(unit) {
+                return new LazyType(unit) {
 
                     @Override
                     public Map<TypeParameter, Type> initTypeArguments() {
