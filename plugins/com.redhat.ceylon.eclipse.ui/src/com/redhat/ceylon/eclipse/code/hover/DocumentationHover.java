@@ -1416,10 +1416,12 @@ public class DocumentationHover extends SourceInfoHover {
             Declaration dec, Node node, Reference pr) {
         if (dec==null) return null;
         if (dec instanceof Value) {
-            TypeDeclaration val = 
-                    ((Value) dec).getTypeDeclaration();
-            if (val!=null && val.isAnonymous()) {
-                dec = val;
+            Value value = (Value) dec;
+            TypeDeclaration valueType = 
+                    value.getTypeDeclaration();
+            if (valueType!=null && valueType.isAnonymous() &&
+                    !value.getType().isTypeConstructor()) {
+                dec = valueType;
             }
         }
         Unit unit = controller==null ? 

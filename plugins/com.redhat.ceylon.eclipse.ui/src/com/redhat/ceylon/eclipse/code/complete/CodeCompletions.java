@@ -709,6 +709,9 @@ public class CodeCompletions {
             Reference pr, Unit unit, 
             StringBuilder result, 
             boolean descriptionOnly) {
+        if (d instanceof TypeAlias && d.isAnonymous()) {
+            return;
+        }
         if (d instanceof Class) {
             if (d.isAnonymous()) {
                 result.append("object");
@@ -757,7 +760,8 @@ public class CodeCompletions {
                 result.append("dynamic");
             }
             else if (td instanceof Value && 
-                    type.getDeclaration().isAnonymous()) {
+                    type.getDeclaration().isAnonymous() &&
+                    !type.isTypeConstructor()) {
                 result.append("object");
             }
             else if (d instanceof Function) {
