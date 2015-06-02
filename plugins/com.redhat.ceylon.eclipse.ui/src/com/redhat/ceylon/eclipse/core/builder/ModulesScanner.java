@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -111,8 +112,8 @@ final class ModulesScanner implements IResourceVisitor {
                         protected ProjectPhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
                             return new ProjectPhasedUnit(virtualFile, srcDir, cu, pkg, 
                                     moduleManager, moduleSourceMapper, typeChecker, tokenStream.getTokens()) {
-                                protected boolean reuseExistingDescriptorModels() {
-                                    return true;
+                                protected boolean isAllowedToChangeModel(Declaration declaration) {
+                                    return false;
                                 };
                             };
                         }
