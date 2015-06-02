@@ -19,7 +19,9 @@ import static org.eclipse.jdt.core.search.SearchPattern.createOrPattern;
 import static org.eclipse.jdt.core.search.SearchPattern.createPattern;
 import static org.eclipse.jdt.internal.core.util.Util.getUnresolvedJavaElement;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,6 +68,7 @@ import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnResolvedGeneratedType;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
+import com.redhat.ceylon.model.loader.NamingBase;
 import com.redhat.ceylon.model.loader.NamingBase.Prefix;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -313,6 +316,155 @@ public class JavaSearch {
         return null;
     }
     
+    public static class JdtDefaultArgumentMethodSearch extends DefaultArgumentMethodSearch<IMethod> {
+        @Override
+        protected String getMethodName(IMethod method) {
+            return method.getElementName();
+        }
+
+        @Override
+        protected boolean isMethodPrivate(IMethod method) {
+            try {
+                return (method.getFlags() & Flags.AccPrivate) != 0;
+            } catch (JavaModelException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        @Override
+        protected List<IMethod> getMethodsOfDeclaringType(IMethod method, String searchedName) {
+            IType declaringType = method.getDeclaringType();
+            if (declaringType == null) {
+                return Collections.emptyList();
+            }
+            List<IMethod> foundMethods = new ArrayList<>();
+            try {
+                for (IMethod m : declaringType.getMethods()) {
+                    if (searchedName == null || searchedName.equals(m.getElementName())) {
+                        foundMethods.add(m);
+                    }
+                }
+            } catch (JavaModelException e) {
+                e.printStackTrace();
+                return Collections.emptyList();
+            }
+            return foundMethods;
+        }
+
+        @Override
+        protected List<String> getParameterNames(IMethod method) {
+            try {
+                return Arrays.asList(method.getParameterNames());
+            } catch (JavaModelException e) {
+                e.printStackTrace();
+                return Collections.emptyList();
+            }
+        }
+    }
+    
+    public static abstract class DefaultArgumentMethodSearch<MethodType> {
+        public class Result {
+            public Result(MethodType defaultArgumentMethod,
+                    String defaultArgumentName,
+                    MethodType overloadedMethod,
+                    MethodType implementationMethod) {
+                this.defaultArgumentMethod = defaultArgumentMethod;
+                this.defaultArgumentName = defaultArgumentName;
+                this.overloadedMethod = overloadedMethod;
+                this.implementationMethod = implementationMethod;
+            }
+            public MethodType defaultArgumentMethod;
+            public String defaultArgumentName;
+            public MethodType overloadedMethod;
+            public MethodType implementationMethod;
+        }
+        
+        protected abstract String getMethodName(MethodType method);
+        protected abstract boolean isMethodPrivate(MethodType method);
+        protected abstract List<MethodType> getMethodsOfDeclaringType(MethodType method, String name);
+        protected abstract List<String> getParameterNames(MethodType method);
+        
+        public Result search(MethodType method) {
+            String methodName = getMethodName(method);
+            if (methodName.endsWith(NamingBase.Suffix.$canonical$.name())) {
+                return new Result(null, null, null, method);
+            }
+            
+            String[] parts = methodName.split("\\$");
+            if (methodName.startsWith("$") && 
+                    parts.length > 0) {
+                parts[0] = "$" + parts[0];
+            }
+            String searchedMethodName = "";
+            boolean canBeADefaultArgumentMethod;
+            if (parts.length == 2 &&
+                    ! methodName.endsWith("$")) {
+                canBeADefaultArgumentMethod = true;
+                searchedMethodName = parts[0];
+                if (isMethodPrivate(method)) {
+                    searchedMethodName += NamingBase.Suffix.$priv$.name();
+                }
+            } else {
+                canBeADefaultArgumentMethod = false;
+                searchedMethodName = methodName;
+            }
+            
+            MethodType canonicalMethod = null;
+            List<MethodType> canonicalMethodSearchResult = getMethodsOfDeclaringType(method, searchedMethodName + NamingBase.Suffix.$canonical$.name());
+            if (canonicalMethodSearchResult != null && 
+                    ! canonicalMethodSearchResult.isEmpty()) {
+                canonicalMethod = canonicalMethodSearchResult.get(0);
+            } else {
+                ArrayList<String> defaultArguments = new ArrayList<>();
+                List<MethodType> defaultArgumentMethods = new ArrayList<>();
+                for (MethodType m : getMethodsOfDeclaringType(method, null)) {
+                    if (getMethodName(m).startsWith(parts[0] + "$")) {
+                        defaultArgumentMethods.add(m);
+                    }
+                }
+                if (! defaultArgumentMethods.isEmpty()) {
+                    for (MethodType defaultArgumentMethod : defaultArgumentMethods) {
+                        String argumentName = getMethodName(defaultArgumentMethod).substring(parts[0].length() + 1);
+                        if (! argumentName.isEmpty()) {
+                            defaultArguments.add(argumentName);
+                        }
+                    }
+                }
+                if (! defaultArguments.isEmpty()) {
+                    List<MethodType> overloadedMethods = getMethodsOfDeclaringType(method, parts[0]);
+                    if (overloadedMethods.size() > 1) {
+                        for (MethodType overloadedMethod : overloadedMethods) {
+                            List<String> argumentNames = getParameterNames(overloadedMethod);
+                            if (argumentNames.size() < defaultArguments.size()) {
+                                continue;
+                            }
+                            if (! argumentNames.containsAll(defaultArguments)) {
+                                continue;
+                            }
+                            canonicalMethod = overloadedMethod;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (canonicalMethod != null) {
+                if (canBeADefaultArgumentMethod) {
+                    if (getParameterNames(canonicalMethod).contains(parts[1])) {
+                        return new Result(method, parts[1], null, canonicalMethod);
+                    }
+                } else {
+                    if (canonicalMethod.equals(method)) {
+                        return new Result(null, null, null, canonicalMethod);
+                    } else {
+                        return new Result(null, null, method, canonicalMethod);
+                    }
+                }
+            }
+            return new Result(null, null, null, null);
+        }
+    }
+    
     /*
      * returns null if it's a method with no Ceylon equivalent
      * (internal getter of a Ceylon object value)
@@ -353,30 +505,16 @@ public class JavaSearch {
             } else if (name.equals("hashCode")) {
                 name = "hash";
             } else if (name.contains("$")) {
-                String[] parts = name.split("\\$");
-                if (parts.length == 2) {
-                    IType declaringType = dec.getDeclaringType();
-                    if (isCeylon(declaringType)) {
-                        IMethod[] methodsWithTheSameName;
-                        try {
-                            methodsWithTheSameName = 
-                                    declaringType.getMethods();
-                            if (methodsWithTheSameName != null) {
-                                label:
-                                for (IMethod m: methodsWithTheSameName) {
-                                    for (String argName: m.getParameterNames()) {
-                                        if (parts[1].equals(argName)) {
-                                            name = argName;
-                                            break label;
-                                        }
-                                    }
-                                }
-                            }
-                        } catch (JavaModelException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                JdtDefaultArgumentMethodSearch.Result searchResult = 
+                        new JdtDefaultArgumentMethodSearch().search((IMethod)dec);
+                if (searchResult.defaultArgumentName != null) {
+                    name = searchResult.defaultArgumentName;
                 }
+            }
+            if (name.endsWith(Suffix.$canonical$.name())) {
+                name = name.substring(0, 
+                        name.length() - 
+                        Suffix.$canonical$.name().length());
             }
             if (name.endsWith(Suffix.$priv$.name())) {
                 name = name.substring(0, 
@@ -604,16 +742,27 @@ public class JavaSearch {
                 }
             }
         } else {
-            if ((typeOrMethod instanceof IMethod) 
-                    && declaringElement.getElementName() != null
+            if (typeOrMethod instanceof IMethod) {
+                IMethod method = (IMethod) typeOrMethod;
+                String methodName = method.getElementName();
+                if (declaringElement.getElementName() != null
                     && declaringElement.getElementName()
-                        .equals(typeOrMethod.getElementName() + "_")
+                        .equals(methodName + "_")
                     && isCeylonMethod(declaringElement)) {
-                IMember declaringElementDeclaringElement = 
-                        getDeclaringElement(declaringElement);
-                return declaringElementDeclaringElement;
+                    IMember declaringElementDeclaringElement = 
+                            getDeclaringElement(declaringElement);
+                    return declaringElementDeclaringElement;
+                } else if (methodName.contains("$")) {
+                    if (declaringElement instanceof IType) {
+                        JdtDefaultArgumentMethodSearch.Result searchResult = 
+                                new JdtDefaultArgumentMethodSearch().search(method);
+                        if (searchResult.defaultArgumentMethod != null) {
+                            return searchResult.implementationMethod;
+                        }
+                    }
+                }
             }
-        }
+        } 
         return declaringElement;
     }
 

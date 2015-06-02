@@ -77,6 +77,7 @@ import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -720,6 +721,13 @@ public class CeylonDebugHover extends SourceInfoHover {
             if (container != null
                     && frameMethodDeclaration != null) {
                 String variableName = declaration.getName();
+                if (frameMethodDeclaration instanceof Value &&
+                        ((Value)frameMethodDeclaration).isParameter()) {
+                    Scope frameMethodContainer = frameMethodDeclaration.getContainer();
+                    if (frameMethodContainer instanceof Declaration) {
+                        frameMethodDeclaration = (Declaration) frameMethodContainer;
+                    }
+                }
                 if (container.equals(frameMethodDeclaration)) {
                     return unBoxIfVariableBoxed(findCeylonVariable(frame, variableName));
                 } else if (container instanceof FunctionOrValue && ! frame.isStatic()) {

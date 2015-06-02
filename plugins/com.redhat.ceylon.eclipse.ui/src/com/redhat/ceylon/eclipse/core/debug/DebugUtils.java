@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.core.debug;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,7 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
+import com.redhat.ceylon.eclipse.util.JavaSearch.DefaultArgumentMethodSearch;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -647,6 +649,42 @@ public class DebugUtils {
                 isCeylonGeneratedMethodToSkipCompletely(method);
     }
 
+    public static class JdiDefaultArgumentMethodSearch extends DefaultArgumentMethodSearch<Method> {
+        @Override
+        protected String getMethodName(Method method) {
+            return method.name();
+        }
+
+        @Override
+        protected boolean isMethodPrivate(Method method) {
+            return method.isPrivate();
+        }
+
+        @Override
+        protected List<Method> getMethodsOfDeclaringType(Method method, String searchedName) {
+            if (searchedName == null) {
+                return method.declaringType().methods();
+            } else {
+                return method.declaringType().methodsByName(searchedName);
+            }
+        }
+
+        @Override
+        protected List<String> getParameterNames(Method method) {
+            List<String> argumentNames = Collections.emptyList();
+            try {
+                List<LocalVariable> arguments = method.arguments();
+                argumentNames = new ArrayList<>(arguments.size());
+                for (LocalVariable arg : arguments) {
+                    argumentNames.add(arg.name());
+                }
+            } catch (AbsentInformationException e) {
+                e.printStackTrace();
+            }
+            return argumentNames;
+        }
+    }
+    
     public static boolean isCeylonGeneratedMethodToStepThrough(Method method) {
         Location location = method.location();
         ReferenceType declaringType = location.declaringType();
@@ -695,87 +733,23 @@ public class DebugUtils {
                     && debugTarget.isStepFiltersEnabled() 
                     && debugTarget.isFiltersDefaultArgumentsCode();
         }
-
-        boolean isDefaultArgumentMethod = false;
-        String[] parts = methodName.split("\\$");
-        if (parts.length == 2) {
-            CeylonJDIDebugTarget debugTarget = getDebugTarget();
-            if(debugTarget != null 
-                    && debugTarget.isStepFiltersEnabled() 
-                    && debugTarget.isFiltersDefaultArgumentsCode()) {
-                List<Method> methodsWithTheSameName = method.declaringType().methodsByName(parts[0]);
-                if (methodsWithTheSameName != null) {
-                    label:
-                    for (Method m : methodsWithTheSameName) {
-                        try {
-                            for (LocalVariable arg : m.arguments()) {
-                                if (parts[1].equals(arg.name())) {
-                                    isDefaultArgumentMethod = true;
-                                    break label;
-                                }
-                            }
-                        } catch (AbsentInformationException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        } else {
-            List<Method> defaultArgumentMethods = new ArrayList<>();
-            for (Method m : method.declaringType().methods()) {
-                if (m.name().startsWith(parts[0] + "$")) {
-                    defaultArgumentMethods.add(m);
-                }
-            }
-            if (! defaultArgumentMethods.isEmpty()) {
-                ArrayList<String> defaultArguments = new ArrayList<>(defaultArgumentMethods.size());
-                for (Method defaultArgumentMethod : defaultArgumentMethods) {
-                    String argumentName = defaultArgumentMethod.name().substring(parts[0].length() + 1);
-                    if (! argumentName.isEmpty()) {
-                        defaultArguments.add(argumentName);
-                    }
-                }
-                
-                List<Method> overloadedMethods = method.declaringType().methodsByName(parts[0]);
-                Method methodWithAllArguments = null;
-                if (overloadedMethods.size() > 1) {
-                    for (Method overloadedMethod : overloadedMethods) {
-                        if (overloadedMethod.equals(method)) {
-                            continue;
-                        }
-                        
-                        try {
-                            List<LocalVariable> arguments = overloadedMethod.arguments();
-                            if (arguments.size() < defaultArguments.size()) {
-                                continue;
-                            }
-                            List<String> argumentNames = new ArrayList<>(arguments.size());
-                            for (LocalVariable arg : arguments) {
-                                argumentNames.add(arg.name());
-                            }
-                            
-                            if (! argumentNames.containsAll(defaultArguments)) {
-                                continue;
-                            }
-                            methodWithAllArguments = overloadedMethod;
-                            break;
-                        } catch (AbsentInformationException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                if (methodWithAllArguments != null) {
-                    isDefaultArgumentMethod = true;
-                }
-            }
-        }
-        if (isDefaultArgumentMethod) {
+        
+        JdiDefaultArgumentMethodSearch.Result searchResult = 
+                new JdiDefaultArgumentMethodSearch().search(method);
+        
+        if (searchResult.overloadedMethod != null) {
             return true;
         }
-
+        
+        if (searchResult.defaultArgumentMethod != null) {
+            CeylonJDIDebugTarget debugTarget = getDebugTarget();
+            return debugTarget != null 
+                    && debugTarget.isStepFiltersEnabled() 
+                    && debugTarget.isFiltersDefaultArgumentsCode();
+        }
         return false;
     }
-
+    
     public static boolean isJavaGeneratedMethodToStepThrough(Method method) {
         if (method.isSynthetic()) {
             if (method.name().startsWith("access$")) {
