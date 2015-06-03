@@ -1195,6 +1195,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
                     curDoc.addDocumentListener(documentListener);
                 }
                 initializeParseController();
+                scheduleParsing();
             }
         }
     };
