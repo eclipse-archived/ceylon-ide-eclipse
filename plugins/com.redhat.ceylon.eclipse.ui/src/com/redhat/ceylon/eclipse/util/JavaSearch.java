@@ -496,10 +496,13 @@ public class JavaSearch {
                 }
             } else if (name.startsWith("$")) {
                 name = name.substring(1);
-            } else if (name.startsWith("get") ||
-                     name.startsWith("set")) {
-                name = Character.toLowerCase(name.charAt(3)) + 
-                        name.substring(4);
+            } else if ((name.startsWith("get") ||
+                     name.startsWith("set")) && name.length() > 3) {
+                StringBuffer newName = new StringBuffer(Character.toLowerCase(name.charAt(3)));
+                if (name.length() > 4) { 
+                        newName.append(name.substring(4));
+                }
+                name = newName.toString();
             } else if (name.equals("toString")) {
                name = "string";
             } else if (name.equals("hashCode")) {
