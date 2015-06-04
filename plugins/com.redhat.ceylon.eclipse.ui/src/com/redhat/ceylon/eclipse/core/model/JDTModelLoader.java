@@ -1406,9 +1406,10 @@ public class JDTModelLoader extends AbstractModelLoader {
                         @Override
                         public void loadFromSource(Tree.Declaration decl) {
                             if (decl.getIdentifier()!=null) {
-
-                                if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isNativeFor(
-                                        decl, Backend.Java.nativeAnnotation)) {
+                                String nativeBackend = getNative(decl);
+                                if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() &&
+                                        nativeBackend != null && 
+                                        !Backend.Java.nativeAnnotation.equals(nativeBackend)) {
                                     return;
                                 }
                                 String fqn = getToplevelQualifiedName(pkgName, decl.getIdentifier().getText());
@@ -1587,26 +1588,29 @@ public class JDTModelLoader extends AbstractModelLoader {
         annotationLoader.setAnnotationConstructor(arg0, arg1);
     }
 
-    protected boolean isNativeFor(Tree.Declaration decl,
-            String searchedBackend) {
-        boolean isNativeForSearchedBackend = false;
+    protected String getNative(Tree.Declaration decl) {
         for (Tree.Annotation annotation : decl.getAnnotationList().getAnnotations()) {
             String text = annotation.getPrimary().getToken().getText();
             if (text != null && text.equals("native")) {
+                String backend = "";
                 Tree.PositionalArgumentList pal = annotation.getPositionalArgumentList();
                 if (pal != null) {
                     List<PositionalArgument> pas = pal.getPositionalArguments();
                     if (pas != null && !pas.isEmpty()) {
                         PositionalArgument backendArg = pas.get(0);
                         String argText = backendArg.getEndToken().getText();
-                        if (("\""+ searchedBackend + "\"").equals(argText)) {
-                            isNativeForSearchedBackend = true;
-                            break;
+                        if (argText.startsWith("\"")) {
+                            argText = argText.substring(1);
                         }
+                        if (argText.endsWith("\"")) {
+                            argText = argText.substring(0, argText.length()-1);
+                        }
+                        backend = argText;
                     }
                 }
+                return backend;
             }
         }
-        return isNativeForSearchedBackend;
+        return null;
     }
 }
