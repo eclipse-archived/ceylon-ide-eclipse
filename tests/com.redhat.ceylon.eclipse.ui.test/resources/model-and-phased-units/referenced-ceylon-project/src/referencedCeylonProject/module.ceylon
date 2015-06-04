@@ -1,1 +1,1 @@
-module referencedCeylonProject "1.0.0" {}
+native("jvm") module referencedCeylonProject "1.0.0" {}
