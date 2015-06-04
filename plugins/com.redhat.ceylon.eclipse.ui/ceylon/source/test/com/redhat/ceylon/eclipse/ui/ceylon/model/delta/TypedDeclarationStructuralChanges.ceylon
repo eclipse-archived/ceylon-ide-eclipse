@@ -317,7 +317,7 @@ test void defaultedTypeAdded() {
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
             assert(comparisons.contains(["dir::test", "type",
-                "Type[[ceylon.language::Integer, ceylon.language::Integer]]"
+                "Type[ceylon.language::Integer[2]]"
                         -> "Type[[ceylon.language::Integer, ceylon.language::Integer=]]"]));
         }
     };
