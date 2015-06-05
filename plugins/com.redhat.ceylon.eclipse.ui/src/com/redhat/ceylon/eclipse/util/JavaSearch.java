@@ -37,6 +37,7 @@ import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMemberValuePair;
 import org.eclipse.jdt.core.IMethod;
@@ -354,7 +355,23 @@ public class JavaSearch {
 
         @Override
         protected List<String> getParameterNames(IMethod method) {
+            List<String> paramNames = new ArrayList<>();
             try {
+                for (ILocalVariable param : method.getParameters()) {
+                    String paramName = null;
+                    IAnnotation nameAnnotation = param.getAnnotation(CEYLON_NAME_ANNOTATION);
+                    if (nameAnnotation != null && nameAnnotation.exists()) {
+                        IMemberValuePair[] valuePairs = nameAnnotation.getMemberValuePairs();
+                        if (valuePairs != null && 
+                                valuePairs.length > 0) {
+                            paramName = (String) valuePairs[0].getValue();
+                        }
+                    }
+                    if (paramName == null) {
+                        paramName = param.getElementName();
+                    }
+                    paramNames.add(paramName);
+                }
                 return Arrays.asList(method.getParameterNames());
             } catch (JavaModelException e) {
                 e.printStackTrace();
