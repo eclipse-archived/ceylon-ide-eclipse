@@ -17,7 +17,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	<properties>
 		<!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
 		<platformSystemProperties></platformSystemProperties>
-        <tycho.testArgLine></tycho.testArgLine>
+        <tycho.testArgLine>-ea</tycho.testArgLine>
 	</properties>
 	<build>
 	    <pluginManagement>

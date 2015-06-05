@@ -18,7 +18,7 @@ import test.com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
 test void addTopLevel() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test() {}
                  ";
@@ -28,7 +28,7 @@ test void addTopLevel() {
                  shared void test2() {}
                  void hidden() {}
                  ";
-        expectedDelta = 
+        expectedDelta =
             RegularCompilationUnitDeltaMockup {
                 changedElementString = "Unit[test.ceylon]";
                 changes = { TopLevelDeclarationAdded("test2", visibleOutside),
@@ -46,20 +46,20 @@ test void removeTopLevel() {
                  shared void test() {}
                  void hidden() {}
                  ";
-        newContents = 
+        newContents =
                 "
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = {};
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { removed };
                 },
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[hidden]";
+                    changedElementString = "Function[hidden]";
                     changes = { removed };
                 }
             };
@@ -70,7 +70,7 @@ test void removeTopLevel() {
 test void changeToplevelName() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test() {}
                  ";
@@ -78,13 +78,13 @@ test void changeToplevelName() {
                 "
                  shared void testChanged() {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { TopLevelDeclarationAdded("testChanged", visibleOutside) };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { removed };
                     childrenDeltas = {};
                 }

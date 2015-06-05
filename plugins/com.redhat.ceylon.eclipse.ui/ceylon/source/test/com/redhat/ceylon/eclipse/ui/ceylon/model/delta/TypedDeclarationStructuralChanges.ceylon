@@ -16,7 +16,7 @@ import test.com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
 test void simpleTypeChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Float test() => nothing;
                  ";
@@ -24,20 +24,20 @@ test void simpleTypeChanged() {
                 "
                  shared Integer test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
+            assert(comparisons.contains(["dir::test", "type",
                 "Type[ceylon.language::Float]" -> "Type[ceylon.language::Integer]"]));
         }
     };
@@ -46,7 +46,7 @@ test void simpleTypeChanged() {
 test void parametrizedTypeChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Comparable<Float> test() => nothing;
                  ";
@@ -54,21 +54,21 @@ test void parametrizedTypeChanged() {
                 "
                  shared Comparable<Integer> test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
-                "Type[ceylon.language::Comparable<ceylon.language::Float>]" 
+            assert(comparisons.contains(["dir::test", "type",
+                "Type[ceylon.language::Comparable<ceylon.language::Float>]"
                         -> "Type[ceylon.language::Comparable<ceylon.language::Integer>]"]));
         }
     };
@@ -77,7 +77,7 @@ test void parametrizedTypeChanged() {
 test void aliasedTypeRecognized() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Integer test() => nothing;
                  ";
@@ -86,21 +86,21 @@ test void aliasedTypeRecognized() {
                  class Integer() {}
                  shared Integer test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { TopLevelDeclarationAdded ("Integer", invisibleOutside) };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
-                "Type[ceylon.language::Integer]" 
+            assert(comparisons.contains(["dir::test", "type",
+                "Type[ceylon.language::Integer]"
                         -> "Type[dir::Integer]"]));
         }
     };
@@ -109,7 +109,7 @@ test void aliasedTypeRecognized() {
 test void equivalentTypeNamesChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Iterable<Float  > test() => nothing;
                  ";
@@ -117,15 +117,15 @@ test void equivalentTypeNamesChanged() {
                 "
                  shared {Float*} test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = { };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
-                "Type[{ceylon.language::Float*}]" 
+            assert(comparisons.contains(["dir::test", "type",
+                "Type[{ceylon.language::Float*}]"
                         -> "Type[{ceylon.language::Float*}]"]));
         }
     };
@@ -134,7 +134,7 @@ test void equivalentTypeNamesChanged() {
 test void genericTypeChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Comparable<Type> test<Type>() => nothing;
                  ";
@@ -142,21 +142,21 @@ test void genericTypeChanged() {
                 "
                  shared Comparable<Type2> test<Type2>() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
-                "Type[ceylon.language::Comparable<Type>]" 
+            assert(comparisons.contains(["dir::test", "type",
+                "Type[ceylon.language::Comparable<Type>]"
                         -> "Type[ceylon.language::Comparable<Type2>]"]));
         }
     };
@@ -165,7 +165,7 @@ test void genericTypeChanged() {
 test void voidTypeChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test() {}
                  ";
@@ -173,21 +173,21 @@ test void voidTypeChanged() {
                 "
                  shared Anything test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
-                "VoidModifier[ceylon.language::Anything]" 
+            assert(comparisons.contains(["dir::test", "type",
+                "VoidModifier[ceylon.language::Anything]"
                         -> "Type[ceylon.language::Anything]"]));
         }
     };
@@ -196,7 +196,7 @@ test void voidTypeChanged() {
 test void typeMadeOptional() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Integer test() => nothing;
                  ";
@@ -204,33 +204,33 @@ test void typeMadeOptional() {
                 "
                  shared Integer? test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
-                "Type[ceylon.language::Integer]" 
+            assert(comparisons.contains(["dir::test", "type",
+                "Type[ceylon.language::Integer]"
                         -> "Type[ceylon.language::Integer?]"]));
         }
     };
 }
 
-"For the moment, since the comparison is based on the fully-qualified 
- ProducedType name, union of types given in a different order is considered a 
+"For the moment, since the comparison is based on the fully-qualified
+ ProducedType name, union of types given in a different order is considered a
  structural change"
 test void unionOrderChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Integer|Float test() => nothing;
                  ";
@@ -238,33 +238,33 @@ test void unionOrderChanged() {
                 "
                  shared Float|Integer test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
-                "Type[ceylon.language::Integer|ceylon.language::Float]" 
+            assert(comparisons.contains(["dir::test", "type",
+                "Type[ceylon.language::Integer|ceylon.language::Float]"
                         -> "Type[ceylon.language::Float|ceylon.language::Integer]"]));
         }
     };
 }
 
-"For the moment, since the comparison is based on the fully-qualified 
- ProducedType name, intersection of types given in a different order is considered a 
+"For the moment, since the comparison is based on the fully-qualified
+ ProducedType name, intersection of types given in a different order is considered a
  structural change"
 test void intersectionOrderChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Integer&Object test() => nothing;
                  ";
@@ -272,21 +272,21 @@ test void intersectionOrderChanged() {
                 "
                  shared Object&Integer test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
-                "Type[ceylon.language::Integer&ceylon.language::Object]" 
+            assert(comparisons.contains(["dir::test", "type",
+                "Type[ceylon.language::Integer&ceylon.language::Object]"
                         -> "Type[ceylon.language::Object&ceylon.language::Integer]"]));
         }
     };
@@ -295,7 +295,7 @@ test void intersectionOrderChanged() {
 test void defaultedTypeAdded() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared [Integer, Integer] test() => nothing;
                  ";
@@ -303,21 +303,21 @@ test void defaultedTypeAdded() {
                 "
                  shared [Integer, Integer=] test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
-                "Type[[ceylon.language::Integer, ceylon.language::Integer]]"
+            assert(comparisons.contains(["dir::test", "type",
+                "Type[ceylon.language::Integer[2]]"
                         -> "Type[[ceylon.language::Integer, ceylon.language::Integer=]]"]));
         }
     };
@@ -326,7 +326,7 @@ test void defaultedTypeAdded() {
 test void useSiteVarianceAdded() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Array<Character[]> test() => nothing;
                  ";
@@ -334,20 +334,20 @@ test void useSiteVarianceAdded() {
                 "
                  shared Array<out Character[]> test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
+            assert(comparisons.contains(["dir::test", "type",
                 "Type[ceylon.language::Array<ceylon.language::Character[]>]"
                         -> "Type[ceylon.language::Array<out ceylon.language::Character[]>]"]));
         }
@@ -357,7 +357,7 @@ test void useSiteVarianceAdded() {
 test void useSiteVarianceFlipped() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Array<in Character[]> test() => nothing;
                  ";
@@ -365,20 +365,20 @@ test void useSiteVarianceFlipped() {
                 "
                  shared Array<out Character[]> test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "type", 
+            assert(comparisons.contains(["dir::test", "type",
                 "Type[ceylon.language::Array<in ceylon.language::Character[]>]"
                         -> "Type[ceylon.language::Array<out ceylon.language::Character[]>]"]));
         }

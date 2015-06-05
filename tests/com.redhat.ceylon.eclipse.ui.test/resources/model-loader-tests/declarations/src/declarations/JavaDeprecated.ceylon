@@ -1,3 +1,0 @@
-void javaDeprecatedMethod(JavaDeprecated t){
-    
-}

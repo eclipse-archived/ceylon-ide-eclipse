@@ -13,7 +13,7 @@ import test.com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
 test void annotationErrorAdded() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test() {}
                  ";
@@ -21,13 +21,13 @@ test void annotationErrorAdded() {
                 "
                  shared unknownAnnotation void test() {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
@@ -39,7 +39,7 @@ test void annotationErrorAdded() {
 test void annotationErrorChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared unknownAnnotation void test() {}
                  ";
@@ -47,13 +47,13 @@ test void annotationErrorChanged() {
                 "
                  shared otherUnknownAnnotation void test() {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
@@ -65,7 +65,7 @@ test void annotationErrorChanged() {
 test void typeErrorAdded() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared Anything test() => nothing;
                  ";
@@ -73,13 +73,13 @@ test void typeErrorAdded() {
                 "
                  shared UnknownType test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
@@ -91,7 +91,7 @@ test void typeErrorAdded() {
 test void typeErrorChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared UnknownType test() => nothing;
                  ";
@@ -99,13 +99,13 @@ test void typeErrorChanged() {
                 "
                  shared OtherUnknownType test() => nothing;
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
@@ -117,7 +117,7 @@ test void typeErrorChanged() {
 test void innerErrorAdded() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test() {
                      print(nothing);
@@ -129,7 +129,7 @@ test void innerErrorAdded() {
                      print(unknown);
                  }
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };

@@ -1,4 +1,4 @@
-module mainModule "1.0.0" {
+native("jvm") module mainModule "1.0.0" {
     import binary_only_external_module "1.0.0";
     import source_and_binary_external_module "1.0.0";
     import referencedCeylonProject "1.0.0";

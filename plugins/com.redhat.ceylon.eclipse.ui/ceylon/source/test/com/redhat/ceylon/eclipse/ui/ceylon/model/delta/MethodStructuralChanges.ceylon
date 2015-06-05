@@ -10,7 +10,7 @@ import ceylon.test {
 test void methodParametersChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test(Integer a) {}
                  ";
@@ -18,20 +18,20 @@ test void methodParametersChanged() {
                 "
                  shared void test(Integer a, Float b) {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "parameterLists", 
+            assert(comparisons.contains(["dir::test", "parameterLists",
                 "ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Identifier[a]Type[ceylon.language::Integer]]]]"
                         -> "ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Identifier[a]Type[ceylon.language::Integer]]]"
                                 +"ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Identifier[b]Type[ceylon.language::Float]]]]"]));
@@ -42,7 +42,7 @@ test void methodParametersChanged() {
 test void methodParameterNameChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test(Integer a) {}
                  ";
@@ -50,20 +50,20 @@ test void methodParameterNameChanged() {
                 "
                  shared void test(Integer aChanged) {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "parameterLists", 
+            assert(comparisons.contains(["dir::test", "parameterLists",
                 "ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Identifier[a]Type[ceylon.language::Integer]]]]"
                         -> "ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Identifier[aChanged]Type[ceylon.language::Integer]]]]"]));
         }
@@ -73,7 +73,7 @@ test void methodParameterNameChanged() {
 test void methodParameterDefaultValueAdded() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test(Integer a) {}
                  ";
@@ -81,20 +81,20 @@ test void methodParameterDefaultValueAdded() {
                 "
                  shared void test(Integer a=0) {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "parameterLists", 
+            assert(comparisons.contains(["dir::test", "parameterLists",
                 "ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Identifier[a]Type[ceylon.language::Integer]]]]"
              -> "ParameterList[ValueParameterDeclaration[SpecifierExpression[Expression[NaturalLiteral[]]]AttributeDeclaration[AnnotationList[]Identifier[a]Type[ceylon.language::Integer]]]]"]));
         }
@@ -104,7 +104,7 @@ test void methodParameterDefaultValueAdded() {
 test void methodParameterDefaultValueTypeChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test(Object a=0) {}
                  ";
@@ -112,20 +112,20 @@ test void methodParameterDefaultValueTypeChanged() {
                 "
                  shared void test(Object a=1.0) {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "parameterLists", 
+            assert(comparisons.contains(["dir::test", "parameterLists",
                 "ParameterList[ValueParameterDeclaration[SpecifierExpression[Expression[NaturalLiteral[]]]AttributeDeclaration[AnnotationList[]Identifier[a]Type[ceylon.language::Object]]]]"
              -> "ParameterList[ValueParameterDeclaration[SpecifierExpression[Expression[FloatLiteral[]]]AttributeDeclaration[AnnotationList[]Identifier[a]Type[ceylon.language::Object]]]]"]));
         }
@@ -135,7 +135,7 @@ test void methodParameterDefaultValueTypeChanged() {
 test void methodFunctionalParameterArgumentNameChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test(void functionalParameter(Integer a)) {}
                  ";
@@ -143,15 +143,15 @@ test void methodFunctionalParameterArgumentNameChanged() {
                 "
                  shared void test(void functionalParameter(Integer a2)) {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = { };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "parameterLists", 
-                "ParameterList[FunctionalParameterDeclaration[MethodDeclaration[AnnotationList[]Identifier[functionalParameter]" 
+            assert(comparisons.contains(["dir::test", "parameterLists",
+                "ParameterList[FunctionalParameterDeclaration[MethodDeclaration[AnnotationList[]Identifier[functionalParameter]"
                         + "VoidModifier[ceylon.language::Anything]ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Type[ceylon.language::Integer]]]]]]]"
              -> "ParameterList[FunctionalParameterDeclaration[MethodDeclaration[AnnotationList[]Identifier[functionalParameter]"
                         + "VoidModifier[ceylon.language::Anything]ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Type[ceylon.language::Integer]]]]]]]"]));
@@ -162,7 +162,7 @@ test void methodFunctionalParameterArgumentNameChanged() {
 test void methodFunctionalParameterNameChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test(void functionalParameter(Integer a)) {}
                  ";
@@ -170,21 +170,21 @@ test void methodFunctionalParameterNameChanged() {
                 "
                  shared void test(void functionalParameterChanged(Integer a)) {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "parameterLists", 
-                "ParameterList[FunctionalParameterDeclaration[MethodDeclaration[AnnotationList[]Identifier[functionalParameter]VoidModifier[ceylon.language::Anything]" 
+            assert(comparisons.contains(["dir::test", "parameterLists",
+                "ParameterList[FunctionalParameterDeclaration[MethodDeclaration[AnnotationList[]Identifier[functionalParameter]VoidModifier[ceylon.language::Anything]"
                     + "ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Type[ceylon.language::Integer]]]]]]]"
              -> "ParameterList[FunctionalParameterDeclaration[MethodDeclaration[AnnotationList[]Identifier[functionalParameterChanged]VoidModifier[ceylon.language::Anything]"
                     + "ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Type[ceylon.language::Integer]]]]]]]"]));
@@ -196,7 +196,7 @@ test void methodFunctionalParameterNameChanged() {
 test void methodEquivalentFunctionalParameter() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test(Anything functionalParameter(Integer a)) {}
                  ";
@@ -204,21 +204,21 @@ test void methodEquivalentFunctionalParameter() {
                 "
                  shared void test(Anything(Integer) functionalParameter) {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "parameterLists", 
-                "ParameterList[FunctionalParameterDeclaration[MethodDeclaration[AnnotationList[]Identifier[functionalParameter]Type[ceylon.language::Anything]" 
+            assert(comparisons.contains(["dir::test", "parameterLists",
+                "ParameterList[FunctionalParameterDeclaration[MethodDeclaration[AnnotationList[]Identifier[functionalParameter]Type[ceylon.language::Anything]"
                     + "ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Type[ceylon.language::Integer]]]]]]]"
              -> "ParameterList[ValueParameterDeclaration[AttributeDeclaration[AnnotationList[]Identifier[functionalParameter]"
                     + "Type[ceylon.language::Anything(ceylon.language::Integer)]]]]"]));
@@ -229,7 +229,7 @@ test void methodEquivalentFunctionalParameter() {
 test void methodTypeConstraintChanged() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "
                  shared void test<Type1, Type2>()
                         given Type1 satisfies Iterable<Integer>
@@ -241,20 +241,20 @@ test void methodTypeConstraintChanged() {
                         given Type1 satisfies Iterable<Float>
                         given Type2 satisfies Iterable<Integer> {}
                  ";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = { };
             childrenDeltas = {
                 TopLevelDeclarationDeltaMockup {
-                    changedElementString = "Method[test]";
+                    changedElementString = "Function[test]";
                     changes = { structuralChange };
                     childrenDeltas = {};
                 }
             };
         };
         void doWithNodeComparisons({NodeComparison*} comparisons) {
-            assert(comparisons.contains(["dir::test", "typeConstraintList", 
+            assert(comparisons.contains(["dir::test", "typeConstraintList",
                 "TypeConstraintList[TypeConstraint[Identifier[Type1]SatisfiedTypes[Type[{ceylon.language::Integer*}]]]"
                     + "TypeConstraint[Identifier[Type2]SatisfiedTypes[Type[{ceylon.language::Float*}]]]]"
              -> "TypeConstraintList[TypeConstraint[Identifier[Type1]SatisfiedTypes[Type[{ceylon.language::Float*}]]]"

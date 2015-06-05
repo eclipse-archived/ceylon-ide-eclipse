@@ -16,7 +16,7 @@ import test.com.redhat.ceylon.eclipse.ui.ceylon.model.delta {
 test void addDeclarationMember() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "shared abstract class Test() {
                     shared formal void test();
                     formal void hidden();
@@ -27,7 +27,7 @@ test void addDeclarationMember() {
                     shared formal void test2();
                     shared formal void hidden();
                  }";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = {};
@@ -45,7 +45,7 @@ test void addDeclarationMember() {
 test void removeDeclarationMember() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "shared abstract class Test() {
                     shared formal void test();
                     shared formal void visible();
@@ -54,7 +54,7 @@ test void removeDeclarationMember() {
                 "shared abstract class Test() {
                      formal void visible();
                  }";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = {};
@@ -64,12 +64,12 @@ test void removeDeclarationMember() {
                     changes = {};
                     childrenDeltas = {
                         NestedDeclarationDeltaMockup {
-                            changedElementString = "Method[test]";
+                            changedElementString = "Function[test]";
                             changes = { removed };
                             childrenDeltas = {};
                         },
                         NestedDeclarationDeltaMockup {
-                            changedElementString = "Method[visible]";
+                            changedElementString = "Function[visible]";
                             changes = { removed };
                             childrenDeltas = {};
                         }
@@ -83,7 +83,7 @@ test void removeDeclarationMember() {
 test void changeDeclarationMemberName() {
     comparePhasedUnits {
         path = "dir/test.ceylon";
-        oldContents = 
+        oldContents =
                 "shared abstract class Test() {
                      shared formal void test();
                  }";
@@ -91,7 +91,7 @@ test void changeDeclarationMemberName() {
                 "shared abstract class Test() {
                      shared formal void testChanged();
                  }";
-        expectedDelta = 
+        expectedDelta =
                 RegularCompilationUnitDeltaMockup {
             changedElementString = "Unit[test.ceylon]";
             changes = {};
@@ -101,7 +101,7 @@ test void changeDeclarationMemberName() {
                     changes = { DeclarationMemberAdded("testChanged") };
                     childrenDeltas = {
                         NestedDeclarationDeltaMockup {
-                            changedElementString = "Method[test]";
+                            changedElementString = "Function[test]";
                             changes = { removed };
                             childrenDeltas = {};
                         }

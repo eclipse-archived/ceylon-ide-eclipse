@@ -23,12 +23,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.Token;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 
 import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -45,11 +45,10 @@ import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 
 public class Nodes {
 
@@ -242,14 +241,23 @@ public class Nodes {
 
     public static Node getIdentifyingNode(Node node) {
         if (node instanceof Tree.Declaration) {
+            Tree.Declaration declaration = 
+                    (Tree.Declaration) node;
             Tree.Identifier identifier = 
-                    ((Tree.Declaration) node).getIdentifier();
+                    declaration.getIdentifier();
             if (identifier==null && 
                     !(node instanceof Tree.MissingDeclaration)) {
                 //TODO: whoah! this is really ugly!
-                CommonToken fakeToken = 
-                        new CommonToken(node.getMainToken());
-                identifier = new Tree.Identifier(fakeToken); 
+                Token tok = node.getMainToken();
+                if (tok==null) {
+                    return null;
+                }
+                else {
+                    CommonToken fakeToken = 
+                            new CommonToken(tok);
+                    identifier = 
+                            new Tree.Identifier(fakeToken);
+                }
             }
             return identifier;
         }

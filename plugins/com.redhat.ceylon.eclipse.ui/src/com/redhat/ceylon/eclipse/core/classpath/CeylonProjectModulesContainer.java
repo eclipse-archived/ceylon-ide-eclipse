@@ -438,13 +438,11 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
     public static File getSourceArtifact(RepositoryManager provider,
             JDTModule module) {
         String sourceArchivePath = module.getSourceArchivePath(); 
-        if (sourceArchivePath == null) {
-            return null;
-        }
-        
-        File sourceArchive = new File(sourceArchivePath);
-        if (sourceArchive.exists()) {
-            return sourceArchive; 
+        if (sourceArchivePath != null) {
+            File sourceArchive = new File(sourceArchivePath);
+            if (sourceArchive.exists()) {
+                return sourceArchive; 
+            }
         }
         
         // BEWARE : here the request to the provider is done in 2 steps, because if

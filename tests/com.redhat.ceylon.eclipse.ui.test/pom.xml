@@ -47,7 +47,7 @@
                       </includes>
                     </configuration>
                 </execution>
-		        <execution>		            
+		        <execution>
 		            <id>Headless tests</id>
 		            <phase>integration-test</phase>
 		            <goals>
