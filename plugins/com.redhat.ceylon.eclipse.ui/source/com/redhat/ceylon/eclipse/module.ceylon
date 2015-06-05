@@ -1,5 +1,6 @@
 "Module that allows developping the Ceylon IDE in Ceylon"
 by("David Festal")
+native("jvm")
 module com.redhat.ceylon.eclipse "1.1.1" {
     shared import com.redhat.ceylon.typechecker "1.1.1";
     shared import com.redhat.ceylon.common "1.1.1";

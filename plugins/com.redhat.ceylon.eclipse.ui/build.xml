@@ -244,7 +244,7 @@
 		<loadfile property="EclipseBundlesToImport" srcfile="EclipseBundlesToImport.txt"/>
 		<mkdir dir="${moduleFileFolder}"/>
 		<echo append="false" file="${moduleFileFolder}/module.ceylon"
-              message='module com.redhat.ceylon.eclipseDependencies "${module.com.redhat.ceylon.eclipse.ui.ceylon.version}" {' />
+              message='native("jvm") module com.redhat.ceylon.eclipseDependencies "${module.com.redhat.ceylon.eclipse.ui.ceylon.version}" {' />
         <echo append="true" file="${moduleFileFolder}/module.ceylon"><![CDATA[
 ]]></echo>
         <echo append="false" file="${basedir}/generated-source/overrides.xml"
