@@ -165,7 +165,10 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
                         var.getDeclarationModel()
                             .getOriginalDeclaration();
                 if (od!=null && od.equals(declaration)) {
-                    c.visit(this);
+                    for (int j=0; j<=i; j++) {
+                        Tree.Condition oc = conditions.get(j);
+                        oc.visit(this);
+                    }
                     Referenceable d = declaration;
                     declaration = var.getDeclarationModel();
                     that.getBlock().visit(this);
@@ -195,7 +198,10 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
                         var.getDeclarationModel()
                             .getOriginalDeclaration();
                 if (od!=null && od.equals(declaration)) {
-                    c.visit(this);
+                    for (int j=0; j<=i; j++) {
+                        Tree.Condition oc = conditions.get(j);
+                        oc.visit(this);
+                    }
                     Referenceable d = declaration;
                     declaration = var.getDeclarationModel();
                     if (that.getBlock()!=null) {
@@ -257,7 +263,7 @@ public class FindReferencesVisitor extends Visitor implements NaturalVisitor {
                         if (od!=null && od.equals(declaration)) {
                             c.visit(this);
                             declaration = var.getDeclarationModel();
-//                            break;
+                            break;
                         }
                     }
                 }
