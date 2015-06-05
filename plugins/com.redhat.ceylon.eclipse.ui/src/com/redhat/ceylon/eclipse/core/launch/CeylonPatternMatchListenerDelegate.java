@@ -88,6 +88,7 @@ public class CeylonPatternMatchListenerDelegate
                 if (p.isAccessible() && CeylonNature.isEnabled(p)) {
                     IPackageFragmentRoot[] roots = 
                             JavaCore.create(p).getAllPackageFragmentRoots();
+                    // TODO : now use the JDTModule.getPhasedUnit() instead of using PackageFragment roots
                     for (IPackageFragmentRoot pfr: roots) {
                         if (pfr.exists()) {
                             if (pfr.getKind()==PackageFragmentRoot.K_BINARY) {
