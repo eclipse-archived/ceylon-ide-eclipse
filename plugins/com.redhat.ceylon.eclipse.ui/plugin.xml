@@ -1943,9 +1943,9 @@
              id="com.redhat.ceylon.eclipse.ui.consolePatternMatchListener"
              class="com.redhat.ceylon.eclipse.core.launch.CeylonPatternMatchListenerDelegate">
          <enablement>
-			<or>
-        	    <test property="org.eclipse.ui.console.consoleTypeTest" value="org.eclipse.debug.ui.ProcessConsoleType"/>
-        		<test property="org.eclipse.ui.console.consoleTypeTest" value="javaStackTraceConsole"/>
+            <or>
+               <test property="org.eclipse.ui.console.consoleTypeTest" value="org.eclipse.debug.ui.ProcessConsoleType"/>
+               <test property="org.eclipse.ui.console.consoleTypeTest" value="javaStackTraceConsole"/>
             </or>
          </enablement>
        </consolePatternMatchListener>
