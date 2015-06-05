@@ -236,28 +236,33 @@ public class JDTModule extends LazyModule {
     private void fillSourceRelativePaths() throws ZipException {
         classesToSources = CarUtils.retrieveMappingFile(returnCarFile());
         sourceRelativePaths.clear();
-        ZipFile sourceArchive;
-        try {
-            sourceArchive = new ZipFile(sourceArchivePath);
-            if (sourceArchive != null) {
+        File sourceArchiveFile = new File( sourceArchivePath);
+        boolean sourcePathsFilled = false;
+        if (sourceArchiveFile.exists()) {
+            ZipFile sourceArchive;
+            try {
+                sourceArchive = new ZipFile(sourceArchiveFile);
                 try {
                     Enumeration<? extends ZipEntry> entries = sourceArchive.entries();
                     while(entries.hasMoreElements()) {
                         ZipEntry entry = entries.nextElement();
                         sourceRelativePaths.add(entry.getName());
                     }
-                    
+                    sourcePathsFilled = true;
                 } finally {
                     sourceArchive.close();
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+                sourceRelativePaths.clear();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            sourceRelativePaths.clear();
+        }
+        if (!sourcePathsFilled) {
             for (Object value : classesToSources.values()) {
                 sourceRelativePaths.add((String)value);
             }
         }
+
         javaImplFilesToCeylonDeclFiles = CarUtils.searchCeylonFilesForJavaImplementations(classesToSources, new File(sourceArchivePath));
     }
     
