@@ -16,44 +16,46 @@ _This is the **simplest way** to install the Ceyon IDE Eclipse plugin._
 
 _If you want to have an up-to-date version of the Ceylon IDE based on the lastest code of all Ceylon projects, this is the **prefered method**._ 
 
-1.  First make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
+1.  Built the command line distribution first (decribed at https://github.com/ceylon/ceylon-dist ), ant setup prepares the environment and clones addition repositories.
 
-1b. Make sure that your ant (latest version) and maven (Version in Range from 3.0.5 to 3.2.1) can also be run on the command line.
+2.  Make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
 
-2.  Make sure that your JAVA_HOME is set to the right JDK 7 installation
+3. Make sure that your ant (latest version) and maven (Version in Range from 3.0.5 to 3.2.1) can also be run on the command line.
 
-3.  Make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
+4.  Make sure that your JAVA_HOME is set to the right JDK 7 installation
+
+5.  Make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
 	- ceylon-dist
 	- ceylon-sdk
 	- ceylon.formatter
 	- ceylon-ide-eclipse	
 	
 	
-4.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
+6.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
     - In the `ceylon-dist` directory run : `ant clean publish-all ide-quick`
     - This should have produced an eclipse update site available at the following path :
       `.../ceylon-dist/osgi/build/dist`
 
-5.  Build the Ceylon SDK locally :
+7.  Build the Ceylon SDK locally :
     - In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path :
       `.../ceylon-sdk/osgi/dist`
 
-5.  Build the Ceylon Formatter locally (see [here](https://github.com/ceylon/ceylon.formatter) for more details) :
+8.  Build the Ceylon Formatter locally (see [here](https://github.com/ceylon/ceylon.formatter) for more details) :
     - In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path :
       `.../ceylon.formatter/osgi/dist`
 
-6.  From this directory (`ceylon-ide-eclipse`), type :
+9.  From this directory (`ceylon-ide-eclipse`), type :
     
         `mvn clean install -fae`
 
-    To skip tests completely you can do:
+    Faster alternative: To skip tests completely you can do:
 
         `mvn clean install -DskipTests` 
    
-7.  The directory `site/target/repository` now contains an update site you can 
-    install from.
+10.  The directory `site/target/repository` now contains an update site you can 
+     install from (documentation at http://ceylon-lang.org/documentation/1.0/ide/install/ but use the path to this         directory instead of the stable web repository) 
 
 ## Building with (pure) Eclipse
 
