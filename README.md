@@ -16,15 +16,15 @@ _This is the **simplest way** to install the Ceyon IDE Eclipse plugin._
 
 _If you want to have an up-to-date version of the Ceylon IDE based on the lastest code of all Ceylon projects, this is the **prefered method**._ 
 
-1.  Built the command line distribution first (decribed at https://github.com/ceylon/ceylon-dist ), ant setup prepares the environment and clones addition repositories.
+1.  Build the command line distribution first (decribed at https://github.com/ceylon/ceylon-dist ), ant setup prepares the environment and clones addition repositories.
 
 2.  Make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
 
 3. Make sure that your ant (latest version) and maven (Version in Range from 3.0.5 to 3.2.1) can also be run on the command line.
 
-4.  Make sure that your JAVA_HOME is set to the right JDK 7 installation
+4.  Make sure that your JAVA_HOME is set to the right JDK 7 installation.
 
-5.  Make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
+5.  Make sure that the following GitHub repositories have all been cloned locally into the same parent directory:
 	- ceylon-dist
 	- ceylon-sdk
 	- ceylon.formatter
