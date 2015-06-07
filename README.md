@@ -4,7 +4,7 @@
 
 _This is the **simplest way** to install the Ceyon IDE Eclipse plugin._ 
 
-1.  Follow the instructions found there :
+1.  Follow the instructions found there:
     
     <http://ceylon-lang.org/documentation/1.0/ide/install>
     
@@ -16,11 +16,11 @@ _This is the **simplest way** to install the Ceyon IDE Eclipse plugin._
 
 _If you want to have an up-to-date version of the Ceylon IDE based on the lastest code of all Ceylon projects, this is the **prefered method**._ 
 
-1.  Build the command line distribution first (decribed at https://github.com/ceylon/ceylon-dist ), ant setup prepares the environment and clones addition repositories.
+1.  Build the command line distribution first (decribed at https://github.com/ceylon/ceylon-dist ), `ant setup` prepares the environment and clones additional repositories.
 
 2.  Make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
 
-3. Make sure that your ant (latest version) and maven (Version in Range from 3.0.5 to 3.2.1) can also be run on the command line.
+3.  Make sure that `ant` (latest version) and `maven` (version from 3.0.5 to 3.2.1) can be run on the command line.
 
 4.  Make sure that your JAVA_HOME is set to the right JDK 7 installation.
 
@@ -29,33 +29,32 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 	- ceylon-sdk
 	- ceylon.formatter
 	- ceylon-ide-eclipse	
-	
-	
-6.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
-    - In the `ceylon-dist` directory run : `ant clean publish-all ide-quick`
-    - This should have produced an eclipse update site available at the following path :
+
+6.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details).
+    - In the `ceylon-dist` directory run: `ant clean publish-all ide-quick`
+    - This should have produced an eclipse update site available at the following path:
       `.../ceylon-dist/osgi/build/dist`
 
 7.  Build the Ceylon SDK locally :
-    - In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
-    - This should have produced an eclipse update site available at the following path :
+    - In the `ceylon-sdk` directory run: `ant clean publish ide-quick`
+    - This should have produced an eclipse update site available at the following path:
       `.../ceylon-sdk/osgi/dist`
 
-8.  Build the Ceylon Formatter locally (see [here](https://github.com/ceylon/ceylon.formatter) for more details) :
-    - In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
-    - This should have produced an eclipse update site available at the following path :
+8.  Build the Ceylon Formatter locally (see [here](https://github.com/ceylon/ceylon.formatter) for more details).
+    - In the `ceylon.formatter` directory run: `ant clean publish ide-quick`
+    - This should have produced an eclipse update site available at the following path:
       `.../ceylon.formatter/osgi/dist`
 
-9.  From this directory (`ceylon-ide-eclipse`), type :
+9.  From this directory (`ceylon-ide-eclipse`), type:
     
         `mvn clean install -fae`
 
-    Faster alternative: To skip tests completely you can do:
+    Faster alternative: To skip tests completely you can run:
 
         `mvn clean install -DskipTests` 
    
-10.  The directory `site/target/repository` now contains an update site you can 
-     install from (documentation at http://ceylon-lang.org/documentation/1.0/ide/install/ but use the path to this         directory instead of the stable web repository) 
+10.  The directory `site/target/repository` now contains an update site you can install from. Documentation for the update process is at http://ceylon-lang.org/documentation/1.1/ide/install/ but use the path to this directory instead of the stable web repository. 
+
 
 ## Building with (pure) Eclipse
 
