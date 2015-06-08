@@ -25,6 +25,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoade
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getFrame;
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getJdiProducedType;
+import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.producedTypeFromTypeDescriptor;
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.toModelProducedType;
 import static com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover.jdiVariableForTypeParameter;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
@@ -2236,7 +2237,7 @@ public class DocumentationHover extends SourceInfoHover {
                                     stackFrame, typeParameter);
                     if (typeDescriptor!=null) {
                         IJavaObject jdiProducedType = 
-                                getJdiProducedType(typeDescriptor.getValue());
+                                getJdiProducedType(typeDescriptor.getValue(), producedTypeFromTypeDescriptor);
                         Type producedType = 
                                 toModelProducedType(jdiProducedType);
                         if (producedType != null) {

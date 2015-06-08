@@ -80,6 +80,7 @@ import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Value;
 import com.sun.jdi.ClassType;
@@ -388,6 +389,13 @@ public class CeylonDebugHover extends SourceInfoHover {
         if (searchedClassDeclaration.equals(currentClassDeclaration)) {
             do {
                 Declaration objectDeclaration = DebugUtils.getDeclaration(jdiObject);
+                if (objectDeclaration instanceof Value) {
+                    Value valueDeclaration = (Value) objectDeclaration;
+                    TypeDeclaration valueTypeDeclaration = valueDeclaration.getTypeDeclaration();
+                    if (valueTypeDeclaration.getQualifiedNameString().equals(valueDeclaration.getQualifiedNameString())) {
+                        objectDeclaration = valueTypeDeclaration;
+                    }
+                }
                 if (objectDeclaration instanceof ClassOrInterface) {
                     if (objectDeclaration.equals(searchedClassDeclaration)) {
                         break;
@@ -446,6 +454,9 @@ public class CeylonDebugHover extends SourceInfoHover {
                         ClassType classJDIType = (ClassType) ((JDIClassType)currentClassScope.getJavaType()).getUnderlyingType();
                         for (Method m : classJDIType.allMethods()) {
                             if (m.name().equals(getterName)) {
+                                if (m.argumentTypeNames().size() > 0) {
+                                    continue;
+                                }
                                 final String signature = m.signature();
                                 IJavaValue result = debugTarget.getEvaluationResult(new EvaluationRunner() {
                                     @Override
@@ -599,7 +610,7 @@ public class CeylonDebugHover extends SourceInfoHover {
                         return null;
                     }
                     primaryValue = (IJavaValue) primaryVariable.getValue();
-                    prefix = primaryVariable.getName();
+                    prefix = CeylonJDIModelPresentation.fixVariableName(primaryVariable.getName(), primaryVariable.isLocal(), primaryVariable.isSynthetic());
                 }
                 
                 IJavaObject primaryJdiObject = makeConsistentWithModel(debugTarget, primaryValue, primary.getTypeModel());
