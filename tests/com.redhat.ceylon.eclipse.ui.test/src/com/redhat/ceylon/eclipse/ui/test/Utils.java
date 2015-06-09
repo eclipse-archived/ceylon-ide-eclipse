@@ -228,6 +228,7 @@ public class Utils {
     }
 
     public static Collection<String> getProjectErrorMarkers(IProject project) throws CoreException {
+        project.refreshLocal(IResource.DEPTH_INFINITE, null);
         IMarker[] allProblems = project.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
         List<String> errors = new ArrayList<String>();
         for (IMarker marker : allProblems) {
