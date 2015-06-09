@@ -876,7 +876,7 @@ public class JavaSearch {
             List<Declaration> overloads = javaSourceTypeDeclaration.getOverloads();
             if (overloads != null) {
                 for (Declaration overload : overloads) {
-                    if (Backend.None.nativeAnnotation.equals(overload.getNative())) {
+                    if (Backend.None.nativeAnnotation.equals(overload.getNativeBackend())) {
                         if (elementEqualsDeclaration(declarationElement, overload)) {
                             return overload;
                         }

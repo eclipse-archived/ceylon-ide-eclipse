@@ -149,7 +149,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                 List<Declaration> overloads = AbstractModelLoader.getOverloads(dec);
                                 if (overloads != null) {
                                     for (Declaration overload : overloads) {
-                                        if (Backend.Java.nativeAnnotation.equals(overload.getNative())) {
+                                        if (Backend.Java.nativeAnnotation.equals(overload.getNativeBackend())) {
                                             if (overload.getUnit() instanceof IJavaModelAware) {
                                                 dec = overload;
                                                 declarationUnit = dec.getUnit();

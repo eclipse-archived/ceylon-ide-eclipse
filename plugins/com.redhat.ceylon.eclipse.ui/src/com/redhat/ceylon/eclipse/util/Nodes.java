@@ -572,7 +572,7 @@ public class Nodes {
                                 && ! unit.getFilename().toLowerCase().endsWith(".ceylon")) {
                             List<Declaration> overloads = AbstractModelLoader.getOverloads((Declaration)model);
                             for (Declaration overload : overloads) {
-                                if (Backend.None.nativeAnnotation.equals(overload.getNative())) {
+                                if (Backend.None.nativeAnnotation.equals(overload.getNativeBackend())) {
                                     model = overload;
                                     foundTheCeylonDeclaration = true;
                                     break;

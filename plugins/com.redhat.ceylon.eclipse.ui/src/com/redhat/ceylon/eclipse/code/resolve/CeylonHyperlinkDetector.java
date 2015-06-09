@@ -138,7 +138,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                 for (Declaration overload: overloads) {
                     Backend overloadBackend = 
                             Backend.fromAnnotation(
-                                    overload.getNative());
+                                    overload.getNativeBackend());
                     if (overloadBackend!=null && 
                             overloadBackend.equals(backend)) {
                         return overload;
