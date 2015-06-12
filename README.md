@@ -26,6 +26,7 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 	- ceylon-dist
 	- ceylon-sdk
 	- ceylon.formatter
+	- ceylon-ide-common
 	- ceylon-ide-eclipse	
 	
 	
@@ -43,6 +44,11 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
     - In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path :
       `.../ceylon.formatter/osgi/dist`
+
+5.  Build the Ceylon IDE Common components locally (see [here](https://github.com/ceylon/ceylon-ide-common) for more details) :
+    - In the `ceylon-ide-common` directory run : `ant clean publish ide-quick`
+    - This should have produced an eclipse update site available at the following path :
+      `.../ceylon-ide-common/osgi/dist`
 
 6.  From this directory (`ceylon-ide-eclipse`), type :
     
@@ -84,11 +90,6 @@ Then :
     ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.android.plugin
     ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui.jdt.debug.fragment
     ```
-    And also the Ceylon project that is the following directory : 
-
-    ```
-    ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui/ceylon
-    ```
 
 6.  The `com.redhat.ceylon.eclipse.ui` plugin depends on several OSGI bundles, which must be available inside Eclipse to be able to build it.	
     Quite recent versions of these dependencies should be available on the [IDE development update site](http://ceylon-lang.org/eclipse/development/)
@@ -111,11 +112,15 @@ Then :
 	- build the _ceylon.formatter_ module that is also required now (see [here](https://github.com/ceylon/ceylon.formatter) for more details):
 		- In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
 
+	- build the _ceylon-ide-common_ module that is also required now (see [here](https://github.com/ceylon/ceylon-ide-common) for more details):
+		- In the `ceylon-ide-common` directory run : `ant clean publish ide-quick`
+
 	- make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
 	```
 	ceylon-dist
 	ceylon-sdk
 	ceylon.formatter
+	ceylon-ide-common
 	ceylon-ide-eclipse
 	```
 
@@ -140,7 +145,7 @@ Then :
 	Each time you will rebuild one of the projects required by the Ceylon IDE plugin (distribution, SDK, formatter, ...), you only need to _Refresh_ the `ceylon-dist-osgi` project, as well as the bundle proxy projects related to the rebuilt required projects, in order to be able to see the changes in the Ceylon IDE projects.
 	However :
 	- If you update the dependencies of libs in the Ceylon distrib repo, you must update your `Ceylon Distribution Binary Dependencies Feature` plugin from the `.../ceylon-dist/osgi/build/dist` update site.
-	- If you update the sdk, ceylon.formatter or Ceylon distrib, you need to redo the `ant clean publish ide` in each project and refresh them in Eclipse and possible clean their proxy bundle projects and the `ceylon-dist-osgi` project.
+	- If you update the `ceylon-ide-common` module, sdk, `ceylon.formatter` module or Ceylon distrib, you need to redo the `ant clean publish ide` in each project and refresh them in Eclipse and possible clean their proxy bundle projects and the `ceylon-dist-osgi` project.
 	
 7. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
     - Add the SWTBot Eclipse features, which are required to compile and run the Ceylon IDE 
