@@ -17,6 +17,11 @@
 	<property name="modules.dir"
         value="${basedir}/modules" />
 
+	<property name="eclipseUpdateSite" value="http://download.eclipse.org/releases/kepler/"/>
+
+    <property name="eclipseBinariesRepo" value="${basedir}/target/repo"/>
+    <property name="eclipseSourcesRepo" value="${basedir}/eclipse-sources-repo"/>
+		
     <path id="ant-tasks">
         <pathelement location="${ceylon.ant.lib}" />
     </path>
@@ -32,16 +37,16 @@
         classpathref="ant-tasks" />
 
     <target name="clean">
-        <delete dir="${modules.dir}"/>
-        <delete dir="${basedir}/.exploded"/>
-        <delete dir="${basedir}/target"/>
-        <delete dir="${basedir}/generated-source"/>
+        <delete dir="${modules.dir}" failonerror="false"/>
+        <delete dir="${basedir}/.exploded" failonerror="false"/>
+        <delete dir="${basedir}/target" failonerror="false"/>
+        <delete dir="${basedir}/generated-source" failonerror="false"/>
     </target>
     
     <reposet id="repos">
     	<repo url="${modules.dir}"/>
     	<repo url="flat:${basedir}/lib"/>
-        <repo url="flat:${basedir}/target/repo/plugins"/>
+        <repo url="flat:${eclipseBinariesRepo}/plugins"/>
         <repo url="flat:${basedir}/../com.redhat.ceylon.eclipse.ui.jdt.debug.fragment/target/ceylonRepo"/>
         <repo url="${basedir}/../../../ceylon-dist/osgi/embeddedRepository/repo"/>
     </reposet>
@@ -121,194 +126,315 @@
                 <if>
                     <matches pattern=".*\.source$" string="${Bundle-SymbolicName}"/>
                     <then>
-                        <propertyregex input="${Bundle-SymbolicName}" regexp="(.*)\.source$" property="RealBundleName" select="\1"/>
-                        <move tofile="${basedir}/target/repo/plugins/${RealBundleName}-${Bundle-Version}.src" file="${currentFile}"/>
                     </then>
                     <else>
                     	<if>
-                    		<contains string="${EclipseBundlesToImport}" substring='"${Bundle-SymbolicName}"'/>
+                    		<not>
+                                <isset property="no-import.${Bundle-SymbolicName}"/>
+                    		</not>
                             <then>
-                                <echo append="true" file="${moduleFileFolder}/module.ceylon" 
+                                <echo append="true" file="${generatedImportsFile}" 
                                     message='    shared import ${Bundle-SymbolicName} "${Bundle-Version}";'/>
-                                <echo append="true" file="${moduleFileFolder}/module.ceylon"><![CDATA[
+                                <echo append="true" file="${generatedImportsFile}"><![CDATA[
 ]]></echo>
                             </then>
                     	</if>
-                        <echo append="true" file="${basedir}/generated-source/overrides.xml" 
+                        <echo append="true" file="${generatedOverridesFile}" 
                             message='    &lt;set module="${Bundle-SymbolicName}" version="${Bundle-Version}"/&gt;'/>
-                        <echo append="true" file="${basedir}/generated-source/overrides.xml"><![CDATA[
+                        <echo append="true" file="${generatedOverridesFile}"><![CDATA[
 ]]></echo>
-                        <if>
-                        	<equals arg1="dir" arg2="${Eclipse-BundleShape}"/>
-                        	<then>
-                                <move tofile="${currentFile}.moved" file="${currentFile}"/>
-                        		<unzip src="${currentFile}.moved" dest="${currentFile}.dir"/>
-                        		<jar destfile="${basedir}/target/repo/plugins/${Bundle-SymbolicName}-${Bundle-Version}.jar" manifest="${currentFile}.dir/META-INF/MANIFEST.MF">
-                        			<zipgroupfileset dir="${currentFile}.dir" includes="*.jar"/>
-                                    <fileset dir="${currentFile}.dir" excludes="*.jar"/>
-                        		</jar>
-                                <delete deleteonexit="true" failonerror="false" file="${currentFile}.moved"/>
-                        		<delete deleteonexit="true" failonerror="false" dir="${currentFile}.dir"/>
-                        	</then>
-                        	<else>
-                                <move tofile="${basedir}/target/repo/plugins/${Bundle-SymbolicName}-${Bundle-Version}.jar" file="${currentFile}"/>
-                        	</else>
-                        </if>
                     </else>
                 </if>
             </then>
         </if>
     </target>
 
-    <target name="mirrorRequiredBundles">
-        <delete dir="${basedir}/target/repo/"/>
-        <mkdir dir="${basedir}/target/repo/"/>
-    	<p2.mirror source="http://download.eclipse.org/releases/kepler/"
-    		verbose="true" validate="true">
-    	    <slicingOptions includeFeatures="false" 
-    		                includeOptional="false"
-    	    	            includeNonGreedy="true"
-    	    	            followStrict="true"
-    	    	            latestVersionOnly="true"/>
-    		<iu id="org.eclipse.core.expressions" version=""/>
-    		<iu id="org.eclipse.core.expressions.source" version=""/>
-    		<iu id="org.eclipse.core.filesystem" version=""/>
-    		<iu id="org.eclipse.core.filesystem.source" version=""/>
-    		<iu id="org.eclipse.core.resources" version=""/>
-    		<iu id="org.eclipse.core.resources.source" version=""/>
-    		<iu id="org.eclipse.core.runtime" version=""/>
-    		<iu id="org.eclipse.core.runtime.source" version=""/>
-    		<iu query="property[@name='maven-artifactId' @value='org.eclipse.jdt.core']" />
-            <iu query="property[@name='maven-artifactId' @value='org.eclipse.jdt.ui']" />
-    		<iu id="org.eclipse.jdt.core.source" version=""/>
-    		<iu id="org.eclipse.text" version=""/>
-    		<iu id="org.eclipse.text.source" version=""/>
-    	    <iu id="org.eclipse.equinox.preferences" version=""/>
-            <iu id="org.eclipse.equinox.preferences.source" version=""/>
-            <iu id="org.eclipse.equinox.common" version=""/>
-            <iu id="org.eclipse.equinox.common.source" version=""/>
-    	    <iu id="org.eclipse.equinox.registry" version=""/>
-            <iu id="org.eclipse.equinox.registry.source" version=""/>
-    	    <iu id="org.eclipse.core.jobs"  version=""/>
-    	    <iu id="org.eclipse.core.jobs.source"  version=""/>
-            <iu id="org.eclipse.ui"  version=""/>
-            <iu id="org.eclipse.ui.source"  version=""/>
-            <iu id="org.eclipse.ui.workbench"  version=""/>
-            <iu id="org.eclipse.ui.workbench.source"  version=""/>
-            <iu id="org.eclipse.jface"  version=""/>
-            <iu id="org.eclipse.jface.text"  version=""/>
-            <iu id="org.eclipse.osgi"  version=""/>
-            <iu id="org.eclipse.swt"  version=""/>
-            <iu id="org.eclipse.swt.gtk.linux.x86_64"  version=""/>
-            <iu id="org.eclipse.ui"  version=""/>
-            <iu id="org.eclipse.ui.intro"  version=""/>
-            <iu id="org.eclipse.jface.text"  version=""/>
-            <iu id="org.eclipse.ui.editors"  version=""/>
-            <iu id="org.eclipse.ui.workbench.texteditor"  version=""/>
-            <iu id="org.eclipse.ltk.core.refactoring"  version=""/>
-            <iu id="org.eclipse.ltk.ui.refactoring"  version=""/>
-            <iu id="org.eclipse.text"  version=""/>
-            <iu id="org.eclipse.ui.ide"  version=""/>
-            <iu id="org.eclipse.search"  version=""/>
-            <iu id="org.eclipse.ui.console"  version=""/>
-            <iu id="org.eclipse.ui.views"  version=""/>
-            <iu id="org.eclipse.core.filesystem"  version=""/>
-            <iu id="org.eclipse.core.commands"  version=""/>
-            <iu id="org.eclipse.core.commands.source"  version=""/>
-            <iu id="org.eclipse.compare"  version=""/>
-            <iu id="org.eclipse.compare.source"  version=""/>
-            <iu id="org.eclipse.debug.core"  version=""/>
-            <iu id="org.eclipse.debug.core.source"  version=""/>
-            <iu id="org.eclipse.debug.ui"  version=""/>
-            <iu id="org.eclipse.debug.ui.source"  version=""/>
-            <iu id="org.eclipse.jdt.debug"  version=""/>
-            <iu id="org.eclipse.jdt.debug.source"  version=""/>
-            <iu id="org.eclipse.jdt.launching"  version=""/>
-            <iu id="org.eclipse.jdt.launching.source"  version=""/>
-            <iu id="org.eclipse.jdt.debug.ui"  version=""/>
-            <iu id="org.eclipse.jdt.debug.ui.source"  version=""/>
-            <iu id="org.eclipse.ui.cheatsheets"  version=""/>
-            <iu id="org.eclipse.core.expressions"  version=""/>
-            <iu id="org.eclipse.zest.core"  version=""/>
-            <iu id="org.eclipse.draw2d"  version=""/>
-            <iu id="org.eclipse.zest.layouts"  version=""/>
-            <iu id="org.eclipse.ui.navigator"  version=""/>
-            <iu id="org.eclipse.ui.navigator.resources"  version=""/>
-            <iu id="org.eclipse.ui.views.properties.tabbed"  version=""/>
-    	    <iu id="org.eclipse.help" version=""/>
-    		<destination append="true" atomic="true" compressed="false" location="${basedir}/target/repo/"/>
-    	</p2.mirror>
+    <target name="renameModuleArchive">
+        <loadproperties>
+            <zipentry zipfile="${currentFile}" name="META-INF/MANIFEST.MF"/>
+             <filterchain>
+                <linecontainsregexp>
+                    <regexp pattern="^(Bundle-SymbolicName|Bundle-Version|Eclipse-BundleShape)"/>
+                </linecontainsregexp>
+                 <replaceregex pattern="\s+$" replace=""/>
+                 <replaceregex pattern=";.+$" replace=""/>
+                 <replaceregex pattern="^\s+" replace=""/>
+              </filterchain>
+        </loadproperties>
+        <if>
+            <isset property="Bundle-SymbolicName"/>
+            <then>
+                <if>
+                    <matches pattern=".*\.source$" string="${Bundle-SymbolicName}"/>
+                    <then>
+                        <propertyregex input="${Bundle-SymbolicName}" regexp="(.*)\.source$" property="RealBundleName" select="\1"/>
+                        <move tofile="${repository}/plugins/${RealBundleName}-${Bundle-Version}.src" file="${currentFile}"/>
+                    </then>
+                    <else>
+                        <if>
+                            <equals arg1="dir" arg2="${Eclipse-BundleShape}"/>
+                            <then>
+                                <move tofile="${currentFile}.moved" file="${currentFile}"/>
+                                <unzip src="${currentFile}.moved" dest="${currentFile}.dir"/>
+                                <jar destfile="${repository}/plugins/${Bundle-SymbolicName}-${Bundle-Version}.jar" manifest="${currentFile}.dir/META-INF/MANIFEST.MF">
+                                    <zipgroupfileset dir="${currentFile}.dir" includes="*.jar"/>
+                                    <fileset dir="${currentFile}.dir" excludes="*.jar"/>
+                                </jar>
+                                <delete deleteonexit="true" failonerror="false" file="${currentFile}.moved"/>
+                                <delete deleteonexit="true" failonerror="false" dir="${currentFile}.dir"/>
+                            </then>
+                            <else>
+                                <move tofile="${repository}/plugins/${Bundle-SymbolicName}-${Bundle-Version}.jar" file="${currentFile}"/>
+                            </else>
+                        </if>
+                    </else>
+                </if>
+            </then>
+        </if>
     </target>
 	
-	<target name="generate-eclipseDependenciesModule">
-		<loadfile property="EclipseBundlesToImport" srcfile="EclipseBundlesToImport.txt"/>
-		<mkdir dir="${moduleFileFolder}"/>
-		<echo append="false" file="${moduleFileFolder}/module.ceylon"
-              message='native("jvm") module com.redhat.ceylon.eclipseDependencies "${module.com.redhat.ceylon.eclipse.ui.ceylon.version}" {' />
-        <echo append="true" file="${moduleFileFolder}/module.ceylon"><![CDATA[
-]]></echo>
-        <echo append="false" file="${basedir}/generated-source/overrides.xml"
-              message='&lt;overrides xmlns="http://www.ceylon-lang.org/xsd/overrides"&gt;' />
-        <echo append="true" file="${basedir}/generated-source/overrides.xml"><![CDATA[
-]]></echo>
-		<foreach target="addModuleImport" param="currentFile">
+	<property name="eclipseBundleRegexp" value=".*(org\.eclipse\.[^=,]+)"/>
+	<loadproperties prefix="no-import" srcfile="${basedir}/AdditionalBundles.properties">
+		<filterchain>
+			<linecontainsregexp>
+				<regexp pattern="${eclipseBundleRegexp}=.*no-import"/>
+			</linecontainsregexp>
+			<tokenfilter>
+	            <replaceregex byline="true" pattern="${eclipseBundleRegexp}.*" replace="\1="/>
+			</tokenfilter>
+            <uniqfilter/>
+		</filterchain>
+	</loadproperties>
+
+    <loadproperties prefix="no-source" srcfile="${basedir}/AdditionalBundles.properties">
+        <filterchain>
+            <linecontainsregexp>
+                <regexp pattern="${eclipseBundleRegexp}=.*no-source"/>
+            </linecontainsregexp>
+            <tokenfilter>
+                <replaceregex byline="true" pattern="${eclipseBundleRegexp}.*" replace="\1="/>
+            </tokenfilter>
+            <uniqfilter/>
+            
+        </filterchain>
+    </loadproperties>
+	
+    <loadresource property="bundlesToDownload">
+    	<resources>
+            <concat >
+                <fileset dir="${basedir}">
+                	<include name="META-INF/MANIFEST.MF"/>
+                    <include name="AdditionalBundles.properties"/>
+            	</fileset>
+            </concat>
+    	</resources>
+        <filterchain>
+            <linecontainsregexp>
+                <regexp pattern="${eclipseBundleRegexp}.*"/>
+            </linecontainsregexp>
+            <tokenfilter>
+                <replaceregex byline="true" pattern="${eclipseBundleRegexp}.*" replace="\1"/>
+            </tokenfilter>
+            <sortfilter/>
+            <uniqfilter/>
+            <suffixlines suffix=","/>
+        	<striplinebreaks/>
+        	<replaceregex pattern="(.*)," replace="\1"/>
+        </filterchain>
+    </loadresource>
+	
+	<target name="dumpBundlesToDownload">
+		<echo file="${file}">${bundlesToDownload}</echo>
+	</target>
+	
+	<target name="mirrorBundle">
+        <echo>Mirror ${bundleName} to ${repository}</echo>
+		<if>
+			<resourcecount when="greater" count="0">
+				<fileset dir="${repository}">
+                    <include name="*"/>
+                </fileset>
+			</resourcecount>
+			<then>
+				<property name="append" value="true"/>
+			</then>
+			<else>
+                <property name="append" value="false"/>
+			</else>
+		</if>
+    	<if>
+    		<or>
+                <equals arg1="${bundleName}" arg2="org.eclipse.jdt.core"/>
+                <equals arg1="${bundleName}" arg2="org.eclipse.jdt.ui"/>
+    		</or>
+    		<then>
+    	        <p2.mirror source="${eclipseUpdateSite}"
+    	            verbose="true" validate="false" includepacked="false" ignoreerrors="true">
+    	            <slicingOptions includeFeatures="false" 
+    	                            includeOptional="false"
+    	                            includeNonGreedy="true"
+    	                            followStrict="true"
+    	                            latestVersionOnly="true"/>
+    	            <iu query="property[@name='maven-artifactId' @value='${bundleName}']" />
+    	            <destination append="${append}" atomic="false" compressed="false" location="${repository}"/>
+    	        </p2.mirror>
+                <if>
+                    <equals arg1="${repository}" arg2="${eclipseBinariesRepo}"/>
+                    <then>
+                    	<echo>Deleting ${bundleName} source from ${repository}</echo>
+                        <delete>
+                            <fileset dir="${repository}/plugins">
+                                <include name="${bundleName}.source_*.jar"/>
+                            </fileset>
+                        </delete>
+                    </then>
+                    <else>
+                        <echo>Deleting ${bundleName} binary from ${repository}</echo>
+                        <delete>
+                            <fileset dir="${repository}/plugins">
+                                <include name="${bundleName}_*.jar"/>
+                            </fileset>
+                    	</delete>
+                    </else>
+                </if>
+    		</then>
+    		<else>
+                <if>
+                    <equals arg1="${repository}" arg2="${eclipseBinariesRepo}"/>
+                    <then>
+                        <p2.mirror source="${eclipseUpdateSite}"
+                            verbose="true" validate="false" includepacked="false" ignoreerrors="true">
+                            <slicingOptions includeFeatures="false" 
+                                            includeOptional="false"
+                                            includeNonGreedy="true"
+                                            followStrict="true"
+                                            latestVersionOnly="true"/>
+                            <iu id="${bundleName}" version=""/>
+                            <destination append="${append}" atomic="false" compressed="false" location="${repository}"/>
+                        </p2.mirror>
+                    </then>
+                	<else>
+                		<if>
+                			<not>
+                                <isset property="no-source.${bundleName}"/>
+                			</not>
+                            <then>
+                                <p2.mirror source="${eclipseUpdateSite}"
+                                    verbose="true" validate="false" includepacked="false" ignoreerrors="true">
+                                    <slicingOptions includeFeatures="false" 
+                                                    includeOptional="false"
+                                                    includeNonGreedy="true"
+                                                    followStrict="true"
+                                                    latestVersionOnly="true"/>
+                                    <iu id="${bundleName}.source" version=""/>
+                                    <destination append="${append}" atomic="false" compressed="false" location="${repository}"/>
+                                </p2.mirror>
+                            </then>
+                		</if>
+                	</else>
+                </if>
+    		</else>
+    	</if>
+    </target>
+	
+    <target name="renameBundles">
+        <foreach target="renameModuleArchive" param="currentFile">
             <path>
-                <fileset dir="${basedir}/target/repo/plugins" includes="**/*.jar"/>
+                <fileset dir="${repository}/plugins" includes="**/*.jar"/>
             </path>
-			<param name="EclipseBundlesToImport" value="${EclipseBundlesToImport}"/>
         </foreach>
-        <echo append="true" file="${moduleFileFolder}/module.ceylon">}</echo>
-        <echo append="true" file="${basedir}/generated-source/overrides.xml"><![CDATA[
-    <remove module="org.eclipse.core.filesystem.java7"/>
-    <remove module="org.eclipse.equinox.bidi"/>
-    <remove module="org.eclipse.osgi"/>
-    <remove module="org.eclipse.ant.core"/>
-    <remove module="org.eclipse.core.runtime.compatibility.auth"/>
-    <remove module="javax.annotation"/>
-    <remove module="javax.inject"/>
-    <remove module="org.eclipse.core.contenttype"/>
-    <remove module="org.eclipse.equinox.app"/>
-    <remove module="org.eclipse.team.core"/>
-    <remove module="com.ibm.icu"/>
-    <remove module="org.eclipse.core.variables"/>
-    <remove module="org.eclipse.jdt.core.manipulation"/>
-    <remove module="org.eclipse.compare.core"/>
-    <remove module="org.eclipse.core.databinding.observable"/>
-    <remove module="org.eclipse.core.databinding.property"/>
-    <remove module="org.eclipse.core.filebuffers"/>
-    <remove module="org.eclipse.e4.core.contexts"/>
-    <remove module="org.eclipse.e4.core.di"/>
-    <remove module="org.eclipse.e4.core.services"/>
-    <remove module="org.eclipse.e4.ui.bindings"/>
-    <remove module="org.eclipse.e4.ui.css.core"/>
-    <remove module="org.eclipse.e4.ui.css.swt"/>
-    <remove module="org.eclipse.e4.ui.css.swt.theme"/>
-    <remove module="org.eclipse.e4.ui.di"/>
-	<remove module="org.eclipse.e4.ui.model.workbench"/>
-    <remove module="org.eclipse.e4.ui.workbench"/>
-    <remove module="org.eclipse.e4.ui.workbench.addons.swt"/>
-    <remove module="org.eclipse.e4.ui.workbench.swt"/>
-    <remove module="org.eclipse.e4.ui.workbench3"/>
-    <remove module="org.eclipse.emf.ecore"/>
-    <remove module="org.eclipse.equinox.p2.engine"/>
-    <remove module="org.eclipse.equinox.p2.metadata"/>
-    <remove module="org.eclipse.help.base"/>
-    <remove module="org.eclipse.help.ui"/>
-    <remove module="org.eclipse.jface.databinding"/>
-    <remove module="org.eclipse.team.ui"/>
-    <remove module="org.eclipse.ui.forms"/>
-    <module module="org.eclipse.core.runtime">
-        <share module="org.eclipse.core.jobs"/>
-    </module>
-    <module module="org.eclipse.core.resources">
-        <share module="org.eclipse.core.runtime"/>
-    </module>
-    <module module="org.eclipse.swt">
-        <add module="org.eclipse.swt.gtk.linux.x86_64" version="current" shared="true"/>
-    </module>
-    <module module="org.eclipse.jface">
-        <add module="org.eclipse.swt.gtk.linux.x86_64" version="current" shared="true"/>
-    </module>
-</overrides>]]></echo>
+    </target>
+	
+    <target name="mirrorBundles">
+        <delete dir="${repository}/" failonerror="false"/>
+        <mkdir dir="${repository}/"/>
+        <foreach list="${bundlesToDownload}" target="mirrorBundle" param="bundleName">
+            <param name="repository" value="${repository}"/>
+        </foreach>
+        <antcall target="renameBundles">
+        	<param name="repository" value="${repository}"/>
+        </antcall>
+    </target>
+
+	<target name="mirrorRequiredBundles">
+        <antcall target="mirrorBundles">
+        	<param name="repository" value="${eclipseBinariesRepo}"/>
+        </antcall>
+    </target>
+	
+    <target name="mirrorSourceBundles">
+        <antcall target="mirrorBundles">
+            <param name="repository" value="${eclipseSourcesRepo}"/>
+        </antcall>
+    </target>
+
+	<target name="generate-eclipseDependenciesModule">
+        <delete failonerror="false">
+        	<fileset dir="${basedir}/generated-source/" includes="**/* "/>
+        </delete>
+		<mkdir dir="${basedir}/generated-source/"/>
+        <mkdir dir="${moduleFileFolder}"/>
+		<tempfile destdir="${moduleFileFolder}" prefix="module.ceylon" property="generatedImportsFile" createfile="true"/>
+        <tempfile destdir="${basedir}/generated-source/" prefix="overrides.xml" property="generatedOverridesFile" createfile="true"/>
+        <foreach target="addModuleImport" param="currentFile">
+            <path>
+                <fileset dir="${eclipseBinariesRepo}/plugins" includes="**/*.jar"/>
+            </path>
+            <param name="generatedImportsFile" value="${generatedImportsFile}"/>
+            <param name="generatedOverridesFile" value="${generatedOverridesFile}"/>
+        </foreach>
+	    <loadfile property="generatedImports" srcfile="${generatedImportsFile}"/>
+        <loadfile property="generatedOverrides" srcfile="${generatedOverridesFile}"/>
+        <loadfile property="generatedModuleContent" srcfile="${basedir}/source-templates/module.ceylon">
+            <filterchain>
+            	<replacestring byline="false" from="/* ADD GENERATED IMPORTS HERE */" to="${generatedImports}"/>
+            </filterchain>
+        </loadfile>
+        <loadfile property="generatedOverridesContent" srcfile="${basedir}/source-templates/overrides.xml">
+            <filterchain>
+                <replacestring byline="false" from="&lt;!-- ADD GENERATED SET VERSION LINES HERE  --&gt;" to="${generatedOverrides}"/>
+            </filterchain>
+        </loadfile>
+		
+		<echo append="false" file="${moduleFileFolder}/module.ceylon"
+              message="${generatedModuleContent}" />
+        <echo append="false" file="${basedir}/generated-source/overrides.xml"
+              message="${generatedOverridesContent}" />
+		<delete file="${generatedImportsFile}" failonerror="false"/>
+        <delete file="${generatedOverridesFile}" failonerror="false"/>
+	</target>
+	
+	<uptodate property="dontMirror" targetfile="${moduleFileFolder}/module.ceylon" >
+	    <srcfiles dir= "${basedir}">
+	    	<include name="META-INF/MANIFEST.MF"/>
+            <include name="AdditionalBundles.txt"/>
+		</srcfiles>
+	</uptodate>
+	<uptodate property="dontRegenerate" targetfile="${moduleFileFolder}/module.ceylon" >
+        <srcfiles dir= "${basedir}">
+            <include name="META-INF/MANIFEST.MF"/>
+            <include name="AdditionalBundles.txt"/>
+            <include name="source-templates/*.*"/>
+        </srcfiles>
+    </uptodate>
+	
+	<target name="update-eclipse-dependencies-as-necessary">
+		<if>
+			<not>
+				<equals arg1="${dontMirror}" arg2="true"/>
+			</not>
+			<then>
+				<antcall target="mirrorRequiredBundles"/>
+			</then>
+		</if>
+        <if>
+            <not>
+                <equals arg1="${dontRegenerate}" arg2="true"/>
+            </not>
+            <then>
+                <antcall target="generate-eclipseDependenciesModule"/>
+                <eclipse.refreshLocal resource="/com.redhat.ceylon.eclipse.ui/generated-source" depth="infinite"/>
+            </then>
+        </if>
 	</target>
 </project>

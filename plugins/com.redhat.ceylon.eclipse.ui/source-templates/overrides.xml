@@ -1,0 +1,53 @@
+<overrides xmlns="http://www.ceylon-lang.org/xsd/overrides">
+<!-- ADD GENERATED SET VERSION LINES HERE  -->
+    <remove module="org.eclipse.core.filesystem.java7"/>
+    <remove module="org.eclipse.equinox.bidi"/>
+    <remove module="org.eclipse.ant.core"/>
+    <remove module="org.eclipse.core.runtime.compatibility.auth"/>
+    <remove module="javax.annotation"/>
+    <remove module="javax.inject"/>
+    <remove module="org.eclipse.core.contenttype"/>
+    <remove module="org.eclipse.equinox.app"/>
+    <remove module="org.eclipse.team.core"/>
+    <remove module="com.ibm.icu"/>
+    <remove module="org.eclipse.core.variables"/>
+    <remove module="org.eclipse.jdt.core.manipulation"/>
+    <remove module="org.eclipse.compare.core"/>
+    <remove module="org.eclipse.core.databinding.observable"/>
+    <remove module="org.eclipse.core.databinding.property"/>
+    <remove module="org.eclipse.core.filebuffers"/>
+    <remove module="org.eclipse.e4.core.contexts"/>
+    <remove module="org.eclipse.e4.core.di"/>
+    <remove module="org.eclipse.e4.core.services"/>
+    <remove module="org.eclipse.e4.ui.bindings"/>
+    <remove module="org.eclipse.e4.ui.css.core"/>
+    <remove module="org.eclipse.e4.ui.css.swt"/>
+    <remove module="org.eclipse.e4.ui.css.swt.theme"/>
+    <remove module="org.eclipse.e4.ui.di"/>
+	<remove module="org.eclipse.e4.ui.model.workbench"/>
+    <remove module="org.eclipse.e4.ui.workbench"/>
+    <remove module="org.eclipse.e4.ui.workbench.addons.swt"/>
+    <remove module="org.eclipse.e4.ui.workbench.swt"/>
+    <remove module="org.eclipse.e4.ui.workbench3"/>
+    <remove module="org.eclipse.emf.ecore"/>
+    <remove module="org.eclipse.equinox.p2.engine"/>
+    <remove module="org.eclipse.equinox.p2.metadata"/>
+    <remove module="org.eclipse.help.base"/>
+    <remove module="org.eclipse.help.ui"/>
+    <remove module="org.eclipse.jface.databinding"/>
+    <remove module="org.eclipse.team.ui"/>
+    <remove module="org.eclipse.ui.forms"/>
+
+    <module module="org.eclipse.core.runtime">
+        <share module="org.eclipse.core.jobs"/>
+    </module>
+    <module module="org.eclipse.core.resources">
+        <share module="org.eclipse.core.runtime"/>
+    </module>
+    <module module="org.eclipse.swt">
+        <add module="org.eclipse.swt.gtk.linux.x86_64" version="current" shared="true"/>
+    </module>
+    <module module="org.eclipse.jface">
+        <add module="org.eclipse.swt.gtk.linux.x86_64" version="current" shared="true"/>
+    </module>
+</overrides>
