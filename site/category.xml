@@ -25,6 +25,9 @@
    <bundle id="ceylon.formatter" version="1.1.1.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </bundle>
+   <bundle id="com.redhat.ceylon.ide.common" version="1.1.1.qualifier">
+      <category name="ceylon-ide-runtime-modules"/>
+   </bundle>
    <bundle id="ceylon.file" version="1.1.1.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </bundle>
