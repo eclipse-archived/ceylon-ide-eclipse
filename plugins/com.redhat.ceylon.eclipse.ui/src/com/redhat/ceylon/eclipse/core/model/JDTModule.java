@@ -304,8 +304,10 @@ public class JDTModule extends LazyModule {
             IJavaProject javaProject = moduleManager.getJavaProject();
             if (javaProject != null) {
                 for (IProject refProject : javaProject.getProject().getReferencedProjects()) {
-                    if (artifact.getAbsolutePath().contains(CeylonBuilder.getCeylonModulesOutputDirectory(refProject).getAbsolutePath())) {
-                        originalProject = refProject;
+                    if (refProject.isAccessible()) {
+                        if (artifact.getAbsolutePath().contains(CeylonBuilder.getCeylonModulesOutputDirectory(refProject).getAbsolutePath())) {
+                            originalProject = refProject;
+                        }
                     }
                 }
             }
