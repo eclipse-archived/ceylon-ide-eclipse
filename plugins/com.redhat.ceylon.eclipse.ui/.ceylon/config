@@ -10,6 +10,7 @@ encoding=UTF-8
 flatclasspath=false
 autoexportmavendependencies=false
 overrides=generated-source/overrides.xml
+offline=true
 
 [repositories]
 output=./modules
