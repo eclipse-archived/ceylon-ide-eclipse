@@ -29,16 +29,18 @@ public class ProjectChangeListener implements IResourceChangeListener {
                     }
                     if (resource instanceof IProject && delta.getKind()==IResourceDelta.REMOVED) {
                         CeylonBuilder.removeProject((IProject) resource);
-                        ceylonModelGetter_.ceylonModelGetter().addProject((IProject) resource); 
+                        ceylonModelGetter_.ceylonModelGetter().removeProject((IProject) resource); 
                     }
                     else if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
                         final IProject project = (IProject) resource;
                         if (!project.isOpen()) {
                             CeylonBuilder.removeProject(project);
+                            ceylonModelGetter_.ceylonModelGetter().removeProject((IProject) resource); 
                         }
                         else if (CeylonNature.isEnabled(project)) {
                             IJavaProject javaProject = JavaCore.create(project);
                             if (javaProject != null) {
+                                ceylonModelGetter_.ceylonModelGetter().removeProject((IProject) resource); 
                                 //List<CeylonApplicationModulesContainer> cpContainers = 
                                 getCeylonClasspathContainers(javaProject);
                                 /*for (CeylonApplicationModulesContainer container : cpContainers) {
