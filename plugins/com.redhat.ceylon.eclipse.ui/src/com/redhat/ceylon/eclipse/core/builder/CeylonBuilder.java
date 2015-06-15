@@ -2257,7 +2257,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             if (jdtModule.isCeylonArchive()) {
                                 List<ModuleImport> importedModuleImports = new ArrayList<>();
                                 for(ModuleImport moduleImport : moduleSourceMapper.retrieveModuleImports(jdtModule)) {
-                                    if (! Backend.Java.nativeAnnotation.equals(moduleImport.getNative())) {
+                                    if (! Backend.Java.nativeAnnotation.equals(moduleImport.getNativeBackend())) {
                                         importedModuleImports.add(moduleImport);
                                     }
                                 }
@@ -2500,7 +2500,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     	    Module module = getModule(file);
     	    String nativeBakend = null; 
     	    if (module != null) {
-    	        nativeBakend = module.getNative();
+    	        nativeBakend = module.getNativeBackend();
     	    }
     	    if (nativeBakend == null 
     	            || nativeBakend.equals(Backend.Java.nativeAnnotation)) {
@@ -2524,7 +2524,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 Module module = getModule(file);
                 String nativeBakend = null; 
                 if (module != null) {
-                    nativeBakend = module.getNative();
+                    nativeBakend = module.getNativeBackend();
                 }
                 if (nativeBakend == null 
                         || nativeBakend.equals(Backend.JavaScript.nativeAnnotation)) {
