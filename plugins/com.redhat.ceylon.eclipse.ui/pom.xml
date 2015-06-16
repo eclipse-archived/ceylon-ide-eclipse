@@ -61,7 +61,7 @@
                       <target>
                         <dependencyfilesets prefix="mydeps."/>
                         <pathconvert pathsep="" property="jdtVersion" refid="mydeps.p2.eclipse-plugin:org.eclipse.jdt.debug:jar:jdimodel.jar">
-                            <mapper type="regexp" from="org\.eclipse\.jdt\.debug-(.+)\.jar/jdimodel.jar" to="\1"/>
+                            <mapper type="regexp" from="org\.eclipse\.jdt\.debug-(.+)\.jar(\\|/)jdimodel.jar" to="\1"/>
                         </pathconvert>
                       </target>
                     </configuration>
