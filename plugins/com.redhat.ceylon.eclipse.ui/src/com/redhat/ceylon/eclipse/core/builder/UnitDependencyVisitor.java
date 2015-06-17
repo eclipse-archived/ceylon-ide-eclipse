@@ -2,9 +2,14 @@ package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.eclipse.core.resources.IResource;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -18,6 +23,7 @@ import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
@@ -105,68 +111,74 @@ public class UnitDependencyVisitor extends Visitor {
                     String currentUnitPath = 
                             phasedUnit.getUnitFile()
                                 .getPath();
-                    String currentUnitName = 
-                            currentUnit.getFilename();
-                    String dependedOnUnitName = 
-                            declarationUnit.getFilename();
-                    String currentUnitPackage = 
-                            currentUnit.getPackage()
-                                .getNameAsString();
-                    String dependedOnPackage = 
-                            declarationUnit.getPackage()
-                                .getNameAsString();
-                    if (!dependedOnUnitName.equals(currentUnitName) ||
-                            !dependedOnPackage.equals(currentUnitPackage)) {
-                        
-                        // WOW : Ceylon Abstract Data types and swith case would be cool here ;) 
-                        if (declarationUnit instanceof ProjectSourceFile) {
-                            declarationUnit.getDependentsOf()
-                                .add(currentUnitPath);
-                        }
-                        else if (declarationUnit instanceof ICrossProjectReference) {
-                            ICrossProjectReference crossProjectReference = 
-                                    (ICrossProjectReference) declarationUnit;
-                            ProjectSourceFile originalProjectSourceFile = 
-                                    crossProjectReference.getOriginalSourceFile();
-                            if (originalProjectSourceFile != null) {
-                                originalProjectSourceFile.getDependentsOf()
-                                    .add(currentUnitPath);
-                            }
-                        }
-                        else if (declarationUnit 
-                                instanceof ExternalSourceFile) {
-                            // Don't manage them : they cannot change ... Well they might if we were using these dependencies to manage module 
-                            // removal. But since module removal triggers a classpath container update and so a full build, it's not necessary.
-                            // Might change in the future 
-                        }
-                        else if (declarationUnit instanceof CeylonBinaryUnit) {
-                            declarationUnit.getDependentsOf()
-                                .add(currentUnitPath);
-                        } 
-                        else if (declarationUnit instanceof JavaCompilationUnit) {
-                            //TODO: this does not seem to work for cross-project deps
-                            // We should introduce a CrossProjectJavaUnit that can return 
-                            // the original JavaCompilationUnit from the original project 
-                            declarationUnit.getDependentsOf()
-                                .add(currentUnitPath);
-                        } 
-                        else if (declarationUnit instanceof JavaClassFile) {
-                            //TODO: All the dependencies to class files are also added... It is really useful ?
-                            // I assume in the case of the classes in the classes or exploded dirs, it might be,
-                            // but not sure it is also used not in the case of jar-located classes
-                            declarationUnit.getDependentsOf()
-                                .add(currentUnitPath);
-                        } 
-                        else {
-                            assert(false);
-                        }
-                    }
+                    addDependentsOf(declarationUnit, currentUnit,
+                            currentUnitPath);
                 }
             }
             return true;
         }
         else {
             return false;
+        }
+    }
+
+    protected static void addDependentsOf(Unit declarationUnit, Unit currentUnit,
+            String currentUnitPath) {
+        String currentUnitName = 
+                currentUnit.getFilename();
+        String dependedOnUnitName = 
+                declarationUnit.getFilename();
+        String currentUnitPackage = 
+                currentUnit.getPackage()
+                    .getNameAsString();
+        String dependedOnPackage = 
+                declarationUnit.getPackage()
+                    .getNameAsString();
+        if (!dependedOnUnitName.equals(currentUnitName) ||
+                !dependedOnPackage.equals(currentUnitPackage)) {
+            
+            // WOW : Ceylon Abstract Data types and swith case would be cool here ;) 
+            if (declarationUnit instanceof ProjectSourceFile) {
+                declarationUnit.getDependentsOf()
+                    .add(currentUnitPath);
+            }
+            else if (declarationUnit instanceof ICrossProjectReference) {
+                ICrossProjectReference crossProjectReference = 
+                        (ICrossProjectReference) declarationUnit;
+                ProjectSourceFile originalProjectSourceFile = 
+                        crossProjectReference.getOriginalSourceFile();
+                if (originalProjectSourceFile != null) {
+                    originalProjectSourceFile.getDependentsOf()
+                        .add(currentUnitPath);
+                }
+            }
+            else if (declarationUnit 
+                    instanceof ExternalSourceFile) {
+                // Don't manage them : they cannot change ... Well they might if we were using these dependencies to manage module 
+                // removal. But since module removal triggers a classpath container update and so a full build, it's not necessary.
+                // Might change in the future 
+            }
+            else if (declarationUnit instanceof CeylonBinaryUnit) {
+                declarationUnit.getDependentsOf()
+                    .add(currentUnitPath);
+            } 
+            else if (declarationUnit instanceof JavaCompilationUnit) {
+                //TODO: this does not seem to work for cross-project deps
+                // We should introduce a CrossProjectJavaUnit that can return 
+                // the original JavaCompilationUnit from the original project 
+                declarationUnit.getDependentsOf()
+                    .add(currentUnitPath);
+            } 
+            else if (declarationUnit instanceof JavaClassFile) {
+                //TODO: All the dependencies to class files are also added... It is really useful ?
+                // I assume in the case of the classes in the classes or exploded dirs, it might be,
+                // but not sure it is also used not in the case of jar-located classes
+                declarationUnit.getDependentsOf()
+                    .add(currentUnitPath);
+            } 
+            else {
+                assert(false);
+            }
         }
     }
     
@@ -237,13 +249,38 @@ public class UnitDependencyVisitor extends Visitor {
     public void visit(Tree.Declaration that) {
         Declaration decl = that.getDeclarationModel();
         if (decl.isNative()) {
-            List<Declaration> overloads = decl.getOverloads();
-            if (overloads != null) {
-                for (Declaration overload : overloads) {
-                    if (overload == decl) {
-                        continue;
+            Declaration headerDeclaration = ModelUtil.getNativeHeader(decl.getContainer(), decl.getName());
+            if (headerDeclaration != null) {
+                List<Declaration> declarationsDependingOn = new ArrayList<>();
+                if (headerDeclaration != decl) {
+                    declarationsDependingOn.add(headerDeclaration);
+                }
+                List<Declaration> overloads = headerDeclaration.getOverloads();
+                if (overloads != null) {
+                    for (Declaration overload : overloads) {
+                        if (overload != decl) {
+                            declarationsDependingOn.add(overload);
+                        }
                     }
-                    createDependency(overload);
+                }
+                for (Declaration dependingOn : declarationsDependingOn) {
+                    createDependency(dependingOn);
+                    Unit u = dependingOn.getUnit();
+                    if (u instanceof JavaCompilationUnit) {
+                        ICompilationUnit compilationUnit = ((JavaCompilationUnit) u).getTypeRoot();
+                        if (compilationUnit != null) {
+                            IResource javaFile;
+                            try {
+                                javaFile = compilationUnit.getCorrespondingResource();
+                                if (javaFile != null) {
+                                    String path = javaFile.getProjectRelativePath().toString();
+                                    addDependentsOf(decl.getUnit(), u, path);
+                                }
+                            } catch (JavaModelException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
                 }
             }
         }

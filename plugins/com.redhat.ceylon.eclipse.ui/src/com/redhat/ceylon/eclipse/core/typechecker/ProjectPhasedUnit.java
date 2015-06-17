@@ -26,6 +26,7 @@ import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
@@ -145,7 +146,8 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
                 List<Declaration> packageDeclarationOverloads = AbstractModelLoader.getOverloads(packageDeclaration);
                 if (packageDeclarationOverloads != null) {
                     for (Declaration packageDeclarationOverload : packageDeclarationOverloads) {
-                        if (packageDeclarationOverload.getUnit() == getUnit()) {
+                        if (getUnit() != null 
+                                && getUnit().equals(packageDeclarationOverload.getUnit())) {
                             declarationsToClean.add(packageDeclarationOverload);
                         }
                     }
@@ -165,24 +167,19 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
     }
 
     protected void removeDeclarationFromOverloads(Declaration declarationToClean) {
-        List<Declaration> overloadsToClean = AbstractModelLoader.getOverloads(declarationToClean);
-        if (overloadsToClean == null) {
-            return;
-        }
-        for (Declaration overloadToClean : overloadsToClean) {
-            if (overloadToClean == declarationToClean) {
-                continue;
+        Declaration headerDeclaration = ModelUtil.getNativeHeader(declarationToClean.getContainer(), declarationToClean.getName());
+        if (headerDeclaration != null) {
+            List<Declaration> overloadsToClean = headerDeclaration.getOverloads();
+            if (overloadsToClean == null) {
+                return;
             }
-            List<Declaration> overloadOverloads = AbstractModelLoader.getOverloads(overloadToClean);
             
-            List<Declaration> newOverloadOverloads = new ArrayList<>(3);
-            for (Declaration overloadOverload : overloadOverloads) {
-                if (overloadOverload == declarationToClean) {
-                    continue;
+            for (Iterator<Declaration> itr = overloadsToClean.iterator(); itr.hasNext(); ) {
+                Declaration overload = itr.next();
+                if (overload == declarationToClean) {
+                    itr.remove();
                 }
-                newOverloadOverloads.add(overloadOverload);
             }
-            AbstractModelLoader.setOverloads(overloadToClean, newOverloadOverloads);
         }
         for (Declaration member : declarationToClean.getMembers()) {
             removeDeclarationFromOverloads(member);

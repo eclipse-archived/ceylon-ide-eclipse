@@ -55,7 +55,6 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.core.JavaElement;
 import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
-import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -74,6 +73,7 @@ import com.redhat.ceylon.model.loader.NamingBase.Prefix;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -873,21 +873,16 @@ public class JavaSearch {
                 javaElement, 
                 javaElement.getJavaProject().getProject());
         if (javaSourceTypeDeclaration != null && javaSourceTypeDeclaration.isNative()) {
-            List<Declaration> overloads = javaSourceTypeDeclaration.getOverloads();
-            if (overloads != null) {
-                for (Declaration overload : overloads) {
-                    if (Backend.None.nativeAnnotation.equals(overload.getNativeBackend())) {
-                        if (elementEqualsDeclaration(declarationElement, overload)) {
-                            return overload;
-                        }
-                        Unit overloadUnit = overload.getUnit();
-                        if (overloadUnit instanceof CeylonUnit) {
-                            PhasedUnit phasedUnit = ((CeylonUnit) overloadUnit).getPhasedUnit();
-                            if (phasedUnit != null) {
-                                phasedUnits = Arrays.asList(phasedUnit);
-                                break;
-                            }
-                        }
+            Declaration headerDeclaration = ModelUtil.getNativeHeader(javaSourceTypeDeclaration.getContainer(), javaSourceTypeDeclaration.getName());
+            if (headerDeclaration != null) {
+                if (elementEqualsDeclaration(declarationElement, headerDeclaration)) {
+                    return headerDeclaration;
+                }
+                Unit nativeHeaderUnit = headerDeclaration.getUnit();
+                if (nativeHeaderUnit instanceof CeylonUnit) {
+                    PhasedUnit phasedUnit = ((CeylonUnit) nativeHeaderUnit).getPhasedUnit();
+                    if (phasedUnit != null) {
+                        phasedUnits = Arrays.asList(phasedUnit);
                     }
                 }
             }

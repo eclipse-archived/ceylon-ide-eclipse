@@ -15,10 +15,8 @@ import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
 public class EditedPhasedUnit extends IdePhasedUnit {
@@ -74,40 +72,4 @@ public class EditedPhasedUnit extends IdePhasedUnit {
     public boolean isAllowedToChangeModel(Declaration declaration) {
         return !IdePhasedUnit.isCentralModelDeclaration(declaration);
     }
-
-    @Override
-    public boolean shouldIgnoreOverload(Declaration overload,
-            Declaration currentDeclaration) {
-        Unit currentdeclarationUnit = currentDeclaration.getUnit();
-        if (currentdeclarationUnit instanceof EditedSourceFile) {
-            ProjectSourceFile projectSourceFile = ((EditedSourceFile)currentdeclarationUnit).getOriginalSourceFile();
-            for (Declaration modelDecl : projectSourceFile.getDeclarations()) {
-                if (modelDecl.equals(currentDeclaration)) {
-                    return overload == modelDecl;
-                }
-            }
-            
-            for (Declaration modelDecl : projectSourceFile.getPackage().getMembers()) {
-                if (modelDecl.isNative()) {
-                    List<Declaration> overloads = modelDecl.getOverloads();
-                    if (overloads != null) {
-                        for (Declaration anyOverload : overloads) {
-                            if (anyOverload.equals(currentDeclaration) 
-                                    && projectSourceFile.equals(anyOverload.getUnit())) {
-                                return overload == anyOverload;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-    
-    @Override
-    public void scanDeclarations() {
-        super.scanDeclarations();
-        IdePhasedUnit.addCentralModelOverloads(getUnit());
-    }
-    
 }

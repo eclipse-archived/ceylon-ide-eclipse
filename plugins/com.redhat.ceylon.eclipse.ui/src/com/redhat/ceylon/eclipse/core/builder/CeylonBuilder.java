@@ -1387,7 +1387,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     if (isSourceFile(f) || isResourceFile(f)) {
                         if (f.exists()) {
                             filesToAddInTypecheck.add(f);
-                            if (!astAwareIncrementalBuild || dependingFilesAccordingToStructureDelta.contains(f)) {
+                            if (!astAwareIncrementalBuild || dependingFilesAccordingToStructureDelta.contains(f) || isJava(f)) {
                                 filesToAddInCompile.add(f);
                             }
                         }

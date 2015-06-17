@@ -84,12 +84,6 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
                             protected boolean isAllowedToChangeModel(Declaration declaration) {
                                 return ! IdePhasedUnit.isCentralModelDeclaration(declaration);
                             }
-
-                            @Override
-                            public void scanDeclarations() {
-                                super.scanDeclarations();
-                                IdePhasedUnit.addCentralModelOverloads(getUnit());
-                            }
                         };
                     }
                 }.parseFileToPhasedUnit(

@@ -6,8 +6,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 
-import java.util.List;
-
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -18,8 +16,14 @@ import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
@@ -103,8 +107,32 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                                 return null;
                             }
                             else {
-                                referenceable = 
-                                        resolveNativeOverload(dec);
+                                Unit unit = dec.getUnit();
+                                Scope containerToSearchHeaderIn = null;
+                                if (unit instanceof CeylonBinaryUnit) {
+                                    ExternalPhasedUnit phasedUnit = ((CeylonBinaryUnit) unit).getPhasedUnit();
+                                    if (phasedUnit != null) {
+                                        ExternalSourceFile sourceFile = phasedUnit.getUnit();
+                                        if (sourceFile != null) {
+                                            for (Declaration sourceDecl : sourceFile.getDeclarations()) {
+                                                if (sourceDecl.equals(dec)) {
+                                                    containerToSearchHeaderIn = sourceDecl.getContainer();
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    containerToSearchHeaderIn = dec.getContainer();
+                                }
+                                Declaration headerDeclaration = ModelUtil.getNativeHeader(containerToSearchHeaderIn, dec.getName());
+                                if (Backend.None.equals(backend)) {
+                                    referenceable = headerDeclaration;
+                                } else {
+                                    if (headerDeclaration != null) {
+                                        referenceable = ModelUtil.getNativeDeclaration(headerDeclaration, supportedBackend());
+                                    }
+                                }
                             }
                         }
                         else {
@@ -123,30 +151,6 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                 }
             }
         }
-    }
-
-    private Declaration resolveNativeOverload(Declaration dec) {
-        List<Declaration> overloads = dec.getOverloads();
-        Backend backend = supportedBackend();
-        if (overloads == null) {
-            if (backend==Backend.None) {
-                return dec;
-            }
-        }
-        else {
-            if (backend!=null) {
-                for (Declaration overload: overloads) {
-                    Backend overloadBackend = 
-                            Backend.fromAnnotation(
-                                    overload.getNativeBackend());
-                    if (overloadBackend!=null && 
-                            overloadBackend.equals(backend)) {
-                        return overload;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     public Backend supportedBackend() {

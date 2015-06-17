@@ -21,8 +21,8 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.common.Backend;
@@ -125,17 +125,15 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                     if (projectSourceFile != null) {
 
                                         Declaration modelDeclaration = null;
-                                        for (Declaration packageDeclaration : projectSourceFile.getPackage().getMembers()) {
-                                            if (packageDeclaration.isNative()) {
-                                                List<Declaration> packageDeclarationOverloads = AbstractModelLoader.getOverloads(packageDeclaration);
-                                                for (Declaration packageDeclarationOverload : packageDeclarationOverloads) {
+                                        Declaration modelHeaderDeclaration = ModelUtil.getNativeHeader(projectSourceFile.getPackage(), dec.getName());
+                                        if (modelHeaderDeclaration != null) {
+                                            List<Declaration> overloads = modelHeaderDeclaration.getOverloads();
+                                            if (overloads != null) {
+                                                for (Declaration packageDeclarationOverload : overloads) {
                                                     if (packageDeclarationOverload.equals(dec)) {
                                                         modelDeclaration = packageDeclarationOverload;
                                                         break;
                                                     }
-                                                }
-                                                if (modelDeclaration != null) {
-                                                    break;
                                                 }
                                             }
                                         }
@@ -146,18 +144,14 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                         }
                                     }
                                 }
-                                List<Declaration> overloads = AbstractModelLoader.getOverloads(dec);
-                                if (overloads != null) {
-                                    for (Declaration overload : overloads) {
-                                        if (Backend.Java.nativeAnnotation.equals(overload.getNativeBackend())) {
-                                            if (overload.getUnit() instanceof IJavaModelAware) {
-                                                dec = overload;
-                                                declarationUnit = dec.getUnit();
-                                                jp = ((IJavaModelAware)declarationUnit).getTypeRoot().getJavaProject();
-                                                hasFoundAJavaImplementation = true;
-                                                break;
-                                            }
-                                        }
+                                
+                                Declaration javaOverload = ModelUtil.getNativeDeclaration(dec, Backend.Java);
+                                if (javaOverload != null) {
+                                    if (javaOverload.getUnit() instanceof IJavaModelAware) {
+                                        dec = javaOverload;
+                                        declarationUnit = dec.getUnit();
+                                        jp = ((IJavaModelAware)declarationUnit).getTypeRoot().getJavaProject();
+                                        hasFoundAJavaImplementation = true;
                                     }
                                 }
                                 if (!hasFoundAJavaImplementation) {

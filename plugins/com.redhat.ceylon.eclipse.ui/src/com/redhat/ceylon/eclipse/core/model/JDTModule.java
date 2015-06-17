@@ -948,13 +948,6 @@ public class JDTModule extends LazyModule {
                                     protected boolean isAllowedToChangeModel(Declaration declaration) {
                                         return !IdePhasedUnit.isCentralModelDeclaration(declaration);
                                     }
-
-                                    @Override
-                                    public void scanDeclarations() {
-                                        super.scanDeclarations();
-                                        IdePhasedUnit.addCentralModelOverloads(getUnit());
-                                    }
-                                    
                                 };
                             } else {
                                 phasedUnit = new CrossProjectPhasedUnit(archiveEntry, sourceArchive, cu, 
@@ -962,12 +955,6 @@ public class JDTModule extends LazyModule {
                                     @Override
                                     protected boolean isAllowedToChangeModel(Declaration declaration) {
                                         return !IdePhasedUnit.isCentralModelDeclaration(declaration);
-                                    }
-
-                                    @Override
-                                    public void scanDeclarations() {
-                                        super.scanDeclarations();
-                                        IdePhasedUnit.addCentralModelOverloads(getUnit());
                                     }
                                 };
                             }

@@ -41,9 +41,9 @@ import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
@@ -570,12 +570,17 @@ public class Nodes {
                         if (decl.isNative() 
                                 && unit != null 
                                 && ! unit.getFilename().toLowerCase().endsWith(".ceylon")) {
-                            List<Declaration> overloads = AbstractModelLoader.getOverloads((Declaration)model);
-                            for (Declaration overload : overloads) {
-                                if (Backend.None.nativeAnnotation.equals(overload.getNativeBackend())) {
-                                    model = overload;
-                                    foundTheCeylonDeclaration = true;
-                                    break;
+                            Declaration headerDeclaration = ModelUtil.getNativeHeader(decl.getContainer(), decl.getName());
+                            if (headerDeclaration != null) {
+                                List<Declaration> overloads = headerDeclaration.getOverloads();
+                                if (overloads != null) {
+                                    for (Declaration overload : overloads) {
+                                        if (Backend.None.nativeAnnotation.equals(overload.getNativeBackend())) {
+                                            model = overload;
+                                            foundTheCeylonDeclaration = true;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
