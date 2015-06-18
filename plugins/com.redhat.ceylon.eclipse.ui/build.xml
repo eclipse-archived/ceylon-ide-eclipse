@@ -412,19 +412,32 @@
 	</uptodate>
 	<uptodate property="dontRegenerate" targetfile="${moduleFileFolder}/module.ceylon" >
         <srcfiles dir= "${basedir}">
-            <include name="META-INF/MANIFEST.MF"/>
-            <include name="AdditionalBundles.txt"/>
             <include name="source-templates/*.*"/>
         </srcfiles>
     </uptodate>
 	
+	<target name="update-eclipse-dependencies-inside-eclipse">
+        <antcall target="generate-eclipseDependenciesModule"/>
+        <eclipse.refreshLocal resource="/com.redhat.ceylon.eclipse.ui/generated-source" depth="infinite"/>
+	</target>
+	
 	<target name="update-eclipse-dependencies-as-necessary">
 		<if>
-			<not>
-				<equals arg1="${dontMirror}" arg2="true"/>
-			</not>
+			<or>
+	            <not>
+	                <available file="${eclipseBinariesRepo}" type="dir"/>
+	            </not>
+	            <not>
+	                <equals arg1="${dontMirror}" arg2="true"/>
+	            </not>
+			</or>
 			<then>
-				<antcall target="mirrorRequiredBundles"/>
+                <echo level="error">
+The Ceylon repository for Eclipse dependencies is not up-to-date :
+    You should run :
+        - either the 'Retrieve Eclipse Dependencies.launch' Ant Launch Configuration to retrieve up-to-date dependencies
+          (disclaimer : this may take some time since files are downloaded form the Eclipse update site)
+        - or the 'Remove Eclipse Dependencies Warning.launch' Ant Launch Configuration to remove this message</echo>
 			</then>
 		</if>
         <if>
@@ -436,5 +449,30 @@
                 <eclipse.refreshLocal resource="/com.redhat.ceylon.eclipse.ui/generated-source" depth="infinite"/>
             </then>
         </if>
+	</target>
+
+    <target name="remove-up-to-date-warning">
+    	<if>
+            <or>
+                <not>
+                    <available file="${eclipseBinariesRepo}" type="dir"/>
+                </not>
+        		<not>
+                    <available file="${moduleFileFolder}/module.ceylon" type="file"/>
+        		</not>
+            </or>
+    		<then>
+                <echo level="error">
+Some generated elements are not there :
+    the 'Retrieve Eclipse Dependencies.launch' Ant Launch Configuration should be run at least once.</echo>
+    			<fail/>
+    		</then>
+    	</if>
+    	<touch file="${basedir}/META-INF/MANIFEST.MF">
+    	    <mapper type="glob" from="${basedir}/META-INF/MANIFEST.MF" to="${moduleFileFolder}/module.ceylon" />
+    	</touch>
+        <touch file="AdditionalBundles.txt">
+            <mapper type="glob" from="AdditionalBundles.txt" to="${moduleFileFolder}/module.ceylon" />
+        </touch>
 	</target>
 </project>
