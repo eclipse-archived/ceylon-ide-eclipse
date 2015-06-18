@@ -77,12 +77,6 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -96,6 +90,12 @@ import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public final class ReferencesPopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,
@@ -207,19 +207,21 @@ public final class ReferencesPopup extends PopupDialog
         includeImports = getDialogSettings().getBoolean("includeImports");
         setTitleText("Quick Find References");
         this.editor = editor;
-        commandBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
-                ".editor.findReferences");
-        findCommandBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
-                ".action.findReferences");
+        commandBinding = 
+                EditorUtil.getCommandBinding(PLUGIN_ID + 
+                        ".editor.findReferences");
+        findCommandBinding = 
+                EditorUtil.getCommandBinding(PLUGIN_ID + 
+                        ".action.findReferences");
         setStatusText();
         create();
         
-        Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
+        /*Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
         getShell().setBackground(bg);
         setBackgroundColor(bg);
 
         //setBackgroundColor(getEditorWidget(editor).getBackground());
-        setForegroundColor(getEditorWidget(editor).getForeground());        
+        setForegroundColor(getEditorWidget(editor).getForeground());*/     
     }
     
     private void setIcon() {
@@ -260,9 +262,9 @@ public final class ReferencesPopup extends PopupDialog
         }
     }
 
-    private StyledText getEditorWidget(CeylonEditor editor) {
+    /*private StyledText getEditorWidget(CeylonEditor editor) {
         return editor.getCeylonSourceViewer().getTextWidget();
-    }
+    }*/
 
     protected Control createContents(Composite parent) {
         Composite composite = (Composite) super.createContents(parent);
@@ -279,15 +281,15 @@ public final class ReferencesPopup extends PopupDialog
     
     @Override
     protected Control createDialogArea(Composite parent) {
-        treeViewer = new TreeViewer(parent, SWT.FLAT);
+        treeViewer = new TreeViewer(parent, SWT.SINGLE);
         treeViewer.getTree().setVisible(treeLayout);
-        GridData gdTree = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
+        GridData gdTree = new GridData(GridData.FILL_BOTH);
         gdTree.exclude = !treeLayout;
         treeViewer.getTree().setLayoutData(gdTree);
         treeViewer.setAutoExpandLevel(TreeViewer.ALL_LEVELS);
-        tableViewer = new TableViewer(parent, SWT.FLAT);
+        tableViewer = new TableViewer(parent, SWT.SINGLE);
         tableViewer.getTable().setVisible(!treeLayout);
-        GridData gdTable = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
+        GridData gdTable = new GridData(GridData.FILL_BOTH);
         gdTable.exclude = treeLayout;
         tableViewer.getTable().setLayoutData(gdTable);
         viewer = treeLayout ? treeViewer : tableViewer;
@@ -340,12 +342,16 @@ public final class ReferencesPopup extends PopupDialog
     }
     
     protected void gotoSelectedElement() {
-        Object node = ((StructuredSelection) viewer.getSelection()).getFirstElement();
+        StructuredSelection selection = 
+                (StructuredSelection) viewer.getSelection();
+        Object node = selection.getFirstElement();
         if (node!=null) {
             Object elem = ((TreeNode) node).getValue();
             if (elem instanceof CeylonSearchMatch) {
-                CeylonSearchMatch match = (CeylonSearchMatch) elem;
-                gotoFile(match.getElement().getFile(), match.getOffset(), match.getLength());
+                CeylonSearchMatch match = 
+                        (CeylonSearchMatch) elem;
+                gotoFile(match.getElement().getFile(), 
+                        match.getOffset(), match.getLength());
             }
         }
     }
@@ -442,7 +448,9 @@ public final class ReferencesPopup extends PopupDialog
             @Override
             public void widgetSelected(SelectionEvent e) {
                 switchMatchesInImports();
-                if (importsAction!=null) importsAction.setChecked(importsButton.getSelection());
+                if (importsAction!=null) {
+                    importsAction.setChecked(importsButton.getSelection());
+                }
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}

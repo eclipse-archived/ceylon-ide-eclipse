@@ -132,7 +132,6 @@ public abstract class TreeViewPopup extends PopupDialog
             String invokingCommandId, CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true, true, null, null);
         this.editor = editor; //has to be initialized here because it is used from create() called by super constructor!
-        
         if (invokingCommandId != null) {
             commandBinding = EditorUtil.getCommandBinding(invokingCommandId);
         }
@@ -205,9 +204,12 @@ public abstract class TreeViewPopup extends PopupDialog
                         e.button==1 &&
                         tree.equals(e.getSource())) {
                     Object o = tree.getItem(new Point(e.x, e.y));
-                    TreeItem selection = tree.getSelection()[0];
-                    if (selection.equals(o)) {
-                        gotoSelectedElement();
+                    TreeItem[] results = tree.getSelection();
+                    if (results.length>0) {
+                        TreeItem selection = results[0];
+                        if (selection.equals(o)) {
+                            gotoSelectedElement();
+                        }
                     }
                 }
             }
