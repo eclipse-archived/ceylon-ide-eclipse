@@ -42,6 +42,8 @@ IEclipsePreferences#org-eclipse-ui-editors {
 
 IEclipsePreferences#org-eclipse-ui-workbench {
     preferences:
+        'com.redhat.ceylon.eclipse.ui.theme.color.initializerAnnotation=153,102,0'
+        'com.redhat.ceylon.eclipse.ui.theme.color.rangeIndicatorAnnotation=51,0,0'
         'com.redhat.ceylon.eclipse.ui.theme.color.keywords=184,186,175'
         'com.redhat.ceylon.eclipse.ui.theme.color.annotations=6,182,239'
         'com.redhat.ceylon.eclipse.ui.theme.color.identifiers=239,97,85'

@@ -109,7 +109,7 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
     public static Image getPatternImage(Control control, Color color) {
         Point size = control.getSize();
         Display display = control.getDisplay();
-        Color bgColor = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        Color bgColor = control.getBackground();
 
         RGB rgbs[] = new RGB[] {
                 new RGB(color.getRed(), color.getGreen(), color.getBlue()),
