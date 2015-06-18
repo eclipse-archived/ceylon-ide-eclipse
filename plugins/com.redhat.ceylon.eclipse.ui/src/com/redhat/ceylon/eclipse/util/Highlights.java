@@ -65,7 +65,7 @@ public class Highlights  {
     }
     
     static {
-        final ITheme currentTheme = getCurrentTheme();        
+        final ITheme currentTheme = getCurrentTheme();
         initColors(currentTheme.getColorRegistry());
         currentTheme.addPropertyChangeListener(new IPropertyChangeListener() {
             @Override
