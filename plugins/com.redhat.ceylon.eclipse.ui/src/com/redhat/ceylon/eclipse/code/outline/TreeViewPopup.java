@@ -142,10 +142,6 @@ public abstract class TreeViewPopup extends PopupDialog
         // Create all controls early to preserve the life cycle of the original implementation.
         create();
         
-        Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
-        getShell().setBackground(bg);
-        setBackgroundColor(bg);
-
         // Status field text can only be computed after widgets are created.
         setInfoText(getStatusFieldText());
     }
@@ -250,7 +246,13 @@ public abstract class TreeViewPopup extends PopupDialog
         data.verticalAlignment = GridData.CENTER;
         filterText.setLayoutData(data);
 
-        filterText.addKeyListener(new KeyListener() {
+        filterText.addKeyListener(createViewerKeyListener());
+
+        return filterText;
+    }
+
+    protected KeyListener createViewerKeyListener() {
+        return new KeyListener() {
             public void keyPressed(KeyEvent e) {
                 if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) // Enter key
                     gotoSelectedElement();
@@ -264,9 +266,7 @@ public abstract class TreeViewPopup extends PopupDialog
             public void keyReleased(KeyEvent e) {
                 // do nothing
             }
-        });
-
-        return filterText;
+        };
     }
 
     protected void updateStatusFieldText() {
@@ -277,7 +277,7 @@ public abstract class TreeViewPopup extends PopupDialog
         return "";
     }
 
-    private void installFilter() {
+    protected void installFilter() {
         filterText.setText("");
         filterText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
@@ -592,9 +592,10 @@ public abstract class TreeViewPopup extends PopupDialog
     @Override
     protected IDialogSettings getDialogSettings() {
         String sectionName = getId();
-        IDialogSettings dialogSettings = CeylonPlugin.getInstance()
-                .getDialogSettings();
-        IDialogSettings settings = dialogSettings.getSection(sectionName);
+        IDialogSettings dialogSettings = 
+                CeylonPlugin.getInstance().getDialogSettings();
+        IDialogSettings settings = 
+                dialogSettings.getSection(sectionName);
         if (settings == null) {
             settings = dialogSettings.addNewSection(sectionName);
         }
@@ -673,7 +674,10 @@ public abstract class TreeViewPopup extends PopupDialog
     
     @Override
     protected void setTabOrder(Composite composite) {
-        composite.setTabList(new Control[] { filterText, treeViewer.getTree() });
+        composite.setTabList(new Control[] { 
+                filterText, 
+                treeViewer.getTree()
+        });
     }
     
     @Override

@@ -51,13 +51,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 final class PeekDefinitionPopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,
@@ -104,20 +104,13 @@ final class PeekDefinitionPopup extends PopupDialog
         super(parent, shellStyle, true, true, false, true,
                 true, null, null);
         this.editor = editor;
-        commandBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
-                ".editor.code");
+        commandBinding = 
+                EditorUtil.getCommandBinding(PLUGIN_ID + 
+                        ".editor.code");
         if (commandBinding!=null) {
             setInfoText(commandBinding.format() + " to open editor");
         }
-        
         create();
-        
-        Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
-        getShell().setBackground(bg);
-        setBackgroundColor(bg);
-
-        //setBackgroundColor(getEditorWidget(editor).getBackground());
-        setForegroundColor(getEditorWidget(editor).getForeground());
     }
 
     private StyledText getEditorWidget(CeylonEditor editor) {
@@ -126,21 +119,21 @@ final class PeekDefinitionPopup extends PopupDialog
 
     protected Control createContents(Composite parent) {
         Composite composite = (Composite) super.createContents(parent);
-        Control[] children = composite.getChildren();
         GridLayout layout = (GridLayout) composite.getLayout();
         layout.verticalSpacing=8;
         layout.marginLeft=8;
         layout.marginRight=8;
         layout.marginTop=8;
         layout.marginBottom=8;
+        Control[] children = composite.getChildren();
         children[children.length-2].setVisible(false);
         return composite;
     }
     
     @Override
     protected Control createDialogArea(Composite parent) {
-        int styles= SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.FULL_SELECTION;
-        viewer = new CeylonSourceViewer(editor, parent, null, null, false, styles);
+        viewer = new CeylonSourceViewer(editor, parent, null, null, false, 
+                SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.FULL_SELECTION);
         viewer.configure(new CeylonSourceViewerConfiguration(editor) {
             @Override
             protected CeylonParseController getParseController() {
@@ -150,7 +143,7 @@ final class PeekDefinitionPopup extends PopupDialog
         viewer.setEditable(false);
         StyledText textWidget = viewer.getTextWidget();
         textWidget.setFont(getEditorWidget(editor).getFont());
-        textWidget.setBackground(getEditorWidget(editor).getBackground());
+//        textWidget.setBackground(getEditorWidget(editor).getBackground());
         textWidget.addKeyListener(new GotoListener());
         return textWidget;
     }
@@ -191,7 +184,10 @@ final class PeekDefinitionPopup extends PopupDialog
 
     @Override
     protected Control createTitleControl(Composite parent) {
-        getPopupLayout().copy().numColumns(3).spacing(6, 6).applyTo(parent);
+        getPopupLayout().copy()
+            .numColumns(3)
+            .spacing(6, 6)
+            .applyTo(parent);
         Label iconLabel = new Label(parent, SWT.NONE);
         iconLabel.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_SOURCE));
         getShell().addKeyListener(new GotoListener());
@@ -203,8 +199,11 @@ final class PeekDefinitionPopup extends PopupDialog
             }
         });
         titleLabel.setEditable(false);
-        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-            .grab(true,false).span(1, 1).applyTo(titleLabel);
+        GridDataFactory.fillDefaults()
+            .align(SWT.FILL, SWT.CENTER)
+            .grab(true,false)
+            .span(1, 1)
+            .applyTo(titleLabel);
         return null;
     }
     
@@ -409,12 +408,14 @@ final class PeekDefinitionPopup extends PopupDialog
 
     @Override
     protected IDialogSettings getDialogSettings() {
-        String sectionName = CeylonPlugin.PLUGIN_ID + ".PeekDefinition";
-        IDialogSettings dialogSettings = CeylonPlugin.getInstance()
-                .getDialogSettings();
-        IDialogSettings settings= dialogSettings.getSection(sectionName);
+        String sectionName = 
+                CeylonPlugin.PLUGIN_ID + ".PeekDefinition";
+        IDialogSettings dialogSettings = 
+                CeylonPlugin.getInstance().getDialogSettings();
+        IDialogSettings settings = 
+                dialogSettings.getSection(sectionName);
         if (settings == null)
-            settings= dialogSettings.addNewSection(sectionName);
+            settings = dialogSettings.addNewSection(sectionName);
         return settings;
     }
 
