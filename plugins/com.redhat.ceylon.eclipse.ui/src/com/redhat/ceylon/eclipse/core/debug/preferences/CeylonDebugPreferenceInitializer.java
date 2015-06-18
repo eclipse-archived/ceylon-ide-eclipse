@@ -12,6 +12,7 @@ public class CeylonDebugPreferenceInitializer extends AbstractPreferenceInitiali
     static String ACTIVE_FILTERS_LIST = "activeStepFilters";
     static String INACTIVE_FILTERS_LIST = "inactiveStepFilters";
     static String USE_STEP_FILTERS = "useStepFilters";
+    static String DEBUG_AS_JAVACODE = "debugAsJavaCode";
     static String FILTER_DEFAULT_ARGUMENTS_CODE = "filterDefaultArgumentsCode";
     
     @Override
@@ -23,5 +24,6 @@ public class CeylonDebugPreferenceInitializer extends AbstractPreferenceInitiali
                 "ceylon.language.*,com.redhat.ceylon.*,java.lang.*");
         store.setDefault(USE_STEP_FILTERS, true);
         store.setDefault(FILTER_DEFAULT_ARGUMENTS_CODE, false);
+        store.setDefault(DEBUG_AS_JAVACODE, false);
     }
 }

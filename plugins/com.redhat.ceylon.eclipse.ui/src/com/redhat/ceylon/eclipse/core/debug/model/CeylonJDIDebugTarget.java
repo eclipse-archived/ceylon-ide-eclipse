@@ -50,6 +50,7 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
     private String[] ceylonStepFilters;
     private boolean stepFiltersEnabled;
     private boolean filterDefaultArgumentsCode;
+    private boolean debugAsJavaCode = false;
     
     public CeylonJDIDebugTarget(ILaunch launch, VirtualMachine jvm, String name,
             boolean supportTerminate, boolean supportDisconnect,
@@ -438,5 +439,13 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
     @Override
     public boolean isStepFiltersEnabled() {
         return stepFiltersEnabled;
+    }
+    
+    public boolean isDebugAsJavaCode() {
+        return debugAsJavaCode;
+    }
+
+    public void setDebugAsJavaCode(boolean debugAsJavaCode) {
+        this.debugAsJavaCode = debugAsJavaCode;
     }
 }

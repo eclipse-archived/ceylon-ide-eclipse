@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPrefer
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.INACTIVE_FILTERS_LIST;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.USE_STEP_FILTERS;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.FILTER_DEFAULT_ARGUMENTS_CODE;
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.DEBUG_AS_JAVACODE;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CreateFilterDialog.showCreateFilterDialog;
 import static org.eclipse.debug.internal.ui.SWTFactory.createPushButton;
 import static org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin.createAllPackagesDialog;
@@ -92,17 +93,12 @@ public class CeylonStepFilterPreferencePage
     
     //widgets
     private CheckboxTableViewer fTableViewer;
+    private Button fDebugAsJavaCode;
     private Button fUseStepFiltersButton;
     private Button fAddPackageButton;
     private Button fAddTypeButton;
     private Button fRemoveFilterButton;
     private Button fAddFilterButton;
-//    private Button fFilterSyntheticButton;
-//    private Button fFilterStaticButton;
-//    private Button fFilterGetterButton;
-//    private Button fFilterSetterButton;
-//    private Button fFilterConstructorButton;
-//    private Button fStepThruButton;
     private Button fSelectAllButton;
     private Button fDeselectAllButton;
     private Button fFilterDefaultArgumentMethodsButton;
@@ -118,8 +114,6 @@ public class CeylonStepFilterPreferencePage
 
     @Override
     protected Control createContents(Composite parent) {
-//        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.JAVA_STEP_FILTER_PREFERENCE_PAGE);
-        
         Link debugLink = new Link(parent, 0);
         debugLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         debugLink.setText("See Java '<a>Debug</a>' preferences for more settings.");
@@ -153,10 +147,11 @@ public class CeylonStepFilterPreferencePage
      * @return 
      */
     private Control createStepFilterPreferences(Composite parent) {
-        Composite container = SWTFactory.createGroup(parent, 
+        Composite container = SWTFactory.createComposite(parent, 1, 1, GridData.FILL_HORIZONTAL);
+        Composite stepFilterGroup = SWTFactory.createGroup(container, 
                 "Step filtering", 2, 1, GridData.FILL_HORIZONTAL);
         
-        fUseStepFiltersButton = SWTFactory.createCheckButton(container, 
+        fUseStepFiltersButton = SWTFactory.createCheckButton(stepFilterGroup, 
                 "&Enable step filtering", 
                 null, getPreferenceStore().getBoolean(USE_STEP_FILTERS), 2);
         fUseStepFiltersButton.addSelectionListener(new SelectionListener() {
@@ -167,11 +162,11 @@ public class CeylonStepFilterPreferencePage
             }
         );
         
-        SWTFactory.createLabel(container, "Code in filtered packages and classes will be skipped by the debugger.", 2);
+        SWTFactory.createLabel(stepFilterGroup, "Code in filtered packages and classes will be skipped by the debugger.", 2);
         
-        fTableViewer = CheckboxTableViewer.newCheckList(container, 
+        fTableViewer = CheckboxTableViewer.newCheckList(stepFilterGroup, 
                 SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
-        fTableViewer.getTable().setFont(container.getFont());
+        fTableViewer.getTable().setFont(stepFilterGroup.getFont());
         fTableViewer.setLabelProvider(new FilterLabelProvider());
         fTableViewer.setComparator(new FilterViewerComparator());
         fTableViewer.setContentProvider(new StepFilterContentProvider());
@@ -199,17 +194,22 @@ public class CeylonStepFilterPreferencePage
             }
         }); 
         
-        createStepFilterButtons(container);
-        createStepFilterCheckboxes(container);
+        createStepFilterButtons(stepFilterGroup);
+        createStepFilterCheckboxes(stepFilterGroup);
 
-        SWTFactory.createLabel(container, "Unchecked filters are disabled.", 2);
+        SWTFactory.createLabel(stepFilterGroup, "Unchecked filters are disabled.", 2);
         
-        fFilterDefaultArgumentMethodsButton = SWTFactory.createCheckButton(container, 
+        fFilterDefaultArgumentMethodsButton = SWTFactory.createCheckButton(stepFilterGroup, 
                 "Filter and step through &default argument code", 
                 null, getPreferenceStore().getBoolean(FILTER_DEFAULT_ARGUMENTS_CODE), 2);
 
         setPageEnablement(fUseStepFiltersButton.getSelection());
 
+        fDebugAsJavaCode = SWTFactory.createCheckButton(container, 
+                "Debug as &Java code", 
+                null, getPreferenceStore().getBoolean(DEBUG_AS_JAVACODE), 1);
+        fDebugAsJavaCode.setToolTipText("Disable the Ceylon-specific presentation, to show raw generated bytecode");
+        
         return container;
     }
     
@@ -239,12 +239,6 @@ public class CeylonStepFilterPreferencePage
         fDeselectAllButton.setEnabled(enabled);
         fSelectAllButton.setEnabled(enabled);
         fFilterDefaultArgumentMethodsButton.setEnabled(enabled);
-//        fFilterConstructorButton.setEnabled(enabled);
-//        fStepThruButton.setEnabled(enabled);
-//        fFilterGetterButton.setEnabled(enabled);
-//        fFilterSetterButton.setEnabled(enabled);
-//        fFilterStaticButton.setEnabled(enabled);
-//        fFilterSyntheticButton.setEnabled(enabled);
         fTableViewer.getTable().setEnabled(enabled);
         fRemoveFilterButton.setEnabled(enabled & 
                 !fTableViewer.getSelection().isEmpty());
@@ -255,25 +249,6 @@ public class CeylonStepFilterPreferencePage
      * @param container the parent container
      */
     private void createStepFilterCheckboxes(Composite container) {
-//        IPreferenceStore store = getPreferenceStore();
-//        fFilterSyntheticButton = SWTFactory.createCheckButton(container, 
-//                DebugUIMessages.JavaStepFilterPreferencePage_Filter_s_ynthetic_methods__requires_VM_support__17, 
-//                null, store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_SYNTHETICS), 2);
-//        fFilterStaticButton = SWTFactory.createCheckButton(container, 
-//                DebugUIMessages.JavaStepFilterPreferencePage_Filter_static__initializers_18, 
-//                null, store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_STATIC_INITIALIZERS), 2);
-//        fFilterConstructorButton = SWTFactory.createCheckButton(container, 
-//                DebugUIMessages.JavaStepFilterPreferencePage_Filter_co_nstructors_19, 
-//                null, store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_CONSTRUCTORS), 2);
-//        fFilterGetterButton = SWTFactory.createCheckButton(container, 
-//                DebugUIMessages.JavaStepFilterPreferencePage_Filter_getters, 
-//                null, store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_GETTERS), 2);
-//        fFilterSetterButton = SWTFactory.createCheckButton(container, 
-//                DebugUIMessages.JavaStepFilterPreferencePage_Filter_setters, 
-//                null, store.getBoolean(IJDIPreferencesConstants.PREF_FILTER_SETTERS), 2);
-//        fStepThruButton = SWTFactory.createCheckButton(container, 
-//                DebugUIMessages.JavaStepFilterPreferencePage_0, 
-//                null, getPreferenceStore().getBoolean(IJDIPreferencesConstants.PREF_STEP_THRU_FILTERS), 2);
     }
     
     /**
@@ -466,13 +441,8 @@ public class CeylonStepFilterPreferencePage
         
         store.setValue(FILTER_DEFAULT_ARGUMENTS_CODE, 
                 fFilterDefaultArgumentMethodsButton.getSelection());
-        //common with JDT preferences
-//        store.setValue(IJDIPreferencesConstants.PREF_FILTER_CONSTRUCTORS, fFilterConstructorButton.getSelection());
-//        store.setValue(IJDIPreferencesConstants.PREF_FILTER_STATIC_INITIALIZERS, fFilterStaticButton.getSelection());
-//        store.setValue(IJDIPreferencesConstants.PREF_FILTER_GETTERS, fFilterGetterButton.getSelection());
-//        store.setValue(IJDIPreferencesConstants.PREF_FILTER_SETTERS, fFilterSetterButton.getSelection());
-//        store.setValue(IJDIPreferencesConstants.PREF_FILTER_SYNTHETICS, fFilterSyntheticButton.getSelection());
-//        store.setValue(IJDIPreferencesConstants.PREF_STEP_THRU_FILTERS, fStepThruButton.getSelection());
+        store.setValue(DEBUG_AS_JAVACODE, 
+                fDebugAsJavaCode.getSelection());
         return super.performOk();
     }
     
@@ -485,13 +455,6 @@ public class CeylonStepFilterPreferencePage
 
         boolean filterDefaultArgumentMethods = store.getBoolean(FILTER_DEFAULT_ARGUMENTS_CODE);
         fFilterDefaultArgumentMethodsButton.setSelection(filterDefaultArgumentMethods);
-        
-//        fFilterSyntheticButton.setSelection(store.getDefaultBoolean(IJDIPreferencesConstants.PREF_FILTER_SYNTHETICS));
-//        fFilterStaticButton.setSelection(store.getDefaultBoolean(IJDIPreferencesConstants.PREF_FILTER_STATIC_INITIALIZERS));
-//        fFilterConstructorButton.setSelection(store.getDefaultBoolean(IJDIPreferencesConstants.PREF_FILTER_CONSTRUCTORS));
-//        fFilterGetterButton.setSelection(store.getDefaultBoolean(IJDIPreferencesConstants.PREF_FILTER_GETTERS));
-//        fFilterSetterButton.setSelection(store.getDefaultBoolean(IJDIPreferencesConstants.PREF_FILTER_SETTERS));
-//        fStepThruButton.setSelection(getPreferenceStore().getDefaultBoolean(IJDIPreferencesConstants.PREF_STEP_THRU_FILTERS));
         fTableViewer.getTable().removeAll();
         initTableState(true);               
         super.performDefaults();

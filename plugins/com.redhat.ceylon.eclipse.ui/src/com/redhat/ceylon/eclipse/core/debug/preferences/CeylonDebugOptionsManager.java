@@ -4,7 +4,10 @@ import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPrefer
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.INACTIVE_FILTERS_LIST;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.USE_STEP_FILTERS;
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.FILTER_DEFAULT_ARGUMENTS_CODE;
+import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.DEBUG_AS_JAVACODE;
 import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.parseList;
+
+import java.util.Arrays;
 
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
@@ -12,9 +15,13 @@ import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchListener;
 import org.eclipse.debug.core.model.IDebugTarget;
+import org.eclipse.debug.internal.ui.DebugUIPlugin;
+import org.eclipse.debug.ui.IDebugUIConstants;
+import org.eclipse.debug.ui.IDebugView;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.ui.IWorkbenchPage;
 
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -80,12 +87,13 @@ public class CeylonDebugOptionsManager
      * 
      * @param target Ceylon debug target
      */
-    protected void notifyTargetOfFilters(CeylonJDIDebugTarget target) {
+    protected void notifyTargetOfPropertyChanges(CeylonJDIDebugTarget target) {
         IPreferenceStore store = EditorUtil.getPreferences();
         String[] filters = parseList(store.getString(ACTIVE_FILTERS_LIST));
         target.setCeylonStepFilters(filters);
         target.setCeylonStepFiltersEnabled(store.getBoolean(USE_STEP_FILTERS));
         target.setFiltersDefaultArgumentsCode(store.getBoolean(FILTER_DEFAULT_ARGUMENTS_CODE));
+        target.setDebugAsJavaCode(store.getBoolean(DEBUG_AS_JAVACODE));
         
         if (!registeredAsPropertyChangeListener) {
             registeredAsPropertyChangeListener = true;
@@ -96,14 +104,14 @@ public class CeylonDebugOptionsManager
     /**
      * Notifies all targets of current filter specifications.
      */
-    protected void notifyTargetsOfFilters() {
+    protected void notifyTargetsOfPropertyChanges() {
         IDebugTarget[] targets = 
                 DebugPlugin.getDefault().getLaunchManager().getDebugTargets();
         for (int i = 0; i < targets.length; i++) {
             if (targets[i] instanceof CeylonJDIDebugTarget) {
                 CeylonJDIDebugTarget target = 
                         (CeylonJDIDebugTarget) targets[i];
-                notifyTargetOfFilters(target);
+                notifyTargetOfPropertyChanges(target);
             }
         }   
     }       
@@ -113,8 +121,22 @@ public class CeylonDebugOptionsManager
      */
     public void propertyChange(PropertyChangeEvent event) {
         String property = event.getProperty();
-        if (isFilterProperty(property)) {
-            notifyTargetsOfFilters();
+
+        if (property.equals(DEBUG_AS_JAVACODE)) {
+            IWorkbenchPage page = DebugUIPlugin.getActiveWorkbenchWindow().getActivePage();
+            for (String viewId : Arrays.asList(
+                    IDebugUIConstants.ID_VARIABLE_VIEW,
+                    IDebugUIConstants.ID_EXPRESSION_VIEW,
+                    IDebugUIConstants.ID_DEBUG_VIEW)) {
+                IDebugView view = (IDebugView) page.findView(viewId);
+                if (view != null) {
+                    view.getViewer().refresh();
+                }
+            }
+        }
+
+        if (isPropertyForDebugTargets(property)) {
+            notifyTargetsOfPropertyChanges();
         }
     }
     
@@ -122,11 +144,12 @@ public class CeylonDebugOptionsManager
      * Returns whether the given property is a property that affects whether
      * or not step filters are used.
      */
-    private boolean isFilterProperty(String property) {
+    private boolean isPropertyForDebugTargets(String property) {
         return property.equals(ACTIVE_FILTERS_LIST) ||
                 property.equals(INACTIVE_FILTERS_LIST) ||
                 property.equals(USE_STEP_FILTERS) ||
-                property.equals(FILTER_DEFAULT_ARGUMENTS_CODE);
+                property.equals(FILTER_DEFAULT_ARGUMENTS_CODE) ||
+                property.equals(DEBUG_AS_JAVACODE);
     }
 
     private boolean registeredAsPropertyChangeListener = false;
@@ -144,7 +167,7 @@ public class CeylonDebugOptionsManager
                     CeylonJDIDebugTarget ceylonTarget = 
                             (CeylonJDIDebugTarget)source;
                     // step filters
-                    notifyTargetOfFilters(ceylonTarget);
+                    notifyTargetOfPropertyChanges(ceylonTarget);
                 }
             }
         }
@@ -163,7 +186,7 @@ public class CeylonDebugOptionsManager
             return;
         }
         fActivated = true;
-        notifyTargetsOfFilters();
+        notifyTargetsOfPropertyChanges();
         DebugPlugin.getDefault().addDebugEventListener(this);
     }   
 

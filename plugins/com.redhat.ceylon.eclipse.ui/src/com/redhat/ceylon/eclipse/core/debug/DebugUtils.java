@@ -646,13 +646,19 @@ public class DebugUtils {
     
     
     public static boolean isCeylonFrame(IJavaStackFrame frame) {
-        try {
-            if (frame.getSourceName() != null
-                    && frame.getSourceName().endsWith(".ceylon")) {
-                return true;
+        IDebugTarget debugTarget = frame.getDebugTarget();
+        if(debugTarget instanceof CeylonJDIDebugTarget) {
+            if (((CeylonJDIDebugTarget) debugTarget).isDebugAsJavaCode()) {
+                return false;
             }
-        } catch (DebugException e) {
-            e.printStackTrace();
+            try {
+                if (frame.getSourceName() != null
+                        && frame.getSourceName().endsWith(".ceylon")) {
+                    return true;
+                }
+            } catch (DebugException e) {
+                e.printStackTrace();
+            }
         }
         return false;
     }
