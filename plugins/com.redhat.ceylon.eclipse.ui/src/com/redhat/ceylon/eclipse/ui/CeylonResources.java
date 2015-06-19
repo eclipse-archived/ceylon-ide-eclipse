@@ -184,8 +184,8 @@ public interface CeylonResources {
     public static final Image WARNING = imageRegistry.get(CEYLON_WARNING);
 
     //decorations
-    public static final String WARNING_IMAGE = "warning_obj.png";
-    public static final String ERROR_IMAGE = "error_obj.png";
+    public static final String WARNING_IMAGE = "warning_co.png";
+    public static final String ERROR_IMAGE = "error_co.png";
     public static final String REFINES_IMAGE = "over_tiny_co.png";
     public static final String IMPLEMENTS_IMAGE = "implm_tiny_co.png";
     public static final String FINAL_IMAGE = "final_co.png";
