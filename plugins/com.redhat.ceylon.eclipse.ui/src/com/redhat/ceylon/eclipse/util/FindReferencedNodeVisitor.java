@@ -64,6 +64,22 @@ class FindReferencedNodeVisitor extends Visitor {
     }
     
     @Override
+    public void visit(Tree.Constructor that) {
+        if (isDeclaration(that.getConstructor())) {
+            declarationNode = that;
+        }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.Enumerated that) {
+        if (isDeclaration(that.getEnumerated())) {
+            declarationNode = that;
+        }
+        super.visit(that);
+    }
+    
+    @Override
     public void visit(Tree.AttributeSetterDefinition that) {
         Setter setter = that.getDeclarationModel();
         if (isDeclaration(setter.getDirectMember(setter.getName(), null, false))) {
