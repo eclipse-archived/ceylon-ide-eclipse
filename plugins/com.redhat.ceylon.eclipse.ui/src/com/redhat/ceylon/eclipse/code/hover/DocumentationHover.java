@@ -40,7 +40,6 @@ import static java.lang.Character.codePointCount;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
-import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
@@ -84,39 +83,12 @@ import org.eclipse.ui.ISharedImages;
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Configuration.Builder;
 import com.github.rjeschke.txtmark.Processor;
-import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Constructor;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.Generic;
-import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.NothingType;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.Reference;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypedReference;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.TypeAlias;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnonymousAnnotation;
-import com.redhat.ceylon.model.typechecker.util.TypePrinter;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
 import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
@@ -132,7 +104,36 @@ import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
+import com.redhat.ceylon.model.cmr.JDKUtils;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.model.typechecker.model.Constructor;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.Generic;
+import com.redhat.ceylon.model.typechecker.model.Interface;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.NothingType;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.ParameterList;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypeAlias;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypeParameter;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypedReference;
+import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.model.typechecker.model.Value;
+import com.redhat.ceylon.model.typechecker.util.TypePrinter;
 
 
 public class DocumentationHover extends SourceInfoHover {
@@ -372,7 +373,7 @@ public class DocumentationHover extends SourceInfoHover {
             fInfoControl = infoControl;
             setText("Open Declaration");
             setToolTipText("Open Declaration");
-            setLocalImageDescriptors(this, "goto_obj.gif");
+            setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.GOTO));
         }
         @Override
         public void run() {
@@ -986,7 +987,7 @@ public class DocumentationHover extends SourceInfoHover {
 
     private static String decorateFunctionIcon(Declaration dec, String icon) {
         if (dec.isAnnotation()) {
-            return icon.replace("co", "ann");
+            return icon.replace("obj", "ann").replace("png", "gif");
         }
         else {
             return icon;
