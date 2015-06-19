@@ -357,6 +357,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return CEYLON_CONSTRUCTOR; //TODO!!
             }
         }
+        else if (n instanceof Tree.Enumerated) {
+            if (shared) {
+                return CEYLON_CONSTRUCTOR;
+            }
+            else {
+                return CEYLON_CONSTRUCTOR; //TODO!!
+            }
+        }
         else if (n instanceof Tree.AnyMethod) {
             if (shared) {
                 return CEYLON_METHOD;
@@ -596,11 +604,19 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.Constructor ac = (Tree.Constructor) node;
             StyledString label = 
                     new StyledString("new ", KW_STYLER);
+            String name = name(ac.getIdentifier());
+            label.append(name, ID_STYLER);
+            parameters(ac.getParameterList(), label);
+            return label;
+        }
+        else if (node instanceof Tree.Enumerated) {
+            Tree.Enumerated ac = (Tree.Enumerated) node;
+            StyledString label = 
+                    new StyledString("new ", KW_STYLER);
             if (ac.getIdentifier()!=null) {
                 String name = name(ac.getIdentifier());
-                label.append(name, TYPE_ID_STYLER);
+                label.append(name, ID_STYLER);
             }
-            parameters(ac.getParameterList(), label);
             return label;
         }
         else if (node instanceof Tree.TypeAliasDeclaration) {
