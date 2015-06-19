@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -70,7 +72,8 @@ import org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.RemoveFromBu
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsBlock;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import com.redhat.ceylon.ide.common.util.InteropUtils;
 
 /**
  * Copied from <code>{@link org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.GenerateBuildPathActionGroup}</code>
@@ -346,8 +349,8 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 		runnable.run();
 		
 		// And finally update the Ceylon config file
-        CeylonProjectConfig config = CeylonProjectConfig.get(project);
-        List<String> configResourceDirectories = config.getProjectResourceDirectories();
+        CeylonProjectConfig<IProject> config = ceylonModel().getProject(project).getConfiguration();
+        List<String> configResourceDirectories = InteropUtils.toJavaStringList(config.getProjectResourceDirectories());
         IPath javaOutputLocation = javaProject.readOutputLocation();
         try {
 			CPListElement[] classPathEntries = CPListElement.createFromExisting(javaProject);

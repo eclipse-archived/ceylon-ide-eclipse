@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import org.eclipse.core.resources.IProject;
@@ -29,23 +30,19 @@ public class ProjectChangeListener implements IResourceChangeListener {
                     }
                     if (resource instanceof IProject && delta.getKind()==IResourceDelta.REMOVED) {
                         CeylonBuilder.removeProject((IProject) resource);
-                        ceylonModelGetter_.ceylonModelGetter().removeProject((IProject) resource); 
+                        ceylonModel().removeProject((IProject) resource); 
                     }
                     else if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
                         final IProject project = (IProject) resource;
                         if (!project.isOpen()) {
                             CeylonBuilder.removeProject(project);
-                            ceylonModelGetter_.ceylonModelGetter().removeProject((IProject) resource); 
+                            ceylonModel().removeProject((IProject) resource); 
                         }
                         else if (CeylonNature.isEnabled(project)) {
                             IJavaProject javaProject = JavaCore.create(project);
                             if (javaProject != null) {
-                                ceylonModelGetter_.ceylonModelGetter().removeProject((IProject) resource); 
-                                //List<CeylonApplicationModulesContainer> cpContainers = 
+                                ceylonModel().addProject((IProject) resource); 
                                 getCeylonClasspathContainers(javaProject);
-                                /*for (CeylonApplicationModulesContainer container : cpContainers) {
-                                    container.launchResolve(false, null);
-                                }*/
                             }
                         }
                     }

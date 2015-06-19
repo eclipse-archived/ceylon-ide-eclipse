@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
 
@@ -13,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.internal.registry.ExtensionRegistry;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -113,6 +115,13 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         super.start(context);
         this.bundleContext = context;
         addResourceFilterPreference();
+        
+        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+            if (project.isAccessible()) {
+                ceylonModel().addProject(project);
+            }
+        }
+        
         registerProjectOpenCloseListener();
         CeylonEncodingSynchronizer.getInstance().install();
 
@@ -125,7 +134,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         registerCeylonModules.setRule(ResourcesPlugin.getWorkspace().getRoot());
         registerCeylonModules.schedule();
         
-        Job refreshExternalSourceArchiveManager = new Job("Load the Ceylon Metamodel for plugin dependencies") {
+        Job refreshExternalSourceArchiveManager = new Job("Refresh External Ceylon Source Archives") {
             protected IStatus run(IProgressMonitor monitor) {
                 ExternalSourceArchiveManager esam = ExternalSourceArchiveManager.getExternalSourceArchiveManager();
                 esam.initialize();

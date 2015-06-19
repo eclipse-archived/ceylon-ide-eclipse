@@ -16,6 +16,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelTypeCh
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.isTheSourceArchiveProject;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.toFullPath;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
@@ -76,7 +77,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
@@ -600,7 +600,7 @@ public class CeylonParseController {
         else {
             cwd = project.getLocation().toFile();
             systemRepo = getInterpolatedCeylonSystemRepo(project);
-            offline = CeylonProjectConfig.get(project).isOffline();
+            offline = ceylonModel().getProject(project).getConfiguration().getOffline();
         }
         
         RepositoryManager repositoryManager = repoManager()

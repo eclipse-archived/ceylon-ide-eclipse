@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.modulesearch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ADD;
 
 import java.util.ArrayList;
@@ -88,7 +89,6 @@ import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
@@ -372,7 +372,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
             Repositories repositories;
             IProject selectedProject = getSelectedProject();
             if( selectedProject != null ) {
-                repositories = CeylonProjectConfig.get(selectedProject).getMergedRepositories();
+                repositories = ceylonModel().getProject(selectedProject).getConfiguration().getRepositories();
             } else {
                 repositories = Repositories.get();
             }

@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.Set;
@@ -33,11 +34,11 @@ import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.cmr.Repository;
 
 public class CeylonNavigatorLabelProvider extends
@@ -129,10 +130,15 @@ public class CeylonNavigatorLabelProvider extends
         if (stringToDisplay == null && CeylonBuilder.getCeylonModulesOutputDirectory(repoNode.project).getAbsolutePath().equals(displayString)) {
             stringToDisplay = "Output Modules";
         }
-        if (stringToDisplay == null && CeylonProjectConfig.get(repoNode.project).getMergedRepositories().getCacheRepoDir().getAbsolutePath().equals(displayString)) {
+        
+        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(repoNode.project);
+        
+        Repositories mergedRepos = ceylonProject.getConfiguration().getRepositories();
+
+        if (stringToDisplay == null && mergedRepos.getCacheRepoDir().getAbsolutePath().equals(displayString)) {
             stringToDisplay = "Cached Modules";
         }
-        if (stringToDisplay == null && CeylonProjectConfig.get(repoNode.project).getMergedRepositories().getUserRepoDir().getAbsolutePath().equals(displayString)) {
+        if (stringToDisplay == null && mergedRepos.getUserRepoDir().getAbsolutePath().equals(displayString)) {
             stringToDisplay = "Imported Modules";
         }
         if (stringToDisplay == null && displayString.startsWith("[Maven]")) {
@@ -153,7 +159,7 @@ public class CeylonNavigatorLabelProvider extends
         }
 
         if (stringToDisplay == null) {
-            for (Repositories.Repository repo : CeylonProjectConfig.get(repoNode.project).getMergedRepositories().getLocalLookupRepositories()) {
+            for (Repositories.Repository repo : mergedRepos.getLocalLookupRepositories()) {
                 if (repo.getUrl().startsWith("./") && repo.getUrl().length() > 2) {
                     IPath relativePath = Path.fromPortableString(repo.getUrl().substring(2));
                     IFolder folder = repoNode.project.getFolder(relativePath);
