@@ -836,7 +836,7 @@ public class SourceViewerInformationControl
 				    {
 				        setText("Open Declaration");
 			            setToolTipText("Open Declaration");
-			            setLocalImageDescriptors(this, "goto_input.gif");
+			            setLocalImageDescriptors(this, "goto_obj.gif");
 				    }
 				    @Override
 			        public void run() {

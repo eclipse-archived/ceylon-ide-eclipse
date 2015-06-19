@@ -1,12 +1,11 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverText;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationHoverText;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverText;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
-import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
@@ -32,8 +31,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.part.ViewPart;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
@@ -44,8 +41,11 @@ import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
 import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 public class DocumentationView extends ViewPart {
     
@@ -308,7 +308,7 @@ public class DocumentationView extends ViewPart {
     final class OpenDeclarationAction extends Action {
         public OpenDeclarationAction() {
             setText("Open Declaration");
-            setLocalImageDescriptors(this, "goto_input.gif");
+            this.setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.GOTO));
         }
         @Override
         public void run() {

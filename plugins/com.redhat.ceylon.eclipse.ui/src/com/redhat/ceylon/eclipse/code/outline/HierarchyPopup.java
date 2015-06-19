@@ -97,8 +97,9 @@ public class HierarchyPopup extends TreeViewPopup {
     
     public HierarchyPopup(CeylonEditor editor, Shell shell, int shellStyle) {
         super(shell, shellStyle, PLUGIN_ID + ".editor.hierarchy", editor);
-        hierarchyBinding = EditorUtil.getCommandBinding(PLUGIN_ID + 
-                ".action.showInHierarchyView");
+        hierarchyBinding = 
+                EditorUtil.getCommandBinding(PLUGIN_ID + 
+                        ".action.showInHierarchyView");
         setInfoText(getStatusFieldText());
     }
     

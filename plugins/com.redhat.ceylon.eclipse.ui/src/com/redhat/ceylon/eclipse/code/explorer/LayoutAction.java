@@ -18,11 +18,11 @@ class LayoutAction extends Action {
         fPackageExplorer= packageExplorer;
         if (fIsFlatLayout) {
             setText(PackagesMessages.LayoutActionGroup_flatLayoutAction_label);
-            JavaPluginImages.setLocalImageDescriptors(this, "flatLayout.gif"); //$NON-NLS-1$
+            JavaPluginImages.setLocalImageDescriptors(this, "flatLayout.png"); //$NON-NLS-1$
             PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.LAYOUT_FLAT_ACTION);
         } else {
             setText(PackagesMessages.LayoutActionGroup_hierarchicalLayoutAction_label);
-            JavaPluginImages.setLocalImageDescriptors(this, "hierarchicalLayout.gif"); //$NON-NLS-1$
+            JavaPluginImages.setLocalImageDescriptors(this, "hierarchicalLayout.png"); //$NON-NLS-1$
             PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.LAYOUT_HIERARCHICAL_ACTION);
         }
         setChecked(packageExplorer.isFlatLayout() == fIsFlatLayout);

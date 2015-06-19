@@ -372,7 +372,7 @@ public class DocumentationHover extends SourceInfoHover {
             fInfoControl = infoControl;
             setText("Open Declaration");
             setToolTipText("Open Declaration");
-            setLocalImageDescriptors(this, "goto_input.gif");
+            setLocalImageDescriptors(this, "goto_obj.gif");
         }
         @Override
         public void run() {
@@ -667,7 +667,7 @@ public class DocumentationHover extends SourceInfoHover {
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
         HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("types.gif").toExternalForm(), 
+                HTML.fileUrl("types.png").toExternalForm(), 
                 16, 16, 
                 "Inferred type&nbsp;&nbsp;<tt>" + 
                 producedTypeLink(t, node.getUnit()) + "</tt>", 
@@ -676,7 +676,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (!t.containsUnknowns()) {
             buffer.append("One quick assist available:<br/>");
             HTML.addImageAndLabel(buffer, null, 
-                    HTML.fileUrl("correction_change.gif").toExternalForm(), 
+                    HTML.fileUrl("correction_change.png").toExternalForm(), 
                     16, 16, 
                     "<a href=\"stp:" + node.getStartIndex() + 
                     "\">Specify explicit type</a>", 
@@ -707,7 +707,7 @@ public class DocumentationHover extends SourceInfoHover {
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
         HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("types.gif").toExternalForm(), 
+                HTML.fileUrl("types.png").toExternalForm(), 
                 16, 16, 
                 "<tt>" + producedTypeLink(t,unit) + "</tt> ", 
                 20, 4);
@@ -749,7 +749,7 @@ public class DocumentationHover extends SourceInfoHover {
         String desc = node instanceof Tree.Literal ? 
                 "Literal of type" : "Expression of type";
         HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("types.gif").toExternalForm(), 
+                HTML.fileUrl("types.png").toExternalForm(), 
                 16, 16, 
                 desc + "&nbsp;&nbsp;<tt>" + 
                 producedTypeLink(t, node.getUnit()) + "</tt> ", 
@@ -931,26 +931,26 @@ public class DocumentationHover extends SourceInfoHover {
             return "jar_l_obj.gif";
         }
         else if (obj instanceof Package) {
-            return "package_obj.gif";
+            return "package_obj.png";
         }
         else if (obj instanceof Declaration) {
             Declaration dec = (Declaration) obj;
             if (dec instanceof Class) {
                 String icon = dec.isShared() ? 
-                        "class_obj.gif" : 
-                        "innerclass_private_obj.gif";
+                        "class_obj.png" : 
+                        "innerclass_private_obj.png";
                 return decorateTypeIcon(dec, icon);
             }
             else if (dec instanceof Interface) {
                 String icon = dec.isShared() ? 
-                        "int_obj.gif" : 
-                        "innerinterface_private_obj.gif";
+                        "int_obj.png" : 
+                        "innerinterface_private_obj.png";
                 return decorateTypeIcon(dec, icon);
             }
             else if (dec instanceof Constructor) {
                 String icon = dec.isShared() ? 
-                        "constructor.gif" : 
-                        "constructor.gif"; //TODO!!!!!!
+                        "constructor.png" : 
+                        "constructor.png"; //TODO!!!!!!
                 return decorateTypeIcon(dec, icon);
             }
             else if (dec instanceof TypeAlias||
@@ -959,25 +959,25 @@ public class DocumentationHover extends SourceInfoHover {
             }
             else if (dec.isParameter()) {
                 if (dec instanceof Function) {
-                    return "methpro_obj.gif";
+                    return "methpro_obj.png";
                 }
                 else {
-                    return "field_protected_obj.gif";
+                    return "field_protected_obj.png";
                 }
             }
             else if (dec instanceof Function) {
                 String icon = dec.isShared() ?
-                        "public_co.gif" : 
-                        "private_co.gif";
+                        "methpub_obj.png" : 
+                        "methpri_obj.png";
                 return decorateFunctionIcon(dec, icon);
             }
             else if (dec instanceof FunctionOrValue) {
                 return dec.isShared() ?
-                        "field_public_obj.gif" : 
-                        "field_private_obj.gif";
+                        "field_public_obj.png" : 
+                        "field_private_obj.png";
             }
             else if (dec instanceof TypeParameter) {
-                return "typevariable_obj.gif";
+                return "typevariable_obj.png";
             }
         }
         return null;
@@ -1228,7 +1228,7 @@ public class DocumentationHover extends SourceInfoHover {
                 ";color:" + ann + "'>shared</span></tt>", 
                 20, 4);
         HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("package_obj.gif").toExternalForm(), 
+                HTML.fileUrl("package_obj.png").toExternalForm(), 
                 16, 16, 
                 "<tt><span style='font-size:" + largerSize + "'>" + 
                 HTML.highlightLine("package " + packageName) +
@@ -1567,7 +1567,7 @@ public class DocumentationHover extends SourceInfoHover {
                     getQualifyingType(node, outer)
                         .getSupertype(superclass);
             String icon = rd.isFormal() ? 
-                    "implm_co.gif" : "over_co.gif";
+                    "implm_co.png" : "over_co.png";
             HTML.addImageAndLabel(buffer, rd, 
                     HTML.fileUrl(icon).toExternalForm(),
                     16, 16,
@@ -1689,7 +1689,7 @@ public class DocumentationHover extends SourceInfoHover {
                             }
 //                            param.append("</span>");
                             HTML.addImageAndLabel(buffer, model, 
-                                    HTML.fileUrl("methpro_obj.gif").toExternalForm(),
+                                    HTML.fileUrl("methpro_obj.png").toExternalForm(),
                                     16, 16, param.toString(), 20, 2);
                         }
                     }
@@ -1716,7 +1716,7 @@ public class DocumentationHover extends SourceInfoHover {
                 buf.append("</tt>");
                 HTML.addImageAndLabel(buffer, 
                         ret.getDeclaration(), 
-                        HTML.fileUrl("stepreturn_co.gif").toExternalForm(), 
+                        HTML.fileUrl("stepreturn_co.png").toExternalForm(), 
                         16, 16, buf.toString(), 20, 2);
                 buffer.append("</p>");
             }
@@ -2111,7 +2111,7 @@ public class DocumentationHover extends SourceInfoHover {
                 cases.append(" (self type)");
             }
             HTML.addImageAndLabel(buffer, null, 
-                    HTML.fileUrl("sub.gif").toExternalForm(), 
+                    HTML.fileUrl("sub.png").toExternalForm(), 
                     16, 16,
                     " <tt><span style='font-size:" + 
                     smallerSize + "'>of&nbsp;" + 
@@ -2122,7 +2122,7 @@ public class DocumentationHover extends SourceInfoHover {
             Type sup = type.getExtendedType();
             if (sup!=null) {
                 HTML.addImageAndLabel(buffer, sup.getDeclaration(), 
-                        HTML.fileUrl("superclass.gif").toExternalForm(), 
+                        HTML.fileUrl("superclass.png").toExternalForm(), 
                         16, 16, 
                         "<tt><span style='font-size:" + 
                         smallerSize + "'>extends&nbsp;" + 
@@ -2140,7 +2140,7 @@ public class DocumentationHover extends SourceInfoHover {
                 satisfies.append(producedTypeLink(st, unit));
             }
             HTML.addImageAndLabel(buffer, null, 
-                    HTML.fileUrl("super.gif").toExternalForm(), 
+                    HTML.fileUrl("super.png").toExternalForm(), 
                     16, 16, 
                     "<tt><span style='font-size:" + 
                     smallerSize + "'>satisfies&nbsp;" + 

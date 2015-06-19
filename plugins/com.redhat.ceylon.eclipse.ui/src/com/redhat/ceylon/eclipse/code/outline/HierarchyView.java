@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
@@ -22,13 +21,13 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.HISTORY;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
@@ -89,19 +88,20 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.part.ViewPart;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.open.OpenDeclarationInHierarchyAction;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
 public class HierarchyView extends ViewPart {
 
@@ -188,7 +188,7 @@ public class HierarchyView extends ViewPart {
             super(null, AS_DROP_DOWN_MENU);
             setMenuCreator(this);
             setToolTipText("Previous Type Hierarchies");
-            JavaPluginImages.setLocalImageDescriptors(this, "history_list.gif");
+            this.setImageDescriptor(imageRegistry.getDescriptor(CeylonResources.HISTORY));
         }
         
         @Override

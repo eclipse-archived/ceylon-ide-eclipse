@@ -196,7 +196,7 @@
             enabled="true"
             extensions="ceylon:90"
             sizeHint="460,160"
-            icon="icons/find_obj.gif"
+            icon="icons/search_src.png"
             showScopeSection="true"
             label="Ceylon Search"/>
    </extension>
@@ -242,7 +242,7 @@
        </wizard>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newPackageWizard"
-             icon="icons/newpack_wiz.gif"
+             icon="icons/newpack.png"
              name="Ceylon Package"
              category="com.redhat.ceylon.eclipse.ui.category"
              hasPages="true"
@@ -280,7 +280,7 @@
             name="Java Archive to Module Repository"
             class="com.redhat.ceylon.eclipse.code.wizard.ExportJarWizard"
             category="ceylon" 
-            icon="/icons/exportjar_wiz.gif">
+            icon="/icons/exportjar.png">
           <description>Export a Java archive to a module repository.</description>
           <selection class="org.eclipse.core.resources.IResource"/> 
       </wizard> 
@@ -380,7 +380,7 @@
             annotationType="com.redhat.ceylon.eclipse.ui.refinement"
             label="Ceylon Refinement Indicators"
             annotationImageProvider="com.redhat.ceylon.eclipse.code.editor.RefinementAnnotationImageProvider"
-            icon="icons/over_co.gif"
+            icon="icons/over_co.png"
             presentationLayer="4"
             contributesToHeader="true"
             includeOnPreferencePage="true"
@@ -433,7 +433,7 @@
             presentationLayer="2"
             contributesToHeader="false"
             includeOnPreferencePage="true"
-            icon="icons/occ_match.gif"
+            icon="icons/occ_match.png"
                         
             isGoToNextNavigationTarget="false"
             isGoToNextNavigationTargetKey="occurrenceAnnotationIsGotoNextKey"
@@ -465,7 +465,7 @@
             presentationLayer="2"
             contributesToHeader="false"
             includeOnPreferencePage="true"
-            icon="icons/occ_match.gif"
+            icon="icons/occ_match.png"
                         
             isGoToNextNavigationTarget="false"
             isGoToNextNavigationTargetKey="declarationAnnotationIsGotoNextKey"
@@ -497,7 +497,7 @@
             presentationLayer="2"
             contributesToHeader="false"
             includeOnPreferencePage="true"
-            icon="icons/occ_match.gif"
+            icon="icons/occ_match.png"
                         
             isGoToNextNavigationTarget="false"
             isGoToNextNavigationTargetKey="assignmentAnnotationIsGotoNextKey"
@@ -559,7 +559,7 @@
             id="com.redhat.ceylon.eclipse.ui.action.markOccurrences">
          <action
                class="com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction"
-               icon="icons/mark_occurrences.gif"
+               icon="icons/mark_occurrences.png"
                id="com.redhat.ceylon.eclipse.ui.action.MarkOccurrences"
                label="&amp;Toggle Mark Occurrences"
                state="true"
@@ -577,7 +577,7 @@
             visible="false">
          <action
                class="com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction"
-               icon="icons/mark_occurrences.gif"
+               icon="icons/mark_occurrences.png"
                id="com.redhat.ceylon.eclipse.ui.action.markOccurrences"
                label="&amp;Toggle Mark Occurrences"
                state="true"
@@ -1466,7 +1466,7 @@
             <command
                   label="Open &amp;Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
-                  icon="icons/opentype.gif"
+                  icon="icons/opentype.png"
                   id="com.redhat.ceylon.eclipse.ui.menu.openDeclaration"/>
             <command
                   label="Open in &amp;Type Hierarchy View..." 
@@ -1510,7 +1510,7 @@
             <command
                   label="Open Declaration..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.openDeclaration"
-                  icon="icons/opentype.gif"
+                  icon="icons/opentype.png"
                   tooltip="Open Declaration"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.openDeclaration"/>
             <command
@@ -1554,7 +1554,7 @@
             <command
                   label="New Ceylon Package..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.newPackage"
-                  icon="icons/newpack_wiz.gif"
+                  icon="icons/newpack.png"
                   tooltip="New Ceylon Package"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.newPackage">
               <visibleWhen>
@@ -1774,7 +1774,7 @@
                    id="ceylonSearch"
                    commandId="com.redhat.ceylon.eclipse.ui.action.ceylonSearch"
                    label="&amp;Ceylon..."
-                   icon="icons/find_obj.gif"/>
+                   icon="icons/search_src.png"/>
              <separator name="dialogGroup"/>
              <separator
                     visible="true"
@@ -2620,7 +2620,7 @@
                label="Show in Type &amp;Hierarchy View"
                class="com.redhat.ceylon.eclipse.code.outline.ShowInHierarchyAction"
                enablesFor="1"
-               icon="icons/class_hi_view.gif"
+               icon="icons/class_hi.png"
                id="showInHierarchy"
                menubarPath="showIn"
                definitionId="com.redhat.ceylon.eclipse.ui.action.showInHierarchyView"/>
@@ -2846,7 +2846,7 @@
       <view
             category="com.redhat.ceylon.eclipse.ui.views"
             class="org.eclipse.ui.navigator.resources.ProjectExplorer"
-            icon="icons/package.gif"
+            icon="icons/package.png"
             id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"
             name="Ceylon Explorer"/>
       <view
@@ -2858,7 +2858,7 @@
       <view
             category="com.redhat.ceylon.eclipse.ui.views"
             class="com.redhat.ceylon.eclipse.code.outline.HierarchyView"
-            icon="icons/class_hi_view.gif"
+            icon="icons/class_hi.png"
             id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"
             name="Ceylon Type Hierarchy"/>
       <view

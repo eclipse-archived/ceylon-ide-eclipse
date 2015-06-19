@@ -184,16 +184,16 @@ public interface CeylonResources {
     public static final Image WARNING = imageRegistry.get(CEYLON_WARNING);
 
     //decorations
-    public static final String WARNING_IMAGE = "warning.gif";
-    public static final String ERROR_IMAGE = "error.gif";
+    public static final String WARNING_IMAGE = "warning_obj.png";
+    public static final String ERROR_IMAGE = "error_obj.png";
     public static final String REFINES_IMAGE = "over_tiny_co.gif";
     public static final String IMPLEMENTS_IMAGE = "implm_tiny_co.gif";
-    public static final String FINAL_IMAGE = "final_co.gif";
-    public static final String ABSTRACT_IMAGE = "abstract_co.gif";
-    public static final String VARIABLE_IMAGE = "volatile_co.gif";
-    public static final String ANNOTATION_IMAGE = "annotation_tsk.gif";
-    public static final String ENUM_IMAGE = "enum_tsk.gif";
+    public static final String FINAL_IMAGE = "final_co.png";
+    public static final String ABSTRACT_IMAGE = "abstract_co.png";
+    public static final String VARIABLE_IMAGE = "volatile_co.png";
+    public static final String ANNOTATION_IMAGE = "annotation_tsk.png";
+    public static final String ENUM_IMAGE = "enum_tsk.png";
     public static final String ALIAS_IMAGE = "linked_co.gif";
-    public static final String DEPRECATED_IMAGE = "deprecated.gif";
+    public static final String DEPRECATED_IMAGE = "deprecated.png";
 
 }
