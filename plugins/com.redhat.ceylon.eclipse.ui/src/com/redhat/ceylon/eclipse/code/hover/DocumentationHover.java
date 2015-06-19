@@ -951,7 +951,8 @@ public class DocumentationHover extends SourceInfoHover {
                 String icon = dec.isShared() ? 
                         "constructor.png" : 
                         "constructor.png"; //TODO!!!!!!
-                return decorateTypeIcon(dec, icon);
+                return icon;
+//                return decorateTypeIcon(dec, icon);
             }
             else if (dec instanceof TypeAlias||
                     dec instanceof NothingType) {
@@ -995,13 +996,13 @@ public class DocumentationHover extends SourceInfoHover {
     private static String decorateTypeIcon(Declaration dec, String icon) {
         TypeDeclaration td = (TypeDeclaration) dec;
         if (td.getCaseTypes()!=null) {
-            return icon.replace("obj", "enum");
+            return icon.replace("obj", "enum").replace("png", "gif");
         }
         else if (dec.isAnnotation()) {
-            return icon.replace("obj", "ann");
+            return icon.replace("obj", "ann").replace("png", "gif");
         }
         else if (td.isAlias()) {
-            return icon.replace("obj", "alias");
+            return icon.replace("obj", "alias").replace("png", "gif");
         }
         else {
             return icon;
