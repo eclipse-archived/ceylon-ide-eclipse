@@ -99,6 +99,7 @@ import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.VALUE_REF;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isLetter;
@@ -147,17 +148,17 @@ import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.ImportList;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Reference;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -932,7 +933,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 if (!secondLevel && !inDoc && noParamsFollow &&
                         isInvocationProposable(dwp, ol, previousTokenType) && 
                         (!isQualifiedType(node) || 
-                                dec instanceof Constructor || 
+                                isConstructor(dec) || 
                                 dec.isStaticallyImportable()) &&
                         (!(scope instanceof Constructor) || 
                                 ol!=EXTENDS || 
@@ -1039,7 +1040,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     private static boolean isDelegatableConstructor(Scope scope, Declaration dec) {
-        if (dec instanceof Constructor) {
+        if (isConstructor(dec)) {
             Scope container = dec.getContainer();
             Scope outerScope = scope.getContainer();
             if (container==null || outerScope==null) {
@@ -1246,7 +1247,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                  ol==EXPRESSION && (!(dec instanceof Class) || !((Class) dec).isAbstract()) || 
                  ol==EXTENDS && dec instanceof Class && !((Class) dec).isFinal() && 
                          ((Class) dec).getTypeParameters().isEmpty() ||
-                 ol==EXTENDS && dec instanceof Constructor && !((Class) dec.getContainer()).isFinal() && 
+                 ol==EXTENDS && isConstructor(dec) && !((Class) dec.getContainer()).isFinal() && 
                          ((Class) dec.getContainer()).getTypeParameters().isEmpty() ||
                  ol==CLASS_ALIAS && dec instanceof Class ||
                  ol==PARAMETER_LIST && dec instanceof Function && 
@@ -1262,7 +1263,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             Type requiredType, int previousTokenType) {
         Declaration dec = dwp.getDeclaration();
         return (ol!=EXTENDS || dec instanceof Class && !((Class) dec).isFinal() || 
-                               dec instanceof Constructor && !((Class) dec.getContainer()).isFinal()) && 
+                               isConstructor(dec) && !((Class) dec.getContainer()).isFinal()) && 
                (ol!=CLASS_ALIAS || dec instanceof Class) &&
                (ol!=SATISFIES || dec instanceof Interface) &&
                (ol!=OF || dec instanceof Class || isAnonymousClassValue(dec)) && 
