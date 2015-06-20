@@ -479,36 +479,49 @@ public class Nodes {
     public static Referenceable getReferencedDeclaration(Node node) {
         //NOTE: this must accept a null node, returning null!
         if (node instanceof Tree.MemberOrTypeExpression) {
-            return ((Tree.MemberOrTypeExpression) node).getDeclaration();
+            Tree.MemberOrTypeExpression mte = 
+                    (Tree.MemberOrTypeExpression) node;
+            return mte.getDeclaration();
         } 
         else if (node instanceof Tree.SimpleType) {
-            return ((Tree.SimpleType) node).getDeclarationModel();
+            Tree.SimpleType st = (Tree.SimpleType) node;
+            return st.getDeclarationModel();
         } 
         else if (node instanceof Tree.ImportMemberOrType) {
-            return ((Tree.ImportMemberOrType) node).getDeclarationModel();
+            Tree.ImportMemberOrType imt = 
+                    (Tree.ImportMemberOrType) node;
+            return imt.getDeclarationModel();
         } 
         else if (node instanceof Tree.Declaration) {
-            return ((Tree.Declaration) node).getDeclarationModel();
+            Tree.Declaration d = (Tree.Declaration) node;
+            return d.getDeclarationModel();
         } 
         else if (node instanceof Tree.NamedArgument) {
-            Parameter p = ((Tree.NamedArgument) node).getParameter();
+            Tree.NamedArgument na = (Tree.NamedArgument) node;
+            Parameter p = na.getParameter();
             return p==null ? null : p.getModel();
         }
         else if (node instanceof Tree.InitializerParameter) {
-            Parameter p = ((Tree.InitializerParameter) node).getParameterModel();
+            Tree.InitializerParameter ip = 
+                    (Tree.InitializerParameter) node;
+            Parameter p = ip.getParameterModel();
             return  p==null ? null : p.getModel();
         }
         else if (node instanceof Tree.MetaLiteral) {
-            return ((Tree.MetaLiteral) node).getDeclaration();
+            Tree.MetaLiteral ml = (Tree.MetaLiteral) node;
+            return ml.getDeclaration();
         }
         else if (node instanceof Tree.SelfExpression) {
-            return ((Tree.SelfExpression) node).getDeclarationModel();
+            Tree.SelfExpression se = (Tree.SelfExpression) node;
+            return se.getDeclarationModel();
         }
         else if (node instanceof Tree.Outer) {
-            return ((Tree.Outer) node).getDeclarationModel();
+            Tree.Outer o = (Tree.Outer) node;
+            return o.getDeclarationModel();
         }
         else if (node instanceof Tree.Return) {
-            return ((Tree.Return) node).getDeclaration();
+            Tree.Return r = (Tree.Return) node;
+            return r.getDeclaration();
         }
         else if (node instanceof Tree.DocLink) {
             DocLink docLink = (Tree.DocLink) node;
@@ -521,7 +534,8 @@ public class Nodes {
             }
         }
         else if (node instanceof Tree.ImportPath) {
-            return ((Tree.ImportPath) node).getModel();
+            Tree.ImportPath ip = (Tree.ImportPath) node;
+            return ip.getModel();
         }
         else {
             return null;
