@@ -29,19 +29,20 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Interface;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class CreateProposal extends InitializerProposal {
     
@@ -251,7 +252,12 @@ class CreateProposal extends InitializerProposal {
                     ValueFunctionDefinitionGenerator.create(brokenName, smte, cu);
             if (vfdg!=null) {
                 if (smte instanceof Tree.BaseMemberExpression) {
-                    addCreateParameterProposal(proposals, project, vfdg);
+                    Tree.BaseMemberExpression bme = 
+                            (Tree.BaseMemberExpression) smte;
+                    Tree.Identifier id = bme.getIdentifier();
+                    if (id.getToken().getType()!=CeylonLexer.AIDENTIFIER) {
+                        addCreateParameterProposal(proposals, project, vfdg);
+                    }
                 }
                 addCreateProposals(cu, proposals, project, file, smte, vfdg);
             }
