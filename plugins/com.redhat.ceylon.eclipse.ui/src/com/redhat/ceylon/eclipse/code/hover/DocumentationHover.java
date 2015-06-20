@@ -1418,11 +1418,12 @@ public class DocumentationHover extends SourceInfoHover {
     private static String getDocumentationFor(CeylonParseController controller, 
             Declaration dec, Node node, Reference pr) {
         if (dec==null) return null;
-        if (dec instanceof Value) {
-            Value value = (Value) dec;
+        if (dec instanceof FunctionOrValue) {
+            FunctionOrValue value = (FunctionOrValue) dec;
             TypeDeclaration valueType = 
                     value.getTypeDeclaration();
-            if (valueType!=null && valueType.isAnonymous() &&
+            if (valueType!=null && 
+                    valueType.isAnonymous() &&
                     !value.getType().isTypeConstructor()) {
                 dec = valueType;
             }
