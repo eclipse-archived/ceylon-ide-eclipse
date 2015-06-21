@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static java.util.Arrays.asList;
 
 import java.util.Collection;
@@ -33,9 +34,9 @@ import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -183,20 +184,20 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 containerDesc = " in '" + name + "'";
             }
             String name = d.getName();
-            if (name == null && 
-                    dec instanceof Constructor) {
-                Scope cont = d.getContainer();
-                if (cont instanceof Declaration) {
-                    name = ((Declaration) container).getName();
-                    containerDesc = "";
-                }
+            if (name == null && isConstructor(d)) {
+                description =
+                        "Make default constructor " + 
+                        annotation + containerDesc;
             }
-            description = 
-                    "Make '" + name + "' " + 
-                            annotation + containerDesc;
+            else {
+                description = 
+                        "Make '" + name + "' " + 
+                        annotation + containerDesc;
+            }
         }
         else  {
-            description = "Make package '" + 
+            description = 
+                    "Make package '" + 
                     dec.getNameAsString() + "' " + 
                     annotation;
         }
