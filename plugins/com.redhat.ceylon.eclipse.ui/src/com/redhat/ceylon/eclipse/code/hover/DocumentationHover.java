@@ -36,6 +36,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isResolvable;
 import static java.lang.Character.codePointCount;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
@@ -1456,21 +1457,31 @@ public class DocumentationHover extends SourceInfoHover {
             Declaration dec, Node node, Reference pr, 
             CeylonParseController cpc, Unit unit) {
         StringBuilder buf = new StringBuilder();
+//        if (isConstructor(dec)) {
+//            if (dec instanceof FunctionOrValue) {
+//                FunctionOrValue fov = (FunctionOrValue) dec;
+//                dec = fov.getTypeDeclaration();
+//            }
+//        }
         if (dec.isShared()) buf.append("shared&nbsp;");
         if (dec.isActual()) buf.append("actual&nbsp;");
         if (dec.isDefault()) buf.append("default&nbsp;");
         if (dec.isFormal()) buf.append("formal&nbsp;");
-        if (dec instanceof Value && ((Value) dec).isLate()) 
+        if (dec instanceof Value && ((Value) dec).isLate()) {
             buf.append("late&nbsp;");
+        }
         if (isVariable(dec)) buf.append("variable&nbsp;");
         if (dec.isNative()) buf.append("native&nbsp;");
         if (dec instanceof TypeDeclaration) {
             TypeDeclaration td = (TypeDeclaration) dec;
             if (td.isSealed()) buf.append("sealed&nbsp;");
-            if (td.isFinal()) buf.append("final&nbsp;");
+            if (td.isFinal() && !(td instanceof Constructor)) {
+                buf.append("final&nbsp;");
+            }
             if (td instanceof Class && 
-                    ((Class) td).isAbstract()) 
+                    ((Class) td).isAbstract()) {
                 buf.append("abstract&nbsp;");
+            }
         }
         if (dec.isAnnotation()) buf.append("annotation&nbsp;");
         if (buf.length()!=0) {
@@ -1496,32 +1507,23 @@ public class DocumentationHover extends SourceInfoHover {
     private static void addClassMembersInfo(Declaration dec,
             StringBuilder buffer) {
         if (dec instanceof ClassOrInterface) {
-            if (!dec.getMembers().isEmpty()) {
-                boolean first = true;
-                for (Declaration mem: dec.getMembers()) {
-                    if (mem.getName()==null) {
-                        continue;
+            boolean first = true;
+            for (Declaration mem: dec.getMembers()) {
+                if (isResolvable(mem) && mem.isShared() &&
+                        (!mem.isOverloaded() ||
+                          mem.isAbstraction())) {
+                    if (first) {
+                        buffer.append("<p>Members:&nbsp;&nbsp;");
+                        first = false;
                     }
-                    if (mem instanceof Function && 
-                            ((Function) mem).isOverloaded()) {
-                        continue;
+                    else {
+                        buffer.append(", ");
                     }
-                    if (mem.isShared()) {
-                        if (first) {
-                            buffer.append("<p>Members:&nbsp;&nbsp;");
-                            first = false;
-                        }
-                        else {
-                            buffer.append(", ");
-                        }
-
-                        appendLink(buffer, mem);
-                    }
+                    appendLink(buffer, mem);
                 }
-                if (!first) {
-                    buffer.append(".</p>");
-                    //extraBreak = true;
-                }
+            }
+            if (!first) {
+                buffer.append(".</p>");
             }
         }
     }
