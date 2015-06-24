@@ -1,7 +1,8 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
@@ -21,7 +22,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 
@@ -36,6 +36,7 @@ public class CompletionProposal implements ICompletionProposal,
     protected int offset;
     private int length;
     private boolean toggleOverwrite;
+    protected String currentPrefix;
     
     public CompletionProposal(int offset, String prefix, Image image,
             String desc, String text) {
@@ -43,6 +44,7 @@ public class CompletionProposal implements ICompletionProposal,
         this.image = image;
         this.offset = offset;
         this.prefix = prefix;
+        currentPrefix = prefix;
         this.length = prefix.length();
         this.description = desc;
         Assert.isNotNull(description);
@@ -74,7 +76,7 @@ public class CompletionProposal implements ICompletionProposal,
     }
 
     public int length(IDocument document) {
-        String overwrite = EditorUtil.getPreferences().getString(COMPLETION);
+        String overwrite = getPreferences().getString(COMPLETION);
         if ("overwrite".equals(overwrite)!=toggleOverwrite) {
             int length = prefix.length();
             try {
@@ -133,7 +135,7 @@ public class CompletionProposal implements ICompletionProposal,
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
         Highlights.styleProposal(result, getDisplayString(), 
-                qualifiedNameIsPath());
+                qualifiedNameIsPath(), currentPrefix);
         return result;
     }
 
@@ -161,21 +163,20 @@ public class CompletionProposal implements ICompletionProposal,
         if (offset<this.offset) {
             return false;
         }
-        try {
-            //TODO: really this strategy is only applicable
-            //      for completion of declaration names, so
-            //      move this implementation to subclasses
-            int start = this.offset-prefix.length();
-            String typedText = document.get(start, offset-start);
-            return isNameMatching(typedText, text);
-//            String typedText = document.get(this.offset, offset-this.offset);
-//            return text.substring(prefix.length())
-//                       .startsWith(typedText);
-        }
-        catch (BadLocationException e) {
-            return false;
-        }
+        currentPrefix = getCurrentPrefix(document, offset);
+        return currentPrefix==null ? false :
+        	isNameMatching(currentPrefix, text);
     }
+
+	String getCurrentPrefix(IDocument document, int offset) {
+		try {
+			int start = this.offset-prefix.length();
+			return document.get(start, offset-start);
+		}
+		catch (BadLocationException e) {
+			return null;
+		}
+	}
 
     @Override
     public IInformationControlCreator getInformationControlCreator() {

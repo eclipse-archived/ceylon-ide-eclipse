@@ -9,6 +9,8 @@ import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.resource.ColorRegistry;
@@ -45,6 +47,7 @@ public class Highlights  {
     public static String PACKAGES = "packages";    
     public static String MEMBERS = "members";    
     public static String OUTLINE_TYPES = "outlineTypes";    
+    public static String MATCHES = "matches";    
     
     private static TextAttribute identifierAttribute, 
             typeAttribute, typeLiteralAttribute, 
@@ -168,9 +171,15 @@ public class Highlights  {
                 }
         }
     }
-
+    
     public static void styleProposal(StyledString result, 
             String string, boolean qualifiedNameIsPath) {
+    	styleProposal(result, string, qualifiedNameIsPath, null);
+    }
+    
+    public static void styleProposal(StyledString result, 
+            String string, boolean qualifiedNameIsPath,
+            String prefix) {
         StringTokenizer tokens = 
                 new StringTokenizer(string, 
                         qualifiedNameIsPath ? 
@@ -179,6 +188,7 @@ public class Highlights  {
                         true);
         boolean version = false;
         boolean qualified = false;
+        boolean matchHighlighting = prefix!=null; 
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
             if (token.equals("\"")) {
@@ -199,7 +209,13 @@ public class Highlights  {
                     result.append(token, NUM_STYLER);
                 }
                 else if (isUpperCase(initial)) {
-                    result.append(token, TYPE_ID_STYLER);
+                	if (matchHighlighting) {
+                		appendId(result, prefix, token, TYPE_ID_STYLER);
+                		matchHighlighting = false;
+                	}
+                	else {
+                		result.append(token, TYPE_ID_STYLER);
+                	}
                 }
                 else if (isLowerCase(initial)) {
                     if (Escaping.KEYWORDS.contains(token)) {
@@ -209,10 +225,22 @@ public class Highlights  {
                         result.append(token, PACKAGE_STYLER);
                     }
                     else if (qualified) {
-                        result.append(token, MEMBER_STYLER);
+                    	if (matchHighlighting) {
+                    		appendId(result, prefix, token, MEMBER_STYLER);
+                    		matchHighlighting = false;
+                    	}
+                    	else {
+                    		result.append(token, MEMBER_STYLER);
+                    	}
                     }
                     else {
-                        result.append(token, ID_STYLER);
+                    	if (matchHighlighting) {
+                    		appendId(result, prefix, token, ID_STYLER);
+                    		matchHighlighting = false;
+                    	}
+                    	else {
+                    		result.append(token, ID_STYLER);
+                    	}
                     }
                 }
                 else {
@@ -222,6 +250,23 @@ public class Highlights  {
             qualified = false;
         }
     }
+
+	private static void appendId(StyledString result, 
+			String prefix, String token, Styler styler) {
+		int i = 0;
+		Matcher m = Pattern.compile("\\w\\p{Ll}*").matcher(prefix);
+		while (i<token.length() && m.find()) {
+			String bit = m.group();
+			int loc = token.indexOf(bit, i);
+			if (loc<0) {
+				loc = token.toLowerCase().indexOf(bit.toLowerCase());
+			}
+			result.append(token.substring(i, loc), styler);
+			result.append(token.substring(loc, loc+bit.length()), Highlights.MATCH_STYLER);
+			i = loc + bit.length();
+		}
+		result.append(token.substring(i), styler);
+	}
 
     public static void styleJavaType(StyledString result, 
             String string) {
@@ -367,6 +412,14 @@ public class Highlights  {
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
                     color(colorRegistry, OUTLINE_TYPES);
+        }
+    };
+    public static final Styler MATCH_STYLER = 
+            new Styler() {
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            textStyle.foreground =
+                    color(colorRegistry, MATCHES);
         }
     };
     public static final Styler ANN_STYLER = 

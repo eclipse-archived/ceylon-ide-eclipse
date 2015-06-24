@@ -22,6 +22,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getRefi
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
@@ -211,10 +212,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         StyledString result = new StyledString();
         String string = getDisplayString();
         if (string.startsWith("shared actual")) {
-            result.append(string.substring(0,13), Highlights.ANN_STYLER);
+            result.append(string.substring(0,13), 
+            		Highlights.ANN_STYLER);
             string=string.substring(13);
         }
-        Highlights.styleProposal(result, string, false);
+        Highlights.styleProposal(result, string, false, currentPrefix);
         return result;
     }
     
@@ -249,7 +251,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         catch (Exception e) {
             e.printStackTrace();
         }
-        if (EditorUtil.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
+        if (getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
             enterLinkedMode(document);
         }
     }
@@ -292,8 +294,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                                 loc+pos, 7, 0, 
                                 props.toArray(NO_COMPLETIONS));
                 LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
-                LinkedMode.installLinkedMode((CeylonEditor) EditorUtil.getCurrentEditor(),
-                        document, linkedModeModel, this, new LinkedMode.NullExitPolicy(), 
+                CeylonEditor editor = 
+                		(CeylonEditor) EditorUtil.getCurrentEditor();
+				LinkedMode.installLinkedMode(editor,
+                        document, linkedModeModel, this, 
+                        new LinkedMode.NullExitPolicy(), 
                         1, loc+text.length());
             }
 
