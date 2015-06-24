@@ -144,7 +144,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     static void addSecondLevelProposal(
             int offset, String prefix, 
-            final CeylonParseController cpc, 
+            CeylonParseController controller, 
             List<ICompletionProposal> result, 
             Declaration dec, Scope scope, 
             boolean isMember, Reference pr,
@@ -152,7 +152,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         if (!(dec instanceof Functional) && 
             !(dec instanceof TypeDeclaration)) {
             //add qualified member proposals 
-            Unit unit = cpc.getRootNode().getUnit();
+            Unit unit = controller.getRootNode().getUnit();
             Type type = pr.getType();
             if (isTypeUnknown(type)) return;
             Collection<DeclarationWithProximity> members = 
@@ -165,31 +165,17 @@ class InvocationCompletionProposal extends CompletionProposal {
                 if ((m instanceof FunctionOrValue ||
                         m instanceof Class) &&
                         !isConstructor(m)) {
-                    Reference ptr = 
-                            type.getTypedReference(m, NO_TYPES);
-                    Type mt = ptr.getType();
-                    if (mt!=null && 
-                            (requiredType==null || 
-                             mt.isSubtypeOf(requiredType))) {
-                        String qualifier = dec.getName() + ".";
-                        String desc = 
-                                qualifier + 
-                                getPositionalInvocationDescriptionFor(
-                                        m, ol, ptr, unit, false, null);
-                        String text = 
-                                qualifier + 
-                                getPositionalInvocationTextFor(
-                                        m, ol, ptr, unit, false, null);
-                        result.add(new InvocationCompletionProposal(
-                                offset, prefix, desc, text, m, ptr, scope, 
-                                cpc, true, true, false, true, dec));
-                    }
+                    addSecondLevelProposal(
+                            offset, prefix, 
+                            controller, result, dec,
+                            scope, requiredType, ol, 
+                            unit, type, m);
                 }
             }
         }
         if (dec instanceof Class) {
             //add constructor proposals 
-            Unit unit = cpc.getRootNode().getUnit();
+            Unit unit = controller.getRootNode().getUnit();
             Type type = pr.getType();
             if (isTypeUnknown(type)) return;
             Collection<DeclarationWithProximity> members = 
@@ -200,27 +186,40 @@ class InvocationCompletionProposal extends CompletionProposal {
             for (DeclarationWithProximity ndwp: members) {
                 Declaration m = ndwp.getDeclaration();
                 if (isConstructor(m)) {
-                    Reference ptr = 
-                            type.getTypedReference(m, NO_TYPES);
-                    Type mt = ptr.getType();
-                    if (mt!=null && 
-                            (requiredType==null || 
-                            mt.isSubtypeOf(requiredType))) {
-                        String qualifier = dec.getName() + ".";
-                        String desc = 
-                                qualifier + 
-                                getPositionalInvocationDescriptionFor(
-                                        m, ol, ptr, unit, false, null);
-                        String text = 
-                                qualifier + 
-                                getPositionalInvocationTextFor(
-                                        m, ol, ptr, unit, false, null);
-                        result.add(new InvocationCompletionProposal(
-                                offset, prefix, desc, text, m, ptr, scope, 
-                                cpc, true, true, false, true, dec));
-                    }
+                    addSecondLevelProposal(
+                            offset, prefix, 
+                            controller, result, dec,
+                            scope, requiredType, ol, 
+                            unit, type, m);
                 }
             }
+        }
+    }
+
+    private static void addSecondLevelProposal(
+            int offset, String prefix,
+            CeylonParseController controller, 
+            List<ICompletionProposal> result,
+            Declaration dec, Scope scope, Type requiredType,
+            OccurrenceLocation ol, Unit unit, 
+            Type type, Declaration m) {
+        Reference ptr = type.getTypedReference(m, NO_TYPES);
+        Type mt = ptr.getType();
+        if (mt!=null && 
+                (requiredType==null || 
+                mt.isSubtypeOf(requiredType))) {
+            String qualifier = dec.getName() + ".";
+            String desc = 
+                    qualifier + 
+                    getPositionalInvocationDescriptionFor(
+                            m, ol, ptr, unit, false, null);
+            String text = 
+                    qualifier + 
+                    getPositionalInvocationTextFor(
+                            m, ol, ptr, unit, false, null);
+            result.add(new InvocationCompletionProposal(
+                    offset, prefix, desc, text, m, ptr, scope, 
+                    controller, true, true, false, true, dec));
         }
     }
     
