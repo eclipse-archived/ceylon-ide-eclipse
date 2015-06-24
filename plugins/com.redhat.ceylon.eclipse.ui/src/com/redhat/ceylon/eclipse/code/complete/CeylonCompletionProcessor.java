@@ -891,7 +891,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             if (dnt!=null && dnt.getTypeModel()!=null) {
                 Type t = dnt.getTypeModel();
                 addRefinementProposals(offset, sortedProposals, 
-                        cpc, scope, node, doc,secondLevel, 
+                        cpc, scope, node, doc, secondLevel, 
                         result, ol, t, true);
             }
             //otherwise guess something from the type

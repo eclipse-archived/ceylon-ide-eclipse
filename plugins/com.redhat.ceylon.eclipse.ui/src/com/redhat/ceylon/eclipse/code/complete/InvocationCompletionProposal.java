@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterContextInfo;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
@@ -37,6 +36,7 @@ import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ALIAS;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,26 +62,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.Generic;
-import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.NothingType;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.Reference;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypedReference;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -90,9 +70,30 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.Generic;
+import com.redhat.ceylon.model.typechecker.model.Interface;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.ParameterList;
+import com.redhat.ceylon.model.typechecker.model.Reference;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypeParameter;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypedReference;
+import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.model.typechecker.model.Value;
 
 class InvocationCompletionProposal extends CompletionProposal {
     
+    private static final List<Type> NO_TYPES = Collections.<Type>emptyList();
+
     static void addProgramElementReferenceProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             Declaration dec, Scope scope, boolean isMember) {
@@ -104,15 +105,19 @@ class InvocationCompletionProposal extends CompletionProposal {
     }
     
     static void addReferenceProposal(int offset, String prefix, 
-            final CeylonParseController cpc, List<ICompletionProposal> result, 
+            final CeylonParseController cpc, 
+            List<ICompletionProposal> result, 
             Declaration dec, Scope scope, boolean isMember, 
             Reference pr, OccurrenceLocation ol) {
         Unit unit = cpc.getRootNode().getUnit();
         //proposal with type args
         if (dec instanceof Generic) {
-            result.add(new InvocationCompletionProposal(offset, prefix,
-                    getDescriptionFor(dec, unit), getTextFor(dec, unit), 
-                    dec, pr, scope, cpc, true, false, false, isMember, null));
+            result.add(new InvocationCompletionProposal(
+                    offset, prefix,
+                    getDescriptionFor(dec, unit), 
+                    getTextFor(dec, unit), 
+                    dec, pr, scope, cpc, true, false, false, 
+                    isMember, null));
             if (((Generic) dec).getTypeParameters().isEmpty()) {
                 //don't add another proposal below!
                 return;
@@ -120,20 +125,28 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
         //proposal without type args
         boolean isAbstract = 
-                dec instanceof Class && ((Class) dec).isAbstract() ||
-                dec instanceof Interface;
+                dec instanceof Interface ||
+                dec instanceof Class && 
+                    ((Class) dec).isAbstract();
         if ((!isAbstract && 
                 ol!=EXTENDS && ol!=SATISFIES && 
                 ol!=CLASS_ALIAS && ol!=TYPE_ALIAS)) {
-            result.add(new InvocationCompletionProposal(offset, prefix,
-                    dec.getName(unit), escapeName(dec, unit), 
-                    dec, pr, scope, cpc, true, false, false, isMember, null));
+            result.add(new InvocationCompletionProposal(
+                    offset, prefix,
+                    dec.getName(unit), 
+                    escapeName(dec, unit), 
+                    dec, pr, scope, cpc, 
+                    true, false, false, 
+                    isMember, null));
         }
     }
     
-    static void addSecondLevelProposal(int offset, String prefix, 
-            final CeylonParseController cpc, List<ICompletionProposal> result, 
-            Declaration dec, Scope scope, boolean isMember, Reference pr,
+    static void addSecondLevelProposal(
+            int offset, String prefix, 
+            final CeylonParseController cpc, 
+            List<ICompletionProposal> result, 
+            Declaration dec, Scope scope, 
+            boolean isMember, Reference pr,
             Type requiredType, OccurrenceLocation ol) {
         if (!(dec instanceof Functional) && 
             !(dec instanceof TypeDeclaration)) {
@@ -142,30 +155,45 @@ class InvocationCompletionProposal extends CompletionProposal {
             Type type = pr.getType();
             if (isTypeUnknown(type)) return;
             Collection<DeclarationWithProximity> members = 
-                    type.getDeclaration().getMatchingMemberDeclarations(unit, scope, "", 0).values();
+                    type.getDeclaration()
+                        .getMatchingMemberDeclarations(
+                                unit, scope, "", 0)
+                        .values();
             for (DeclarationWithProximity ndwp: members) {
-                final Declaration m = ndwp.getDeclaration();
+                Declaration m = ndwp.getDeclaration();
                 if (m instanceof TypedDeclaration) { //TODO: member Class would also be useful! 
-                    final TypedReference ptr = 
-                            type.getTypedMember((TypedDeclaration) m, 
-                                    Collections.<Type>emptyList());
+                    TypedDeclaration d = (TypedDeclaration) m;
+                    TypedReference ptr = 
+                            type.getTypedMember(d, NO_TYPES);
                     Type mt = ptr.getType();
                     if (mt!=null && 
-                            (requiredType==null || mt.isSubtypeOf(requiredType))) {
-                        result.add(new InvocationCompletionProposal(offset, prefix,
-                                dec.getName() + "." + getPositionalInvocationDescriptionFor(m, ol, ptr, unit, false, null), 
-                                dec.getName() + "." + getPositionalInvocationTextFor(m, ol, ptr, unit, false, null), 
-                                m, ptr, scope, cpc, true, true, false, true, dec));
+                            (requiredType==null || 
+                             mt.isSubtypeOf(requiredType))) {
+                        String qualifier = dec.getName() + ".";
+                        String desc = 
+                                qualifier + 
+                                getPositionalInvocationDescriptionFor(
+                                        m, ol, ptr, unit, false, null);
+                        String text = 
+                                qualifier + 
+                                getPositionalInvocationTextFor(
+                                        m, ol, ptr, unit, false, null);
+                        result.add(new InvocationCompletionProposal(
+                                offset, prefix, desc, text, m, ptr, scope, 
+                                cpc, true, true, false, true, dec));
                     }
                 }
             }
         }
     }
     
-    static void addInvocationProposals(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
+    static void addInvocationProposals(
+            int offset, String prefix, 
+            CeylonParseController cpc, 
+            List<ICompletionProposal> result, 
             Declaration dec, Reference pr, Scope scope,
-            OccurrenceLocation ol, String typeArgs, boolean isMember) {
+            OccurrenceLocation ol, String typeArgs, 
+            boolean isMember) {
         if (dec instanceof Functional) {
             Unit unit = cpc.getRootNode().getUnit();
             boolean isAbstract = 
@@ -195,17 +223,32 @@ class InvocationCompletionProposal extends CompletionProposal {
                         (!isAbstract || 
                                 ol==EXTENDS || ol==CLASS_ALIAS)) {
                     List<Parameter> parameters = 
-                            getParameters(parameterList, false, false);
+                            getParameters(parameterList, 
+                                    false, false);
                     if (ps.size()!=parameters.size()) {
-                        result.add(new InvocationCompletionProposal(offset, prefix, 
-                                getPositionalInvocationDescriptionFor(dec, ol, pr, unit, false, typeArgs), 
-                                getPositionalInvocationTextFor(dec, ol, pr, unit, false, typeArgs), dec,
-                                pr, scope, cpc, false, true, false, isMember, null));
+                        String desc = 
+                                getPositionalInvocationDescriptionFor(
+                                        dec, ol, pr, unit, false, 
+                                        typeArgs);
+                        String text = 
+                                getPositionalInvocationTextFor(
+                                        dec, ol, pr, unit, false, 
+                                        typeArgs);
+                        result.add(new InvocationCompletionProposal(
+                                offset, prefix, desc, text, dec, pr, scope, 
+                                cpc, false, true, false, isMember, null));
                     }
-                    result.add(new InvocationCompletionProposal(offset, prefix, 
-                            getPositionalInvocationDescriptionFor(dec, ol, pr, unit, true, typeArgs), 
-                            getPositionalInvocationTextFor(dec, ol, pr, unit, true, typeArgs), dec,
-                            pr, scope, cpc, true, true, false, isMember, null));
+                    String desc = 
+                            getPositionalInvocationDescriptionFor(
+                                    dec, ol, pr, unit, true, 
+                                    typeArgs);
+                    String text = 
+                            getPositionalInvocationTextFor(
+                                    dec, ol, pr, unit, true, 
+                                    typeArgs);
+                    result.add(new InvocationCompletionProposal(
+                            offset, prefix, desc, text, dec, pr, scope, 
+                            cpc, true, true, false, isMember, null));
                 }
                 if (named && 
                         parameterList.isNamedParametersSupported() &&
@@ -217,23 +260,38 @@ class InvocationCompletionProposal extends CompletionProposal {
                     List<Parameter> parameters = 
                             getParameters(parameterList, false, true);
                     if (ps.size()!=parameters.size()) {
-                        result.add(new InvocationCompletionProposal(offset, prefix, 
-                                getNamedInvocationDescriptionFor(dec, pr, unit, false, typeArgs), 
-                                getNamedInvocationTextFor(dec, pr, unit, false, typeArgs), dec,
-                                pr, scope, cpc, false, false, true, isMember, null));
+                        String desc = 
+                                getNamedInvocationDescriptionFor(
+                                        dec, pr, unit, false, 
+                                        typeArgs);
+                        String text = 
+                                getNamedInvocationTextFor(
+                                        dec, pr, unit, false, 
+                                        typeArgs);
+                        result.add(new InvocationCompletionProposal(
+                                offset, prefix, desc, text, dec, pr, scope, 
+                                cpc, false, false, true, isMember, null));
                     }
                     if (!ps.isEmpty()) {
-                        result.add(new InvocationCompletionProposal(offset, prefix, 
-                                getNamedInvocationDescriptionFor(dec, pr, unit, true, typeArgs), 
-                                getNamedInvocationTextFor(dec, pr, unit, true, typeArgs), dec,
-                                pr, scope, cpc, true, false, true, isMember, null));
+                        String desc = 
+                                getNamedInvocationDescriptionFor(
+                                        dec, pr, unit, true, 
+                                        typeArgs);
+                        String text = 
+                                getNamedInvocationTextFor(
+                                        dec, pr, unit, true, 
+                                        typeArgs);
+                        result.add(new InvocationCompletionProposal(
+                                offset, prefix, desc, text, dec, pr, scope, 
+                                cpc, true, false, true, isMember, null));
                     }
                 }
             }
         }
     }
 
-    private static String prefixWithoutTypeArgs(String prefix, String typeArgs) {
+    private static String prefixWithoutTypeArgs(
+            String prefix, String typeArgs) {
         if (typeArgs==null) {
             return prefix;
         }
@@ -243,8 +301,10 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
     
-    final class NestedCompletionProposal implements ICompletionProposal, 
-            ICompletionProposalExtension2, ICompletionProposalExtension6 {
+    final class NestedCompletionProposal 
+            implements ICompletionProposal, 
+                    ICompletionProposalExtension2, 
+                    ICompletionProposalExtension6 {
         private final String op;
         private final int loc;
         private final int index;
@@ -252,8 +312,10 @@ class InvocationCompletionProposal extends CompletionProposal {
         private final Declaration dec;
         private Declaration qualifier;
         
-        NestedCompletionProposal(Declaration dec, Declaration qualifier, 
-                int loc, int index, boolean basic, String op) {
+        NestedCompletionProposal(
+                Declaration dec, Declaration qualifier, 
+                int loc, int index, boolean basic, 
+                String op) {
             this.qualifier = qualifier;
             this.op = op;
             this.loc = loc;
@@ -351,9 +413,11 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
 
         private String getText(boolean description) {
-            StringBuilder sb = new StringBuilder().append(op);
+            StringBuilder sb = 
+                    new StringBuilder().append(op);
             if (qualifier!=null) {
-                sb.append(qualifier.getName(getUnit())).append('.');
+                sb.append(qualifier.getName(getUnit()))
+                  .append('.');
             }
             sb.append(dec.getName(getUnit()));
             if (dec instanceof Functional && !basic) {
@@ -413,7 +477,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                 try {
                     IRegion li = 
                             document.getLineInformationOfOffset(loc);
-                    int endOfLine = li.getOffset() + li.getLength();
+                    int endOfLine = 
+                            li.getOffset() + li.getLength();
                     int startOfArgs = getFirstPosition();
                     int offset = 
                             findCharCount(index, document, 
@@ -431,13 +496,17 @@ class InvocationCompletionProposal extends CompletionProposal {
                         content = content.substring(eq+1);
                     }
                     String filter = content.trim().toLowerCase();
-                    String decName = dec.getName(getUnit()).toLowerCase();
+                    String decName = 
+                            dec.getName(getUnit())
+                                .toLowerCase();
                     if ((op+decName).startsWith(filter) ||
                             decName.startsWith(filter)) {
                         return true;
                     }
                     if (qualifier!=null) {
-                        String qualName = qualifier.getName(getUnit()).toLowerCase();
+                        String qualName = 
+                                qualifier.getName(getUnit())
+                                    .toLowerCase();
                         if ((op+qualName+'.'+decName).startsWith(filter) ||
                                 (qualName+'.'+decName).startsWith(filter)) {
                             return true;
@@ -629,7 +698,8 @@ class InvocationCompletionProposal extends CompletionProposal {
     private DocumentChange createChange(IDocument document)
             throws BadLocationException {
         DocumentChange change = 
-                new DocumentChange("Complete Invocation", document);
+                new DocumentChange("Complete Invocation", 
+                        document);
         change.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs = new HashSet<Declaration>();
         Tree.CompilationUnit cu = cpc.getRootNode();
@@ -651,7 +721,8 @@ class InvocationCompletionProposal extends CompletionProposal {
     @Override
     public void apply(IDocument document) {
         try {
-            createChange(document).perform(new NullProgressMonitor());
+            createChange(document)
+                .perform(new NullProgressMonitor());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -666,9 +737,9 @@ class InvocationCompletionProposal extends CompletionProposal {
             Generic generic = (Generic) declaration;
             ParameterList paramList = null;
             if (declaration instanceof Functional && 
-                    (positionalInvocation||namedInvocation)) {
-                List<ParameterList> pls = 
-                        ((Functional) declaration).getParameterLists();
+                    (positionalInvocation || namedInvocation)) {
+                Functional fd = (Functional) declaration;
+                List<ParameterList> pls = fd.getParameterLists();
                 if (!pls.isEmpty() && 
                         !pls.get(0).getParameters().isEmpty()) {
                     paramList = pls.get(0);
@@ -677,7 +748,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (paramList!=null) {
                 List<Parameter> params = 
                         getParameters(paramList, 
-                                includeDefaulted, namedInvocation);
+                                includeDefaulted, 
+                                namedInvocation);
                 if (!params.isEmpty()) {
                     enterLinkedMode(document, params, null);
                     return; //NOTE: early exit!
@@ -774,8 +846,10 @@ class InvocationCompletionProposal extends CompletionProposal {
             List<Parameter> params, 
             List<TypeParameter> typeParams) {
         boolean proposeTypeArguments = params==null;
-        int paramCount = proposeTypeArguments ? 
-                typeParams.size() : params.size();
+        int paramCount = 
+                proposeTypeArguments ? 
+                        typeParams.size() : 
+                        params.size();
         if (paramCount==0) return;
         try {
             final int loc = offset-prefix.length();
@@ -783,10 +857,12 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (first<=0) return; //no arg list
             int next = getNextPosition(document, first);
             if (next<=0) return; //empty arg list
-            LinkedModeModel linkedModeModel = new LinkedModeModel();
+            LinkedModeModel linkedModeModel = 
+                    new LinkedModeModel();
             int seq=0, param=0;
             while (next>0 && param<paramCount) {
-                boolean voidParam = !proposeTypeArguments &&
+                boolean voidParam = 
+                        !proposeTypeArguments &&
                         params.get(param).isDeclaredVoid();
                 if (proposeTypeArguments || positionalInvocation ||
                         //don't create linked positions for
@@ -796,11 +872,13 @@ class InvocationCompletionProposal extends CompletionProposal {
                     List<ICompletionProposal> props = 
                             new ArrayList<ICompletionProposal>();
                     if (proposeTypeArguments) {
-                        addTypeArgumentProposals(typeParams.get(seq), 
+                        addTypeArgumentProposals(
+                                typeParams.get(seq), 
                                 loc, first, props, seq);
                     }
                     else if (!voidParam) {
-                        addValueArgumentProposals(params.get(param), 
+                        addValueArgumentProposals(
+                                params.get(param), 
                                 loc, first, props, seq, 
                                 param==params.size()-1);
                     }
@@ -812,7 +890,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                         len=0;
                     }
                     ProposalPosition linkedPosition = 
-                            new ProposalPosition(document, start, len, seq, 
+                            new ProposalPosition(
+                                    document, start, len, seq, 
                                     props.toArray(NO_COMPLETIONS));
                     addLinkedPosition(linkedModeModel, linkedPosition);
                     first = first+next+1;
@@ -822,7 +901,9 @@ class InvocationCompletionProposal extends CompletionProposal {
                 param++; 
             }
             if (seq>0) {
-                installLinkedMode((CeylonEditor) getCurrentEditor(), 
+                CeylonEditor editor = 
+                        (CeylonEditor) getCurrentEditor();
+                installLinkedMode(editor, 
                         document, linkedModeModel, this, 
                         new LinkedMode.NullExitPolicy(),
                         seq, loc+text.length());
@@ -834,14 +915,16 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
-    private void addValueArgumentProposals(Parameter p, final int loc,
-            int first, List<ICompletionProposal> props, int index,
-            boolean last) {
+    private void addValueArgumentProposals(
+            Parameter p, int loc, int first, 
+            List<ICompletionProposal> props, 
+            int index, boolean last) {
         if (p.getModel().isDynamicallyTyped()) {
             return;
         }
         Type type = 
-                producedReference.getTypedParameter(p).getType();
+                producedReference.getTypedParameter(p)
+                    .getType();
         if (type==null) return;
         Unit unit = getUnit();
         List<DeclarationWithProximity> proposals = 
@@ -861,9 +944,12 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
-    private void addValueArgumentProposal(Parameter p, final int loc,
-            List<ICompletionProposal> props, int index, boolean last,
-            Type type, Unit unit, DeclarationWithProximity dwp,
+    private void addValueArgumentProposal(
+            Parameter p, int loc,
+            List<ICompletionProposal> props, 
+            int index, boolean last,
+            Type type, Unit unit, 
+            DeclarationWithProximity dwp,
             DeclarationWithProximity qualifier) {
         if (qualifier==null && dwp.isUnimported()) {
             return;
@@ -885,21 +971,26 @@ class InvocationCompletionProposal extends CompletionProposal {
             Type vt = value.getType();
             if (vt!=null && !vt.isNothing()) {
                 if (vt.isSubtypeOf(type) ||
-                        (td instanceof TypeParameter) && 
-                        isInBounds(((TypeParameter) td).getSatisfiedTypes(), vt)) {
-                    boolean isIterArg = namedInvocation && last && 
+                        withinBounds(td, vt)) {
+                    boolean isIterArg = 
+                            namedInvocation && last && 
                             unit.isIterableParameterType(type);
-                    boolean isVarArg = p.isSequenced() && positionalInvocation;
-                    props.add(new NestedCompletionProposal(d, qdec,
-                            loc, index, false, isIterArg || isVarArg ? "*" : ""));
+                    boolean isVarArg = 
+                            p.isSequenced() && 
+                            positionalInvocation;
+                    props.add(new NestedCompletionProposal(
+                            d, qdec, loc, index, false, 
+                            isIterArg || isVarArg ? "*" : ""));
                 }
                 if (qualifier==null && 
                         getPreferences().getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
                     Collection<DeclarationWithProximity> members = 
-                            ((Value) d).getTypeDeclaration()
-                            .getMatchingMemberDeclarations(unit, scope, "", 0).values();
+                            value.getTypeDeclaration()
+                            .getMatchingMemberDeclarations(unit, scope, "", 0)
+                            .values();
                     for (DeclarationWithProximity mwp: members) {
-                        addValueArgumentProposal(p, loc, props, index, last, type, unit, mwp, dwp);
+                        addValueArgumentProposal(p, loc, props, 
+                                index, last, type, unit, mwp, dwp);
                     }
                 }
             }
@@ -913,15 +1004,19 @@ class InvocationCompletionProposal extends CompletionProposal {
                     }
                 }
                 Type mt = method.getType();
-                if (mt!=null && !mt.isNothing() &&
-                        ((td instanceof TypeParameter) && 
-                                isInBounds(((TypeParameter) td).getSatisfiedTypes(), mt) || 
-                                mt.isSubtypeOf(type))) {
-                    boolean isIterArg = namedInvocation && last && 
-                            unit.isIterableParameterType(type);
-                    boolean isVarArg = p.isSequenced() && positionalInvocation;
-                    props.add(new NestedCompletionProposal(d, qdec,
-                            loc, index, false, isIterArg || isVarArg ? "*" : ""));
+                if (mt!=null && !mt.isNothing()) {
+                    if (mt.isSubtypeOf(type) ||
+                            withinBounds(td, mt)) {
+                        boolean isIterArg = 
+                                namedInvocation && last && 
+                                unit.isIterableParameterType(type);
+                        boolean isVarArg = 
+                                p.isSequenced() && 
+                                positionalInvocation;
+                        props.add(new NestedCompletionProposal(
+                                d, qdec, loc, index, false, 
+                                isIterArg || isVarArg ? "*" : ""));
+                    }
                 }
             }
         }
@@ -935,24 +1030,40 @@ class InvocationCompletionProposal extends CompletionProposal {
                 }
                 Type ct = clazz.getType();
                 if (ct!=null && !ct.isNothing() &&
-                        ((td instanceof TypeParameter) && 
-                                isInBounds(((TypeParameter) td).getSatisfiedTypes(), ct) || 
-                                ct.getDeclaration().equals(type.getDeclaration()) ||
+                        (withinBounds(td, ct) || 
+                                ct.getDeclaration().equals(
+                                        type.getDeclaration()) ||
                                 ct.isSubtypeOf(type))) {
-                    boolean isIterArg = namedInvocation && last && 
+                    boolean isIterArg = 
+                            namedInvocation && last && 
                             unit.isIterableParameterType(type);
-                    boolean isVarArg = p.isSequenced() && positionalInvocation;
-                    props.add(new NestedCompletionProposal(d, qdec, 
-                            loc, index, false, isIterArg || isVarArg ? "*" : ""));
+                    boolean isVarArg = 
+                            p.isSequenced() && 
+                            positionalInvocation;
+                    props.add(new NestedCompletionProposal(
+                            d, qdec, loc, index, false, 
+                            isIterArg || isVarArg ? "*" : ""));
                 }
             }
         }
     }
 
-    private void addLiteralProposals(final int loc,
-            List<ICompletionProposal> props, int index, Type type,
-            Unit unit) {
-        TypeDeclaration dtd = unit.getDefiniteType(type).getDeclaration();
+    protected boolean withinBounds(TypeDeclaration td, Type vt) {
+        if (td instanceof TypeParameter) { 
+            TypeParameter tp = (TypeParameter) td;
+            return isInBounds(tp.getSatisfiedTypes(), vt);
+        }
+        else {
+            return false;
+        }
+    }
+
+    private void addLiteralProposals(int loc,
+            List<ICompletionProposal> props, int index, 
+            Type type, Unit unit) {
+        TypeDeclaration dtd = 
+                unit.getDefiniteType(type)
+                    .getDeclaration();
         if (dtd instanceof Class) {
             if (dtd.equals(unit.getIntegerDeclaration())) {
                 props.add(new NestedLiteralCompletionProposal("0", loc, index));
@@ -1012,19 +1123,22 @@ class InvocationCompletionProposal extends CompletionProposal {
 
     @Override
     public IContextInformation getContextInformation() {
-        if (namedInvocation||positionalInvocation) { //TODO: context info for type arg lists!
+        if (namedInvocation || positionalInvocation) { //TODO: context info for type arg lists!
             if (declaration instanceof Functional) {
+                Functional fd = (Functional) declaration;
                 List<ParameterList> pls = 
-                        ((Functional) declaration).getParameterLists();
+                        fd.getParameterLists();
                 if (!pls.isEmpty()) {
-                    int argListOffset = isParameterInfo() ? 
-                            this.offset : 
+                    int argListOffset = 
+                            isParameterInfo() ? this.offset : 
                                 offset-prefix.length() + 
                                 text.indexOf(namedInvocation?'{':'(');
-                    return new ParameterContextInformation(declaration, 
-                            producedReference, getUnit(), 
-                            pls.get(0), argListOffset, includeDefaulted, 
-                            namedInvocation /*!isParameterInfo()*/);
+                    return new ParameterContextInformation(
+                            declaration, producedReference, 
+                            getUnit(), pls.get(0), 
+                            argListOffset, 
+                            includeDefaulted, 
+                            namedInvocation);
                 }
             }
         }
@@ -1057,8 +1171,10 @@ class InvocationCompletionProposal extends CompletionProposal {
         public void apply(IDocument document) {}
     }
 
-    static List<IContextInformation> computeParameterContextInformation(final int offset,
-            final Tree.CompilationUnit rootNode, final ITextViewer viewer) {
+    static List<IContextInformation> computeParameterContextInformation(
+            final int offset,
+            final Tree.CompilationUnit rootNode, 
+            final ITextViewer viewer) {
         final List<IContextInformation> infos = 
                 new ArrayList<IContextInformation>();
         rootNode.visit(new Visitor() {
@@ -1085,21 +1201,25 @@ class InvocationCompletionProposal extends CompletionProposal {
                         }
                         if (string.trim().isEmpty()) {
                             Tree.MemberOrTypeExpression mte = 
-                                    (Tree.MemberOrTypeExpression) that.getPrimary();
-                            Declaration declaration = mte.getDeclaration();
+                                    (Tree.MemberOrTypeExpression) 
+                                        that.getPrimary();
+                            Declaration declaration = 
+                                    mte.getDeclaration();
                             if (declaration instanceof Functional) {
+                                Functional fd = (Functional) declaration;
                                 List<ParameterList> pls = 
-                                        ((Functional) declaration).getParameterLists();
+                                        fd.getParameterLists();
                                 if (!pls.isEmpty()) {
                                     //Note: This line suppresses the little menu 
                                     //      that gives me a choice of context infos.
                                     //      Delete it to get a choice of all surrounding
                                     //      argument lists.
                                     infos.clear();
-                                    infos.add(new ParameterContextInformation(declaration, 
-                                            mte.getTarget(), rootNode.getUnit(), 
-                                            pls.get(0), al.getStartIndex(), 
-                                            true, al instanceof Tree.NamedArgumentList /*false*/));
+                                    infos.add(new ParameterContextInformation(
+                                            declaration, mte.getTarget(), 
+                                            rootNode.getUnit(), pls.get(0), 
+                                            al.getStartIndex(), true, 
+                                            al instanceof Tree.NamedArgumentList));
                                 }
                             }
                         }
@@ -1130,11 +1250,15 @@ class InvocationCompletionProposal extends CompletionProposal {
                         Tree.Primary primary = that.getPrimary();
                         if (primary instanceof Tree.MemberOrTypeExpression) {
                             Tree.MemberOrTypeExpression mte = 
-                                    (Tree.MemberOrTypeExpression) primary;
-                            if (mte.getDeclaration()!=null && mte.getTarget()!=null) {
-                                result.add(new ParameterInfo(al.getStartIndex(),
-                                        mte.getDeclaration(), mte.getTarget(), 
-                                        node.getScope(), cpc, 
+                                    (Tree.MemberOrTypeExpression) 
+                                        primary;
+                            if (mte.getDeclaration()!=null && 
+                                    mte.getTarget()!=null) {
+                                result.add(new ParameterInfo(
+                                        al.getStartIndex(),
+                                        mte.getDeclaration(), 
+                                        mte.getTarget(), 
+                                        node.getScope(), cpc,
                                         al instanceof Tree.NamedArgumentList));
                             }
                         }
@@ -1157,10 +1281,13 @@ class InvocationCompletionProposal extends CompletionProposal {
 //        private final boolean inLinkedMode;
         private final boolean namedInvocation;
         
-        private ParameterContextInformation(Declaration declaration,
+        private ParameterContextInformation(
+                Declaration declaration,
                 Reference producedReference, Unit unit,
-                ParameterList parameterList, int argumentListOffset, 
-                boolean includeDefaulted, boolean namedInvocation) {
+                ParameterList parameterList, 
+                int argumentListOffset, 
+                boolean includeDefaulted, 
+                boolean namedInvocation) {
 //                boolean inLinkedMode
             this.declaration = declaration;
             this.producedReference = producedReference;
@@ -1184,14 +1311,17 @@ class InvocationCompletionProposal extends CompletionProposal {
         
         @Override
         public String getInformationDisplayString() {
-            List<Parameter> ps = getParameters(parameterList, 
-                    includeDefaulted, namedInvocation);
+            List<Parameter> ps = 
+                    getParameters(parameterList, 
+                            includeDefaulted, 
+                            namedInvocation);
             if (ps.isEmpty()) {
                 return "no parameters";
             }
             StringBuilder result = new StringBuilder();
             for (Parameter p: ps) {
-                boolean isListedValues = namedInvocation && 
+                boolean isListedValues = 
+                        namedInvocation && 
                         p==ps.get(ps.size()-1) &&
                         p.getModel() instanceof Value && 
                         p.getType()!=null &&
@@ -1204,8 +1334,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                     else {
                         TypedReference pr = 
                                 producedReference.getTypedParameter(p);
-                        appendParameterContextInfo(result, pr, p, unit, 
-                                namedInvocation, isListedValues);
+                        appendParameterContextInfo(
+                                result, pr, p, unit, 
+                                namedInvocation, 
+                                isListedValues);
                     }
                     if (!isListedValues) {
                         result.append(namedInvocation ? "; " : ", ");
