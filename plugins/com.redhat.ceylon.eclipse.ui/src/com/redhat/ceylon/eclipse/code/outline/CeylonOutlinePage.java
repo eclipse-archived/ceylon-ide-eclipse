@@ -20,6 +20,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIDE_PRIVATE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
+import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentTheme;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
@@ -63,7 +64,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -75,6 +75,7 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 public class CeylonOutlinePage extends ContentOutlinePage 
         implements TreeLifecycleListener, CaretListener {
@@ -110,7 +111,9 @@ public class CeylonOutlinePage extends ContentOutlinePage
             }
         };
         getPreferences().addPropertyChangeListener(propertyChangeListener);
+        getCurrentTheme().addPropertyChangeListener(propertyChangeListener);
     }
+
     
     public CeylonOutlinePage(CeylonParseController parseController,
             CeylonSourceViewer sourceViewer) {
@@ -241,6 +244,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         }
         if (propertyChangeListener!=null) {
             getPreferences().removePropertyChangeListener(propertyChangeListener);
+            getCurrentTheme().removePropertyChangeListener(propertyChangeListener);
             propertyChangeListener = null;
         }
         sourceViewer.getTextWidget().removeCaretListener(this);

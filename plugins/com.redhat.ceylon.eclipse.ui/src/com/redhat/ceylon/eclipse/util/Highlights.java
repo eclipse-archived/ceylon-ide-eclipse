@@ -386,9 +386,7 @@ public class Highlights  {
         }
     };
     
-    private static ColorRegistry colorRegistry = 
-            getWorkbench().getThemeManager()
-                          .getCurrentTheme()
-                          .getColorRegistry();
+    private static final ColorRegistry colorRegistry = 
+            getCurrentTheme().getColorRegistry();
         
 }

@@ -19,6 +19,8 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HISTORY;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
+import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentTheme;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
@@ -96,6 +98,7 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
@@ -165,14 +168,16 @@ public class HierarchyView extends ViewPart {
                 tableViewer.refresh();
             }
         };
-        EditorUtil.getPreferences().addPropertyChangeListener(propertyChangeListener);
+        getPreferences().addPropertyChangeListener(propertyChangeListener);
+        getCurrentTheme().addPropertyChangeListener(propertyChangeListener);
     }
     
     @Override
     public void dispose() {
         super.dispose();
         if (propertyChangeListener!=null) {
-            EditorUtil.getPreferences().removePropertyChangeListener(propertyChangeListener);
+            getPreferences().removePropertyChangeListener(propertyChangeListener);
+            getCurrentTheme().removePropertyChangeListener(propertyChangeListener);
             propertyChangeListener = null;
         }
     }
