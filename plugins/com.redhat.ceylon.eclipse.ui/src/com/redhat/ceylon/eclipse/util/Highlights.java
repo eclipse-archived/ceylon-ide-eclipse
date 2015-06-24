@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCH_HIGHLIGHTING;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isJavaIdentifierStart;
 import static java.lang.Character.isLowerCase;
@@ -48,7 +50,8 @@ public class Highlights  {
     public static String BRACES = "braces";    
     public static String PACKAGES = "packages";    
     public static String MEMBERS = "members";    
-    public static String OUTLINE_TYPES = "outlineTypes";    
+    public static String OUTLINE_TYPES = "outlineTypes";  
+    public static String MATCHES = "matches";  
     
     private static TextAttribute identifierAttribute, 
             typeAttribute, typeLiteralAttribute, 
@@ -280,8 +283,18 @@ public class Highlights  {
 				@Override
 				public void applyStyles(TextStyle textStyle) {
 					styler.applyStyles(textStyle);
-//					textStyle.underline = true;
-					textStyle.font = getBoldFont(font);
+					String type = getPreferences().getString(MATCH_HIGHLIGHTING);
+					switch (type) {
+					case "underline": 
+						textStyle.underline = true;
+						break;
+					case "bold":
+						textStyle.font = getBoldFont(font);
+						break;
+					case "color": 
+						textStyle.background = color(colorRegistry, MATCHES);
+						break;
+					}					
 				}
 			};
 			result.append(token.substring(loc, loc+bit.length()), matchStyler);

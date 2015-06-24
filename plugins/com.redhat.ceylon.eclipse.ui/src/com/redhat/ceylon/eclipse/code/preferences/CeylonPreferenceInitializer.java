@@ -56,6 +56,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String TYPE_PARAMS_IN_DIALOGS = "typeParamsInDialogs";
     public static final String RETURN_TYPES_IN_DIALOGS = "typesInDialogs";
     public static final String FULL_LOC_SEARCH_RESULTS = "fullLocationInSearchResults";
+    public static final String MATCH_HIGHLIGHTING = "matchHighlighting";
 
     public CeylonPreferenceInitializer() {}
 
@@ -104,5 +105,6 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PARAM_TYPES_IN_DIALOGS, true);
         store.setDefault(RETURN_TYPES_IN_DIALOGS, false);
         store.setDefault(FULL_LOC_SEARCH_RESULTS, true);
+        store.setDefault(MATCH_HIGHLIGHTING, "bold");
    }
 }

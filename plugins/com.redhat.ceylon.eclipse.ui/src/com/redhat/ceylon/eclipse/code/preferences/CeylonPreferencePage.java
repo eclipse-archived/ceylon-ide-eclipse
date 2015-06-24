@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCH_HIGHLIGHTING;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
@@ -40,6 +41,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
     private BooleanFieldEditor displayOutlineParameters;
     private BooleanFieldEditor displayOutlineParameterTypes;
     private BooleanFieldEditor displayOutlineTypeParameters;
+    private RadioGroupFieldEditor matchHighlighting;
     
     public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences";
     
@@ -213,12 +215,24 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         addField(projectType);
         addField(sourceFolder);
         addField(resourceFolder);
+
+        final Composite highlighting = createGroup(1, "Match highlighting");
+        matchHighlighting = new RadioGroupFieldEditor(MATCH_HIGHLIGHTING, 
+                "Emphasize matching text in Open dialogs and proposal lists:", 4, 
+                new String[][] { new String[] { "Bold", "bold" }, 
+                        new String[] { "Underline", "underline" },
+                        new String[] { "Color", "color" },
+                        new String[] { "None", "none" } }, 
+                        getFieldEditorParent(highlighting));
+        matchHighlighting.load();
+        addField(matchHighlighting);
     }
     
     @Override
     protected void performDefaults() {
         super.performDefaults();
         projectType.loadDefault();
+        matchHighlighting.loadDefault();
         sourceFolder.loadDefault();
         resourceFolder.loadDefault();
         displayOutlineTypes.loadDefault();
@@ -230,6 +244,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
     @Override
     public boolean performOk() {
         projectType.store();
+        matchHighlighting.store();
         sourceFolder.store();
         resourceFolder.store();
         displayOutlineTypes.store();
