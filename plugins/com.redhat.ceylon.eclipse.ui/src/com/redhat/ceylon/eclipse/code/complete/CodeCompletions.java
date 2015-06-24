@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
+import org.eclipse.swt.graphics.Font;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -337,18 +338,18 @@ public class CodeCompletions {
     }
     public static StyledString getQualifiedDescriptionFor(Declaration d, 
             boolean typeParameters, boolean parameters, boolean parameterTypes, 
-            boolean types, String prefix) {
+            boolean types, String prefix, Font font) {
         StyledString result = new StyledString();
         if (d!=null) {
             appendDeclarationDescription(d, result);
             result.append(' ');
             if (d.isClassOrInterfaceMember()) {
                 Declaration ci = (Declaration) d.getContainer();
-                appendQualifyingTypeName(result, ci, prefix);
-                appendMemberName(d, result, prefix);
+                appendQualifyingTypeName(result, ci, prefix, font);
+                appendMemberName(d, result, prefix, font);
             }
             else {
-                appendDeclarationName(d, result, prefix);
+                appendDeclarationName(d, result, prefix, font);
             }
             if (typeParameters) {
                 appendTypeParameters(d, result, true);
@@ -377,14 +378,15 @@ public class CodeCompletions {
     }
 
 	private static void appendQualifyingTypeName(StyledString result, 
-			Declaration ci, String prefix) {
+			Declaration ci, String prefix, Font font) {
 		String name = ci.getName();
 		if (prefix!=null) {
 			int loc = prefix.indexOf('.');
 			if (loc>0) {
 				prefix = prefix.substring(0, loc);
 			}
-			Highlights.appendId(result, prefix, name, Highlights.TYPE_ID_STYLER);
+			Highlights.appendId(result, prefix, name, 
+					Highlights.TYPE_ID_STYLER, font);
 		}
 		else {
 			result.append(name, Highlights.TYPE_ID_STYLER);
@@ -913,7 +915,7 @@ public class CodeCompletions {
     }
 
     private static void appendMemberName(Declaration d, 
-    		StyledString result, String prefix) {
+    		StyledString result, String prefix, Font font) {
         String name = d.getName();
         if (name != null) {
         	Styler styler;
@@ -928,7 +930,8 @@ public class CodeCompletions {
             	if (loc>0) {
             		prefix = prefix.substring(loc);
             	}
-            	Highlights.appendId(result, prefix, name, styler);
+            	Highlights.appendId(result, prefix, name, 
+            			styler, font);
             }
             else {
             	result.append(name, styler);
@@ -937,7 +940,7 @@ public class CodeCompletions {
     }
     
     private static void appendDeclarationName(Declaration d, 
-    		StyledString result, String prefix) {
+    		StyledString result, String prefix, Font font) {
         String name = d.getName();
         if (name != null) {
         	Styler styler;
@@ -948,7 +951,8 @@ public class CodeCompletions {
             	styler = Highlights.ID_STYLER;
             }
             if (prefix!=null) {
-            	Highlights.appendId(result, prefix, name, styler);
+            	Highlights.appendId(result, prefix, name, 
+            			styler, font);
             }
             else {
             	result.append(name, styler);
@@ -958,7 +962,7 @@ public class CodeCompletions {
     
     private static void appendDeclarationName(Declaration d, 
     		StyledString result) {
-    	appendDeclarationName(d, result, null);
+    	appendDeclarationName(d, result, null, null);
     }
     /*private static void appendPackage(Declaration d, StringBuilder result) {
     if (d.isToplevel()) {

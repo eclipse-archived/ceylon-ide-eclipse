@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -60,16 +61,16 @@ import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Reference;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -211,12 +212,20 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
         String string = getDisplayString();
-        if (string.startsWith("shared actual")) {
-            result.append(string.substring(0,13), 
+        if (string.startsWith("shared actual ")) {
+            result.append(string.substring(0,14), 
             		Highlights.ANN_STYLER);
-            string=string.substring(13);
+            string=string.substring(14);
         }
-        Highlights.styleProposal(result, string, false, currentPrefix);
+        int loc = string.indexOf(' ');
+        Highlights.styleProposal(result, 
+        		string.substring(0, loc), 
+        		false);
+        Highlights.styleProposal(result, 
+        		string.substring(loc), 
+        		false, 
+        		currentPrefix, 
+        		JFaceResources.getDialogFont());
         return result;
     }
     
@@ -317,14 +326,9 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         if (offset<this.offset) {
             return false;
         }
-        try {
-            int start = this.offset-prefix.length();
-            String typedText = document.get(start, offset-start);
-            return isNameMatching(typedText, declaration.getName());
-        }
-        catch (BadLocationException e) {
-            return false;
-        }
+        currentPrefix = getCurrentPrefix(document, offset);
+        return currentPrefix==null ? false :
+        	isNameMatching(currentPrefix, declaration.getName());
     }
     
     private void addProposals(final int loc, 

@@ -21,6 +21,8 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.ui.themes.ITheme;
 
@@ -173,12 +175,13 @@ public class Highlights  {
     
     public static void styleProposal(StyledString result, 
             String string, boolean qualifiedNameIsPath) {
-    	styleProposal(result, string, qualifiedNameIsPath, null);
+    	styleProposal(result, string, qualifiedNameIsPath, 
+    			null, null);
     }
     
     public static void styleProposal(StyledString result, 
             String string, boolean qualifiedNameIsPath,
-            String prefix) {
+            String prefix, Font font) {
         StringTokenizer tokens = 
                 new StringTokenizer(string, 
                         qualifiedNameIsPath ? 
@@ -209,7 +212,8 @@ public class Highlights  {
                 }
                 else if (isUpperCase(initial)) {
                 	if (matchHighlighting) {
-                		appendId(result, prefix, token, TYPE_ID_STYLER);
+                		appendId(result, prefix, token, 
+                				TYPE_ID_STYLER, font);
                 		matchHighlighting = false;
                 	}
                 	else {
@@ -225,7 +229,8 @@ public class Highlights  {
                     }
                     else if (qualified) {
                     	if (matchHighlighting) {
-                    		appendId(result, prefix, token, MEMBER_STYLER);
+                    		appendId(result, prefix, token, 
+                    				MEMBER_STYLER, font);
                     		matchHighlighting = false;
                     	}
                     	else {
@@ -234,7 +239,8 @@ public class Highlights  {
                     }
                     else {
                     	if (matchHighlighting) {
-                    		appendId(result, prefix, token, ID_STYLER);
+                    		appendId(result, prefix, token, 
+                    				ID_STYLER, font);
                     		matchHighlighting = false;
                     	}
                     	else {
@@ -250,9 +256,17 @@ public class Highlights  {
         }
     }
 
+    private static Font getBoldFont(Font font) {
+    	FontData[] data = font.getFontData();
+    	for (int i= 0; i<data.length; i++) {
+    		data[i].setStyle(SWT.BOLD);
+    	}
+    	return new Font(font.getDevice(), data);
+    }
+
 	public static void appendId(StyledString result, 
 			String prefix, String token, 
-			final Styler styler) {
+			final Styler styler, final Font font) {
 		int i = 0;
 		Matcher m = Pattern.compile("\\w\\p{Ll}*").matcher(prefix);
 		while (i<token.length() && m.find()) {
@@ -266,7 +280,8 @@ public class Highlights  {
 				@Override
 				public void applyStyles(TextStyle textStyle) {
 					styler.applyStyles(textStyle);
-					textStyle.underline = true;
+//					textStyle.underline = true;
+					textStyle.font = getBoldFont(font);
 				}
 			};
 			result.append(token.substring(loc, loc+bit.length()), matchStyler);

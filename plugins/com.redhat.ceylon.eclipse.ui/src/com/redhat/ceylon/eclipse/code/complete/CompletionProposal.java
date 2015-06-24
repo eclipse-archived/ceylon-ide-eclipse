@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -134,8 +135,11 @@ public class CompletionProposal implements ICompletionProposal,
     @Override
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
-        Highlights.styleProposal(result, getDisplayString(), 
-                qualifiedNameIsPath(), currentPrefix);
+        Highlights.styleProposal(result, 
+        		getDisplayString(), 
+                qualifiedNameIsPath(), 
+                currentPrefix,
+                JFaceResources.getDialogFont());
         return result;
     }
 

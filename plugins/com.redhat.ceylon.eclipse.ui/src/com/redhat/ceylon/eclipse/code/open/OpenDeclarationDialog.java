@@ -621,7 +621,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                                     prefs.getBoolean(PARAMS_IN_DIALOGS),
                                     prefs.getBoolean(PARAM_TYPES_IN_DIALOGS),
                                     prefs.getBoolean(RETURN_TYPES_IN_DIALOGS),
-                                    getPatternControl().getText());
+                                    getPatternControl().getText(),
+                                    getDialogArea().getFont());
                     if (nameOccursMultipleTimes(dec)) {
                         label.append(" - ", PACKAGE_STYLER)
                              .append(getPackageLabel(dec), PACKAGE_STYLER)
