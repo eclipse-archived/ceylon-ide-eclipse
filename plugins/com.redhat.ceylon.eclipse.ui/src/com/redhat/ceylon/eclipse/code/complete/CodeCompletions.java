@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.StyledString.Styler;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -331,6 +332,12 @@ public class CodeCompletions {
     public static StyledString getQualifiedDescriptionFor(Declaration d, 
             boolean typeParameters, boolean parameters, boolean parameterTypes, 
             boolean types) {
+    	 return getQualifiedDescriptionFor(d, 
+    	            typeParameters, parameters, parameterTypes, types);
+    }
+    public static StyledString getQualifiedDescriptionFor(Declaration d, 
+            boolean typeParameters, boolean parameters, boolean parameterTypes, 
+            boolean types, String prefix) {
         StyledString result = new StyledString();
         if (d!=null) {
             appendDeclarationDescription(d, result);
@@ -338,10 +345,10 @@ public class CodeCompletions {
             if (d.isClassOrInterfaceMember()) {
                 Declaration ci = (Declaration) d.getContainer();
                 result.append(ci.getName(), Highlights.TYPE_ID_STYLER).append('.');
-                appendMemberName(d, result);
+                appendMemberName(d, result, prefix);
             }
             else {
-                appendDeclarationName(d, result);
+                appendDeclarationName(d, result, prefix);
             }
             if (typeParameters) {
                 appendTypeParameters(d, result, true);
@@ -889,30 +896,54 @@ public class CodeCompletions {
         }
     }
 
-    private static void appendMemberName(Declaration d, StyledString result) {
+    private static void appendMemberName(Declaration d, 
+    		StyledString result, String prefix) {
         String name = d.getName();
         if (name != null) {
+        	Styler styler;
             if (d instanceof TypeDeclaration) {
-                result.append(name, Highlights.TYPE_STYLER);
+            	styler = Highlights.TYPE_STYLER;
             }
             else {
-                result.append(name, Highlights.MEMBER_STYLER);
+            	styler = Highlights.MEMBER_STYLER;
+            }
+            if (prefix!=null) {
+            	int loc = prefix.indexOf('.');
+            	if (loc>0) {
+            		prefix = prefix.substring(loc);
+            	}
+            	Highlights.appendId(result, prefix, name, styler);
+            }
+            else {
+            	result.append(name, styler);
             }
         }
     }
     
-    private static void appendDeclarationName(Declaration d, StyledString result) {
+    private static void appendDeclarationName(Declaration d, 
+    		StyledString result, String prefix) {
         String name = d.getName();
         if (name != null) {
+        	Styler styler;
             if (d instanceof TypeDeclaration) {
-                result.append(name, Highlights.TYPE_STYLER);
+            	styler = Highlights.TYPE_STYLER;
             }
             else {
-                result.append(name, Highlights.ID_STYLER);
+            	styler = Highlights.ID_STYLER;
+            }
+            if (prefix!=null) {
+            	Highlights.appendId(result, prefix, name, styler);
+            }
+            else {
+            	result.append(name, styler);
             }
         }
     }
     
+    private static void appendDeclarationName(Declaration d, 
+    		StyledString result) {
+    	appendDeclarationName(d, result, null);
+    }
     /*private static void appendPackage(Declaration d, StringBuilder result) {
     if (d.isToplevel()) {
         result.append(" - ").append(getPackageLabel(d));

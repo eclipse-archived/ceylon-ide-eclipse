@@ -251,7 +251,7 @@ public class Highlights  {
         }
     }
 
-	private static void appendId(StyledString result, 
+	public static void appendId(StyledString result, 
 			String prefix, String token, Styler styler) {
 		int i = 0;
 		Matcher m = Pattern.compile("\\w\\p{Ll}*").matcher(prefix);
