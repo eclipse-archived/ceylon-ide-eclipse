@@ -36,6 +36,7 @@ import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ALIAS;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
@@ -74,6 +75,7 @@ import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
@@ -85,7 +87,6 @@ import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedReference;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
@@ -161,14 +162,50 @@ class InvocationCompletionProposal extends CompletionProposal {
                         .values();
             for (DeclarationWithProximity ndwp: members) {
                 Declaration m = ndwp.getDeclaration();
-                if (m instanceof TypedDeclaration) { //TODO: member Class would also be useful! 
-                    TypedDeclaration d = (TypedDeclaration) m;
-                    TypedReference ptr = 
-                            type.getTypedMember(d, NO_TYPES);
+                if ((m instanceof FunctionOrValue ||
+                        m instanceof Class) &&
+                        !isConstructor(m)) {
+                    Reference ptr = 
+                            type.getTypedReference(m, NO_TYPES);
                     Type mt = ptr.getType();
                     if (mt!=null && 
                             (requiredType==null || 
                              mt.isSubtypeOf(requiredType))) {
+                        String qualifier = dec.getName() + ".";
+                        String desc = 
+                                qualifier + 
+                                getPositionalInvocationDescriptionFor(
+                                        m, ol, ptr, unit, false, null);
+                        String text = 
+                                qualifier + 
+                                getPositionalInvocationTextFor(
+                                        m, ol, ptr, unit, false, null);
+                        result.add(new InvocationCompletionProposal(
+                                offset, prefix, desc, text, m, ptr, scope, 
+                                cpc, true, true, false, true, dec));
+                    }
+                }
+            }
+        }
+        if (dec instanceof Class) {
+            //add constructor proposals 
+            Unit unit = cpc.getRootNode().getUnit();
+            Type type = pr.getType();
+            if (isTypeUnknown(type)) return;
+            Collection<DeclarationWithProximity> members = 
+                    type.getDeclaration()
+                    .getMatchingMemberDeclarations(
+                            unit, scope, "", 0)
+                            .values();
+            for (DeclarationWithProximity ndwp: members) {
+                Declaration m = ndwp.getDeclaration();
+                if (isConstructor(m)) {
+                    Reference ptr = 
+                            type.getTypedReference(m, NO_TYPES);
+                    Type mt = ptr.getType();
+                    if (mt!=null && 
+                            (requiredType==null || 
+                            mt.isSubtypeOf(requiredType))) {
                         String qualifier = dec.getName() + ".";
                         String desc = 
                                 qualifier + 
