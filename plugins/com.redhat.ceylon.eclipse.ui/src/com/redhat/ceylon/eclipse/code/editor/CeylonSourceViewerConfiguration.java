@@ -133,7 +133,7 @@ public class CeylonSourceViewerConfiguration extends TextSourceViewerConfigurati
         contentAssistant.setStatusMessage(key.format() + " to toggle second-level completions");
         contentAssistant.setStatusLineVisible(true);
         contentAssistant.setInformationControlCreator(new DocumentationHover(editor)
-                .getHoverControlCreator("Click for focus"));
+                .getHoverControlCreator("Tab or click for focus"));
         contentAssistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 //      contentAssistant.setContextInformationPopupBackground(Display.getDefault().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
         return contentAssistant;
