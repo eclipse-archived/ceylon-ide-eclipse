@@ -232,7 +232,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 contentProposals = 
                         getContentProposals(controller, 
                                 offset, viewer, 
-                                secondLevel, returnedParamInfo,
+                                secondLevel, 
+                                returnedParamInfo,
                                 monitor);
                 if (contentProposals!=null && 
                         contentProposals.length==1 && 
@@ -245,9 +246,14 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         Runnable runnable = new Runnable();
         try {
-            getWorkbench()
+            if (secondLevel) {
+                runnable.run(new NullProgressMonitor());
+            }
+            else {
+                getWorkbench()
                     .getActiveWorkbenchWindow()
                     .run(true, true, runnable);
+            }
         }
         catch (Exception e) {
             e.printStackTrace();
