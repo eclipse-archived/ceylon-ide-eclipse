@@ -47,7 +47,6 @@ public class Highlights  {
     public static String PACKAGES = "packages";    
     public static String MEMBERS = "members";    
     public static String OUTLINE_TYPES = "outlineTypes";    
-    public static String MATCHES = "matches";    
     
     private static TextAttribute identifierAttribute, 
             typeAttribute, typeLiteralAttribute, 
@@ -252,7 +251,8 @@ public class Highlights  {
     }
 
 	public static void appendId(StyledString result, 
-			String prefix, String token, Styler styler) {
+			String prefix, String token, 
+			final Styler styler) {
 		int i = 0;
 		Matcher m = Pattern.compile("\\w\\p{Ll}*").matcher(prefix);
 		while (i<token.length() && m.find()) {
@@ -262,7 +262,14 @@ public class Highlights  {
 				loc = token.toLowerCase().indexOf(bit.toLowerCase());
 			}
 			result.append(token.substring(i, loc), styler);
-			result.append(token.substring(loc, loc+bit.length()), Highlights.MATCH_STYLER);
+			Styler matchStyler = new Styler() {
+				@Override
+				public void applyStyles(TextStyle textStyle) {
+					styler.applyStyles(textStyle);
+					textStyle.underline = true;
+				}
+			};
+			result.append(token.substring(loc, loc+bit.length()), matchStyler);
 			i = loc + bit.length();
 		}
 		result.append(token.substring(i), styler);
@@ -412,14 +419,6 @@ public class Highlights  {
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
                     color(colorRegistry, OUTLINE_TYPES);
-        }
-    };
-    public static final Styler MATCH_STYLER = 
-            new Styler() {
-        @Override
-        public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground =
-                    color(colorRegistry, MATCHES);
         }
     };
     public static final Styler ANN_STYLER = 

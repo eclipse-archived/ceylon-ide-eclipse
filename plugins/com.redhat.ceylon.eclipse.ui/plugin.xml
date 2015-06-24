@@ -2478,16 +2478,6 @@
 
     <colorDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
-        id="com.redhat.ceylon.eclipse.ui.theme.color.matches" 
-        label="Match highlighting in proposals"
-        value="255,102,0">
-        <description>
-            Color for highlighting textual matches within proposal lists.
-        </description>
-    </colorDefinition>
-
-    <colorDefinition
-        categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.matchingBracketsColor" 
         label="Matching brackets, braces, parens"
         value="0,120,255">
