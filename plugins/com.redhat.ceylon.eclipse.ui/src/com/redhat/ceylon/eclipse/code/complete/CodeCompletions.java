@@ -344,7 +344,7 @@ public class CodeCompletions {
             result.append(' ');
             if (d.isClassOrInterfaceMember()) {
                 Declaration ci = (Declaration) d.getContainer();
-                result.append(ci.getName(), Highlights.TYPE_ID_STYLER).append('.');
+                appendQualifyingTypeName(result, ci, prefix);
                 appendMemberName(d, result, prefix);
             }
             else {
@@ -375,6 +375,22 @@ public class CodeCompletions {
         }
         return result;
     }
+
+	private static void appendQualifyingTypeName(StyledString result, 
+			Declaration ci, String prefix) {
+		String name = ci.getName();
+		if (prefix!=null) {
+			int loc = prefix.indexOf('.');
+			if (loc>0) {
+				prefix = prefix.substring(0, loc);
+			}
+			Highlights.appendId(result, prefix, name, Highlights.TYPE_ID_STYLER);
+		}
+		else {
+			result.append(name, Highlights.TYPE_ID_STYLER);
+		}
+		result.append('.');
+	}
     
     public static StyledString getStyledDescriptionFor(Declaration d) {
         StyledString result = new StyledString();
