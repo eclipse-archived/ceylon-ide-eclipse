@@ -2480,7 +2480,7 @@
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.theme.color.matches" 
         label="Match highlighting in proposals"
-        value="204,255,102">
+        value="0,128,255"><!--"204,255,102"-->
         <description>
             Color for highlighting textual matches within proposal lists and Open dialogs.
         </description>

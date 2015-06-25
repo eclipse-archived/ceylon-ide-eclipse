@@ -222,7 +222,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
                 new String[][] { new String[] { "Bold", "bold" }, 
                         new String[] { "Underline", "underline" },
                         new String[] { "Text color", "color" },
-                        new String[] { "Background color", "background" },
+//                        new String[] { "Background color", "background" },
                         new String[] { "None", "none" } }, 
                         getFieldEditorParent(highlighting));
         matchHighlighting.load();
