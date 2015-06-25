@@ -13,6 +13,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.swt.graphics.Font;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -108,6 +109,10 @@ public class CeylonElement {
     }
     
     public StyledString getLabel() {
+        return getLabel(null, null);
+    }
+    
+    public StyledString getLabel(String prefix, Font font) {
         if (proxy==null) {
             return label;
         }
@@ -118,7 +123,8 @@ public class CeylonElement {
                     prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
                     prefs.getBoolean(PARAMS_IN_OUTLINES),
                     prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
-                    prefs.getBoolean(RETURN_TYPES_IN_OUTLINES));
+                    prefs.getBoolean(RETURN_TYPES_IN_OUTLINES),
+                    prefix, font);
         }
     }
     

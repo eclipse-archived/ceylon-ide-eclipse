@@ -77,6 +77,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -118,9 +119,23 @@ public final class ReferencesPopup extends PopupDialog
         public void widgetDefaultSelected(SelectionEvent e) {}
     }
 
-    public static final class LabelProvider extends TreeNodeLabelProvider {
+    public final class LabelProvider extends TreeNodeLabelProvider {
         public LabelProvider() {
             super(new SearchResultsLabelProvider());
+        }
+        
+        @Override
+        public StyledString getStyledText(Object element) {
+            Object unwrapped = unwrap(element);
+            if (unwrapped instanceof CeylonElement) {
+                CeylonElement ce = (CeylonElement) unwrapped;
+                return ce.getLabel(
+                        filterText.getText(), 
+                        getViewer().getControl().getFont());
+            }
+            else {
+                return super.getStyledText(element);
+            }
         }
         
         @Override
@@ -237,7 +252,7 @@ public final class ReferencesPopup extends PopupDialog
         StringBuilder builder = new StringBuilder();
         if (findCommandBinding!=null) {
             builder.append(findCommandBinding.format())
-                    .append(" to find all references");
+                .append(" to find all references");
         }
         if (commandBinding!=null) {
             String message;
@@ -255,7 +270,8 @@ public final class ReferencesPopup extends PopupDialog
             if (builder.length()>0) {
                 builder.append(" - ");
             }
-            builder.append(commandBinding.format()).append(message);
+            builder.append(commandBinding.format())
+                .append(message);
         }
         if (builder.length()>0) {
             setInfoText(builder.toString());
@@ -320,17 +336,21 @@ public final class ReferencesPopup extends PopupDialog
         Cursor cursor = new Cursor(getShell().getDisplay(), SWT.CURSOR_HAND);
         tableViewer.getControl().setCursor(cursor);
         treeViewer.getControl().setCursor(cursor);
-        tableViewer.getControl().addMouseMoveListener(new MouseMoveListener() {
+        tableViewer.getControl()
+            .addMouseMoveListener(new MouseMoveListener() {
             @Override
             public void mouseMove(MouseEvent e) {
                 Item item = tableViewer.getTable()
                             .getItem(new Point(e.x, e.y));
                 if (item!=null) {
-                    tableViewer.setSelection(new StructuredSelection(item.getData()));
+                    StructuredSelection selection = 
+                            new StructuredSelection(item.getData());
+                    tableViewer.setSelection(selection);
                 }
             }
         });
-        treeViewer.getControl().addMouseMoveListener(new TreeViewMouseListener(treeViewer));
+        treeViewer.getControl().addMouseMoveListener(
+                new TreeViewMouseListener(treeViewer));
         ShortcutKeyListener listener = new ShortcutKeyListener();
         tableViewer.getControl().addKeyListener(listener);
         treeViewer.getControl().addKeyListener(listener);
@@ -359,7 +379,8 @@ public final class ReferencesPopup extends PopupDialog
     private static GridLayoutFactory popupLayoutFactory;
     protected static GridLayoutFactory getPopupLayout() {
         if (popupLayoutFactory == null) {
-            popupLayoutFactory = GridLayoutFactory.fillDefaults()
+            popupLayoutFactory = 
+                    GridLayoutFactory.fillDefaults()
                     .margins(POPUP_MARGINWIDTH, POPUP_MARGINHEIGHT)
                     .spacing(POPUP_HORIZONTALSPACING, POPUP_VERTICALSPACING);
         }
@@ -382,16 +403,18 @@ public final class ReferencesPopup extends PopupDialog
         return result;
     }
 
-    protected void styleDescription(final StyledText title, StyledString result,
-            String desc) {
-        final FontData[] fontDatas = title.getFont().getFontData();
+    protected void styleDescription(final StyledText title, 
+            StyledString result, String desc) {
+        final FontData[] fontDatas = 
+                title.getFont().getFontData();
         for (int i = 0; i < fontDatas.length; i++) {
             fontDatas[i].setStyle(SWT.BOLD);
         }
         result.append(desc, new Styler() {
             @Override
             public void applyStyles(TextStyle textStyle) {
-                textStyle.font=new Font(title.getDisplay(), fontDatas);
+                textStyle.font = 
+                        new Font(title.getDisplay(), fontDatas);
             }
         });
     }
@@ -760,11 +783,14 @@ public final class ReferencesPopup extends PopupDialog
             message = "references to";
         }
         String name;
+        TypecheckerUnit unit = pc.getRootNode().getUnit();
         if (declaration instanceof Declaration) {
             Declaration dec = (Declaration) declaration;
-            name = dec.getName(pc.getRootNode().getUnit());
+            name = dec.getName(unit);
             if (dec.isClassOrInterfaceMember()) {
-                name = ((Declaration) dec.getContainer()).getName() + '.' + name;
+                Declaration container = 
+                        (Declaration) dec.getContainer();
+                name = container.getName() + '.' + name;
             }
         }
         else {
@@ -773,36 +799,50 @@ public final class ReferencesPopup extends PopupDialog
         setTitleText("Quick Find References - " + message + " " + 
                         name + " in project source");
         TreeNode root = new TreeNode(new Object());
-        Map<Package,TreeNode> packageNodes = new HashMap<Package,TreeNode>();
-        Map<Module,TreeNode> moduleNodes = new HashMap<Module,TreeNode>();
-        List<TreeNode> allMatchesList = new ArrayList<TreeNode>();
-        List<TreeNode> allUnitsList = new ArrayList<TreeNode>();
-        for (PhasedUnit pu: pc.getTypeChecker()
-                .getPhasedUnits()
-                .getPhasedUnits()) {
+        Map<Package,TreeNode> packageNodes = 
+                new HashMap<Package,TreeNode>();
+        Map<Module,TreeNode> moduleNodes = 
+                new HashMap<Module,TreeNode>();
+        List<TreeNode> allMatchesList = 
+                new ArrayList<TreeNode>();
+        List<TreeNode> allUnitsList = 
+                new ArrayList<TreeNode>();
+        List<PhasedUnit> phasedUnits = 
+                pc.getTypeChecker()
+                    .getPhasedUnits()
+                    .getPhasedUnits();
+        for (PhasedUnit pu: phasedUnits) {
             Tree.CompilationUnit cu = pu.getCompilationUnit();
-            if (pu.getUnit().equals(pc.getRootNode().getUnit()) &&
-                    editor.isDirty()) {
+            if (pu.getUnit().equals(unit) && editor.isDirty()) {
                 //search in the current dirty editor
                 cu = pc.getRootNode();
             }
             Unit u = cu.getUnit();
             TreeNode unitNode = new TreeNode(u);
-            List<TreeNode> unitList = new ArrayList<TreeNode>();
+            List<TreeNode> unitList = 
+                    new ArrayList<TreeNode>();
             Set<Node> nodes;
             if (showingRefinements) {
                 if (declaration instanceof Declaration) {
                     if (type) {
+                        TypeDeclaration td = 
+                                (TypeDeclaration) declaration;
                         FindSubtypesVisitor frv = 
-                                new FindSubtypesVisitor((TypeDeclaration) declaration);
+                                new FindSubtypesVisitor(td);
                         frv.visit(cu);
-                        nodes = new HashSet<Node>(frv.getDeclarationNodes());
+                        Set<Tree.Declaration> dns = 
+                                frv.getDeclarationNodes();
+                        nodes = new HashSet<Node>(dns);
                     }
                     else {
+                        Declaration d = 
+                                (Declaration) declaration;
                         FindRefinementsVisitor frv = 
-                                new FindRefinementsVisitor((Declaration) declaration);
+                                new FindRefinementsVisitor(d);
                         frv.visit(cu);
-                        nodes = new HashSet<Node>(frv.getDeclarationNodes());
+                        Set<Tree.StatementOrArgument> dns = 
+                                frv.getDeclarationNodes();
+                        nodes = new HashSet<Node>(dns);
                     }
                 }
                 else {
@@ -817,7 +857,8 @@ public final class ReferencesPopup extends PopupDialog
             }
             for (Node node: nodes) {
                 CeylonSearchMatch match = 
-                        CeylonSearchMatch.create(node, cu, pu.getUnitFile());
+                        CeylonSearchMatch.create(node, cu, 
+                                pu.getUnitFile());
                 if (includeImports || !match.isInImport()) {
                     TreeNode matchNode = new TreeNode(match);
                     matchNode.setParent(unitNode);
@@ -827,12 +868,15 @@ public final class ReferencesPopup extends PopupDialog
             }
             if (!unitList.isEmpty()) {
                 allUnitsList.add(unitNode);
-                unitNode.setChildren(unitList.toArray(new TreeNode[0]));
+                TreeNode[] array = 
+                        unitList.toArray(new TreeNode[0]);
+                unitNode.setChildren(array);
                 Package p = u.getPackage();
                 TreeNode packageNode = packageNodes.get(p);
                 if (packageNode==null) {
                     packageNode = new TreeNode(p);
-                    TreeNode moduleNode = moduleNodes.get(p.getModule());
+                    TreeNode moduleNode = 
+                            moduleNodes.get(p.getModule());
                     if (moduleNode==null) {
                         moduleNode = new TreeNode(p.getModule());
                         moduleNode.setParent(root);
@@ -840,8 +884,10 @@ public final class ReferencesPopup extends PopupDialog
                         moduleNode.setChildren(new TreeNode[] {packageNode});
                     }
                     else {
-                        TreeNode[] oldChildren = moduleNode.getChildren();
-                        TreeNode[] children = new TreeNode[oldChildren.length+1];
+                        TreeNode[] oldChildren = 
+                                moduleNode.getChildren();
+                        TreeNode[] children = 
+                                new TreeNode[oldChildren.length+1];
                         for (int i=0; i<oldChildren.length; i++) {
                             children[i] = oldChildren[i];
                         }
@@ -853,8 +899,10 @@ public final class ReferencesPopup extends PopupDialog
                     packageNode.setChildren(new TreeNode[] {unitNode});
                 }
                 else {
-                    TreeNode[] oldChildren = packageNode.getChildren();
-                    TreeNode[] children = new TreeNode[oldChildren.length+1];
+                    TreeNode[] oldChildren = 
+                            packageNode.getChildren();
+                    TreeNode[] children = 
+                            new TreeNode[oldChildren.length+1];
                     for (int i=0; i<oldChildren.length; i++) {
                         children[i] = oldChildren[i];
                     }
@@ -877,11 +925,12 @@ public final class ReferencesPopup extends PopupDialog
     private void selectFirst() {
         Object firstElem;
         if (viewer instanceof TableViewer) {
-            firstElem = ((TableViewer) viewer).getElementAt(0);
+            TableViewer tv = (TableViewer) viewer;
+            firstElem = tv.getElementAt(0);
         }
         else {
-            org.eclipse.swt.widgets.Tree tree = 
-                    ((TreeViewer) viewer).getTree();
+            TreeViewer tv = (TreeViewer) viewer;
+            org.eclipse.swt.widgets.Tree tree = tv.getTree();
             if (tree.getItemCount()>0) {
                 firstElem = tree.getItem(0).getData();
             }
@@ -891,7 +940,9 @@ public final class ReferencesPopup extends PopupDialog
             
         }
         if (firstElem!=null) {
-            viewer.setSelection(new StructuredSelection(firstElem), true);
+            StructuredSelection selection = 
+                    new StructuredSelection(firstElem);
+            viewer.setSelection(selection, true);
         }
     }
 
@@ -920,7 +971,8 @@ public final class ReferencesPopup extends PopupDialog
         String sectionName = 
                 CeylonPlugin.PLUGIN_ID + ".FindReferences";
         IDialogSettings dialogSettings = 
-                CeylonPlugin.getInstance().getDialogSettings();
+                CeylonPlugin.getInstance()
+                    .getDialogSettings();
         IDialogSettings settings = 
                 dialogSettings.getSection(sectionName);
         if (settings == null)
@@ -941,7 +993,8 @@ public final class ReferencesPopup extends PopupDialog
     
     @Override
     protected void fillDialogMenu(IMenuManager dialogMenu) {
-        flatLayoutAction = new LayoutAction("Show as List", FLAT_MODE) {
+        flatLayoutAction = 
+                new LayoutAction("Show as List", FLAT_MODE) {
             @Override
             public void run() {
                 super.run();
@@ -958,7 +1011,8 @@ public final class ReferencesPopup extends PopupDialog
             }
         };
         flatLayoutAction.setChecked(!treeLayout);
-        treeLayoutAction = new LayoutAction("Show as Tree", TREE_MODE) {
+        treeLayoutAction = 
+                new LayoutAction("Show as Tree", TREE_MODE) {
             @Override
             public void run() {
                 super.run();
@@ -978,7 +1032,8 @@ public final class ReferencesPopup extends PopupDialog
         dialogMenu.add(flatLayoutAction);
         dialogMenu.add(treeLayoutAction);
         dialogMenu.add(new Separator());
-        importsAction = new Action("Show Matches in Imports", AS_CHECK_BOX) {
+        importsAction = 
+                new Action("Show Matches in Imports", AS_CHECK_BOX) {
             {
                 setImageDescriptor(imageRegistry.getDescriptor(CEYLON_IMPORT));
             }
