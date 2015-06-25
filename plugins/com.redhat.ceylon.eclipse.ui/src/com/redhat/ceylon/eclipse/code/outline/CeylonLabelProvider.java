@@ -115,29 +115,36 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private final static int REFINES = 1 << 4;
     private final static int IMPLEMENTS = 1 << 5;
     private final static int FORMAL = 1 << 6;
-    private final static int ABSTRACT = 1 << 7;
-    private final static int VARIABLE = 1 << 8;
-    private final static int ANNOTATION = 1 << 9;
-    private final static int ENUM = 1 << 10;
-    private final static int ALIAS = 1 << 11;
-    private final static int DEPRECATED = 1 << 12;
-    private final static int CEYLON_NATURE = 1 << 12;
-    //private final static int FINAL = 1 << 13;
-
+    private final static int DEFAULT = 1 << 7;
+    private final static int ABSTRACT = 1 << 8;
+    private final static int FINAL = 1 << 9;
+    private final static int VARIABLE = 1 << 10;
+    private final static int ANNOTATION = 1 << 11;
+    private final static int ENUM = 1 << 12;
+    private final static int ALIAS = 1 << 13;
+    private final static int DEPRECATED = 1 << 14;
+    private final static int NATIVE = 1 << 15;
+    
     static final DecorationDescriptor[] DECORATIONS = 
             new DecorationDescriptor[] {
         new DecorationDescriptor(WARNING, WARNING_IMAGE, BOTTOM_LEFT),
         new DecorationDescriptor(ERROR, ERROR_IMAGE, BOTTOM_LEFT),
+        
         new DecorationDescriptor(REFINES, REFINES_IMAGE, BOTTOM_RIGHT),
         new DecorationDescriptor(IMPLEMENTS, IMPLEMENTS_IMAGE, BOTTOM_RIGHT),
-        new DecorationDescriptor(FORMAL, FINAL_IMAGE, TOP_RIGHT),
+        
+        new DecorationDescriptor(FORMAL, FORMAL_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(DEFAULT, DEFAULT_IMAGE, TOP_RIGHT),
         new DecorationDescriptor(ABSTRACT, ABSTRACT_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(FINAL, FINAL_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(NATIVE, NATIVE_IMAGE, TOP_RIGHT),
+        
         new DecorationDescriptor(VARIABLE, VARIABLE_IMAGE, TOP_LEFT),
         new DecorationDescriptor(ANNOTATION, ANNOTATION_IMAGE, TOP_LEFT),
         new DecorationDescriptor(ENUM, ENUM_IMAGE, TOP_LEFT),
         new DecorationDescriptor(ALIAS, ALIAS_IMAGE, TOP_LEFT),
+        
         new DecorationDescriptor(DEPRECATED, DEPRECATED_IMAGE, IDecoration.UNDERLAY),
-        //new DecorationDescriptor(FINAL, CeylonPlugin.getInstance().image("..."), TOP_RIGHT)
     };
 
     public CeylonLabelProvider() {
@@ -1071,15 +1078,15 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static int getDecorationAttributes(Object entity) {
         try {
             if (entity instanceof IProject) {
-                int decorationAttributes = CEYLON_NATURE;
+                int decorationAttributes = 0;
                 IProject project = (IProject) entity;
                 switch (getMaxProblemMarkerSeverity(
                         project, DEPTH_INFINITE)) {
                         case IMarker.SEVERITY_ERROR:
-                            decorationAttributes &= ERROR;
+                            decorationAttributes |= ERROR;
                             break;
                         case IMarker.SEVERITY_WARNING:
-                            decorationAttributes &= WARNING;
+                            decorationAttributes |= WARNING;
                             break;
                 }
                 return decorationAttributes;
@@ -1227,6 +1234,12 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             if (model.isFormal()) {
                 result |= FORMAL;
             }
+            if (model.isDefault()) {
+                result |= DEFAULT;
+            }
+            if (model.isNative()) {
+                result |= NATIVE;
+            }
             if (model.isAnnotation()) {
                 result |= ANNOTATION;
             }
@@ -1237,6 +1250,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             if (model instanceof Class && 
                     ((Class) model).isAbstract()) {
                 result |= ABSTRACT;
+            }
+            if (model instanceof Class && 
+                    ((Class) model).isFinal()) {
+                result |= FINAL;
             }
     //        if (model instanceof Class && ((Class) model).isFinal()) {
             //            result |= FINAL;

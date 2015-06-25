@@ -189,7 +189,10 @@ public interface CeylonResources {
     public static final String REFINES_IMAGE = "over_tiny_co.png";
     public static final String IMPLEMENTS_IMAGE = "implm_tiny_co.png";
     public static final String FINAL_IMAGE = "final_co.png";
+    public static final String FORMAL_IMAGE = "formal_co.png";
+    public static final String DEFAULT_IMAGE = "default_co.png";
     public static final String ABSTRACT_IMAGE = "abstract_co.png";
+    public static final String NATIVE_IMAGE = "native_co.png";
     public static final String VARIABLE_IMAGE = "volatile_co.png";
     public static final String ANNOTATION_IMAGE = "annotation_tsk.png";
     public static final String ENUM_IMAGE = "enum_tsk.png";
