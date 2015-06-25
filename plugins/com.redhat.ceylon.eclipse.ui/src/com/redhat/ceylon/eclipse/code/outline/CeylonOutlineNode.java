@@ -243,15 +243,15 @@ public class CeylonOutlineNode implements IAdaptable {
         return realEndOffset;
     }
     
-    public String getImageKey() {
+    String getImageKey() {
         return imageKey;
     }
     
-    public StyledString getLabel() {
+    StyledString getLabel() {
         return getLabel(null, null);
     }
 
-    public StyledString getLabel(String prefix, Font font) {
+    StyledString getLabel(String prefix, Font font) {
         if (category==DEFAULT_CATEGORY && declaration) {
             IEditorPart currentEditor = getCurrentEditor();
             if (currentEditor instanceof CeylonEditor) {
@@ -272,7 +272,7 @@ public class CeylonOutlineNode implements IAdaptable {
         return label;
     }
     
-    public int getDecorations() {
+    int getDecorations() {
         if (category==DEFAULT_CATEGORY && declaration) {
             IEditorPart currentEditor = getCurrentEditor();
             if (currentEditor instanceof CeylonEditor) {

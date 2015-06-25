@@ -240,11 +240,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (element instanceof Unit) {
             return CEYLON_FILE;
         }
-        if (element instanceof CeylonOutlineNode) {
-            CeylonOutlineNode node = 
-                    (CeylonOutlineNode) element;
-            return node.getImageKey();
-        }
         if (element instanceof Node) {
             Node treeNode = (Node) element;
             return getImageKeyForNode(treeNode);
@@ -465,14 +460,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     @Override
     public StyledString getStyledText(Object element) {
-        if (element instanceof CeylonOutlineNode) {
-            CeylonOutlineNode node = 
-                    (CeylonOutlineNode) element;
-            return node.getLabel();
-            //TODO: add the arrow if the node is dirty vs git!
-            //return new StyledString("> ", ARROW_STYLER).append(label);
-        }
-        else if (element instanceof IFile) {
+        if (element instanceof IFile) {
             IFile file = (IFile) element;
             return new StyledString(file.getName());
         }
@@ -522,8 +510,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (element instanceof IImportDeclaration) {
             IImportDeclaration id = 
                     (IImportDeclaration) element;
-            return new StyledString("import ", KW_STYLER)
-                    .append(id.getElementName(), PACKAGE_STYLER);
+            StyledString label = 
+                    new StyledString("import ", KW_STYLER);
+            label.append(id.getElementName(), PACKAGE_STYLER);
+            return label;
         }
         else if (element instanceof Package) {
             Package pack = (Package) element;
@@ -541,11 +531,20 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (element instanceof Node) {
             Node treeNode = (Node) element;
-            return getStyledLabelForNode(treeNode);
+            return getStyledLabelForNode(treeNode,
+                    getPrefix(), getFont());
         }
         else {
             return new StyledString("");
         }
+    }
+    
+    String getPrefix() {
+        return null;
+    }
+    
+    Font getFont() {
+        return null;
     }
 
     @Override
@@ -1138,11 +1137,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 default: 
                     return 0;
                 }
-            }
-            if (entity instanceof CeylonOutlineNode) {
-                CeylonOutlineNode node = 
-                        (CeylonOutlineNode) entity;
-                return node.getDecorations();
             }
             if (entity instanceof Declaration) {
                 Declaration dec = (Declaration) entity;

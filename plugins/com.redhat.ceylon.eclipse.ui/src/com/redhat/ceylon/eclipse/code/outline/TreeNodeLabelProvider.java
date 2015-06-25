@@ -9,7 +9,8 @@ import org.eclipse.jface.viewers.TreeNode;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 
-public class TreeNodeLabelProvider extends StyledCellLabelProvider 
+public class TreeNodeLabelProvider 
+        extends StyledCellLabelProvider 
         implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, 
                    ILabelProvider {
     

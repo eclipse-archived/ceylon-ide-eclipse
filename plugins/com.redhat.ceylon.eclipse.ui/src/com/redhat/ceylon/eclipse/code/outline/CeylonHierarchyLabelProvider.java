@@ -22,8 +22,8 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
-abstract class CeylonHierarchyLabelProvider extends
-        StyledCellLabelProvider {
+abstract class CeylonHierarchyLabelProvider 
+        extends StyledCellLabelProvider {
         
     @Override
     public void removeListener(ILabelProviderListener listener) {}
@@ -47,7 +47,7 @@ abstract class CeylonHierarchyLabelProvider extends
         return null;
     }
 
-    StyledString getStyledText(CeylonHierarchyNode n) {
+    private StyledString getStyledText(CeylonHierarchyNode n) {
         Declaration d = getDisplayedDeclaration(n);
         if (d==null) {
         	return new StyledString();

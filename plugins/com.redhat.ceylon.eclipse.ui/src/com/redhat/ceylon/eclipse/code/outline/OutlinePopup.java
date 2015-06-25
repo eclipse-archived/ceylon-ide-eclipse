@@ -12,13 +12,9 @@
 
 package com.redhat.ceylon.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
@@ -39,10 +35,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.bindings.TriggerSequence;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageRegistry;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -95,7 +88,7 @@ public class OutlinePopup extends TreeViewPopup {
     
     private CeylonOutlineContentProvider outlineContentProvider;
     private OutlineSorter outlineSorter;
-    private ILabelProvider labelProvider;
+    private CeylonOutlineLabelProvider labelProvider;
     private LexicalSortingAction lexicalSortingAction;
     private HideNonSharedAction hideNonSharedAction;
 
@@ -195,53 +188,6 @@ public class OutlinePopup extends TreeViewPopup {
                 return null;
             }
         }
-    }
-
-    private final class LabelProvider extends CeylonLabelProvider {
-        //TODO: refactor to not inherit CeylonLabelProvider
-        
-        private Font getFont() {
-            return getTreeViewer().getControl().getFont();
-        }
-
-        private String getPrefix() {
-            return getFilterText().getText();
-        }
-
-        @Override
-        public StyledString getStyledText(Object element) {
-            if (element instanceof CeylonOutlineNode) {
-                CeylonOutlineNode node = 
-                        (CeylonOutlineNode) element;
-                return node.getLabel(getPrefix(), getFont());
-            }
-            else if (element instanceof Declaration) {
-                IPreferenceStore prefs = getPreferences();
-                return getQualifiedDescriptionFor((Declaration) element,
-                        prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
-                        prefs.getBoolean(PARAMS_IN_OUTLINES),
-                        prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
-                        prefs.getBoolean(RETURN_TYPES_IN_OUTLINES),
-                        getPrefix(), getFont());
-            }
-            else {
-                return new StyledString();
-            }
-        }
-
-        @Override
-        public Image getImage(Object element) {
-            if (element instanceof CeylonOutlineNode) {
-                return super.getImage(element);
-            }
-            else if (element instanceof Declaration) {
-                return getImageForDeclaration((Declaration) element);
-            }
-            else {
-                return null;
-            }
-        }
-        
     }
 
     private final class ChangeViewListener implements KeyListener {
@@ -469,7 +415,14 @@ public class OutlinePopup extends TreeViewPopup {
         hideNonSharedAction = new HideNonSharedAction(treeViewer);
         
         outlineContentProvider = new ContentProvider();
-        labelProvider = new LabelProvider();
+        labelProvider = new CeylonOutlineLabelProvider() {
+            Font getFont() {
+                return getTreeViewer().getControl().getFont();
+            }
+            String getPrefix() {
+                return getFilterText().getText();
+            }
+        };
         
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new OutlineNamePatternFilter(getFilterText()));

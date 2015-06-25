@@ -193,7 +193,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
 
     private DecoratingStyledCellLabelProvider createLabelProvider() {
         return new DecoratingStyledCellLabelProvider(
-                new CeylonLabelProvider(), 
+                new CeylonOutlineLabelProvider(), 
                 getWorkbench()
                     .getDecoratorManager()
                     .getLabelDecorator(), 
