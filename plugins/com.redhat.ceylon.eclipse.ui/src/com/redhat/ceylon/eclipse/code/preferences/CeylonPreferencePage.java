@@ -218,7 +218,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
 
         final Composite highlighting = createGroup(1, "Match highlighting");
         matchHighlighting = new RadioGroupFieldEditor(MATCH_HIGHLIGHTING, 
-                "Emphasize matching text in Open dialogs and proposal lists:", 4, 
+                "Emphasize matching text in 'Open' dialogs and proposal lists:", 4, 
                 new String[][] { new String[] { "Bold", "bold" }, 
                         new String[] { "Underline", "underline" },
                         new String[] { "Text color", "color" },
