@@ -292,6 +292,9 @@ public class Highlights  {
 						textStyle.font = getBoldFont(font);
 						break;
 					case "color": 
+						textStyle.foreground = color(colorRegistry, MATCHES);
+						break;
+					case "background": 
 						textStyle.background = color(colorRegistry, MATCHES);
 						break;
 					}					
