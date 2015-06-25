@@ -105,6 +105,134 @@ public class OutlinePopup extends TreeViewPopup {
     
     private boolean mode;
     
+    private final class ContentProvider 
+            extends CeylonOutlineContentProvider {
+        @Override
+        public Object getParent(Object element) {
+            if (element instanceof CeylonOutlineNode) {
+                return super.getParent(element);
+            }
+            else {
+                return null; //TODO!!!
+            }
+        }
+
+        @Override
+        public Object[] getChildren(Object element) {
+            if (element instanceof CeylonOutlineNode) {
+                if (mode) {
+                    boolean includeParameters =
+                            !getPreferences()
+                                .getBoolean(PARAMS_IN_OUTLINES);
+                    CeylonOutlineNode node = 
+                            (CeylonOutlineNode) element;
+                    CompilationUnit rootNode = 
+                            getEditor().getParseController()
+                                .getRootNode();
+                    Node treeNode = 
+                            Nodes.findNode(rootNode, 
+                                    node.getStartOffset());
+                    TypeDeclaration td;
+                    if (treeNode instanceof ClassOrInterface) {
+                        ClassOrInterface ci = 
+                                (ClassOrInterface) treeNode;
+                        td = ci.getDeclarationModel();
+                    }
+                    else if (treeNode instanceof ObjectDefinition) {
+                        ObjectDefinition od = 
+                                (ObjectDefinition) treeNode;
+                        td = od.getDeclarationModel()
+                                .getTypeDeclaration();
+                    }
+                    else {
+                        return super.getChildren(element);
+                    }
+                    List<Declaration> list = 
+                            new ArrayList<Declaration>();
+                    String filter = getFilterText().getText();
+                    for (int i=0; i<filter.length(); i++) {
+                        char ch = filter.charAt(i);
+                        if (ch=='*' ||
+                                i>0 && Character.isUpperCase(ch)) {
+                            filter = filter.substring(0, i);
+                            break;
+                        }
+                    }
+                    Collection<DeclarationWithProximity> members = 
+                            td.getMatchingMemberDeclarations(
+                                    rootNode.getUnit(), 
+                                    td, filter, 0).values();
+                    for (DeclarationWithProximity dwp: members) {
+                        for (Declaration dec: 
+                                overloads(dwp.getDeclaration())) {
+                            if (!(dec instanceof TypeParameter)) {
+                                if (includeParameters || !dec.isParameter()) {
+                                    list.add(dec);
+                                }
+                            }
+                        }
+                    }
+                    if (!lexicalSortingAction.isChecked()) {
+                        Collections.sort(list, 
+                                new Comparator<Declaration>() {
+                            public int compare(Declaration x, Declaration y) {
+                                String xn = x.getContainer()
+                                        .getQualifiedNameString();
+                                String yn = y.getContainer()
+                                        .getQualifiedNameString();
+                                return xn.compareTo(yn);
+                            }
+                        });
+                    }
+                    return list.toArray();
+                }
+                else {
+                    return super.getChildren(element);
+                }
+            }
+            else {
+                return null;
+            }
+        }
+    }
+
+    private final class LabelProvider extends CeylonLabelProvider {
+        //TODO: refactor to not inherit CeylonLabelProvider
+        @Override
+        public StyledString getStyledText(Object element) {
+            if (element instanceof CeylonOutlineNode) {
+                CeylonOutlineNode node = 
+                        (CeylonOutlineNode) element;
+                return node.getLabel(getFilterText().getText(), 
+                        getTreeViewer().getControl().getFont());
+            }
+            else if (element instanceof Declaration) {
+                IPreferenceStore prefs = getPreferences();
+                return getQualifiedDescriptionFor((Declaration) element,
+                        prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
+                        prefs.getBoolean(PARAMS_IN_OUTLINES),
+                        prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
+                        prefs.getBoolean(RETURN_TYPES_IN_OUTLINES));
+            }
+            else {
+                return new StyledString();
+            }
+        }
+
+        @Override
+        public Image getImage(Object element) {
+            if (element instanceof CeylonOutlineNode) {
+                return super.getImage(element);
+            }
+            else if (element instanceof Declaration) {
+                return getImageForDeclaration((Declaration) element);
+            }
+            else {
+                return null;
+            }
+        }
+    }
+
     private final class ChangeViewListener implements KeyListener {
         @Override
         public void keyReleased(KeyEvent e) {}
@@ -329,130 +457,8 @@ public class OutlinePopup extends TreeViewPopup {
         lexicalSortingAction = new LexicalSortingAction(treeViewer);
         hideNonSharedAction = new HideNonSharedAction(treeViewer);
         
-        outlineContentProvider = new CeylonOutlineContentProvider() {
-            @Override
-            public Object getParent(Object element) {
-                if (element instanceof CeylonOutlineNode) {
-                    return super.getParent(element);
-                }
-                else {
-                    return null; //TODO!!!
-                }
-            }
-            @Override
-            public Object[] getChildren(Object element) {
-                if (element instanceof CeylonOutlineNode) {
-                    if (mode) {
-                        boolean includeParameters =
-                                !getPreferences()
-                                    .getBoolean(PARAMS_IN_OUTLINES);
-                        CeylonOutlineNode node = 
-                                (CeylonOutlineNode) element;
-                        CompilationUnit rootNode = 
-                                getEditor().getParseController()
-                                    .getRootNode();
-                        Node treeNode = 
-                                Nodes.findNode(rootNode, 
-                                        node.getStartOffset());
-                        TypeDeclaration td;
-                        if (treeNode instanceof ClassOrInterface) {
-                            ClassOrInterface ci = 
-                                    (ClassOrInterface) treeNode;
-                            td = ci.getDeclarationModel();
-                        }
-                        else if (treeNode instanceof ObjectDefinition) {
-                            ObjectDefinition od = 
-                                    (ObjectDefinition) treeNode;
-                            td = od.getDeclarationModel()
-                                    .getTypeDeclaration();
-                        }
-                        else {
-                            return super.getChildren(element);
-                        }
-                        List<Declaration> list = 
-                                new ArrayList<Declaration>();
-                        String filter = getFilterText().getText();
-                        for (int i=0; i<filter.length(); i++) {
-                            char ch = filter.charAt(i);
-                            if (ch=='*' ||
-                                    i>0 && Character.isUpperCase(ch)) {
-                                filter = filter.substring(0, i);
-                                break;
-                            }
-                        }
-                        Collection<DeclarationWithProximity> members = 
-                                td.getMatchingMemberDeclarations(
-                                        rootNode.getUnit(), 
-                                        td, filter, 0).values();
-                        for (DeclarationWithProximity dwp: members) {
-                            for (Declaration dec: 
-                                    overloads(dwp.getDeclaration())) {
-                                if (!(dec instanceof TypeParameter)) {
-                                    if (includeParameters || !dec.isParameter()) {
-                                        list.add(dec);
-                                    }
-                                }
-                            }
-                        }
-                        if (!lexicalSortingAction.isChecked()) {
-                            Collections.sort(list, 
-                                    new Comparator<Declaration>() {
-                                public int compare(Declaration x, Declaration y) {
-                                    String xn = x.getContainer()
-                                            .getQualifiedNameString();
-                                    String yn = y.getContainer()
-                                            .getQualifiedNameString();
-                                    return xn.compareTo(yn);
-                                }
-                            });
-                        }
-                        return list.toArray();
-                    }
-                    else {
-                        return super.getChildren(element);
-                    }
-                }
-                else {
-                    return null;
-                }
-            }
-        };
-        
-        labelProvider = new CeylonLabelProvider() {
-            //TODO: refactor to not inherit CeylonLabelProvider
-            @Override
-            public StyledString getStyledText(Object element) {
-                if (element instanceof CeylonOutlineNode) {
-                    CeylonOutlineNode node = 
-                            (CeylonOutlineNode) element;
-                    return node.getLabel(getFilterText().getText(), 
-                            getTreeViewer().getControl().getFont());
-                }
-                else if (element instanceof Declaration) {
-                    IPreferenceStore prefs = getPreferences();
-                    return getQualifiedDescriptionFor((Declaration) element,
-                            prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
-                            prefs.getBoolean(PARAMS_IN_OUTLINES),
-                            prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
-                            prefs.getBoolean(RETURN_TYPES_IN_OUTLINES));
-                }
-                else {
-                    return new StyledString();
-                }
-            }
-            @Override
-            public Image getImage(Object element) {
-                if (element instanceof CeylonOutlineNode) {
-                    return super.getImage(element);
-                }
-                else if (element instanceof Declaration) {
-                    return getImageForDeclaration((Declaration) element);
-                }
-                else {
-                    return null;
-                }
-            }
-        };
+        outlineContentProvider = new ContentProvider();
+        labelProvider = new LabelProvider();
         
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.addFilter(new OutlineNamePatternFilter(getFilterText()));
