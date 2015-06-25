@@ -278,6 +278,9 @@ public class Highlights  {
 			if (loc<0) {
 				loc = token.toLowerCase().indexOf(bit.toLowerCase());
 			}
+			if (loc<0) {
+			    break;
+			}
 			result.append(token.substring(i, loc), styler);
 			Styler matchStyler = new Styler() {
 				@Override

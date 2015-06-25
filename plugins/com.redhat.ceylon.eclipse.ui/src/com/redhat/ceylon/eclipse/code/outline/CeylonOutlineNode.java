@@ -34,6 +34,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.IEditorPart;
 
@@ -247,6 +248,10 @@ public class CeylonOutlineNode implements IAdaptable {
     }
     
     public StyledString getLabel() {
+        return getLabel(null, null);
+    }
+
+    public StyledString getLabel(String prefix, Font font) {
         if (category==DEFAULT_CATEGORY && declaration) {
             IEditorPart currentEditor = getCurrentEditor();
             if (currentEditor instanceof CeylonEditor) {
@@ -259,14 +264,14 @@ public class CeylonOutlineNode implements IAdaptable {
                     if (node!=null && 
                             node.getStartIndex()==realStartOffset && 
                             node.getStopIndex()+1==realEndOffset) {
-                        return getStyledLabelForNode(node);
+                        return getStyledLabelForNode(node, prefix, font);
                     }
                 }
             }
         }
         return label;
     }
-
+    
     public int getDecorations() {
         if (category==DEFAULT_CATEGORY && declaration) {
             IEditorPart currentEditor = getCurrentEditor();

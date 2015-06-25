@@ -59,6 +59,7 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -69,6 +70,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -569,15 +571,32 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
 
     public static StyledString getStyledLabelForNode(Node node) {
+        return getStyledLabelForNode(node, null, null);
+    }
+
+    static void appendName(StyledString result, String name, Styler styler,
+            String prefix, Font font) {
+        if (prefix==null) {
+            result.append(name, styler);
+        }
+        else {
+            Highlights.appendId(result, prefix, name, styler, font);
+        }
+    }
+
+    public static StyledString getStyledLabelForNode(Node node,
+            String prefix, Font font) {
         //TODO: it would be much better to render types
         //      from the tree nodes instead of from the
         //      model nodes
-        
+
         if (node instanceof Tree.TypeParameterDeclaration) {
             Tree.TypeParameterDeclaration ac = 
                     (Tree.TypeParameterDeclaration) node;
             String name = name(ac.getIdentifier());
-            return new StyledString(name);
+            StyledString label = new StyledString();
+            appendName(label, name, ID_STYLER, prefix, font);
+            return label;
         }
         else if (node instanceof Tree.AnyClass) {
             Tree.AnyClass ac = 
@@ -585,7 +604,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             StyledString label = 
                     new StyledString("class ", KW_STYLER);
             String name = name(ac.getIdentifier());
-            label.append(name, TYPE_ID_STYLER);
+            appendName(label, name, TYPE_ID_STYLER, prefix, font);
             parameters(ac.getTypeParameterList(), label);
             parameters(ac.getParameterList(), label);
             return label;
@@ -596,7 +615,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             StyledString label = 
                     new StyledString("interface ", KW_STYLER);
             String name = name(ai.getIdentifier());
-            label.append(name, TYPE_ID_STYLER);
+            appendName(label, name, TYPE_ID_STYLER, prefix, font);
             parameters(ai.getTypeParameterList(), label);
             return label;
         }
@@ -604,8 +623,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.Constructor ac = (Tree.Constructor) node;
             StyledString label = 
                     new StyledString("new ", KW_STYLER);
-            String name = name(ac.getIdentifier());
-            label.append(name, ID_STYLER);
+            if (ac.getIdentifier()!=null) {
+                String name = name(ac.getIdentifier());
+                appendName(label, name, ID_STYLER, prefix, font);
+            }
             parameters(ac.getParameterList(), label);
             return label;
         }
@@ -613,10 +634,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.Enumerated ac = (Tree.Enumerated) node;
             StyledString label = 
                     new StyledString("new ", KW_STYLER);
-            if (ac.getIdentifier()!=null) {
-                String name = name(ac.getIdentifier());
-                label.append(name, ID_STYLER);
-            }
+            String name = name(ac.getIdentifier());
+            appendName(label, name, ID_STYLER, prefix, font);
             return label;
         }
         else if (node instanceof Tree.TypeAliasDeclaration) {
@@ -625,7 +644,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             StyledString label = 
                     new StyledString("alias ", KW_STYLER);
             String name = name(ac.getIdentifier());
-            label.append(name, TYPE_ID_STYLER);
+            appendName(label, name, TYPE_ID_STYLER, prefix, font);
             parameters(ac.getTypeParameterList(), label);
             return label;
         }
@@ -633,15 +652,19 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.ObjectDefinition ai = 
                     (Tree.ObjectDefinition) node;
             String name = name(ai.getIdentifier());
-            return new StyledString("object ", KW_STYLER)
-                    .append(name, ID_STYLER);
+            StyledString label = 
+                    new StyledString("object ", KW_STYLER);
+            appendName(label, name, ID_STYLER, prefix, font);
+            return label;
         }
         else if (node instanceof Tree.AttributeSetterDefinition) {
             Tree.AttributeSetterDefinition ai = 
                     (Tree.AttributeSetterDefinition) node;
             String name = name(ai.getIdentifier());
-            return new StyledString("assign ", KW_STYLER)
-                    .append(name, ID_STYLER);
+            StyledString label = 
+                    new StyledString("assign ", KW_STYLER);
+            appendName(label, name, ID_STYLER, prefix, font);
+            return label;
         }
         else if (node instanceof Tree.AnyMethod) {
             Tree.TypedDeclaration td = 
@@ -660,8 +683,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             String name = name(td.getIdentifier());
             StyledString label = 
                     new StyledString(kind, KW_STYLER)
-                        .append(" ")
-                        .append(name, ID_STYLER);
+                        .append(" ");
+            appendName(label, name, ID_STYLER, prefix, font);
             Tree.AnyMethod am = (Tree.AnyMethod) node;
             parameters(am.getTypeParameterList(), label);
             for (Tree.ParameterList pl: am.getParameterLists()) { 
@@ -684,10 +707,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             String name = name(td.getIdentifier());
             StyledString label = 
                     new StyledString(kind, KW_STYLER)
-                        .append(" ")
-                        .append(name, ID_STYLER);
+                        .append(" ");
+            appendName(label, name, ID_STYLER, prefix, font);
             appendPostfixType(td, label);
-			return label;
+            return label;
         }
 //        else if (n instanceof Tree.TypedDeclaration) {
 //            Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
@@ -727,7 +750,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                         md.getVersion();
                 if (version!=null) {
                     styledString.append(" ")
-                                .append(version.getText(), STRING_STYLER);
+                        .append(version.getText(), STRING_STYLER);
                 }
                 return styledString;
             }
@@ -872,9 +895,13 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return result;
             }
         }
-        String keyword = 
-                node instanceof Tree.AnyMethod ? 
-                        "function" : "value";
+        String keyword;
+        if (node instanceof Tree.AnyMethod) {
+            keyword = "function";
+        }
+        else {
+            keyword = "value";
+        }
         return result.append(keyword, KW_STYLER);
     }
     

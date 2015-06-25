@@ -67,12 +67,6 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.Widget;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassOrInterface;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -82,6 +76,12 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypeParameter;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class OutlinePopup extends TreeViewPopup {
     
@@ -419,10 +419,14 @@ public class OutlinePopup extends TreeViewPopup {
         };
         
         labelProvider = new CeylonLabelProvider() {
+            //TODO: refactor to not inherit CeylonLabelProvider
             @Override
             public StyledString getStyledText(Object element) {
                 if (element instanceof CeylonOutlineNode) {
-                    return super.getStyledText(element);
+                    CeylonOutlineNode node = 
+                            (CeylonOutlineNode) element;
+                    return node.getLabel(getFilterText().getText(), 
+                            getTreeViewer().getControl().getFont());
                 }
                 else if (element instanceof Declaration) {
                     IPreferenceStore prefs = getPreferences();
