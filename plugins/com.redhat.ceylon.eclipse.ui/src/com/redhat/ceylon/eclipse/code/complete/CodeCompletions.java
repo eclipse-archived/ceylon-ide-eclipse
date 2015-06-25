@@ -334,7 +334,8 @@ public class CodeCompletions {
             boolean typeParameters, boolean parameters, boolean parameterTypes, 
             boolean types) {
     	 return getQualifiedDescriptionFor(d, 
-    	            typeParameters, parameters, parameterTypes, types);
+    	            typeParameters, parameters, parameterTypes, types,
+    	            null, null);
     }
     public static StyledString getQualifiedDescriptionFor(Declaration d, 
             boolean typeParameters, boolean parameters, boolean parameterTypes, 
