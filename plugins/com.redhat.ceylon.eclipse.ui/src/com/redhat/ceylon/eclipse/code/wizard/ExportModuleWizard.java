@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaEl
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -34,9 +35,9 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils.CeylonRepoManagerBuilder;
 import com.redhat.ceylon.cmr.ceylon.ModuleCopycat;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 
 public class ExportModuleWizard extends Wizard implements IExportWizard {
 
@@ -100,135 +101,133 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
                     "No Java project selected.");
             return false;
         }
-        else {
-            /*IProject project = javaProject.getProject();
-            List<PhasedUnit> list = CeylonBuilder.getProjectTypeChecker(project)
-                .getPhasedUnits().getPhasedUnits();
-            Set<String> moduleNames = new HashSet<String>();
-            for (PhasedUnit phasedUnit: list) {
-                Module module = phasedUnit.getUnit().getPackage().getModule();
-                moduleNames.add(module.getNameAsString());
-            }*/
-            ex = null;
-            List<TableItem> selectedItems = page.getModules();
-            final String[] selectedModules = new String[selectedItems.size()];
-            final String[] selectedVersions = new String[selectedItems.size()];
-            for (int i=0; i<selectedItems.size(); i++) {
-                selectedModules[i] = selectedItems.get(i).getText();
-                selectedVersions[i] = selectedItems.get(i).getText(1);
-            }
-            try {
-                Job job = new Job("Exporting modules") {
-                    @Override
-                    protected IStatus run(IProgressMonitor monitor) {
-                        monitor.setTaskName("Exporting modules to repository");
-                        getDialogSettings().put(CLEAN_BUILD_BEFORE_EXPORT, page.isClean());
-                        getDialogSettings().put(RECURSIVE_EXPORT, page.isRecursive());
-                        if (page.isClean()) {
-                            try {
-                                project.build(CLEAN_BUILD, monitor);
-                                project.build(AUTO_BUILD, monitor);
-                            }
-                            catch (CoreException e) {
-                                ex = e;
-                                return Status.CANCEL_STATUS;
-                            }
-                            yieldRule(monitor);
-                        }
+
+        final CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        if (ceylonProject == null) {
+            MessageDialog.openError(getShell(), "Export Module Error", 
+                    "The selected project is not a Ceylon project.");
+            return false;
+        }
+        
+        ex = null;
+        List<TableItem> selectedItems = page.getModules();
+        final String[] selectedModules = new String[selectedItems.size()];
+        final String[] selectedVersions = new String[selectedItems.size()];
+        for (int i=0; i<selectedItems.size(); i++) {
+            selectedModules[i] = selectedItems.get(i).getText();
+            selectedVersions[i] = selectedItems.get(i).getText(1);
+        }
+        try {
+            Job job = new Job("Exporting modules") {
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    monitor.setTaskName("Exporting modules to repository");
+                    getDialogSettings().put(CLEAN_BUILD_BEFORE_EXPORT, page.isClean());
+                    getDialogSettings().put(RECURSIVE_EXPORT, page.isRecursive());
+                    if (page.isClean()) {
                         try {
-                            File cwd = project.getLocation().toFile();
-                            String systemRepo = getInterpolatedCeylonSystemRepo(project);
-                            boolean offline = CeylonProjectConfig.get(project).isOffline();
-                            String output = getCeylonModulesOutputDirectory(project).getAbsolutePath();
-                            List<String> outputRepositories = 
-                                    getReferencedProjectsOutputRepositories(project);
-                            outputRepositories.add(output);
-                            CeylonUtils.CeylonRepoManagerBuilder rmb = 
-                                    CeylonUtils.repoManager()
-                                    .cwd(cwd)
-                                    .systemRepo(systemRepo)
-                                    .extraUserRepos(outputRepositories)
-                                    .offline(offline)
-                                    .logger(new EclipseLogger());
-                            RepositoryManager repo = rmb.buildManager();
-                            CeylonRepoManagerBuilder builder = 
-                                    CeylonUtils.repoManager()
-                                    .noDefaultRepos(true)
-                                    .systemRepo(systemRepo)
-                                    .outRepo(repositoryPath)
-                                    .offline(offline)
-                                    .logger(new EclipseLogger());
-                            if (page.isRemote()) {
-                                builder.user(page.getUser());
-                                builder.password(page.getPass());
+                            project.build(CLEAN_BUILD, monitor);
+                            project.build(AUTO_BUILD, monitor);
+                        }
+                        catch (CoreException e) {
+                            ex = e;
+                            return Status.CANCEL_STATUS;
+                        }
+                        yieldRule(monitor);
+                    }
+                    try {
+                        File cwd = project.getLocation().toFile();
+                        String systemRepo = getInterpolatedCeylonSystemRepo(project);
+                        boolean offline = ceylonProject.getConfiguration().getOffline();
+                        String output = getCeylonModulesOutputDirectory(project).getAbsolutePath();
+                        List<String> outputRepositories = 
+                                getReferencedProjectsOutputRepositories(project);
+                        outputRepositories.add(output);
+                        CeylonUtils.CeylonRepoManagerBuilder rmb = 
+                                CeylonUtils.repoManager()
+                                .cwd(cwd)
+                                .systemRepo(systemRepo)
+                                .extraUserRepos(outputRepositories)
+                                .offline(offline)
+                                .logger(new EclipseLogger());
+                        RepositoryManager repo = rmb.buildManager();
+                        CeylonRepoManagerBuilder builder = 
+                                CeylonUtils.repoManager()
+                                .noDefaultRepos(true)
+                                .systemRepo(systemRepo)
+                                .outRepo(repositoryPath)
+                                .offline(offline)
+                                .logger(new EclipseLogger());
+                        if (page.isRemote()) {
+                            builder.user(page.getUser());
+                            builder.password(page.getPass());
+                        }
+                        RepositoryManager outRepo = builder.buildOutputManager();
+                        ModuleCopycat copycat = new ModuleCopycat(repo,outRepo);
+                        for (int i=0; i<selectedModules.length; i++) {
+                            String name = selectedModules[i];
+                            String version = selectedVersions[i];
+                            ArtifactContext artifactContext = 
+                                    new ArtifactContext(name, version, allSuffixes());
+                            artifactContext.setIgnoreDependencies(!page.isRecursive());
+                            copycat.copyModule(artifactContext);
+                        }
+                    }
+                    catch (Exception e) {
+                        ex = e;
+//                            e.printStackTrace();
+                        return Status.CANCEL_STATUS;
+                    }
+                    /*File outputDir = getCeylonModulesOutputDirectory(project);
+                    Path outputPath = Paths.get(outputDir.getAbsolutePath());
+                    Path repoPath = Paths.get(repositoryPath);
+                    if (!Files.exists(repoPath)) {
+                        MessageDialog.openError(getShell(), "Export Module Error", 
+                                "No repository at location: " + repositoryPath);
+                        return Status.CANCEL_STATUS;
+                    }
+                    for (int i=0; i<selectedModules.length; i++) {
+                        String name = selectedModules[i];
+                        String version = selectedVersions[i];
+                        String glob = name + '-' + version + "*";
+                        String dir = name.replace('.', File.separatorChar) + File.separatorChar + version;
+                        Path repoOutputPath = outputPath.resolve(dir);
+                        Path repoModulePath = repoPath.resolve(dir);
+                        try {
+                            Files.createDirectories(repoModulePath);
+                            DirectoryStream<Path> ds = Files.newDirectoryStream(repoOutputPath, glob);
+                            try {
+                                for (Path path: ds) {
+                                    Files.copy(path, repoModulePath.resolve(path.getFileName()), 
+                                            REPLACE_EXISTING);
+                                }
                             }
-                            RepositoryManager outRepo = builder.buildOutputManager();
-                            ModuleCopycat copycat = new ModuleCopycat(repo,outRepo);
-                            for (int i=0; i<selectedModules.length; i++) {
-                                String name = selectedModules[i];
-                                String version = selectedVersions[i];
-                                ArtifactContext artifactContext = 
-                                        new ArtifactContext(name, version, allSuffixes());
-                                artifactContext.setIgnoreDependencies(!page.isRecursive());
-                                copycat.copyModule(artifactContext);
+                            finally {
+                                ds.close();
                             }
                         }
                         catch (Exception e) {
                             ex = e;
-//                            e.printStackTrace();
                             return Status.CANCEL_STATUS;
                         }
-                        /*File outputDir = getCeylonModulesOutputDirectory(project);
-                        Path outputPath = Paths.get(outputDir.getAbsolutePath());
-                        Path repoPath = Paths.get(repositoryPath);
-                        if (!Files.exists(repoPath)) {
-                            MessageDialog.openError(getShell(), "Export Module Error", 
-                                    "No repository at location: " + repositoryPath);
-                            return Status.CANCEL_STATUS;
-                        }
-                        for (int i=0; i<selectedModules.length; i++) {
-                            String name = selectedModules[i];
-                            String version = selectedVersions[i];
-                            String glob = name + '-' + version + "*";
-                            String dir = name.replace('.', File.separatorChar) + File.separatorChar + version;
-                            Path repoOutputPath = outputPath.resolve(dir);
-                            Path repoModulePath = repoPath.resolve(dir);
-                            try {
-                                Files.createDirectories(repoModulePath);
-                                DirectoryStream<Path> ds = Files.newDirectoryStream(repoOutputPath, glob);
-                                try {
-                                    for (Path path: ds) {
-                                        Files.copy(path, repoModulePath.resolve(path.getFileName()), 
-                                                REPLACE_EXISTING);
-                                    }
-                                }
-                                finally {
-                                    ds.close();
-                                }
-                            }
-                            catch (Exception e) {
-                                ex = e;
-                                return Status.CANCEL_STATUS;
-                            }
-                        }*/
-                        return Status.OK_STATUS;
-                    }
-                };
-                job.setRule(getWorkspace().getRuleFactory().buildRule());
-                getWorkbench().getProgressService().showInDialog(getShell(), job);
-                job.setUser(true);
-                job.schedule();
-            } 
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-            if (ex!=null) {
-                ex.printStackTrace();
-                MessageDialog.openError(getShell(), "Export Module Error", 
-                        "Error occurred exporting module: " + ex.getMessage());
-            }
-            persistDefaultRepositoryPath(repositoryPath);
+                    }*/
+                    return Status.OK_STATUS;
+                }
+            };
+            job.setRule(getWorkspace().getRuleFactory().buildRule());
+            getWorkbench().getProgressService().showInDialog(getShell(), job);
+            job.setUser(true);
+            job.schedule();
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
         }
+        if (ex!=null) {
+            ex.printStackTrace();
+            MessageDialog.openError(getShell(), "Export Module Error", 
+                    "Error occurred exporting module: " + ex.getMessage());
+        }
+        persistDefaultRepositoryPath(repositoryPath);
         return true;
     }
 

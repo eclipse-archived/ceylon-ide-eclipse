@@ -6,8 +6,11 @@ import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
@@ -33,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
 import javax.tools.DiagnosticListener;
@@ -166,23 +168,25 @@ import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
-import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
 import com.redhat.ceylon.model.typechecker.context.TypeCache;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TaskEvent;
@@ -1044,7 +1048,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             doWithCeylonModelCaching(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws CoreException {
-                    return generateBinaries(project, javaProject, unitsTypecheckedIncrementally,
+                    return generateBinaries(javaProject, unitsTypecheckedIncrementally,
                             filesToProcess, typeChecker, 
                             monitor.newChild(45, PREPEND_MAIN_LABEL_TO_SUBTASK));
                 }
@@ -1082,6 +1086,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             final IJavaProject javaProject,
             List<IClasspathContainer> cpContainers) throws CoreException,
             JavaModelException {
+        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(javaProject.getProject());
         boolean languageModuleContainerFound = false;
         boolean applicationModulesContainerFound = false;
         
@@ -1192,7 +1197,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             buildCanContinue = false;
         }
         
-        if (! isInSyncWithCeylonConfig(project)) {
+        if (! ceylonProject.getSynchronizedWithConfiguration()) {
             //if the build order is not correct, add an error and return
             IMarker marker = project.createMarker(CEYLON_CONFIG_NOT_IN_SYNC_MARKER);
             marker.setAttribute(IMarker.MESSAGE, "The Ceylon Build Paths are not in sync with those in the ceylon configuration file (" 
@@ -1212,36 +1217,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return buildCanContinue;
     }
 
-    public static boolean isInSyncWithCeylonConfig(final IProject project) {
-        Set<String> sourceFoldersFromCeylonConfig = new TreeSet<String>();
-        Set<String> sourceFoldersFromEclipseProject = new TreeSet<String>();
-        Set<String> resourceFoldersFromCeylonConfig = new TreeSet<String>();
-        Set<String> resourceFoldersFromEclipseProject = new TreeSet<String>();
-        CeylonProjectConfig ceylonConfig = CeylonProjectConfig.get(project);
-        for (String path : ceylonConfig.getProjectSourceDirectories()) {
-            sourceFoldersFromCeylonConfig.add(Path.fromOSString(path).toString());
-        }
-        for (String path : ceylonConfig.getProjectResourceDirectories()) {
-            resourceFoldersFromCeylonConfig.add(Path.fromOSString(path).toString());
-        }
-        for (IFolder folder : getSourceFolders(project)) {
-            IPath path = folder.isLinked() ? folder.getLocation() : folder.getProjectRelativePath();
-            sourceFoldersFromEclipseProject.add(path.toString());
-        }
-        for (IFolder folder : getResourceFolders(project)) {
-            IPath path = folder.isLinked() ? folder.getLocation() : folder.getProjectRelativePath();
-            resourceFoldersFromEclipseProject.add(path.toString());
-        }
-        if (sourceFoldersFromEclipseProject.isEmpty()) {
-            sourceFoldersFromEclipseProject.add(Constants.DEFAULT_SOURCE_DIR);
-        }
-        if (resourceFoldersFromEclipseProject.isEmpty()) {
-            resourceFoldersFromEclipseProject.add(Constants.DEFAULT_RESOURCE_DIR);
-        }
-        return sourceFoldersFromCeylonConfig.equals(sourceFoldersFromEclipseProject) &&
-                resourceFoldersFromCeylonConfig.equals(resourceFoldersFromEclipseProject);
-    }
-    
     private void warmupCompletionProcessor(final IProject project) {
         /*Job job = new WarmupJob(project);
         job.setPriority(Job.BUILD);
@@ -2397,7 +2372,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private boolean generateBinaries(IProject project, IJavaProject javaProject,
+    private boolean generateBinaries(IJavaProject javaProject,
             Collection<PhasedUnit> unitsTypecheckedIncrementally,
             Collection<IFile> filesToCompile, TypeChecker typeChecker, 
             IProgressMonitor monitor) throws CoreException {
@@ -2408,6 +2383,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         String js_verbose = null;
         String js_outRepo = null;
 
+        IProject project = javaProject.getProject();
+        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        
         String srcPath = "";
         for (IFolder sourceFolder : getSourceFolders(project)) {
             File sourcePathElement = sourceFolder.getRawLocation().toFile();
@@ -2469,19 +2447,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             options.add(systemRepo);
         }
         
-        String overrides = CeylonProjectConfig.get(project).getOverrides();
+        CeylonProjectConfig<IProject> config = ceylonProject.getConfiguration();
+        
+        String overrides = toJavaString(config.getOverrides());
         if (overrides != null) {
             options.add("-overrides");
             options.add(overrides);
         }
         
-        Boolean flatClasspath = CeylonProjectConfig.get(project).isFlatClasspath();
-        if (flatClasspath != null) {
+        if (config.getFlatClasspath()) {
             options.add("-flat-classpath");
         }
 
-        Boolean autoExportMavenDependencies = CeylonProjectConfig.get(project).isAutoExportMavenDependencies();
-        if (autoExportMavenDependencies != null) {
+        if (config.getAutoExportMavenDependencies()) {
             options.add("-auto-export-maven-dependencies");
         }
 
@@ -2544,7 +2522,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         boolean success = true;
         //Compile JS first
         if ((forJavascriptBackend.size() + javaScriptResources.size() > 0) && compileToJs(project)) {
-            success = compileJs(project, typeChecker, js_srcdir, js_rsrcdir, js_repos,
+            success = compileJs(ceylonProject, typeChecker, js_srcdir, js_rsrcdir, js_repos,
                     js_verbose, js_outRepo, printWriter, 
                     /*!compileToJava(project) uncomment isntead of true 
 					when https://github.com/ceylon/ceylon-compiler/issues/2175 is fixed */true,
@@ -2555,7 +2533,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             options.add("-continue");
             // always add the java files, otherwise ceylon code won't see them 
             // and they won't end up in the archives (src/car)
-            success = success & compile(project, javaProject, options,
+            success = success & compile(ceylonProject, javaProject, options,
             		unitsTypecheckedIncrementally,
                     forJavaBackend, javaResources, typeChecker, printWriter, monitor);
         }
@@ -2565,7 +2543,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         		modulesOutputDir != null) {
         	EclipseLogger logger = new EclipseLogger();
 			RepositoryManager outRepo = repoManager()
-            .offline(CeylonProjectConfig.get(project).isOffline())
+            .offline(config.getOffline())
             .cwd(project.getLocation().toFile())
             .outRepo(js_outRepo)
             .logger(logger)
@@ -2600,12 +2578,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return success;
     }
 
-    private boolean compileJs(IProject project, TypeChecker typeChecker,
+    private boolean compileJs(CeylonProject<IProject> ceylonProject, TypeChecker typeChecker,
             List<File> js_srcdir, List<File> js_rsrcdir, List<String> js_repos, 
             String js_verbose, String js_outRepo, PrintWriter printWriter, 
             boolean generateSourceArchive, List<File> sources, List<File> resources) 
                     throws CoreException {
-        
+        IProject project = ceylonProject.getIdeArtifact();
+        CeylonProjectConfig<IProject> config = ceylonProject.getConfiguration();
         Options jsopts = new Options()
                 .outWriter(printWriter)
                 .repos(js_repos)
@@ -2617,7 +2596,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 .verbose(js_verbose)
                 .generateSourceArchive(generateSourceArchive)
                 .encoding(project.getDefaultCharset())
-                .offline(CeylonProjectConfig.get(project).isOffline());
+                .offline(config.getOffline());
         JsCompiler jsc = new JsCompiler(typeChecker, jsopts) {
 
             @Override
@@ -2685,12 +2664,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     @SuppressWarnings("deprecation")
-    private boolean compile(final IProject project, IJavaProject javaProject, 
+    private boolean compile(CeylonProject<IProject> ceylonProject, IJavaProject javaProject, 
             List<String> options, Collection<PhasedUnit> unitsTypecheckedIncrementally,
             List<File> sources, List<File> resources,
             final TypeChecker typeChecker, PrintWriter printWriter,
             IProgressMonitor mon) 
                     throws VerifyError {
+        
+        final IProject project = ceylonProject.getIdeArtifact();
         
         int numberOfJavaFiles = 0;
         int numberOfCeylonFiles = 0;
@@ -2962,12 +2943,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static EnumSet<Warning> getSuppressedWarnings(IProject project) {
-        if (project==null || ! project.isAccessible()) {
-            return EnumSet.noneOf(Warning.class);
+        if (project!=null) {
+            CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+            if (ceylonProject != null) {
+                return ceylonProject.getConfiguration().getSuppressWarningsEnum();
+            }
         }
-        else {
-            return CeylonProjectConfig.get(project).getSuppressWarningsEnum();
-        }
+        return EnumSet.noneOf(Warning.class);
     }
 
     public static String fileName(ClassMirror c) {
@@ -2989,12 +2971,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         List<String> userRepos = getCeylonRepositories(project);
         userRepos.addAll(getReferencedProjectsOutputRepositories(project));
         return userRepos;
-    }
-    
-    public static List<String> getAllRepositories(IProject project) throws CoreException {
-        List<String> allRepos = getUserRepositories(project);
-        allRepos.add(CeylonProjectConfig.get(project).getMergedRepositories().getCacheRepository().getUrl());
-        return allRepos;
     }
     
     public static List<String> getReferencedProjectsOutputRepositories(IProject project) throws CoreException {
@@ -3026,18 +3002,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static List<String> getCeylonRepositories(IProject project) {
-        CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
-        List<String> projectLookupRepos = projectConfig.getProjectLocalRepos();
-        List<String> globalLookupRepos = projectConfig.getGlobalLookupRepos();
-        List<String> projectRemoteRepos = projectConfig.getProjectRemoteRepos();
-        List<String> otherRemoteRepos = projectConfig.getOtherRemoteRepos();
-
-        List<String> repos = new ArrayList<String>();
-        repos.addAll(projectLookupRepos);
-        repos.addAll(globalLookupRepos);
-        repos.addAll(projectRemoteRepos);
-        repos.addAll(otherRemoteRepos);
-        return repos;
+        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        if (ceylonProject != null) {
+            return toJavaStringList(ceylonProject.getCeylonRepositories());
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     private static File toFile(IProject project, IPath path) {
@@ -3438,7 +3408,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         job.schedule();
     }
     
+    // TODO ABSTRACTION : should be moved to the CeylonProject class
     public static RepositoryManager createProjectRepositoryManager(final IProject project) throws CoreException {
+        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+
         RepositoryManager repositoryManager = new CeylonUtils.CeylonRepoManagerBuilder() {
                     protected com.redhat.ceylon.cmr.api.Overrides getOverrides(String path) {
                         if (path == null) {
@@ -3487,7 +3460,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     };
                     
                 }
-                .offline(CeylonProjectConfig.get(project).isOffline())
+                .offline(ceylonProject.getConfiguration().getOffline())
                 .cwd(project.getLocation().toFile())
                 .systemRepo(getInterpolatedCeylonSystemRepo(project))
                 .extraUserRepos(getReferencedProjectsOutputRepositories(project))
@@ -3512,7 +3485,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         modelStates.remove(project);
         containersInitialized.remove(project);
         projectRepositoryManagers.remove(project);
-        CeylonProjectConfig.remove(project);
         JavaProjectStateMirror.cleanup(project);
         projectModuleDependencies.remove(project);
     }
@@ -3556,39 +3528,42 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static List<IFolder> getResourceFolders(IProject project) {
         LinkedList<IFolder> resourceFolers = new LinkedList<>();
         if (project.exists()) {
-            for (String resourceInConfig : CeylonProjectConfig.get(project).getResourceDirectories()) {
-                class FolderHolder {
-                    IFolder resourceFolder;
-                }
-                final FolderHolder folderHolder = new FolderHolder();;
-                final IPath path = Path.fromOSString(resourceInConfig);
-                if (! path.isAbsolute()) {
-                    folderHolder.resourceFolder = project.getFolder(path);
-                } else {
-                    try {   
-                        project.accept(new IResourceVisitor() {
-                            @Override
-                            public boolean visit(IResource resource) 
-                                    throws CoreException {
-                                if (resource instanceof IFolder &&
-                                        resource.isLinked() && 
-                                        resource.getLocation() != null &&
-                                        resource.getLocation().equals(path)) {
-                                    folderHolder.resourceFolder = (IFolder) resource;
-                                    return false;
+            CeylonProject<IProject> ceylonProject  = ceylonModel().getProject(project);
+            if (ceylonProject != null) {
+                for (String resourceInConfig : toJavaStringList(ceylonProject.getConfiguration().getResourceDirectories())) {
+                    class FolderHolder {
+                        IFolder resourceFolder;
+                    }
+                    final FolderHolder folderHolder = new FolderHolder();;
+                    final IPath path = Path.fromOSString(resourceInConfig);
+                    if (! path.isAbsolute()) {
+                        folderHolder.resourceFolder = project.getFolder(path);
+                    } else {
+                        try {   
+                            project.accept(new IResourceVisitor() {
+                                @Override
+                                public boolean visit(IResource resource) 
+                                        throws CoreException {
+                                    if (resource instanceof IFolder &&
+                                            resource.isLinked() && 
+                                            resource.getLocation() != null &&
+                                            resource.getLocation().equals(path)) {
+                                        folderHolder.resourceFolder = (IFolder) resource;
+                                        return false;
+                                    }
+                                    return resource instanceof IFolder || 
+                                            resource instanceof IProject;
                                 }
-                                return resource instanceof IFolder || 
-                                        resource instanceof IProject;
-                            }
-                        });
+                            });
+                        }
+                        catch (CoreException e) {
+                            e.printStackTrace();
+                        }
                     }
-                    catch (CoreException e) {
-                        e.printStackTrace();
+                    if (folderHolder.resourceFolder != null && 
+                            folderHolder.resourceFolder.exists()) {
+                        resourceFolers.add(folderHolder.resourceFolder);
                     }
-                }
-                if (folderHolder.resourceFolder != null && 
-                        folderHolder.resourceFolder.exists()) {
-                    resourceFolers.add(folderHolder.resourceFolder);
                 }
             }
         }
@@ -4161,8 +4136,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static IFolder getCeylonModulesOutputFolder(IProject project) {
-        IPath path = CeylonProjectConfig.get(project).getOutputRepoPath();
-        return project.getFolder(path.removeFirstSegments(1));
+        CeylonProjectConfig<IProject> config = ceylonModel().getProject(project).getConfiguration();
+        return project.getFolder(config.getOutputRepoProjectRelativePath());
     }
     
     public static String getCeylonSystemRepo(IProject project) {

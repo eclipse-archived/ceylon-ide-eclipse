@@ -2,6 +2,8 @@ package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_PORT;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
@@ -23,8 +25,8 @@ import org.eclipse.jdt.launching.SocketUtil;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.launch.ModuleLaunchDelegate;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
@@ -128,7 +130,9 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
                 args.add("--rep");
                 args.add(outputFolder.toOSString());
             }
-            for (String repo : CeylonProjectConfig.get(project).getProjectLocalRepos()) {
+            CeylonProjectConfig<IProject> projectConfig = ceylonModel()
+                    .getProject(project).getConfiguration();
+            for (String repo : toJavaStringList(projectConfig.getProjectLocalRepos())) {
                 args.add("--rep");
                 args.add(repo);
             }

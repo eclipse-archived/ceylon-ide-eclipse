@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
+import static com.redhat.ceylon.ide.common.util.toCeylonBoolean_.toCeylonBoolean;
+import static com.redhat.ceylon.ide.common.util.toCeylonStringIterable_.toCeylonStringIterable;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
 import java.io.File;
@@ -38,8 +41,9 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
 import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class NewProjectWizard extends NewElementWizard implements IExecutableExtension {
 
@@ -131,7 +135,9 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             
             IProject project = getCreatedElement().getProject();
             
-            CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
+            ceylonModel().addProject(project);
+            CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+            CeylonProjectConfig<IProject> projectConfig = ceylonProject.getConfiguration();
             
             if (!firstPage.isShowCompilerWarnings()) {
                 projectConfig.setProjectSuppressWarningsEnum(EnumSet.allOf(Warning.class));
@@ -139,13 +145,13 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             
             Boolean offlineOption = firstPage.getOfflineOption();
             if (offlineOption!=null) {
-                projectConfig.setProjectOffline(offlineOption);
+                projectConfig.setProjectOffline(toCeylonBoolean(offlineOption));
             }
             
             if (thirdPage.getBlock().getProject() != null) {
                 projectConfig.setOutputRepo(thirdPage.getBlock().getOutputRepo());
-                projectConfig.setProjectLocalRepos(thirdPage.getBlock().getProjectLocalRepos());
-                projectConfig.setProjectRemoteRepos(thirdPage.getBlock().getProjectRemoteRepos());
+                projectConfig.setProjectLocalRepos(toCeylonStringIterable(thirdPage.getBlock().getProjectLocalRepos()));
+                projectConfig.setProjectRemoteRepos(toCeylonStringIterable(thirdPage.getBlock().getProjectRemoteRepos()));
             }
             
             projectConfig.save();

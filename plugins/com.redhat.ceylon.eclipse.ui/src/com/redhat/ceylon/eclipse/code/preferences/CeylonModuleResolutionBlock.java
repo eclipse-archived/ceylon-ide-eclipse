@@ -39,14 +39,16 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.core.model.modelJ2C;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class CeylonModuleResolutionBlock {
 
     private IProject project;
 
-    private Boolean flatClasspath;
-    private Boolean autoExportMavenDependencies;
+    private ceylon.language.Boolean flatClasspath;
+    private ceylon.language.Boolean autoExportMavenDependencies;
 
     private Text overridesText;
     private Button overridesBrowseButton;
@@ -68,11 +70,11 @@ public class CeylonModuleResolutionBlock {
     }
 
     public Boolean getFlatClasspath() {
-        return flatClasspath;
+        return flatClasspath == null ? null : flatClasspath.booleanValue();
     }
 
     public Boolean getAutoExportMavenDependencies() {
-        return autoExportMavenDependencies;
+        return autoExportMavenDependencies == null ? null : autoExportMavenDependencies.booleanValue();
     }
 
     public void performDefaults() {
@@ -84,49 +86,53 @@ public class CeylonModuleResolutionBlock {
             boolean isCeylonNatureEnabled) {
         this.project = project;
         
-        String overrides = null;
+        ceylon.language.String overrides = null;
         if (isCeylonNatureEnabled) {
-            CeylonProjectConfig config = 
-                    CeylonProjectConfig.get(project);
+            CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(project);
+            if (project != null) {
+                
+            }
+            CeylonProjectConfig<IProject> config = 
+                    ceylonProject.getConfiguration();
             overrides = config.getProjectOverrides();
-            flatClasspath = config.isProjectFlatClasspath();
+            flatClasspath = config.getProjectFlatClasspath();
             autoExportMavenDependencies = 
-                    config.isProjectAutoExportMavenDependencies();
+                    config.getProjectAutoExportMavenDependencies();
         }
         
         boolean flat = 
                 flatClasspath!=null && 
-                flatClasspath;
+                flatClasspath.booleanValue();
         flatClasspathButton.setSelection(flat);
         flatClasspathButton.addListener(SWT.Selection, 
                 new Listener() {
             public void handleEvent(Event e) {
                 if (flatClasspath == null) {
-                    flatClasspath = true;
+                    flatClasspath = ceylon.language.Boolean.instance(true);
                 } else {
-                    flatClasspath = !flatClasspath;
+                    flatClasspath = ceylon.language.Boolean.instance(!flatClasspath.booleanValue());
                 }
             }
         });
 
         boolean autoExport = 
                 autoExportMavenDependencies!=null &&
-                autoExportMavenDependencies;
+                autoExportMavenDependencies.booleanValue();
         autoExportMavenDependenciesButton.setSelection(autoExport);
         autoExportMavenDependenciesButton.addListener(SWT.Selection, 
                 new Listener() {
             public void handleEvent(Event e) {
                 if (autoExportMavenDependencies == null) {
-                    autoExportMavenDependencies = true;
+                    autoExportMavenDependencies = ceylon.language.Boolean.instance(true);
                 } else {
                     autoExportMavenDependencies = 
-                            !autoExportMavenDependencies;
+                            ceylon.language.Boolean.instance(!autoExportMavenDependencies.booleanValue());
                 }
             }
         });
 
         if (overrides != null) {
-            overridesText.setText(overrides.trim());
+            overridesText.setText(overrides.value.trim());
         } else {
             overridesText.setText("");
         }
@@ -345,7 +351,6 @@ public class CeylonModuleResolutionBlock {
                     } catch (UnsupportedEncodingException e1) {
                         e1.printStackTrace();
                     }
-                    final IFile fileToOpen = overridesResource;
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override
                         public void run() {

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.ui;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static org.eclipse.core.resources.IResource.DEPTH_ONE;
 import static org.eclipse.core.resources.IResourceDelta.CONTENT;
 import static org.eclipse.core.resources.IResourceDelta.ENCODING;
@@ -29,7 +30,8 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class CeylonEncodingSynchronizer {
 
@@ -73,7 +75,7 @@ public class CeylonEncodingSynchronizer {
     }
     
     private void synchronizeEncoding(IProject project, boolean forceEclipseEncoding) {
-        if (!(project.isOpen() && CeylonNature.isEnabled(project))) {
+        if (!(project.isAccessible() && CeylonNature.isEnabled(project))) {
             return;
         }
         
@@ -81,8 +83,8 @@ public class CeylonEncodingSynchronizer {
             removeProblemMarker(project);
             
             String eclipseEncoding = project.getDefaultCharset();
-            String configEncoding = 
-                    CeylonProjectConfig.get(project).getProjectEncoding();
+            String configEncoding = ceylonModel().getProject(project)
+                    .getConfiguration().getProjectEncoding();
 
             if (forceEclipseEncoding) {
                 updateEncoding(project, eclipseEncoding);
@@ -226,8 +228,11 @@ public class CeylonEncodingSynchronizer {
                         synchronizeEncoding(project, false);
                     }
                     if (filePath.equals(".ceylon/config")) {
-                        CeylonProjectConfig.get(project).refresh();
-                        synchronizeEncoding(project, false);
+                        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+                        if (ceylonProject != null) {
+                            ceylonProject.getConfiguration().refresh();
+                            synchronizeEncoding(project, false);
+                        }
                     }
                 }
             }
@@ -252,28 +257,30 @@ public class CeylonEncodingSynchronizer {
             refresh(project.getFolder(".settings"), monitor);
             refresh(project.getFolder(".ceylon"), monitor);
             
-            CeylonProjectConfig config = CeylonProjectConfig.get(project);
-            config.refresh();
-            
-            try {
-                isSuspended.set(true);
+            CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+            if (ceylonProject != null) {
+                CeylonProjectConfig<IProject> config = ceylonProject.getConfiguration();
+                config.refresh();
                 
-                String originalEclipseEncoding = project.getDefaultCharset();
-                if (!isEquals(originalEclipseEncoding, encoding)) {
-                    project.setDefaultCharset(encoding, monitor);
-                }
+                try {
+                    isSuspended.set(true);
+                    
+                    String originalEclipseEncoding = project.getDefaultCharset();
+                    if (!isEquals(originalEclipseEncoding, encoding)) {
+                        project.setDefaultCharset(encoding, monitor);
+                    }
 
-                String originalConfigEncoding = config.getProjectEncoding();
-                if (!isEquals(originalConfigEncoding, encoding)) {
-                    config.setProjectEncoding(encoding);
-                    config.save();
+                    String originalConfigEncoding = config.getProjectEncoding();
+                    if (!isEquals(originalConfigEncoding, encoding)) {
+                        config.setProjectEncoding(encoding);
+                        config.save();
+                    }
+                } finally {
+                    isSuspended.set(false);
                 }
-
-                return Status.OK_STATUS;
-            } finally {
-                isSuspended.set(false);
             }
-        }        
+            return Status.OK_STATUS;
+        }
     }
     
     private boolean hasFlag(IResourceDelta delta, int flag) {

@@ -107,13 +107,13 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTMethod;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceDeclarationHolder;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.JvmBackendUtil;
@@ -1541,19 +1541,24 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected boolean isAutoExportMavenDependencies() {
         if (javaProject != null) {
-            return CeylonProjectConfig.get(javaProject.getProject()).isAutoExportMavenDependencies();
-        } else {
-            return false;
+            CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(javaProject.getProject());
+            if (ceylonProject != null) {
+                return ceylonProject.getConfiguration().getAutoExportMavenDependencies();
+            }
         }
+        
+        return false;
     }
 
     @Override
     protected boolean isFlatClasspath() {
         if (javaProject != null) {
-            return CeylonProjectConfig.get(javaProject.getProject()).isFlatClasspath();
-        } else {
-            return false;
+            CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(javaProject.getProject());
+            if (ceylonProject != null) {
+                return ceylonProject.getConfiguration().getFlatClasspath();
+            }
         }
+        return false;
     }
 
     @Override

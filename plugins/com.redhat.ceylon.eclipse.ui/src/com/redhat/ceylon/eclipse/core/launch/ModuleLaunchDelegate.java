@@ -8,6 +8,9 @@ import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationCo
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE;
 import static com.redhat.ceylon.eclipse.core.launch.LaunchHelper.getStartLocation;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,9 +46,9 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 
 import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.sun.jdi.VirtualMachine;
 
 public class ModuleLaunchDelegate extends JavaLaunchDelegate {
@@ -154,11 +157,12 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
             args.add("run");
         }
         
-        prepareRepositoryArguments(args, project, workingRepos);
-        prepareOverridesArgument(args, project);
-        prepareFlatClasspathArgument(args, project);
-        prepareAutoExportMavenDependencies(args, project);
-        prepareOfflineArgument(args, project);
+        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        prepareRepositoryArguments(args, ceylonProject, workingRepos);
+        prepareOverridesArgument(args, ceylonProject);
+        prepareFlatClasspathArgument(args, ceylonProject);
+        prepareAutoExportMavenDependencies(args, ceylonProject);
+        prepareOfflineArgument(args, ceylonProject);
         if (configuration.getAttribute(ATTR_LAUNCH_VERBOSE, false)) {
             prepareVerboseArgument(args, runAsJs);
         }
@@ -178,42 +182,42 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
     }
 
     protected void prepareRepositoryArguments(List<String> args, 
-            IProject project, List<IPath> workingRepos) {
+            CeylonProject<IProject> project, List<IPath> workingRepos) {
         for (IPath repo : workingRepos) {
             args.add("--rep");
             args.add(repo.toOSString());
         }
         
-        for (String repo: CeylonProjectConfig.get(project)
-                .getProjectLocalRepos()) {
+        for (String repo: toJavaStringList(project.getConfiguration()
+                .getProjectLocalRepos())) {
             args.add("--rep");
             args.add(repo);                      
         }
     }
 
-    protected void prepareOverridesArgument(List<String> args, IProject project) {
-        String overrides = CeylonProjectConfig.get(project).getOverrides();
+    protected void prepareOverridesArgument(List<String> args, CeylonProject<IProject> project) {
+        String overrides = toJavaString(project.getConfiguration().getOverrides());
         if (overrides != null) {
             args.add("--overrides=" + overrides);
         }
     }
 
-    protected void prepareFlatClasspathArgument(List<String> args, IProject project) {
-        Boolean flatClasspath = CeylonProjectConfig.get(project).isFlatClasspath();
-        if (flatClasspath != null && flatClasspath) {
+    protected void prepareFlatClasspathArgument(List<String> args, CeylonProject<IProject> project) {
+        boolean flatClasspath = project.getConfiguration().getFlatClasspath();
+        if (flatClasspath) {
             args.add("--flat-classpath");
         }
     }
 
-    protected void prepareAutoExportMavenDependencies(List<String> args, IProject project) {
-        Boolean autoExportMavenDependencies = CeylonProjectConfig.get(project).isAutoExportMavenDependencies();
-        if (autoExportMavenDependencies != null && autoExportMavenDependencies) {
+    protected void prepareAutoExportMavenDependencies(List<String> args, CeylonProject<IProject> project) {
+        boolean autoExportMavenDependencies = project.getConfiguration().getAutoExportMavenDependencies();
+        if (autoExportMavenDependencies) {
             args.add("--auto-export-maven-dependencies");
         }
     }
 
-    protected void prepareOfflineArgument(List<String> args, IProject project) {
-        if (CeylonProjectConfig.get(project).isOffline()) {
+    protected void prepareOfflineArgument(List<String> args, CeylonProject<IProject> project) {
+        if (project.getConfiguration().getOffline()) {
             args.add("--offline");
         }
     }

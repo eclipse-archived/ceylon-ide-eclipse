@@ -6,6 +6,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolder
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInSourceFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isResourceFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isSourceFile;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -24,12 +26,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
 import com.redhat.ceylon.common.FileUtil;
-import com.redhat.ceylon.model.typechecker.util.ModuleManager;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
 final class DeltaScanner implements IResourceDeltaVisitor {
     private final BooleanHolder mustDoFullBuild;
@@ -62,9 +65,9 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         } catch (CoreException e) {
         }
         astAwareIncrementalBuild = CeylonBuilder.areAstAwareIncrementalBuildsEnabled(project);
-        CeylonProjectConfig projectConfig = CeylonProjectConfig.get(project);
+        CeylonProjectConfig<IProject> projectConfig = ceylonModel().getProject(project).getConfiguration();
         if (projectConfig != null) {
-            String overridesFilePath = projectConfig.getOverrides();
+            String overridesFilePath = toJavaString(projectConfig.getOverrides());
             if (overridesFilePath != null) {
                 File overridesFile = FileUtil.absoluteFile(FileUtil.applyCwd(project.getLocation().toFile(), new File(overridesFilePath)));
                 overridesResource = CeylonBuilder.fileToIFile(overridesFile, project);

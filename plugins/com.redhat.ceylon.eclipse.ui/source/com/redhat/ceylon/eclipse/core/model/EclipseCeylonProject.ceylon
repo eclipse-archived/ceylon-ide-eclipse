@@ -12,7 +12,8 @@ import java.io {
 import org.eclipse.core.runtime {
     NullProgressMonitor,
     CoreException,
-    IProgressMonitor
+    IProgressMonitor,
+    Path
 }
 import org.eclipse.jface.dialogs {
     MessageDialog
@@ -22,6 +23,18 @@ import org.eclipse.swt.widgets {
 }
 import com.redhat.ceylon.eclipse.ui {
     CeylonEncodingSynchronizer
+}
+import ceylon.collection {
+    HashSet
+}
+import com.redhat.ceylon.eclipse.core.builder {
+    CeylonBuilder
+}
+import ceylon.interop.java {
+    CeylonIterable
+}
+import com.redhat.ceylon.common {
+    Constants
 }
 
 shared class EclipseCeylonProject(ideArtifact) extends CeylonProject<IProject>() {
@@ -114,5 +127,39 @@ shared class EclipseCeylonProject(ideArtifact) extends CeylonProject<IProject>()
                 e.printStackTrace();
             }
         }
+    }
+
+    shared actual Boolean synchronizedWithConfiguration {
+        value config = configuration;
+        function sameFolders({String*} configFolders, {IFolder*} eclipseFolders, String defaultEclipsePath)
+            => HashSet {
+                configFolders.map((p)
+                    => Path.fromOSString(p).string)
+                }
+                ==
+                HashSet {
+                    * (
+                        if (nonempty eclipsePaths =
+                            eclipseFolders.map {
+                                collecting(IFolder f)
+                                        => (if (f.linked) then f.location else f.projectRelativePath).string;
+                            }.sequence())
+                        then eclipsePaths
+                        else { defaultEclipsePath }
+                       )
+                };
+
+        return every {
+            sameFolders {
+                configFolders = config.projectSourceDirectories;
+                eclipseFolders = CeylonIterable(CeylonBuilder.getSourceFolders(ideArtifact));
+                defaultEclipsePath = Constants.\iDEFAULT_SOURCE_DIR;
+            },
+            sameFolders {
+                configFolders = config.projectResourceDirectories;
+                eclipseFolders = CeylonIterable(CeylonBuilder.getResourceFolders(ideArtifact));
+                defaultEclipsePath = Constants.\iDEFAULT_RESOURCE_DIR;
+            }
+        };
     }
  }

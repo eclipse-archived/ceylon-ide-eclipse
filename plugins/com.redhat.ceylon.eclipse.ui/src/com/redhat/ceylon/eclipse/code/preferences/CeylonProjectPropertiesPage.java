@@ -6,6 +6,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.ide.common.util.toJavaBoolean_.toJavaBoolean;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import org.eclipse.core.resources.IProject;
@@ -33,10 +35,9 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
-
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 public class CeylonProjectPropertiesPage extends PropertyPage {
     
     private boolean explodeModules = true;
@@ -83,9 +84,9 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
                     backendJava, backendJs, astAwareIncrementalBuids, verbose)
                     .addToProject(project);
 
-            CeylonProjectConfig config = CeylonProjectConfig.get(project);
+            CeylonProjectConfig<IProject> config = ceylonModel().getProject(project).getConfiguration();
             if (offlineOption!=null) {
-                config.setProjectOffline(offlineOption);
+                config.setProjectOffline(ceylon.language.Boolean.instance(offlineOption));
             }
             config.save();
         }
@@ -344,7 +345,7 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
                 backendJs = compileToJs(project);
                 backendJava = compileToJava(project);
                 verbose = getVerbose(project);
-                offlineOption = CeylonProjectConfig.get(project).isProjectOffline();
+                offlineOption = toJavaBoolean(ceylonModel().getProject(project).getConfiguration().getProjectOffline());
             }
         }
 

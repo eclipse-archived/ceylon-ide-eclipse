@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 
 import java.io.File;
@@ -41,12 +43,13 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
+import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.CeylonConfigFinder;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class CeylonRepoConfigBlock {
 
@@ -136,20 +139,6 @@ public class CeylonRepoConfigBlock {
     public void initState(IProject project, 
             boolean isCeylonNatureEnabled) {
         this.project = project;
-        CeylonProjectConfig config = 
-                CeylonProjectConfig.get(project);
-        
-        if (isCeylonNatureEnabled) {
-            projectLocalRepos = 
-                    config.getProjectLocalRepos();
-            projectRemoteRepos = 
-                    config.getProjectRemoteRepos();
-            globalLookupRepos = 
-                    config.getGlobalLookupRepos();
-            otherRemoteRepos = 
-                    config.getOtherRemoteRepos();
-        }
-        
         String systemRepo = 
                 CeylonBuilder.getCeylonSystemRepo(project);
         if( systemRepo == null || 
@@ -161,11 +150,30 @@ public class CeylonRepoConfigBlock {
         systemRepoText.setEnabled(isCeylonNatureEnabled);
         systemRepoBrowseButton.setEnabled(isCeylonNatureEnabled);
         
-        outputRepoText.setText(config.getOutputRepo());
         outputRepoText.setEnabled(isCeylonNatureEnabled);
         outputRepoBrowseButton.setEnabled(isCeylonNatureEnabled);
         
         lookupRepoTable.setEnabled(isCeylonNatureEnabled);
+
+        
+        if (isCeylonNatureEnabled) {
+            CeylonProjectConfig<IProject> config = 
+                    ceylonModel().getProject(project).getConfiguration();
+
+            projectLocalRepos = 
+                    toJavaStringList(config.getProjectLocalRepos());
+            projectRemoteRepos = 
+                    toJavaStringList(config.getProjectRemoteRepos());
+            globalLookupRepos = 
+                    toJavaStringList(config.getGlobalLookupRepos());
+            otherRemoteRepos = 
+                    toJavaStringList(config.getOtherRemoteRepos());
+            outputRepoText.setText(config.getOutputRepo());
+        } else {
+            outputRepoText.setText(Constants.DEFAULT_MODULE_DIR);
+        }
+        
+        
         lookupRepoTable.removeAll();
         addLookupRepos(projectLocalRepos, false);
         addLookupRepos(globalLookupRepos, true);

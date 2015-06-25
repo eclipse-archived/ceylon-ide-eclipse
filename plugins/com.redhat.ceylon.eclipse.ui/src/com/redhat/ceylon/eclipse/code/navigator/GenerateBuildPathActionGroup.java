@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,9 +72,8 @@ import org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.RemoveFromBu
 
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsBlock;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
-import com.redhat.ceylon.ide.common.util.InteropUtils;
 
 /**
  * Copied from <code>{@link org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.GenerateBuildPathActionGroup}</code>
@@ -337,7 +337,10 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 			return;
 		}
 		
-		if (! CeylonBuilder.isInSyncWithCeylonConfig(project)) {
+		CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        CeylonProjectConfig<IProject> config = ceylonProject.getConfiguration();
+
+        if (! ceylonProject.getSynchronizedWithConfiguration()) {
 			MessageDialog.openError(shell, 
 					NewWizardMessages.NewSourceContainerWorkbookPage_ToolBar_RemoveFromCP_tooltip, 
                     "The Ceylon configuration file (.ceylon/config) is not synchronized with the current build path settings.\n" +
@@ -349,8 +352,7 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 		runnable.run();
 		
 		// And finally update the Ceylon config file
-        CeylonProjectConfig<IProject> config = ceylonModel().getProject(project).getConfiguration();
-        List<String> configResourceDirectories = InteropUtils.toJavaStringList(config.getProjectResourceDirectories());
+        List<String> configResourceDirectories = toJavaStringList(config.getProjectResourceDirectories());
         IPath javaOutputLocation = javaProject.readOutputLocation();
         try {
 			CPListElement[] classPathEntries = CPListElement.createFromExisting(javaProject);

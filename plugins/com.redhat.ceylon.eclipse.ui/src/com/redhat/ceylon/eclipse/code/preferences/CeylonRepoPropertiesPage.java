@@ -6,6 +6,9 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressedWarnings;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
+import static com.redhat.ceylon.ide.common.util.toCeylonBoolean_.toCeylonBoolean;
+import static com.redhat.ceylon.ide.common.util.toCeylonStringIterable_.toCeylonStringIterable;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Composite;
@@ -13,8 +16,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.builder.CeylonProjectConfig;
+import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class CeylonRepoPropertiesPage extends PropertyPage {
     
@@ -30,21 +35,20 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
         }
 
         IProject project = getSelectedProject();
-        CeylonProjectConfig projectConfig = 
-                CeylonProjectConfig.get(project);
+        CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(project);
+        CeylonProjectConfig<IProject> projectConfig = 
+                ceylonProject.getConfiguration();
         projectConfig.setOutputRepo(block.getOutputRepo());
         projectConfig.setProjectLocalRepos(
-                block.getProjectLocalRepos());
+                toCeylonStringIterable(block.getProjectLocalRepos()));
         projectConfig.setProjectRemoteRepos(
-                block.getProjectRemoteRepos());
+                toCeylonStringIterable(block.getProjectRemoteRepos()));
         projectConfig.setProjectSuppressWarningsEnum(
                 getSuppressedWarnings(project));
-        projectConfig.setProjectOverrides(
-                block.getOverrides());
-        projectConfig.setProjectFlatClasspath(
-                block.getFlatClasspath());
+        projectConfig.setProjectOverrides(toCeylonString(block.getOverrides()));
+        projectConfig.setProjectFlatClasspath(toCeylonBoolean(block.getFlatClasspath()));
         projectConfig.setProjectAutoExportMavenDependencies(
-                block.getAutoExportMavenDependencies());
+                toCeylonBoolean(block.getAutoExportMavenDependencies()));
         projectConfig.save();
         
         if (CeylonNature.isEnabled(project)) {
