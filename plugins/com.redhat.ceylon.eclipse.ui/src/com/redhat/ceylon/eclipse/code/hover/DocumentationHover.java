@@ -1047,7 +1047,17 @@ public class DocumentationHover extends SourceInfoHover {
             try {
                 //TODO: Javadoc @ icon?
                 IMember mem = (IMember) elem;
-                String jd = JavadocContentAccess2.getHTMLContent(mem, true);
+//                String jd = JavadocContentAccess2.getHTMLContent(mem, true);
+                String jd = null;
+                for (java.lang.reflect.Method m: JavadocContentAccess2.class.getDeclaredMethods()) {
+                	if (m.getName().equals("getHTMLContent")) {
+                		try {
+	                		jd = (String) m.invoke(null, new Object[]{mem,true});
+	                		break;
+                		}
+                		catch (Exception e) {}
+                	}
+                }
                 if (jd!=null) {
                     sb.append("<br/>").append(jd);
                     String base = getBaseURL(mem, mem.isBinary());
