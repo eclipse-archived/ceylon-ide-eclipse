@@ -15,6 +15,7 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.graphics.Font;
 
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -38,6 +39,14 @@ abstract class CeylonHierarchyLabelProvider extends
     @Override
     public void addListener(ILabelProviderListener listener) {}
 
+    Font getFont() {
+        return null;
+    }
+
+    String getPrefix() {
+        return null;
+    }
+
     StyledString getStyledText(CeylonHierarchyNode n) {
         Declaration d = getDisplayedDeclaration(n);
         if (d==null) {
@@ -48,7 +57,8 @@ abstract class CeylonHierarchyLabelProvider extends
                 prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
                 prefs.getBoolean(PARAMS_IN_OUTLINES),
                 prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
-                prefs.getBoolean(RETURN_TYPES_IN_OUTLINES));
+                prefs.getBoolean(RETURN_TYPES_IN_OUTLINES),
+                getPrefix(), getFont());
         /*if (d.isClassOrInterfaceMember()) {
             Declaration container = (Declaration) d.getContainer();
             result.append(" in ")

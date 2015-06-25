@@ -29,6 +29,7 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -137,9 +138,18 @@ public class HierarchyPopup extends TreeViewPopup {
                         dialogSettings.getBoolean(EXCLUDE_ORACLE_JDK));
         labelProvider = new CeylonHierarchyLabelProvider() {
             @Override
+            Font getFont() {
+                return treeViewer.getControl().getFont();
+            }
+            @Override
+            String getPrefix() {
+                return getFilterText().getText();
+            }
+            @Override
             String getViewInterfacesShortcut() {
                 TriggerSequence binding = getCommandBinding();
-                return binding==null ? "" : " (" + binding.format() + " to view)";
+                return binding==null ? "" : 
+                    " (" + binding.format() + " to view)";
             }
             @Override
             boolean isShowingRefinements() {

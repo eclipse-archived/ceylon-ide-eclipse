@@ -53,6 +53,7 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -198,13 +199,21 @@ public class OutlinePopup extends TreeViewPopup {
 
     private final class LabelProvider extends CeylonLabelProvider {
         //TODO: refactor to not inherit CeylonLabelProvider
+        
+        private Font getFont() {
+            return getTreeViewer().getControl().getFont();
+        }
+
+        private String getPrefix() {
+            return getFilterText().getText();
+        }
+
         @Override
         public StyledString getStyledText(Object element) {
             if (element instanceof CeylonOutlineNode) {
                 CeylonOutlineNode node = 
                         (CeylonOutlineNode) element;
-                return node.getLabel(getFilterText().getText(), 
-                        getTreeViewer().getControl().getFont());
+                return node.getLabel(getPrefix(), getFont());
             }
             else if (element instanceof Declaration) {
                 IPreferenceStore prefs = getPreferences();
@@ -212,7 +221,8 @@ public class OutlinePopup extends TreeViewPopup {
                         prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
                         prefs.getBoolean(PARAMS_IN_OUTLINES),
                         prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
-                        prefs.getBoolean(RETURN_TYPES_IN_OUTLINES));
+                        prefs.getBoolean(RETURN_TYPES_IN_OUTLINES),
+                        getPrefix(), getFont());
             }
             else {
                 return new StyledString();
@@ -231,6 +241,7 @@ public class OutlinePopup extends TreeViewPopup {
                 return null;
             }
         }
+        
     }
 
     private final class ChangeViewListener implements KeyListener {
