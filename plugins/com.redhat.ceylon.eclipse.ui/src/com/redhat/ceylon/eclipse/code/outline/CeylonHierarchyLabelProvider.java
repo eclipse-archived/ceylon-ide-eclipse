@@ -8,6 +8,8 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MULTIPLE_TYPES_IMAGE;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
+import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -19,8 +21,6 @@ import org.eclipse.swt.graphics.Font;
 
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Highlights;
 
 abstract class CeylonHierarchyLabelProvider 
         extends StyledCellLabelProvider {
@@ -48,24 +48,25 @@ abstract class CeylonHierarchyLabelProvider
     }
 
     private StyledString getStyledText(CeylonHierarchyNode n) {
-        Declaration d = getDisplayedDeclaration(n);
-        if (d==null) {
+        Declaration dec = getDisplayedDeclaration(n);
+        if (dec==null) {
         	return new StyledString();
         }
-        IPreferenceStore prefs = EditorUtil.getPreferences();
-        StyledString result = getQualifiedDescriptionFor(d, 
-                prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
-                prefs.getBoolean(PARAMS_IN_OUTLINES),
-                prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
-                prefs.getBoolean(RETURN_TYPES_IN_OUTLINES),
-                getPrefix(), getFont());
+        IPreferenceStore prefs = getPreferences();
+        StyledString result = 
+                getQualifiedDescriptionFor(dec, 
+                        prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
+                        prefs.getBoolean(PARAMS_IN_OUTLINES),
+                        prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
+                        prefs.getBoolean(RETURN_TYPES_IN_OUTLINES),
+                        getPrefix(), getFont());
         /*if (d.isClassOrInterfaceMember()) {
             Declaration container = (Declaration) d.getContainer();
             result.append(" in ")
                   .append(container.getName(), Highlights.TYPE_ID_STYLER);
         }*/
-        result.append(" - ", Highlights.PACKAGE_STYLER)
-              .append(getPackageLabel(d), Highlights.PACKAGE_STYLER);
+        result.append(" - ", PACKAGE_STYLER)
+              .append(getPackageLabel(dec), PACKAGE_STYLER);
         if (n.isNonUnique()) {
             result.append(" - and other supertypes")
                   .append(getViewInterfacesShortcut());
@@ -84,7 +85,9 @@ abstract class CeylonHierarchyLabelProvider
         if (declaration!=null && 
                 isShowingRefinements() && 
                 declaration.isClassOrInterfaceMember()) {
-            declaration = (ClassOrInterface) declaration.getContainer();
+            declaration = 
+                    (ClassOrInterface) 
+                        declaration.getContainer();
         }
         return declaration;
     }

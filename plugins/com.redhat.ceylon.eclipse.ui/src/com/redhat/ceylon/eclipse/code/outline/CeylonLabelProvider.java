@@ -539,11 +539,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
     }
     
-    String getPrefix() {
+    public String getPrefix() {
         return null;
     }
     
-    Font getFont() {
+    public Font getFont() {
         return null;
     }
 

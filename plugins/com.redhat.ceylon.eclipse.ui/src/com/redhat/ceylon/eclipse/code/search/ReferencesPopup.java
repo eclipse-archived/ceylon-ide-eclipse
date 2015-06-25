@@ -114,14 +114,30 @@ public final class ReferencesPopup extends PopupDialog
         public void widgetSelected(SelectionEvent e) {
             switchLayout();
         }
-
         @Override
         public void widgetDefaultSelected(SelectionEvent e) {}
     }
 
+    private String getPrefix() {
+        return filterText.getText();
+    }
+    
+    private Font getFont() {
+        return viewer.getControl().getFont();
+    }
+
     public final class LabelProvider extends TreeNodeLabelProvider {
         public LabelProvider() {
-            super(new SearchResultsLabelProvider());
+            super(new SearchResultsLabelProvider() {
+                @Override
+                public String getPrefix() {
+                    return ReferencesPopup.this.getPrefix();
+                }
+                @Override
+                public Font getFont() {
+                    return ReferencesPopup.this.getFont();
+                }
+            });
         }
         
         @Override
@@ -129,15 +145,13 @@ public final class ReferencesPopup extends PopupDialog
             Object unwrapped = unwrap(element);
             if (unwrapped instanceof CeylonElement) {
                 CeylonElement ce = (CeylonElement) unwrapped;
-                return ce.getLabel(
-                        filterText.getText(), 
-                        getViewer().getControl().getFont());
+                return ce.getLabel(getPrefix(), getFont());
             }
             else {
                 return super.getStyledText(element);
             }
         }
-        
+
         @Override
         public Object unwrap(Object element) {
             Object unwrapped = super.unwrap(element);
