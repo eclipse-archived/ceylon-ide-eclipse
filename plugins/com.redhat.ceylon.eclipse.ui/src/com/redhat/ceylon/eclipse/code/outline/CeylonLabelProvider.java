@@ -118,12 +118,13 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private final static int DEFAULT = 1 << 7;
     private final static int ABSTRACT = 1 << 8;
     private final static int FINAL = 1 << 9;
-    private final static int VARIABLE = 1 << 10;
-    private final static int ANNOTATION = 1 << 11;
-    private final static int ENUM = 1 << 12;
-    private final static int ALIAS = 1 << 13;
-    private final static int DEPRECATED = 1 << 14;
-    private final static int NATIVE = 1 << 15;
+    private final static int SEALED = 1 << 10;
+    private final static int VARIABLE = 1 << 11;
+    private final static int ANNOTATION = 1 << 12;
+    private final static int ENUM = 1 << 13;
+    private final static int ALIAS = 1 << 14;
+    private final static int DEPRECATED = 1 << 15;
+    private final static int NATIVE = 1 << 16;
     
     static final DecorationDescriptor[] DECORATIONS = 
             new DecorationDescriptor[] {
@@ -137,6 +138,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         new DecorationDescriptor(DEFAULT, DEFAULT_IMAGE, TOP_RIGHT),
         new DecorationDescriptor(ABSTRACT, ABSTRACT_IMAGE, TOP_RIGHT),
         new DecorationDescriptor(FINAL, FINAL_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(SEALED, SEALED_IMAGE, TOP_RIGHT),
         new DecorationDescriptor(NATIVE, NATIVE_IMAGE, TOP_RIGHT),
         
         new DecorationDescriptor(VARIABLE, VARIABLE_IMAGE, TOP_LEFT),
@@ -1239,6 +1241,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             if (model.isNative()) {
                 result |= NATIVE;
+            }
+            if (model instanceof TypeDeclaration && 
+                    ((TypeDeclaration) model).isSealed()) {
+                result |= SEALED;
             }
             if (model.isAnnotation()) {
                 result |= ANNOTATION;
