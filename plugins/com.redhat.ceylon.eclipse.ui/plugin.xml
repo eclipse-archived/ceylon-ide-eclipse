@@ -57,7 +57,7 @@
    <extension
          point="org.eclipse.ui.ide.projectNatureImages">
          <image
-               icon="icons/ceylon_nature.gif"
+               icon="icons/constr_ovr.png"
                id="com.redhat.ceylon.eclipse.ui.projectNatureImage"
                natureId="com.redhat.ceylon.eclipse.ui.ceylonNature">
          <description>
@@ -3105,7 +3105,7 @@
 		<navigatorContent
 				activeByDefault="true"
 				contentProvider="com.redhat.ceylon.eclipse.code.navigator.CeylonNavigatorContentProvider"
-				icon="icons/ceylon_nature.gif"
+				icon="icons/constr_ovr.png"
 				id="com.redhat.ceylon.eclipse.ui.ceylonContent"
 				labelProvider="com.redhat.ceylon.eclipse.code.navigator.CeylonNavigatorLabelProvider"
 				name="%commonNavigatorContentName"
