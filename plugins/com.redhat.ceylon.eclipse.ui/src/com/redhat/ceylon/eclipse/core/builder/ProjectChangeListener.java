@@ -40,8 +40,8 @@ public class ProjectChangeListener implements IResourceChangeListener {
                         }
                         else if (CeylonNature.isEnabled(project)) {
                             IJavaProject javaProject = JavaCore.create(project);
+                            ceylonModel().addProject((IProject) resource); 
                             if (javaProject != null) {
-                                ceylonModel().addProject((IProject) resource); 
                                 getCeylonClasspathContainers(javaProject);
                             }
                         }

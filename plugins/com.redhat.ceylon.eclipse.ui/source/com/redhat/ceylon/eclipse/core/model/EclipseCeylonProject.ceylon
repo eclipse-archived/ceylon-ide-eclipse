@@ -132,12 +132,12 @@ shared class EclipseCeylonProject(ideArtifact) extends CeylonProject<IProject>()
     shared actual Boolean synchronizedWithConfiguration {
         value config = configuration;
         function sameFolders({String*} configFolders, {IFolder*} eclipseFolders, String defaultEclipsePath)
-            => HashSet {
-                configFolders.map((p)
+            => HashSet<String> {
+                * configFolders.map((p)
                     => Path.fromOSString(p).string)
                 }
                 ==
-                HashSet {
+                HashSet<String> {
                     * (
                         if (nonempty eclipsePaths =
                             eclipseFolders.map {

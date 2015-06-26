@@ -13,9 +13,6 @@ package com.redhat.ceylon.eclipse.code.wizard;
 
 
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-
-import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -220,40 +217,6 @@ public class CapabilityConfigurationPage extends NewElementWizardPage {
             };
         }
         return null;
-    }
-
-    /**
-     * Helper method to create and open a IProject. The project location
-     * is configured. No natures are added.
-     *
-     * @param project The handle of the project to create.
-     * @param locationPath The location of the project <code>null</code> to create the project in the workspace
-     * @param monitor a progress monitor to report progress or <code>null</code> if
-     *  progress reporting is not desired
-     * @throws CoreException if the project couldn't be created
-     * @since 2.1
-     * @deprecated use {@link #createProject(IProject, URI, IProgressMonitor)} instead.
-     */
-    public static void createProject(IProject project, IPath locationPath, IProgressMonitor monitor) 
-            throws CoreException {
-        createProject(project, locationPath != null ? URIUtil.toURI(locationPath) : null, monitor);
-    }
-
-    /**
-     * Helper method to create and open a IProject. The project location
-     * is configured. No natures are added.
-     *
-     * @param project The handle of the project to create.
-     * @param locationURI The location of the project or <code>null</code> to create the project in the workspace
-     * @param monitor a progress monitor to report progress or <code>null</code> if
-     *  progress reporting is not desired
-     * @throws CoreException if the project couldn't be created
-     * @see org.eclipse.core.resources.IProjectDescription#setLocationURI(java.net.URI)
-     * @since 3.2
-     */
-    public static void createProject(IProject project, URI locationURI, IProgressMonitor monitor) 
-            throws CoreException {
-        CeylonBuildPathsBlock.createProject(project, locationURI, monitor);
     }
 
     /**

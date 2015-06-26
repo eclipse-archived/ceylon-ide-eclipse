@@ -258,16 +258,6 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
         
-        folder.setText(repositoryPath);
-        if (project!=null) {
-            folder.add(repositoryPath);
-            for (String path: getCeylonRepositories(project.getProject())) {
-                if (!path.startsWith("http://") && !path.equals(repositoryPath)) {
-                    folder.add(path);
-                }
-            }
-        }
-        
         new Label(composite, SWT.NONE);
         final Button et = new Button(composite, SWT.CHECK);
         et.setText("Perform a clean build before exporting");

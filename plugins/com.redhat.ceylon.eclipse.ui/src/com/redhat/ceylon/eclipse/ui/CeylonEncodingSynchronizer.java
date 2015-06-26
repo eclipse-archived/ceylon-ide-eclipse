@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.ui;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.core.resources.IResource.DEPTH_ONE;
 import static org.eclipse.core.resources.IResourceDelta.CONTENT;
 import static org.eclipse.core.resources.IResourceDelta.ENCODING;
@@ -83,8 +85,8 @@ public class CeylonEncodingSynchronizer {
             removeProblemMarker(project);
             
             String eclipseEncoding = project.getDefaultCharset();
-            String configEncoding = ceylonModel().getProject(project)
-                    .getConfiguration().getProjectEncoding();
+            String configEncoding = toJavaString(ceylonModel().getProject(project)
+                    .getConfiguration().getProjectEncoding());
 
             if (forceEclipseEncoding) {
                 updateEncoding(project, eclipseEncoding);
@@ -270,9 +272,9 @@ public class CeylonEncodingSynchronizer {
                         project.setDefaultCharset(encoding, monitor);
                     }
 
-                    String originalConfigEncoding = config.getProjectEncoding();
+                    String originalConfigEncoding = toJavaString(config.getProjectEncoding());
                     if (!isEquals(originalConfigEncoding, encoding)) {
-                        config.setProjectEncoding(encoding);
+                        config.setProjectEncoding(toCeylonString(encoding));
                         config.save();
                     }
                 } finally {

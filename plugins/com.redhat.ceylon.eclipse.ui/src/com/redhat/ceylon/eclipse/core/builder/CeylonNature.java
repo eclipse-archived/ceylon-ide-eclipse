@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BUILDER_ID;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.Map;
@@ -59,6 +60,7 @@ public class CeylonNature extends ProjectNatureBase {
     }
     
     public void addToProject(final IProject project) {
+        ceylonModel().addProject(project);
         super.addToProject(project);
         try {
             new CeylonLanguageModuleContainer(project).install();

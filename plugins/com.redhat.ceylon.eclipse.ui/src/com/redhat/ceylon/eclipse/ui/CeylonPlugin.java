@@ -45,6 +45,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import com.redhat.ceylon.common.FileUtil;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.dist.osgi.Activator;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
 import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugOptionsManager;
@@ -117,7 +118,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         addResourceFilterPreference();
         
         for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            if (project.isAccessible()) {
+            if (project.isAccessible() && CeylonNature.isEnabled(project)) {
                 ceylonModel().addProject(project);
             }
         }

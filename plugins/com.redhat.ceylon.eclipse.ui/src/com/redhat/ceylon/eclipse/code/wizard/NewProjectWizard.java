@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
 import static com.redhat.ceylon.ide.common.util.toCeylonBoolean_.toCeylonBoolean;
 import static com.redhat.ceylon.ide.common.util.toCeylonStringIterable_.toCeylonStringIterable;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
 import java.io.File;
@@ -135,7 +136,6 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             
             IProject project = getCreatedElement().getProject();
             
-            ceylonModel().addProject(project);
             CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
             CeylonProjectConfig<IProject> projectConfig = ceylonProject.getConfiguration();
             
@@ -157,7 +157,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             projectConfig.save();
             
             try {
-                project.setDefaultCharset(projectConfig.getEncoding(), new NullProgressMonitor());
+                project.setDefaultCharset(toJavaString(projectConfig.getEncoding()), new NullProgressMonitor());
             } catch (CoreException e) {
                 throw new RuntimeException(e);
             }

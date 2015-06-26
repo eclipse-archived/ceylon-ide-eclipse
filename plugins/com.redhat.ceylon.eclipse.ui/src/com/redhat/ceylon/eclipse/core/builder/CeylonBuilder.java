@@ -2968,7 +2968,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static List<String> getUserRepositories(IProject project) throws CoreException {
-        List<String> userRepos = getCeylonRepositories(project);
+        List<String> ceylonRepos = getCeylonRepositories(project);
+        List<String> userRepos = new ArrayList<>(ceylonRepos);
         userRepos.addAll(getReferencedProjectsOutputRepositories(project));
         return userRepos;
     }
@@ -3410,6 +3411,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     // TODO ABSTRACTION : should be moved to the CeylonProject class
     public static RepositoryManager createProjectRepositoryManager(final IProject project) throws CoreException {
+        ceylonModel().addProject(project);
         CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
 
         RepositoryManager repositoryManager = new CeylonUtils.CeylonRepoManagerBuilder() {

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,6 +32,7 @@ import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceStatus;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -209,6 +212,38 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
         return location;
     }
 
+    private void createProject(IProject project, URI locationURI, IProgressMonitor monitor) 
+            throws CoreException {
+        if (monitor == null) {
+            monitor= new NullProgressMonitor();
+        }
+        monitor.beginTask(NewWizardMessages.BuildPathsBlock_operationdesc_project, 10);
+
+        // create the project
+        try {
+            if (!project.exists()) {
+                IProjectDescription desc= project.getWorkspace()
+                        .newProjectDescription(project.getName());
+                if (locationURI != null && ResourcesPlugin.getWorkspace()
+                        .getRoot().getLocationURI().equals(locationURI)) {
+                    locationURI= null;
+                }
+                desc.setLocationURI(locationURI);
+                project.create(desc, monitor);
+                monitor= null;
+            }
+            if (!project.isOpen()) {
+                project.open(monitor);
+                monitor= null;
+            }
+        } finally {
+            if (monitor != null) {
+                monitor.done();
+            }
+        }
+    }
+
+
     private final IStatus updateProject(IProgressMonitor monitor) 
             throws CoreException, InterruptedException {
         IStatus result = StatusInfo.OK_STATUS;
@@ -260,6 +295,10 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
                 }
             }
 
+            if (ceylonModel().getProject(fCurrProject) == null) {
+                ceylonModel().addProject(fCurrProject);
+            }
+            
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
             }
@@ -528,6 +567,7 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     protected void removeProvisonalProject() {
         if (!fCurrProject.exists()) {
             fCurrProject = null;
+            ceylonModel().removeProject(fCurrProject);
             return;
         }
 

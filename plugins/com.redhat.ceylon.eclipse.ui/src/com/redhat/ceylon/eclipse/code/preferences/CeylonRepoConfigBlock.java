@@ -161,18 +161,17 @@ public class CeylonRepoConfigBlock {
                     ceylonModel().getProject(project).getConfiguration();
 
             projectLocalRepos = 
-                    toJavaStringList(config.getProjectLocalRepos());
+                    new ArrayList<>(toJavaStringList(config.getProjectLocalRepos()));
             projectRemoteRepos = 
-                    toJavaStringList(config.getProjectRemoteRepos());
+                    new ArrayList<>(toJavaStringList(config.getProjectRemoteRepos()));
             globalLookupRepos = 
-                    toJavaStringList(config.getGlobalLookupRepos());
+                    new ArrayList<>(toJavaStringList(config.getGlobalLookupRepos()));
             otherRemoteRepos = 
-                    toJavaStringList(config.getOtherRemoteRepos());
+                    new ArrayList<>(toJavaStringList(config.getOtherRemoteRepos()));
             outputRepoText.setText(config.getOutputRepo());
         } else {
             outputRepoText.setText(Constants.DEFAULT_MODULE_DIR);
         }
-        
         
         lookupRepoTable.removeAll();
         addLookupRepos(projectLocalRepos, false);
