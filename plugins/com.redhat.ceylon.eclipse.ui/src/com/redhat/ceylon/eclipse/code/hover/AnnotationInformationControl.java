@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.util.Escaping.toInitialUppercase;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -128,7 +130,7 @@ class AnnotationInformationControl
         for (int i=0; i<children.length; i++) {
             children[i].dispose();
         }
-        ToolBarManager toolBarManager= getToolBarManager();
+        ToolBarManager toolBarManager = getToolBarManager();
         if (toolBarManager != null)
             toolBarManager.removeAll();
     }
@@ -159,8 +161,8 @@ class AnnotationInformationControl
                 .computeSize(constrains.x - trimWidth, 
                         SWT.DEFAULT, true);
 
-        int width = Math.min(preferedSize.x, constrainedSize.x);
-        int height = Math.max(preferedSize.y, constrainedSize.y);
+        int width = min(preferedSize.x, constrainedSize.x);
+        int height = max(preferedSize.y, constrainedSize.y);
 
         return new Point(width, height);
     }
@@ -193,8 +195,8 @@ class AnnotationInformationControl
         control.setFont(font);
 
         if (control instanceof Composite) {
-            Control[] children = 
-                    ((Composite) control).getChildren();
+            Composite composite = (Composite) control;
+            Control[] children = composite.getChildren();
             for (int i=0; i<children.length; i++) {
                 setColorAndFont(children[i], 
                         foreground, background, 
@@ -256,9 +258,11 @@ class AnnotationInformationControl
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         RefinementAnnotation ra = 
-                                (RefinementAnnotation) annotation;
+                                (RefinementAnnotation) 
+                                    annotation;
                         CeylonEditor editor = 
-                                getAnnotationInfo().getEditor();
+                                getAnnotationInfo()
+                                    .getEditor();
                         ra.gotoRefinedDeclaration(editor);
                     }
                     @Override
@@ -275,7 +279,8 @@ class AnnotationInformationControl
                 String message = annotation.getText();
                 if (message!=null && !message.isEmpty()) {
                     CeylonInitializerAnnotation cia = 
-                            (CeylonInitializerAnnotation) annotation;
+                            (CeylonInitializerAnnotation) 
+                                annotation;
                     StyledString styledString = 
                             cia.getStyledString();
                     text.setText(styledString.getString());
@@ -305,7 +310,8 @@ class AnnotationInformationControl
         return new AnnotationComparator();
     }
 
-    private void createCompletionProposalsControl(Composite parent, 
+    private void createCompletionProposalsControl(
+            Composite parent, 
             ICompletionProposal[] proposals) {
         Composite composite = 
                 new Composite(parent, SWT.NONE);
@@ -347,7 +353,8 @@ class AnnotationInformationControl
         createCompletionProposalsList(composite, proposals);
     }
 
-    private void createCompletionProposalsList(Composite parent, 
+    private void createCompletionProposalsList(
+            Composite parent, 
             ICompletionProposal[] proposals) {
         final ScrolledComposite scrolledComposite = 
                 new ScrolledComposite(parent, 
@@ -390,7 +397,8 @@ class AnnotationInformationControl
                 JFaceResources.getDialogFont());
 
         Point contentSize = 
-                composite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                composite.computeSize(
+                        SWT.DEFAULT, SWT.DEFAULT);
         composite.setSize(contentSize);
 
         Point constraints = getSizeConstraints();
@@ -402,13 +410,17 @@ class AnnotationInformationControl
             int scrollBarHeight;
             if (horizontalBar == null) {
                 Point scrollSize = 
-                        scrolledComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-                scrollBarHeight = scrollSize.y - contentSize.y;
+                        scrolledComposite.computeSize(
+                                SWT.DEFAULT, SWT.DEFAULT);
+                scrollBarHeight = 
+                        scrollSize.y - contentSize.y;
             }
             else {
-                scrollBarHeight = horizontalBar.getSize().y;
+                scrollBarHeight = 
+                        horizontalBar.getSize().y;
             }
-            gd1.heightHint = contentSize.y - scrollBarHeight;
+            gd1.heightHint = 
+                    contentSize.y - scrollBarHeight;
         }
 
         fFocusControl = links[0];
@@ -465,7 +477,8 @@ class AnnotationInformationControl
         }
     }
 
-    private Link createCompletionProposalLink(Composite parent,
+    private Link createCompletionProposalLink(
+            Composite parent,
             final ICompletionProposal proposal) {
         Label proposalImage = new Label(parent, SWT.NONE);
         GridData gd1 = 

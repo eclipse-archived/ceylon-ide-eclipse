@@ -70,26 +70,32 @@ class AnnotationInfo {
             if (annotation instanceof MarkerAnnotation) {
                 MarkerAnnotation ma = 
                         (MarkerAnnotation) annotation;
-                for (ICompletionProposal p: 
+                for (ICompletionProposal proposal: 
                     getMarkerAnnotationFixes(ma, position)) {
-                    list.add(p);
+                    list.add(proposal);
                 }
             }
         }
         return list.toArray(NO_PROPOSALS);
     }
 
-    private void collectAnnotationFixes(CeylonAnnotation annotation, 
-            Position position, List<ICompletionProposal> proposals) {
+    private void collectAnnotationFixes(
+            CeylonAnnotation annotation, 
+            Position position, 
+            List<ICompletionProposal> proposals) {
         final ProblemLocation location = 
-                new ProblemLocation(position.getOffset(), 
-                        position.getLength(), annotation);
+                new ProblemLocation(
+                        position.getOffset(), 
+                        position.getLength(), 
+                        annotation);
         
         IQuickAssistInvocationContext quickAssistContext = 
                 new IQuickAssistInvocationContext() {
             public ISourceViewer getSourceViewer() {
-                if (getViewer() instanceof ISourceViewer)
-                    return (ISourceViewer) getViewer();
+                ITextViewer viewer = getViewer();
+                if (viewer instanceof ISourceViewer) {
+                    return (ISourceViewer) viewer;
+                }
                 return null;
             }
 
@@ -119,7 +125,7 @@ class AnnotationInfo {
         }
 
         ISourceViewer sourceViewer = 
-                (ISourceViewer) this.getViewer();
+                (ISourceViewer) getViewer();
         TextInvocationContext context = 
                 new TextInvocationContext(sourceViewer, 
                         position.getOffset(),

@@ -35,16 +35,21 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
         return styledString;
     }
 
-    public CeylonInitializerAnnotation(String name, Position initializerPosition, int depth) {
+    public CeylonInitializerAnnotation(String name, 
+            Position initializerPosition, int depth) {
         this.initializerPosition = initializerPosition;
         this.depth = depth;
-        styledString.append("Initializer section of " + name, new Styler() {
+        styledString.append("Initializer section of " + name, 
+                new Styler() {
             @Override
             public void applyStyles(TextStyle textStyle) {
                 FontData data = getFontRegistry()
                         .getFontData(APPEARANCE_JAVADOC_FONT)[0];
-                
-                textStyle.font = new Font(Display.getDefault(), new FontData(data.getName(), data.getHeight(), SWT.BOLD));
+                textStyle.font = 
+                        new Font(Display.getDefault(), 
+                                new FontData(data.getName(), 
+                                        data.getHeight(), 
+                                        SWT.BOLD));
             }
         });
         styledString.append("\nThe initial part of the body of a class is called the initializer "
@@ -90,7 +95,8 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
             return;
         }
 
-        Color color = getCurrentThemeColor("initializerAnnotation");
+        Color color = 
+                getCurrentThemeColor("initializerAnnotation");
         gc.setBackground(color);
 
         Image patternImage = getPatternImage(canvas, color);
@@ -112,10 +118,16 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
         Color bgColor = control.getBackground();
 
         RGB rgbs[] = new RGB[] {
-                new RGB(color.getRed(), color.getGreen(), color.getBlue()),
-                new RGB(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue()) };
+                new RGB(color.getRed(), 
+                        color.getGreen(), 
+                        color.getBlue()),
+                new RGB(bgColor.getRed(), 
+                        bgColor.getGreen(), 
+                        bgColor.getBlue()) };
 
-        ImageData imageData = new ImageData(size.x, size.y, 1, new PaletteData(rgbs));
+        ImageData imageData = 
+                new ImageData(size.x, size.y, 1, 
+                        new PaletteData(rgbs));
 
         for (int y = 0; y < size.y; y++) {
             for (int x = 0; x < size.x; x++) {

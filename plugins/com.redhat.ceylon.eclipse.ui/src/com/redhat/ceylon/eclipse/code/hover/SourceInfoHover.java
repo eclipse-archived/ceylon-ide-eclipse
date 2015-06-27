@@ -43,27 +43,27 @@ public abstract class SourceInfoHover
 
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
         IDocument document = textViewer.getDocument();
-        int start= -2;
-        int end= -1;
+        int start = -2;
+        int end = -1;
         
         try {
-            int pos= offset;
+            int pos = offset;
             char c;
         
             while (pos >= 0) {
-                c= document.getChar(pos);
+                c = document.getChar(pos);
                 if (!isJavaIdentifierPart(c)) {
                     break;
                 }
                 --pos;
             }
-            start= pos;
+            start = pos;
         
-            pos= offset;
-            int length= document.getLength();
+            pos = offset;
+            int length = document.getLength();
         
             while (pos < length) {
-                c= document.getChar(pos);
+                c = document.getChar(pos);
                 if (!isJavaIdentifierPart(c)) {
                     break;
         
@@ -72,16 +72,19 @@ public abstract class SourceInfoHover
             }
             end= pos;
         
-        } catch (BadLocationException x) {
-        }
+        } 
+        catch (BadLocationException x) {}
         
         if (start >= -1 && end > -1) {
-            if (start == offset && end == offset)
+            if (start == offset && end == offset) {
                 return new Region(offset, 0);
-            else if (start == offset)
+            }
+            else if (start == offset) {
                 return new Region(start, end - start);
-            else
+            }
+            else {
                 return new Region(start + 1, end - start - 1);
+            }
         }
         
         return null;
