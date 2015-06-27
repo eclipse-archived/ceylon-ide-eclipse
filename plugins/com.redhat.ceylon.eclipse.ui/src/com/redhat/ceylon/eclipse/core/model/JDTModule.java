@@ -20,6 +20,8 @@
 
 package com.redhat.ceylon.eclipse.core.model;
 
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
@@ -83,6 +85,7 @@ import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
 import com.redhat.ceylon.model.cmr.ImportType;
@@ -304,7 +307,8 @@ public class JDTModule extends LazyModule {
             IJavaProject javaProject = moduleManager.getJavaProject();
             if (javaProject != null) {
                 for (IProject refProject : javaProject.getProject().getReferencedProjects()) {
-                    if (refProject.isAccessible()) {
+                    CeylonProject<IProject> ceylonProject = ceylonModel().getProject(refProject);
+                    if (refProject.isAccessible() && ceylonProject != null) {
                         if (artifact.getAbsolutePath().contains(CeylonBuilder.getCeylonModulesOutputDirectory(refProject).getAbsolutePath())) {
                             originalProject = refProject;
                         }

@@ -760,6 +760,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(final int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor mon) 
             throws CoreException {
         final IProject project = getProject();
+        if (! ceylonModel().addProject(project.getProject())) {
+            System.err.println("WARNING : Project Not Added in CeylonBuilder.build() for project :" + project.getProject());
+            if (ceylonModel().getProject(project.getProject()) == null) {
+                System.err.println("WARNING : Existing Project is null in CeylonBuilder.build() for project :" + project.getProject());
+            }
+        }
         final IJavaProject javaProject = JavaCore.create(project);
         final SubMonitor monitor = SubMonitor.convert(new ProgressMonitorWrapper(mon) {
             @Override
@@ -2978,7 +2984,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         List<String> repos = new ArrayList<String>();
         if (project != null) {
             for (IProject referencedProject: project.getReferencedProjects()) {
-                if (referencedProject.isOpen() && CeylonNature.isEnabled(referencedProject)) {
+                if (referencedProject.isAccessible() && CeylonNature.isEnabled(referencedProject)) {
                     repos.add(getCeylonModulesOutputDirectory(referencedProject).getAbsolutePath());
                 }
             }

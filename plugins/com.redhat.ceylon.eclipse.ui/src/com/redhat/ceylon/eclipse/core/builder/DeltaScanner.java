@@ -58,7 +58,9 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         modulesDirPathByProject.put(project, modulesDirPath);
         try {
             for (IProject referencedProject : project.getReferencedProjects()) {
-                modulesFolder = CeylonBuilder.getCeylonModulesOutputFolder(referencedProject);
+                if (ceylonModel().getProject(referencedProject) != null) {
+                    modulesFolder = CeylonBuilder.getCeylonModulesOutputFolder(referencedProject);
+                }
                 modulesDirPath = modulesFolder != null ? modulesFolder.getFullPath() : null;
                 modulesDirPathByProject.put(referencedProject, modulesDirPath);
             }
