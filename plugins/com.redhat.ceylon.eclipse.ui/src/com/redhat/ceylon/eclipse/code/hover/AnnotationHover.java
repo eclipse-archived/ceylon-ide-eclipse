@@ -38,10 +38,8 @@ import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
-
 /**
- * Abstract super class for annotation hovers.
- *
+ * Hover for error and warning annotations.
  */
 public class AnnotationHover 
         extends SourceInfoHover
@@ -49,16 +47,17 @@ public class AnnotationHover
 
     /**
      * Action to configure the annotation preferences.
-     *
      */
     class ConfigureAnnotationsAction extends Action {
 
         private final AnnotationInformationControl fInfoControl;
         
-        public ConfigureAnnotationsAction(AnnotationInformationControl infoControl) {
+        public ConfigureAnnotationsAction(
+                AnnotationInformationControl infoControl) {
             fInfoControl = infoControl;
             setText("Configure Annotation Appearance");
-            ImageRegistry imageRegistry = getInstance().getImageRegistry();
+            ImageRegistry imageRegistry = 
+                    getInstance().getImageRegistry();
             setImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN));
             setDisabledImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN_DIS));
             setToolTipText("Configure Annotation Appearance");
@@ -66,15 +65,15 @@ public class AnnotationHover
 
         @Override
         public void run() {
-            Shell shell = getWorkbench().getActiveWorkbenchWindow().getShell();
-
             Object data = null;
             Map<Annotation, Position> annotationPositions = 
-                    fInfoControl.getAnnotationInfo().getAnnotationPositions();
+                    fInfoControl.getAnnotationInfo()
+                        .getAnnotationPositions();
             if (annotationPositions!=null &&
                     !annotationPositions.isEmpty()) {
                 Annotation annotation = 
-                        annotationPositions.keySet().iterator().next();
+                        annotationPositions.keySet()
+                            .iterator().next();
                 AnnotationPreference preference = 
                         getAnnotationPreference(annotation);
                 if (preference != null) {
@@ -82,6 +81,10 @@ public class AnnotationHover
                 }
             }
             
+            Shell shell = 
+                    getWorkbench()
+                        .getActiveWorkbenchWindow()
+                        .getShell();
             fInfoControl.dispose(); //FIXME: should have protocol to hide, rather than dispose
             createPreferenceDialogOn(shell, 
                     "org.eclipse.ui.editors.preferencePages.Annotations", 
@@ -96,24 +99,29 @@ public class AnnotationHover
     private final CeylonEditor editor;
     private final boolean rulerHover;
     
-    public AnnotationHover(CeylonEditor editor, boolean rulerHover) {
+    public AnnotationHover(CeylonEditor editor, 
+            boolean rulerHover) {
         super(editor);
         this.editor = editor;
         this.rulerHover = rulerHover;
     }
     
     @Override
-    public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
+    public String getHoverInfo(ITextViewer textViewer, 
+            IRegion hoverRegion) {
         return null;
     }
     
     @SuppressWarnings("unchecked")
     @Override
-    public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
+    public Object getHoverInfo2(ITextViewer textViewer, 
+            IRegion hoverRegion) {
         
         IAnnotationModel model;
         if (textViewer instanceof ISourceViewer) {
-            model = ((ISourceViewer) textViewer).getAnnotationModel();
+            ISourceViewer sourceViewer = 
+                    (ISourceViewer) textViewer;
+            model = sourceViewer.getAnnotationModel();
         }
         else {
             // Get annotation model from file buffer manager
@@ -126,8 +134,10 @@ public class AnnotationHover
         Iterator<Annotation> parent;
         if (model instanceof IAnnotationModelExtension2) {
             parent = ((IAnnotationModelExtension2) model)
-                    .getAnnotationIterator(hoverRegion.getOffset(), 
-                            hoverRegion.getLength()+1, true, true);
+                    .getAnnotationIterator(
+                            hoverRegion.getOffset(), 
+                            hoverRegion.getLength()+1, 
+                            true, true);
         }
         else {
             parent = model.getAnnotationIterator();
@@ -135,16 +145,19 @@ public class AnnotationHover
 
         Map<Annotation,Position> annotationPositions = 
                 new LinkedHashMap<Annotation, Position>();
-        Iterator<Annotation> iter = new AnnotationIterator(parent, rulerHover);
+        Iterator<Annotation> iter = 
+                new AnnotationIterator(parent, rulerHover);
         while (iter.hasNext()) {
             Annotation a = (Annotation) iter.next();
             Position p = model.getPosition(a);
             int l = fAnnotationAccess.getLayer(a);
             //TODO: make higher-layer annotations suppress lower-layer ones
-            if (p != null && p.overlapsWith(hoverRegion.getOffset(), 
-                    hoverRegion.getLength())) {
+            if (p!=null && 
+                    p.overlapsWith(
+                            hoverRegion.getOffset(), 
+                            hoverRegion.getLength())) {
                 String msg = a.getText();
-                if (msg != null && msg.trim().length() > 0) {
+                if (msg!=null && msg.trim().length()>0) {
                     if (l>=0) {
                         annotationPositions.put(a, p);
                     }
@@ -153,41 +166,51 @@ public class AnnotationHover
         }
         
         if (!annotationPositions.isEmpty()) {
-            return createAnnotationInfo(textViewer, annotationPositions);
+            return createAnnotationInfo(textViewer, 
+                    annotationPositions);
         }
         else {
             return null;
         }
     }
     
-    protected AnnotationInfo createAnnotationInfo(ITextViewer textViewer, 
+    protected AnnotationInfo createAnnotationInfo(
+            ITextViewer textViewer, 
             Map<Annotation,Position> annotationPositions) {
-        return new AnnotationInfo(editor, annotationPositions, textViewer);
+        return new AnnotationInfo(editor, 
+                annotationPositions, textViewer);
     }
     
     @Override
     public IInformationControlCreator getHoverControlCreator() {
         return new AbstractReusableInformationControlCreator() {
             @Override
-            public IInformationControl doCreateInformationControl(Shell parent) {
-                return new AnnotationInformationControl(parent, "F2 for focus") {
+            public IInformationControl 
+            doCreateInformationControl(Shell parent) {
+                return new AnnotationInformationControl(
+                        parent, "F2 for focus") {
                     /**
                      * Create the "enriched" control
                      */
                     @Override
-                    public IInformationControlCreator getInformationPresenterControlCreator() {
+                    public IInformationControlCreator 
+                    getInformationPresenterControlCreator() {
                         return new AbstractReusableInformationControlCreator() {
                             @Override
-                            public IInformationControl doCreateInformationControl(Shell parent) {
-                                ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
+                            public IInformationControl 
+                            doCreateInformationControl(Shell parent) {
+                                ToolBarManager tbm = 
+                                        new ToolBarManager(SWT.FLAT);
                                 AnnotationInformationControl control = 
-                                        new AnnotationInformationControl(parent, tbm);
-                                ConfigureAnnotationsAction configAnnotations = 
-                                        new ConfigureAnnotationsAction(control);
-                                configAnnotations.setEnabled(true);
+                                        new AnnotationInformationControl(
+                                                parent, tbm);
+                                ConfigureAnnotationsAction config = 
+                                        new ConfigureAnnotationsAction(
+                                                control);
+                                config.setEnabled(true);
                                 //TODO: add a listener which sets the annotation type
                                 //      onto the ConfigureAnnotationsAction
-                                tbm.add(configAnnotations);
+                                tbm.add(config);
                                 tbm.update(true);
                                 return control;
                             }
@@ -210,7 +233,8 @@ public class AnnotationHover
     }
     
     @Override
-    public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
+    public IRegion getHoverRegion(ITextViewer textViewer, 
+            int offset) {
         return new Region(offset, 0);
     }
     
@@ -220,7 +244,8 @@ public class AnnotationHover
      * @param annotation the annotation
      * @return the annotation preference or <code>null</code> if none
      */
-    private static AnnotationPreference getAnnotationPreference(Annotation annotation) {
+    private static AnnotationPreference getAnnotationPreference(
+            Annotation annotation) {
         if (annotation.isMarkedDeleted()) {
             return null;
         }
@@ -239,8 +264,11 @@ public class AnnotationHover
     public Object getHoverInfo(ISourceViewer sourceViewer,
             ILineRange lineRange, int visibleNumberOfLines) {
         try {
-            return getHoverInfo2(sourceViewer, sourceViewer.getDocument()
-                    .getLineInformation(lineRange.getStartLine()));
+            int line = lineRange.getStartLine();
+            IRegion li = 
+                    sourceViewer.getDocument()
+                        .getLineInformation(line);
+            return getHoverInfo2(sourceViewer, li);
         }
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -249,12 +277,14 @@ public class AnnotationHover
     }
 
     @Override
-    public ILineRange getHoverLineRange(ISourceViewer viewer, int lineNumber) {
+    public ILineRange getHoverLineRange(ISourceViewer viewer, 
+            int lineNumber) {
         return new LineRange(lineNumber, 1);
     }
 
     @Override
-    public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
+    public String getHoverInfo(ISourceViewer sourceViewer, 
+            int lineNumber) {
         //TODO: implement to get hover in overview ruler!!
         return null;
     }
