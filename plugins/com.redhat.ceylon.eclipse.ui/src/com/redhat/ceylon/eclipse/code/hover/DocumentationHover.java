@@ -29,6 +29,7 @@ import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.producedTypeFromTy
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.toModelProducedType;
 import static com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover.jdiVariableForTypeParameter;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
+import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATION_STRINGS;
 import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
 import static com.redhat.ceylon.eclipse.util.Highlights.NUMBERS;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
@@ -1481,7 +1482,14 @@ public class DocumentationHover extends SourceInfoHover {
             buf.append("late&nbsp;");
         }
         if (isVariable(dec)) buf.append("variable&nbsp;");
-        if (dec.isNative()) buf.append("native&nbsp;");
+        if (dec.isNative()) buf.append("native");
+        String nativeBackend = dec.getNativeBackend();
+        if (nativeBackend!=null && !nativeBackend.isEmpty()) {
+            String str = toHex(getCurrentThemeColor(ANNOTATION_STRINGS));
+            buf.append("(<span style='color:").append(str).append("'>\"")
+                .append(nativeBackend).append("\"</span>)");
+        }
+        if (dec.isNative()) buf.append("&nbsp;");
         if (dec instanceof TypeDeclaration) {
             TypeDeclaration td = (TypeDeclaration) dec;
             if (td.isSealed()) buf.append("sealed&nbsp;");
