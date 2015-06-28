@@ -416,6 +416,8 @@ public class HierarchyPopup extends TreeViewPopup {
                         CeylonPreferencePage.ID, 
                         new String[] {CeylonPreferencePage.ID}, 
                         null).open();
+                getTreeViewer().getTree()
+                    .setFont(CeylonPlugin.getOutlineFont());
                 getTreeViewer().refresh();
             }
         };

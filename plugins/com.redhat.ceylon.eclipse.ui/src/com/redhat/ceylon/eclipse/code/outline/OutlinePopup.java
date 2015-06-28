@@ -329,16 +329,19 @@ public class OutlinePopup extends TreeViewPopup {
         }
     }
 
-    private static final ViewerFilter filter = new ViewerFilter() {
+    private static final ViewerFilter filter = 
+            new ViewerFilter() {
         @Override
         public boolean select(Viewer viewer, 
                 Object parentElement, Object element) {
             if (element instanceof CeylonOutlineNode) {
-                CeylonOutlineNode node = (CeylonOutlineNode) element;
+                CeylonOutlineNode node = 
+                        (CeylonOutlineNode) element;
                 return node.isShared();
             }
             else if (element instanceof Declaration) {
-                return ((Declaration) element).isShared();
+                Declaration dec = (Declaration) element;
+                return dec.isShared();
             }
             else {
                 return true;
@@ -550,6 +553,8 @@ public class OutlinePopup extends TreeViewPopup {
                         CeylonPreferencePage.ID, 
                         new String[] { CeylonPreferencePage.ID }, 
                         null).open();
+                getTreeViewer().getTree()
+                    .setFont(CeylonPlugin.getOutlineFont());
                 getTreeViewer().refresh();
             }
         };
