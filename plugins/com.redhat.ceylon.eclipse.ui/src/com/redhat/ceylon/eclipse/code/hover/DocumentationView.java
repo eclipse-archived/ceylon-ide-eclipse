@@ -6,6 +6,8 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverTe
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
@@ -17,6 +19,8 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
@@ -70,6 +74,8 @@ public class DocumentationView extends ViewPart {
     private BackAction back;
     private ForwardAction forward;
     private OpenDeclarationAction openDeclarationAction;
+
+    private IPropertyChangeListener propertyChangeListener;
     
     @Override
     public void createPartControl(Composite parent) {
@@ -127,6 +133,18 @@ public class DocumentationView extends ViewPart {
             @Override
             public void hide(WindowEvent event) {}
         });
+
+        propertyChangeListener = 
+                new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                updateWithCurrentEditor();
+            }
+        };
+        getPreferences()
+            .addPropertyChangeListener(propertyChangeListener);
+        getCurrentTheme()
+            .addPropertyChangeListener(propertyChangeListener);
     }
 
     private void updateWithCurrentEditor() {
@@ -256,6 +274,10 @@ public class DocumentationView extends ViewPart {
     @Override
     public void dispose() {
         instance = null;
+        getPreferences()
+            .removePropertyChangeListener(propertyChangeListener);
+        getCurrentTheme()
+            .removePropertyChangeListener(propertyChangeListener);
         super.dispose();
     }
 

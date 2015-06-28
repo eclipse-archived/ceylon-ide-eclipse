@@ -70,6 +70,7 @@ import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -166,6 +167,9 @@ public class HierarchyView extends ViewPart {
                 new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
+                Font outlineFont = CeylonPlugin.getOutlineFont();
+                treeViewer.getControl().setFont(outlineFont);
+                tableViewer.getControl().setFont(outlineFont);
                 treeViewer.refresh();
                 tableViewer.refresh();
             }

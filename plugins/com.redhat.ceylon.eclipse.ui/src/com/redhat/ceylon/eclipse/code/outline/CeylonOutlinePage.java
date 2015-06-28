@@ -108,6 +108,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
                 new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
+                getTreeViewer().getTree().setFont(CeylonPlugin.getOutlineFont());
                 getTreeViewer().refresh();
             }
         };
