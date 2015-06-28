@@ -272,16 +272,27 @@ public class Highlights  {
     	return new Font(font.getDevice(), data);
     }
 
+    private static final Pattern HUMP = 
+            Pattern.compile("\\w\\p{Ll}*");
+    
 	public static void appendId(StyledString result, 
 			String prefix, String token, 
 			final Styler styler, final Font font) {
-		int i = 0;
-		Matcher m = Pattern.compile("\\w\\p{Ll}*").matcher(prefix);
+        final String type = 
+                getPreferences()
+                    .getString(MATCH_HIGHLIGHTING);
+        if ("none".equals(type)) {
+            result.append(token, styler);
+            return;
+        }
+		Matcher m = HUMP.matcher(prefix);
+        int i = 0;
 		while (i<token.length() && m.find()) {
 			String bit = m.group();
 			int loc = token.indexOf(bit, i);
 			if (loc<0) {
-				loc = token.toLowerCase().indexOf(bit.toLowerCase());
+				loc = token.toLowerCase()
+				        .indexOf(bit.toLowerCase());
 			}
 			if (loc<0) {
 			    break;
@@ -291,7 +302,6 @@ public class Highlights  {
 				@Override
 				public void applyStyles(TextStyle textStyle) {
 					styler.applyStyles(textStyle);
-					String type = getPreferences().getString(MATCH_HIGHLIGHTING);
 					switch (type) {
 					case "underline": 
 						textStyle.underline = true;
@@ -300,15 +310,18 @@ public class Highlights  {
 						textStyle.font = getBoldFont(font);
 						break;
 					case "color": 
-						textStyle.foreground = color(colorRegistry, MATCHES);
+						textStyle.foreground = 
+						    color(colorRegistry, MATCHES);
 						break;
 					case "background": 
-						textStyle.background = color(colorRegistry, MATCHES);
+						textStyle.background = 
+						    color(colorRegistry, MATCHES);
 						break;
 					}					
 				}
 			};
-			result.append(token.substring(loc, loc+bit.length()), matchStyler);
+			result.append(token.substring(loc, loc+bit.length()), 
+			        matchStyler);
 			i = loc + bit.length();
 		}
 		result.append(token.substring(i), styler);
@@ -347,12 +360,14 @@ public class Highlights  {
         }
     }
 
-    public static StyledString styleProposal(String description, 
+    public static StyledString styleProposal(
+            String description, 
             boolean qualifiedNameIsPath, 
             boolean eliminateQuotes) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(description, "'\"", true);
+                new StringTokenizer(description, 
+                        "'\"", true);
         result.append(tokens.nextToken());
         while (tokens.hasMoreTokens()) {
             String tok = tokens.nextToken();
@@ -391,7 +406,8 @@ public class Highlights  {
         return result;
     }
 
-    public static StyledString styleProposal(String description, 
+    public static StyledString styleProposal(
+            String description, 
             boolean qualifiedNameIsPath) {
         return styleProposal(description, 
                 qualifiedNameIsPath, true);
@@ -433,7 +449,8 @@ public class Highlights  {
             new Styler() {
         @Override
         public void applyStyles(TextStyle textStyle) {
-            textStyle.foreground=color(colorRegistry, STRINGS);
+            textStyle.foreground =
+                    color(colorRegistry, STRINGS);
         }
     };
     public static final Styler NUM_STYLER = 
