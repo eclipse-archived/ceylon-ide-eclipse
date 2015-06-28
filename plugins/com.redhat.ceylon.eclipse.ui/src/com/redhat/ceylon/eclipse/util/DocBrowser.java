@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
-import static org.eclipse.jface.resource.JFaceResources.getFontRegistry;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getHoverFont;
+import static org.eclipse.jface.text.TextPresentation.applyTextPresentation;
 
 import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.swt.SWT;
@@ -20,7 +20,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Drawable;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -34,7 +33,8 @@ import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
 
 public class DocBrowser {
     
-    private TextPresentation presentation = new TextPresentation();
+    private TextPresentation presentation = 
+            new TextPresentation();
     
     private Browser browser;
     private StyledText styledText;
@@ -50,12 +50,18 @@ public class DocBrowser {
     
     public void setVisible(boolean visible) {
         this.visible = visible;
-        if (browser!=null) browser.setVisible(visible);
-        if (styledText!=null) styledText.setVisible(visible);
+        if (browser!=null) {
+            browser.setVisible(visible);
+        }
+        if (styledText!=null) {
+            styledText.setVisible(visible);
+        }
     }
     
     public void addLocationListener(LocationListener listener) {
-        if (browser!=null) browser.addLocationListener(listener);
+        if (browser!=null) {
+            browser.addLocationListener(listener);
+        }
     }
 
     public void setText(String text) {
@@ -66,7 +72,8 @@ public class DocBrowser {
             }
         }
         if (progressListener!=null && styledText!=null) {
-            progressListener.completed(new ProgressEvent(styledText));
+            progressListener.completed(
+                    new ProgressEvent(styledText));
         }
     }
     
@@ -80,9 +87,10 @@ public class DocBrowser {
             String content = 
                     new HTMLTextPresenter() //TODO: should be new HTMLTextPresenter(false) but that's crashing SWT for some reason
                         .updatePresentation(styledText, text, 
-                                presentation, area.width-2, Integer.MAX_VALUE);
+                                presentation, area.width-2, 
+                                Integer.MAX_VALUE);
             styledText.setText(content);
-            TextPresentation.applyTextPresentation(presentation, styledText);
+            applyTextPresentation(presentation, styledText);
         }
     }
     
@@ -90,10 +98,7 @@ public class DocBrowser {
         Display display = parent.getDisplay();
         Color fg = display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
         Color bg = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
-        FontData fontData = 
-                getFontRegistry()
-                    .getFontData(APPEARANCE_JAVADOC_FONT)[0];
-        Font font = new Font(display, fontData);
+        Font font = getHoverFont();
         if (isAvailable(parent)) {
             browser = new Browser(parent, style);
             browser.setJavascriptEnabled(false);
@@ -101,9 +106,11 @@ public class DocBrowser {
             browser.setBackground(bg);
             browser.setFont(font);
             if (parent.getLayout() instanceof GridLayout) {
-                browser.setLayoutData(new GridData(GridData.FILL_BOTH));
+                browser.setLayoutData(
+                        new GridData(GridData.FILL_BOTH));
             }
-            browser.addOpenWindowListener(new OpenWindowListener() {
+            browser.addOpenWindowListener(
+                    new OpenWindowListener() {
                 @Override
                 public void open(WindowEvent event) {
                     event.required = true; //Cancel opening of new windows
@@ -111,11 +118,15 @@ public class DocBrowser {
             });
         }
         else {
-            styledText = new StyledText(parent, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | style);
+            styledText = 
+                    new StyledText(parent, 
+                            SWT.MULTI | SWT.READ_ONLY | 
+                            SWT.V_SCROLL | style);
             styledText.setForeground(fg);
             styledText.setBackground(bg);
             if (parent.getLayout() instanceof GridLayout) {
-                styledText.setLayoutData(new GridData(GridData.FILL_BOTH));
+                styledText.setLayoutData(
+                        new GridData(GridData.FILL_BOTH));
             }
             styledText.setFont(font);
             styledText.addControlListener(new ControlAdapter() {
@@ -132,7 +143,8 @@ public class DocBrowser {
     private static boolean isAvailable(Composite parent) {
         if (available==null) {
             try {
-                Browser browser= new Browser(parent, SWT.NONE);
+                Browser browser = 
+                        new Browser(parent, SWT.NONE);
                 browser.dispose();
                 available = true;
             }
@@ -175,33 +187,55 @@ public class DocBrowser {
 
     public void setProgressListener(ProgressListener listener) {
         this.progressListener = listener;
-        if (browser!=null) browser.addProgressListener(listener);
+        if (browser!=null) {
+            browser.addProgressListener(listener);
+        }
     }
 
     public void setRedraw(boolean b) {
-        if (browser!=null) browser.setRedraw(b);
-        if (styledText!=null) styledText.setRedraw(b);
+        if (browser!=null) {
+            browser.setRedraw(b);
+        }
+        if (styledText!=null) {
+            styledText.setRedraw(b);
+        }
     }
 
     public Device getDisplay() {
-        if (browser!=null) return browser.getDisplay();
-        if (styledText!=null) return styledText.getDisplay();
+        if (browser!=null) {
+            return browser.getDisplay();
+        }
+        if (styledText!=null) {
+            return styledText.getDisplay();
+        }
         return null;
     }
     
     public Drawable getDrawable() {
-        if (browser!=null) return browser;
-        if (styledText!=null) return styledText;
+        if (browser!=null) {
+            return browser;
+        }
+        if (styledText!=null) {
+            return styledText;
+        }
         return null;
     }
 
     public void setForeground(Color foreground) {
-        if (browser!=null) browser.setForeground(foreground);
-        if (styledText!=null) styledText.setForeground(foreground);
+        if (browser!=null) {
+            browser.setForeground(foreground);
+        }
+        if (styledText!=null) {
+            styledText.setForeground(foreground);
+        }
     }
 
     public void setBackground(Color background) {
-        if (browser!=null) browser.setBackground(background);
-        if (styledText!=null) styledText.setBackground(background);
+        if (browser!=null) {
+            browser.setBackground(background);
+        }
+        if (styledText!=null) {
+            styledText.setBackground(background);
+        }
     }
 }
