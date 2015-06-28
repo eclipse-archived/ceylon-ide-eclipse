@@ -160,8 +160,12 @@ public class DocBrowser {
     }
 
     public void setMenu(Menu menu) {
-        if (browser!=null) browser.setMenu(menu);
-        if (styledText!=null) styledText.setMenu(menu);
+        if (browser!=null) {
+            browser.setMenu(menu);
+        }
+        if (styledText!=null) {
+            styledText.setMenu(menu);
+        }
     }
 
     public void addVisibilityWindowListener(
