@@ -72,6 +72,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.DocumentProviderRegistry;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.themes.ITheme;
 
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
@@ -418,7 +419,8 @@ public class EditorUtil {
             return null;
         }
         if (unit instanceof IResourceAware) {
-            IFile file = ((IResourceAware) unit).getFileResource();
+            IResourceAware ra = (IResourceAware) unit;
+            IFile file = ra.getFileResource();
             if (file != null) {
                 return getEditorInput(file);
             }
@@ -608,5 +610,11 @@ public class EditorUtil {
         catch (CoreException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static ITheme getCurrentTheme() {
+        return PlatformUI.getWorkbench()
+                .getThemeManager()
+                .getCurrentTheme();
     }
 }

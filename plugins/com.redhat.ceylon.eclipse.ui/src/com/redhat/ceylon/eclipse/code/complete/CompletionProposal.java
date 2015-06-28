@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getCompletionFont;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
@@ -23,6 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 
@@ -139,7 +139,7 @@ public class CompletionProposal implements ICompletionProposal,
         		getDisplayString(), 
                 qualifiedNameIsPath(), 
                 currentPrefix,
-                getCompletionFont());
+                CeylonPlugin.getCompletionFont());
         return result;
     }
 

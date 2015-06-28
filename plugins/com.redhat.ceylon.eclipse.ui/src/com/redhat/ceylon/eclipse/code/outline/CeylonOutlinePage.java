@@ -19,8 +19,8 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIDE_PRIVATE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
-import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentTheme;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
@@ -104,18 +104,22 @@ public class CeylonOutlinePage extends ContentOutlinePage
     @Override
     public void init(IPageSite site) {
         super.init(site);
-        propertyChangeListener = new IPropertyChangeListener() {
+        propertyChangeListener = 
+                new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 getTreeViewer().refresh();
             }
         };
-        getPreferences().addPropertyChangeListener(propertyChangeListener);
-        getCurrentTheme().addPropertyChangeListener(propertyChangeListener);
+        getPreferences()
+            .addPropertyChangeListener(propertyChangeListener);
+        getCurrentTheme()
+            .addPropertyChangeListener(propertyChangeListener);
     }
 
     
-    public CeylonOutlinePage(CeylonParseController parseController,
+    public CeylonOutlinePage(
+            CeylonParseController parseController,
             CeylonSourceViewer sourceViewer) {
         this.parseController = parseController;
         this.sourceViewer = sourceViewer;
@@ -127,7 +131,8 @@ public class CeylonOutlinePage extends ContentOutlinePage
     }
     
     @Override
-    public void update(final CeylonParseController controller, 
+    public void update(
+            final CeylonParseController controller, 
             IProgressMonitor monitor) {
         TreeViewer treeViewer = getTreeViewer();
         if (treeViewer!=null && 
@@ -183,6 +188,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         viewer.setLabelProvider(labelProvider);
         viewer.setContentProvider(contentProvider);
         viewer.setComparer(new DefaultElementComparer());
+        viewer.getTree().setFont(CeylonPlugin.getOutlineFont());
         CeylonOutlineNode rootNode = 
                 new CeylonOutlineBuilder()
                         .buildTree(parseController);
@@ -255,8 +261,10 @@ public class CeylonOutlinePage extends ContentOutlinePage
             labelProvider = null;
         }
         if (propertyChangeListener!=null) {
-            getPreferences().removePropertyChangeListener(propertyChangeListener);
-            getCurrentTheme().removePropertyChangeListener(propertyChangeListener);
+            getPreferences()
+                .removePropertyChangeListener(propertyChangeListener);
+            getCurrentTheme()
+                .removePropertyChangeListener(propertyChangeListener);
             propertyChangeListener = null;
         }
         sourceViewer.getTextWidget().removeCaretListener(this);

@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getEditorFont;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getHoverFont;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 
 import org.eclipse.jface.text.Position;
@@ -25,6 +23,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class CeylonInitializerAnnotation 
@@ -54,7 +53,7 @@ public class CeylonInitializerAnnotation
                 new Styler() {
             @Override
             public void applyStyles(TextStyle textStyle) {
-                textStyle.font = bold(getHoverFont());
+                textStyle.font = bold(CeylonPlugin.getHoverFont());
             }
 
         });
@@ -63,7 +62,7 @@ public class CeylonInitializerAnnotation
             @Override
             public void applyStyles(TextStyle textStyle) {
                 Highlights.TYPE_ID_STYLER.applyStyles(textStyle);
-                textStyle.font = bold(getEditorFont());
+                textStyle.font = bold(CeylonPlugin.getEditorFont());
             }
         });
         styledString.append("\nThe initial part of the body of a class is called the initializer "

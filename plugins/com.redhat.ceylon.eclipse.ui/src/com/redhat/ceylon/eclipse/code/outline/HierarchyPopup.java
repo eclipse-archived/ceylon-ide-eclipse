@@ -43,8 +43,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
@@ -54,6 +52,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 public class HierarchyPopup extends TreeViewPopup {
     
@@ -161,8 +161,9 @@ public class HierarchyPopup extends TreeViewPopup {
         treeViewer.addFilter(new HierarchyNamePatternFilter(getFilterText()));
         treeViewer.setAutoExpandLevel(getDefaultLevel());
         tree.addKeyListener(new ChangeViewListener());
+        tree.setFont(CeylonPlugin.getOutlineFont());
 //        treeViewer.setUseHashlookup(false);
-         return treeViewer;
+        return treeViewer;
     }
 
     @Override
@@ -176,15 +177,20 @@ public class HierarchyPopup extends TreeViewPopup {
     protected String getStatusFieldText() {
         TriggerSequence binding = getCommandBinding();
         if (binding==null) return "";
-        String viewHint = hierarchyBinding==null ? "" :
-                hierarchyBinding.format() + " to show in hierarchy view - ";
+        String viewHint = 
+                hierarchyBinding==null ? "" :
+                    hierarchyBinding.format() + 
+                    " to show in hierarchy view - ";
         switch (contentProvider.getMode()) {
         case SUBTYPES:
-            return viewHint + binding.format() + " to show hierarchy";
+            return viewHint + binding.format() + 
+                    " to show hierarchy";
         case SUPERTYPES:
-            return viewHint + binding.format() + " to show subtypes";
+            return viewHint + binding.format() + 
+                    " to show subtypes";
         case HIERARCHY:
-            return viewHint + binding.format() + " to show supertypes";
+            return viewHint + binding.format() + 
+                    " to show supertypes";
         default:
             throw new RuntimeException();
         }
@@ -210,7 +216,10 @@ public class HierarchyPopup extends TreeViewPopup {
 
     @Override
     protected Control createTitleControl(Composite parent) {
-        getPopupLayout().copy().numColumns(4).spacing(6, 6).applyTo(parent);
+        getPopupLayout().copy()
+            .numColumns(4)
+            .spacing(6, 6)
+            .applyTo(parent);
         iconLabel = new Label(parent, SWT.NONE);
         super.createTitleControl(parent);
         updateIcon();
@@ -332,7 +341,8 @@ public class HierarchyPopup extends TreeViewPopup {
         if (selectedElement instanceof CeylonHierarchyNode) {
             dispose();
             CeylonHierarchyNode node = 
-                    (CeylonHierarchyNode) selectedElement;
+                    (CeylonHierarchyNode) 
+                        selectedElement;
             gotoDeclaration(node.getDeclaration());
         }
     }
@@ -366,24 +376,28 @@ public class HierarchyPopup extends TreeViewPopup {
         super.fillViewMenu(viewMenu);
         viewMenu.add(new Separator());
         final Action javaSDKAction = 
-                new Action("Exclude Java SDK", IAction.AS_CHECK_BOX) {
+                new Action("Exclude Java SDK", 
+                        IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
                 boolean checked = isChecked();
                 contentProvider.setExcludeJDK(checked);
-                getDialogSettings().put(EXCLUDE_JDK, checked);
+                getDialogSettings()
+                    .put(EXCLUDE_JDK, checked);
                 update();
             }
         };
         javaSDKAction.setChecked(contentProvider.isExcludeJDK());
         viewMenu.add(javaSDKAction);
         final Action oracleSDKAction = 
-                new Action("Exclude Java SDK Internals", IAction.AS_CHECK_BOX) {
+                new Action("Exclude Java SDK Internals", 
+                        IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
                 boolean checked = isChecked();
                 contentProvider.setExcludeOracleJDK(checked);
-                getDialogSettings().put(EXCLUDE_ORACLE_JDK, checked);
+                getDialogSettings()
+                    .put(EXCLUDE_ORACLE_JDK, checked);
                 update();
             }
         };

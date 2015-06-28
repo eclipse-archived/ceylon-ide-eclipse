@@ -13,8 +13,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 class CeylonTextViewer extends Viewer {
 
@@ -33,7 +33,7 @@ class CeylonTextViewer extends Viewer {
 
         sourceViewer.setEditable(false);
         
-        Font font = CeylonEditor.getEditorFont();
+        Font font = CeylonPlugin.getEditorFont();
         if (font!=null) {
             sourceViewer.getTextWidget().setFont(font);
         }

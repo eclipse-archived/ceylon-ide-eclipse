@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.html;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getEditorFont;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getHoverFont;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
 import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
@@ -73,8 +71,8 @@ public class HTML {
             fgStyleSheet = loadStyleSheet();
         }
         final StringBuffer monospaceSize = new StringBuffer();
-        final Font editorFont = getEditorFont();
-        final Font hoverFont = getHoverFont();
+        final Font editorFont = CeylonPlugin.getEditorFont();
+        final Font hoverFont = CeylonPlugin.getHoverFont();
         final FontData monospaceFontData = 
                 editorFont.getFontData()[0];
         final FontData textFontData = 

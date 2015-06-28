@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.open;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getCompletionFont;
-
 /*******************************************************************************
  * Copyright (c) 2000, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
@@ -79,7 +77,6 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
@@ -1751,7 +1748,7 @@ public abstract class FilteredItemsSelectionDialog extends
         @Override
         public void update(ViewerCell cell) {
             Object element = cell.getElement();
-            Font completionFont = getCompletionFont();
+            Font completionFont = CeylonPlugin.getCompletionFont();
             if (!(element instanceof ItemsListSeparator)
                     && provider instanceof IStyledLabelProvider) {
                 IStyledLabelProvider styledLabelProvider = 
@@ -1792,7 +1789,7 @@ public abstract class FilteredItemsSelectionDialog extends
             int width = rect.width - borderWidth - imageWidth;
 
             GC gc = new GC(list.getTable());
-            gc.setFont(getCompletionFont());
+            gc.setFont(CeylonPlugin.getCompletionFont());
 
             int fSeparatorWidth = gc.getAdvanceWidth('-');
             int fMessageLength = gc.textExtent(separatorLabel).x;

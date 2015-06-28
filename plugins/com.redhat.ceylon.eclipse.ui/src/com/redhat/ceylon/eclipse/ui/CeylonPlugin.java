@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.ui;
 
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
 
@@ -37,6 +38,8 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -75,6 +78,15 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
     };
+    
+    public static final String EDITOR_FONT_PREFERENCE = 
+            PLUGIN_ID + ".editorFont";
+    public static final String HOVER_FONT_PREFERENCE = 
+            PLUGIN_ID + ".hoverFont";
+    public static final String COMPLETION_FONT_PREFERENCE = 
+            PLUGIN_ID + ".completionFont";
+    public static final String OUTLINE_FONT_PREFERENCE = 
+            PLUGIN_ID + ".outlineFont";
     
     private FontRegistry fontRegistry;
 
@@ -479,7 +491,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         // Hopefully this gets called late enough, i.e., after a Display has been
         // created on the current thread (see FontRegistry constructor).
         if (fontRegistry == null) {
-            fontRegistry= new FontRegistry();
+            fontRegistry = new FontRegistry();
         }
         return fontRegistry;
     }
@@ -487,5 +499,38 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     public File getJavaSourceArchiveCacheDirectory() {
         return javaSourceArchiveCacheDirectory;
     }
+
+    private static Font getFont(final String pref) {
+        class GetFont implements Runnable {
+            public Font result;
+            @Override
+            public void run() {
+                result =
+                        getCurrentTheme()
+                            .getFontRegistry()
+                            .get(pref);
+            }
+        } 
+        GetFont gf = new GetFont();
+        Display.getDefault().syncExec(gf);
+        return gf.result;
+    }
+
+    public static Font getHoverFont() {
+        return getFont(HOVER_FONT_PREFERENCE);
+    }
+
+    public static Font getEditorFont() {
+        return getFont(EDITOR_FONT_PREFERENCE);
+    }
+
+    public static Font getCompletionFont() {
+        return getFont(COMPLETION_FONT_PREFERENCE);
+    }
+
+    public static Font getOutlineFont() {
+        return getFont(OUTLINE_FONT_PREFERENCE);
+    }
+
 }
 

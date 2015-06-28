@@ -372,6 +372,9 @@ public final class ReferencesPopup extends PopupDialog
         tableViewer.getControl().addMouseListener(clickListener);
         treeViewer.getControl().addMouseListener(clickListener);
         viewer.getControl().getParent().layout(/*true*/);
+        Font outlineFont = CeylonPlugin.getOutlineFont();
+        tableViewer.getControl().setFont(outlineFont);
+        treeViewer.getControl().setFont(outlineFont);
         return viewer.getControl();
     }
     

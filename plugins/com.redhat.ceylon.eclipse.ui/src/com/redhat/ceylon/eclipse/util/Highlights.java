@@ -2,12 +2,12 @@ package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCH_HIGHLIGHTING;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isJavaIdentifierStart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.util.List;
 import java.util.StringTokenizer;
@@ -29,9 +29,9 @@ import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.ui.themes.ITheme;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.Task;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class Highlights  {
     
@@ -85,10 +85,6 @@ public class Highlights  {
         });
     }
 
-    public static ITheme getCurrentTheme() {
-        return getWorkbench().getThemeManager().getCurrentTheme();
-    }
-    
     public static Color getCurrentThemeColor(String key) {
         return color(getCurrentTheme().getColorRegistry(), key);
     }
@@ -180,7 +176,7 @@ public class Highlights  {
     public static void styleProposal(StyledString result, 
             String string, boolean qualifiedNameIsPath) {
     	styleProposal(result, string, qualifiedNameIsPath, 
-    			null, CeylonEditor.getCompletionFont());
+    			null, CeylonPlugin.getCompletionFont());
     }
     
     private static final Pattern path = 
@@ -538,6 +534,6 @@ public class Highlights  {
     };
     
     private static final ColorRegistry colorRegistry = 
-            getCurrentTheme().getColorRegistry();
+            EditorUtil.getCurrentTheme().getColorRegistry();
         
 }

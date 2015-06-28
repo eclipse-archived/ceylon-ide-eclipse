@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getEditorFont;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getHoverFont;
 import static com.redhat.ceylon.eclipse.util.Escaping.toInitialUppercase;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -56,6 +54,7 @@ import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 /**
@@ -181,7 +180,7 @@ class AnnotationInformationControl
         setColorAndFont(fParent, 
                 fParent.getForeground(), 
                 fParent.getBackground(), 
-                getHoverFont());
+                CeylonPlugin.getHoverFont());
 
         ICompletionProposal[] proposals = 
                 getAnnotationInfo().getCompletionProposals();
@@ -327,8 +326,8 @@ class AnnotationInformationControl
                     text.setText(styled.getString());
                     StyleRange[] styleRanges = 
                             styled.getStyleRanges();
-                    Font editorFont = getEditorFont();
-                    Font hoverFont = getHoverFont();
+                    Font editorFont = CeylonPlugin.getEditorFont();
+                    Font hoverFont = CeylonPlugin.getHoverFont();
                     FontData monospaceFontData = 
                             editorFont.getFontData()[0];
                     Display display = Display.getDefault();
@@ -407,7 +406,7 @@ class AnnotationInformationControl
         setColorAndFont(composite, 
                 parent.getForeground(), 
                 parent.getBackground(), 
-                getHoverFont());
+                CeylonPlugin.getHoverFont());
         createCompletionProposalsList(composite, proposals);
     }
 
@@ -452,7 +451,7 @@ class AnnotationInformationControl
         setColorAndFont(scrolledComposite, 
                 parent.getForeground(), 
                 parent.getBackground(), 
-                getHoverFont());
+                CeylonPlugin.getHoverFont());
 
         Point contentSize = 
                 composite.computeSize(
@@ -564,7 +563,7 @@ class AnnotationInformationControl
         GridData gd2 = 
                 new GridData(SWT.BEGINNING, SWT.CENTER, 
                         false, false);
-        proposalLink.setFont(getHoverFont());
+        proposalLink.setFont(CeylonPlugin.getHoverFont());
         proposalLink.setLayoutData(gd2);
         proposalLink.setText("<a>" + 
                 proposal.getDisplayString()

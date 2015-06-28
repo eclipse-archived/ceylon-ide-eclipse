@@ -16,7 +16,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importParameterTypes;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getCompletionFont;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getRefinementIcon;
@@ -213,7 +212,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
         String string = getDisplayString();
-        Font font = getCompletionFont();
+        Font font = CeylonPlugin.getCompletionFont();
         if (string.startsWith("shared actual ")) {
             result.append(string.substring(0,14), 
             		new Highlights.FontStyler(font,

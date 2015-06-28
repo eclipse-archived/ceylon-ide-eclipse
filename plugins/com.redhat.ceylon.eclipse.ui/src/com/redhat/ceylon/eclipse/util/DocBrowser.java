@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getHoverFont;
 import static org.eclipse.jface.text.TextPresentation.applyTextPresentation;
 
 import org.eclipse.jface.text.TextPresentation;
@@ -30,6 +29,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 
 import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class DocBrowser {
     
@@ -98,7 +98,7 @@ public class DocBrowser {
         Display display = parent.getDisplay();
         Color fg = display.getSystemColor(SWT.COLOR_INFO_FOREGROUND);
         Color bg = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
-        Font font = getHoverFont();
+        Font font = CeylonPlugin.getHoverFont();
         if (isAvailable(parent)) {
             browser = new Browser(parent, style);
             browser.setJavascriptEnabled(false);

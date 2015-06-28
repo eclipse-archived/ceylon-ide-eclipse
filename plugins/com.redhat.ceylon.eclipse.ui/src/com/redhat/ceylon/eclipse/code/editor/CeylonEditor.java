@@ -34,6 +34,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModu
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolderType;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
@@ -115,7 +116,6 @@ import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.StyledTextContent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
@@ -1298,7 +1298,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         /*((IContextService) getSite().getService(IContextService.class))
                 .activateContext(PLUGIN_ID + ".context");*/
         
-        ITheme currentTheme = getTheme();
+        ITheme currentTheme = getCurrentTheme();
         currentTheme.getColorRegistry()
             .addListener(colorChangeListener);
         updateFontAndCaret();
@@ -1701,59 +1701,16 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getProperty()
-                    .equals(EDITOR_FONT_PREFERENCE)) {
+                    .equals(CeylonPlugin.EDITOR_FONT_PREFERENCE)) {
                 updateFontAndCaret();
             }
         }
     };
-    
-    private static final String EDITOR_FONT_PREFERENCE = 
-            PLUGIN_ID + ".editorFont";
-    private static final String HOVER_FONT_PREFERENCE = 
-            PLUGIN_ID + ".hoverFont";
-    private static final String COMPLETION_FONT_PREFERENCE = 
-            PLUGIN_ID + ".completionFont";
-    
-    private static ITheme getTheme() {
-        return getWorkbench()
-                .getThemeManager()
-                .getCurrentTheme();
-    }
-
-    private static class GetFont implements Runnable {
-        private Font result;
-        private final String pref;
-        private GetFont(String pref) {
-            this.pref = pref;
-        }
-        @Override
-        public void run() {
-            result = getTheme().getFontRegistry().get(pref);
-        }
-    } 
-
-    public static Font getCompletionFont() {
-        GetFont gf = new GetFont(COMPLETION_FONT_PREFERENCE);
-        Display.getDefault().syncExec(gf);
-        return gf.result;
-    }
-
-    public static Font getEditorFont() {
-        GetFont gf = new GetFont(EDITOR_FONT_PREFERENCE);
-        Display.getDefault().syncExec(gf);
-        return gf.result;
-    }
-
-    public static Font getHoverFont() {
-        GetFont gf = new GetFont(HOVER_FONT_PREFERENCE);
-        Display.getDefault().syncExec(gf);
-        return gf.result;
-    }
-    
+        
     private void updateFontAndCaret() {
         getSourceViewer()
             .getTextWidget()
-            .setFont(getEditorFont());
+            .setFont(CeylonPlugin.getEditorFont());
         try {
             Method updateCaretMethod = 
                     AbstractTextEditor.class

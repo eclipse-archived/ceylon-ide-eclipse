@@ -55,8 +55,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -567,7 +567,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         Highlights.styleProposal(styledString, text, false);
         signatureText.setText(styledString.getString());
         signatureText.setStyleRanges(styledString.getStyleRanges());
-        signatureText.setFont(CeylonEditor.getEditorFont());
+        signatureText.setFont(CeylonPlugin.getEditorFont());
     }
     
     private ChangeParametersRefactoring getChangeParametersRefactoring() {

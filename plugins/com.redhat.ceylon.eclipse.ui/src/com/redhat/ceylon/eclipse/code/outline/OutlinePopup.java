@@ -433,6 +433,7 @@ public class OutlinePopup extends TreeViewPopup {
         treeViewer.setSorter(outlineSorter);
         treeViewer.setAutoExpandLevel(getDefaultLevel());
         tree.addKeyListener(new ChangeViewListener());
+        tree.setFont(CeylonPlugin.getOutlineFont());
         return treeViewer;
     }
     
