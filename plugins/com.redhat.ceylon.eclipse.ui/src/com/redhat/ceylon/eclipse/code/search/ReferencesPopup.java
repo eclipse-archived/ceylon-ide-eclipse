@@ -45,6 +45,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusListener;
@@ -194,16 +195,25 @@ public final class ReferencesPopup extends PopupDialog
 
     public final class Filter extends ViewerFilter {
         @Override
-        public boolean select(Viewer viewer, Object parentElement, Object element) {
+        public boolean select(Viewer viewer, 
+                Object parentElement, Object element) {
             TreeNode treeNode = (TreeNode) element;
             Object value = treeNode.getValue();
             if (value instanceof CeylonSearchMatch) {
-                CeylonSearchMatch match = (CeylonSearchMatch) value;
+                CeylonSearchMatch match = 
+                        (CeylonSearchMatch) value;
                 String filter = filterText.getText();
-                String[] split = match.getElement().getLabel().getString().split(" ");
-                return split.length>1 && isMatchingGlob(filter, split[1]) ||
-                        isMatchingGlob(filter, match.getElement().getPackageLabel()) ||
-                        isMatchingGlob(filter, match.getElement().getFile().getName());
+                CeylonElement e = match.getElement();
+                String[] split = 
+                        e.getLabel()
+                            .getString()
+                            .split(" ");
+                return split.length>1 && 
+                        isMatchingGlob(filter, split[1]) ||
+                        isMatchingGlob(filter, 
+                                e.getPackageLabel()) ||
+                        isMatchingGlob(filter, 
+                                e.getFile().getName());
             }
             else {
                 for (TreeNode child: treeNode.getChildren()) {
@@ -229,11 +239,16 @@ public final class ReferencesPopup extends PopupDialog
     
     private boolean showingRefinements = false;
     
-    public ReferencesPopup(Shell parent, int shellStyle, CeylonEditor editor) {
+    public ReferencesPopup(Shell parent, int shellStyle, 
+            CeylonEditor editor) {
         super(parent, shellStyle, true, true, false, true,
                 true, null, null);
-        treeLayout = getDialogSettings().getBoolean("treeLayout");
-        includeImports = getDialogSettings().getBoolean("includeImports");
+        treeLayout = 
+                getDialogSettings()
+                    .getBoolean("treeLayout");
+        includeImports = 
+                getDialogSettings()
+                    .getBoolean("includeImports");
         setTitleText("Quick Find References");
         this.editor = editor;
         commandBinding = 
@@ -407,7 +422,8 @@ public final class ReferencesPopup extends PopupDialog
     protected StyledString styleTitle(final StyledText title) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(title.getText(), "-", false);
+                new StringTokenizer(title.getText(), 
+                        "-", false);
         styleDescription(title, result, tokens.nextToken());
         result.append("-");
         String rest = tokens.nextToken();
@@ -416,7 +432,9 @@ public final class ReferencesPopup extends PopupDialog
         loc+=4;
         result.append(rest.substring(0,loc));
         int end = rest.indexOf(" in ", loc);
-        Highlights.styleProposal(result, rest.substring(loc, end), false);
+        Highlights.styleProposal(result, 
+                rest.substring(loc, end), 
+                false);
         return result;
     }
 
@@ -431,7 +449,8 @@ public final class ReferencesPopup extends PopupDialog
             @Override
             public void applyStyles(TextStyle textStyle) {
                 textStyle.font = 
-                        new Font(title.getDisplay(), fontDatas);
+                        new Font(title.getDisplay(), 
+                                fontDatas);
             }
         });
     }
@@ -452,7 +471,10 @@ public final class ReferencesPopup extends PopupDialog
         titleLabel.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                titleLabel.setStyleRanges(styleTitle(titleLabel).getStyleRanges());
+                StyleRange[] styleRanges = 
+                        styleTitle(titleLabel)
+                            .getStyleRanges();
+                titleLabel.setStyleRanges(styleRanges);
             }
         });
         titleLabel.setEditable(false);
@@ -476,7 +498,8 @@ public final class ReferencesPopup extends PopupDialog
     private void switchMatchesInImports() {
         includeImports = !includeImports;
         setInput(null);
-        getDialogSettings().put("includeImports", includeImports);
+        getDialogSettings()
+            .put("includeImports", includeImports);
     }
     
     private void createImportsButton(ToolBar toolBar) {
@@ -551,19 +574,28 @@ public final class ReferencesPopup extends PopupDialog
         treeLayoutButton.setImage(imageRegistry.get(TREE_MODE));
         treeLayoutButton.setToolTipText("Show as Tree");
         treeLayoutButton.setSelection(treeLayout);
-        flatLayoutButton.addSelectionListener(new ChangeLayoutListener() {
+        flatLayoutButton.addSelectionListener(
+                new ChangeLayoutListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (flatLayoutButton.getSelection()) {
                     super.widgetSelected(e);
                     treeLayoutButton.setSelection(false);
-                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(false);
-                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(true);
+                    if (treeLayoutAction!=null) {
+                        treeLayoutAction.setChecked(false);
+                    }
+                    if (flatLayoutAction!=null) {
+                        flatLayoutAction.setChecked(true);
+                    }
                 }
                 else {
                     treeLayoutButton.setSelection(true);
-                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(false);
-                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(true);
+                    if (flatLayoutAction!=null) {
+                        flatLayoutAction.setChecked(false);
+                    }
+                    if (treeLayoutAction!=null) {
+                        treeLayoutAction.setChecked(true);
+                    }
                 }
             }
         });
@@ -573,20 +605,29 @@ public final class ReferencesPopup extends PopupDialog
                 if (treeLayoutButton.getSelection()) {
                     super.widgetSelected(e);
                     flatLayoutButton.setSelection(false);
-                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(false);
-                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(true);
+                    if (flatLayoutAction!=null) {
+                        flatLayoutAction.setChecked(false);
+                    }
+                    if (treeLayoutAction!=null) {
+                        treeLayoutAction.setChecked(true);
+                    }
                 }
                 else {
                     flatLayoutButton.setSelection(true);
-                    if (treeLayoutAction!=null) treeLayoutAction.setChecked(false);
-                    if (flatLayoutAction!=null) flatLayoutAction.setChecked(true);
+                    if (treeLayoutAction!=null) {
+                        treeLayoutAction.setChecked(false);
+                    }
+                    if (flatLayoutAction!=null) {
+                        flatLayoutAction.setChecked(true);
+                    }
                 }
             }
         });
     }
     
     protected Text createFilterText(Composite parent) {
-        filterText= new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+        filterText = new Text(parent, 
+                SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
         filterText.setMessage("type filter text");
         Dialog.applyDialogFont(filterText);
 
@@ -780,9 +821,11 @@ public final class ReferencesPopup extends PopupDialog
     
     @Override
     public void setInput(Object input) {
-        CeylonParseController pc = editor.getParseController();
+        CeylonParseController pc = 
+                editor.getParseController();
         Referenceable declaration = 
-                getReferencedExplicitDeclaration(editor.getSelectedNode(), 
+                getReferencedExplicitDeclaration(
+                        editor.getSelectedNode(), 
                         pc.getRootNode());
         if (declaration==null) {
             return;
@@ -1050,7 +1093,8 @@ public final class ReferencesPopup extends PopupDialog
         dialogMenu.add(treeLayoutAction);
         dialogMenu.add(new Separator());
         importsAction = 
-                new Action("Show Matches in Imports", AS_CHECK_BOX) {
+                new Action("Show Matches in Imports", 
+                        AS_CHECK_BOX) {
             {
                 setImageDescriptor(imageRegistry.getDescriptor(CEYLON_IMPORT));
             }
