@@ -2521,7 +2521,7 @@
         label="Ceylon Completion Proposals Text Font"
         defaultsTo="org.eclipse.jface.dialogfont">
         <description>
-            Font for displaying proposals in the completion popup
+            Font for displaying proposals in the completion popup and Open dialogs
         </description>
     </fontDefinition>
     <colorDefinition

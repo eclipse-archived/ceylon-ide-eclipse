@@ -29,6 +29,7 @@ import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.ui.themes.ITheme;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.Task;
 
@@ -179,7 +180,7 @@ public class Highlights  {
     public static void styleProposal(StyledString result, 
             String string, boolean qualifiedNameIsPath) {
     	styleProposal(result, string, qualifiedNameIsPath, 
-    			null, null);
+    			null, CeylonEditor.getCompletionFont());
     }
     
     private static final Pattern path = 

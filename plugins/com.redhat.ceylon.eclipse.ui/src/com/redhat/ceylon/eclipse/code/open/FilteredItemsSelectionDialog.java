@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.open;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getCompletionFont;
+
 /*******************************************************************************
  * Copyright (c) 2000, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
@@ -86,6 +88,7 @@ import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -361,7 +364,8 @@ public abstract class FilteredItemsSelectionDialog extends
         if (setting != null) {
             try {
                 IMemento memento = 
-                        XMLMemento.createReadRoot(new StringReader(setting));
+                        XMLMemento.createReadRoot(
+                                new StringReader(setting));
                 this.contentProvider.loadHistory(memento);
             }
             catch (WorkbenchException e) {
@@ -383,8 +387,10 @@ public abstract class FilteredItemsSelectionDialog extends
         this.refreshCacheJob.cancel();
         this.refreshProgressMessageJob.cancel();
         if (showViewHandler != null) {
-            IHandlerService service = (IHandlerService) PlatformUI
-                    .getWorkbench().getService(IHandlerService.class);
+            IHandlerService service = 
+                    (IHandlerService) 
+                        PlatformUI.getWorkbench()
+                            .getService(IHandlerService.class);
             service.deactivateHandler(showViewHandler);
             showViewHandler.getHandler().dispose();
             showViewHandler = null;
@@ -415,12 +421,14 @@ public abstract class FilteredItemsSelectionDialog extends
                     browser!=null && browser.isVisible());
         }
 
-        XMLMemento memento = XMLMemento.createWriteRoot(HISTORY_SETTINGS);
+        XMLMemento memento = 
+                XMLMemento.createWriteRoot(HISTORY_SETTINGS);
         this.contentProvider.saveHistory(memento);
         StringWriter writer = new StringWriter();
         try {
             memento.save(writer);
-            settings.put(HISTORY_SETTINGS, writer.getBuffer().toString());
+            settings.put(HISTORY_SETTINGS, 
+                    writer.getBuffer().toString());
         } catch (IOException e) {
             // Simply don't store the settings
             StatusManager
@@ -493,7 +501,8 @@ public abstract class FilteredItemsSelectionDialog extends
     }*/
 
     /**
-     * Create the labels for the list and the progress. Return the list label.
+     * Create the labels for the list and the progress. 
+     * Return the list label.
      * 
      * @param parent
      * @return Label
@@ -501,7 +510,11 @@ public abstract class FilteredItemsSelectionDialog extends
     private Label createLabels(Composite parent) {
         Composite labels = new Composite(parent, SWT.NONE);
         labels.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        labels.setLayout(GridLayoutFactory.fillDefaults().equalWidth(false).numColumns(2).margins(0, 0).create());
+        labels.setLayout(GridLayoutFactory.fillDefaults()
+                .equalWidth(false)
+                .numColumns(2)
+                .margins(0, 0)
+                .create());
         
         Label listLabel = new Label(labels, SWT.NONE);
         listLabel.setText(listLabelText);
@@ -554,8 +567,10 @@ public abstract class FilteredItemsSelectionDialog extends
         fillViewMenu(menuManager);
         toolBar.setVisible(!menuManager.isEmpty());
         
-        IHandlerService service = (IHandlerService) PlatformUI.getWorkbench()
-                .getService(IHandlerService.class);
+        IHandlerService service = 
+                (IHandlerService) 
+                    PlatformUI.getWorkbench()
+                        .getService(IHandlerService.class);
         IHandler handler = new AbstractHandler() {
             @Override
             public Object execute(ExecutionEvent event) {
@@ -587,7 +602,8 @@ public abstract class FilteredItemsSelectionDialog extends
     private void showViewMenu() {
         Menu menu = menuManager.createContextMenu(getShell());
         Rectangle bounds = menuToolItem.getBounds();
-        Point topLeft = new Point(bounds.x, bounds.y + bounds.height);
+        Point topLeft = 
+                new Point(bounds.x, bounds.y + bounds.height);
         topLeft = toolBar.toDisplay(topLeft);
         menu.setLocation(topLeft.x, topLeft.y);
         menu.setVisible(true);
@@ -602,7 +618,8 @@ public abstract class FilteredItemsSelectionDialog extends
      * @since 3.5
      */
     protected void fillContextMenu(IMenuManager menuManager) {
-        List selectedElements= ((StructuredSelection)list.getSelection()).toList();
+        List selectedElements = 
+                ((StructuredSelection)list.getSelection()).toList();
 
         Object item= null;
 
@@ -645,7 +662,8 @@ public abstract class FilteredItemsSelectionDialog extends
         final Composite dialogArea = 
                 (Composite) super.createDialogArea(parent);
 
-        final Composite content = new Composite(dialogArea, SWT.NONE);
+        final Composite content = 
+                new Composite(dialogArea, SWT.NONE);
         content.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         GridLayout layout = new GridLayout();
@@ -663,7 +681,8 @@ public abstract class FilteredItemsSelectionDialog extends
         Composite composite = new Composite(sash, SWT.NONE);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(GridLayoutFactory.fillDefaults().create());
-        list = new TableViewer(composite, (multi ? SWT.MULTI : SWT.SINGLE)
+        list = new TableViewer(composite, 
+                (multi ? SWT.MULTI : SWT.SINGLE)
                 | SWT.BORDER | SWT.V_SCROLL | SWT.VIRTUAL);
         list.getTable().getAccessible().addAccessibleListener(
                 new AccessibleAdapter() {
@@ -692,7 +711,8 @@ public abstract class FilteredItemsSelectionDialog extends
                     String location = event.location;
                     //necessary for windows environment (fix for blank page)
                     //somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
-                    if (!"about:blank".equals(location) && !location.startsWith("http:")) {
+                    if (!"about:blank".equals(location) && 
+                            !location.startsWith("http:")) {
                         event.doit= false;
                         handleLink(event.location, browser);
                     }
@@ -725,12 +745,14 @@ public abstract class FilteredItemsSelectionDialog extends
             }
         });
 
-        list.addSelectionChangedListener(new ISelectionChangedListener() {
+        list.addSelectionChangedListener(
+                new ISelectionChangedListener() {
             boolean first = true;
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                StructuredSelection selection = (StructuredSelection) event
-                        .getSelection();
+                StructuredSelection selection = 
+                        (StructuredSelection) 
+                            event.getSelection();
                 handleSelected(selection);
                 //we need to re-layout the status area *only* the 
                 //very first time an icon is displayed!
@@ -776,8 +798,9 @@ public abstract class FilteredItemsSelectionDialog extends
 
                 if (e.keyCode == SWT.ARROW_UP && (e.stateMask & SWT.SHIFT) != 0
                         && (e.stateMask & SWT.CTRL) != 0) {
-                    StructuredSelection selection = (StructuredSelection) list
-                            .getSelection();
+                    StructuredSelection selection = 
+                            (StructuredSelection) 
+                                list.getSelection();
 
                     if (selection.size() == 1) {
                         Object element = selection.getFirstElement();
@@ -798,8 +821,8 @@ public abstract class FilteredItemsSelectionDialog extends
                         && (e.stateMask & SWT.SHIFT) != 0
                         && (e.stateMask & SWT.CTRL) != 0) {
 
-                    if (list
-                            .getElementAt(list.getTable().getSelectionIndex() + 1) instanceof ItemsListSeparator)
+                    if (list.getElementAt(list.getTable().getSelectionIndex() + 1) 
+                            instanceof ItemsListSeparator)
                         list.getTable().setSelection(
                                 list.getTable().getSelectionIndex() + 1);
                     list.getTable().notifyListeners(SWT.Selection, new Event());
@@ -1029,7 +1052,8 @@ public abstract class FilteredItemsSelectionDialog extends
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
         IDialogSettings settings = getDialogSettings();
-        IDialogSettings section = settings.getSection(DIALOG_BOUNDS_SETTINGS);
+        IDialogSettings section = 
+                settings.getSection(DIALOG_BOUNDS_SETTINGS);
         if (section == null) {
             section = settings.addNewSection(DIALOG_BOUNDS_SETTINGS);
             section.put(DIALOG_HEIGHT, 450);
@@ -1200,8 +1224,8 @@ public abstract class FilteredItemsSelectionDialog extends
      */
     protected StructuredSelection getSelectedItems() {
 
-        StructuredSelection selection = (StructuredSelection) list
-                .getSelection();
+        StructuredSelection selection = 
+                (StructuredSelection) list.getSelection();
 
         List selectedItems = selection.toList();
         Object itemToRemove = null;
@@ -1217,16 +1241,18 @@ public abstract class FilteredItemsSelectionDialog extends
         if (itemToRemove == null)
             return new StructuredSelection(selectedItems);
         // Create a new selection without the collision
-        List<Object> newItems = new ArrayList<Object>(selectedItems);
+        List<Object> newItems = 
+                new ArrayList<Object>(selectedItems);
         newItems.remove(itemToRemove);
         return new StructuredSelection(newItems);
 
     }
 
     /**
-     * Validates the item. When items on the items list are selected or
-     * deselected, it validates each item in the selection and the dialog status
-     * depends on all validations.
+     * Validates the item. When items on the items list are 
+     * selected or deselected, it validates each item in the 
+     * selection and the dialog status depends on all 
+     * validations.
      * 
      * @param item
      *            an item to be checked
@@ -1237,16 +1263,17 @@ public abstract class FilteredItemsSelectionDialog extends
     /**
      * Creates an instance of a filter.
      * 
-     * @return a filter for items on the items list. Can be <code>null</code>,
-     *         no filtering will be applied then, causing no item to be shown in
+     * @return a filter for items on the items list. Can be 
+     *         <code>null</code>, no filtering will be 
+     *         applied then, causing no item to be shown in
      *         the list.
      */
     protected abstract ItemsFilter createFilter();
 
     /**
-     * Applies the filter created by <code>createFilter()</code> method to the
-     * items list. When new filter is different than previous one it will cause
-     * refiltering.
+     * Applies the filter created by <code>createFilter()</code> 
+     * method to the items list. When new filter is different 
+     * than previous one it will cause refiltering.
      */
     protected void applyFilter() {
 
@@ -1707,12 +1734,15 @@ public abstract class FilteredItemsSelectionDialog extends
 
         private StyledString getStyledText(Object element,
                 IStyledLabelProvider provider) {
-            StyledString string = provider.getStyledText(element);
+            StyledString string = 
+                    provider.getStyledText(element);
 
-            if (selectionDecorator != null && isSelected(element)) {
-                String decorated = selectionDecorator.decorateText(string
-                        .getString(), element);
-                return StyledCellLabelProvider.styleDecoratedString(decorated, null, string);
+            if (selectionDecorator != null && 
+                    isSelected(element)) {
+                String decorated = 
+                        selectionDecorator.decorateText(
+                                string.getString(), element);
+                return styleDecoratedString(decorated, null, string);
                 // no need to add colors when element is selected
             }
             return string;
@@ -1721,22 +1751,31 @@ public abstract class FilteredItemsSelectionDialog extends
         @Override
         public void update(ViewerCell cell) {
             Object element = cell.getElement();
-
+            Font completionFont = getCompletionFont();
             if (!(element instanceof ItemsListSeparator)
                     && provider instanceof IStyledLabelProvider) {
-                IStyledLabelProvider styledLabelProvider = (IStyledLabelProvider) provider;
-                StyledString styledString = getStyledText(element,
-                        styledLabelProvider);
+                IStyledLabelProvider styledLabelProvider = 
+                        (IStyledLabelProvider) provider;
+                StyledString styledString = 
+                        getStyledText(element,
+                                styledLabelProvider);
 
                 cell.setText(styledString.getString());
-                cell.setStyleRanges(styledString.getStyleRanges());
+                StyleRange[] styleRanges = 
+                        styledString.getStyleRanges();
+                for (StyleRange styleRange : styleRanges) {
+                    styleRange.font = completionFont;
+                }
+                cell.setStyleRanges(styleRanges);
                 cell.setImage(styledLabelProvider.getImage(element));
-            } else {
+            }
+            else {
                 cell.setText(getText(element));
                 cell.setStyleRanges(null); //work around bug in Eclipse!!
                 cell.setImage(getImage(element));
             }
-            cell.setFont(getFont(element));
+//            cell.setFont(getFont(element));
+            cell.setFont(completionFont);
             cell.setForeground(getForeground(element));
             cell.setBackground(getBackground(element));
 
@@ -1753,7 +1792,7 @@ public abstract class FilteredItemsSelectionDialog extends
             int width = rect.width - borderWidth - imageWidth;
 
             GC gc = new GC(list.getTable());
-            gc.setFont(list.getTable().getFont());
+            gc.setFont(getCompletionFont());
 
             int fSeparatorWidth = gc.getAdvanceWidth('-');
             int fMessageLength = gc.textExtent(separatorLabel).x;
@@ -1959,7 +1998,7 @@ public abstract class FilteredItemsSelectionDialog extends
             worked = worked + work;
         }
 
-        private String getMessage() {
+        /*private String getMessage() {
             if (done)
                 return "";
 
@@ -1985,7 +2024,7 @@ public abstract class FilteredItemsSelectionDialog extends
                                     new Integer(
                                             (int) ((worked * 100) / totalWork)) });
 
-        }
+        }*/
 
     }
 
