@@ -16,6 +16,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importParameterTypes;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getCompletionFont;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getRefinementIcon;
@@ -33,7 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -45,6 +45,7 @@ import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -212,20 +213,20 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
         String string = getDisplayString();
+        Font font = getCompletionFont();
         if (string.startsWith("shared actual ")) {
             result.append(string.substring(0,14), 
-            		Highlights.ANN_STYLER);
-            string=string.substring(14);
+            		new Highlights.FontStyler(font,
+            		        Highlights.ANN_STYLER));
+            string = string.substring(14);
         }
         int loc = string.indexOf(' ');
         Highlights.styleProposal(result, 
         		string.substring(0, loc), 
-        		false);
+        		false, null, font);
         Highlights.styleProposal(result, 
         		string.substring(loc), 
-        		false, 
-        		currentPrefix, 
-        		JFaceResources.getDialogFont());
+        		false, currentPrefix, font);
         return result;
     }
     

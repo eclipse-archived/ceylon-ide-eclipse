@@ -1711,6 +1711,8 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             PLUGIN_ID + ".editorFont";
     private static final String HOVER_FONT_PREFERENCE = 
             PLUGIN_ID + ".hoverFont";
+    private static final String COMPLETION_FONT_PREFERENCE = 
+            PLUGIN_ID + ".completionFont";
     
     private static ITheme getTheme() {
         return getWorkbench()
@@ -1729,6 +1731,12 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             result = getTheme().getFontRegistry().get(pref);
         }
     } 
+
+    public static Font getCompletionFont() {
+        GetFont gf = new GetFont(COMPLETION_FONT_PREFERENCE);
+        Display.getDefault().syncExec(gf);
+        return gf.result;
+    }
 
     public static Font getEditorFont() {
         GetFont gf = new GetFont(EDITOR_FONT_PREFERENCE);
@@ -1832,7 +1840,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
                 currentTheme.getColorRegistry()
                     .get(MATCHING_BRACKETS_PREF);
         IPreferenceStore store = 
-              //can't be stored in the CeylonPlugin preferences!
+                //can't be stored in the CeylonPlugin preferences!
                 EditorsUI.getPreferenceStore(); 
         store.setDefault(MATCHING_BRACKET, true);
         store.setDefault(ENCLOSING_BRACKETS, false);

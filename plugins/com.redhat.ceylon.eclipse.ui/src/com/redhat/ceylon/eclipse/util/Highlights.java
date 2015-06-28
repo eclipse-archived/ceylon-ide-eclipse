@@ -185,6 +185,28 @@ public class Highlights  {
     private static final Pattern path = 
             Pattern.compile("\\b\\p{Ll}+(\\.\\p{Ll}+)+\\b");
     
+    public static class FontStyler extends Styler {
+        private final Font font;
+        private Styler styler;
+        public FontStyler(Font font) {
+            this.font = font;
+        }
+        public FontStyler(Font font, Styler styler) {
+            this(font);
+            this.styler = styler;
+            
+        }
+        @Override
+        public void applyStyles(TextStyle textStyle) {
+            if (font!=null) {
+                textStyle.font = font;
+            }
+            if (styler!=null) {
+                styler.applyStyles(textStyle);
+            }
+        }
+    }
+    
     public static void styleProposal(StyledString result, 
             String string, boolean qualifiedNameIsPath,
             String prefix, Font font) {
@@ -203,65 +225,82 @@ public class Highlights  {
             final String token = tokens.nextToken();
             if (token.equals("\"")) {
                 version = !version;
-                result.append(token, STRING_STYLER);
+                append(result, token, font, STRING_STYLER);
             }
             else if (version) {
-                result.append(token, STRING_STYLER);
+                append(result, token, font, STRING_STYLER);
             }
             else if (token.equals(".")) {
                 qualified = true;
-                result.append(token);
+                append(result, token, font, null);
                 continue;
             }
             else {
                 int initial = token.codePointAt(0);
                 if (isDigit(initial)) {
-                    result.append(token, NUM_STYLER);
+                    append(result, token, font, NUM_STYLER);
                 }
                 else if (isUpperCase(initial)) {
                 	if (matchHighlighting) {
                 		appendId(result, prefix, token, 
-                				TYPE_ID_STYLER, font);
+                		        new FontStyler(font, 
+                		                TYPE_ID_STYLER), 
+                		        font);
                 		matchHighlighting = false;
                 	}
                 	else {
-                		result.append(token, TYPE_ID_STYLER);
+                		append(result, token, font, 
+                		        TYPE_ID_STYLER);
                 	}
                 }
                 else if (isLowerCase(initial)) {
                     if (Escaping.KEYWORDS.contains(token)) {
-                        result.append(token, KW_STYLER);
+                        append(result, token, font, 
+                                KW_STYLER);
                     }
                     else if (token.contains(".")) {
-                        result.append(token, PACKAGE_STYLER);
+                        append(result, token, font, 
+                                PACKAGE_STYLER);
                     }
                     else if (qualified) {
                     	if (matchHighlighting) {
                     		appendId(result, prefix, token, 
-                    				MEMBER_STYLER, font);
+                    		        new FontStyler(font, 
+                    		                MEMBER_STYLER), 
+                    		        font);
                     		matchHighlighting = false;
                     	}
                     	else {
-                    		result.append(token, MEMBER_STYLER);
+                    	    append(result, token, font, 
+                    	            MEMBER_STYLER);
                     	}
                     }
                     else {
                     	if (matchHighlighting) {
                     		appendId(result, prefix, token, 
-                    				ID_STYLER, font);
+                    		        new FontStyler(font, 
+                    		                ID_STYLER), 
+                    		        font);
                     		matchHighlighting = false;
                     	}
                     	else {
-                    		result.append(token, ID_STYLER);
+                    	    append(result, token, font, 
+                    	            ID_STYLER);
                     	}
                     }
                 }
                 else {
-                    result.append(token);
+                    append(result, token, font, null);
                 }
             }
             qualified = false;
         }
+    }
+
+    private static void append(StyledString result, final String token, Font font, Styler styler) {
+        result.append(token, 
+                new FontStyler(font, 
+                        styler));
     }
 
     private static Font getBoldFont(Font font) {
@@ -277,12 +316,14 @@ public class Highlights  {
     
 	public static void appendId(StyledString result, 
 			String prefix, String token, 
-			final Styler styler, final Font font) {
+			Styler colorStyler, final Font font) {
+	    final Styler fontAndColorStyler = 
+	            new FontStyler(font, colorStyler);
         final String type = 
                 getPreferences()
                     .getString(MATCH_HIGHLIGHTING);
         if ("none".equals(type)) {
-            result.append(token, styler);
+            result.append(token, fontAndColorStyler);
             return;
         }
 		Matcher m = HUMP.matcher(prefix);
@@ -297,11 +338,12 @@ public class Highlights  {
 			if (loc<0) {
 			    break;
 			}
-			result.append(token.substring(i, loc), styler);
+			result.append(token.substring(i, loc), 
+			        fontAndColorStyler);
 			Styler matchStyler = new Styler() {
 				@Override
 				public void applyStyles(TextStyle textStyle) {
-					styler.applyStyles(textStyle);
+				    fontAndColorStyler.applyStyles(textStyle);
 					switch (type) {
 					case "underline": 
 						textStyle.underline = true;
@@ -324,7 +366,7 @@ public class Highlights  {
 			        matchStyler);
 			i = loc + bit.length();
 		}
-		result.append(token.substring(i), styler);
+		result.append(token.substring(i), fontAndColorStyler);
 	}
 
     public static void styleJavaType(StyledString result, 

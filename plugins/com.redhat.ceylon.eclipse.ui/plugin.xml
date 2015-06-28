@@ -2472,7 +2472,7 @@
         label="Return types in outline view"
         value="102,102,51">
         <description>
-            Color for displaying return types in outline view. (Takes effect after closing Ceylon editor.)
+            Color for displaying return types in outline view.
         </description>
     </colorDefinition>
 
@@ -2492,7 +2492,8 @@
         label="Matching brackets, braces, parens"
         value="0,120,255">
         <description>
-            Color for highlighting matching braces, brackets, and parens. (Takes effect after closing Ceylon editor.)
+            Color for highlighting matching braces, brackets, and parens. 
+(Takes effect after closing Ceylon editor.)
         </description>
     </colorDefinition>
 
@@ -2512,6 +2513,15 @@
         defaultsTo="org.eclipse.jface.dialogfont">
         <description>
             Font for displaying text in the Ceylon documentation hover
+        </description>
+    </fontDefinition>
+    <fontDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.completionFont" 
+        label="Ceylon Completion Proposals Text Font"
+        defaultsTo="org.eclipse.jface.dialogfont">
+        <description>
+            Font for displaying proposals in the completion popup
         </description>
     </fontDefinition>
     <colorDefinition

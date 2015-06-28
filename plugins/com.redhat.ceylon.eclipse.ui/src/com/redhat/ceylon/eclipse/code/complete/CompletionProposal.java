@@ -1,11 +1,11 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getCompletionFont;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -139,7 +139,7 @@ public class CompletionProposal implements ICompletionProposal,
         		getDisplayString(), 
                 qualifiedNameIsPath(), 
                 currentPrefix,
-                JFaceResources.getDialogFont());
+                getCompletionFont());
         return result;
     }
 
