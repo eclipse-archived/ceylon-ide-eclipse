@@ -1,14 +1,15 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.intersectionType;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.unionType;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.intersectionType;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.unionType;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -24,43 +25,55 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.IntersectionType;
 import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.IntersectionType;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class ChangeTypeProposal extends CorrectionProposal {
 
     ChangeTypeProposal(ProblemLocation problem, 
-            String name, String type, int offset, int len,
+            String name, String type, 
+            int offset, int len,
             TextFileChange change) {
         super("Change type of "+ name + " to '" + type + "'", 
                 change, new Region(offset, len));
     }
         
-    static void addChangeTypeProposal(Node node, ProblemLocation problem, 
-            Collection<ICompletionProposal> proposals, Declaration dec, 
-            Type newType, IFile file, Tree.CompilationUnit cu) {
-        if (node.getStartIndex() == null || node.getStopIndex() == null) {
+    static void addChangeTypeProposal(Node node, 
+            ProblemLocation problem, 
+            Collection<ICompletionProposal> proposals,
+            Declaration dec, 
+            Type newType, 
+            IFile file, 
+            Tree.CompilationUnit cu) {
+        if (node.getStartIndex() == null || 
+                node.getStopIndex() == null) {
             return;
         }
         if (newType.isNothing()) {
             return;
         }
-        TextFileChange change =  new TextFileChange("Change Type", file);
+        if (ModelUtil.isConstructor(dec)) {
+            return;
+        }
+        TextFileChange change = 
+                new TextFileChange("Change Type", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = EditorUtil.getDocument(change);
+        IDocument doc = getDocument(change);
         int offset = node.getStartIndex();
         int length = node.getStopIndex()-offset+1;
-        HashSet<Declaration> decs = new HashSet<Declaration>();
+        HashSet<Declaration> decs = 
+                new HashSet<Declaration>();
         importType(decs, newType, cu);
         int il=applyImports(change, decs, cu, doc);
         String newTypeName = 
@@ -69,12 +82,16 @@ class ChangeTypeProposal extends CorrectionProposal {
                 newTypeName));
         String name;
         if (dec.isParameter()) {
+            Declaration container = 
+                    (Declaration) dec.getContainer();
             name = "parameter '" + dec.getName() + "' of '" + 
-                    ((Declaration) dec.getContainer()).getName() + "'";
+                    container.getName() + "'";
         }
         else if (dec.isClassOrInterfaceMember()) {
+            ClassOrInterface container = 
+                    (ClassOrInterface) dec.getContainer();
             name = "member '" +  dec.getName() + "' of '" + 
-                    ((ClassOrInterface) dec.getContainer()).getName() + "'";
+                    container.getName() + "'";
         }
         else {
             name = "'" + dec.getName() + "'";
@@ -84,32 +101,46 @@ class ChangeTypeProposal extends CorrectionProposal {
                 offset+il, newTypeName.length(), change));
     }
     
-    static void addChangeTypeArgProposals(Tree.CompilationUnit cu, Node node, 
-            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
+    static void addChangeTypeArgProposals(
+            Tree.CompilationUnit cu, Node node, 
+            ProblemLocation problem, 
+            Collection<ICompletionProposal> proposals, 
             IProject project) {
         if (node instanceof Tree.SimpleType) {
-            TypeDeclaration decl = ((Tree.SimpleType) node).getDeclarationModel();
+            Tree.SimpleType stn = (Tree.SimpleType) node;
+            TypeDeclaration decl = stn.getDeclarationModel();
             if (decl instanceof TypeParameter) {
-                Tree.Statement statement = findStatement(cu, node);
+                Tree.Statement statement = 
+                        findStatement(cu, node);
                 if (statement instanceof Tree.TypedDeclaration) {
-                    Tree.TypedDeclaration ad = (Tree.TypedDeclaration) statement;
-                    if (ad.getType() instanceof Tree.SimpleType) {
-                        Tree.SimpleType st = (Tree.SimpleType) ad.getType();
+                    Tree.TypedDeclaration ad = 
+                            (Tree.TypedDeclaration) 
+                                statement;
+                    Tree.Type adt = ad.getType();
+                    if (adt instanceof Tree.SimpleType) {
+                        Tree.SimpleType st = 
+                                (Tree.SimpleType) adt;
                         
                         TypeParameter stTypeParam = null;
-                        if (st.getTypeArgumentList() != null) {
-                            List<Tree.Type> stTypeArguments = 
-                                    st.getTypeArgumentList().getTypes();
-                            for (int i=0; i<stTypeArguments.size(); i++) {
-                                Tree.SimpleType stTypeArgument = 
-                                        (Tree.SimpleType) stTypeArguments.get(i);
-                                if (decl.getName().equals(
-                                        stTypeArgument.getDeclarationModel().getName())) {
-                                    TypeDeclaration stDecl = st.getDeclarationModel();
-                                    if (stDecl != null) {
-                                        if (stDecl.getTypeParameters()!=null && 
-                                                stDecl.getTypeParameters().size()>i) {
-                                            stTypeParam = stDecl.getTypeParameters().get(i);
+                        Tree.TypeArgumentList tal = 
+                                st.getTypeArgumentList();
+                        if (tal!=null) {
+                            List<Tree.Type> stas = 
+                                    tal.getTypes();
+                            for (int i=0; i<stas.size(); i++) {
+                                Tree.Type sta = stas.get(i);
+                                Tree.SimpleType ssta = 
+                                        (Tree.SimpleType) sta;
+                                TypeDeclaration d = 
+                                        ssta.getDeclarationModel();
+                                if (decl.getName().equals(d.getName())) {
+                                    TypeDeclaration std = 
+                                            st.getDeclarationModel();
+                                    if (std!=null) {
+                                        List<TypeParameter> tps = 
+                                                std.getTypeParameters();
+                                        if (tps!=null && tps.size()>i) {
+                                            stTypeParam = tps.get(i);
                                             break;
                                         }
                                     }                            
@@ -117,12 +148,19 @@ class ChangeTypeProposal extends CorrectionProposal {
                             }                    
                         }
                         
-                        if (stTypeParam != null && 
-                                !stTypeParam.getSatisfiedTypes().isEmpty()) {
-                            IntersectionType it = new IntersectionType(cu.getUnit());
-                            it.setSatisfiedTypes(stTypeParam.getSatisfiedTypes());
-                            addChangeTypeProposals(proposals, problem, project, node, 
-                                    it.canonicalize().getType(), decl, true);
+                        if (stTypeParam!=null) {
+                            List<Type> sts = 
+                                    stTypeParam.getSatisfiedTypes();
+                            if (!sts.isEmpty()) {
+                                IntersectionType it = 
+                                        new IntersectionType(
+                                                cu.getUnit());
+                                it.setSatisfiedTypes(sts);
+                                addChangeTypeProposals(proposals, 
+                                        problem, project, node, 
+                                        it.canonicalize().getType(), 
+                                        decl, true);
+                            }
                         }
                     }
                 }
@@ -130,11 +168,15 @@ class ChangeTypeProposal extends CorrectionProposal {
         }
     }
     
-    static void addChangeTypeProposals(Tree.CompilationUnit cu, Node node, 
-            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
+    static void addChangeTypeProposals(
+            Tree.CompilationUnit cu, Node node, 
+            ProblemLocation problem, 
+            Collection<ICompletionProposal> proposals, 
             IProject project) {
         if (node instanceof Tree.SpecifierExpression) {
-            Tree.Expression e = ((Tree.SpecifierExpression) node).getExpression();
+            Tree.SpecifierExpression se = 
+                    (Tree.SpecifierExpression) node;
+            Tree.Expression e = se.getExpression();
             if (e!=null) {
                 node = e.getTerm();
             }
@@ -143,82 +185,115 @@ class ChangeTypeProposal extends CorrectionProposal {
             node = ((Tree.Expression) node).getTerm();
         }
         if (node instanceof Tree.Term) {
-            Type t = ((Tree.Term) node).getTypeModel();
+            Tree.Term term = (Tree.Term) node;
+            Type t = term.getTypeModel();
             if (t==null) return;
             Type type = node.getUnit().denotableType(t);
-            FindInvocationVisitor fav = new FindInvocationVisitor(node);
+            FindInvocationVisitor fav = 
+                    new FindInvocationVisitor(node);
             fav.visit(cu);
             TypedDeclaration td = fav.parameter;
             if (td!=null) {
                 if (node instanceof Tree.InvocationExpression) {
-                    node = ((Tree.InvocationExpression) node).getPrimary(); 
+                    Tree.InvocationExpression ie = 
+                            (Tree.InvocationExpression) node;
+                    node = ie.getPrimary(); 
                 }
                 if (node instanceof Tree.BaseMemberExpression) {
+                    Tree.BaseMemberExpression bme = 
+                            (Tree.BaseMemberExpression) node;
                     TypedDeclaration d = (TypedDeclaration) 
-                            ((Tree.BaseMemberExpression) node).getDeclaration();
-                    addChangeTypeProposals(proposals, problem, project, node, 
+                            bme.getDeclaration();
+                    addChangeTypeProposals(proposals, 
+                            problem, project, node, 
                             td.getType(), d, true);
                 }
-                if (node instanceof Tree.QualifiedMemberExpression){
+                if (node instanceof Tree.QualifiedMemberExpression) {
+                    Tree.QualifiedMemberExpression qme = 
+                            (Tree.QualifiedMemberExpression) node;
                     TypedDeclaration d = (TypedDeclaration) 
-                            ((Tree.QualifiedMemberExpression) node).getDeclaration();
-                    addChangeTypeProposals(proposals, problem, project, node, 
+                            qme.getDeclaration();
+                    addChangeTypeProposals(proposals, 
+                            problem, project, node, 
                             td.getType(), d, true);
                 }
-                addChangeTypeProposals(proposals, problem, project, 
-                        node, type, td, false);
+                addChangeTypeProposals(proposals, 
+                        problem, project, node, 
+                        type, td, false);
             }
         }
     }
     
-    private static void addChangeTypeProposals(Collection<ICompletionProposal> proposals,
-            ProblemLocation problem, IProject project, Node node, Type type, 
+    private static void addChangeTypeProposals(
+            Collection<ICompletionProposal> proposals,
+            ProblemLocation problem, IProject project, 
+            Node node, Type type, 
             Declaration dec, boolean intersect) {
         if (dec!=null) {
             for (PhasedUnit unit: getUnits(project)) {
-                if (dec.getUnit().equals(unit.getUnit())) {
+                Unit u = unit.getUnit();
+                if (dec.getUnit().equals(u)) {
                     Type t = null;
                     Node typeNode = null;
                     
                     if (dec instanceof TypeParameter) {
-                        t = ((TypeParameter) dec).getType();
+                        TypeParameter tp = 
+                                (TypeParameter) dec;
+                        t = tp.getType();
                         typeNode = node;
                     }
                     
                     if (dec instanceof TypedDeclaration) {
-                        TypedDeclaration typedDec = (TypedDeclaration) dec;
+                        TypedDeclaration typedDec = 
+                                (TypedDeclaration) dec;
                         FindDeclarationNodeVisitor fdv = 
-                                new FindDeclarationNodeVisitor(typedDec);
+                                new FindDeclarationNodeVisitor(
+                                        typedDec);
                         getRootNode(unit).visit(fdv);
-                        Tree.TypedDeclaration decNode = 
-                                (Tree.TypedDeclaration) fdv.getDeclarationNode();
-                        if (decNode!=null) {
-                            typeNode = decNode.getType();
-                            if (typeNode!=null) {
-                                t= ((Tree.Type) typeNode).getTypeModel();
+                        Tree.StatementOrArgument dn = 
+                                fdv.getDeclarationNode();
+                        if (dn instanceof Tree.TypedDeclaration) {
+                            Tree.TypedDeclaration decNode = 
+                                    (Tree.TypedDeclaration) dn;
+                            if (decNode!=null) {
+                                typeNode = decNode.getType();
+                                if (typeNode!=null) {
+                                    Tree.Type tn = 
+                                            (Tree.Type) 
+                                                typeNode;
+                                    t = tn.getTypeModel();
+                                }
                             }
                         }
                     }
                     
-                    //TODO: fix this condition to properly distinguish
-                    //      between a method reference and an invocation
+                    //TODO: fix this condition to properly 
+                    //      distinguish between a method 
+                    //      reference and an invocation
+                    Unit nu = node.getUnit();
                     if (dec instanceof Function && 
-                            node.getUnit().isCallableType(type)) {
-                        type = node.getUnit().getCallableReturnType(type);
+                            nu.isCallableType(type)) {
+                        type = nu.getCallableReturnType(type);
                     }
                     
-                    if (typeNode != null && !isTypeUnknown(type)) {
+                    if (typeNode != null && 
+                            !isTypeUnknown(type)) {
                         IFile file = getFile(unit);
-                        Tree.CompilationUnit rootNode = unit.getCompilationUnit();
-                        addChangeTypeProposal(typeNode, problem, 
-                                proposals, dec, type, file, rootNode);
+                        Tree.CompilationUnit rootNode = 
+                                unit.getCompilationUnit();
+                        addChangeTypeProposal(typeNode, 
+                                problem, proposals, dec, 
+                                type, file, rootNode);
                         if (t != null) {
                             Type newType = intersect ? 
-                                    intersectionType(t, type, unit.getUnit()) : 
-                                    unionType(t, type, unit.getUnit());
-                            if (!newType.isExactly(t) && !newType.isExactly(type)) {
-                                addChangeTypeProposal(typeNode, problem, 
-                                        proposals, dec, newType, file, rootNode);
+                                    intersectionType(t, type, u) : 
+                                    unionType(t, type, u);
+                            if (!newType.isExactly(t) && 
+                                    !newType.isExactly(type)) {
+                                addChangeTypeProposal(typeNode, 
+                                        problem, proposals, 
+                                        dec, newType, file, 
+                                        rootNode);
                             }
                         }
                     }
