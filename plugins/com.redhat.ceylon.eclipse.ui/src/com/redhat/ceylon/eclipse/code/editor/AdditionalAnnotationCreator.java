@@ -4,6 +4,7 @@ import static com.redhat.ceylon.compiler.typechecker.analyzer.AnalyzerUtil.getLa
 import static com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.addTaskAnnotation;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.Nodes.findScope;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
@@ -22,6 +23,7 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.ui.IEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -29,7 +31,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
@@ -60,7 +61,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     }
     
     @Override
-    public void update(CeylonParseController parseController, IProgressMonitor monitor) {
+    public void update(CeylonParseController parseController, 
+            IProgressMonitor monitor) {
         final CeylonParseController cpc = parseController;
         if (cpc.getStage().ordinal() >= getStage().ordinal()) {
             final Tree.CompilationUnit rootNode = cpc.getRootNode();
@@ -69,14 +71,18 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                 return;
             }
             
-            final IAnnotationModel model = editor.getDocumentProvider()
-                    .getAnnotationModel(editor.getEditorInput());
+            IEditorInput editorInput = 
+                    editor.getEditorInput();
+            final IAnnotationModel model =
+                    editor.getDocumentProvider()
+                        .getAnnotationModel(editorInput);
             if (model==null) {
                 return;
             }
             
             for (@SuppressWarnings("unchecked")
-            Iterator<Annotation> iter = model.getAnnotationIterator(); 
+                Iterator<Annotation> iter = 
+                        model.getAnnotationIterator(); 
                     iter.hasNext();) {
                 Annotation a = iter.next();
                 if (a instanceof RefinementAnnotation ||
@@ -165,10 +171,14 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             if (refinedDeclaration!=null &&
                     !declaration.equals(refinedDeclaration)) {
                 List<Declaration> directlyInheritedMembers = 
-                        getInterveningRefinements(declaration.getName(), signature,
+                        getInterveningRefinements(
+                                declaration.getName(), 
+                                signature,
                                 refinedDeclaration,
-                                (TypeDeclaration) declaration.getContainer(), 
-                                (TypeDeclaration) refinedDeclaration.getContainer());
+                                (TypeDeclaration) 
+                                    declaration.getContainer(), 
+                                (TypeDeclaration) 
+                                    refinedDeclaration.getContainer());
                 directlyInheritedMembers.remove(refinedDeclaration);
                 //TODO: do something for the case of
                 //      multiple intervening interfaces?
@@ -212,9 +222,11 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     class SelectionListener implements ISelectionChangedListener {
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
-            final CeylonParseController cpc = editor.getParseController();
+            CeylonParseController cpc = 
+                    editor.getParseController();
             if (cpc.getRootNode()==null) return;
-            Node node = Nodes.findScope(cpc.getRootNode(), (ITextSelection) event.getSelection());
+            Node node = findScope(cpc.getRootNode(), 
+                    (ITextSelection) event.getSelection());
             if (node!=null) {
                 editor.setHighlightRange(node.getStartIndex(), 
                         node.getStopIndex()-node.getStartIndex()+1, false);
@@ -222,8 +234,11 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             else {
                 editor.resetHighlightRange();
             }
-            IAnnotationModel model= editor.getDocumentProvider()
-                    .getAnnotationModel(editor.getEditorInput());
+            IEditorInput editorInput = 
+                    editor.getEditorInput();
+            IAnnotationModel model = 
+                    editor.getDocumentProvider()
+                        .getAnnotationModel(editorInput);
             if (model!=null) {
                 model.removeAnnotation(initializerAnnotation);
             }
@@ -241,23 +256,38 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     class InitializerVisitor extends Visitor {
         @Override
         public void visit(Tree.ClassDefinition that) {
-            if (that.getClassBody()==null||that.getIdentifier()==null) return;
-            createAnnotation(that, that.getClassBody(), that.getIdentifier().getText());
+            if (that.getClassBody()==null ||
+                    that.getIdentifier()==null) {
+                return;
+            }
+            createAnnotation(that, 
+                    that.getClassBody(), 
+                    that.getIdentifier().getText());
         }
         @Override
         public void visit(Tree.ObjectDefinition that) {
-            if (that.getClassBody()==null||that.getIdentifier()==null) return;
-            createAnnotation(that, that.getClassBody(), that.getIdentifier().getText());
+            if (that.getClassBody()==null ||
+                    that.getIdentifier()==null) {
+                return;
+            }
+            createAnnotation(that, 
+                    that.getClassBody(), 
+                    that.getIdentifier().getText());
         }
         private void createAnnotation(Node that, Tree.ClassBody body, String name) {
 //          int offset = editor.getSelection().getOffset();
 //          if (offset>that.getStartIndex()&&offset<that.getStopIndex()) {
-            Tree.Statement les = getLastExecutableStatement(body);
+            Tree.Statement les = 
+                    getLastExecutableStatement(body);
             if (les != null) {
                 int startIndex = body.getStartIndex() + 2;
                 int stopIndex = les.getStopIndex();
-                Position initializerPosition = new Position(startIndex, stopIndex - startIndex + 1);
-                initializerAnnotation = new CeylonInitializerAnnotation(name, initializerPosition, 1);
+                Position initializerPosition = 
+                        new Position(startIndex, 
+                                stopIndex - startIndex + 1);
+                initializerAnnotation = 
+                        new CeylonInitializerAnnotation(name, 
+                                initializerPosition, 1);
             }
 //          }
         }

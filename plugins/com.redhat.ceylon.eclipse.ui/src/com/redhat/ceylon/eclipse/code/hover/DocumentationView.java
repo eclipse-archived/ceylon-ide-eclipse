@@ -14,6 +14,7 @@ import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.swt.SWT;
@@ -49,8 +50,9 @@ import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 public class DocumentationView extends ViewPart {
     
-    private static final Image GOTO_IMAGE = CeylonPlugin.getInstance()
-            .getImageRegistry().get(GOTO);
+    private static final Image GOTO_IMAGE = 
+            CeylonPlugin.getInstance()
+                .getImageRegistry().get(GOTO);
     
     private static DocumentationView instance;
     
@@ -71,7 +73,9 @@ public class DocumentationView extends ViewPart {
     
     @Override
     public void createPartControl(Composite parent) {
-        IToolBarManager tbm = getViewSite().getActionBars().getToolBarManager();
+        IToolBarManager tbm = 
+                getViewSite().getActionBars()
+                    .getToolBarManager();
         back = new BackAction();
         back.setEnabled(false);
         tbm.add(back);
@@ -88,7 +92,8 @@ public class DocumentationView extends ViewPart {
                 String location = event.location;
                 //necessary for windows environment (fix for blank page)
                 //somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
-                if (!"about:blank".equals(location) && !location.startsWith("http:")) {
+                if (!"about:blank".equals(location) && 
+                        !location.startsWith("http:")) {
                     event.doit = false;
                     handleLink(location);
                 }                
@@ -113,7 +118,8 @@ public class DocumentationView extends ViewPart {
 
         updateWithCurrentEditor();
         
-        control.addVisibilityWindowListener(new VisibilityWindowListener() {
+        control.addVisibilityWindowListener(
+                new VisibilityWindowListener() {
             @Override
             public void show(WindowEvent event) {
                 updateWithCurrentEditor();
@@ -129,21 +135,27 @@ public class DocumentationView extends ViewPart {
             CeylonEditor editor = (CeylonEditor) part;
             IRegion selection = editor.getSelection();
             editor.getSelectionText();
-            update(editor, selection.getOffset(), selection.getLength());
+            update(editor, 
+                    selection.getOffset(), 
+                    selection.getLength());
         }
     }
     //TODO: big copy/paste from DocumentationHover.handleLink
     private void handleLink(String location) {
         if (location.startsWith("dec:")) {
-            Referenceable target = getLinkedModel(location, editor);
+            Referenceable target = 
+                    getLinkedModel(location, editor);
             if (target!=null) {
                 Navigation.gotoDeclaration(target);
             }
         }
         else if (location.startsWith("doc:")) {
-            Referenceable target = getLinkedModel(location, editor);
+            Referenceable target = 
+                    getLinkedModel(location, editor);
             if (target!=null) {
-                String html = getDocumentationHoverText(target, editor, null);
+                String html = 
+                        getDocumentationHoverText(target, 
+                                editor, null);
                 if (html!=null) {
                     control.setText(html);
                     info = new CeylonBrowserInput(info, target, html);
@@ -153,20 +165,28 @@ public class DocumentationView extends ViewPart {
             }
         }
         else if (location.startsWith("ref:")) {
-            Referenceable target = getLinkedModel(location, editor);
-            new FindReferencesAction(editor, (Declaration) target).run();
+            Referenceable target = 
+                    getLinkedModel(location, editor);
+            new FindReferencesAction(editor, 
+                    (Declaration) target).run();
         }
         else if (location.startsWith("sub:")) {
-            Referenceable target = getLinkedModel(location, editor);
-            new FindSubtypesAction(editor, (Declaration) target).run();
+            Referenceable target = 
+                    getLinkedModel(location, editor);
+            new FindSubtypesAction(editor, 
+                    (Declaration) target).run();
         }
         else if (location.startsWith("act:")) {
-            Referenceable target = getLinkedModel(location, editor);
-            new FindRefinementsAction(editor, (Declaration) target).run();
+            Referenceable target = 
+                    getLinkedModel(location, editor);
+            new FindRefinementsAction(editor, 
+                    (Declaration) target).run();
         }
         else if (location.startsWith("ass:")) {
-            Referenceable target = getLinkedModel(location, editor);
-            new FindAssignmentsAction(editor, (Declaration) target).run();
+            Referenceable target = 
+                    getLinkedModel(location, editor);
+            new FindAssignmentsAction(editor, 
+                    (Declaration) target).run();
         }
         /*else if (location.startsWith("stp:")) {
             CompilationUnit rn = editor.getParseController().getRootNode();
@@ -187,7 +207,8 @@ public class DocumentationView extends ViewPart {
     @Override
     public void setFocus() {}
     
-    public void update(CeylonEditor editor, int offset, int length) { 
+    public void update(CeylonEditor editor, 
+            int offset, int length) { 
         if (editor==null) {
             clear();
         }
@@ -195,7 +216,8 @@ public class DocumentationView extends ViewPart {
             Region hoverRegion = new Region(offset, length);
             String html = getHoverText(editor, hoverRegion);
             if (html!=null) {
-                if (info==null || !info.getHtml().equals(html)) {
+                if (info==null || 
+                        !info.getHtml().equals(html)) {
                     control.setText(html);
                     info = new CeylonBrowserInput(info, 
                             getModel(editor, hoverRegion), 
@@ -214,10 +236,14 @@ public class DocumentationView extends ViewPart {
 
     private void clear() {
         StringBuilder buffer = new StringBuilder();
-        HTMLPrinter.insertPageProlog(buffer, 0, HTML.getStyleSheet());
+        HTMLPrinter.insertPageProlog(buffer, 0, 
+                HTML.getStyleSheet());
         HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("information.gif").toExternalForm(), 
-                16, 16, "<i>Nothing selected in Ceylon editor.</i>", 20, 2);
+                HTML.fileUrl("information.gif")
+                    .toExternalForm(), 
+                16, 16, 
+                "<i>Nothing selected in Ceylon editor.</i>", 
+                20, 2);
 //            buffer.append("<p>Nothing selected.</p>");
         HTMLPrinter.addPageProlog(buffer);
         control.setText(buffer.toString());
@@ -237,7 +263,8 @@ public class DocumentationView extends ViewPart {
         
         public BackAction() {
             setText("Back");
-            ISharedImages images = getWorkbench().getSharedImages();
+            ISharedImages images = 
+                    getWorkbench().getSharedImages();
             setImageDescriptor(images.getImageDescriptor(IMG_TOOL_BACK));
             setDisabledImageDescriptor(images.getImageDescriptor(IMG_TOOL_BACK_DISABLED));
 
@@ -273,7 +300,8 @@ public class DocumentationView extends ViewPart {
         
         public ForwardAction() {
             setText("Forward");
-            ISharedImages images = getWorkbench().getSharedImages();
+            ISharedImages images = 
+                    getWorkbench().getSharedImages();
             setImageDescriptor(images.getImageDescriptor(IMG_TOOL_FORWARD));
             setDisabledImageDescriptor(images.getImageDescriptor(IMG_TOOL_FORWARD_DISABLED));
 
@@ -308,7 +336,11 @@ public class DocumentationView extends ViewPart {
     final class OpenDeclarationAction extends Action {
         public OpenDeclarationAction() {
             setText("Open Declaration");
-            this.setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.GOTO));
+            ImageDescriptor descriptor = 
+                    CeylonPlugin.getInstance()
+                        .getImageRegistry()
+                        .getDescriptor(CeylonResources.GOTO);
+            this.setImageDescriptor(descriptor);
         }
         @Override
         public void run() {

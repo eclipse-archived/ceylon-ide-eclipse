@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getEditorFont;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getHoverFont;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
-import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
-import static org.eclipse.jface.resource.JFaceResources.getFontRegistry;
 
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -25,7 +25,10 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
-public class CeylonInitializerAnnotation extends Annotation implements IAnnotationPresentation {
+import com.redhat.ceylon.eclipse.util.Highlights;
+
+public class CeylonInitializerAnnotation 
+        extends Annotation implements IAnnotationPresentation {
 
     private final Position initializerPosition;
     private final int depth;
@@ -35,21 +38,32 @@ public class CeylonInitializerAnnotation extends Annotation implements IAnnotati
         return styledString;
     }
 
+    static Font bold(Font font) {
+        FontData data = font.getFontData()[0];
+        return new Font(Display.getDefault(), 
+                new FontData(data.getName(), 
+                        data.getHeight(), 
+                        SWT.BOLD));
+    }
+    
     public CeylonInitializerAnnotation(String name, 
             Position initializerPosition, int depth) {
         this.initializerPosition = initializerPosition;
         this.depth = depth;
-        styledString.append("Initializer section of " + name, 
+        styledString.append("Initializer section of ", 
                 new Styler() {
             @Override
             public void applyStyles(TextStyle textStyle) {
-                FontData data = getFontRegistry()
-                        .getFontData(APPEARANCE_JAVADOC_FONT)[0];
-                textStyle.font = 
-                        new Font(Display.getDefault(), 
-                                new FontData(data.getName(), 
-                                        data.getHeight(), 
-                                        SWT.BOLD));
+                textStyle.font = bold(getHoverFont());
+            }
+
+        });
+        styledString.append(name, 
+                new Styler() {
+            @Override
+            public void applyStyles(TextStyle textStyle) {
+                Highlights.TYPE_ID_STYLER.applyStyles(textStyle);
+                textStyle.font = bold(getEditorFont());
             }
         });
         styledString.append("\nThe initial part of the body of a class is called the initializer "

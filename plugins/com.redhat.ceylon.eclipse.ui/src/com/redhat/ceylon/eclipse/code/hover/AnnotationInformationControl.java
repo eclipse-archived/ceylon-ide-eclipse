@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getEditorFont;
 import static com.redhat.ceylon.eclipse.util.Escaping.toInitialUppercase;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -20,6 +21,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -219,9 +221,11 @@ class AnnotationInformationControl
         layout.marginRight = 5;
         composite.setLayout(layout);
 
-        Annotation[] annotations = getAnnotationInfo()
-                .getAnnotationPositions().keySet()
-                .toArray(new Annotation[0]);
+        Annotation[] annotations = 
+                getAnnotationInfo()
+                    .getAnnotationPositions()
+                    .keySet()
+                    .toArray(new Annotation[0]);
         Arrays.sort(annotations, 
                 createAnnotationComparator());
         for (final Annotation annotation: annotations) {
@@ -269,6 +273,24 @@ class AnnotationInformationControl
                     public void widgetDefaultSelected(SelectionEvent e) {}
                 });
             }
+            /*else if (annotation instanceof 
+                        CeylonRangeIndicator) {
+                StyledText text = 
+                        new StyledText(composite, 
+                                SWT.MULTI | SWT.WRAP | 
+                                SWT.READ_ONLY);
+                text.setLayoutData(gd3);
+                String message = annotation.getText();
+                if (message!=null && !message.isEmpty()) {
+                    CeylonRangeIndicator cia = 
+                            (CeylonRangeIndicator) 
+                                annotation;
+                    StyledString styledString = 
+                            cia.getStyledString();
+                    text.setText(styledString.getString());
+                    text.setStyleRanges(styledString.getStyleRanges());
+                }
+            }*/
             else if (annotation instanceof 
                         CeylonInitializerAnnotation) {
                 StyledText text = 
@@ -300,7 +322,12 @@ class AnnotationInformationControl
                             Highlights.styleProposal(message, 
                                     true, true);
                     text.setText(styled.getString());
-                    text.setStyleRanges(styled.getStyleRanges());
+                    StyleRange[] styleRanges = 
+                            styled.getStyleRanges();
+                    for (StyleRange range: styleRanges) {
+                        range.font = getEditorFont();
+                    }
+                    text.setStyleRanges(styleRanges);
                 }
             }
         }

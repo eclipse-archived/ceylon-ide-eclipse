@@ -216,7 +216,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         setRangeIndicator(new CeylonRangeIndicator());
         configureInsertMode(SMART_INSERT, true);
         setInsertMode(SMART_INSERT);
-        problemMarkerManager= new ProblemMarkerManager();
+        problemMarkerManager = new ProblemMarkerManager();
         parseController = new CeylonParseController();
     }
     

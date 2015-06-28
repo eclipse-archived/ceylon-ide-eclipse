@@ -17,10 +17,25 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
-public class CeylonRangeIndicator extends Annotation implements IAnnotationPresentation {
+public class CeylonRangeIndicator 
+        extends Annotation implements IAnnotationPresentation {
     
+    /*private StyledString styledString = new StyledString();
+    
+    public StyledString getStyledString() {
+        return styledString;
+    }*/
+
     CeylonRangeIndicator() {
-        setText("<b>Current declaration</b>");
+        /*styledString.append("Current declaration body", 
+                new Styler() {
+            @Override
+            public void applyStyles(TextStyle textStyle) {
+                textStyle.font = bold(getHoverFont());
+            }
+
+        });
+        setText(styledString.getString());*/
     }
 
     @Override
@@ -47,7 +62,8 @@ public class CeylonRangeIndicator extends Annotation implements IAnnotationPrese
             return;
         }
 
-        Color color = getCurrentThemeColor("rangeIndicatorAnnotation");
+        Color color = 
+                getCurrentThemeColor("rangeIndicatorAnnotation");
         gc.setBackground(color);
         
         Image patternImage = getPatternImage(canvas, color);
@@ -65,13 +81,21 @@ public class CeylonRangeIndicator extends Annotation implements IAnnotationPrese
     public static Image getPatternImage(Control control, Color color) {
         Point size = control.getSize();
         Display display = control.getDisplay();
-        Color bgColor = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        Color bgColor = 
+                Display.getCurrent()
+                    .getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
         RGB rgbs[] = new RGB[] {
-                new RGB(color.getRed(), color.getGreen(), color.getBlue()),
-                new RGB(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue()) };
+                new RGB(color.getRed(), 
+                        color.getGreen(), 
+                        color.getBlue()),
+                new RGB(bgColor.getRed(), 
+                        bgColor.getGreen(), 
+                        bgColor.getBlue()) };
 
-        ImageData imageData = new ImageData(size.x, size.y, 1, new PaletteData(rgbs));
+        ImageData imageData = 
+                new ImageData(size.x, size.y, 1, 
+                        new PaletteData(rgbs));
 
         for (int y = 0; y < size.y; y++) {
             for (int x = 0; x < size.x; x++) {

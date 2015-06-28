@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+
 import java.util.Iterator;
 
 import org.eclipse.core.resources.IMarker;
@@ -10,7 +12,6 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 
 /**
@@ -30,7 +31,8 @@ public class AnnotationIterator implements Iterator<Annotation> {
     public AnnotationIterator(Iterator<Annotation> parent,
             boolean includeRefinementAnnotations) {
         this.iterator = parent;
-        this.includeRefinementAnnotations = includeRefinementAnnotations;
+        this.includeRefinementAnnotations = 
+                includeRefinementAnnotations;
         skip();
     }
 
@@ -41,8 +43,9 @@ public class AnnotationIterator implements Iterator<Annotation> {
                 //TODO: rethink this condition!
                 if (next instanceof CeylonAnnotation || 
                     includeRefinementAnnotations &&
-                        (next instanceof RefinementAnnotation || next instanceof CeylonInitializerAnnotation) ||
-                    isProblemMarkerAnnotation(next)) {
+                        (next instanceof RefinementAnnotation || 
+                         next instanceof CeylonInitializerAnnotation) ||
+                         isProblemMarkerAnnotation(next)) {
                     nextAnnotation = next;
                     return;
                 }
@@ -51,15 +54,22 @@ public class AnnotationIterator implements Iterator<Annotation> {
         nextAnnotation = null;
     }
 
-    private static boolean isProblemMarkerAnnotation(Annotation annotation) {
-        if (!(annotation instanceof MarkerAnnotation))
-            return false;
-        try {
-            MarkerAnnotation ma = (MarkerAnnotation) annotation;
-            return ma.getMarker().isSubtypeOf(IMarker.PROBLEM) &&
-                    !ma.getMarker().getType().equals(CeylonBuilder.PROBLEM_MARKER_ID);
-        } 
-        catch (CoreException e) {
+    private static boolean isProblemMarkerAnnotation(
+            Annotation annotation) {
+        if (annotation instanceof MarkerAnnotation) {
+            try {
+                MarkerAnnotation ma = 
+                        (MarkerAnnotation) annotation;
+                return ma.getMarker()
+                            .isSubtypeOf(IMarker.PROBLEM) &&
+                        !ma.getMarker().getType()
+                            .equals(PROBLEM_MARKER_ID);
+            } 
+            catch (CoreException e) {
+                return false;
+            }
+        }
+        else {
             return false;
         }
     }
