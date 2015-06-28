@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.html;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getEditorFont;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getHoverFont;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
 import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
@@ -30,16 +32,15 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.osgi.framework.Bundle;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Escaping;
 
 public class HTML {
 
@@ -50,7 +51,8 @@ public class HTML {
 
     public static URL fileUrl(String icon) {
         try {
-            Bundle bundle = CeylonPlugin.getInstance().getBundle();
+            Bundle bundle = 
+                    CeylonPlugin.getInstance().getBundle();
             return FileLocator.toFileURL(FileLocator.find(bundle, 
                     new Path("icons/").append(icon), null));
         } 
@@ -61,7 +63,8 @@ public class HTML {
     }
 
     /**
-     * Returns the Javadoc hover style sheet with the current Javadoc font from the preferences.
+     * Returns the Javadoc hover style sheet with the current 
+     * Javadoc font from the preferences.
      * @return the updated style sheet
      * @since 3.4
      */
@@ -70,27 +73,35 @@ public class HTML {
             fgStyleSheet = loadStyleSheet();
         }
         final StringBuffer monospaceSize = new StringBuffer();
-        final Font editorFont = CeylonEditor.getEditorFont();
-        final Font hoverFont = CeylonEditor.getHoverFont();
-        final FontData monospaceFontData = editorFont.getFontData()[0];
-        final FontData textFontData = hoverFont.getFontData()[0];
+        final Font editorFont = getEditorFont();
+        final Font hoverFont = getHoverFont();
+        final FontData monospaceFontData = 
+                editorFont.getFontData()[0];
+        final FontData textFontData = 
+                hoverFont.getFontData()[0];
         final Display display = Display.getDefault();
         display.syncExec(new Runnable() {
             @Override
             public void run() {
-                Shell activeShell=display.getActiveShell();
+                Shell activeShell = display.getActiveShell();
                 //TODO: how can we make sure this is never called
                 //      without a Shell at startup time
                 if (activeShell!=null) {
                     GC gc = new GC(activeShell);
                     Font font = gc.getFont();
                     gc.setFont(hoverFont);
-                    int hoverFontHeight = gc.getFontMetrics().getAscent();
+                    int hoverFontHeight = 
+                            gc.getFontMetrics()
+                                .getAscent();
                     gc.setFont(editorFont);
-                    int monospaceFontHeight = gc.getFontMetrics().getAscent();
+                    int monospaceFontHeight = 
+                            gc.getFontMetrics()
+                                .getAscent();
                     gc.setFont(font);
-                    int ratio = 100 * monospaceFontData.getHeight() * hoverFontHeight 
-                            / monospaceFontHeight / textFontData.getHeight();
+                    int ratio = 100 * 
+                            monospaceFontData.getHeight() * 
+                            hoverFontHeight / monospaceFontHeight / 
+                            textFontData.getHeight();
                     monospaceSize.append(ratio).append("%");
                 }
             }

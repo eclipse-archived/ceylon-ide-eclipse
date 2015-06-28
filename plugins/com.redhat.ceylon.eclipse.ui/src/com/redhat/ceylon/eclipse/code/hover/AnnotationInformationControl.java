@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getEditorFont;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getHoverFont;
 import static com.redhat.ceylon.eclipse.util.Escaping.toInitialUppercase;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -36,6 +37,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -44,6 +47,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.ScrollBar;
@@ -324,8 +328,36 @@ class AnnotationInformationControl
                     text.setText(styled.getString());
                     StyleRange[] styleRanges = 
                             styled.getStyleRanges();
-                    for (StyleRange range: styleRanges) {
-                        range.font = getEditorFont();
+                    Font editorFont = getEditorFont();
+                    Font hoverFont = getHoverFont();
+                    FontData monospaceFontData = 
+                            editorFont.getFontData()[0];
+                    Display display = Display.getDefault();
+                    Shell activeShell = 
+                            display.getActiveShell();
+                    if (activeShell!=null) {
+                        GC gc = new GC(activeShell);
+                        Font font = gc.getFont();
+                        gc.setFont(hoverFont);
+                        int hoverFontHeight = 
+                                gc.getFontMetrics()
+                                    .getAscent();
+                        gc.setFont(editorFont);
+                        int monospaceFontHeight = 
+                                gc.getFontMetrics()
+                                    .getAscent();
+                        gc.setFont(font);
+                        int height = 
+                                monospaceFontData.getHeight() * 
+                                hoverFontHeight / monospaceFontHeight;
+                        Font result = 
+                                new Font(display, 
+                                    monospaceFontData.getName(), 
+                                    height, 
+                                    monospaceFontData.getStyle());
+                        for (StyleRange range: styleRanges) {
+                            range.font = result;
+                        }
                     }
                     text.setStyleRanges(styleRanges);
                 }
