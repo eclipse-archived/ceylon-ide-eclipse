@@ -11,7 +11,6 @@ import java.util.Comparator;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IRewriteTarget;
@@ -182,7 +181,7 @@ class AnnotationInformationControl
         setColorAndFont(fParent, 
                 fParent.getForeground(), 
                 fParent.getBackground(), 
-                CeylonEditor.getHoverFont());
+                getHoverFont());
 
         ICompletionProposal[] proposals = 
                 getAnnotationInfo().getCompletionProposals();
@@ -408,7 +407,7 @@ class AnnotationInformationControl
         setColorAndFont(composite, 
                 parent.getForeground(), 
                 parent.getBackground(), 
-                CeylonEditor.getHoverFont());
+                getHoverFont());
         createCompletionProposalsList(composite, proposals);
     }
 
@@ -453,7 +452,7 @@ class AnnotationInformationControl
         setColorAndFont(scrolledComposite, 
                 parent.getForeground(), 
                 parent.getBackground(), 
-                JFaceResources.getDialogFont());
+                getHoverFont());
 
         Point contentSize = 
                 composite.computeSize(
@@ -565,6 +564,7 @@ class AnnotationInformationControl
         GridData gd2 = 
                 new GridData(SWT.BEGINNING, SWT.CENTER, 
                         false, false);
+        proposalLink.setFont(getHoverFont());
         proposalLink.setLayoutData(gd2);
         proposalLink.setText("<a>" + 
                 proposal.getDisplayString()
