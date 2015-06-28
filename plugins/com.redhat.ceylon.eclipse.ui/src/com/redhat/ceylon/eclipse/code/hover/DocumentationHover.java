@@ -1899,9 +1899,9 @@ public class DocumentationHover extends SourceInfoHover {
         else {
             if (dec.isClassOrInterfaceMember()) {
                 ClassOrInterface outer = 
-                        (ClassOrInterface) dec.getContainer();
-                Type qt = 
-                        getQualifyingType(node, outer);
+                        (ClassOrInterface) 
+                            dec.getContainer();
+                Type qt = getQualifyingType(node, outer);
                 if (qt!=null) {
                     String desc;
                     if (dec instanceof Constructor) {
@@ -1925,7 +1925,7 @@ public class DocumentationHover extends SourceInfoHover {
                             desc = "Static method of";
                         }
                         else {
-                            desc = "Function of";
+                            desc = "Method of";
                         }
                     }
                     else {
@@ -1937,7 +1937,8 @@ public class DocumentationHover extends SourceInfoHover {
                         }
                     }
                     String typeDesc;
-                    if (qt.getDeclaration().getName().startsWith("anonymous#")) {
+                    if (qt.getDeclaration().getName()
+                            .startsWith("anonymous#")) {
                         typeDesc = " anonymous class";
                     }
                     else {
