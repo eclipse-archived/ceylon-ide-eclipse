@@ -182,9 +182,14 @@ public class Highlights  {
     			null, null);
     }
     
+    private static final Pattern path = 
+            Pattern.compile("\\b\\p{Ll}+(\\.\\p{Ll}+)+\\b");
+    
     public static void styleProposal(StyledString result, 
             String string, boolean qualifiedNameIsPath,
             String prefix, Font font) {
+        qualifiedNameIsPath &=
+                path.matcher(string).find();
         StringTokenizer tokens = 
                 new StringTokenizer(string, 
                         qualifiedNameIsPath ? 
@@ -195,7 +200,7 @@ public class Highlights  {
         boolean qualified = false;
         boolean matchHighlighting = prefix!=null; 
         while (tokens.hasMoreTokens()) {
-            String token = tokens.nextToken();
+            final String token = tokens.nextToken();
             if (token.equals("\"")) {
                 version = !version;
                 result.append(token, STRING_STYLER);
