@@ -332,12 +332,12 @@ public class JDTModuleManager extends LazyModuleManager {
     @Override
     public boolean supportsBackend(Backend backend) {
         if (backend == Backend.Java)
-            return CeylonBuilder.compileToJava(javaProject.getProject());
+            return javaProject != null && CeylonBuilder.compileToJava(javaProject.getProject());
         if (backend == Backend.JavaScript)
-            return CeylonBuilder.compileToJs(javaProject.getProject());
+            return javaProject != null && CeylonBuilder.compileToJs(javaProject.getProject());
         // HACK As long as the JS ModelLoader can't deal with native "stitched" files we need this
         if (backend == Backend.None)
-            return !CeylonBuilder.compileToJava(javaProject.getProject()) && CeylonBuilder.compileToJs(javaProject.getProject());
+            return javaProject == null || !CeylonBuilder.compileToJava(javaProject.getProject()) && CeylonBuilder.compileToJs(javaProject.getProject());
         return false;
     }
 }
