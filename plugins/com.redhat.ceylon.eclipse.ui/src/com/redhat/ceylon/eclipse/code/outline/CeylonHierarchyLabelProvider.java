@@ -106,7 +106,9 @@ abstract class CeylonHierarchyLabelProvider
             StyledString styledText = getStyledText(n);
             cell.setText(styledText.toString());
             cell.setStyleRanges(styledText.getStyleRanges());
-            cell.setImage(getImageForDeclaration(getDisplayedDeclaration(n)));
+            cell.setImage(getImageForDeclaration(
+                    getDisplayedDeclaration(n),
+                    n.isFocus()));
         }
         super.update(cell);
     }

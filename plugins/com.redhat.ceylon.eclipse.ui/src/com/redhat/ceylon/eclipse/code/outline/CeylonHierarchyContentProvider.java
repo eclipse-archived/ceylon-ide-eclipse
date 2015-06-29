@@ -33,8 +33,8 @@ import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -314,17 +314,21 @@ public final class CeylonHierarchyContentProvider
             monitor.beginTask("Building hierarchy", 100000);
             
             Unit unit = declaration.getUnit();
-            Module currentModule = unit.getPackage().getModule();
+            Module currentModule = 
+                    unit.getPackage().getModule();
             String name = currentModule.getNameAsString();
             String version = currentModule.getVersion();
             Set<Module> allModules = new HashSet<Module>();
             allModules.add(currentModule);
             for (TypeChecker typeChecker: getTypeCheckers()) {
-                JDTModelLoader modelLoader = getModelLoader(typeChecker);
-                Module module = modelLoader.getLoadedModule(name, version);
+                JDTModelLoader modelLoader = 
+                        getModelLoader(typeChecker);
+                Module module = 
+                        modelLoader.getLoadedModule(name, version);
                 if (module!=null) { //TODO: check this with David ... could we use JDTModule.getReferencingModules()?
                     ModuleSourceMapper moduleSourceMapper = 
-                            typeChecker.getPhasedUnits().getModuleSourceMapper();
+                            typeChecker.getPhasedUnits()
+                                .getModuleSourceMapper();
                     allModules.addAll(moduleSourceMapper.getCompiledModules());
                 }
             }
@@ -334,10 +338,14 @@ public final class CeylonHierarchyContentProvider
             Set<Package> packages = new HashSet<Package>();
             int ams = allModules.size();
             for (Module module: allModules) {
-                for (Package pack: module.getAllReachablePackages()) {
-                    String packageModuleName = pack.getModule().getNameAsString();
-                    if ((!excludeJDK || !JDKUtils.isJDKModule(packageModuleName)) && 
-                            (!excludeOracleJDK || !JDKUtils.isOracleJDKModule(packageModuleName))) {
+                for (Package pack: 
+                        module.getAllReachablePackages()) {
+                    String packageModuleName = 
+                            pack.getModule().getNameAsString();
+                    if ((!excludeJDK || 
+                            !JDKUtils.isJDKModule(packageModuleName)) && 
+                        (!excludeOracleJDK || 
+                            !JDKUtils.isOracleJDKModule(packageModuleName))) {
                         packages.add(pack);
                     }
                 }
@@ -345,8 +353,10 @@ public final class CeylonHierarchyContentProvider
                 if (monitor.isCanceled()) return;
             }
     
-            subtypesOfAllTypes.put(declaration, 
-                    getSubtypePathNode(declaration));
+            CeylonHierarchyNode node = 
+                    getSubtypePathNode(declaration);
+            node.setFocus(true);
+            subtypesOfAllTypes.put(declaration, node);
 
             Declaration root = declaration;
             depthInHierarchy = 0;
@@ -486,7 +496,9 @@ public final class CeylonHierarchyContentProvider
 
             hierarchyRoot = getSubtypePathNode(root);
             subtypesRoot = getSubtypeHierarchyNode(declaration);
+            subtypesRoot.setFocus(true);
             supertypesRoot = getSupertypeHierarchyNode(declaration);
+            supertypesRoot.setFocus(true);
             
             if (monitor.isCanceled()) return;
             

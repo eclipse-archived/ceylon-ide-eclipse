@@ -125,6 +125,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private final static int ALIAS = 1 << 14;
     private final static int DEPRECATED = 1 << 15;
     private final static int NATIVE = 1 << 16;
+    final static int FOCUS = 1 << 17;
     
     static final DecorationDescriptor[] DECORATIONS = 
             new DecorationDescriptor[] {
@@ -147,6 +148,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         new DecorationDescriptor(ALIAS, ALIAS_IMAGE, TOP_LEFT),
         
         new DecorationDescriptor(DEPRECATED, DEPRECATED_IMAGE, IDecoration.UNDERLAY),
+        new DecorationDescriptor(FOCUS, FOCUS_IMAGE, IDecoration.TOP_LEFT)
     };
 
     public CeylonLabelProvider() {
@@ -158,11 +160,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     }
     
     private static Image getDecoratedImage(Object element, 
-            String key, boolean smallSize) {
+            String key, boolean smallSize, boolean focus) {
         if (key==null) return null;
-        return getDecoratedImage(key, 
-                getDecorationAttributes(element), 
-                smallSize);
+        int attributes = getDecorationAttributes(element);
+        if (focus) attributes |= FOCUS;
+        return getDecoratedImage(key, attributes, smallSize);
     }
 
     public static Image getDecoratedImage(String key, 
@@ -172,8 +174,9 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (descriptor==null) {
             return null;
         }
-        String decoratedKey = key+'#'+decorationAttributes + 
-                (smallSize ? "#small" : "");
+        String decoratedKey = 
+                key+'#'+decorationAttributes + 
+                    (smallSize ? "#small" : "");
         Image image = imageRegistry.get(decoratedKey);
         if (image==null) {
             imageRegistry.put(decoratedKey, 
@@ -189,7 +192,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public Image getImage(Object element) {
         return getDecoratedImage(element, 
                 getImageKey(element), 
-                smallSize);
+                smallSize, false);
     }
     
     protected String getImageKey(Object element) {
@@ -392,15 +395,24 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
     }
     
-    public static Image getImageForDeclaration(Declaration element) {
+    public static Image getImageForDeclaration(
+            Declaration element) {
         return getDecoratedImage(element, 
-                getImageKeyForDeclaration(element), false);
+                getImageKeyForDeclaration(element), 
+                false, false);
+    }
+    
+    public static Image getImageForDeclaration(
+            Declaration element, boolean focus) {
+        return getDecoratedImage(element, 
+                getImageKeyForDeclaration(element), 
+                false, focus);
     }
     
     public static Image getImageForFile(IFile file) {
         return getDecoratedImage(file, 
                 getImageKeyForFile(file), 
-                false);
+                false, false);
     }
     
     static String getImageKeyForDeclaration(Declaration d) {
@@ -1389,7 +1401,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image getRefinementIcon(Declaration dec) {
         return getDecoratedImage(null, 
                 getRefinementIconKey(dec), 
-                false);
+                false, false);
     }
     
 }

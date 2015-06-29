@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -18,7 +19,8 @@ import org.eclipse.core.internal.registry.ExtensionRegistry;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.ContributorFactoryOSGi;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IAdaptable;
@@ -62,10 +64,10 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     public static final String EMBEDDED_REPO_PLUGIN_ID = "com.redhat.ceylon.dist.repo";
     public static final String LANGUAGE_ID = "ceylon";
     public static final String EDITOR_ID = PLUGIN_ID + ".editor";
-    private static final String[] MODULE_LAUNCHER_LIBRARIES = new String[]{ 
+    private static final String[] MODULE_LAUNCHER_LIBRARIES = new String[] { 
         "ceylon.bootstrap-"+Versions.CEYLON_VERSION_NUMBER+".jar" 
     };
-    private static final String[] RUNTIME_LIBRARIES = new String[]{
+    private static final String[] RUNTIME_LIBRARIES = new String[] {
         "ceylon.bootstrap-"+Versions.CEYLON_VERSION_NUMBER+".car",
         "com.redhat.ceylon.compiler.java-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
@@ -74,7 +76,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         "com.redhat.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "org.jboss.modules-1.3.3.Final.jar",
     };
-    private static final String[] COMPILETIME_LIBRARIES = new String[]{
+    private static final String[] COMPILETIME_LIBRARIES = new String[] {
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
     };
@@ -122,17 +124,26 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     }
 
     @Override
-    public void start(BundleContext context) throws Exception {
-        javaSourceArchiveCacheDirectory = new File(getStateLocation().toFile(), "JavaSourceArchiveCache");
+    public void start(BundleContext context) 
+            throws Exception {
+        javaSourceArchiveCacheDirectory = 
+                new File(getStateLocation().toFile(), 
+                        "JavaSourceArchiveCache");
         javaSourceArchiveCacheDirectory.mkdirs();
-        String ceylonRepositoryProperty = System.getProperty("ceylon.repo", "");
-        ceylonRepository = getCeylonPluginRepository(ceylonRepositoryProperty);
+        String ceylonRepositoryProperty = 
+                System.getProperty("ceylon.repo", "");
+        ceylonRepository = 
+                getCeylonPluginRepository(
+                        ceylonRepositoryProperty);
         super.start(context);
         this.bundleContext = context;
         addResourceFilterPreference();
         
-        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            if (project.isAccessible() && CeylonNature.isEnabled(project)) {
+        final IWorkspace workspace = getWorkspace();
+        IWorkspaceRoot root = workspace.getRoot();
+        for (IProject project: root.getProjects()) {
+            if (project.isAccessible() && 
+                    CeylonNature.isEnabled(project)) {
                 ceylonModel().addProject(project);
             }
         }
@@ -140,28 +151,32 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         registerProjectOpenCloseListener();
         CeylonEncodingSynchronizer.getInstance().install();
 
-        Job registerCeylonModules = new Job("Load the Ceylon Metamodel for plugin dependencies") {
+        Job registerCeylonModules = 
+                new Job("Load the Ceylon Metamodel for plugin dependencies") {
             protected IStatus run(IProgressMonitor monitor) {
                 Activator.loadBundleAsModule(bundleContext.getBundle());
                 return Status.OK_STATUS;
             };
         };
-        registerCeylonModules.setRule(ResourcesPlugin.getWorkspace().getRoot());
+        registerCeylonModules.setRule(root);
         registerCeylonModules.schedule();
         
-        Job refreshExternalSourceArchiveManager = new Job("Refresh External Ceylon Source Archives") {
+        Job refreshExternalSourceArchiveManager = 
+                new Job("Refresh External Ceylon Source Archives") {
             protected IStatus run(IProgressMonitor monitor) {
-                ExternalSourceArchiveManager esam = ExternalSourceArchiveManager.getExternalSourceArchiveManager();
+                ExternalSourceArchiveManager esam = 
+                        getExternalSourceArchiveManager();
                 esam.initialize();
-                ResourcesPlugin.getWorkspace().addResourceChangeListener(esam);
+                workspace.addResourceChangeListener(esam);
                 return Status.OK_STATUS;
             };
         };
-        refreshExternalSourceArchiveManager.setRule(ResourcesPlugin.getWorkspace().getRoot());
+        refreshExternalSourceArchiveManager.setRule(root);
         refreshExternalSourceArchiveManager.schedule();
         
         CeylonDebugOptionsManager.getDefault().startup();
-        InputStream contributionStream = new ByteArrayInputStream(new String(
+        InputStream contributionStream = 
+                new ByteArrayInputStream(new String(
                 "<plugin>\n" +
                 "<extension point=\"org.eclipse.wst.xml.core.catalogContributions\">\n" +
                 "  <catalogContribution>\n" +
@@ -173,10 +188,17 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                 "</plugin>").getBytes("ASCII"));
 
         IExtensionRegistry reg = RegistryFactory.getRegistry();
-        Object key = ((ExtensionRegistry) reg).getTemporaryUserToken();
-        IContributor contributor = ContributorFactoryOSGi.createContributor(context.getBundle());
+        ExtensionRegistry er = (ExtensionRegistry) reg;
+        Object key = er.getTemporaryUserToken();
+        IContributor contributor = 
+                ContributorFactoryOSGi.createContributor(
+                        context.getBundle());
                 
-        RegistryFactory.getRegistry().addContribution(contributionStream, contributor, false, PLUGIN_ID + ".xmlCatalogContribution", null, key);
+        RegistryFactory.getRegistry()
+            .addContribution(contributionStream, 
+                    contributor, false, 
+                    PLUGIN_ID + ".xmlCatalogContribution", 
+                    null, key);
     }
     
     @Override
@@ -189,22 +211,29 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         FileUtil.deleteQuietly(getJavaSourceArchiveCacheDirectory());
     }
 
-    private void addResourceFilterPreference() throws BackingStoreException {
+    private void addResourceFilterPreference() 
+            throws BackingStoreException {
         new Job("Add Resource Filter for Ceylon projects") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                IEclipsePreferences instancePreferences = InstanceScope.INSTANCE
-                        .getNode(JavaCore.PLUGIN_ID);
+                IEclipsePreferences instancePreferences = 
+                        InstanceScope.INSTANCE
+                            .getNode(JavaCore.PLUGIN_ID);
                 /*IEclipsePreferences defaultPreferences = DefaultScope.INSTANCE
                         .getNode(JavaCore.PLUGIN_ID);*/
-                String filter = instancePreferences.get(CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, "");
+                String filter = 
+                        instancePreferences.get(
+                                CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, 
+                                "");
                 if (filter.isEmpty()) {
                     filter = "*.launch, *.ceylon";
                 }
                 else if (!filter.contains("*.ceylon")) {
                     filter += ", *.ceylon";
                 }
-                instancePreferences.put(CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, filter);
+                instancePreferences.put(
+                        CORE_JAVA_BUILD_RESOURCE_COPY_FILTER, 
+                        filter);
                 try {
                     instancePreferences.flush();
                 } 
@@ -219,7 +248,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
     
     /**
-     * - If the property is not empty, return the corresponding file
+     * - If the property is not empty, return the 
+     *   corresponding file
      * <br>
      * - Else return the internal repo folder
      * 
@@ -227,10 +257,12 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
      * @return
      * 
      */
-    public static File getCeylonPluginRepository(String ceylonRepositoryProperty) {
+    public static File getCeylonPluginRepository(
+            String ceylonRepositoryProperty) {
         File ceylonRepository=null;
         if (!"".equals(ceylonRepositoryProperty)) {
-            File ceylonRepositoryPath = new File(ceylonRepositoryProperty);
+            File ceylonRepositoryPath = 
+                    new File(ceylonRepositoryProperty);
             if (ceylonRepositoryPath.exists()) {
                 ceylonRepository = ceylonRepositoryPath;
             }
@@ -243,10 +275,13 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                     bundle = Platform.getBundle(DIST_PLUGIN_ID);
                     path = new Path("embeddedRepository").append(path);
                 }
-                URL eclipseUrl = FileLocator.find(bundle, path, null);
-                URL fileURL = FileLocator.resolve(eclipseUrl);
+                URL eclipseUrl = 
+                        FileLocator.find(bundle, path, null);
+                URL fileURL = 
+                        FileLocator.resolve(eclipseUrl);
                 String urlPath = fileURL.getPath();
-                URI fileURI = new URI("file", null, urlPath, null);
+                URI fileURI = 
+                        new URI("file", null, urlPath, null);
                 ceylonRepository = new File(fileURI);
             }
             catch (Exception e) {
@@ -257,14 +292,18 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     }
 
     /**
-     * Returns the list of jars in the bundled system repo that are required by the ceylon.language module at runtime
+     * Returns the list of jars in the bundled system repo 
+     * that are required by the ceylon.language module at 
+     * runtime
      */
     public static List<String> getRuntimeRequiredJars(){
         return getRequiredJars(RUNTIME_LIBRARIES);
     }
 
     /**
-     * Returns the list of jars in the bundled system repo that are required by the ceylon.language module at compiletime
+     * Returns the list of jars in the bundled system repo 
+     * that are required by the ceylon.language module at 
+     * compiletime
      */
     public static List<String> getCompiletimeRequiredJars(){
         return getRequiredJars(COMPILETIME_LIBRARIES);
@@ -277,16 +316,24 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         return getRequiredJars(MODULE_LAUNCHER_LIBRARIES);
     }
 
-    private static List<String> getRequiredJars(String[] libraries){
-        File repoDir = getCeylonPluginRepository(System.getProperty("ceylon.repo", ""));
+    private static List<String> getRequiredJars(String[] libraries) {
+        File repoDir = 
+                getCeylonPluginRepository(
+                        System.getProperty("ceylon.repo", ""));
         try{
-            List<String> jars = new ArrayList<String>(libraries.length);
+            List<String> jars = 
+                    new ArrayList<String>
+                        (libraries.length);
             for(String jar : libraries){
-                File libDir = new File(repoDir, getRepoFolder(jar));
+                File libDir = 
+                        new File(repoDir, getRepoFolder(jar));
                 if( !libDir.exists() ) {
                     System.out.println("WARNING directory doesn't exist: " + libDir);
                 }
-                jars.add(new File(libDir, jar).getAbsolutePath());
+                String path = 
+                        new File(libDir, jar)
+                            .getAbsolutePath();
+                jars.add(path);
             }
             return jars;
         } catch (Exception x) {
@@ -428,6 +475,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(ENUM_IMAGE, image(ENUM_IMAGE));
         reg.put(ALIAS_IMAGE, image(ALIAS_IMAGE));
         reg.put(DEPRECATED_IMAGE, image(DEPRECATED_IMAGE));
+        reg.put(FOCUS_IMAGE, image(FOCUS_IMAGE));
         
         reg.put(PROJECT_MODE, image("prj_mode.png"));
         reg.put(PACKAGE_MODE, image("package_mode.png"));
@@ -455,15 +503,20 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     }
     
     private void registerProjectOpenCloseListener() {
-         getWorkspace().addResourceChangeListener(projectOpenCloseListener, 
-                IResourceChangeEvent.POST_CHANGE);
+         getWorkspace()
+             .addResourceChangeListener(
+                     projectOpenCloseListener, 
+                     IResourceChangeEvent.POST_CHANGE);
     }
 
     private void unregisterProjectOpenCloseListener() {
-          getWorkspace().removeResourceChangeListener(projectOpenCloseListener);
+          getWorkspace()
+              .removeResourceChangeListener(
+                      projectOpenCloseListener);
     }
 
-    IResourceChangeListener projectOpenCloseListener = new ProjectChangeListener();
+    IResourceChangeListener projectOpenCloseListener = 
+            new ProjectChangeListener();
     private File javaSourceArchiveCacheDirectory;
     
     public BundleContext getBundleContext() {
@@ -483,10 +536,13 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     public static Object adapt(Object object, Class<?> type) {
         if (type.isInstance(object)) {
             return object;
-        } else if (object instanceof IAdaptable) {
-            return ((IAdaptable) object).getAdapter(type);
         }
-        return Platform.getAdapterManager().getAdapter(object, type);
+        else if (object instanceof IAdaptable) {
+            IAdaptable adaptable = (IAdaptable) object;
+            return adaptable.getAdapter(type);
+        }
+        return Platform.getAdapterManager()
+                .getAdapter(object, type);
     }
 
     public FontRegistry getFontRegistry() {

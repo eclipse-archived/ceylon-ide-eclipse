@@ -2,8 +2,8 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import java.util.Arrays;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 class CeylonHierarchyNode 
         implements Comparable<CeylonHierarchyNode> {
@@ -17,6 +17,8 @@ class CeylonHierarchyNode
     
     private CeylonHierarchyNode[] children = 
             new CeylonHierarchyNode[0];
+
+    private boolean focus;
     
     public CeylonHierarchyNode(Declaration declaration) {
         proxy = new ModelProxy(declaration);
@@ -110,6 +112,14 @@ class CeylonHierarchyNode
                         .compareTo(node.proxy.getQualifiedName());
             }
         }
+    }
+
+    public boolean isFocus() {
+        return focus;
+    }
+    
+    void setFocus(boolean focus) {
+        this.focus = focus;
     }
     
 }
