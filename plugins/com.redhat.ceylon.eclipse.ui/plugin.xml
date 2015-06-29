@@ -2500,7 +2500,7 @@
     <fontDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.editorFont" 
-        label="Ceylon Editor Text Font"
+        label="Editor Text Font"
         defaultsTo="org.eclipse.jface.textfont">
         <description>
             Font for displaying code in the Ceylon editor and documentation hover
@@ -2509,7 +2509,7 @@
     <fontDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.hoverFont" 
-        label="Ceylon Hover Text Font"
+        label="Hover Text Font"
         defaultsTo="org.eclipse.jface.dialogfont">
         <description>
             Font for displaying text in the Ceylon documentation hover
@@ -2518,7 +2518,7 @@
     <fontDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.completionFont" 
-        label="Ceylon Completion Proposal Font"
+        label="Completion Proposal Font"
         defaultsTo="org.eclipse.jface.dialogfont">
         <description>
             Font for displaying proposals in the completion popup
@@ -2527,7 +2527,7 @@
     <fontDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.openFont" 
-        label="Ceylon Open Dialog Label Font"
+        label="Open Dialog Label Font"
         defaultsTo="org.eclipse.jface.dialogfont">
         <description>
             Font for displaying labels in Open dialogs
@@ -2536,7 +2536,7 @@
     <fontDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.outlineFont" 
-        label="Ceylon Outline Label Font"
+        label="Outline Label Font"
         defaultsTo="org.eclipse.jface.dialogfont">
         <description>
             Font for displaying labels in outline and hierarchy views
