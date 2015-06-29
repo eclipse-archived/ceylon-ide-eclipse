@@ -263,7 +263,10 @@ public class CeylonOutlinePage extends ContentOutlinePage
                 createPreferenceDialogOn(
                         getSite().getShell(), 
                         CeylonPreferencePage.ID, 
-                        new String[] { CeylonPreferencePage.ID }, 
+                        new String[] { 
+                                CeylonPreferencePage.ID,
+                                CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
+                        }, 
                         null).open();
             }
         };

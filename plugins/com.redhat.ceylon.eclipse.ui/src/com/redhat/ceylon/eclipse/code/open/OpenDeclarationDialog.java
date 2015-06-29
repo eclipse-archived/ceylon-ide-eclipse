@@ -1,9 +1,5 @@
 package com.redhat.ceylon.eclipse.code.open;
 
-import static com.redhat.ceylon.model.cmr.JDKUtils.isJDKModule;
-import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
@@ -27,6 +23,10 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
+import static com.redhat.ceylon.model.cmr.JDKUtils.isJDKModule;
+import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
@@ -51,7 +51,9 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -66,13 +68,6 @@ import org.eclipse.ui.IMemento;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
@@ -89,6 +84,13 @@ import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Modules;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
@@ -127,7 +129,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     @Override
     protected void applyFilter() {
-        includeMembers = getPatternControl().getText().contains(".");
+        includeMembers = 
+                getPatternControl().getText()
+                    .contains(".");
 //        toggleMembersAction.setChecked(includeMembers);
         super.applyFilter();
     }
@@ -186,9 +190,12 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
     private class TogglePackageAction extends Action {
         private TogglePackageAction() {
-            super("Show Selection Package", IAction.AS_CHECK_BOX);
-            setImageDescriptor(CeylonPlugin.getInstance()
-                    .getImageRegistry().getDescriptor(CEYLON_PACKAGE));
+            super("Show Selection Package", AS_CHECK_BOX);
+            ImageDescriptor desc = 
+                    CeylonPlugin.getInstance()
+                        .getImageRegistry()
+                        .getDescriptor(CEYLON_PACKAGE);
+            setImageDescriptor(desc);
         }
         @Override
         public void run() {
@@ -200,8 +207,11 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private class ToggleModuleAction extends Action {
         private ToggleModuleAction() {
             super("Show Selection Module", IAction.AS_CHECK_BOX);
-            setImageDescriptor(CeylonPlugin.getInstance()
-                    .getImageRegistry().getDescriptor(CEYLON_MODULE));
+            ImageDescriptor desc = 
+                    CeylonPlugin.getInstance()
+                        .getImageRegistry()
+                        .getDescriptor(CEYLON_MODULE);
+            setImageDescriptor(desc);
         }
         @Override
         public void run() {
@@ -270,7 +280,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     private static Declaration toDeclaration(Object object) {
         if (object instanceof DeclarationProxy) {
-            return ((DeclarationProxy) object).declaration;
+            DeclarationProxy proxy = 
+                    (DeclarationProxy) object;
+            return proxy.declaration;
         }
         else {
             return null;
@@ -332,7 +344,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             return true;
         }
 
-        private boolean isCompatibleFilter(ItemsFilter itemsFilter) {
+        private boolean isCompatibleFilter(
+                ItemsFilter itemsFilter) {
             if (itemsFilter instanceof Filter) {
                 Filter filter = (Filter) itemsFilter;
                 return members==filter.members &&
@@ -374,13 +387,16 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             }
         }
     }
-
-    class SelectionLabelDecorator implements ILabelDecorator {
+    
+    static abstract class BaseLabelProvider 
+            implements IBaseLabelProvider {
         @Override
-        public void removeListener(ILabelProviderListener listener) {}
+        public void removeListener(
+                ILabelProviderListener listener) {}
         
         @Override
-        public boolean isLabelProperty(Object element, String property) {
+        public boolean isLabelProperty(
+                Object element, String property) {
             return false;
         }
         
@@ -388,7 +404,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         public void dispose() {}
         
         @Override
-        public void addListener(ILabelProviderListener listener) {}
+        public void addListener(
+                ILabelProviderListener listener) {}
+    }
+
+    class SelectionLabelDecorator 
+            extends BaseLabelProvider
+            implements ILabelDecorator {
         
         @Override
         public String decorateText(String text, Object element) {
@@ -425,20 +447,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
-    static class DetailsLabelProvider implements ILabelProvider {
-        @Override
-        public void removeListener(ILabelProviderListener listener) {}
-        
-        @Override
-        public boolean isLabelProperty(Object element, String property) {
-            return false;
-        }
-        
-        @Override
-        public void dispose() {}
-        
-        @Override
-        public void addListener(ILabelProviderListener listener) {}
+    static class DetailsLabelProvider 
+            extends BaseLabelProvider
+            implements ILabelProvider {
         
         @Override
         public String getText(Object element) {
@@ -473,21 +484,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
-    static class MoreDetailsLabelProvider implements ILabelProvider {
-        @Override
-        public void removeListener(ILabelProviderListener listener) {}
-        
-        @Override
-        public boolean isLabelProperty(Object element, String property) {
-            return false;
-        }
-        
-        @Override
-        public void dispose() {}
-        
-        @Override
-        public void addListener(ILabelProviderListener listener) {}
-        
+    static class MoreDetailsLabelProvider 
+            extends BaseLabelProvider
+            implements ILabelProvider {
         @Override
         public String getText(Object element) {
             Declaration dec = toDeclaration(element);
@@ -521,20 +520,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
-    static class EvenMoreDetailsLabelProvider implements ILabelProvider {
-        @Override
-        public void removeListener(ILabelProviderListener listener) {}
-        
-        @Override
-        public boolean isLabelProperty(Object element, String property) {
-            return false;
-        }
-        
-        @Override
-        public void dispose() {}
-        
-        @Override
-        public void addListener(ILabelProviderListener listener) {}
+    static class EvenMoreDetailsLabelProvider
+            extends BaseLabelProvider
+            implements ILabelProvider {
         
         @Override
         public String getText(Object element) {
@@ -840,8 +828,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             new HashMap<String,Integer>();
     
     @Override
-    protected void fillContentProvider(AbstractContentProvider contentProvider,
-            ItemsFilter itemsFilter, IProgressMonitor monitor) 
+    protected void fillContentProvider(
+            AbstractContentProvider contentProvider,
+            ItemsFilter itemsFilter, 
+            IProgressMonitor monitor) 
                     throws CoreException {
         usedNames.clear();
         monitor.beginTask("Filtering", estimateWork(monitor));
@@ -946,7 +936,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     dec instanceof ClassOrInterface) {
                 try {
                     ArrayList<Declaration> copiedMembers = 
-                            new ArrayList<Declaration>(dec.getMembers());
+                            new ArrayList<Declaration>
+                                (dec.getMembers());
                     for (Declaration member: copiedMembers) {
                         fillDeclarationAndMembers(contentProvider, 
                                 itemsFilter, module, member);
@@ -967,7 +958,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     unit.getPackage().getModule();
             for (Declaration dec: unit.getDeclarations()) {
                 if (includeDeclaration(jdtModule, dec)) {
-                    contentProvider.add(new DeclarationProxy(dec), 
+                    contentProvider.add(
+                            new DeclarationProxy(dec), 
                             itemsFilter);
                     nameOccurs(dec);
                 }
@@ -982,7 +974,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 
     private List<Pattern> filters;
     private List<Pattern> packageFilters;
-    { 
+    {
         filters = new ArrayList<Pattern>();
         packageFilters = new ArrayList<Pattern>();
         String filtersString = getFilterListAsString();
@@ -1042,7 +1034,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         return false;
     }
 
-    private boolean includeDeclaration(JDTModule module, Declaration dec) {
+    private boolean includeDeclaration(JDTModule module, 
+            Declaration dec) {
         try {
             boolean visibleFromSourceModules;
             if (dec.isToplevel()) {
@@ -1094,8 +1087,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     private String uniqueIdentifier(JDTModule module) {
         return module.getArtifact()==null ?
-                module.getNameAsString() + '#' + module.getVersion() :
-                new File(module.getSourceArchivePath()).getAbsolutePath();
+                module.getNameAsString() + 
+                    '#' + module.getVersion() :
+                new File(module.getSourceArchivePath())
+                    .getAbsolutePath();
     }
 
     private static String getModule(Declaration dec) {
@@ -1244,7 +1239,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             public void run() {
                 createPreferenceDialogOn(getShell(), 
                         CeylonOpenDialogsPreferencePage.ID, 
-                        new String[] { CeylonOpenDialogsPreferencePage.ID }, 
+                        new String[] { 
+                                CeylonOpenDialogsPreferencePage.ID,
+                                CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
+                        }, 
                         null).open();
                 filters = new ArrayList<Pattern>();
                 packageFilters = new ArrayList<Pattern>();

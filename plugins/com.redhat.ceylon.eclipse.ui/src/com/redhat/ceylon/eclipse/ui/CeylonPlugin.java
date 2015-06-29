@@ -92,6 +92,9 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     public static final String OUTLINE_FONT_PREFERENCE = 
             PLUGIN_ID + ".outlineFont";
     
+    public static final String COLORS_AND_FONTS_PAGE_ID = 
+            "org.eclipse.ui.preferencePages.ColorsAndFonts";
+    
     private FontRegistry fontRegistry;
 
     /**

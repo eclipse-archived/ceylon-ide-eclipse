@@ -416,7 +416,10 @@ public class HierarchyPopup extends TreeViewPopup {
                 PreferencesUtil.createPreferenceDialogOn(
                         getShell(), 
                         CeylonPreferencePage.ID, 
-                        new String[] {CeylonPreferencePage.ID}, 
+                        new String[] {
+                                CeylonPreferencePage.ID,
+                                CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
+                        }, 
                         null).open();
                 getTreeViewer().getTree()
                     .setFont(CeylonPlugin.getOutlineFont());

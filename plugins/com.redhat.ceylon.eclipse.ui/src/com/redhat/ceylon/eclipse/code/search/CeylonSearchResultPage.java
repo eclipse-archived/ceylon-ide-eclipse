@@ -316,7 +316,10 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             public void run() {
                 createPreferenceDialogOn(getSite().getShell(), 
                         CeylonPreferencePage.ID, 
-                        new String[] { CeylonPreferencePage.ID }, 
+                        new String[] {
+                                CeylonPreferencePage.ID,
+                                CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
+                        }, 
                         null).open();
             }
         };
