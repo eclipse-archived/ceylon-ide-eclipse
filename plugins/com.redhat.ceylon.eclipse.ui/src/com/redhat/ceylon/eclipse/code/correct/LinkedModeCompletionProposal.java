@@ -7,6 +7,7 @@ import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -317,6 +318,20 @@ public class LinkedModeCompletionProposal
                 }
             };
         }
+        Collections.sort(supertypes, 
+                new Comparator<TypeDeclaration>() {
+            @Override
+            public int compare(TypeDeclaration x, 
+                    TypeDeclaration y) {
+                if (x.inherits(y)) {
+                    return 1;
+                }
+                if (y.inherits(x)) {
+                    return -1;
+                }
+                return y.getName().compareTo(x.getName());
+            }
+        });
         for (int j=supertypes.size()-1; j>=0; j--) {
             final Type supertype = 
                     type.getSupertype(supertypes.get(j));
