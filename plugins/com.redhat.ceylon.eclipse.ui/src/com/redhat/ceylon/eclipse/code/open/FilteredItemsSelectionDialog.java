@@ -54,6 +54,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ContentViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -150,9 +151,12 @@ import com.redhat.ceylon.eclipse.util.DocBrowser;
 public abstract class FilteredItemsSelectionDialog extends
         SelectionStatusDialog {
 
-    private static final Image MENU_IMAGE = WorkbenchImages.getImage(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU);
-//    private static final Image DOC_IMAGE = CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.SHOW_DOC);
-    private static final Image SEP_IMAGE = WorkbenchImages.getImage(IWorkbenchGraphicConstants.IMG_OBJ_SEPARATOR);
+    private static final Image MENU_IMAGE = 
+            WorkbenchImages.getImage(
+                    IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU);
+    private static final Image SEP_IMAGE = 
+            WorkbenchImages.getImage(
+                    IWorkbenchGraphicConstants.IMG_OBJ_SEPARATOR);
 
     protected static final String DIALOG_BOUNDS_SETTINGS = "DialogBoundsSettings";
 
@@ -977,16 +981,22 @@ public abstract class FilteredItemsSelectionDialog extends
      *            the new selection
      */
     protected void handleSelected(StructuredSelection selection) {
-        IStatus status = new Status(IStatus.OK, PlatformUI.PLUGIN_ID,
-                IStatus.OK, EMPTY_STRING, null);
+        IStatus status = 
+                new Status(IStatus.OK, 
+                        PlatformUI.PLUGIN_ID,
+                        IStatus.OK, 
+                        EMPTY_STRING, null);
 
         Object[] lastSelection = currentSelection;
 
         currentSelection = selection.toArray();
 
         if (selection.size() == 0) {
-            status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID,
-                    IStatus.ERROR, EMPTY_STRING, null);
+            status = 
+                    new Status(IStatus.ERROR, 
+                            PlatformUI.PLUGIN_ID,
+                            IStatus.ERROR, 
+                            EMPTY_STRING, null);
 
             if (lastSelection != null
                     /*&& getListSelectionLabelDecorator() != null*/) {
@@ -996,15 +1006,19 @@ public abstract class FilteredItemsSelectionDialog extends
             currentSelection = null;
 
         } else {
-            status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID,
-                    IStatus.ERROR, EMPTY_STRING, null);
+            status = 
+                    new Status(IStatus.ERROR, 
+                            PlatformUI.PLUGIN_ID,
+                            IStatus.ERROR, 
+                            EMPTY_STRING, null);
 
             List items = selection.toList();
 
             Object item = null;
             IStatus tempStatus = null;
 
-            for (Iterator it = items.iterator(); it.hasNext();) {
+            for (Iterator it = items.iterator(); 
+                    it.hasNext();) {
                 Object o = it.next();
 
                 if (o instanceof ItemsListSeparator) {
@@ -1015,8 +1029,11 @@ public abstract class FilteredItemsSelectionDialog extends
                 tempStatus = validateItem(item);
 
                 if (tempStatus.isOK()) {
-                    status = new Status(IStatus.OK, PlatformUI.PLUGIN_ID,
-                            IStatus.OK, EMPTY_STRING, null);
+                    status = 
+                            new Status(IStatus.OK, 
+                                    PlatformUI.PLUGIN_ID,
+                                    IStatus.OK, 
+                                    EMPTY_STRING, null);
                 } else {
                     status = tempStatus;
                     // if any selected element is not valid status is set to
@@ -1070,30 +1087,36 @@ public abstract class FilteredItemsSelectionDialog extends
      * Refreshes the dialog - has to be called in UI thread.
      */
     public void refresh() {
-        if (list != null && !list.getTable().isDisposed()) {
+        if (list != null) {
+            Table table = list.getTable();
+            if (!table.isDisposed()) {
+                List lastRefreshSelection = 
+                        ((StructuredSelection) list
+                                .getSelection()).toList();
+                table.deselectAll();
 
-            List lastRefreshSelection = ((StructuredSelection) list
-                    .getSelection()).toList();
-            list.getTable().deselectAll();
+                list.setItemCount(contentProvider.getNumberOfElements());
+                list.refresh();
 
-            list.setItemCount(contentProvider.getNumberOfElements());
-            list.refresh();
-
-            if (list.getTable().getItemCount() > 0) {
-                // preserve previous selection
-                if (refreshWithLastSelection && lastRefreshSelection != null
-                        && lastRefreshSelection.size() > 0) {
-                    list.setSelection(new StructuredSelection(
-                            lastRefreshSelection));
+                if (table.getItemCount() > 0) {
+                    // preserve previous selection
+                    if (refreshWithLastSelection && 
+                            lastRefreshSelection != null && 
+                            lastRefreshSelection.size() > 0) {
+                        list.setSelection(
+                                new StructuredSelection(
+                                        lastRefreshSelection));
+                    }
+                    else {
+                        refreshWithLastSelection = true;
+                        table.setSelection(0);
+                        table.notifyListeners(SWT.Selection, 
+                                new Event());
+                    }
                 } else {
-                    refreshWithLastSelection = true;
-                    list.getTable().setSelection(0);
-                    list.getTable().notifyListeners(SWT.Selection, new Event());
+                    list.setSelection(StructuredSelection.EMPTY);
                 }
-            } else {
-                list.setSelection(StructuredSelection.EMPTY);
             }
-
         }
 
         scheduleProgressMessageRefresh();
@@ -1114,7 +1137,8 @@ public abstract class FilteredItemsSelectionDialog extends
      *            a progress monitor or <code>null</code> if no monitor is
      *            available
      */
-    public void reloadCache(boolean checkDuplicates, IProgressMonitor monitor) {
+    public void reloadCache(boolean checkDuplicates, 
+            IProgressMonitor monitor) {
         if (list != null && !list.getTable().isDisposed()
                 && contentProvider != null) {
             contentProvider.reloadCache(checkDuplicates, monitor);
@@ -1133,24 +1157,24 @@ public abstract class FilteredItemsSelectionDialog extends
      * Schedules progress message refresh.
      */
     public void scheduleProgressMessageRefresh() {
-        if (filterJob.getState() != Job.RUNNING
-                && refreshProgressMessageJob.getState() != Job.RUNNING)
+        if (filterJob.getState() != Job.RUNNING && 
+                refreshProgressMessageJob.getState() != Job.RUNNING)
             refreshProgressMessageJob.scheduleProgressRefresh(null);
     }
 
     @Override
     protected void computeResult() {
 
-        List selectedElements = ((StructuredSelection) list.getSelection())
-                .toList();
-
-        List<Object> objectsToReturn = new ArrayList<Object>();
-
+        StructuredSelection selection = 
+                (StructuredSelection) 
+                    list.getSelection();
+        List<Object> objectsToReturn = 
+                new ArrayList<Object>();
         Object item = null;
-
-        for (Iterator it = selectedElements.iterator(); it.hasNext();) {
+        List selectedItems = selection.toList();
+        for (Iterator it = selectedItems.iterator(); 
+                it.hasNext();) {
             item = it.next();
-
             if (!(item instanceof ItemsListSeparator)) {
                 accessedHistoryItem(item);
                 objectsToReturn.add(item);
@@ -1168,8 +1192,9 @@ public abstract class FilteredItemsSelectionDialog extends
 
     @Override
     protected void okPressed() {
-        if (status != null
-                && (status.isOK() || status.getCode() == IStatus.INFO)) {
+        if (status != null && 
+                (status.isOK() || 
+                        status.getCode() == IStatus.INFO)) {
             super.okPressed();
         }
     }
@@ -1222,19 +1247,19 @@ public abstract class FilteredItemsSelectionDialog extends
     protected StructuredSelection getSelectedItems() {
 
         StructuredSelection selection = 
-                (StructuredSelection) list.getSelection();
-
+                (StructuredSelection) 
+                    list.getSelection();
         List selectedItems = selection.toList();
         Object itemToRemove = null;
-
-        for (Iterator it = selection.iterator(); it.hasNext();) {
+        for (Iterator it = selection.iterator(); 
+                it.hasNext();) {
             Object item = it.next();
             if (item instanceof ItemsListSeparator) {
                 itemToRemove = item;
                 break;
             }
         }
-
+        
         if (itemToRemove == null)
             return new StructuredSelection(selectedItems);
         // Create a new selection without the collision
@@ -1278,7 +1303,8 @@ public abstract class FilteredItemsSelectionDialog extends
 
         // don't apply filtering for patterns which mean the same, for example:
         // *a**b and ***a*b
-        if (filter != null && filter.equalsFilter(newFilter)) {
+        if (filter != null && 
+                filter.equalsFilter(newFilter)) {
             return;
         }
 
@@ -1317,8 +1343,10 @@ public abstract class FilteredItemsSelectionDialog extends
      * @throws CoreException
      */
     protected abstract void fillContentProvider(
-            AbstractContentProvider contentProvider, ItemsFilter itemsFilter,
-            IProgressMonitor progressMonitor) throws CoreException;
+            AbstractContentProvider contentProvider, 
+            ItemsFilter itemsFilter,
+            IProgressMonitor progressMonitor) 
+                    throws CoreException;
 
     /**
      * Removes selected items from history.
@@ -1327,7 +1355,8 @@ public abstract class FilteredItemsSelectionDialog extends
      *            items to be removed
      */
     private void removeSelectedItems(List<Object> items) {
-        for (Iterator<Object> iter = items.iterator(); iter.hasNext();) {
+        for (Iterator<Object> iter = items.iterator(); 
+                iter.hasNext();) {
             Object item = iter.next();
             removeHistoryItem(item);
         }
@@ -1451,8 +1480,11 @@ public abstract class FilteredItemsSelectionDialog extends
     private class ToggleDocAreaAction extends Action {
         public ToggleDocAreaAction() {
             super("Show &Documentation", IAction.AS_CHECK_BOX);
-            setImageDescriptor(CeylonPlugin.getInstance()
-                    .getImageRegistry().getDescriptor(CeylonResources.SHOW_DOC));
+            ImageDescriptor descriptor = 
+                    CeylonPlugin.getInstance()
+                        .getImageRegistry()
+                        .getDescriptor(CeylonResources.SHOW_DOC);
+            setImageDescriptor(descriptor);
         }
         @Override
         public void run() {
@@ -1510,12 +1542,14 @@ public abstract class FilteredItemsSelectionDialog extends
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
             if (monitor.isCanceled())
-                return new Status(IStatus.OK, WorkbenchPlugin.PI_WORKBENCH,
+                return new Status(IStatus.OK, 
+                        WorkbenchPlugin.PI_WORKBENCH,
                         IStatus.OK, EMPTY_STRING, null);
             
             FilteredItemsSelectionDialog.this.refresh();
             
-            return new Status(IStatus.OK, PlatformUI.PLUGIN_ID, IStatus.OK,
+            return new Status(IStatus.OK, 
+                    PlatformUI.PLUGIN_ID, IStatus.OK,
                     EMPTY_STRING, null);
         }
 
@@ -1561,15 +1595,18 @@ public abstract class FilteredItemsSelectionDialog extends
                 progressBar.getParent().layout();
             }
 
-            if (progressMonitor == null || progressMonitor.isDone()) {
-                return new Status(IStatus.CANCEL, PlatformUI.PLUGIN_ID,
-                        IStatus.CANCEL, EMPTY_STRING, null);
+            if (progressMonitor == null || 
+                    progressMonitor.isDone()) {
+                return new Status(IStatus.CANCEL, 
+                        PlatformUI.PLUGIN_ID, IStatus.CANCEL, 
+                        EMPTY_STRING, null);
             }
 
             // Schedule cyclical with 500 milliseconds delay
             schedule(100);
 
-            return new Status(IStatus.OK, PlatformUI.PLUGIN_ID, IStatus.OK,
+            return new Status(IStatus.OK, 
+                    PlatformUI.PLUGIN_ID, IStatus.OK,
                     EMPTY_STRING, null);
         }
 
@@ -1619,22 +1656,24 @@ public abstract class FilteredItemsSelectionDialog extends
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             if (monitor.isCanceled()) {
-                return new Status(IStatus.CANCEL, WorkbenchPlugin.PI_WORKBENCH,
+                return new Status(IStatus.CANCEL, 
+                        WorkbenchPlugin.PI_WORKBENCH,
                         IStatus.CANCEL, EMPTY_STRING, null);
             }
 
             if (FilteredItemsSelectionDialog.this != null) {
-                GranualProgressMonitor wrappedMonitor = new GranualProgressMonitor(
-                        monitor);
-                FilteredItemsSelectionDialog.this.reloadCache(true,
-                        wrappedMonitor);
+                GranualProgressMonitor wrappedMonitor = 
+                        new GranualProgressMonitor(monitor);
+                FilteredItemsSelectionDialog.this.reloadCache(
+                        true, wrappedMonitor);
             }
 
             if (!monitor.isCanceled()) {
                 refreshJob.schedule();
             }
 
-            return new Status(IStatus.OK, PlatformUI.PLUGIN_ID, IStatus.OK,
+            return new Status(IStatus.OK, 
+                    PlatformUI.PLUGIN_ID, IStatus.OK,
                     EMPTY_STRING, null);
 
         }
@@ -1655,15 +1694,19 @@ public abstract class FilteredItemsSelectionDialog extends
 
         @Override
         public void run() {
-            removeSelectedItems(((StructuredSelection) list.getSelection()).toList());
+            StructuredSelection selection = 
+                    (StructuredSelection) list.getSelection();
+            removeSelectedItems(selection.toList());
         }
     }
 
     private static boolean showColoredLabels() {
-        return PlatformUI.getPreferenceStore().getBoolean(IWorkbenchPreferenceConstants.USE_COLORED_LABELS);
+        return PlatformUI.getPreferenceStore()
+                .getBoolean(IWorkbenchPreferenceConstants.USE_COLORED_LABELS);
     }
 
-    private class ItemsListLabelProvider extends StyledCellLabelProvider
+    private class ItemsListLabelProvider 
+            extends StyledCellLabelProvider
             implements ILabelProviderListener {
 
         private ILabelProvider provider;
@@ -1717,13 +1760,16 @@ public abstract class FilteredItemsSelectionDialog extends
 
         private String getText(Object element) {
             if (element instanceof ItemsListSeparator) {
-                return getSeparatorLabel(((ItemsListSeparator) element)
-                        .getName());
+                ItemsListSeparator sep = 
+                        (ItemsListSeparator) element;
+                return getSeparatorLabel(sep.getName());
             }
 
             String str = provider.getText(element);
-            if (selectionDecorator != null && isSelected(element)) {
-                return selectionDecorator.decorateText(str.toString(), element);
+            if (selectionDecorator != null && 
+                    isSelected(element)) {
+                return selectionDecorator.decorateText(
+                        str.toString(), element);
             }
 
             return str;
@@ -1748,7 +1794,7 @@ public abstract class FilteredItemsSelectionDialog extends
         @Override
         public void update(ViewerCell cell) {
             Object element = cell.getElement();
-            Font completionFont = CeylonPlugin.getCompletionFont();
+            Font openFont = CeylonPlugin.getOpenDialogFont();
             if (!(element instanceof ItemsListSeparator)
                     && provider instanceof IStyledLabelProvider) {
                 IStyledLabelProvider styledLabelProvider = 
@@ -1761,7 +1807,7 @@ public abstract class FilteredItemsSelectionDialog extends
                 StyleRange[] styleRanges = 
                         styledString.getStyleRanges();
                 for (StyleRange styleRange : styleRanges) {
-                    styleRange.font = completionFont;
+                    styleRange.font = openFont;
                 }
                 cell.setStyleRanges(styleRanges);
                 cell.setImage(styledLabelProvider.getImage(element));
@@ -1772,7 +1818,7 @@ public abstract class FilteredItemsSelectionDialog extends
                 cell.setImage(getImage(element));
             }
 //            cell.setFont(getFont(element));
-            cell.setFont(completionFont);
+            cell.setFont(openFont);
             cell.setForeground(getForeground(element));
             cell.setBackground(getBackground(element));
 
@@ -1782,14 +1828,15 @@ public abstract class FilteredItemsSelectionDialog extends
         private String getSeparatorLabel(String separatorLabel) {
             Rectangle rect = list.getTable().getBounds();
 
-            int borderWidth = list.getTable().computeTrim(0, 0, 0, 0).width;
+            int borderWidth = 
+                    list.getTable().computeTrim(0, 0, 0, 0).width;
 
             int imageWidth = SEP_IMAGE.getBounds().width;
 
             int width = rect.width - borderWidth - imageWidth;
 
             GC gc = new GC(list.getTable());
-            gc.setFont(CeylonPlugin.getCompletionFont());
+            gc.setFont(CeylonPlugin.getOpenDialogFont());
 
             int fSeparatorWidth = gc.getAdvanceWidth('-');
             int fMessageLength = gc.textExtent(separatorLabel).x;
@@ -1832,8 +1879,9 @@ public abstract class FilteredItemsSelectionDialog extends
             if (provider.isLabelProperty(element, property)) {
                 return true;
             }
-            if (selectionDecorator != null
-                    && selectionDecorator.isLabelProperty(element, property)) {
+            if (selectionDecorator != null && 
+                    selectionDecorator.isLabelProperty(
+                            element, property)) {
                 return true;
             }
             return false;
@@ -2668,7 +2716,8 @@ public abstract class FilteredItemsSelectionDialog extends
          */
         public void addHistoryItems(ItemsFilter itemsFilter) {
             if (this.selectionHistory != null) {
-                Object[] items = this.selectionHistory.getHistoryItems();
+                Object[] items = 
+                        this.selectionHistory.getHistoryItems();
                 for (int i = 0; i < items.length; i++) {
                     Object item = items[i];
                     if (itemsFilter == filter) {
@@ -2704,14 +2753,16 @@ public abstract class FilteredItemsSelectionDialog extends
         public Object removeHistoryElement(Object item) {
             if (this.selectionHistory != null)
                 this.selectionHistory.remove(item);
-            if (filter == null || filter.getPattern().length() == 0) {
+            if (filter == null || 
+                    filter.getPattern().length() == 0) {
                 items.remove(item);
                 duplicates.remove(item);
                 this.lastSortedItems.remove(item);
             }
 
             synchronized (lastSortedItems) {
-                Collections.sort(lastSortedItems, getHistoryComparator());
+                Collections.sort(lastSortedItems, 
+                        getHistoryComparator());
             }
             return item;
         }
@@ -2731,7 +2782,8 @@ public abstract class FilteredItemsSelectionDialog extends
                 this.lastSortedItems.remove(item);
             }
             synchronized (lastSortedItems) {
-                Collections.sort(lastSortedItems, getHistoryComparator());
+                Collections.sort(lastSortedItems, 
+                        getHistoryComparator());
             }
             this.refresh();
         }
@@ -2808,7 +2860,8 @@ public abstract class FilteredItemsSelectionDialog extends
                 synchronized (lastSortedItems) {
                     lastSortedItems.clear();
                     lastSortedItems.addAll(items);
-                    Collections.sort(lastSortedItems, getHistoryComparator());
+                    Collections.sort(lastSortedItems, 
+                            getHistoryComparator());
                 }
             }
             return lastSortedItems.toArray();
@@ -2820,8 +2873,9 @@ public abstract class FilteredItemsSelectionDialog extends
          * @param itemsFilter
          */
         public void rememberResult(ItemsFilter itemsFilter) {
-            List<Object> itemsList = Collections.synchronizedList(Arrays
-                    .asList(getSortedItems()));
+            List<Object> itemsList = 
+                    Collections.synchronizedList(
+                            Arrays.asList(getSortedItems()));
             // synchronization
             if (itemsFilter == filter) {
                 lastCompletedFilter = itemsFilter;
@@ -2840,18 +2894,18 @@ public abstract class FilteredItemsSelectionDialog extends
         }
 
         @Override
-        public void dispose() {
-        }
+        public void dispose() {}
 
         @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-        }
+        public void inputChanged(Viewer viewer, 
+                Object oldInput, Object newInput) {}
 
         @Override
         public void updateElement(int index) {
 
-            FilteredItemsSelectionDialog.this.list.replace((lastFilteredItems
-                    .size() > index) ? lastFilteredItems.get(index) : null,
+            FilteredItemsSelectionDialog.this.list.replace(
+                    lastFilteredItems.size() > index ? 
+                            lastFilteredItems.get(index) : null,
                     index);
 
         }
@@ -2914,10 +2968,12 @@ public abstract class FilteredItemsSelectionDialog extends
                                     WorkbenchMessages.FilteredItemsSelectionDialog_cacheRefreshJob_checkDuplicates,
                                     5);
                 }
-                HashMap<Object,Object> helperMap = new HashMap<Object,Object>();
+                HashMap<Object,Object> helperMap = 
+                        new HashMap<Object,Object>();
                 for (int i = 0; i < lastFilteredItems.size(); i++) {
-                    if (reset
-                            || (subMonitor != null && subMonitor.isCanceled()))
+                    if (reset || 
+                            (subMonitor != null && 
+                             subMonitor.isCanceled()))
                         return;
                     Object item = lastFilteredItems.get(i);
 
@@ -2974,19 +3030,25 @@ public abstract class FilteredItemsSelectionDialog extends
 
             // filter the elements using provided ViewerFilters
             if (filters != null && filteredElements != null) {
-                for (Iterator<ViewerFilter> iter = filters.iterator(); iter.hasNext();) {
+                for (Iterator<ViewerFilter> iter = 
+                        filters.iterator(); 
+                        iter.hasNext();) {
                     ViewerFilter f = iter.next();
-                    filteredElements = f.filter(list, parent, filteredElements);
+                    filteredElements = 
+                            f.filter(list, parent, 
+                                    filteredElements);
                     monitor.worked(ticks);
                 }
             }
 
-            if (filteredElements == null || monitor.isCanceled()) {
+            if (filteredElements == null || 
+                    monitor.isCanceled()) {
                 monitor.done();
                 return new Object[0];
             }
 
-            ArrayList<Object> preparedElements = new ArrayList<Object>();
+            ArrayList<Object> preparedElements = 
+                    new ArrayList<Object>();
             boolean hasHistory = false;
 
             if (filteredElements.length > 0) {
@@ -3049,7 +3111,8 @@ public abstract class FilteredItemsSelectionDialog extends
         }
 
         @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        public void inputChanged(Viewer viewer, 
+                Object oldInput, Object newInput) {
         }
 
     }
@@ -3128,10 +3191,12 @@ public abstract class FilteredItemsSelectionDialog extends
         public void refresh() {
             Object input = this.getInput();
             if (input != null) {
-                ILabelProvider labelProvider = (ILabelProvider) getLabelProvider();
-                doRefresh(labelProvider.getText(input), labelProvider
-                        .getImage(input));
-            } else {
+                ILabelProvider labelProvider = 
+                        (ILabelProvider) getLabelProvider();
+                doRefresh(labelProvider.getText(input), 
+                        labelProvider.getImage(input));
+            }
+            else {
                 doRefresh(null, null);
             }
         }

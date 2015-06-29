@@ -432,9 +432,10 @@ public final class ReferencesPopup extends PopupDialog
         loc+=4;
         result.append(rest.substring(0,loc));
         int end = rest.indexOf(" in ", loc);
-        Highlights.styleProposal(result, 
+        Highlights.styleFragment(result, 
                 rest.substring(loc, end), 
-                false);
+                false, null, 
+                CeylonPlugin.getOutlineFont());
         return result;
     }
 

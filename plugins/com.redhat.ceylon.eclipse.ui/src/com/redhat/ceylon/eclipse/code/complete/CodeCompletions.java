@@ -386,7 +386,7 @@ public class CodeCompletions {
 			if (loc>0) {
 				prefix = prefix.substring(0, loc);
 			}
-			Highlights.appendId(result, prefix, name, 
+			Highlights.styleIdentifier(result, prefix, name, 
 					Highlights.TYPE_ID_STYLER, font);
 		}
 		else {
@@ -931,7 +931,7 @@ public class CodeCompletions {
             	if (loc>0) {
             		prefix = prefix.substring(loc);
             	}
-            	Highlights.appendId(result, prefix, name, 
+            	Highlights.styleIdentifier(result, prefix, name, 
             			styler, font);
             }
             else {
@@ -952,7 +952,7 @@ public class CodeCompletions {
             	styler = Highlights.ID_STYLER;
             }
             if (prefix!=null) {
-            	Highlights.appendId(result, prefix, name, 
+            	Highlights.styleIdentifier(result, prefix, name, 
             			styler, font);
             }
             else {

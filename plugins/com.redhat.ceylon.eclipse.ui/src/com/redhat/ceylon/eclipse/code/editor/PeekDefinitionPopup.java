@@ -164,7 +164,9 @@ final class PeekDefinitionPopup extends PopupDialog
                 new StringTokenizer(title.getText(), "-", false);
         styleDescription(title, result, tokens.nextToken());
         result.append("-");
-        Highlights.styleProposal(result, tokens.nextToken(), false);
+        Highlights.styleFragment(result, 
+                tokens.nextToken(), false, null, 
+                CeylonPlugin.getOutlineFont());
         return result;
     }
 

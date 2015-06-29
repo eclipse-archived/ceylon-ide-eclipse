@@ -173,12 +173,6 @@ public class Highlights  {
         }
     }
     
-    public static void styleProposal(StyledString result, 
-            String string, boolean qualifiedNameIsPath) {
-    	styleProposal(result, string, qualifiedNameIsPath, 
-    			null, CeylonPlugin.getCompletionFont());
-    }
-    
     private static final Pattern path = 
             Pattern.compile("\\b\\p{Ll}+(\\.\\p{Ll}+)+\\b");
     
@@ -204,13 +198,15 @@ public class Highlights  {
         }
     }
     
-    public static void styleProposal(StyledString result, 
-            String string, boolean qualifiedNameIsPath,
+    public static void styleFragment(
+            StyledString result, 
+            String codeFragment, 
+            boolean qualifiedNameIsPath,
             String prefix, Font font) {
         qualifiedNameIsPath &=
-                path.matcher(string).find();
+                path.matcher(codeFragment).find();
         StringTokenizer tokens = 
-                new StringTokenizer(string, 
+                new StringTokenizer(codeFragment, 
                         qualifiedNameIsPath ? 
                                 " |&()<>*+?,:{}[]@\"" : 
                                 " |&()<>*+?,:{}[]@\".", 
@@ -239,7 +235,7 @@ public class Highlights  {
                 }
                 else if (isUpperCase(initial)) {
                 	if (matchHighlighting) {
-                		appendId(result, prefix, token, 
+                		styleIdentifier(result, prefix, token, 
                 		        new FontStyler(font, 
                 		                TYPE_ID_STYLER), 
                 		        font);
@@ -261,7 +257,7 @@ public class Highlights  {
                     }
                     else if (qualified) {
                     	if (matchHighlighting) {
-                    		appendId(result, prefix, token, 
+                    		styleIdentifier(result, prefix, token, 
                     		        new FontStyler(font, 
                     		                MEMBER_STYLER), 
                     		        font);
@@ -274,7 +270,7 @@ public class Highlights  {
                     }
                     else {
                     	if (matchHighlighting) {
-                    		appendId(result, prefix, token, 
+                    		styleIdentifier(result, prefix, token, 
                     		        new FontStyler(font, 
                     		                ID_STYLER), 
                     		        font);
@@ -311,7 +307,7 @@ public class Highlights  {
     private static final Pattern HUMP = 
             Pattern.compile("\\w\\p{Ll}*");
     
-	public static void appendId(StyledString result, 
+	public static void styleIdentifier(StyledString result, 
 			String prefix, String token, 
 			Styler colorStyler, final Font font) {
 	    final Styler fontAndColorStyler = 
@@ -433,8 +429,9 @@ public class Highlights  {
                         }
                     }
                     else {
-                        styleProposal(result, token, 
-                                qualifiedNameIsPath);
+                        styleFragment(result, token, 
+                                qualifiedNameIsPath, null, 
+                                CeylonPlugin.getCompletionFont());
                     }
                 }
             }

@@ -40,6 +40,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.common.Backend;
@@ -64,8 +65,8 @@ import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
 public class ChangeParametersInputPage extends UserInputWizardPage {
@@ -86,9 +87,11 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         };
     }
     
-    private boolean isDefaulted(List<Parameter> parameterModels, 
+    private boolean isDefaulted(
+            List<Parameter> parameterModels, 
             Parameter parameter) {
-        return getChangeParametersRefactoring().getDefaulted()
+        return getChangeParametersRefactoring()
+                .getDefaulted()
                 .get(parameterModels.indexOf(parameter));
     }
     
@@ -118,10 +121,11 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         title.setLayoutData(gd);
         GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
         gd2.horizontalSpan=2;
-        new Label(result, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
+        new Label(result, SWT.SEPARATOR | SWT.HORIZONTAL)
+            .setLayoutData(gd2);
 
         Composite composite = new Composite(result, SWT.NONE);
-        GridData cgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
+        GridData cgd = new GridData(GridData.FILL_BOTH);
         cgd.grabExcessHorizontalSpace = true;
         cgd.grabExcessVerticalSpace = true;
         composite.setLayoutData(cgd);
@@ -130,14 +134,16 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         composite.setLayout(tableLayout);
         
         final List<Parameter> parameterModels = 
-                new ArrayList<Parameter>(refactoring.getParameters());
+                new ArrayList<Parameter>(
+                        refactoring.getParameters());
         
-        final TableViewer viewer = new TableViewer(composite, 
-                SWT.SINGLE | SWT.V_SCROLL | SWT.BORDER);
+        final TableViewer viewer = 
+                new TableViewer(composite, 
+                        SWT.SINGLE | SWT.V_SCROLL | SWT.BORDER);
         viewer.setContentProvider(getInstance());
         viewer.getTable().setHeaderVisible(true);
         viewer.getTable().setLinesVisible(true);
-        GridData tgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
+        GridData tgd = new GridData(GridData.FILL_BOTH);
         tgd.horizontalSpan = 3;
         tgd.verticalSpan = 6;
         tgd.grabExcessHorizontalSpace = true;
@@ -145,48 +151,67 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         tgd.heightHint = 100;
         tgd.widthHint = 425;
         viewer.getTable().setLayoutData(tgd);
-        TableViewerColumn orderCol = new TableViewerColumn(viewer, SWT.LEFT);
+        TableViewerColumn orderCol = 
+                new TableViewerColumn(viewer, SWT.LEFT);
         orderCol.getColumn().setText("");
         orderCol.getColumn().setWidth(10);
         orderCol.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                final int originalIndex = refactoring.getParameters().indexOf(element);
-                final int currentIndex = parameterModels.indexOf(element);
-                if (originalIndex==currentIndex) return "";
-                return originalIndex>currentIndex ? "\u2191" : "\u2193"; 
+                final int originalIndex = 
+                        refactoring.getParameters()
+                            .indexOf(element);
+                final int currentIndex = 
+                        parameterModels.indexOf(element);
+                if (originalIndex==currentIndex) {
+                    return "";
+                }
+                else {
+                    return originalIndex>currentIndex ? 
+                            "\u2191" : "\u2193";
+                }
             }
             @Override
             public Image getImage(Object element) {
                 return null;
             }
         });
-        TableViewerColumn sigCol = new TableViewerColumn(viewer, SWT.LEFT);
+        TableViewerColumn sigCol = 
+                new TableViewerColumn(viewer, SWT.LEFT);
         sigCol.getColumn().setText("Type");
         sigCol.getColumn().setWidth(140);
-        sigCol.setLabelProvider(new StyledCellLabelProvider() {
+        sigCol.setLabelProvider(
+                new StyledCellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 Parameter p = (Parameter) cell.getElement();
                 FunctionOrValue model = p.getModel();
                 StyledString styledString = new StyledString();
-                Type fullType = model.appliedReference(null, 
-                        Collections.<Type>emptyList()).getFullType();
+                Type fullType = 
+                        model.appliedReference(null, 
+                                Collections.<Type>emptyList())
+                        .getFullType();
                 appendTypeName(styledString, fullType);
-                cell.setImage(getImageForDeclaration(fullType.getDeclaration()));
+                cell.setImage(getImageForDeclaration(
+                        fullType.getDeclaration()));
                 cell.setText(styledString.toString());
                 cell.setStyleRanges(styledString.getStyleRanges());
                 super.update(cell);
             }
         });
-        TableViewerColumn nameCol = new TableViewerColumn(viewer, SWT.LEFT);
+        TableViewerColumn nameCol = 
+                new TableViewerColumn(viewer, SWT.LEFT);
         nameCol.getColumn().setText("Name");
         nameCol.getColumn().setWidth(100);
-        nameCol.setLabelProvider(new StyledCellLabelProvider() {
+        nameCol.setLabelProvider(
+                new StyledCellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
-                String name = getChangeParametersRefactoring().getNames()
-                        .get(parameterModels.indexOf((Parameter) cell.getElement()));
+                Parameter p = (Parameter) cell.getElement();
+                String name = 
+                        getChangeParametersRefactoring()
+                            .getNames()
+                            .get(parameterModels.indexOf(p));
                 StyledString styledString = new StyledString();
                 styledString.append(name, Highlights.ID_STYLER);
                 cell.setText(styledString.toString());
@@ -205,25 +230,32 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
             @Override
             protected Object getValue(Object element) {
-                return getChangeParametersRefactoring().getNames()
-                        .get(parameterModels.indexOf((Parameter) element));
+                Parameter p = (Parameter) element;
+                int index = parameterModels.indexOf(p);
+                return getChangeParametersRefactoring()
+                        .getNames()
+                        .get(index);
             }
             @Override
             protected void setValue(Object element, Object value) {
-                getChangeParametersRefactoring().getNames()
-                        .set(parameterModels.indexOf((Parameter) element), 
-                                value.toString());
+                Parameter p = (Parameter) element;
+                int index = parameterModels.indexOf(p);
+                getChangeParametersRefactoring()
+                        .getNames()
+                        .set(index, value.toString());
                 viewer.update(element, null);
                 drawSignature();
             } 
         });
-        TableViewerColumn optCol = new TableViewerColumn(viewer, SWT.LEFT);
+        TableViewerColumn optCol = 
+                new TableViewerColumn(viewer, SWT.LEFT);
         optCol.getColumn().setText("Optionality");
         optCol.getColumn().setWidth(70);
         optCol.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                return isDefaulted(parameterModels, (Parameter) element) ?
+                Parameter p = (Parameter) element;
+                return isDefaulted(parameterModels, p) ?
                         "defaulted" : "required"; 
             }
             @Override
@@ -231,12 +263,14 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 return null;
             }
         });
-        final String[] options = new String[] {"required", "defaulted"};
+        final String[] options = 
+                new String[] {"required", "defaulted"};
         optCol.setEditingSupport(new EditingSupport(viewer) {
             @Override
             protected CellEditor getCellEditor(Object element) {
-                return new ComboBoxCellEditor(viewer.getTable(), 
-                        options, SWT.FLAT);
+                return new ComboBoxCellEditor(
+                        viewer.getTable(), options, 
+                        SWT.FLAT);
             }
             @Override
             protected boolean canEdit(Object element) {
@@ -244,21 +278,24 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
             @Override
             protected Object getValue(Object element) {
-                return isDefaulted(parameterModels, (Parameter) element) ? 1 : 0;
+                Parameter p = (Parameter) element;
+                return isDefaulted(parameterModels, p) ? 1 : 0;
             }
             @Override
             protected void setValue(Object element, Object value) {
+                int index = parameterModels.indexOf(element);
                 refactoring.getDefaulted()
-                        .set(parameterModels.indexOf(element), 
-                                value.equals(1));
+                    .set(index, value.equals(1));
                 viewer.update(element, null);
                 drawSignature();
             } 
         });
-        TableViewerColumn diffCol = new TableViewerColumn(viewer, SWT.LEFT);
+        TableViewerColumn diffCol = 
+                new TableViewerColumn(viewer, SWT.LEFT);
         diffCol.getColumn().setText("");
         diffCol.getColumn().setWidth(15);
-        diffCol.setLabelProvider(new ColumnLabelProvider() {
+        diffCol.setLabelProvider(
+                new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 Parameter p = (Parameter) element;
@@ -288,25 +325,32 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 return null;
             }
         });
-        TableViewerColumn argCol = new TableViewerColumn(viewer, SWT.LEFT);
+        TableViewerColumn argCol = 
+                new TableViewerColumn(viewer, SWT.LEFT);
         argCol.getColumn().setText("Default Argument");
         argCol.getColumn().setWidth(100);
-        argCol.setLabelProvider(new StyledCellLabelProvider() {
+        argCol.setLabelProvider(
+                new StyledCellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
-                StyledString styledString = new StyledString();
+                StyledString styledString = 
+                        new StyledString();
                 String text = getText(cell.getElement());
                 if (text!=null) {
-                    Highlights.styleProposal(styledString, text, false);
+                    Highlights.styleFragment(
+                            styledString, text, false, null, 
+                            CeylonPlugin.getOutlineFont());
                 }
                 cell.setText(styledString.toString());
                 cell.setStyleRanges(styledString.getStyleRanges());
                 super.update(cell);
             }
             public String getText(Object element) {
-                FunctionOrValue model = ((Parameter) element).getModel();
-                if (isDefaulted(parameterModels, (Parameter) element)) {
-                    return refactoring.getDefaultArgs().get(model);
+                Parameter p = (Parameter) element;
+                FunctionOrValue model = p.getModel();
+                if (isDefaulted(parameterModels, p)) {
+                    return refactoring.getDefaultArgs()
+                            .get(model);
                 }
                 else {
                     return null;
@@ -320,13 +364,17 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
             @Override
             protected boolean canEdit(Object element) {
-                return isDefaulted(parameterModels, (Parameter) element);
+                Parameter p = (Parameter) element;
+                return isDefaulted(parameterModels, p);
             }
             @Override
             protected Object getValue(Object element) {
-                FunctionOrValue model = ((Parameter) element).getModel();
-                if (isDefaulted(parameterModels, (Parameter) element)) {
-                    String arg = refactoring.getDefaultArgs().get(model);
+                Parameter p = (Parameter) element;
+                FunctionOrValue model = p.getModel();
+                if (isDefaulted(parameterModels, p)) {
+                    String arg = 
+                            refactoring.getDefaultArgs()
+                                .get(model);
                     return arg==null ? "" : arg;
                 }
                 else {
@@ -335,11 +383,11 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
             @Override
             protected void setValue(Object element, Object value) {
-                updateArgument((Parameter) element, (String) value,
-                        refactoring);
-                FunctionOrValue model = ((Parameter) element).getModel();
-                refactoring.getDefaultArgs().put(model, 
-                        (String) value);
+                Parameter p = (Parameter) element;
+                String str = (String) value;
+                updateArgument(p, str, refactoring);
+                FunctionOrValue model = p.getModel();
+                refactoring.getDefaultArgs().put(model, str);
                 viewer.update(element, null);
                 drawSignature();
             } 
@@ -347,27 +395,35 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         
         viewer.setInput(parameterModels);
         
-        final Button upButton = new Button(composite, SWT.PUSH);
+        final Button upButton = 
+                new Button(composite, SWT.PUSH);
         upButton.setText("Up");
         GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
         bgd.grabExcessHorizontalSpace=false;
         bgd.widthHint = 50;
         upButton.setLayoutData(bgd);
-        upButton.addSelectionListener(new SelectionListener() {
+        upButton.addSelectionListener(
+                new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int[] indices = viewer.getTable().getSelectionIndices();
+                Table table = viewer.getTable();
+                int[] indices = table.getSelectionIndices();
                 if (indices.length>0 && indices[0]>0) {
                     int index = indices[0];
-                    parameterModels.add(index-1, parameterModels.remove(index));
-                    List<Integer> order = refactoring.getOrder();
+                    List<Integer> order = 
+                            refactoring.getOrder();
+                    List<Boolean> defaulted = 
+                            refactoring.getDefaulted();
+                    List<String> names = 
+                            refactoring.getNames();
+                    Parameter p = 
+                            parameterModels.remove(index);
+                    parameterModels.add(index-1, p);
                     order.add(index-1, order.remove(index));
-                    List<Boolean> defaulted = refactoring.getDefaulted();
-                    List<String> names = refactoring.getNames();
                     defaulted.add(index-1, defaulted.remove(index));
                     names.add(index-1, names.remove(index));
                     viewer.refresh();
-                    viewer.getTable().select(index-1);
+                    table.select(index-1);
                 }
                 drawSignature();
             }
@@ -375,25 +431,32 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        final Button downButton = new Button(composite, SWT.PUSH);
+        final Button downButton = 
+                new Button(composite, SWT.PUSH);
         downButton.setText("Down");
         downButton.setLayoutData(bgd);
-        downButton.addSelectionListener(new SelectionListener() {
+        downButton.addSelectionListener(
+                new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int[] indices = viewer.getTable().getSelectionIndices();
-                int lastIndex = viewer.getTable().getItemCount()-1;
+                Table table = viewer.getTable();
+                int[] indices = table.getSelectionIndices();
+                int lastIndex = table.getItemCount()-1;
                 if (indices.length>0 && indices[0]<lastIndex) {
                     int index = indices[0];
-                    parameterModels.add(index+1, parameterModels.remove(index));
-                    List<Integer> order = refactoring.getOrder();
+                    List<Integer> order = 
+                            refactoring.getOrder();
+                    List<Boolean> defaulted = 
+                            refactoring.getDefaulted();
+                    List<String> names = 
+                            refactoring.getNames();
+                    parameterModels.add(index+1, 
+                            parameterModels.remove(index));
                     order.add(index+1, order.remove(index));
-                    List<Boolean> defaulted = refactoring.getDefaulted();
-                    List<String> names = refactoring.getNames();
                     defaulted.add(index+1, defaulted.remove(index));
                     names.add(index+1, names.remove(index));
                     viewer.refresh();
-                    viewer.getTable().select(index+1);
+                    table.select(index+1);
                 }
                 drawSignature();
             }
@@ -401,26 +464,32 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        final Button addButton = new Button(composite, SWT.PUSH);
+        final Button addButton = 
+                new Button(composite, SWT.PUSH);
         addButton.setText("Add...");
         addButton.setLayoutData(bgd);
         
-        final Button removeButton = new Button(composite, SWT.PUSH);
+        final Button removeButton = 
+                new Button(composite, SWT.PUSH);
         removeButton.setText("Remove");
         removeButton.setLayoutData(bgd);
         
         new Label(composite, SWT.NONE);
 
-        final Button toggleButton = new Button(composite, SWT.PUSH);
+        final Button toggleButton = 
+                new Button(composite, SWT.PUSH);
         toggleButton.setText("Toggle Optionality");
         toggleButton.setLayoutData(bgd);
-        toggleButton.addSelectionListener(new SelectionListener() {
+        toggleButton.addSelectionListener(
+                new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int[] indices = viewer.getTable().getSelectionIndices();
+                Table table = viewer.getTable();
+                int[] indices = table.getSelectionIndices();
                 if (indices.length>0) {
                     int index = indices[0];
-                    List<Boolean> defaulted = refactoring.getDefaulted();
+                    List<Boolean> defaulted = 
+                            refactoring.getDefaulted();
                     defaulted.set(index, !defaulted.get(index));
                     viewer.refresh();
                 }
@@ -430,14 +499,17 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        removeButton.addSelectionListener(new SelectionListener() {
+        removeButton.addSelectionListener(
+                new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int[] indices = viewer.getTable().getSelectionIndices();
-                int lastIndex = viewer.getTable().getItemCount()-1;
+                Table table = viewer.getTable();
+                int[] indices = table.getSelectionIndices();
+                int lastIndex = table.getItemCount()-1;
                 if (indices.length>0 && indices[0]<=lastIndex) {
                     int index = indices[0];
-                    Parameter p = parameterModels.remove(index);
+                    Parameter p = 
+                            parameterModels.remove(index);
                     refactoring.getDefaulted().remove(index);
                     refactoring.getOrder().remove(index);
                     refactoring.getNames().remove(index);
@@ -465,8 +537,11 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 for (Parameter p: parameterModels) {
                     names.add(p.getName());
                 }
-                AddParameterDialog dialog = new AddParameterDialog(getShell(), 
-                        refactoring.node, refactoring.project, names);
+                AddParameterDialog dialog = 
+                        new AddParameterDialog(getShell(), 
+                                refactoring.node, 
+                                refactoring.project, 
+                                names);
                 if (dialog.open()==Window.OK) {
                     String name = dialog.getName();
                     Type type = dialog.getType();
@@ -474,7 +549,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     Value model = new Value();
                     model.setType(type);
                     model.setName(name);
-                    Scope scope = refactoring.node.getScope();
+                    Scope scope = 
+                            refactoring.node.getScope();
                     model.setContainer(scope);
                     model.setScope(scope);
                     Parameter p = new Parameter();
@@ -484,14 +560,22 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     p.setDeclaration((Declaration) scope);
                     model.setInitializerParameter(p);
                     int index = parameterModels.size();
-                    int order = refactoring.getParameters().size();
+                    int order = 
+                            refactoring.getParameters()
+                                .size();
                     parameterModels.add(p);
-                    refactoring.getParameters().add(p);
-                    refactoring.getDefaulted().add(false);
-                    refactoring.getNames().add(name);
-                    refactoring.getArguments().put(p.getModel(), arg);
-                    refactoring.getDefaultArgs().put(model, arg);
-                    refactoring.getOrder().add(index, order);
+                    refactoring.getParameters()
+                        .add(p);
+                    refactoring.getDefaulted()
+                        .add(false);
+                    refactoring.getNames()
+                        .add(name);
+                    refactoring.getArguments()
+                        .put(p.getModel(), arg);
+                    refactoring.getDefaultArgs()
+                        .put(model, arg);
+                    refactoring.getOrder()
+                        .add(index, order);
                     viewer.add(p);
                     viewer.refresh();
                     viewer.getTable().select(index);
@@ -522,14 +606,16 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             downButton.setEnabled(false);
         }
         
-        new Label(composite, SWT.SEPARATOR|SWT.HORIZONTAL)
+        new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL)
             .setLayoutData(GridDataFactory.fillDefaults().span(4, 1).create());
         
         Label l = new Label(composite, SWT.NONE);
         l.setLayoutData(GridDataFactory.fillDefaults().span(4, 1).create());
         l.setText("Refactored signature preview:");
         
-        signatureText = new StyledText(composite, SWT.FLAT|SWT.READ_ONLY|SWT.WRAP);
+        signatureText = 
+                new StyledText(composite, 
+                        SWT.FLAT | SWT.READ_ONLY | SWT.WRAP);
         signatureText.setLayoutData(GridDataFactory.fillDefaults().hint(300, 50).grab(true, true).span(4, 3).create());
         signatureText.setBackground(composite.getBackground());
         drawSignature();
@@ -543,28 +629,45 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         Node decNode = getReferencedNode(declaration);
         Tree.ParameterList pl;
         if (decNode instanceof Tree.AnyMethod) {
-            pl = ((Tree.AnyMethod) decNode).getParameterLists().get(0);
+            Tree.AnyMethod m = (Tree.AnyMethod) decNode;
+            pl = m.getParameterLists().get(0);
         }
         else if (decNode instanceof Tree.AnyClass) {
-            pl = ((Tree.AnyClass) decNode).getParameterList();
+            Tree.AnyClass c = (Tree.AnyClass) decNode;
+            pl = c.getParameterList();
         }
         else if (decNode instanceof Tree.Constructor) {
-            pl = ((Tree.Constructor) decNode).getParameterList();
+            Tree.Constructor c = (Tree.Constructor) decNode;
+            pl = c.getParameterList();
         }
         else {
             return;
         }
+        CeylonUnit ceylonUnit = 
+                (CeylonUnit) declaration.getUnit();
         List<CommonToken> tokens = 
-                ((CeylonUnit) declaration.getUnit()).getPhasedUnit().getTokens();
+                ceylonUnit.getPhasedUnit().getTokens();
         Tree.Parameter[] reorderedParameters = 
                 ref.reorderedParameters(pl.getParameters());
         ReplaceEdit edit = 
-                ref.reorderParamsEdit(pl, reorderedParameters, false, tokens);
-        int start = ((CommonToken) decNode.getMainToken()).getStartIndex() - decNode.getStartIndex();
-        int end = pl.getStartIndex() - decNode.getStartIndex();
-        String text = Nodes.toString(decNode, tokens).substring(start,end) + edit.getText();
+                ref.reorderParamsEdit(pl, 
+                        reorderedParameters, false, tokens);
+        CommonToken token = 
+                (CommonToken) decNode.getMainToken();
+        int start = 
+                token.getStartIndex() - 
+                decNode.getStartIndex();
+        int end = 
+                pl.getStartIndex() - 
+                decNode.getStartIndex();
+        String text = 
+                Nodes.toString(decNode, tokens)
+                    .substring(start,end) 
+                    + edit.getText();
         StyledString styledString = new StyledString();
-        Highlights.styleProposal(styledString, text, false);
+        Highlights.styleFragment(styledString, 
+                text, false, null, 
+                CeylonPlugin.getEditorFont());
         signatureText.setText(styledString.getString());
         signatureText.setStyleRanges(styledString.getStyleRanges());
         signatureText.setFont(CeylonPlugin.getEditorFont());
@@ -583,11 +686,17 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
 //                setErrorMessage("Missing argument expression");
 //                return false;
             }
-            String typeExpression = parameter.getType().asString();
+            String typeExpression = 
+                    parameter.getType().asString();
             String parameterName = parameter.getName();
-            String paramDeclaration = "(" + typeExpression + " " + parameterName + " = " + text + ")";
+            String paramDeclaration = 
+                    "(" + typeExpression + 
+                    " " + parameterName + 
+                    " = " + text + ")";
             
-            CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(paramDeclaration));
+            ANTLRStringStream stream = 
+                    new ANTLRStringStream(paramDeclaration);
+            CeylonLexer lexer = new CeylonLexer(stream);
             CommonTokenStream ts = new CommonTokenStream(lexer);
             ts.fill();
             List<LexError> lexErrors = lexer.getErrors();
@@ -608,7 +717,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 return false;
             }
             
-            final TypecheckerUnit unit = refactoring.node.getUnit();
+            final TypecheckerUnit unit = 
+                    refactoring.node.getUnit();
             final Scope scope = refactoring.node.getScope();
             final Value value = new Value();
             value.setName(parameterName);
@@ -623,11 +733,13 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     super.visitAny(that);
                 }
                 @Override
-                public void visit(Tree.AttributeDeclaration that) {
+                public void visit(
+                        Tree.AttributeDeclaration that) {
                     that.setDeclarationModel(value);
                     super.visit(that);
                 }
-                @Override public void visit(Tree.ParameterDeclaration that) {
+                @Override public void visit(
+                        Tree.ParameterDeclaration that) {
                     that.setParameterModel(param);
                     super.visit(that);
                 }
@@ -639,8 +751,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             
             new ErrorVisitor() {
                 @Override
-                protected void handleMessage(int startOffset, int endOffset, 
-                        int startCol, int startLine, Message error) {
+                protected void handleMessage(
+                        int startOffset, int endOffset, 
+                        int startCol, int startLine, 
+                        Message error) {
                     setErrorMessage(error.getMessage());
                 }
             }.visit(parameters);

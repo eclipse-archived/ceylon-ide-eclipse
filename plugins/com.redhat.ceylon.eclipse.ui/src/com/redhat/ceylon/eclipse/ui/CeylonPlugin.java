@@ -85,6 +85,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
             PLUGIN_ID + ".hoverFont";
     public static final String COMPLETION_FONT_PREFERENCE = 
             PLUGIN_ID + ".completionFont";
+    public static final String OPEN_FONT_PREFERENCE = 
+            PLUGIN_ID + ".openFont";
     public static final String OUTLINE_FONT_PREFERENCE = 
             PLUGIN_ID + ".outlineFont";
     
@@ -526,6 +528,10 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
     public static Font getCompletionFont() {
         return getFont(COMPLETION_FONT_PREFERENCE);
+    }
+
+    public static Font getOpenDialogFont() {
+        return getFont(OPEN_FONT_PREFERENCE);
     }
 
     public static Font getOutlineFont() {

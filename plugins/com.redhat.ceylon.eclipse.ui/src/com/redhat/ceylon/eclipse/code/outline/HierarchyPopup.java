@@ -210,7 +210,9 @@ public class HierarchyPopup extends TreeViewPopup {
         String rest = tokens.nextToken();
         int loc = rest.indexOf(" of ") + 4;
         result.append(rest.substring(0, loc));
-        Highlights.styleProposal(result, rest.substring(loc), false);
+        Highlights.styleFragment(result, 
+                rest.substring(loc), false, null, 
+                CeylonPlugin.getOutlineFont());
         return result;
     }
 

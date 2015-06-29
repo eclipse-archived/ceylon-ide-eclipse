@@ -321,13 +321,15 @@ class AnnotationInformationControl
                 if (message!=null && !message.isEmpty()) {
                     message = toInitialUppercase(message);
                     StyledString styled =
-                            Highlights.styleProposal(message, 
-                                    true, true);
+                            Highlights.styleProposal(
+                                    message, true, true);
                     text.setText(styled.getString());
                     StyleRange[] styleRanges = 
                             styled.getStyleRanges();
-                    Font editorFont = CeylonPlugin.getEditorFont();
-                    Font hoverFont = CeylonPlugin.getHoverFont();
+                    Font editorFont = 
+                            CeylonPlugin.getEditorFont();
+                    Font hoverFont = 
+                            CeylonPlugin.getHoverFont();
                     FontData monospaceFontData = 
                             editorFont.getFontData()[0];
                     Display display = Display.getDefault();

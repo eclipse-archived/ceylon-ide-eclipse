@@ -286,20 +286,15 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         @Override
         public boolean matchItem(Object item) {
-            Declaration declaration = 
-                    toDeclaration(item);
+            Declaration declaration = toDeclaration(item);
             Unit unit = declaration.getUnit();
-            Module module = 
-                    unit.getPackage().getModule();
-            String moduleName = 
-                    module.getNameAsString();
+            Module module = unit.getPackage().getModule();
+            String moduleName = module.getNameAsString();
             if (filterJDK && 
                     isJDKModule(moduleName) ||
                 filterOracleJDK && 
-                    isOracleJDKModule(moduleName)) {
-                return false;
-            }
-            if (filterDeprecated && 
+                    isOracleJDKModule(moduleName) ||
+                filterDeprecated && 
                     declaration.isDeprecated()) {
                 return false;
             }
@@ -351,7 +346,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         @Override
         public boolean equalsFilter(ItemsFilter filter) {
             return isCompatibleFilter(filter) &&
-                    filter.getPattern().equals(getPattern());
+                    filter.getPattern()
+                        .equals(getPattern());
         }
 
         @Override
@@ -646,7 +642,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         public void update(ViewerCell cell) {
             Object element = cell.getElement();
             if (element instanceof DeclarationProxy) {
-                StyledString styledText = getStyledText(element);
+                StyledString styledText = 
+                        getStyledText(element);
                 cell.setText(styledText.toString());
                 cell.setStyleRanges(styledText.getStyleRanges());
                 cell.setImage(getImage(element));

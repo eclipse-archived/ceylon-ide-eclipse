@@ -24,6 +24,7 @@ import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 final class FunctionCompletionProposal extends
@@ -110,8 +111,9 @@ final class FunctionCompletionProposal extends
     @Override
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
-        Highlights.styleProposal(result, getDisplayString(), 
-                qualifiedNameIsPath());
+        Highlights.styleFragment(result, 
+                getDisplayString(), qualifiedNameIsPath(), 
+                null, CeylonPlugin.getCompletionFont());
         return result;
     }
 

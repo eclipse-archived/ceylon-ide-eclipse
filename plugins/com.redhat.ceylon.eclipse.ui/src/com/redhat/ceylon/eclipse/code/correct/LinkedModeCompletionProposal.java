@@ -25,6 +25,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
@@ -193,7 +194,9 @@ public class LinkedModeCompletionProposal
     @Override
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
-        Highlights.styleProposal(result, getDisplayString(), false);
+        Highlights.styleFragment(result, 
+                getDisplayString(), false, null, 
+                CeylonPlugin.getCompletionFont());
         return result;
     }
 

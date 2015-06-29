@@ -68,6 +68,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
@@ -476,8 +477,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         @Override
         public StyledString getStyledDisplayString() {
             StyledString result = new StyledString();
-            Highlights.styleProposal(result, 
-                    getDisplayString(), false);
+            Highlights.styleFragment(result, 
+                    getDisplayString(), false, null, 
+                    CeylonPlugin.getCompletionFont());
             return result;
         }
 

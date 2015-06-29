@@ -2518,16 +2518,25 @@
     <fontDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.completionFont" 
-        label="Ceylon Completion Proposals Text Font"
+        label="Ceylon Completion Proposal Font"
         defaultsTo="org.eclipse.jface.dialogfont">
         <description>
-            Font for displaying proposals in the completion popup and Open dialogs
+            Font for displaying proposals in the completion popup
+        </description>
+    </fontDefinition>
+    <fontDefinition
+        categoryId="com.redhat.ceylon.eclipse.ui.theme"
+        id="com.redhat.ceylon.eclipse.ui.openFont" 
+        label="Ceylon Open Dialog Label Font"
+        defaultsTo="org.eclipse.jface.dialogfont">
+        <description>
+            Font for displaying labels in Open dialogs
         </description>
     </fontDefinition>
     <fontDefinition
         categoryId="com.redhat.ceylon.eclipse.ui.theme"
         id="com.redhat.ceylon.eclipse.ui.outlineFont" 
-        label="Ceylon Outline Text Font"
+        label="Ceylon Outline Label Font"
         defaultsTo="org.eclipse.jface.dialogfont">
         <description>
             Font for displaying labels in outline and hierarchy views

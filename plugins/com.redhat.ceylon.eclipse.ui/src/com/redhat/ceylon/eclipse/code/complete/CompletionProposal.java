@@ -135,7 +135,7 @@ public class CompletionProposal implements ICompletionProposal,
     @Override
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
-        Highlights.styleProposal(result, 
+        Highlights.styleFragment(result, 
         		getDisplayString(), 
                 qualifiedNameIsPath(), 
                 currentPrefix,

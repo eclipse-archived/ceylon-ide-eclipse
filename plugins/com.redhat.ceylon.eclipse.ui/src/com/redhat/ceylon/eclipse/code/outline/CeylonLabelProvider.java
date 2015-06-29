@@ -588,7 +588,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             result.append(name, styler);
         }
         else {
-            Highlights.appendId(result, prefix, name, styler, font);
+            Highlights.styleIdentifier(result, prefix, name, styler, font);
         }
     }
 
