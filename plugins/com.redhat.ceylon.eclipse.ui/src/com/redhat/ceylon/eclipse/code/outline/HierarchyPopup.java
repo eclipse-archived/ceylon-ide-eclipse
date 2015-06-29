@@ -45,7 +45,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -415,9 +415,9 @@ public class HierarchyPopup extends TreeViewPopup {
             public void run() {
                 PreferencesUtil.createPreferenceDialogOn(
                         getShell(), 
-                        CeylonPreferencePage.ID, 
+                        CeylonOutlinesPreferencePage.ID,
                         new String[] {
-                                CeylonPreferencePage.ID,
+                                CeylonOutlinesPreferencePage.ID,
                                 CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
                         }, 
                         null).open();

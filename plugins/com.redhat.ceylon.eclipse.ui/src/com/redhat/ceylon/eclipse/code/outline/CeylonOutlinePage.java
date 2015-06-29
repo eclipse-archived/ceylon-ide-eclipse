@@ -73,7 +73,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -262,9 +262,9 @@ public class CeylonOutlinePage extends ContentOutlinePage
             public void run() {
                 createPreferenceDialogOn(
                         getSite().getShell(), 
-                        CeylonPreferencePage.ID, 
+                        CeylonOutlinesPreferencePage.ID,
                         new String[] { 
-                                CeylonPreferencePage.ID,
+                                CeylonOutlinesPreferencePage.ID,
                                 CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
                         }, 
                         null).open();

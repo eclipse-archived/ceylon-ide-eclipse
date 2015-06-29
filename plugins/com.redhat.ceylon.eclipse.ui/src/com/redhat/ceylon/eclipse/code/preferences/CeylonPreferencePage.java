@@ -3,16 +3,11 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCH_HIGHLIGHTING;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -29,7 +24,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonStepFilterPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonPreferencePage extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
@@ -37,11 +31,6 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
     private StringFieldEditor sourceFolder;
     private StringFieldEditor resourceFolder;
     private RadioGroupFieldEditor projectType;
-    private BooleanFieldEditor displayOutlineTypes;
-    private BooleanFieldEditor displayOutlineParameters;
-    private BooleanFieldEditor displayOutlineParameterTypes;
-    private BooleanFieldEditor displayOutlineTypeParameters;
-    private RadioGroupFieldEditor matchHighlighting;
     
     public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences";
     
@@ -52,7 +41,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
 
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(EditorUtil.getPreferences());
+        setPreferenceStore(getPreferences());
     }
 
     @Override
@@ -70,19 +59,6 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
             }
         });
         
-        Link colorsAndFontsLink = new Link(parent, 0);
-        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize fonts and label colors.");
-        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                createPreferenceDialogOn(getShell(), 
-                        CeylonPlugin.COLORS_AND_FONTS_PAGE_ID, null, 
-                        "selectFont:" + 
-                                CeylonPlugin.OUTLINE_FONT_PREFERENCE);
-            }
-        });
-                
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
         composite.setLayout(new GridLayout(1, true));
@@ -133,6 +109,17 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
             }
         });
         
+        Link outlineLink = new Link(parent, 0);
+        outlineLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        outlineLink.setText("See '<a>Outlines and Hierarchies</a>' to customize outline and hierarchy views.");
+        outlineLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonOutlinesPreferencePage.ID, null, null);
+            }
+        });
+        
         Link openLink = new Link(parent, 0);
         openLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         openLink.setText("See '<a>Open Dialogs</a>' to customize 'Open ...' dialog navigation.");
@@ -175,27 +162,6 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
 
     @Override
     protected void createFieldEditors() {
-        final Composite outlines = createGroup(2, "Outline and Hierarchy Labels");
-        displayOutlineTypes = new BooleanFieldEditor(RETURN_TYPES_IN_OUTLINES, 
-                "Display return types", 
-                getFieldEditorParent(outlines));
-        displayOutlineTypes.load();
-        addField(displayOutlineTypes);
-        displayOutlineTypeParameters = new BooleanFieldEditor(TYPE_PARAMS_IN_OUTLINES, 
-                "Display type parameters", 
-                getFieldEditorParent(outlines));
-        displayOutlineTypeParameters.load();
-        addField(displayOutlineTypeParameters);
-        displayOutlineParameterTypes = new BooleanFieldEditor(PARAM_TYPES_IN_OUTLINES, 
-                "Display parameter types", 
-                getFieldEditorParent(outlines));
-        displayOutlineParameterTypes.load();
-        addField(displayOutlineParameterTypes);
-        displayOutlineParameters = new BooleanFieldEditor(PARAMS_IN_OUTLINES, 
-                "Display parameter names ", 
-                getFieldEditorParent(outlines));
-        displayOutlineParameters.load();
-        addField(displayOutlineParameters);
         
         final Composite group = createGroup(1, "Defaults for new Ceylon projects");
         projectType = new RadioGroupFieldEditor(DEFAULT_PROJECT_TYPE, 
@@ -217,42 +183,21 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         addField(sourceFolder);
         addField(resourceFolder);
 
-        final Composite highlighting = createGroup(1, "Match highlighting");
-        matchHighlighting = new RadioGroupFieldEditor(MATCH_HIGHLIGHTING, 
-                "Emphasize matching text in 'Open' dialogs and proposal lists:", 4, 
-                new String[][] { new String[] { "Bold", "bold" }, 
-                        new String[] { "Underline", "underline" },
-                        new String[] { "Text color", "color" },
-//                        new String[] { "Background color", "background" },
-                        new String[] { "None", "none" } }, 
-                        getFieldEditorParent(highlighting));
-        matchHighlighting.load();
-        addField(matchHighlighting);
     }
     
     @Override
     protected void performDefaults() {
         super.performDefaults();
         projectType.loadDefault();
-        matchHighlighting.loadDefault();
         sourceFolder.loadDefault();
         resourceFolder.loadDefault();
-        displayOutlineTypes.loadDefault();
-        displayOutlineParameters.loadDefault();
-        displayOutlineTypeParameters.loadDefault();
-        displayOutlineParameterTypes.loadDefault();
     }
     
     @Override
     public boolean performOk() {
         projectType.store();
-        matchHighlighting.store();
         sourceFolder.store();
         resourceFolder.store();
-        displayOutlineTypes.store();
-        displayOutlineParameters.store();
-        displayOutlineTypeParameters.store();
-        displayOutlineParameterTypes.store();
         return true;
     }
 

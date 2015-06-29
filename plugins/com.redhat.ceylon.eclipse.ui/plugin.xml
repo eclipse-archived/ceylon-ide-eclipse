@@ -2069,6 +2069,16 @@
        </keywordReference>
        </page>
        <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.outlines"
+           name="Outlines and Hierarchies"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage"
+           category="com.redhat.ceylon.eclipse.ui.preferences">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="com.redhat.ceylon.eclipse.ui.keywords.outlines">
+       </keywordReference>
+       </page>
+       <page
            id="com.redhat.ceylon.eclipse.ui.preferences.open"
            name="Open Dialogs"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage"
@@ -2113,6 +2123,9 @@
    <keyword
          label="open declaration filters"
          id="com.redhat.ceylon.eclipse.ui.keywords.open"/>
+   <keyword
+         label="outline hierarchy labels match highlighting"
+         id="com.redhat.ceylon.eclipse.ui.keywords.outlines"/>
    <keyword
          label="save actions imports format"
          id="com.redhat.ceylon.eclipse.ui.keywords.save"/>

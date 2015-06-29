@@ -95,7 +95,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.open.OpenDeclarationInHierarchyAction;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
@@ -581,9 +581,9 @@ public class HierarchyView extends ViewPart {
             public void run() {
                 PreferencesUtil.createPreferenceDialogOn(
                         getSite().getShell(), 
-                        CeylonPreferencePage.ID, 
+                        CeylonOutlinesPreferencePage.ID,
                         new String[] {
-                                CeylonPreferencePage.ID,
+                                CeylonOutlinesPreferencePage.ID,
                                 CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
                         }, 
                         null).open();
