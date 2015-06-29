@@ -24,8 +24,10 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.eclipse.util.Highlights.FontStyler;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 
 public class KeywordCompletionProposal extends CompletionProposal {
@@ -118,7 +120,9 @@ public class KeywordCompletionProposal extends CompletionProposal {
 
     @Override
     public StyledString getStyledDisplayString() {
-        return new StyledString(getDisplayString(), Highlights.KW_STYLER);
+        return new StyledString(getDisplayString(), 
+                new FontStyler(CeylonPlugin.getCompletionFont(), 
+                        Highlights.KW_STYLER));
     }
     
     static void addKeywordProposal(int offset, String prefix, 
