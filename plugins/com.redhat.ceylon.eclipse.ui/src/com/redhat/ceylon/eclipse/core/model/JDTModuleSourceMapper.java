@@ -20,6 +20,8 @@
 
 package com.redhat.ceylon.eclipse.core.model;
 
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -196,20 +198,22 @@ public class JDTModuleSourceMapper extends LazyModuleSourceMapper {
 
         @Override
         public void parseUnit(VirtualFile srcDir) {
-//            sourceDirectory = srcDir;
             if (srcDir instanceof ZipFileVirtualFile && javaProject != null) {
-                ZipFileVirtualFile zipFileVirtualFile = (ZipFileVirtualFile) srcDir;
-                String archiveName = zipFileVirtualFile.getPath();
-                try {
-                    for (IProject refProject : javaProject.getProject().getReferencedProjects()) {
-                        if (archiveName.contains(CeylonBuilder.getCeylonModulesOutputDirectory(refProject).getAbsolutePath())) {
-                            referencedProject = refProject;
-                            break;
+                if (ceylonModel().getProject(javaProject.getProject()) != null) {
+                    // It's a Ceylon project
+                    ZipFileVirtualFile zipFileVirtualFile = (ZipFileVirtualFile) srcDir;
+                    String archiveName = zipFileVirtualFile.getPath();
+                    try {
+                        for (IProject refProject : javaProject.getProject().getReferencedProjects()) {
+                            if (archiveName.contains(CeylonBuilder.getCeylonModulesOutputDirectory(refProject).getAbsolutePath())) {
+                                referencedProject = refProject;
+                                break;
+                            }
                         }
+                    } catch (CoreException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
                     }
-                } catch (CoreException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
                 }
             }
             super.parseUnit(srcDir);

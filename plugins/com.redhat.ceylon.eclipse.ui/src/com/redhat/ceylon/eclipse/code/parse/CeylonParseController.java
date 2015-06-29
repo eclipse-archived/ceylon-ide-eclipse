@@ -50,6 +50,7 @@ import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
@@ -564,8 +565,11 @@ public class CeylonParseController {
     private static TypeChecker createTypeChecker(IProject project, 
             boolean showWarnings) 
             throws CoreException {
+        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        
         final IJavaProject javaProject = 
                 project != null ? JavaCore.create(project) : null;
+
         TypeCheckerBuilder tcb = new TypeCheckerBuilder()
                 .verbose(false)
                 .moduleManagerFactory(new ModuleManagerFactory(){
@@ -584,12 +588,7 @@ public class CeylonParseController {
         File cwd;
         String systemRepo;
         boolean offline;
-        if (project == null) {
-            //I believe this case can only happen
-            //in the structure compare editor, so
-            //it does not really matter what repo
-            //we use as long as it has the language
-            //module.
+        if (ceylonProject == null) {
             cwd = null;
             systemRepo = CeylonPlugin.getInstance()
                     .getCeylonRepository()
