@@ -2257,12 +2257,10 @@
                   relationship="stack"/>
             <view id="org.eclipse.ui.views.ContentOutline"
                   relative="org.eclipse.ui.editorss"
-                  closeable="false"
                   ratio="0.72"
                   relationship="right"/>
             <view id="com.redhat.ceylon.eclipse.ui.view.HierarchyView"
                   relative="org.eclipse.ui.views.ContentOutline"
-                  closeable="true"
                   visible="true"
                   relationship="stack"/>
             <actionSet

@@ -298,7 +298,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
     }
 
     public CeylonOutlinePage getOutlinePage() {
-        if (outlinePage == null) {
+        if (outlinePage == null || outlinePage.isDisposed()) {
             outlinePage = 
                     new CeylonOutlinePage(
                             getParseController(),

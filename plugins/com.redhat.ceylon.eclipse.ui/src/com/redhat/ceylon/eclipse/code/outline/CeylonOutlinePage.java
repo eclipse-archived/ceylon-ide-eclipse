@@ -291,7 +291,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         sourceViewer = null;
         parseController = null;
     }
-
+    
     private void expand(CeylonOutlineNode rootNode) {
         if (rootNode!=null) {
             for (CeylonOutlineNode on: rootNode.getChildren()) {
@@ -707,6 +707,10 @@ public class CeylonOutlinePage extends ContentOutlinePage
                     tokenStartIndex<=offset && 
                     tokenStopIndex+1>=offset;
         }
+    }
+
+    public boolean isDisposed() {
+        return sourceViewer==null;
     }
     
 }
