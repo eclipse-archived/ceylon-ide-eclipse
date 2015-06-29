@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_LAUNCH_VERBOSE;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
@@ -96,8 +97,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         //user values at the end although JVMs behave differently
         List<String> vmArgs = new ArrayList<String>();
         vmArgs.add("-Dceylon.system.version="+Versions.CEYLON_VERSION_NUMBER);
-        vmArgs.add("-Dceylon.system.repo="+CeylonPlugin.getCeylonPluginRepository(
-            System.getProperty("ceylon.repo", "")).getAbsolutePath());
+        vmArgs.add("-Dceylon.system.repo="+getInterpolatedCeylonSystemRepo(getJavaProject(configuration).getProject()));
         vmArgs.add("-Dceylon.debug.startEvaluationThread=true");
         
         vmArgs.addAll(Arrays.asList(DebugPlugin.parseArguments(super.getVMArguments(configuration))));
