@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCH_HIGHLIGHTING;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
@@ -12,7 +11,6 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -33,7 +31,6 @@ public class CeylonOutlinesPreferencePage extends FieldEditorPreferencePage
     private BooleanFieldEditor displayOutlineParameters;
     private BooleanFieldEditor displayOutlineParameterTypes;
     private BooleanFieldEditor displayOutlineTypeParameters;
-    private RadioGroupFieldEditor matchHighlighting;
     
     public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.outlines";
     
@@ -89,7 +86,7 @@ public class CeylonOutlinesPreferencePage extends FieldEditorPreferencePage
 
     @Override
     protected void createFieldEditors() {
-        final Composite outlines = createGroup(2, "Outline and Hierarchy Labels");
+        final Composite outlines = createGroup(2, "Labels");
         displayOutlineTypes = new BooleanFieldEditor(RETURN_TYPES_IN_OUTLINES, 
                 "Display return types", 
                 getFieldEditorParent(outlines));
@@ -111,23 +108,11 @@ public class CeylonOutlinesPreferencePage extends FieldEditorPreferencePage
         displayOutlineParameters.load();
         addField(displayOutlineParameters);
         
-        final Composite highlighting = createGroup(1, "Match highlighting");
-        matchHighlighting = new RadioGroupFieldEditor(MATCH_HIGHLIGHTING, 
-                "Emphasize matching text in 'Open' dialogs and proposal lists:", 4, 
-                new String[][] { new String[] { "Bold", "bold" }, 
-                        new String[] { "Underline", "underline" },
-                        new String[] { "Text color", "color" },
-//                        new String[] { "Background color", "background" },
-                        new String[] { "None", "none" } }, 
-                        getFieldEditorParent(highlighting));
-        matchHighlighting.load();
-        addField(matchHighlighting);
     }
     
     @Override
     protected void performDefaults() {
         super.performDefaults();
-        matchHighlighting.loadDefault();
         displayOutlineTypes.loadDefault();
         displayOutlineParameters.loadDefault();
         displayOutlineTypeParameters.loadDefault();
@@ -136,7 +121,6 @@ public class CeylonOutlinesPreferencePage extends FieldEditorPreferencePage
     
     @Override
     public boolean performOk() {
-        matchHighlighting.store();
         displayOutlineTypes.store();
         displayOutlineParameters.store();
         displayOutlineTypeParameters.store();

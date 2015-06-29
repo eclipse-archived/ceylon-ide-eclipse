@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INACTIVE_OPEN_FILTERS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCH_HIGHLIGHTING;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_DIALOGS;
@@ -11,6 +12,7 @@ import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -35,6 +37,7 @@ public class CeylonOpenDialogsPreferencePage
     private BooleanFieldEditor paramTypes;
     private BooleanFieldEditor params;
     private BooleanFieldEditor types;
+    private RadioGroupFieldEditor matchHighlighting;
     
     public CeylonOpenDialogsPreferencePage() {
         setDescription("Preferences applying to the 'Open Declaration' and 'Open in Type Hierarchy View' dialogs."); 
@@ -46,6 +49,7 @@ public class CeylonOpenDialogsPreferencePage
         params.store();
         typeParams.store();
         types.store();
+        matchHighlighting.store();
         return super.performOk();
     }
     
@@ -56,6 +60,7 @@ public class CeylonOpenDialogsPreferencePage
         params.loadDefault();
         typeParams.loadDefault();
         types.loadDefault();
+        matchHighlighting.loadDefault();
         super.performDefaults();
     }
     
@@ -82,6 +87,19 @@ public class CeylonOpenDialogsPreferencePage
                 getFieldEditorParent(group));
         params.load();
         addField(params);
+
+        Group highlighting = createGroup(1, "Match highlighting");
+        matchHighlighting = new RadioGroupFieldEditor(MATCH_HIGHLIGHTING, 
+                "Emphasize matching text in 'Open' dialogs and proposal lists:", 4, 
+                new String[][] { new String[] { "Bold", "bold" }, 
+                        new String[] { "Underline", "underline" },
+                        new String[] { "Text color", "color" },
+//                        new String[] { "Background color", "background" },
+                        new String[] { "None", "none" } }, 
+                        getFieldEditorParent(highlighting));
+        matchHighlighting.load();
+        addField(matchHighlighting);
+        
     }
     
     @Override
@@ -113,8 +131,8 @@ public class CeylonOpenDialogsPreferencePage
                                 CeylonPlugin.OPEN_FONT_PREFERENCE);
             }
         });
-        Control result = super.createContents(parent);
-        return result;     
+        
+        return super.createContents(parent);
     }
 
 }
