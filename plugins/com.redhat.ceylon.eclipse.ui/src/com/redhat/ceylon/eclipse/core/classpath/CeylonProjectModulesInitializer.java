@@ -55,12 +55,7 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
         int size = containerPath.segmentCount();
         if (size > 0) {
             if (containerPath.segment(0).equals(CeylonProjectModulesContainer.CONTAINER_ID)) {
-                if (! ceylonModel().addProject(project.getProject())) {
-                    System.err.println("WARNING : Project Not Added in CeylonProjectModulesInitializer.initialize() for project :" + project.getProject());
-                    if (ceylonModel().getProject(project.getProject()) == null) {
-                        System.err.println("WARNING : Existing Project is null in CeylonProjectModulesInitializer.initialize() for project :" + project.getProject());
-                    }
-                }
+                ceylonModel().addProject(project.getProject());
                 IClasspathContainer c = getClasspathContainer(containerPath, project);
                 CeylonProjectModulesContainer container;
                 if (c instanceof CeylonProjectModulesContainer) {
