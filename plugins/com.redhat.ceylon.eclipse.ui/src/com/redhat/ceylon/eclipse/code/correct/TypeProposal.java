@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
@@ -18,8 +19,10 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.ProposalPosition;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -27,15 +30,17 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.IntersectionType;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.UnionType;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
-class TypeProposal implements ICompletionProposal, 
-        ICompletionProposalExtension2 {
+class TypeProposal 
+        implements ICompletionProposal, 
+                   ICompletionProposalExtension2, 
+                   ICompletionProposalExtension6 {
     
     private final Type type;
     private final int offset;
@@ -131,6 +136,15 @@ class TypeProposal implements ICompletionProposal,
     }
 
     @Override
+    public StyledString getStyledDisplayString() {
+        StyledString result = new StyledString();
+        Highlights.styleFragment(result, 
+                getDisplayString(), false, null, 
+                CeylonPlugin.getCompletionFont());
+        return result;
+    }
+    
+    @Override
     public Image getImage() {
         if (type==null) {
             return getDecoratedImage(CEYLON_LITERAL, 0, false);
@@ -181,6 +195,20 @@ class TypeProposal implements ICompletionProposal,
                             infType.asString(unit), 
                             rootNode);
         }
+        Collections.sort(supertypes, 
+                new Comparator<TypeDeclaration>() {
+            @Override
+            public int compare(TypeDeclaration x, 
+                    TypeDeclaration y) {
+                if (x.inherits(y)) {
+                    return 1;
+                }
+                if (y.inherits(x)) {
+                    return -1;
+                }
+                return y.getName().compareTo(x.getName());
+            }
+        });
         for (int j=supertypes.size()-1; j>=0; j--) {
             Type type = 
                     infType.getSupertype(supertypes.get(j));
