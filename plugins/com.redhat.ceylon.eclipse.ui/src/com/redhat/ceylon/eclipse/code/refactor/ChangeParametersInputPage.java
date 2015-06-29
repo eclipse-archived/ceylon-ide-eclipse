@@ -5,6 +5,8 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendT
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static org.eclipse.jface.viewers.ArrayContentProvider.getInstance;
+import static org.eclipse.swt.layout.GridData.FILL_BOTH;
+import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
 
@@ -17,6 +19,7 @@ import java.util.Set;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -65,6 +68,7 @@ import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Value;
@@ -119,13 +123,13 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         GridData gd = new GridData();
         gd.horizontalSpan=2;
         title.setLayoutData(gd);
-        GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd2 = new GridData(FILL_HORIZONTAL);
         gd2.horizontalSpan=2;
         new Label(result, SWT.SEPARATOR | SWT.HORIZONTAL)
             .setLayoutData(gd2);
 
         Composite composite = new Composite(result, SWT.NONE);
-        GridData cgd = new GridData(GridData.FILL_BOTH);
+        GridData cgd = new GridData(FILL_BOTH);
         cgd.grabExcessHorizontalSpace = true;
         cgd.grabExcessVerticalSpace = true;
         composite.setLayoutData(cgd);
@@ -143,7 +147,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         viewer.setContentProvider(getInstance());
         viewer.getTable().setHeaderVisible(true);
         viewer.getTable().setLinesVisible(true);
-        GridData tgd = new GridData(GridData.FILL_BOTH);
+        GridData tgd = new GridData(FILL_BOTH);
         tgd.horizontalSpan = 3;
         tgd.verticalSpan = 6;
         tgd.grabExcessHorizontalSpace = true;
@@ -158,10 +162,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         orderCol.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                final int originalIndex = 
+                int originalIndex = 
                         refactoring.getParameters()
                             .indexOf(element);
-                final int currentIndex = 
+                int currentIndex = 
                         parameterModels.indexOf(element);
                 if (originalIndex==currentIndex) {
                     return "";
@@ -187,10 +191,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 Parameter p = (Parameter) cell.getElement();
                 FunctionOrValue model = p.getModel();
                 StyledString styledString = new StyledString();
-                Type fullType = 
+                Reference ref = 
                         model.appliedReference(null, 
-                                Collections.<Type>emptyList())
-                        .getFullType();
+                                Collections.<Type>emptyList());
+                Type fullType = ref.getFullType();
                 appendTypeName(styledString, fullType);
                 cell.setImage(getImageForDeclaration(
                         fullType.getDeclaration()));
@@ -222,7 +226,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         nameCol.setEditingSupport(new EditingSupport(viewer) {
             @Override
             protected CellEditor getCellEditor(Object element) {
-                return new TextCellEditor(viewer.getTable(), SWT.FLAT);
+                Table table = viewer.getTable();
+                return new TextCellEditor(table, SWT.FLAT);
             }
             @Override
             protected boolean canEdit(Object element) {
@@ -268,9 +273,9 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         optCol.setEditingSupport(new EditingSupport(viewer) {
             @Override
             protected CellEditor getCellEditor(Object element) {
+                Table table = viewer.getTable();
                 return new ComboBoxCellEditor(
-                        viewer.getTable(), options, 
-                        SWT.FLAT);
+                        table, options, SWT.FLAT);
             }
             @Override
             protected boolean canEdit(Object element) {
@@ -360,7 +365,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         argCol.setEditingSupport(new EditingSupport(viewer) {
             @Override
             protected CellEditor getCellEditor(Object element) {
-                return new TextCellEditor(viewer.getTable(), SWT.FLAT);
+                Table table = viewer.getTable();
+                return new TextCellEditor(table, SWT.FLAT);
             }
             @Override
             protected boolean canEdit(Object element) {
@@ -398,7 +404,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         final Button upButton = 
                 new Button(composite, SWT.PUSH);
         upButton.setText("Up");
-        GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
+        int alignment = 
+                VERTICAL_ALIGN_BEGINNING |
+                HORIZONTAL_ALIGN_FILL;
+        GridData bgd = new GridData(alignment);
         bgd.grabExcessHorizontalSpace=false;
         bgd.widthHint = 50;
         upButton.setLayoutData(bgd);
@@ -408,7 +417,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             public void widgetSelected(SelectionEvent e) {
                 Table table = viewer.getTable();
                 int[] indices = table.getSelectionIndices();
-                if (indices.length>0 && indices[0]>0) {
+                if (indices.length>0 && 
+                        indices[0]>0) {
                     int index = indices[0];
                     List<Integer> order = 
                             refactoring.getOrder();
@@ -416,8 +426,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                             refactoring.getDefaulted();
                     List<String> names = 
                             refactoring.getNames();
-                    Parameter p = 
-                            parameterModels.remove(index);
+                    Parameter p = parameterModels.remove(index);
                     parameterModels.add(index-1, p);
                     order.add(index-1, order.remove(index));
                     defaulted.add(index-1, defaulted.remove(index));
@@ -442,7 +451,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 Table table = viewer.getTable();
                 int[] indices = table.getSelectionIndices();
                 int lastIndex = table.getItemCount()-1;
-                if (indices.length>0 && indices[0]<lastIndex) {
+                if (indices.length>0 && 
+                        indices[0]<lastIndex) {
                     int index = indices[0];
                     List<Integer> order = 
                             refactoring.getOrder();
@@ -450,8 +460,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                             refactoring.getDefaulted();
                     List<String> names = 
                             refactoring.getNames();
-                    parameterModels.add(index+1, 
-                            parameterModels.remove(index));
+                    Parameter p = parameterModels.remove(index);
+                    parameterModels.add(index+1, p);
                     order.add(index+1, order.remove(index));
                     defaulted.add(index+1, defaulted.remove(index));
                     names.add(index+1, names.remove(index));
@@ -506,10 +516,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 Table table = viewer.getTable();
                 int[] indices = table.getSelectionIndices();
                 int lastIndex = table.getItemCount()-1;
-                if (indices.length>0 && indices[0]<=lastIndex) {
+                if (indices.length>0 && 
+                        indices[0]<=lastIndex) {
                     int index = indices[0];
-                    Parameter p = 
-                            parameterModels.remove(index);
+                    Parameter p = parameterModels.remove(index);
                     refactoring.getDefaulted().remove(index);
                     refactoring.getOrder().remove(index);
                     refactoring.getNames().remove(index);
@@ -537,11 +547,11 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 for (Parameter p: parameterModels) {
                     names.add(p.getName());
                 }
+                Node node = refactoring.node;
+                IProject project = refactoring.project;
                 AddParameterDialog dialog = 
                         new AddParameterDialog(getShell(), 
-                                refactoring.node, 
-                                refactoring.project, 
-                                names);
+                                node, project, names);
                 if (dialog.open()==Window.OK) {
                     String name = dialog.getName();
                     Type type = dialog.getType();
@@ -549,8 +559,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     Value model = new Value();
                     model.setType(type);
                     model.setName(name);
-                    Scope scope = 
-                            refactoring.node.getScope();
+                    Scope scope = node.getScope();
                     model.setContainer(scope);
                     model.setScope(scope);
                     Parameter p = new Parameter();
@@ -607,16 +616,20 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         }
         
         new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL)
-            .setLayoutData(GridDataFactory.fillDefaults().span(4, 1).create());
+            .setLayoutData(GridDataFactory.fillDefaults()
+                    .span(4, 1).create());
         
         Label l = new Label(composite, SWT.NONE);
-        l.setLayoutData(GridDataFactory.fillDefaults().span(4, 1).create());
+        l.setLayoutData(GridDataFactory.fillDefaults()
+                .span(4, 1).create());
         l.setText("Refactored signature preview:");
         
         signatureText = 
                 new StyledText(composite, 
                         SWT.FLAT | SWT.READ_ONLY | SWT.WRAP);
-        signatureText.setLayoutData(GridDataFactory.fillDefaults().hint(300, 50).grab(true, true).span(4, 3).create());
+        signatureText.setLayoutData(GridDataFactory.fillDefaults()
+                .hint(300, 50).grab(true, true)
+                .span(4, 3).create());
         signatureText.setBackground(composite.getBackground());
         drawSignature();
     }
@@ -651,7 +664,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 ref.reorderedParameters(pl.getParameters());
         ReplaceEdit edit = 
                 ref.reorderParamsEdit(pl, 
-                        reorderedParameters, false, tokens);
+                        reorderedParameters, 
+                        false, tokens);
         CommonToken token = 
                 (CommonToken) decNode.getMainToken();
         int start = 
@@ -701,25 +715,29 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             ts.fill();
             List<LexError> lexErrors = lexer.getErrors();
             if (!lexErrors.isEmpty()) {
-                setErrorMessage(lexErrors.get(0).getMessage());
+                LexError lexError = lexErrors.get(0);
+                setErrorMessage(lexError.getMessage());
                 return false;
             }
             
             CeylonParser parser = new CeylonParser(ts);
-            Tree.ParameterList parameters = parser.parameters();
+            Tree.ParameterList parameters = 
+                    parser.parameters();
             if (ts.index()<ts.size()-1) {
-                setErrorMessage("extra tokens in argument expression");
+                setErrorMessage(
+                        "extra tokens in argument expression");
                 return false;
             }
             List<ParseError> parseErrors = parser.getErrors();
             if (!parseErrors.isEmpty()) {
-                setErrorMessage(parseErrors.get(0).getMessage());
+                ParseError parseError = parseErrors.get(0);
+                setErrorMessage(parseError.getMessage());
                 return false;
             }
             
-            final TypecheckerUnit unit = 
-                    refactoring.node.getUnit();
-            final Scope scope = refactoring.node.getScope();
+            Node node = refactoring.node;
+            final TypecheckerUnit unit = node.getUnit();
+            final Scope scope = node.getScope();
             final Value value = new Value();
             value.setName(parameterName);
             final Parameter param = new Parameter();
@@ -744,8 +762,10 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     super.visit(that);
                 }
             });
-            parameters.visit(new TypeVisitor(unit, backendSupport));
-            parameters.visit(new ExpressionVisitor(unit, backendSupport));
+            parameters.visit(new TypeVisitor(unit, 
+                    backendSupport));
+            parameters.visit(new ExpressionVisitor(unit, 
+                    backendSupport));
             
             setErrorMessage(null);
             
