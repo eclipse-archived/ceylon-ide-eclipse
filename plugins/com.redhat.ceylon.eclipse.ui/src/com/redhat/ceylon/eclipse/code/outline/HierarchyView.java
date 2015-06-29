@@ -322,17 +322,31 @@ public class HierarchyView extends ViewPart {
     
     private final class MemberSorter extends ViewerSorter {
         private boolean sortByType;
+        private int compare(Declaration x, Declaration y) {
+            int result =
+                    x.getNameAsString()
+                        .compareTo(y.getNameAsString());
+            if (result!=0) {
+                return result;
+            }
+            return x.getQualifiedNameString()
+                    .compareTo(y.getQualifiedNameString());
+        }
         @Override
         public int compare(Viewer viewer, Object x, Object y) {
+            ModelProxy p = (ModelProxy) x;
+            ModelProxy q = (ModelProxy) y;
+            Declaration e = p.get();
+            Declaration f = q.get();
             if (sortByType) {
-                ModelProxy p = (ModelProxy) x;
-                ModelProxy q = (ModelProxy) y;
-                int result = super.compare(viewer, 
-                        p.get().getContainer(), 
-                        q.get().getContainer());
-                if (result!=0) return result;
+                int result = 
+                        compare((Declaration) e.getContainer(), 
+                                (Declaration) f.getContainer());
+                if (result!=0) {
+                    return result;
+                }
             }
-            return super.compare(viewer, x, y);
+            return compare(e, f);
         }
         public void toggle() {
             sortByType = !sortByType;
