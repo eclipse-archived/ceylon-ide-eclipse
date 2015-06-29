@@ -7,9 +7,17 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_DIALOGS;
+import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -89,6 +97,24 @@ public class CeylonOpenDialogsPreferencePage
     @Override
     protected String getActiveFiltersPreference() {
         return OPEN_FILTERS;
+    }
+    
+    @Override
+    protected Control createContents(Composite parent) {
+        Link colorsAndFontsLink = new Link(parent, 0);
+        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize font and label colors.");
+        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonPlugin.COLORS_AND_FONTS_PAGE_ID, null, 
+                        "selectFont:" + 
+                                CeylonPlugin.OPEN_FONT_PREFERENCE);
+            }
+        });
+        Control result = super.createContents(parent);
+        return result;     
     }
 
 }

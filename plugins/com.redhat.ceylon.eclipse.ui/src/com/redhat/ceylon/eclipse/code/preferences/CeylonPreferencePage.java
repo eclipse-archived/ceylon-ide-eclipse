@@ -70,6 +70,19 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
             }
         });
         
+        Link colorsAndFontsLink = new Link(parent, 0);
+        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize fonts and label colors.");
+        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonPlugin.COLORS_AND_FONTS_PAGE_ID, null, 
+                        "selectFont:" + 
+                                CeylonPlugin.OUTLINE_FONT_PREFERENCE);
+            }
+        });
+                
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
         composite.setLayout(new GridLayout(1, true));
@@ -141,18 +154,6 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
                         CeylonStepFilterPreferencePage.ID, null, null);
             }
         });
-        
-//        Link colorsAndFontsLink = new Link(parent, 0);
-//        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-//        colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize appearance and syntax highlighting.");
-//        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                createPreferenceDialogOn(getShell(), 
-//                        "org.eclipse.ui.preferencePages.ColorsAndFonts", null, 
-//                        "selectFont:com.redhat.ceylon.eclipse.ui.editorFont");
-//            }
-//        });
         
         return contents;
     }

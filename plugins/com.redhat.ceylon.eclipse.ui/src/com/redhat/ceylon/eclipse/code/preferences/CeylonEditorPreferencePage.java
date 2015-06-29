@@ -151,8 +151,9 @@ public class CeylonEditorPreferencePage
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        "org.eclipse.ui.preferencePages.ColorsAndFonts", null, 
-                        "selectFont:com.redhat.ceylon.eclipse.ui.editorFont");
+                        CeylonPlugin.COLORS_AND_FONTS_PAGE_ID, null, 
+                        "selectFont:" + 
+                                CeylonPlugin.EDITOR_FONT_PREFERENCE);
             }
         });
         

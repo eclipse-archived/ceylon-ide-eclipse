@@ -12,6 +12,8 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
+import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
@@ -20,8 +22,12 @@ import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.ScaleFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -171,7 +177,7 @@ public class CeylonCompletionPreferencePage
         autoActivationDelay.setMaximum(2000);
         autoActivationDelay.load();
         addField(autoActivationDelay);
-        final IPreferenceStore store = EditorUtil.getPreferences();
+        final IPreferenceStore store = getPreferences();
         boolean enabled = store.getBoolean(AUTO_ACTIVATION);
         autoActivationChars.setEnabled(enabled, p1);
         autoActivationDelay.setEnabled(enabled, p2);        
@@ -234,8 +240,26 @@ public class CeylonCompletionPreferencePage
     public void dispose() {
         super.dispose();
         if (listener!=null) {
-            EditorUtil.getPreferences().removePropertyChangeListener(listener);
+            getPreferences().removePropertyChangeListener(listener);
         }
+    }
+
+    @Override
+    protected Control createContents(Composite parent) {
+        Link colorsAndFontsLink = new Link(parent, 0);
+        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize font and proposal colors.");
+        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonPlugin.COLORS_AND_FONTS_PAGE_ID, null, 
+                        "selectFont:" + 
+                                CeylonPlugin.COMPLETION_FONT_PREFERENCE);
+            }
+        });
+        Control result = super.createContents(parent);
+        return result;     
     }
 
 }
