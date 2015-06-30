@@ -375,13 +375,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 int filterLoc = filterPattern.indexOf('.');
                 if (loc<0) {
                     return filterLoc<0 &&
-                            filterPattern.startsWith(pattern);
+                        filterPattern.startsWith(pattern);
                 }
                 else {
                     return filterLoc>=0 &&
-                            filterPattern.substring(filterLoc+1)
+                        filterPattern.substring(filterLoc+1)
                             .startsWith(pattern.substring(loc+1)) &&
-                            filterPattern.substring(0,filterLoc)
+                        filterPattern.substring(0,filterLoc)
                             .startsWith(pattern.substring(0,loc));
                 }
             }
@@ -1276,8 +1276,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (browser.isVisible()) {
             try {
                 if (selection!=null &&
-                        selection.length==1 &&
-                        selection[0] instanceof DeclarationProxy) {
+                    selection.length==1 &&
+                    selection[0] instanceof DeclarationProxy) {
                     browser.setText(getDocumentationFor(null, 
                             toDeclaration(selection[0])));
                 }
