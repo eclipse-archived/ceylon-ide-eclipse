@@ -44,7 +44,6 @@ import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.GROUP_RULERS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
@@ -75,6 +74,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.ui.actions.IRunToLineTarget;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
@@ -1302,6 +1302,8 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
                 .activateContext(PLUGIN_ID + ".context");*/
         
         ITheme currentTheme = getCurrentTheme();
+        CeylonPlugin.log(Status.WARNING, 
+                "theme " + currentTheme.getId());
         currentTheme.getColorRegistry()
             .addListener(colorChangeListener);
         updateFontAndCaret();
@@ -1690,9 +1692,10 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getProperty()
                     .startsWith(PLUGIN_ID + ".theme.color.")) {
-                System.out.println(
+                String message = 
                         event.getProperty() + "=" +
-                        event.getNewValue());
+                        event.getNewValue();
+                CeylonPlugin.log(Status.WARNING, message);
                 Highlights.refreshColors();
                 getSourceViewer()
                     .invalidateTextPresentation();
@@ -1793,10 +1796,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             PLUGIN_ID + ".theme.matchingBracketsColor";
     
     public static void initializeBrackMatcherPreferences() {
-        ITheme currentTheme = 
-                getWorkbench()
-                    .getThemeManager()
-                    .getCurrentTheme();
+        ITheme currentTheme = getCurrentTheme();
         Color color = 
                 currentTheme.getColorRegistry()
                     .get(MATCHING_BRACKETS_PREF);

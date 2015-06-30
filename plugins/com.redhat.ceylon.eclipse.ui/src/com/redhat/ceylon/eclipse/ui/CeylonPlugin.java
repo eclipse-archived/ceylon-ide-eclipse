@@ -561,6 +561,14 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         return javaSourceArchiveCacheDirectory;
     }
 
+    public static void log(int severity, String message) {
+        Status status =
+                new Status(severity, 
+                        PLUGIN_ID, 
+                        message);
+        getInstance().getLog().log(status);
+    }
+
     private static Font getFont(final String pref) {
         class GetFont implements Runnable {
             public Font result;
