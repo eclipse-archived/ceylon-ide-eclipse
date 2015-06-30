@@ -38,6 +38,12 @@ IEclipsePreferences#org-eclipse-ui-editors {
         'warningIndicationColor=156,114,3'
         'warningIndicationHighlighting=true'
         'writeOccurrenceIndicationColor=51,90,114'
+        'com.redhat.ceylon.eclipse.ui.parseAnnotation.error.highlight=true'
+        'com.redhat.ceylon.eclipse.ui.parseAnnotation.error.textStyle=NONE'
+        'com.redhat.ceylon.eclipse.ui.parseAnnotation.error.color=204,0,0'
+        'com.redhat.ceylon.eclipse.ui.parseAnnotation.warning.highlight=true'
+        'com.redhat.ceylon.eclipse.ui.parseAnnotation.warning.textStyle=NONE'
+        'com.redhat.ceylon.eclipse.ui.parseAnnotation.warning.color=102,102,51'
 }
 
 IEclipsePreferences#org-eclipse-ui-workbench {

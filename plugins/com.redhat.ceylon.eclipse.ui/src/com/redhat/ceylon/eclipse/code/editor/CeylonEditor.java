@@ -174,6 +174,7 @@ import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 /**
  * An editor for Ceylon source code.
@@ -1675,10 +1676,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         /*if (fResourceListener != null) {
             ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
         }*/
-        ITheme currentTheme = 
-                getWorkbench()
-                    .getThemeManager()
-                    .getCurrentTheme();
+        ITheme currentTheme = getCurrentTheme();
         currentTheme.getColorRegistry()
             .removeListener(colorChangeListener);
         currentTheme.getFontRegistry()
@@ -1692,6 +1690,10 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getProperty()
                     .startsWith(PLUGIN_ID + ".theme.color.")) {
+                System.out.println(
+                        event.getProperty() + "=" +
+                        event.getNewValue());
+                Highlights.refreshColors();
                 getSourceViewer()
                     .invalidateTextPresentation();
             }

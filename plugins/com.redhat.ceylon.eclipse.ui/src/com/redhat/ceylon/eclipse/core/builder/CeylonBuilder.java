@@ -3081,7 +3081,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }*/
 
-    protected static MessageConsoleStream getConsoleStream() {
+    private static MessageConsoleStream getConsoleStream() {
         return findConsole().newMessageStream();
     }
 //    

@@ -88,7 +88,11 @@ public class Highlights  {
     public static Color getCurrentThemeColor(String key) {
         return color(getCurrentTheme().getColorRegistry(), key);
     }
-
+    
+    public static void refreshColors() {
+        initColors(getCurrentTheme().getColorRegistry());
+    }
+    
     private static void initColors(ColorRegistry colorRegistry) {
         identifierAttribute = text(colorRegistry, IDENTIFIERS, SWT.NORMAL);
         typeAttribute = text(colorRegistry, TYPES, SWT.NORMAL);
