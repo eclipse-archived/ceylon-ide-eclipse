@@ -338,6 +338,15 @@ public class HierarchyView extends ViewPart {
             ModelProxy q = (ModelProxy) y;
             Declaration e = p.get();
             Declaration f = q.get();
+            if (e==f) {
+                return 0;
+            }
+            else if (e==null) {
+                return 1;
+            }
+            else if (f==null) {
+                return -1;
+            }
             if (sortByType) {
                 int result = 
                         compare((Declaration) e.getContainer(), 
