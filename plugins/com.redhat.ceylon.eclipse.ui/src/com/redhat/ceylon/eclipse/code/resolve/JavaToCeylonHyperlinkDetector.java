@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoCeylonDeclarationFromJava;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static java.lang.Character.isJavaIdentifierPart;
 
 import org.eclipse.core.resources.IProject;
@@ -21,26 +22,25 @@ import org.eclipse.ui.part.FileEditorInput;
 
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
 
     private static final class JavaToCeylonLink implements IHyperlink {
         private final IRegion region;
         private final IDocument doc;
-        private final IProject project;
-        private final IJavaElement javaElement;
+        private final Declaration ceylonDeclaration;
 
         private JavaToCeylonLink(IRegion region, IDocument doc, 
-                IProject project, IJavaElement javaElement) {
+                Declaration ceylonDeclaration) {
             this.region = region;
             this.doc = doc;
-            this.project = project;
-            this.javaElement = javaElement;
+            this.ceylonDeclaration = ceylonDeclaration;
         }
 
         @Override
         public void open() {
-            gotoCeylonDeclarationFromJava(project, javaElement);
+            gotoDeclaration(ceylonDeclaration);
         }
         
         @Override
@@ -95,9 +95,13 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
                 final IProject project = javaElement.getJavaProject().getProject();
 
                 if (JavaSearch.isCeylonDeclaration(javaElement) && !(javaElement instanceof IPackageFragment)) {
-                    return new IHyperlink[] {
-                            new JavaToCeylonLink(region, doc, project, javaElement)
-                        };
+                    Declaration declaration = 
+                            toCeylonDeclaration(project, javaElement);
+                    if (declaration != null) {
+                        return new IHyperlink[] {
+                                new JavaToCeylonLink(region, doc, declaration)
+                            };
+                    }
                 }
             }
         } 

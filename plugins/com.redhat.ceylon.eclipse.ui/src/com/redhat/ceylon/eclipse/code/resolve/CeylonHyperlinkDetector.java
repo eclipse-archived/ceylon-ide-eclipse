@@ -114,10 +114,20 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                                     if (phasedUnit != null) {
                                         ExternalSourceFile sourceFile = phasedUnit.getUnit();
                                         if (sourceFile != null) {
-                                            for (Declaration sourceDecl : sourceFile.getDeclarations()) {
-                                                if (sourceDecl.equals(dec)) {
-                                                    containerToSearchHeaderIn = sourceDecl.getContainer();
-                                                    break;
+                                            String sourceRelativePath = ((CeylonBinaryUnit) unit).getModule().toSourceUnitRelativePath(unit.getRelativePath());
+                                            if (sourceRelativePath != null && sourceRelativePath.endsWith(".ceylon")) {
+                                                for (Declaration sourceDecl : sourceFile.getDeclarations()) {
+                                                    if (sourceDecl.equals(dec)) {
+                                                        containerToSearchHeaderIn = sourceDecl.getContainer();
+                                                        break;
+                                                    }
+                                                }
+                                            } else {
+                                                for (Declaration sourceDecl : sourceFile.getDeclarations()) {
+                                                    if (sourceDecl.getQualifiedNameString().equals(dec.getQualifiedNameString())) {
+                                                        containerToSearchHeaderIn = sourceDecl.getContainer();
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }
