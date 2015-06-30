@@ -327,7 +327,11 @@ public class JDTClass implements ClassMirror, IBindingProvider {
                     isInnerType = getAnnotation(AbstractModelLoader.CEYLON_CONTAINER_ANNOTATION) != null || klass.isMemberType();
                 }
             });
-            
+            if (qualifiedName.startsWith("ceylon.language") && annotations.containsKey(com.redhat.ceylon.compiler.java.metadata.Ceylon.class.getName())) {
+                HashMap<String, Object> values = new HashMap<>();
+                values.put("backend", "");
+                annotations.put("ceylon.language.NativeAnnotation$annotation$", new JDTAnnotation(values));
+            }
         }
         return annotations.get(annotationType);
     }

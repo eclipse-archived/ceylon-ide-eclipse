@@ -66,6 +66,10 @@ public class JDTAnnotation implements AnnotationMirror {
         }
     }
 
+    public JDTAnnotation(Map<String, Object> values) {
+        this.values = values;
+    }
+
     @Override
     public Object getValue(String fieldName) {
         return values.get(fieldName);
