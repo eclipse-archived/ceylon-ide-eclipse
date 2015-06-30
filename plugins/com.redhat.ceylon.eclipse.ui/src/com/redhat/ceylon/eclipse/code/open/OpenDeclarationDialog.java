@@ -84,6 +84,7 @@ import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
+import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -282,7 +283,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (object instanceof DeclarationProxy) {
             DeclarationProxy proxy = 
                     (DeclarationProxy) object;
-            return proxy.declaration;
+            return proxy.get();
         }
         else {
             return null;
@@ -885,11 +886,11 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
     
-    protected static class DeclarationProxy {
-        private Declaration declaration;
+    protected static class DeclarationProxy 
+            extends ModelProxy {
         private String location;
         public DeclarationProxy(Declaration declaration) {
-            this.declaration = declaration;
+            super(declaration);
             location = getLocation(declaration);
         }
         @Override
@@ -898,8 +899,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 return true;
             }
             else if (obj instanceof DeclarationProxy) {
-                DeclarationProxy that = (DeclarationProxy) obj;
-                if (declaration.equals(that.declaration)) {
+                DeclarationProxy that = 
+                        (DeclarationProxy) obj;
+                if (super.equals(that)) {
                     return location==that.location || 
                             location!=null && that.location!=null &&
                             location.equals(that.location);
@@ -914,8 +916,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         @Override
         public int hashCode() {
-            return declaration.hashCode() + 
-                    location.hashCode();
+            return super.hashCode() + location.hashCode();
         }
     }
 
