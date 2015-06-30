@@ -44,6 +44,7 @@ import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.GROUP_RULERS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS;
@@ -144,6 +145,7 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextNavigationAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.themes.ITheme;
+import org.eclipse.ui.themes.IThemeManager;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -1301,14 +1303,13 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         /*((IContextService) getSite().getService(IContextService.class))
                 .activateContext(PLUGIN_ID + ".context");*/
         
-        ITheme currentTheme = getCurrentTheme();
+        IThemeManager themeManager = 
+                getWorkbench().getThemeManager();
         CeylonPlugin.log(Status.WARNING, 
-                "theme " + currentTheme.getId());
-        currentTheme.getColorRegistry()
-            .addListener(colorChangeListener);
+                "theme " + themeManager.getCurrentTheme().getId());
+        themeManager.addPropertyChangeListener(colorChangeListener);
         updateFontAndCaret();
-        currentTheme.getFontRegistry()
-            .addListener(fontChangeListener);
+        themeManager.addPropertyChangeListener(fontChangeListener);
     }
 
     public synchronized void scheduleParsing() {
@@ -1678,11 +1679,10 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         /*if (fResourceListener != null) {
             ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
         }*/
-        ITheme currentTheme = getCurrentTheme();
-        currentTheme.getColorRegistry()
-            .removeListener(colorChangeListener);
-        currentTheme.getFontRegistry()
-            .removeListener(fontChangeListener);
+        IThemeManager themeManager = 
+                getWorkbench().getThemeManager();
+        themeManager.removePropertyChangeListener(colorChangeListener);
+        themeManager.removePropertyChangeListener(fontChangeListener);
         
     }
 

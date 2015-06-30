@@ -8,6 +8,7 @@ import static java.lang.Character.isDigit;
 import static java.lang.Character.isJavaIdentifierStart;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.util.List;
 import java.util.StringTokenizer;
@@ -26,7 +27,9 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.TextStyle;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
+import org.eclipse.ui.themes.IThemeManager;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
@@ -73,13 +76,14 @@ public class Highlights  {
     }
     
     static {
-        final ITheme currentTheme = getCurrentTheme();
-        initColors(currentTheme.getColorRegistry());
-        currentTheme.addPropertyChangeListener(new IPropertyChangeListener() {
+        initColors(getCurrentTheme().getColorRegistry());
+        IThemeManager themeManager = 
+                getWorkbench().getThemeManager();
+        themeManager.addPropertyChangeListener(new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (event.getProperty().startsWith(PLUGIN_ID + ".theme.color.")) {
-                    initColors(currentTheme.getColorRegistry());
+                    initColors(getCurrentTheme().getColorRegistry());
                 }
             }
         });
