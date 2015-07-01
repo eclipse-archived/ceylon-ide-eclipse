@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.HIERARCHY_FILTERS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INACTIVE_HIERARCHY_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
@@ -24,7 +26,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class CeylonOutlinesPreferencePage extends FieldEditorPreferencePage 
+public class CeylonOutlinesPreferencePage 
+        extends FiltersPreferencePage 
         implements IWorkbenchPreferencePage {
 
     private BooleanFieldEditor displayOutlineTypes;
@@ -35,15 +38,9 @@ public class CeylonOutlinesPreferencePage extends FieldEditorPreferencePage
     public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.outlines";
     
     public CeylonOutlinesPreferencePage() {
-        super(GRID);
         setDescription("Customize the appearance of Ceylon outline and hierarchy views.");
     }
-
-    @Override
-    public void init(IWorkbench workbench) {
-        setPreferenceStore(getPreferences());
-    }
-
+    
     @Override
     protected Control createContents(Composite parent) {
         
@@ -68,22 +65,7 @@ public class CeylonOutlinesPreferencePage extends FieldEditorPreferencePage
         
         return contents;
     }
-
-    private Group createGroup(int cols, String text) {
-        Composite parent = getFieldEditorParent();
-        Group group = new Group(parent, SWT.NONE);
-        group.setText(text);
-        group.setLayout(GridLayoutFactory.swtDefaults().equalWidth(true).numColumns(cols).create());
-        group.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).grab(true, false).create());
-        return group;
-    }
     
-    protected Composite getFieldEditorParent(Composite group) {
-        Composite parent = new Composite(group, SWT.NULL);
-        parent.setLayoutData(GridDataFactory.fillDefaults().create());
-        return parent;
-    }
-
     @Override
     protected void createFieldEditors() {
         final Composite outlines = createGroup(2, "Labels");
@@ -112,11 +94,11 @@ public class CeylonOutlinesPreferencePage extends FieldEditorPreferencePage
     
     @Override
     protected void performDefaults() {
-        super.performDefaults();
         displayOutlineTypes.loadDefault();
         displayOutlineParameters.loadDefault();
         displayOutlineTypeParameters.loadDefault();
         displayOutlineParameterTypes.loadDefault();
+        super.performDefaults();
     }
     
     @Override
@@ -125,7 +107,22 @@ public class CeylonOutlinesPreferencePage extends FieldEditorPreferencePage
         displayOutlineParameters.store();
         displayOutlineTypeParameters.store();
         displayOutlineParameterTypes.store();
-        return true;
+        return super.performOk();
+    }
+
+    @Override
+    protected String getInactiveFiltersPreference() {
+        return INACTIVE_HIERARCHY_FILTERS;
+    }
+
+    @Override
+    protected String getActiveFiltersPreference() {
+        return HIERARCHY_FILTERS;
+    }
+    
+    @Override
+    protected String getLabelText() {
+        return "Filtered packages and declarations are excluded from type hierarchy view.";
     }
 
 }

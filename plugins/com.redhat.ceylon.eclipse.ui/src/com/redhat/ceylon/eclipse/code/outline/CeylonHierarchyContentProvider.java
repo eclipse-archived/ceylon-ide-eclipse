@@ -1,19 +1,23 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.HIERARCHY_FILTERS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getSignature;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -80,6 +84,7 @@ public final class CeylonHierarchyContentProvider
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         if (newInput!=null && newInput!=oldInput) {
+            initFilters();
             Declaration declaration = ((ModelProxy) newInput).get();
             if (declaration instanceof TypedDeclaration) { 
                 TypedDeclaration td = (TypedDeclaration) declaration;
@@ -340,13 +345,15 @@ public final class CeylonHierarchyContentProvider
             for (Module module: allModules) {
                 for (Package pack: 
                         module.getAllReachablePackages()) {
-                    String packageModuleName = 
-                            pack.getModule().getNameAsString();
-                    if ((!excludeJDK || 
-                            !JDKUtils.isJDKModule(packageModuleName)) && 
-                        (!excludeOracleJDK || 
-                            !JDKUtils.isOracleJDKModule(packageModuleName))) {
-                        packages.add(pack);
+                    if (!isFiltered(pack)) {
+                        String packageModuleName = 
+                                pack.getModule().getNameAsString();
+                        if ((!excludeJDK || 
+                                !JDKUtils.isJDKModule(packageModuleName)) && 
+                            (!excludeOracleJDK || 
+                                !JDKUtils.isOracleJDKModule(packageModuleName))) {
+                            packages.add(pack);
+                        }
                     }
                 }
                 monitor.worked(10000/ams);
@@ -366,12 +373,12 @@ public final class CeylonHierarchyContentProvider
                 while (dec!=null) {
                     depthInHierarchy++;
                     root = dec;
-                    Type extended = 
-                            dec.getExtendedType();
+                    Type extended = dec.getExtendedType();
                     if (extended!=null) {
                         TypeDeclaration superDec = 
                                 extended.getDeclaration();
-                        if (!extended.getSatisfiedTypes().isEmpty()) {
+                        if (!extended.getSatisfiedTypes()
+                                .isEmpty()) {
                             getSubtypePathNode(superDec)
                                 .setNonUnique(true);
                         }
@@ -419,7 +426,7 @@ public final class CeylonHierarchyContentProvider
                             if (superMemberDec!=null && 
                                     !isAbstraction(superMemberDec) &&
                                     superMemberDec.getRefinedDeclaration()
-                                    .equals(refinedDeclaration)) {
+                                        .equals(refinedDeclaration)) {
                                 List<Declaration> directlyInheritedMembers = 
                                         getInterveningRefinements(dn, 
                                                 signature, 
@@ -516,15 +523,17 @@ public final class CeylonHierarchyContentProvider
                         //TODO: unshared inner types get 
                         //      missed for binary modules
                         for (Declaration d: u.getDeclarations()) {
-                            d = replaceWithCurrentEditorDeclaration(part, p, d); //TODO: not enough to catch *new* subtypes in the dirty editor
-                            if (d instanceof ClassOrInterface || 
-                                    d instanceof TypeParameter) {
-                                try {
-                                    addDeclaration(signature, d);
-                                }
-                                catch (Exception e) {
-                                    System.err.println(d.getQualifiedNameString());
-                                    throw e;
+                            if (!isFiltered(d)) {
+                                d = replaceWithCurrentEditorDeclaration(part, p, d); //TODO: not enough to catch *new* subtypes in the dirty editor
+                                if (d instanceof ClassOrInterface || 
+                                        d instanceof TypeParameter) {
+                                    try {
+                                        addDeclaration(signature, d);
+                                    }
+                                    catch (Exception e) {
+                                        System.err.println(d.getQualifiedNameString());
+                                        throw e;
+                                    }
                                 }
                             }
                             monitor.worked(15000/ps/ms);
@@ -652,4 +661,71 @@ public final class CeylonHierarchyContentProvider
         }
     }
     
+    protected String getFilterListAsString() {
+        return getPreferences().getString(HIERARCHY_FILTERS);
+    }
+
+    private List<Pattern> filters;
+    private List<Pattern> packageFilters;
+    
+    private void initFilters() {
+        filters = new ArrayList<Pattern>();
+        packageFilters = new ArrayList<Pattern>();
+        String filtersString = getFilterListAsString();
+        if (!filtersString.trim().isEmpty()) {
+            String[] regexes = filtersString
+                    .replaceAll("\\(\\w+\\)", "")
+                    .replace(".", "\\.")
+                    .replace("*", ".*")
+                    .split(",");
+            for (String regex: regexes) {
+                regex = regex.trim();
+                if (!regex.isEmpty()) {
+                    filters.add(Pattern.compile(regex));
+                    if (regex.endsWith("::.*")) {
+                        regex = regex.substring(0, regex.length()-4);
+                    }
+                    if (!regex.contains("::")) {
+                        packageFilters.add(Pattern.compile(regex));
+                    }
+                }
+            }
+        } 
+    }
+
+    private boolean isFiltered(Declaration declaration) {
+//        if (excludeDeprecated && 
+//                declaration.isDeprecated()) {
+//            return true;
+//        }
+        if (declaration.isAnnotation() &&
+                declaration.getName().contains("__")) {
+            //actually what we should really do is filter
+            //out all constructors for Java annotations
+            return true;
+        }
+        if (!filters.isEmpty()) {
+            String name = 
+                    declaration.getQualifiedNameString();
+            for (Pattern filter: filters) {
+                if (filter.matcher(name).matches()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isFiltered(Package pack) {
+        if (!packageFilters.isEmpty()) {
+            String name = pack.getNameAsString();
+            for (Pattern filter: packageFilters) {
+                if (filter.matcher(name).matches()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }

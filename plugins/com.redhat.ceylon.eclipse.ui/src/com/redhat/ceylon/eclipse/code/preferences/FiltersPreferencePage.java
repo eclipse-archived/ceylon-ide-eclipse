@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CreateFilterDialog.showCreateFilterDialog;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.debug.internal.ui.SWTFactory.createPushButton;
 import static org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin.createAllPackagesDialog;
 import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.parseList;
@@ -45,14 +46,13 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.Interface;
+import com.redhat.ceylon.model.typechecker.model.Value;
 
 public abstract class FiltersPreferencePage 
         extends FieldEditorPreferencePage 
@@ -85,7 +85,7 @@ public abstract class FiltersPreferencePage
     
     public FiltersPreferencePage() {
         super(GRID);
-        setPreferenceStore(EditorUtil.getPreferences());
+        setPreferenceStore(getPreferences());
     }
     
     protected Group createGroup(int cols, String text) {
