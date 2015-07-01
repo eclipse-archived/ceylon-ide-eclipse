@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_NAME;
 import static com.redhat.ceylon.eclipse.util.Nodes.addNameProposals;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,12 +10,12 @@ import java.util.Set;
 
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class MemberNameCompletions {
     
@@ -54,10 +54,13 @@ public class MemberNameCompletions {
             return;
         }
         else if (node instanceof Tree.TypedDeclaration) {
-            Tree.TypedDeclaration td = (Tree.TypedDeclaration) node;
+            Tree.TypedDeclaration td = 
+                    (Tree.TypedDeclaration) node;
             Tree.Type type = td.getType();
             Tree.Identifier id = td.getIdentifier();
-            if (id==null || offset>=id.getStartIndex() && offset<=id.getStopIndex()+1) {
+            if (id==null || 
+                    offset>=id.getStartIndex() && 
+                    offset<=id.getStopIndex()+1) {
                 node = type;
             }
             else {
@@ -66,56 +69,79 @@ public class MemberNameCompletions {
         }
         
         if (node instanceof Tree.SimpleType) {
-            Tree.SimpleType simpleType = (Tree.SimpleType) node;
-            addProposals(proposals, simpleType.getIdentifier(), 
+            Tree.SimpleType simpleType = 
+                    (Tree.SimpleType) node;
+            addProposals(proposals, 
+                    simpleType.getIdentifier(), 
                     simpleType.getTypeModel());
         }
         else if (node instanceof Tree.BaseTypeExpression) {
-            Tree.BaseTypeExpression typeExpression = (Tree.BaseTypeExpression) node;
-            addProposals(proposals, typeExpression.getIdentifier(), 
+            Tree.BaseTypeExpression typeExpression = 
+                    (Tree.BaseTypeExpression) node;
+            addProposals(proposals,
+                    typeExpression.getIdentifier(), 
                     getLiteralType(node, typeExpression));
         }
         else if (node instanceof Tree.QualifiedTypeExpression) {
-            Tree.QualifiedTypeExpression typeExpression = (Tree.QualifiedTypeExpression) node;
-            addProposals(proposals, typeExpression.getIdentifier(), 
+            Tree.QualifiedTypeExpression typeExpression = 
+                    (Tree.QualifiedTypeExpression) node;
+            addProposals(proposals, 
+                    typeExpression.getIdentifier(), 
                     getLiteralType(node, typeExpression));
         }
         else if (node instanceof Tree.OptionalType) {
-            Tree.StaticType et = ((Tree.OptionalType) node).getDefiniteType();
+            Tree.OptionalType ot = (Tree.OptionalType) node;
+            Tree.StaticType et = ot.getDefiniteType();
             if (et instanceof Tree.SimpleType) {
-                addProposals(proposals, ((Tree.SimpleType) et).getIdentifier(), 
-                        ((Tree.OptionalType) node).getTypeModel());
+                Tree.SimpleType set = (Tree.SimpleType) et;
+                addProposals(proposals, 
+                        set.getIdentifier(), 
+                        ot.getTypeModel());
             }
         }
         else if (node instanceof Tree.SequenceType) {
-            Tree.StaticType et = ((Tree.SequenceType) node).getElementType();
+            Tree.SequenceType st = (Tree.SequenceType) node;
+            Tree.StaticType et = st.getElementType();
             if (et instanceof Tree.SimpleType) {
-                addPluralProposals(proposals, ((Tree.SimpleType) et).getIdentifier(), 
-                        ((Tree.SequenceType) node).getTypeModel());
+                Tree.SimpleType set = (Tree.SimpleType) et;
+                addPluralProposals(proposals, 
+                        set.getIdentifier(), 
+                        st.getTypeModel());
             }
             proposals.add("sequence");
         }
         else if (node instanceof Tree.IterableType) {
-            Tree.Type et = ((Tree.IterableType) node).getElementType();
+            Tree.IterableType it = (Tree.IterableType) node;
+            Tree.Type et = it.getElementType();
             if (et instanceof Tree.SequencedType) {
-                et = ((Tree.SequencedType) et).getType();
+                Tree.SequencedType st = 
+                        (Tree.SequencedType) et;
+                et = st.getType();
             }
             if (et instanceof Tree.SimpleType) {
-                addPluralProposals(proposals, ((Tree.SimpleType) et).getIdentifier(), 
-                        ((Tree.IterableType) node).getTypeModel());
+                Tree.SimpleType set = (Tree.SimpleType) et;
+                addPluralProposals(proposals, 
+                        set.getIdentifier(), 
+                        it.getTypeModel());
             }
             proposals.add("iterable");
         }
         else if (node instanceof Tree.TupleType) {
-            List<Tree.Type> ets = ((Tree.TupleType) node).getElementTypes();
+            Tree.TupleType tt = (Tree.TupleType) node;
+            List<Tree.Type> ets = tt.getElementTypes();
             if (ets.size()==1) {
                 Tree.Type et = ets.get(0);
                 if (et instanceof Tree.SequencedType) {
-                    et = ((Tree.SequencedType) et).getType();
+                    Tree.SequencedType st = 
+                            (Tree.SequencedType) et;
+                    et = st.getType();
                 }
                 if (et instanceof Tree.SimpleType) {
-                    addPluralProposals(proposals, ((Tree.SimpleType) et).getIdentifier(), 
-                            ((Tree.TupleType) node).getTypeModel());
+                    Tree.SimpleType set = 
+                            (Tree.SimpleType) et;
+                    addPluralProposals(proposals, 
+                            set.getIdentifier(), 
+                            tt.getTypeModel());
                 }
                 proposals.add("sequence");
             }
@@ -164,9 +190,13 @@ public class MemberNameCompletions {
 
     private static void addPluralProposals(Set<String> proposals,
             Tree.Identifier identifier, Type type) {
-        addNameProposals(proposals, true, 
-                identifier.getUnit().getIteratedType(type)
-                        .getDeclaration().getName());
+        if (!isTypeUnknown(type) && !type.isNothing()) {
+            Unit unit = identifier.getUnit();
+            addNameProposals(proposals, true, 
+                    unit.getIteratedType(type)
+                            .getDeclaration()
+                            .getName(unit));
+        }
     }
 
 }
