@@ -321,7 +321,7 @@ public class Highlights  {
         final String type = 
                 getPreferences()
                     .getString(MATCH_HIGHLIGHTING);
-        if ("none".equals(type)) {
+        if ("none".equals(type) || prefix.isEmpty()) {
             result.append(token, fontAndColorStyler);
             return;
         }
