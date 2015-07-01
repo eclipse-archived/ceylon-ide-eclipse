@@ -5,6 +5,8 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -20,7 +22,6 @@ import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -107,42 +108,9 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                                 return null;
                             }
                             else {
-                                Unit unit = dec.getUnit();
-                                Scope containerToSearchHeaderIn = null;
-                                if (unit instanceof CeylonBinaryUnit) {
-                                    ExternalPhasedUnit phasedUnit = ((CeylonBinaryUnit) unit).getPhasedUnit();
-                                    if (phasedUnit != null) {
-                                        ExternalSourceFile sourceFile = phasedUnit.getUnit();
-                                        if (sourceFile != null) {
-                                            String sourceRelativePath = ((CeylonBinaryUnit) unit).getModule().toSourceUnitRelativePath(unit.getRelativePath());
-                                            if (sourceRelativePath != null && sourceRelativePath.endsWith(".ceylon")) {
-                                                for (Declaration sourceDecl : sourceFile.getDeclarations()) {
-                                                    if (sourceDecl.equals(dec)) {
-                                                        containerToSearchHeaderIn = sourceDecl.getContainer();
-                                                        break;
-                                                    }
-                                                }
-                                            } else {
-                                                for (Declaration sourceDecl : sourceFile.getDeclarations()) {
-                                                    if (sourceDecl.getQualifiedNameString().equals(dec.getQualifiedNameString())) {
-                                                        containerToSearchHeaderIn = sourceDecl.getContainer();
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    containerToSearchHeaderIn = dec.getContainer();
-                                }
-                                Declaration headerDeclaration = ModelUtil.getNativeHeader(containerToSearchHeaderIn, dec.getName());
-                                if (Backend.None.equals(backend)) {
-                                    referenceable = headerDeclaration;
-                                } else {
-                                    if (headerDeclaration != null) {
-                                        referenceable = ModelUtil.getNativeDeclaration(headerDeclaration, supportedBackend());
-                                    }
-                                }
+                                referenceable = 
+                                        resolveNative(referenceable, 
+                                                dec, backend);
                             }
                         }
                         else {
@@ -161,6 +129,65 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                 }
             }
         }
+    }
+
+    private Referenceable resolveNative(
+            Referenceable referenceable, 
+            Declaration dec, Backend backend) {
+        Unit unit = dec.getUnit();
+        Scope containerToSearchHeaderIn = null;
+        if (unit instanceof CeylonBinaryUnit) {
+            CeylonBinaryUnit binaryUnit = 
+                    (CeylonBinaryUnit) unit;
+            ExternalPhasedUnit phasedUnit = 
+                    binaryUnit.getPhasedUnit();
+            if (phasedUnit != null) {
+                ExternalSourceFile sourceFile = 
+                        phasedUnit.getUnit();
+                if (sourceFile != null) {
+                    String sourceRelativePath = 
+                            binaryUnit.getModule()
+                                .toSourceUnitRelativePath(
+                                        unit.getRelativePath());
+                    if (sourceRelativePath != null && 
+                            sourceRelativePath.endsWith(".ceylon")) {
+                        for (Declaration sourceDecl: 
+                                sourceFile.getDeclarations()) {
+                            if (sourceDecl.equals(dec)) {
+                                containerToSearchHeaderIn = 
+                                        sourceDecl.getContainer();
+                                break;
+                            }
+                        }
+                    } else {
+                        for (Declaration sourceDecl: 
+                                sourceFile.getDeclarations()) {
+                            if (sourceDecl.getQualifiedNameString()
+                                    .equals(dec.getQualifiedNameString())) {
+                                containerToSearchHeaderIn = 
+                                        sourceDecl.getContainer();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            containerToSearchHeaderIn = dec.getContainer();
+        }
+        Declaration headerDeclaration = 
+                getNativeHeader(containerToSearchHeaderIn, 
+                        dec.getName());
+        if (Backend.None.equals(backend)) {
+            referenceable = headerDeclaration;
+        } else {
+            if (headerDeclaration != null) {
+                referenceable = 
+                        getNativeDeclaration(headerDeclaration, 
+                                supportedBackend());
+            }
+        }
+        return referenceable;
     }
 
     public Backend supportedBackend() {
