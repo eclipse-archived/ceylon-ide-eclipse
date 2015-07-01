@@ -1806,9 +1806,9 @@ public abstract class FilteredItemsSelectionDialog extends
                 cell.setText(styledString.getString());
                 StyleRange[] styleRanges = 
                         styledString.getStyleRanges();
-                for (StyleRange styleRange : styleRanges) {
-                    styleRange.font = openFont;
-                }
+//                for (StyleRange styleRange : styleRanges) {
+//                    styleRange.font = openFont;
+//                }
                 cell.setStyleRanges(styleRanges);
                 cell.setImage(styledLabelProvider.getImage(element));
             }
