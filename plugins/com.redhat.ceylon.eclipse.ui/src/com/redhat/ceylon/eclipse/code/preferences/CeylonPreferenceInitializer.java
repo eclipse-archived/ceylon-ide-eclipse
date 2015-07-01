@@ -11,16 +11,22 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
 
     private static final String COMMON_PACKAGES = "com.oracle.*,com.ibm.*,com.sun.*,com.apple.*,com.redhat.*,org.eclipse.*,org.apache.*,org.omg.*,org.w3c.*,org.xml.*,java.*,javax.*,sun.*,oracle.*,apple.*,jdk.*,javafx.*";
+    
     public static final String AUTO_INSERT = "autoInsert";
     public static final String AUTO_INSERT_PREFIX = "autoInsertPrefix";
     public static final String AUTO_ACTIVATION = "autoActivation";
     public static final String AUTO_ACTIVATION_CHARS = "autoActivationChars";
     public static final String AUTO_ACTIVATION_DELAY = "autoActivationDelay";
     public static final String COMPLETION = "completion";
+    public static final String FILTERS = "filters";
+    public static final String INACTIVE_FILTERS = "inactiveFilters";
+    public static final String ENABLE_COMPLETION_FILTERS = "enableCompletionFilters";
     public static final String COMPLETION_FILTERS = "completionFilters";
     public static final String INACTIVE_COMPLETION_FILTERS = "inactiveCompletionFilters";
+    public static final String ENABLE_OPEN_FILTERS = "enableOpenFilters";
     public static final String OPEN_FILTERS = "openFilters";
     public static final String INACTIVE_OPEN_FILTERS = "inactiveOpenFilters";
+    public static final String ENABLE_HIERARCHY_FILTERS = "enableHierarchyFilters";
     public static final String HIERARCHY_FILTERS = "hierarchyFilters";
     public static final String INACTIVE_HIERARCHY_FILTERS = "inactiveHierarchyFilters";
     public static final String INEXACT_MATCHES = "inexactMatches";
@@ -109,6 +115,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(RETURN_TYPES_IN_DIALOGS, false);
         store.setDefault(FULL_LOC_SEARCH_RESULTS, true);
         store.setDefault(MATCH_HIGHLIGHTING, "bold");
+        store.setDefault(INACTIVE_FILTERS, COMMON_PACKAGES);
         store.setDefault(INACTIVE_OPEN_FILTERS, COMMON_PACKAGES);
         store.setDefault(INACTIVE_HIERARCHY_FILTERS, COMMON_PACKAGES);
         store.setDefault(INACTIVE_COMPLETION_FILTERS, COMMON_PACKAGES);

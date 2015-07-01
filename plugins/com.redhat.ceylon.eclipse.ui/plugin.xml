@@ -2049,6 +2049,16 @@
        </keywordReference>
        </page>
        <page
+           id="com.redhat.ceylon.eclipse.ui.preferences.filters"
+           name="Global Filters"
+           class="com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage"
+           category="com.redhat.ceylon.eclipse.ui.preferences">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="com.redhat.ceylon.eclipse.ui.keywords.filters">
+       </keywordReference>
+       </page>
+       <page
            id="com.redhat.ceylon.eclipse.ui.preferences.refactoring"
            name="Refactoring"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonRefactoringPreferencePage"
@@ -2117,6 +2127,9 @@
    <keyword
          label="refactoring linked mode"
          id="com.redhat.ceylon.eclipse.ui.keywords.refactoring"/>
+   <keyword
+         label="filters"
+         id="com.redhat.ceylon.eclipse.ui.keywords.filters"/>
    <keyword
          label="completion linked mode proposals filters"
          id="com.redhat.ceylon.eclipse.ui.keywords.completion"/>

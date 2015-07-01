@@ -20,8 +20,11 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -74,12 +77,13 @@ public abstract class FiltersPreferencePage
         public void dispose() {}        
     }
     
-    private CheckboxTableViewer fTableViewer;
+    private CheckboxTableViewer tableViewer;
 //    private Button fUseStepFiltersButton;
-    private Button fAddPackageButton;
-    private Button fAddTypeButton;
-    private Button fRemoveFilterButton;
-    private Button fAddFilterButton;
+    private Button addPackageButton;
+    private Button addTypeButton;
+    private Button removeFilterButton;
+    private Button addFilterButton;
+    private BooleanFieldEditor enable; 
 //    private Button fSelectAllButton;
 //    private Button fDeselectAllButton;
     
@@ -122,7 +126,14 @@ public abstract class FiltersPreferencePage
     public void init(IWorkbench workbench) {}
     
     private void createFilterPreferences(Composite parent) {
-        Composite container = SWTFactory.createGroup(parent, 
+        if (getEnabledPreference()!=null) {
+            enable = new BooleanFieldEditor(getEnabledPreference(), 
+                    "Enable filters (in addition to global filters)", parent);
+            enable.load();
+            addField(enable);
+        }
+
+        final Composite container = SWTFactory.createGroup(parent, 
                 "Filtering", 2, 1, GridData.FILL_BOTH);
         
 //        fUseStepFiltersButton = SWTFactory.createCheckButton(container, 
@@ -135,27 +146,27 @@ public abstract class FiltersPreferencePage
 //                public void widgetDefaultSelected(SelectionEvent e) {}
 //            }
 //        );
-
+        
         SWTFactory.createLabel(container, getLabelText(), 2);
-        fTableViewer = CheckboxTableViewer.newCheckList(container, 
+        tableViewer = CheckboxTableViewer.newCheckList(container, 
                 SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
-        fTableViewer.getTable().setFont(container.getFont());
-        fTableViewer.setLabelProvider(new FilterLabelProvider());
-        fTableViewer.setComparator(new FilterViewerComparator());
-        fTableViewer.setContentProvider(new FilterContentProvider());
-        fTableViewer.setInput(getAllStoredFilters(false));
-        fTableViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-        fTableViewer.addCheckStateListener(new ICheckStateListener() {
+        tableViewer.getTable().setFont(container.getFont());
+        tableViewer.setLabelProvider(new FilterLabelProvider());
+        tableViewer.setComparator(new FilterViewerComparator());
+        tableViewer.setContentProvider(new FilterContentProvider());
+        tableViewer.setInput(getAllStoredFilters(false));
+        tableViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+        tableViewer.addCheckStateListener(new ICheckStateListener() {
             public void checkStateChanged(CheckStateChangedEvent event) {
                 ((Filter) event.getElement()).setChecked(event.getChecked());
             }
         });
-        fTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+        tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
-                fRemoveFilterButton.setEnabled(!event.getSelection().isEmpty());
+                removeFilterButton.setEnabled(!event.getSelection().isEmpty());
             }
         }); 
-        fTableViewer.getControl().addKeyListener(new KeyAdapter() {
+        tableViewer.getControl().addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
                 if (event.character == SWT.DEL && event.stateMask == 0) {
@@ -168,8 +179,22 @@ public abstract class FiltersPreferencePage
 
         SWTFactory.createLabel(container, "Unchecked filters are disabled.", 2);
 //        setPageEnablement(fUseStepFiltersButton.getSelection());
+        
+        if (getEnabledPreference()!=null) {
+            container.setVisible(enable.getBooleanValue());
+            enable.setPropertyChangeListener(new IPropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent event) {
+                    container.setVisible(enable.getBooleanValue());
+                }
+            });
+        }
     }
-
+    
+    protected String getEnabledPreference() {
+        return null;
+    }
+    
     protected String getLabelText() {
         return "Defined filters:";
     }
@@ -177,8 +202,8 @@ public abstract class FiltersPreferencePage
     private void initTableState(boolean defaults) {
         Filter[] filters = getAllStoredFilters(defaults);
         for(int i = 0; i < filters.length; i++) {
-            fTableViewer.add(filters[i]);
-            fTableViewer.setChecked(filters[i], filters[i].isChecked());
+            tableViewer.add(filters[i]);
+            tableViewer.setChecked(filters[i], filters[i].isChecked());
         }
     }
     
@@ -212,47 +237,47 @@ public abstract class FiltersPreferencePage
         buttonLayout.marginWidth = 0;
         buttonContainer.setLayout(buttonLayout);
     //Add filter button
-        fAddFilterButton = createPushButton(buttonContainer, 
+        addFilterButton = createPushButton(buttonContainer, 
                 "Add &Filter...", 
                 "Key in the Name of a New Filter", null);
-        fAddFilterButton.addListener(SWT.Selection, 
+        addFilterButton.addListener(SWT.Selection, 
                 new Listener() {
             public void handleEvent(Event e) {
                 addFilter();
             }
         });
     //Add type button
-        fAddTypeButton = createPushButton(buttonContainer, 
+        addTypeButton = createPushButton(buttonContainer, 
                 "Add &Declarations...", 
                 "Choose Declaration(s) and Add to Filters", null);
-        fAddTypeButton.addListener(SWT.Selection, 
+        addTypeButton.addListener(SWT.Selection, 
                 new Listener() {
             public void handleEvent(Event e) {
                 addDeclaration();
             }
         });
     //Add package button
-        fAddPackageButton = createPushButton(buttonContainer, 
+        addPackageButton = createPushButton(buttonContainer, 
                 "Add &Packages...", 
                 "Choose Package(s) to Add to Filters", null);
-        fAddPackageButton.addListener(SWT.Selection, 
+        addPackageButton.addListener(SWT.Selection, 
                 new Listener() {
             public void handleEvent(Event e) {
                 addPackage();
             }
         });
     //Remove button
-        fRemoveFilterButton = createPushButton(buttonContainer, 
+        removeFilterButton = createPushButton(buttonContainer, 
                 "&Remove", 
                 "Remove a Filter", 
                 null);
-        fRemoveFilterButton.addListener(SWT.Selection, 
+        removeFilterButton.addListener(SWT.Selection, 
                 new Listener() {
             public void handleEvent(Event e) {
                 removeFilters();
             }
         });
-        fRemoveFilterButton.setEnabled(false);
+        removeFilterButton.setEnabled(false);
         
 //        Label separator= new Label(buttonContainer, SWT.NONE);
 //        separator.setVisible(false);
@@ -289,9 +314,9 @@ public abstract class FiltersPreferencePage
                 showCreateFilterDialog(getShell(), 
                         getAllFiltersFromTable());
         if (newfilter != null) {
-            fTableViewer.add(newfilter);
-            fTableViewer.setChecked(newfilter, true);
-            fTableViewer.refresh(newfilter);
+            tableViewer.add(newfilter);
+            tableViewer.setChecked(newfilter, true);
+            tableViewer.refresh(newfilter);
         }
     }
     
@@ -392,12 +417,14 @@ public abstract class FiltersPreferencePage
     
     protected void removeFilters() {
         IStructuredSelection structuredSelection = 
-                (IStructuredSelection) fTableViewer.getSelection();
-        fTableViewer.remove(structuredSelection.toArray());
+                (IStructuredSelection) tableViewer.getSelection();
+        tableViewer.remove(structuredSelection.toArray());
     }
     
     @Override
     public boolean performOk() {
+        enable.store();
+        
         ArrayList<String> active = new ArrayList<String>();
         ArrayList<String> inactive = new ArrayList<String>();
         String name = "";
@@ -427,11 +454,12 @@ public abstract class FiltersPreferencePage
 
     @Override
     protected void performDefaults() {
+        enable.loadDefault();
 //        IPreferenceStore store = getPreferenceStore();
 //        boolean stepenabled = store.getBoolean(StepFilterManager.PREF_USE_STEP_FILTERS);
 //        fUseStepFiltersButton.setSelection(stepenabled);
 //        setPageEnablement(true);
-        fTableViewer.getTable().removeAll();
+        tableViewer.getTable().removeAll();
         initTableState(true);               
         super.performDefaults();
     }
@@ -439,13 +467,13 @@ public abstract class FiltersPreferencePage
     protected void addFilter(String filter, boolean checked) {
         if(filter != null) {
             Filter f = new Filter(filter, checked);
-            fTableViewer.add(f);
-            fTableViewer.setChecked(f, checked);
+            tableViewer.add(f);
+            tableViewer.setChecked(f, checked);
         }
     }
     
     protected Filter[] getAllFiltersFromTable() {
-        TableItem[] items = fTableViewer.getTable().getItems();
+        TableItem[] items = tableViewer.getTable().getItems();
         Filter[] filters = new Filter[items.length];
         for(int i = 0; i < items.length; i++) {
             filters[i] = (Filter)items[i].getData();

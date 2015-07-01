@@ -25,7 +25,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonStepFilterPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class CeylonPreferencePage extends FieldEditorPreferencePage 
+public class CeylonPreferencePage 
+        extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
 
     private StringFieldEditor sourceFolder;
@@ -131,6 +132,17 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
             }
         });
         
+        Link filtersLink = new Link(parent, 0);
+        filtersLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        filtersLink.setText("See '<a>Global Filters</a>' to set up filtering.");
+        filtersLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonFiltersPreferencePage.ID, null, null);
+            }
+        });
+        
         Link debugLink = new Link(parent, 0);
         debugLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         debugLink.setText("See '<a>Debugging</a>' to set up step filtering.");
@@ -162,7 +174,6 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
 
     @Override
     protected void createFieldEditors() {
-        
         final Composite group = createGroup(1, "Defaults for new Ceylon projects");
         projectType = new RadioGroupFieldEditor(DEFAULT_PROJECT_TYPE, 
                 "Default target virtual machine:", 3, 
@@ -187,10 +198,10 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
     
     @Override
     protected void performDefaults() {
-        super.performDefaults();
         projectType.loadDefault();
         sourceFolder.loadDefault();
         resourceFolder.loadDefault();
+        super.performDefaults();
     }
     
     @Override
@@ -198,7 +209,7 @@ public class CeylonPreferencePage extends FieldEditorPreferencePage
         projectType.store();
         sourceFolder.store();
         resourceFolder.store();
-        return true;
+        return super.performOk();
     }
 
 }

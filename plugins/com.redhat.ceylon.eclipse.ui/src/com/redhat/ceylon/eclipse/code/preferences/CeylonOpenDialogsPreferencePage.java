@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
 
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INACTIVE_OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCH_HIGHLIGHTING;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
@@ -115,6 +116,11 @@ public class CeylonOpenDialogsPreferencePage
     @Override
     protected String getActiveFiltersPreference() {
         return OPEN_FILTERS;
+    }
+    
+    @Override
+    protected String getEnabledPreference() {
+        return ENABLE_OPEN_FILTERS;
     }
     
     @Override
