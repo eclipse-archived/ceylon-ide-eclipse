@@ -251,7 +251,18 @@
            <description>Create a Ceylon package with a package descriptor</description>
            <selection class="org.eclipse.core.resources.IResource"/> 
        </wizard>
-       <primaryWizard
+       <wizard
+            id="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard"
+            icon="icons/newpackfolder_wiz.png"
+            name="Source Folder"
+            category="com.redhat.ceylon.eclipse.ui.category"
+            hasPages="true"
+            canFinishEarly="false"
+            class="org.eclipse.jdt.internal.ui.wizards.NewSourceFolderCreationWizard">
+           <description>Create a source folder for Ceylon or Java code</description>
+           <selection class="org.eclipse.core.resources.IResource"/> 
+       </wizard>
+       <!--primaryWizard
              id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
        <primaryWizard
              id="com.redhat.ceylon.eclipse.ui.newProjectWizard"/>
@@ -260,7 +271,7 @@
        <primaryWizard
              id="com.redhat.ceylon.eclipse.ui.newPackageWizard"/>
        <primaryWizard
-             id="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard"/>
+             id="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard"/-->
    </extension>
    
    <extension 
@@ -2300,7 +2311,7 @@
             <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
             <showInPart id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
             <showInPart id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"/>
-            <showInPart id="org.eclipse.jdt.ui.PackageExplorer"/>
+            <!--showInPart id="org.eclipse.jdt.ui.PackageExplorer"/-->
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.CeylonExplorer"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"/>
             <viewShortcut id="com.redhat.ceylon.eclipse.ui.view.DependencyGraphView"/>
@@ -2315,9 +2326,13 @@
             <viewShortcut id="org.eclipse.search.ui.views.SearchView"/>
             <viewShortcut id="org.eclipse.ui.navigator.ProjectExplorer"/>
             <viewShortcut id="org.eclipse.ui.views.ResourceNavigator"/>
-            <viewShortcut id="org.eclipse.jdt.ui.PackageExplorer"/>
+            <!--viewShortcut id="org.eclipse.jdt.ui.PackageExplorer"/-->
       </perspectiveExtension>
-      <perspectiveExtension 
+      <perspectiveExtension targetID="*">
+            <perspectiveShortcut 
+                  id="com.redhat.ceylon.eclipse.ui.perspective"/>
+      </perspectiveExtension>
+      <!--perspectiveExtension 
               targetID="org.eclipse.jdt.ui.JavaPerspective">
             <newWizardShortcut
                   id="com.redhat.ceylon.eclipse.ui.newUnitWizard"/>
@@ -2334,7 +2349,7 @@
               targetID="org.eclipse.debug.ui.DebugPerspective">
             <perspectiveShortcut 
                   id="com.redhat.ceylon.eclipse.ui.perspective"/>
-      </perspectiveExtension>
+      </perspectiveExtension-->
    </extension>
       
    <extension point="org.eclipse.ui.themes">
