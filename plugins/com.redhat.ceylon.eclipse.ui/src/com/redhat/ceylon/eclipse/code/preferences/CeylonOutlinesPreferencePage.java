@@ -53,13 +53,11 @@ public class CeylonOutlinesPreferencePage
             }
         });
                 
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-        composite.setLayout(new GridLayout(1, true));
+//        Composite composite = new Composite(parent, SWT.NONE);
+//        composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+//        composite.setLayout(new GridLayout(1, true));
         
-        Control contents = super.createContents(composite);
-        
-        return contents;
+        return super.createContents(parent);
     }
     
     @Override

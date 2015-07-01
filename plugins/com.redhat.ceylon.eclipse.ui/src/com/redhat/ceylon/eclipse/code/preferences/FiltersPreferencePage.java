@@ -132,6 +132,8 @@ public abstract class FiltersPreferencePage
             @Override
             public void valueChanged(boolean oldValue, boolean newValue) {
                 container.setVisible(newValue);
+                ((GridData)container.getLayoutData()).exclude = !newValue;
+                container.getParent().getParent().getParent().getParent().layout(true,true);
             }
         });
         enable.load();
@@ -186,8 +188,10 @@ public abstract class FiltersPreferencePage
 
         SWTFactory.createLabel(container, "Unchecked filters are disabled.", 2);
 //        setPageEnablement(fUseStepFiltersButton.getSelection());
-        container.setVisible(enable==null || enable.getBooleanValue());
-
+        boolean visible = enable==null || enable.getBooleanValue();
+        container.setVisible(visible);
+        ((GridData)container.getLayoutData()).exclude = !visible;
+//        container.getParent().layout();
         
     }
     
