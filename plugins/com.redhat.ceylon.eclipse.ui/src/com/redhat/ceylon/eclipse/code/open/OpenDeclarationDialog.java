@@ -9,6 +9,8 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_OPEN_FILTERS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_DIALOGS;
@@ -969,16 +971,24 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
 
-    protected String getFilterListAsString() {
-        return getPreferences().getString(OPEN_FILTERS);
+    protected String getFilterListAsString(String preference) {
+        return getPreferences().getString(preference);
     }
 
     private List<Pattern> filters;
     private List<Pattern> packageFilters;
-    {
+    { initFilters(); }
+    
+    void initFilters() {
         filters = new ArrayList<Pattern>();
         packageFilters = new ArrayList<Pattern>();
-        String filtersString = getFilterListAsString();
+        parseFilters(getFilterListAsString(FILTERS));
+        if (getPreferences().getBoolean(ENABLE_OPEN_FILTERS)) {
+            parseFilters(getFilterListAsString(OPEN_FILTERS)); 
+        }
+    }
+
+    private void parseFilters(String filtersString) {
         if (!filtersString.trim().isEmpty()) {
             String[] regexes = filtersString
                     .replaceAll("\\(\\w+\\)", "")
@@ -997,7 +1007,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     }
                 }
             }
-        } 
+        }
     }
 
     private boolean isFiltered(Declaration declaration) {
@@ -1245,25 +1255,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                                 CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
                         }, 
                         null).open();
-                filters = new ArrayList<Pattern>();
-                packageFilters = new ArrayList<Pattern>();
-                String filtersString = getFilterListAsString();
-                if (!filtersString.trim().isEmpty()) {
-                    String[] regexes = filtersString
-                            .replaceAll("\\(\\w+\\)", "")
-                            .replace(".", "\\.")
-                            .replace("*", ".*")
-                            .split(",");
-                    for (String regex: regexes) {
-                        filters.add(Pattern.compile(regex));
-                        if (regex.endsWith("::*")) {
-                            String pregex = 
-                                    regex.substring(0, 
-                                            regex.length()-3);
-                            packageFilters.add(Pattern.compile(pregex));
-                        }
-                    }
-                }
+                initFilters();
                 filterVersion++;
                 applyFilter();
             }

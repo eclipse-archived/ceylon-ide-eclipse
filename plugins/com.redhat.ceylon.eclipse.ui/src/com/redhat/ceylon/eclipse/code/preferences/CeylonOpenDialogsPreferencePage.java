@@ -101,6 +101,7 @@ public class CeylonOpenDialogsPreferencePage
         matchHighlighting.load();
         addField(matchHighlighting);
         
+        super.createFieldEditors();
     }
     
     @Override

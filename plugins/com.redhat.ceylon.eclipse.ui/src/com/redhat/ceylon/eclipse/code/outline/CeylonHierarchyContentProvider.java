@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_HIERARCHY_FILTERS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.HIERARCHY_FILTERS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
@@ -21,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IEditorPart;
@@ -661,17 +664,20 @@ public final class CeylonHierarchyContentProvider
         }
     }
     
-    protected String getFilterListAsString() {
-        return getPreferences().getString(HIERARCHY_FILTERS);
-    }
-
     private List<Pattern> filters;
     private List<Pattern> packageFilters;
     
     private void initFilters() {
         filters = new ArrayList<Pattern>();
         packageFilters = new ArrayList<Pattern>();
-        String filtersString = getFilterListAsString();
+        IPreferenceStore preferences = getPreferences();
+        parseFilters(preferences.getString(FILTERS));
+        if (preferences.getBoolean(ENABLE_HIERARCHY_FILTERS)) {
+            parseFilters(preferences.getString(HIERARCHY_FILTERS));
+        }
+    }
+
+    private void parseFilters(String filtersString) {
         if (!filtersString.trim().isEmpty()) {
             String[] regexes = filtersString
                     .replaceAll("\\(\\w+\\)", "")
@@ -690,7 +696,7 @@ public final class CeylonHierarchyContentProvider
                     }
                 }
             }
-        } 
+        }
     }
 
     private boolean isFiltered(Declaration declaration) {

@@ -20,11 +20,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -83,7 +80,8 @@ public abstract class FiltersPreferencePage
     private Button addTypeButton;
     private Button removeFilterButton;
     private Button addFilterButton;
-    private BooleanFieldEditor enable; 
+    private BoolFieldEditor enable;
+    private Composite container; 
 //    private Button fSelectAllButton;
 //    private Button fDeselectAllButton;
     
@@ -125,15 +123,24 @@ public abstract class FiltersPreferencePage
     
     public void init(IWorkbench workbench) {}
     
+    @Override
+    protected void createFieldEditors() {
+        enable = new BoolFieldEditor(getEnabledPreference(), 
+                "Enable filters (in addition to global filters)", 
+                getFieldEditorParent());
+        enable.setListener(new BoolFieldEditor.Listener() {
+            @Override
+            public void valueChanged(boolean oldValue, boolean newValue) {
+                container.setVisible(newValue);
+            }
+        });
+        enable.load();
+        addField(enable);
+    }
+    
     private void createFilterPreferences(Composite parent) {
-        if (getEnabledPreference()!=null) {
-            enable = new BooleanFieldEditor(getEnabledPreference(), 
-                    "Enable filters (in addition to global filters)", parent);
-            enable.load();
-            addField(enable);
-        }
-
-        final Composite container = SWTFactory.createGroup(parent, 
+        
+        container = SWTFactory.createGroup(parent, 
                 "Filtering", 2, 1, GridData.FILL_BOTH);
         
 //        fUseStepFiltersButton = SWTFactory.createCheckButton(container, 
@@ -179,16 +186,9 @@ public abstract class FiltersPreferencePage
 
         SWTFactory.createLabel(container, "Unchecked filters are disabled.", 2);
 //        setPageEnablement(fUseStepFiltersButton.getSelection());
+        container.setVisible(enable==null || enable.getBooleanValue());
+
         
-        if (getEnabledPreference()!=null) {
-            container.setVisible(enable.getBooleanValue());
-            enable.setPropertyChangeListener(new IPropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent event) {
-                    container.setVisible(enable.getBooleanValue());
-                }
-            });
-        }
     }
     
     protected String getEnabledPreference() {
@@ -329,7 +329,7 @@ public abstract class FiltersPreferencePage
             private static final String SETTINGS_ID = 
                     CeylonPlugin.PLUGIN_ID + ".addDeclarationFilterDialog";            
             @Override
-            protected String getFilterListAsString() {
+            protected String getFilterListAsString(String preference) {
                 return "";
             }
             @Override
@@ -423,7 +423,9 @@ public abstract class FiltersPreferencePage
     
     @Override
     public boolean performOk() {
-        enable.store();
+        if (enable!=null) {
+            enable.store();
+        }
         
         ArrayList<String> active = new ArrayList<String>();
         ArrayList<String> inactive = new ArrayList<String>();
@@ -454,7 +456,9 @@ public abstract class FiltersPreferencePage
 
     @Override
     protected void performDefaults() {
-        enable.loadDefault();
+        if (enable!=null) {
+            enable.loadDefault();
+        }
 //        IPreferenceStore store = getPreferenceStore();
 //        boolean stepenabled = store.getBoolean(StepFilterManager.PREF_USE_STEP_FILTERS);
 //        fUseStepFiltersButton.setSelection(stepenabled);
@@ -509,5 +513,5 @@ public abstract class FiltersPreferencePage
         }
         return filters;
     }
-
+    
 }

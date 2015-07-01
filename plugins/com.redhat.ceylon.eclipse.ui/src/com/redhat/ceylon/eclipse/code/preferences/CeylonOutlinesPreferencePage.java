@@ -86,6 +86,7 @@ public class CeylonOutlinesPreferencePage
         displayOutlineParameters.load();
         addField(displayOutlineParameters);
         
+        super.createFieldEditors();
     }
     
     @Override

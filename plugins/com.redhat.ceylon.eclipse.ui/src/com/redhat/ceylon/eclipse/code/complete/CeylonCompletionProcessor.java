@@ -69,6 +69,8 @@ import static com.redhat.ceylon.eclipse.code.complete.TypeArgumentListCompletion
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_CHARS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_COMPLETION_FILTERS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
@@ -125,6 +127,7 @@ import org.antlr.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
@@ -491,9 +494,18 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 
     private List<Pattern> getProposalFilters() {
         List<Pattern> filters = new ArrayList<Pattern>();
-        String filtersString = 
-                getPreferences()
-                    .getString(COMPLETION_FILTERS);
+        IPreferenceStore preferences = getPreferences();
+        parseFilters(filters, 
+                preferences.getString(FILTERS));
+        if (preferences.getBoolean(ENABLE_COMPLETION_FILTERS)) {
+            parseFilters(filters,
+                    preferences.getString(COMPLETION_FILTERS));
+        }
+        return filters;
+    }
+
+    private void parseFilters(List<Pattern> filters, 
+            String filtersString) {
         if (!filtersString.trim().isEmpty()) {
             String[] regexes = filtersString
                     .replaceAll("\\(\\w+\\)", "")
@@ -506,8 +518,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     filters.add(Pattern.compile(regex));
                 }
             }
-        } 
-        return filters;
+        }
     }
     
     private String getRealText(CommonToken token) {

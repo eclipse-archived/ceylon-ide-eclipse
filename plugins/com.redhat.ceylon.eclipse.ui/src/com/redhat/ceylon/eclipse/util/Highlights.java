@@ -27,8 +27,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.TextStyle;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;

@@ -391,7 +391,7 @@ public class LaunchHelper {
             private static final String SETTINGS_ID = 
                     CeylonPlugin.PLUGIN_ID + ".selectRunnableDialog";            
             @Override
-            protected String getFilterListAsString() {
+            protected String getFilterListAsString(String preference) {
                 return "";
             }
             @Override

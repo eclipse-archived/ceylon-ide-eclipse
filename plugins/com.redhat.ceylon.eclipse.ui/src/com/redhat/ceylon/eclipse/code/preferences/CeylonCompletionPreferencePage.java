@@ -21,7 +21,6 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.ScaleFieldEditor;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -134,7 +133,7 @@ public class CeylonCompletionPreferencePage
         linkedModeChain.setEnabled(
                 getPreferenceStore().getBoolean(LINKED_MODE_ARGUMENTS), 
                 parent);
-        linkedMode.setListener(new Listener() {
+        linkedMode.setListener(new BoolFieldEditor.Listener() {
             @Override
             public void valueChanged(boolean oldValue, boolean newValue) {
                 linkedModeChain.setEnabled(newValue, parent);
@@ -180,51 +179,17 @@ public class CeylonCompletionPreferencePage
         boolean enabled = store.getBoolean(AUTO_ACTIVATION);
         autoActivationChars.setEnabled(enabled, p1);
         autoActivationDelay.setEnabled(enabled, p2);        
-        autoActivation.setListener(new Listener() {
+        autoActivation.setListener(new BoolFieldEditor.Listener() {
             @Override
             public void valueChanged(boolean oldValue, boolean newValue) {
                 autoActivationChars.setEnabled(newValue, p1);
                 autoActivationDelay.setEnabled(newValue, p2);
             }
         });
+        
+        super.createFieldEditors();
     }
 
-    interface Listener {
-        void valueChanged(boolean oldValue, boolean newValue);
-    }
-    
-    class BoolFieldEditor extends BooleanFieldEditor {
-        private Listener listener;
-        public BoolFieldEditor(String name, String label, Composite parent) {
-            super(name, label, parent);
-        }
-        public BoolFieldEditor(String name, String labelText, int style,
-                Composite parent) {
-            super(name, labelText, style, parent);
-        }
-        public void setListener(Listener listener) {
-            this.listener = listener;
-        }
-        @Override
-        protected void valueChanged(boolean oldValue, boolean newValue) {
-            super.valueChanged(oldValue, newValue);
-            if (listener!=null) {
-                listener.valueChanged(oldValue, newValue);
-            }
-        }
-        @Override
-        protected void doLoadDefault() {
-            boolean oldValue = getBooleanValue();
-            super.doLoadDefault();
-            boolean newValue = getBooleanValue();
-            if (listener!=null) {
-                listener.valueChanged(oldValue, newValue);
-            }
-        }
-    }
-    
-    private IPropertyChangeListener listener;
-    
     @Override
     protected String getInactiveFiltersPreference() {
         return INACTIVE_COMPLETION_FILTERS;
@@ -240,14 +205,6 @@ public class CeylonCompletionPreferencePage
         return ENABLE_COMPLETION_FILTERS;
     }
     
-    @Override
-    public void dispose() {
-        super.dispose();
-        if (listener!=null) {
-            getPreferences().removePropertyChangeListener(listener);
-        }
-    }
-
     @Override
     protected Control createContents(Composite parent) {
         Link colorsAndFontsLink = new Link(parent, 0);
