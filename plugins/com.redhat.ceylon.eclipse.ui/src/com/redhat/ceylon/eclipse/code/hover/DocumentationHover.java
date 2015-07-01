@@ -1207,10 +1207,10 @@ public class DocumentationHover extends SourceInfoHover {
         String label;
         if (mod.getNameAsString().isEmpty() || 
                 mod.getNameAsString().equals("default")) {
-            label = "<span>Packaged in default module.</span>";
+            label = "<span>Belongs to default module.</span>";
         }
         else {
-            label = "<span>Packaged in module&nbsp;" + link(mod) + 
+            label = "<span>Belongs to&nbsp;" + link(mod) + 
                     "&nbsp;<tt><span style='color:" + toHex(getCurrentThemeColor(STRINGS)) + 
                     "'>\"" + mod.getVersion() + "\"</span></tt>" + ".</span>";
         }
