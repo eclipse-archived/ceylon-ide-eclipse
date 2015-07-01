@@ -864,10 +864,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             else {
                  throw new RuntimeException("unexpected node type");
             }
-            StyledString label = new StyledString();
-            label.append(kw, KW_STYLER)
-                .append(" ")
-                .append(name(id), ID_STYLER);
+            StyledString label = 
+                    new StyledString(kw, KW_STYLER)
+                        .append(" ");
+            String name = name(id);
+            appendName(label, name, ID_STYLER, prefix, font);
             if (pls!=null) {
                 for (Tree.ParameterList pl: pls) { 
                     parameters(pl, label);

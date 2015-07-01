@@ -42,6 +42,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
@@ -134,20 +135,25 @@ public class CeylonOutlineNode implements IAdaptable {
         id = createIdentifier(treeNode);
         declaration = treeNode instanceof Tree.Declaration;
         if (declaration) {
+            Tree.Declaration treeDeclaration = 
+                    (Tree.Declaration) treeNode;
             Declaration model = 
-                    ((Tree.Declaration) treeNode).getDeclarationModel();
+                    treeDeclaration.getDeclarationModel();
             if (model!=null) {
                 shared = model.isShared();
             }
             Tree.Identifier identifier = 
-                    ((Tree.Declaration) treeNode).getIdentifier();
+                    treeDeclaration.getIdentifier();
             name = identifier==null ? null : identifier.getText();
         }
         else if (treeNode instanceof Tree.SpecifierStatement) {
+            Tree.SpecifierStatement treeSpecifier = 
+                    (Tree.SpecifierStatement) treeNode;
             Tree.Identifier id = 
-                    getIdentifier((Tree.SpecifierStatement) treeNode);
+                    getIdentifier(treeSpecifier);
             name = id==null ? null : id.getText();
             shared = false;
+            declaration = true;
         }
         else {
             shared = true;
@@ -168,15 +174,18 @@ public class CeylonOutlineNode implements IAdaptable {
         imageKey = getImageKeyForNode(treeNode);
         decorations = getNodeDecorationAttributes(treeNode);
         if (shared && treeNode instanceof Tree.AnyMethod) {
+            Tree.AnyMethod am = (Tree.AnyMethod) treeNode;
             List<Tree.ParameterList> lists = 
-                    ((Tree.AnyMethod)treeNode).getParameterLists();
-            runnable = lists.size()==1 && 
+                    am.getParameterLists();
+            runnable = 
+                    lists.size()==1 && 
                     lists.get(0).getParameters().isEmpty();
         }
         else if (shared && treeNode instanceof Tree.AnyClass) {
-            Tree.ParameterList list = 
-                    ((Tree.AnyClass)treeNode).getParameterList();
-            runnable = list!=null && 
+            Tree.AnyClass ac = (Tree.AnyClass) treeNode;
+            Tree.ParameterList list = ac.getParameterList();
+            runnable = 
+                    list!=null && 
                     list.getParameters().isEmpty();
         }
         else {
@@ -261,6 +270,9 @@ public class CeylonOutlineNode implements IAdaptable {
                         ce.getParseController().getRootNode();
                 if (rootNode!=null) {
                     Node node = findNode(rootNode, startOffset);
+                    if (!(node instanceof Tree.Declaration)) {
+                        node = Nodes.findStatement(rootNode, node);
+                    }
                     if (node!=null && 
                             node.getStartIndex()==realStartOffset && 
                             node.getStopIndex()+1==realEndOffset) {
@@ -282,6 +294,9 @@ public class CeylonOutlineNode implements IAdaptable {
                         ce.getParseController().getRootNode();
                 if (rootNode!=null) {
                     Node node = findNode(rootNode, startOffset);
+                    if (!(node instanceof Tree.Declaration)) {
+                        node = Nodes.findStatement(rootNode, node);
+                    }
                     if (node!=null) {
                         return getNodeDecorationAttributes(node);
                     }
