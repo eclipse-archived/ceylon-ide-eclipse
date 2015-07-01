@@ -67,6 +67,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ObjectDefinition;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -553,7 +554,8 @@ public class OutlinePopup extends TreeViewPopup {
                         CeylonOutlinesPreferencePage.ID, 
                         new String[] {
                                 CeylonOutlinesPreferencePage.ID,
-                                CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
+                                CeylonPlugin.COLORS_AND_FONTS_PAGE_ID,
+                                CeylonFiltersPreferencePage.ID
                         }, 
                         null).open();
                 getTreeViewer().getTree()

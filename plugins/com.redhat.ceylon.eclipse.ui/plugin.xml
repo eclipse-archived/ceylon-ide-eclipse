@@ -2050,7 +2050,7 @@
        </page>
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences.filters"
-           name="Global Filters"
+           name="Filtering"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage"
            category="com.redhat.ceylon.eclipse.ui.preferences">
        <keywordReference id="org.eclipse.ui.editors.general"/>

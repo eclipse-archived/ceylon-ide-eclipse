@@ -134,7 +134,7 @@ public class CeylonPreferencePage
         
         Link filtersLink = new Link(parent, 0);
         filtersLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        filtersLink.setText("See '<a>Global Filters</a>' to set up filtering.");
+        filtersLink.setText("See '<a>Filtering</a>' to set up filtering.");
         filtersLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

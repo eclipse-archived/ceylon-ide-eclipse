@@ -219,8 +219,19 @@ public class CeylonCompletionPreferencePage
                                 CeylonPlugin.COMPLETION_FONT_PREFERENCE);
             }
         });
-        Control result = super.createContents(parent);
-        return result;     
+        
+        Link filtersLink = new Link(parent, 0);
+        filtersLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        filtersLink.setText("See '<a>Filtering</a>' to set up global filters and match highlighting.");
+        filtersLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonFiltersPreferencePage.ID, null, null);
+            }
+        });
+        
+        return super.createContents(parent);
     }
 
 }

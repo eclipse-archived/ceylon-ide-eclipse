@@ -72,6 +72,7 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.html.HTML;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
 import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
@@ -1252,7 +1253,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                         CeylonOpenDialogsPreferencePage.ID, 
                         new String[] { 
                                 CeylonOpenDialogsPreferencePage.ID,
-                                CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
+                                CeylonPlugin.COLORS_AND_FONTS_PAGE_ID,
+                                CeylonFiltersPreferencePage.ID
                         }, 
                         null).open();
                 initFilters();

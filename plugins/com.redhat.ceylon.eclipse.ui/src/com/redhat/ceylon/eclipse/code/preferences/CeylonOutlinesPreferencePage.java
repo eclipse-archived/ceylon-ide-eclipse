@@ -14,7 +14,6 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
@@ -53,6 +52,17 @@ public class CeylonOutlinesPreferencePage
             }
         });
                 
+        Link filtersLink = new Link(parent, 0);
+        filtersLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        filtersLink.setText("See '<a>Filtering</a>' to set up global filters and match highlighting.");
+        filtersLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                createPreferenceDialogOn(getShell(), 
+                        CeylonFiltersPreferencePage.ID, null, null);
+            }
+        });
+        
 //        Composite composite = new Composite(parent, SWT.NONE);
 //        composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
 //        composite.setLayout(new GridLayout(1, true));
