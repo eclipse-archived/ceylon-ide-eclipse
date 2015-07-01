@@ -114,4 +114,9 @@ public class JDTAnnotation implements AnnotationMirror {
     public Object getValue() {
         return getValue("value");
     }
+    
+    @Override
+    public String toString() {
+        return "[JDTAnnotation: "+values+"]";
+    }
 }

@@ -286,4 +286,9 @@ public class JDTType implements TypeMirror {
     public TypeMirror getQualifyingType() {
         return qualifyingType;
     }
+    
+    @Override
+    public String toString() {
+        return "[JDTType: "+qualifiedName+"]";
+    }
 }

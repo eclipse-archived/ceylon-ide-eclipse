@@ -59,4 +59,9 @@ public class JDTTypeParameter implements TypeParameterMirror {
     public List<TypeMirror> getBounds() {
         return bounds;
     }
+    
+    @Override
+    public String toString() {
+        return "[JDTTypeParameter: "+name+"]";
+    }
 }

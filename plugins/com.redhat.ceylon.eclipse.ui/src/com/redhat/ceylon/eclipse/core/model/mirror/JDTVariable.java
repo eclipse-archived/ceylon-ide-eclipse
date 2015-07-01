@@ -52,4 +52,9 @@ public class JDTVariable implements VariableMirror {
     public String getName() {
         return name;
     }
+
+    @Override
+    public String toString() {
+        return "[JDTVariable: "+name+" ( + " + type != null ? type.getQualifiedName() : "unknown" + ")]";
+    }
 }

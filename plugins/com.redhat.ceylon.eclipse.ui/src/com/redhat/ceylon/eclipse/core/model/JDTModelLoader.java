@@ -1017,7 +1017,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         IType typeModel = nameEnvironment.findTypeInNameLookup(compoundName);
         
         if (typeModel == null && ! (binding instanceof MissingTypeBinding)) {
-            throw new ModelResolutionException("JDT reference binding without a JDT IType element !");
+            throw new ModelResolutionException("JDT reference binding without a JDT IType element : " + CharOperation.toString(compoundName));
         }
         return typeModel;
     }

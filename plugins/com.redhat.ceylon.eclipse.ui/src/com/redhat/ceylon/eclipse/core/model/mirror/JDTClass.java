@@ -20,6 +20,8 @@
 
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -211,7 +213,7 @@ class UnknownClassMirror implements ClassMirror {
 public class JDTClass implements ClassMirror, IBindingProvider {
     public static final ClassMirror UNKNOWN_CLASS = new UnknownClassMirror();
     
-    WeakReference<ReferenceBinding> bindingRef;
+    Reference<ReferenceBinding> bindingRef;
     private PackageMirror pkg;
     private TypeMirror superclass;
     private List<MethodMirror> methods;
@@ -229,26 +231,19 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     private JDTClass enclosingClass;
     private boolean enclosingClassSet;
   
-    private boolean isPublic;
-    
     private IType type = null;
-    private boolean isInterface;
-    private boolean isAbstract;
-    private boolean isProtected;
-    private boolean isDefaultAccess;
-    private boolean isInnerType; 
+    private int modifiers;
+    private boolean isInnerType;
     private boolean isLocalType;
-    private boolean isStatic;
-    private boolean isFinal;
-    private boolean isEnum;
     private String fileName;
     private boolean isBinary;
     private boolean isAnonymous;
     private boolean isJavaSource;
     private String javaModelPath;
     private String fullPath;
-    private boolean isAnnotationType;
     private char[] bindingKey;
+    
+    private static final Map<String, AnnotationMirror> noAnnotations = Collections.emptyMap();
     
     /*
      *  the klass parameter should not be null
@@ -259,23 +254,15 @@ public class JDTClass implements ClassMirror, IBindingProvider {
      */
     public JDTClass(ReferenceBinding klass, IType type) {
         this.type = type;
-        bindingRef = new WeakReference<ReferenceBinding>(klass);
+        bindingRef = new SoftReference<ReferenceBinding>(klass);
         pkg = new JDTPackage(klass.getPackage());
         simpleName = new String(klass.sourceName());
         qualifiedName = JDTUtils.getFullyQualifiedName(klass);
-        isPublic = klass.isPublic();
-        isInterface = klass.isInterface();
-        isAbstract = klass.isAbstract();
-        isProtected = klass.isProtected();
-        isDefaultAccess = klass.isDefault();
+        modifiers = klass.modifiers;
         isLocalType = klass.isLocalType();
-        isStatic = (klass.modifiers & ClassFileConstants.AccStatic) != 0;
-        isFinal = klass.isFinal();
-        isEnum = klass.isEnum();
         isBinary = klass.isBinaryBinding();
         isAnonymous = klass.isAnonymousType();
         isJavaSource = (klass instanceof SourceTypeBinding) && new String(((SourceTypeBinding) klass).getFileName()).endsWith(".java");
-        isAnnotationType = klass.isAnnotationType();
         bindingKey = klass.computeUniqueKey();
 
         char[] bindingFileName = klass.getFileName();
@@ -319,26 +306,34 @@ public class JDTClass implements ClassMirror, IBindingProvider {
 
     @Override
     public AnnotationMirror getAnnotation(String annotationType) {
+        retrieveAnnotations();
+        return annotations.get(annotationType);
+    }
+
+    private synchronized void retrieveAnnotations() {
         if (annotations == null) {
             doWithBindings(new ActionOnClassBinding() {
                 @Override
                 public void doWithBinding(IType classModel, ReferenceBinding klass) {
-                    annotations = JDTUtils.getAnnotations(klass.getAnnotations());
+                    Map<String, AnnotationMirror> annots = JDTUtils.getAnnotations(klass.getAnnotations());
+                    if (qualifiedName.startsWith("ceylon.language") && annots.containsKey(com.redhat.ceylon.compiler.java.metadata.Ceylon.class.getName())) {
+                        HashMap<String, Object> values = new HashMap<>();
+                        values.put("backend", "");
+                        annots.put("ceylon.language.NativeAnnotation$annotation$", new JDTAnnotation(values));
+                    }
+                    if (annots.isEmpty()) {
+                        annots = noAnnotations;
+                    }
+                    annotations = annots;
                     isInnerType = getAnnotation(AbstractModelLoader.CEYLON_CONTAINER_ANNOTATION) != null || klass.isMemberType();
                 }
             });
-            if (qualifiedName.startsWith("ceylon.language") && annotations.containsKey(com.redhat.ceylon.compiler.java.metadata.Ceylon.class.getName())) {
-                HashMap<String, Object> values = new HashMap<>();
-                values.put("backend", "");
-                annotations.put("ceylon.language.NativeAnnotation$annotation$", new JDTAnnotation(values));
-            }
         }
-        return annotations.get(annotationType);
     }
 
     @Override
     public boolean isPublic() {
-        return isPublic;
+        return (this.modifiers & ClassFileConstants.AccPublic) != 0;
     }
 
     @Override
@@ -364,22 +359,22 @@ public class JDTClass implements ClassMirror, IBindingProvider {
 
     @Override
     public boolean isInterface() {
-        return isInterface;
+        return (this.modifiers & ClassFileConstants.AccInterface) != 0;
     }
 
     @Override
     public boolean isAbstract() {
-        return isAbstract;
+        return (this.modifiers & ClassFileConstants.AccAbstract) != 0;
     }
     
     @Override
     public boolean isProtected() {
-        return isProtected;
+        return (this.modifiers & ClassFileConstants.AccProtected) != 0;
     }
     
     @Override
     public boolean isDefaultAccess() {
-        return isDefaultAccess;
+        return (this.modifiers & (ClassFileConstants.AccPublic | ClassFileConstants.AccProtected | ClassFileConstants.AccPrivate)) == 0;
     }
     
     private void doWithBindings(final ActionOnClassBinding action) {
@@ -513,6 +508,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
 
     @Override
     public boolean isInnerClass() {
+        retrieveAnnotations();
         return isInnerType;
     }
     
@@ -579,17 +575,17 @@ public class JDTClass implements ClassMirror, IBindingProvider {
 
     @Override
     public boolean isStatic() {
-        return isStatic;
+        return (this.modifiers & ClassFileConstants.AccStatic) != 0;
     }
 
     @Override
     public boolean isFinal() {
-        return isFinal;
+        return (this.modifiers & ClassFileConstants.AccFinal) != 0;
     }
     
     @Override
     public boolean isEnum() {
-        return isEnum;
+        return (this.modifiers & ClassFileConstants.AccEnum) != 0;
     }
 
     public String getFileName() {
@@ -625,7 +621,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
 
     @Override
     public boolean isAnnotationType() {
-        return isAnnotationType;
+        return (this.modifiers & ClassFileConstants.AccAnnotation) != 0;
     }
 
     @Override
@@ -650,5 +646,10 @@ public class JDTClass implements ClassMirror, IBindingProvider {
 
     public IType getType() {
         return type;
+    }
+    
+    @Override
+    public String toString() {
+        return "[JDTClass: "+qualifiedName+" ( " + fileName + ")]";
     }
 }

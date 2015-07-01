@@ -22,7 +22,8 @@ package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import static java.lang.Character.toLowerCase;
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import java.util.StringTokenizer;
 
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.compiler.CharOperation;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodVerifier;
@@ -56,7 +58,7 @@ import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
 import com.redhat.ceylon.model.loader.mirror.VariableMirror;
 
 public class JDTMethod implements MethodMirror, IBindingProvider {
-    private WeakReference<MethodBinding> bindingRef;
+    private Reference<MethodBinding> bindingRef;
     private Map<String, AnnotationMirror> annotations;
     private String name;
     private List<VariableMirror> parameters;
@@ -65,33 +67,25 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     Boolean isOverriding;
     private Boolean isOverloading;
     private JDTClass enclosingClass;
-    private boolean isStatic;
-    private boolean isPublic;
+    private int modifiers;
     private boolean isConstructor;
     private boolean isStaticInit;
-    private boolean isAbstract;
-    private boolean isFinal;
     private char[] bindingKey;
     private String readableName;
-    private boolean isProtected;
-    private boolean isDefaultAccess;
     private boolean isDeclaredVoid;
     private boolean isVariadic;
     private boolean isDefault;
+    
+    private static final Map<String, AnnotationMirror> noAnnotations = Collections.emptyMap();
 
     public JDTMethod(JDTClass enclosingClass, MethodBinding method) {
         this.enclosingClass = enclosingClass;
-        bindingRef = new WeakReference<MethodBinding>(method);
+        bindingRef = new SoftReference<MethodBinding>(method);
         name = new String(method.selector);
         readableName = new String(method.readableName());
-        isStatic = method.isStatic();
-        isPublic = method.isPublic();
+        modifiers = method.modifiers;
         isConstructor = method.isConstructor();
         isStaticInit = method.selector == TypeConstants.CLINIT; // TODO : check if it is right
-        isAbstract = method.isAbstract();
-        isFinal = method.isFinal();
-        isProtected  = method.isProtected();
-        isDefaultAccess = method.isDefault();
         isDeclaredVoid = method.returnType.id == TypeIds.T_void;
         isVariadic = method.isVarargs();
         isDefault = method.getDefaultValue()!=null;
@@ -106,8 +100,6 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         }
     }
 
-    
-    
     @Override
     public AnnotationMirror getAnnotation(String type) {
         if (annotations == null) {
@@ -116,7 +108,12 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                 public void doWithBinding(IType declaringClassModel,
                         ReferenceBinding declaringClass,
                         MethodBinding method) {
-                    annotations = JDTUtils.getAnnotations(method.getAnnotations());
+                    Map<String, AnnotationMirror> annots = JDTUtils.getAnnotations(method.getAnnotations());
+                    if (annots.isEmpty()) {
+                        annotations = noAnnotations;
+                    } else {
+                        annotations = annots;
+                    }
                 }
             });
         }
@@ -130,12 +127,12 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     @Override
     public boolean isStatic() {
-        return isStatic;
+        return (this.modifiers & ClassFileConstants.AccStatic) != 0;
     }
 
     @Override
     public boolean isPublic() {
-        return isPublic;
+        return (this.modifiers & ClassFileConstants.AccPublic) != 0;
     }
 
     @Override
@@ -212,12 +209,12 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     @Override
     public boolean isAbstract() {
-        return isAbstract;
+        return (this.modifiers & ClassFileConstants.AccAbstract) != 0;
     }
 
     @Override
     public boolean isFinal() {
-        return isFinal;
+        return (this.modifiers & ClassFileConstants.AccFinal) != 0;
     }
 
     @Override
@@ -307,7 +304,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                         throw new ModelResolutionException("Function '" + readableName + "' not found in the binding of class '" + declaringClassModel.getFullyQualifiedName() + "'");
                     }
 
-                    bindingRef = new WeakReference<MethodBinding>(method);
+                    bindingRef = new SoftReference<MethodBinding>(method);
                     action.doWithBinding(declaringClassModel, declaringClass, method);
                 }
             });
@@ -473,14 +470,18 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     @Override
     public boolean isProtected() {
-        return isProtected;
+        return (this.modifiers & ClassFileConstants.AccProtected) != 0;
     }
 
     @Override
     public boolean isDefaultAccess() {
-        return isDefaultAccess;
+        return !isPublic() && !isProtected() && !isPrivate();
     }
     
+    public final boolean isPrivate() {
+        return (this.modifiers & ClassFileConstants.AccPrivate) != 0;
+    }
+
     @Override
     public boolean isDeclaredVoid() {
         return isDeclaredVoid;
