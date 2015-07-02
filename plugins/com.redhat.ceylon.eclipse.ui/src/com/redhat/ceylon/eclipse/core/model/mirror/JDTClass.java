@@ -249,7 +249,9 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     
     public JDTClass(ReferenceBinding klass, IType type, ClassFileReader classFileReader) {
         this(klass, type);
-        sourceFileName = CharOperation.charToString(classFileReader.sourceFileName());
+        if (classFileReader != null) {
+            sourceFileName = CharOperation.charToString(classFileReader.sourceFileName());
+        }
     }
     
     /*
