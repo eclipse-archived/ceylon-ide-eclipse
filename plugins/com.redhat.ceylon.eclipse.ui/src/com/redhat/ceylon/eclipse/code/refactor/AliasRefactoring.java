@@ -180,7 +180,7 @@ public class AliasRefactoring extends AbstractRefactoring {
                 if (unit.getFilename().equals(editorUnit.getFilename())) {
                     tfc.addEdit(new InsertEdit(doc.getLength(),
                             delim + delim +
-                            "alias " + getNewName() + 
+                            "shared alias " + getNewName() + 
                             " => " + getType().asString() + ";"));
                 }
             }
