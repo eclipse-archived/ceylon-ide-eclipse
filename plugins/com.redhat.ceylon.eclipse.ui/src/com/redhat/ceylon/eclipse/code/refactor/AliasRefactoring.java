@@ -93,7 +93,7 @@ public class AliasRefactoring extends AbstractRefactoring {
     }
 
     public String getName() {
-        return "Rename";
+        return "Create Type Alias";
     }
 
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
