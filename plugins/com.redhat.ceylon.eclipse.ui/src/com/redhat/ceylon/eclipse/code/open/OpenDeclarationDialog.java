@@ -1016,8 +1016,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 declaration.isDeprecated()) {
             return true;
         }
-        if (declaration.isAnnotation() &&
-                declaration.getName().contains("__")) {
+        if (declaration.getName().contains("__") &&
+                declaration.isAnnotation()) {
             //actually what we should really do is filter
             //out all constructors for Java annotations
             return true;
