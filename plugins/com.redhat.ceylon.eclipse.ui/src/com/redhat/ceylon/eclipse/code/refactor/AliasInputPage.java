@@ -45,7 +45,7 @@ public class AliasInputPage extends UserInputWizardPage {
         GridData gd3 = new GridData();
         gd3.horizontalSpan=2;
         text.setLayoutData(gd3);
-        text.setText(getAliasRefactoring().getNewName());
+        text.setText(getAliasRefactoring().getInitialName());
         text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         text.addModifyListener(new ModifyListener() {
             @Override

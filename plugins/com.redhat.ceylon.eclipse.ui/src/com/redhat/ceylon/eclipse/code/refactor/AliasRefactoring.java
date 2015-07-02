@@ -28,10 +28,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -70,6 +72,7 @@ public class AliasRefactoring extends AbstractRefactoring {
     }
 
     private String newName;
+    private String typeString;
     private final Type type;
 //    private boolean renameValuesAndFunctions;
     
@@ -83,7 +86,8 @@ public class AliasRefactoring extends AbstractRefactoring {
             if (node instanceof Tree.Type) {
                 Tree.Type t = (Tree.Type) node;
                 type = t.getTypeModel();
-                newName = "Alias"; //TODO but what?
+                newName = null;
+                typeString = Nodes.toString(t, tokens);
             }
             else {
                 type = null;
@@ -129,7 +133,7 @@ public class AliasRefactoring extends AbstractRefactoring {
             IProgressMonitor pm)
                     throws CoreException, 
                            OperationCanceledException {
-        if (!newName.matches("^[a-zA-Z_]\\w*$")) {
+        if (newName==null || !newName.matches("^[a-zA-Z_]\\w*$")) {
             return createErrorStatus("Not a legal Ceylon identifier");
         }
         else if (Escaping.KEYWORDS.contains(newName)) {
@@ -186,7 +190,17 @@ public class AliasRefactoring extends AbstractRefactoring {
         return cc;
     }
     
-    private void renameInFile(TextChange tfc, 
+    private int aliasOffset;
+    
+    int getAliasOffset() {
+        return aliasOffset;
+    }
+    
+    int getAliasLength() {
+        return typeString.length();
+    }
+    
+    void renameInFile(TextChange tfc, 
             CompositeChange cc, 
             Tree.CompilationUnit root) {
         tfc.setEdit(new MultiTextEdit());
@@ -201,8 +215,10 @@ public class AliasRefactoring extends AbstractRefactoring {
                 IDocument doc = getDocument(tfc);
                 String delim = 
                         getDefaultLineDelimiter(document);
-                for (Node node: getNodesToRename(root)) {
-                    renameNode(tfc, node, root);
+                if (newName!=null) {
+                    for (Node node: getNodesToRename(root)) {
+                        renameNode(tfc, node, root);
+                    }
                 }
                 if (unit.getFilename()
                         .equals(editorUnit.getFilename())) {
@@ -212,43 +228,58 @@ public class AliasRefactoring extends AbstractRefactoring {
                     StringBuffer header = 
                             new StringBuffer("shared ");
                     StringBuffer args = new StringBuffer();
+                    String initialName = getInitialName();
                     if (td instanceof Class) {
+                        aliasOffset = 
+                                doc.getLength() + 
+                                delim.length()*2 +
+                                6+7;
                         header.append("class ")
-                            .append(getNewName())
+                            .append(initialName)
                             .append("(");
-                        args.append("(");
                         Class c = (Class) td;
-                        boolean first = true;
-                        for (Parameter p: 
-                                c.getParameterList()
-                                    .getParameters()) {
-                            if (first) {
-                                first = false;
+                        ParameterList pl = 
+                                c.getParameterList();
+                        if (pl!=null) {
+                            args.append("(");
+                            boolean first = true;
+                            for (Parameter p: pl.getParameters()) {
+                                if (first) {
+                                    first = false;
+                                }
+                                else {
+                                    header.append(", ");
+                                    args.append(", ");
+                                }
+                                Type ptype = 
+                                        getType()
+                                            .getTypedParameter(p)
+                                            .getFullType();
+                                String pname = p.getName();
+                                header.append(ptype.asString(unit)) 
+                                    .append(" ")
+                                    .append(pname);
+                                args.append(pname);
                             }
-                            else {
-                                header.append(", ");
-                                args.append(", ");
-                            }
-                            Type ptype = 
-                                    getType()
-                                        .getTypedParameter(p)
-                                        .getFullType();
-                            String pname = p.getName();
-                            header.append(ptype.asString(unit)) 
-                                .append(" ")
-                                .append(pname);
-                            args.append(pname);
+                            header.append(")");
+                            args.append(")");
                         }
-                        header.append(")");
-                        args.append(")");
                     }
                     else if (td instanceof Interface) {
+                        aliasOffset = 
+                                doc.getLength() + 
+                                delim.length()*2 +
+                                10+7;
                         header.append("interface ")
-                            .append(getNewName());
+                            .append(initialName);
                     }
                     else {
+                        aliasOffset = 
+                                doc.getLength() + 
+                                delim.length()*2 +
+                                6+7;
                         header.append("alias ")
-                            .append(getNewName());
+                            .append(initialName);
                     }
                     tfc.addEdit(new InsertEdit(
                             doc.getLength(),
@@ -264,9 +295,14 @@ public class AliasRefactoring extends AbstractRefactoring {
 //                }
 //            }
         }
-        if (tfc.getEdit().hasChildren()) {
+        if (cc!=null && tfc.getEdit().hasChildren()) {
             cc.add(tfc);
         }
+    }
+
+    String getInitialName() {
+        return newName==null ? 
+                typeString : newName;
     }
     
     public List<Node> getNodesToRename(

@@ -3,15 +3,18 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
@@ -34,8 +37,26 @@ public final class AliasLinkedMode
     }
     
     public static boolean useLinkedMode() {
-        return EditorUtil.getPreferences()
+        return getPreferences()
                 .getBoolean(LINKED_MODE_RENAME);
+    }
+    
+    @Override
+    protected int performInitialChange(IDocument document) {
+        try {
+            DocumentChange change = 
+                    new DocumentChange(
+                            "Introduce Type Alias", 
+                            document);
+            refactoring.renameInFile(change, null,
+                    editor.getParseController()
+                        .getRootNode());
+            change.perform(new NullProgressMonitor());
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
     }
     
     @Override
@@ -124,6 +145,12 @@ public final class AliasLinkedMode
                 e.printStackTrace();
             }
         }
+        
+        linkedPositionGroup.addPosition(
+                new LinkedPosition(document, 
+                        refactoring.getAliasOffset(), 
+                        refactoring.getAliasLength(), 
+                        i));
     }
 
     @Override
