@@ -3,42 +3,35 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Escaping;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
-public final class RenameLinkedMode
+public final class AliasLinkedMode
         extends RefactorLinkedMode {
         
-    private final RenameRefactoring refactoring;
+    private final AliasRefactoring refactoring;
     protected LinkedPosition namePosition;
     protected LinkedPositionGroup linkedPositionGroup;
     
-    public RenameLinkedMode(CeylonEditor editor) {
+    public AliasLinkedMode(CeylonEditor editor) {
         super(editor);
-        this.refactoring = new RenameRefactoring(editor);
+        this.refactoring = new AliasRefactoring(editor);
     }
     
     public static boolean useLinkedMode() {
@@ -102,45 +95,21 @@ public final class RenameLinkedMode
                     throws BadLocationException {
         
         Node selectedNode = refactoring.getNode();
-        int offset;
-        if (selectedNode instanceof DocLink) {
-            DocLink docLink = (DocLink) selectedNode;
-            int i = 0;
-            if (docLink.getQualified()!=null) {
-                i+=docLink.getQualified().size();
-            }
-            offset = nameRegion(docLink, i).getOffset();
-        }
-        else {
-            offset = getIdentifyingNode(selectedNode).getStartIndex();
-        }
-//        namePosition = new ProposalPosition(document, offset, 
-//                getOriginalName().length(), 0, 
-//                LinkedModeCompletionProposal.getNameProposals(offset, 0, getOriginalName()));
         namePosition = 
-                new LinkedPosition(document, offset, 
-                        getInitialName().length(), 0);
+                new LinkedPosition(document, 
+                    getNodeStartOffset(selectedNode), 
+                    getNodeLength(selectedNode), 
+                    0);
         linkedPositionGroup.addPosition(namePosition);
         
         int i=1;
-        for (Node node: refactoring.getNodesToRename(rootNode)) {
-            Node identifyingNode = getIdentifyingNode(node);
+        for (Tree.Type type: refactoring.getNodesToRename(rootNode)) {
             try {
                 linkedPositionGroup.addPosition(
                         new LinkedPosition(document, 
-                            identifyingNode.getStartIndex(), 
-                            identifyingNode.getText().length(), i++));
-            } 
-            catch (BadLocationException e) {
-                e.printStackTrace();
-            }
-        }
-        for (Region region: refactoring.getStringsToReplace(rootNode)) {
-            try {
-                linkedPositionGroup.addPosition(
-                        new LinkedPosition(document, 
-                            region.getOffset(), 
-                            region.getLength(), i++));
+                            getNodeStartOffset(type), 
+                            getNodeLength(type), 
+                            i++));
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -150,7 +119,7 @@ public final class RenameLinkedMode
 
     @Override
     protected String getName() {
-        return refactoring.getDeclaration().getName();
+        return "Alias"; //TODO but what!?
     }
     
     @Override
@@ -160,19 +129,19 @@ public final class RenameLinkedMode
     
     @Override
     protected String getActionName() {
-        return PLUGIN_ID + ".action.rename";
+        return PLUGIN_ID + ".action.createAlias";
     }
     
     @Override
     protected void openPreview() {
-        new RenameRefactoringAction(editor) {
+        new AliasRefactoringAction(editor) {
             @Override
             public Refactoring createRefactoring() {
-                return RenameLinkedMode.this.refactoring;
+                return AliasLinkedMode.this.refactoring;
             }
             @Override
             public RefactoringWizard createWizard(Refactoring refactoring) {
-                return new RenameWizard((RenameRefactoring) refactoring) {
+                return new AliasWizard((AliasRefactoring) refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };
@@ -182,10 +151,10 @@ public final class RenameLinkedMode
 
     @Override
     protected void openDialog() {
-        new RenameRefactoringAction(editor) {
+        new AliasRefactoringAction(editor) {
             @Override
             public AbstractRefactoring createRefactoring() {
-                return RenameLinkedMode.this.refactoring;
+                return AliasLinkedMode.this.refactoring;
             }
         }.run();
     }
@@ -223,7 +192,7 @@ public final class RenameLinkedMode
         }
     }
     
-    @Override
+    /*@Override
     protected void openPopup() {
         super.openPopup();
         getInfoPopup().getMenuManager()
@@ -242,19 +211,9 @@ public final class RenameLinkedMode
                 renameLocals.setChecked(refactoring.isRenameValuesAndFunctions());
                 renameLocals.setEnabled(refactoring.getDeclaration() instanceof TypeDeclaration);
                 manager.add(renameLocals);
-                Action renameFile = 
-                        new Action("Rename Source File", 
-                                IAction.AS_CHECK_BOX) {
-                    @Override
-                    public void run() {
-                        refactoring.setRenameFile(isChecked());
-                    }
-                };
-                renameFile.setChecked(refactoring.isRenameFile());
-                manager.add(renameFile);
             }
         });
-    }
+    }*/
 
 //  private Image image= null;
 //  private Label label= null;

@@ -713,6 +713,11 @@
             description="Rename selected declaration"
             name="Rename"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.createAlias"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Create alias for selected type"
+            name="Create Type Alias"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.enterAlias"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Enter alias for imported declaration"
@@ -966,6 +971,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.RenameHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.rename"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.refactor.AliasHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.createAlias"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.EnterAliasHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.enterAlias"/>
