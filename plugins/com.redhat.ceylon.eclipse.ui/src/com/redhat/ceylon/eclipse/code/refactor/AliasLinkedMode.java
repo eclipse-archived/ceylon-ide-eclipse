@@ -16,7 +16,6 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -113,7 +112,7 @@ public final class AliasLinkedMode
         linkedPositionGroup.addPosition(namePosition);
         
         int i=1;
-        for (Tree.Type type: refactoring.getNodesToRename(rootNode)) {
+        for (Node type: refactoring.getNodesToRename(rootNode)) {
             try {
                 linkedPositionGroup.addPosition(
                         new LinkedPosition(document, 

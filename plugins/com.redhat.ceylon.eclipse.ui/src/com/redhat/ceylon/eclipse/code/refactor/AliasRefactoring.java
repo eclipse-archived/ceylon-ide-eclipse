@@ -28,8 +28,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class AliasRefactoring extends AbstractRefactoring {
@@ -58,7 +62,7 @@ public class AliasRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.BaseTypeExpression that) {
             super.visit(that);
-            Type t = that.getTypeModel();
+            Type t = that.getTarget().getType();
             if (t!=null && type.isExactly(t)) {
                 nodes.add(that);
             }
@@ -202,12 +206,56 @@ public class AliasRefactoring extends AbstractRefactoring {
                 }
                 if (unit.getFilename()
                         .equals(editorUnit.getFilename())) {
+                    TypeDeclaration td = 
+                            getType()
+                                .getDeclaration();
+                    StringBuffer header = 
+                            new StringBuffer("shared ");
+                    StringBuffer args = new StringBuffer();
+                    if (td instanceof Class) {
+                        header.append("class ")
+                            .append(getNewName())
+                            .append("(");
+                        args.append("(");
+                        Class c = (Class) td;
+                        boolean first = true;
+                        for (Parameter p: 
+                                c.getParameterList()
+                                    .getParameters()) {
+                            if (first) {
+                                first = false;
+                            }
+                            else {
+                                header.append(", ");
+                                args.append(", ");
+                            }
+                            Type ptype = 
+                                    getType()
+                                        .getTypedParameter(p)
+                                        .getFullType();
+                            String pname = p.getName();
+                            header.append(ptype.asString(unit)) 
+                                .append(" ")
+                                .append(pname);
+                            args.append(pname);
+                        }
+                        header.append(")");
+                        args.append(")");
+                    }
+                    else if (td instanceof Interface) {
+                        header.append("interface ")
+                            .append(getNewName());
+                    }
+                    else {
+                        header.append("alias ")
+                            .append(getNewName());
+                    }
                     tfc.addEdit(new InsertEdit(
                             doc.getLength(),
                             delim + delim +
-                            "shared alias " + getNewName() + 
-                            " => " + getType().asString() + 
-                            ";"));
+                            header + " => " + 
+                            getType().asString(unit) + 
+                            args + ";"));
                 }
             }
 //            if (renameValuesAndFunctions) { 
