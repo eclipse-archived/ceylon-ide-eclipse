@@ -85,7 +85,7 @@ public final class AliasLinkedMode
 
     @Override
     public String getHintTemplate() {
-        return "Enter new name for " + refactoring.getCount() + 
+        return "Enter alias for " + refactoring.getCount() + 
                 " occurrences of '" + getName() + 
                 "' in current package '" + 
                 getPackageName() + "' {0}";
