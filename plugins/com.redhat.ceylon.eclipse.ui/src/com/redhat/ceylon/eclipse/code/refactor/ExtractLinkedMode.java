@@ -9,15 +9,15 @@ import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
 
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.correct.LinkedModeImporter;
 import com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal;
+import com.redhat.ceylon.eclipse.code.correct.LinkedModeImporter;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public abstract class ExtractLinkedMode extends RefactorLinkedMode {
 
@@ -63,14 +63,18 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
             int offset2, int length) {
     	linkedPositionGroup = new LinkedPositionGroup();
     	namePosition =
-    			new ProposalPosition(document, getNameOffset(), 
+    			new ProposalPosition(document, 
+    			        getNameOffset(), 
                         getInitialName().length(), 0,
-                        LinkedModeCompletionProposal.getNameProposals(getTypeOffset(), 1, 
+                        LinkedModeCompletionProposal
+                            .getNameProposals(
+                                getTypeOffset(), 1, 
                         		getNameProposals()));
         try {
             linkedPositionGroup.addPosition(namePosition);
-            linkedPositionGroup.addPosition(new LinkedPosition(document, 
-                    offset2, length, 2));
+            linkedPositionGroup.addPosition(
+                    new LinkedPosition(document, 
+                            offset2, length, 2));
             linkedModeModel.addGroup(linkedPositionGroup);
         }
         catch (BadLocationException e) {
@@ -83,26 +87,35 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
 	protected void addTypePosition(IDocument document,
             Type type, int offset, int length) {
         Tree.CompilationUnit rootNode = 
-                editor.getParseController().getRootNode();
+                editor.getParseController()
+                    .getRootNode();
         Unit unit = rootNode.getUnit();
         
-        LinkedModeImporter importer =  new LinkedModeImporter(document, editor);
+        LinkedModeImporter importer = 
+                new LinkedModeImporter(document, editor);
         linkedModeModel.addLinkingListener(importer);
         
         ProposalPosition linkedPosition = 
-                new ProposalPosition(document, offset, length, 1, 
-                        getSupertypeProposals(offset, unit, type,
-                                canBeInferred(), getKind(), importer));
+                new ProposalPosition(document, 
+                        offset, length, 1, 
+                        getSupertypeProposals(offset, 
+                                unit, type,
+                                canBeInferred(), 
+                                getKind(), 
+                                importer));
         try {
-            LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
+            LinkedMode.addLinkedPosition(linkedModeModel, 
+                    linkedPosition);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
         }
     }
     
-    protected abstract void addLinkedPositions(IDocument document, 
-            Tree.CompilationUnit rootNode, int adjust);
+    protected abstract void addLinkedPositions(
+            IDocument document, 
+            Tree.CompilationUnit rootNode, 
+            int adjust);
 
     @Override
     protected String getNewNameFromNamePosition() {
@@ -115,11 +128,14 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     }
 
     @Override
-    protected void setupLinkedPositions(IDocument document, int adjust)
-            throws BadLocationException {
-        addLinkedPositions(document, 
-                editor.getParseController().getRootNode(), 
-                adjust);
+    protected void setupLinkedPositions(
+            IDocument document, 
+            int adjust) 
+                    throws BadLocationException {
+        Tree.CompilationUnit rootNode = 
+                editor.getParseController()
+                    .getRootNode();
+        addLinkedPositions(document, rootNode, adjust);
     }
 
     public static boolean useLinkedMode() {
@@ -135,17 +151,21 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
 
     @Override
     protected final void updatePopupLocation() {
-        LinkedPosition currentLinkedPosition = getCurrentLinkedPosition();
+        LinkedPosition currentLinkedPosition = 
+                getCurrentLinkedPosition();
         if (currentLinkedPosition==null) {
-            getInfoPopup().setHintTemplate(getHintTemplate());
+            getInfoPopup()
+                .setHintTemplate(getHintTemplate());
         }
         else if (currentLinkedPosition.getSequenceNumber()==1) {
-            getInfoPopup().setHintTemplate("Enter type for extracted " + 
-                    getKind() + " declaration {0}");
+            getInfoPopup()
+                .setHintTemplate("Enter type for extracted " + 
+                        getKind() + " declaration {0}");
         }
         else {
-            getInfoPopup().setHintTemplate("Enter name for extracted " + 
-                    getKind() + " declaration {0}");
+            getInfoPopup()
+                .setHintTemplate("Enter name for extracted " + 
+                        getKind() + " declaration {0}");
         }
     }
 
