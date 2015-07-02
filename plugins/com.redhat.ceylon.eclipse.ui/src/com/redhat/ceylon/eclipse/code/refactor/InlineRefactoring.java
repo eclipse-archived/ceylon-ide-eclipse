@@ -29,15 +29,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Setter;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -47,6 +38,16 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Setter;
+import com.redhat.ceylon.model.typechecker.model.TypeAlias;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class InlineRefactoring extends AbstractRefactoring {
     
@@ -67,31 +68,49 @@ public class InlineRefactoring extends AbstractRefactoring {
     
     boolean isReference() {
         return !(node instanceof Tree.Declaration) &&
-                getIdentifyingNode(node) instanceof Tree.Identifier;
+                getIdentifyingNode(node) 
+                    instanceof Tree.Identifier;
     }
-    
+
     @Override
     public boolean isEnabled() {
-        return  declaration!=null &&
+        if (declaration!=null &&
                 project != null &&
-                inSameProject(declaration) &&
-                declaration instanceof FunctionOrValue &&
-                !declaration.isParameter() &&
-                !(declaration instanceof Setter) &&
-                !declaration.isDefault() &&
-                !declaration.isFormal() &&
-                (((FunctionOrValue)declaration).getTypeDeclaration()!=null) &&
-                (!((FunctionOrValue)declaration).getTypeDeclaration().isAnonymous()) &&
-                (declaration.isToplevel() || !declaration.isShared() ||
-                        (!declaration.isFormal() && !declaration.isDefault() && !declaration.isActual())) &&
-                (!declaration.getUnit().equals(rootNode.getUnit()) || 
-                 !(getDeclararionNode(rootNode) instanceof Tree.Variable)); //not a Destructure
+                inSameProject(declaration)) {
+            if (declaration instanceof FunctionOrValue) {
+                FunctionOrValue fov = 
+                        (FunctionOrValue) declaration;
+                return  !fov.isParameter() &&
+                        !(fov instanceof Setter) &&
+                        !fov.isDefault() &&
+                        !fov.isFormal() &&
+                        (fov.getTypeDeclaration()!=null) &&
+                        (!fov.getTypeDeclaration().isAnonymous()) &&
+                        (fov.isToplevel() || !fov.isShared() ||
+                                (!fov.isFormal() && 
+                                 !fov.isDefault() && 
+                                 !fov.isActual())) &&
+                        (!fov.getUnit().equals(rootNode.getUnit()) || 
+                                !(getDeclararionNode(rootNode) 
+                                        instanceof Tree.Variable)); //not a Destructure
                 //TODO: && !declaration is a control structure variable 
                 //TODO: && !declaration is a value with lazy init
+            }
+            else if (declaration instanceof TypeAlias) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
     }
     
     public int getCount() {
-        return declaration==null ? 0 : countDeclarationOccurrences();
+        return declaration==null ? 0 : 
+            countDeclarationOccurrences();
     }
     
     @Override
@@ -113,13 +132,14 @@ public class InlineRefactoring extends AbstractRefactoring {
         Tree.CompilationUnit declarationUnit=null;
         if (searchInEditor()) {
             Tree.CompilationUnit cu = 
-            		editor.getParseController().getRootNode();
+            		editor.getParseController()
+            		    .getRootNode();
             if (cu.getUnit().equals(declaration.getUnit())) {
                 declarationUnit = cu;
             }
         }
         if (declarationUnit==null) {
-            for (final PhasedUnit pu: CeylonBuilder.getUnits(project)) {
+            for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
                 if (pu.getUnit().equals(declaration.getUnit())) {
                     declarationUnit = pu.getCompilationUnit();
                     break;
@@ -128,64 +148,84 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
         declarationNode = getDeclararionNode(declarationUnit);
         if (declarationNode instanceof Tree.AttributeDeclaration &&
-                ((Tree.AttributeDeclaration) declarationNode).getSpecifierOrInitializerExpression()==null ||
+                ((Tree.AttributeDeclaration) declarationNode)
+                    .getSpecifierOrInitializerExpression()==null ||
             declarationNode instanceof Tree.MethodDeclaration &&
-                ((Tree.MethodDeclaration) declarationNode).getSpecifierExpression()==null) {
-            return createFatalErrorStatus("Cannot inline forward declaration: " + 
-                    declaration.getName());
+                ((Tree.MethodDeclaration) declarationNode)
+                    .getSpecifierExpression()==null) {
+            return createFatalErrorStatus(
+                    "Cannot inline forward declaration: " + 
+                            declaration.getName());
         }
         if (declarationNode instanceof Tree.AttributeGetterDefinition) {
-            Tree.AttributeGetterDefinition attributeGetterDefinition = 
-                    (Tree.AttributeGetterDefinition) declarationNode;
+            Tree.AttributeGetterDefinition getterDefinition = 
+                    (Tree.AttributeGetterDefinition) 
+                        declarationNode;
             List<Tree.Statement> statements = 
-                    attributeGetterDefinition.getBlock().getStatements();
+                    getterDefinition.getBlock()
+                        .getStatements();
             if (statements.size()!=1) {
-                return createFatalErrorStatus("Getter body is not a single statement: " + 
-                        declaration.getName());
+                return createFatalErrorStatus(
+                        "Getter body is not a single statement: " + 
+                                declaration.getName());
             }
             if (!(statements.get(0) instanceof Tree.Return)) {
-                return createFatalErrorStatus("Getter body is not a return statement: " + 
-                        declaration.getName());
+                return createFatalErrorStatus(
+                        "Getter body is not a return statement: " + 
+                                declaration.getName());
             }
         }
         if (declarationNode instanceof Tree.MethodDefinition) {
             Tree.MethodDefinition methodDefinition = 
                     (Tree.MethodDefinition) declarationNode;
             List<Tree.Statement> statements = 
-                    methodDefinition.getBlock().getStatements();
+                    methodDefinition.getBlock()
+                        .getStatements();
             if (statements.size()!=1) {
-                return createFatalErrorStatus("Function body is not a single statement: " + 
-                        declaration.getName());
+                return createFatalErrorStatus(
+                        "Function body is not a single statement: " + 
+                                declaration.getName());
             }
-            if (methodDefinition.getType() instanceof Tree.VoidModifier) {
-                if (!(statements.get(0) instanceof Tree.ExpressionStatement)) {
-                    return createFatalErrorStatus("Function body is not an expression: " + 
-                            declaration.getName());
+            Tree.Statement statement = statements.get(0);
+            if (methodDefinition.getType() 
+                    instanceof Tree.VoidModifier) {
+                if (!(statement 
+                        instanceof Tree.ExpressionStatement)) {
+                    return createFatalErrorStatus(
+                            "Function body is not an expression: " + 
+                                    declaration.getName());
                 }
             }
             else {
-                if (!(statements.get(0) instanceof Tree.Return)) {
-                    return createFatalErrorStatus("Function body is not a return statement: " + 
-                            declaration.getName());
+                if (!(statement instanceof Tree.Return)) {
+                    return createFatalErrorStatus(
+                            "Function body is not a return statement: " + 
+                                    declaration.getName());
                 }
             }
         }
-        if (declarationNode instanceof Tree.AnyAttribute &&
-                ((Tree.AnyAttribute) declarationNode).getDeclarationModel().isVariable()) {
-            result.merge(createWarningStatus("Inlined value is variable"));
+        if (declarationNode instanceof Tree.AnyAttribute) {
+            Tree.AnyAttribute attribute = 
+                    (Tree.AnyAttribute) declarationNode;
+            if (attribute.getDeclarationModel().isVariable()) {
+                result.merge(createWarningStatus(
+                        "Inlined value is variable"));
+            }
         }
         declarationNode.visit(new Visitor() {
             @Override
             public void visit(Tree.BaseMemberOrTypeExpression that) {
                 super.visit(that);
                 if (that.getDeclaration()==null) {
-                    result.merge(createWarningStatus("Definition contains unresolved reference"));
+                    result.merge(createWarningStatus(
+                            "Definition contains unresolved reference"));
                 }
                 else if (declaration.isShared() &&
                         !that.getDeclaration().isShared() &&
                         !that.getDeclaration().isParameter()) {
-                    result.merge(createWarningStatus("Definition contains reference to unshared declaration: " +
-                            that.getDeclaration().getName()));
+                    result.merge(createWarningStatus(
+                            "Definition contains reference to unshared declaration: " +
+                                    that.getDeclaration().getName()));
                 }
             }
         });
@@ -205,9 +245,11 @@ public class InlineRefactoring extends AbstractRefactoring {
         Tree.Term term = null;
         List<CommonToken> declarationTokens = null;
         Tree.CompilationUnit editorRootNode = 
-        		editor.getParseController().getRootNode();
+        		editor.getParseController()
+        		    .getRootNode();
         List<CommonToken> editorTokens = 
-        		editor.getParseController().getTokens();
+        		editor.getParseController()
+        		    .getTokens();
         if (declaration!=null) {
             if (searchInEditor()) {
                 if (editorRootNode.getUnit()
@@ -225,7 +267,8 @@ public class InlineRefactoring extends AbstractRefactoring {
                     }
                 }
             }
-            declarationNode = getDeclararionNode(declarationUnit);
+            declarationNode = 
+                    getDeclararionNode(declarationUnit);
             term = getInlinedTerm(declarationNode);
         }
         
@@ -235,25 +278,28 @@ public class InlineRefactoring extends AbstractRefactoring {
                 if (searchInFile(pu) && 
                         affectsUnit(pu.getUnit())) {
                     TextFileChange tfc = newTextFileChange(pu);
-                    Tree.CompilationUnit cu = pu.getCompilationUnit();
+                    Tree.CompilationUnit cu = 
+                            pu.getCompilationUnit();
                     inlineInFile(tfc, cc, declarationNode, 
-                            declarationUnit, term, declarationTokens, 
-                            cu, pu.getTokens());
+                            declarationUnit, term, 
+                            declarationTokens, cu, 
+                            pu.getTokens());
                 }
             }
         }
         if (searchInEditor() && 
                 affectsUnit(editorRootNode.getUnit())) {
             DocumentChange dc = newDocumentChange();
-            inlineInFile(dc, cc, declarationNode, declarationUnit, 
-                    term, declarationTokens,
+            inlineInFile(dc, cc, declarationNode, 
+                    declarationUnit, term, declarationTokens,
                     editorRootNode, editorTokens);
         }
         return cc;
         
     }
 
-    private Tree.Declaration getDeclararionNode(Tree.CompilationUnit declarationUnit) {
+    private Tree.Declaration getDeclararionNode(
+            Tree.CompilationUnit declarationUnit) {
         FindDeclarationNodeVisitor fdv = 
         		new FindDeclarationNodeVisitor(declaration);
         declarationUnit.visit(fdv);
@@ -269,7 +315,8 @@ public class InlineRefactoring extends AbstractRefactoring {
             final Tree.Declaration declarationNode, 
             final Tree.CompilationUnit cu) {
         
-        final Package decPack = declarationNode.getUnit().getPackage();
+        final Package decPack = 
+                declarationNode.getUnit().getPackage();
         final Package filePack = cu.getUnit().getPackage();
         
         final class AddImportsVisitor extends Visitor {
@@ -283,30 +330,38 @@ public class InlineRefactoring extends AbstractRefactoring {
             @Override
             public void visit(Tree.BaseMemberOrTypeExpression that) {
                 super.visit(that);
-                if (that.getDeclaration()!=null) {
-                    importDeclaration(already, that.getDeclaration(), cu);
-                    Package refPack = that.getDeclaration().getUnit().getPackage();
-                    importedFromDeclarationPackage = importedFromDeclarationPackage ||
-                            //result!=0 &&
-                            refPack.equals(decPack) && 
-                            !decPack.equals(filePack); //unnecessary
+                Declaration dec = that.getDeclaration();
+                if (dec!=null) {
+                    importDeclaration(already, dec, cu);
+                    Package refPack = 
+                            dec.getUnit().getPackage();
+                    importedFromDeclarationPackage = 
+                            importedFromDeclarationPackage ||
+                                refPack.equals(decPack) && 
+                                !decPack.equals(filePack); //unnecessary
                 }
             }
         }
 
-        final Set<Declaration> already = new HashSet<Declaration>();
-        AddImportsVisitor aiv = new AddImportsVisitor(already);
+        final Set<Declaration> already = 
+                new HashSet<Declaration>();
+        AddImportsVisitor aiv = 
+                new AddImportsVisitor(already);
         declarationNode.visit(aiv);
-        applyImports(change, already, 
-                declarationNode.getDeclarationModel(), cu, document);
+        Declaration dnd = 
+                declarationNode.getDeclarationModel();
+        applyImports(change, already, dnd, cu, document);
         return aiv.importedFromDeclarationPackage;
     }
 
-    private void inlineInFile(TextChange tfc, CompositeChange cc, 
+    private void inlineInFile(TextChange tfc, 
+            CompositeChange cc, 
             Tree.Declaration declarationNode, 
-            Tree.CompilationUnit declarationUnit, Tree.Term term, 
+            Tree.CompilationUnit declarationUnit, 
+            Tree.Term term, 
             List<CommonToken> declarationTokens,
-            Tree.CompilationUnit cu, List<CommonToken> tokens) {
+            Tree.CompilationUnit cu, 
+            List<CommonToken> tokens) {
         tfc.setEdit(new MultiTextEdit());
         inlineReferences(declarationNode, declarationUnit, 
         		term, declarationTokens, cu, tokens, tfc);
@@ -325,8 +380,10 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void deleteImports(TextChange tfc, Tree.Declaration declarationNode, 
-            Tree.CompilationUnit cu, List<CommonToken> tokens, 
+    private void deleteImports(TextChange tfc, 
+            Tree.Declaration declarationNode, 
+            Tree.CompilationUnit cu, 
+            List<CommonToken> tokens, 
             boolean importsAddedToDeclarationPackage) {
         Tree.ImportList il = cu.getImportList();
         if (il!=null) {
@@ -336,8 +393,11 @@ public class InlineRefactoring extends AbstractRefactoring {
                 		        .getImportMemberOrTypes();
                 for (Tree.ImportMemberOrType imt: list) {
                     Declaration d = imt.getDeclarationModel();
-                    if (d!=null && d.equals(declarationNode.getDeclarationModel())) {
-                        if (list.size()==1 && !importsAddedToDeclarationPackage) {
+                    Declaration dnd = 
+                            declarationNode.getDeclarationModel();
+                    if (d!=null && d.equals(dnd)) {
+                        if (list.size()==1 && 
+                                !importsAddedToDeclarationPackage) {
                             //delete the whole import statement
                             tfc.addEdit(new DeleteEdit(i.getStartIndex(), 
                                     i.getStopIndex()-i.getStartIndex()+1));
@@ -372,12 +432,20 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void deleteDeclaration(Tree.Declaration declarationNode, 
-            Tree.CompilationUnit declarationUnit, Tree.CompilationUnit cu, 
-            List<CommonToken> tokens, TextChange tfc) {
-        if (delete && cu.getUnit().equals(declarationUnit.getUnit())) {
-            CommonToken from = (CommonToken) declarationNode.getToken();
-            Tree.AnnotationList anns = declarationNode.getAnnotationList();
+    private void deleteDeclaration(
+            Tree.Declaration declarationNode, 
+            Tree.CompilationUnit declarationUnit, 
+            Tree.CompilationUnit cu, 
+            List<CommonToken> tokens, 
+            TextChange tfc) {
+        if (delete && 
+                cu.getUnit()
+                    .equals(declarationUnit.getUnit())) {
+            CommonToken from = 
+                    (CommonToken) 
+                        declarationNode.getToken();
+            Tree.AnnotationList anns = 
+                    declarationNode.getAnnotationList();
             if (!anns.getAnnotations().isEmpty()) {
                 from = (CommonToken) anns.getAnnotations().get(0).getToken();
             }
@@ -393,24 +461,30 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
     }
 
-    private static Tree.Term getInlinedTerm(Tree.Declaration declarationNode) {
+    private static Tree.Term getInlinedTerm(
+            Tree.Declaration declarationNode) {
         if (declarationNode!=null) {
-            if (declarationNode instanceof Tree.AttributeDeclaration) {
+            if (declarationNode 
+                    instanceof Tree.AttributeDeclaration) {
                 Tree.AttributeDeclaration att = 
-                		(Tree.AttributeDeclaration) declarationNode;
+                		(Tree.AttributeDeclaration) 
+                		    declarationNode;
                 return att.getSpecifierOrInitializerExpression()
                 		.getExpression().getTerm();
             }
-            else if (declarationNode instanceof Tree.MethodDefinition) {
+            else if (declarationNode 
+                    instanceof Tree.MethodDefinition) {
                 Tree.MethodDefinition meth = 
                 		(Tree.MethodDefinition) declarationNode;
-                List<Tree.Statement> statements = meth.getBlock().getStatements();
+                List<Tree.Statement> statements = 
+                        meth.getBlock().getStatements();
                 if (meth.getType() instanceof Tree.VoidModifier) {
                     //TODO: in the case of a void method, tolerate 
                     //      multiple statements , including control
                     //      structures, not just expression statements
                     if (statements.size()!=1 ||
-                            !(statements.get(0) instanceof Tree.ExpressionStatement)) {
+                            !(statements.get(0) 
+                                    instanceof Tree.ExpressionStatement)) {
                         throw new RuntimeException("method body is not a single expression statement");
                     }
                     Tree.ExpressionStatement e = 
@@ -420,7 +494,8 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
                 else {
                     if (statements.size()!=1 ||
-                            !(statements.get(0) instanceof Tree.Return)) {
+                            !(statements.get(0) 
+                                    instanceof Tree.Return)) {
                         throw new RuntimeException("method body is not a single expression statement");
                     }
                     Tree.Return r = (Tree.Return) statements.get(0);
@@ -428,18 +503,28 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
             }
             else if (declarationNode instanceof Tree.MethodDeclaration) {
-                Tree.MethodDeclaration meth = (Tree.MethodDeclaration) declarationNode;
-                return meth.getSpecifierExpression().getExpression().getTerm();
+                Tree.MethodDeclaration meth = 
+                        (Tree.MethodDeclaration) 
+                            declarationNode;
+                return meth.getSpecifierExpression()
+                        .getExpression().getTerm();
             }
             else if (declarationNode instanceof Tree.AttributeGetterDefinition) {
                 Tree.AttributeGetterDefinition att = 
-                		(Tree.AttributeGetterDefinition) declarationNode;
-                List<Tree.Statement> statements = att.getBlock().getStatements();
+                		(Tree.AttributeGetterDefinition) 
+                		    declarationNode;
+                List<Tree.Statement> statements = 
+                        att.getBlock().getStatements();
                 if (statements.size()!=1 ||
-                        !(statements.get(0) instanceof Tree.Return)) {
+                        !(statements.get(0) 
+                                instanceof Tree.Return)) {
                     throw new RuntimeException("getter body is not a single expression statement");
                 }
-                Tree.Return r = (Tree.Return) att.getBlock().getStatements().get(0);
+                Tree.Return r = 
+                        (Tree.Return) 
+                            att.getBlock()
+                                .getStatements()
+                                .get(0);
                 return r.getExpression().getTerm();
             }
             else {
@@ -451,10 +536,14 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void inlineReferences(Tree.Declaration declarationNode,
-            Tree.CompilationUnit declarationUnit, Tree.Term term, 
-            List<CommonToken> declarationTokens, Tree.CompilationUnit pu, 
-            List<CommonToken> tokens, TextChange tfc) {
+    private void inlineReferences(
+            Tree.Declaration declarationNode,
+            Tree.CompilationUnit declarationUnit, 
+            Tree.Term term, 
+            List<CommonToken> declarationTokens, 
+            Tree.CompilationUnit pu, 
+            List<CommonToken> tokens, 
+            TextChange tfc) {
         if (declarationNode instanceof Tree.AnyAttribute) {
             inlineAttributeReferences(pu, tokens, term, 
             		declarationTokens, tfc);
@@ -466,34 +555,43 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void inlineFunctionReferences(final Tree.CompilationUnit pu, 
-            final List<CommonToken> tokens, final Tree.Term term, 
+    private void inlineFunctionReferences(
+            final Tree.CompilationUnit pu, 
+            final List<CommonToken> tokens, 
+            final Tree.Term term, 
             final Tree.AnyMethod declaration, 
             final List<CommonToken> declarationTokens, 
             final TextChange tfc) {
         new Visitor() {
             private boolean needsParens = false;
             @Override
-            public void visit(final Tree.InvocationExpression that) {
+            public void visit(
+                    final Tree.InvocationExpression that) {
                 super.visit(that);
-                if (that.getPrimary() instanceof Tree.MemberOrTypeExpression) {
+                Tree.Primary primary = that.getPrimary();
+                if (primary instanceof Tree.MemberOrTypeExpression) {
                     Tree.MemberOrTypeExpression mte = 
-                            (Tree.MemberOrTypeExpression) that.getPrimary();
+                            (Tree.MemberOrTypeExpression) 
+                                primary;
                     inlineDefinition(tokens, declarationTokens, 
                     		term, tfc, that, mte, needsParens);
                 }
             }
             @Override
-            public void visit(final Tree.MemberOrTypeExpression that) {
+            public void visit(
+                    final Tree.MemberOrTypeExpression that) {
             	 super.visit(that);
             	 Declaration d = that.getDeclaration();
-            	 if (!that.getDirectlyInvoked() && inlineRef(that, d)) {
+            	 if (!that.getDirectlyInvoked() && 
+            	         inlineRef(that, d)) {
             		 StringBuilder text = new StringBuilder();
-            		 Function dec = declaration.getDeclarationModel();
+            		 Function dec = 
+            		         declaration.getDeclarationModel();
             		 if (dec.isDeclaredVoid()) {
             			 text.append("void ");
             		 }
-            		 for (Tree.ParameterList pl: declaration.getParameterLists()) {
+            		 for (Tree.ParameterList pl: 
+            		         declaration.getParameterLists()) {
             			 text.append(Nodes.toString(pl, declarationTokens));
             		 }
             		 text.append(" => ");
@@ -527,19 +625,26 @@ public class InlineRefactoring extends AbstractRefactoring {
         }.visit(pu);
     }
     
-    private void inlineAttributeReferences(final Tree.CompilationUnit pu, 
-            final List<CommonToken> tokens, final Term term, 
-            final List<CommonToken> declarationTokens, final TextChange tfc) {
+    private void inlineAttributeReferences(
+            final Tree.CompilationUnit pu, 
+            final List<CommonToken> tokens, 
+            final Term term, 
+            final List<CommonToken> declarationTokens, 
+            final TextChange tfc) {
         new Visitor() {
             private boolean needsParens = false;
             @Override
             public void visit(Tree.Variable that) {
-                if (that.getType() instanceof Tree.SyntheticVariable) {
+                if (that.getType() 
+                        instanceof Tree.SyntheticVariable) {
                     TypedDeclaration od = 
-                            that.getDeclarationModel().getOriginalDeclaration();
-                    if (od!=null && od.equals(declaration) && delete) {
+                            that.getDeclarationModel()
+                                .getOriginalDeclaration();
+                    if (od!=null && 
+                            od.equals(declaration) && delete) {
                         Integer startIndex = 
-                        		that.getSpecifierExpression().getStartIndex();
+                        		that.getSpecifierExpression()
+                        		    .getStartIndex();
 						tfc.addEdit(new InsertEdit(startIndex, 
                                 that.getIdentifier().getText()+" = "));
                     }
@@ -583,15 +688,18 @@ public class InlineRefactoring extends AbstractRefactoring {
         }.visit(pu);
     }
 
-    private void inlineDefinitionReference(List<CommonToken> tokens,
+    private void inlineDefinitionReference(
+            List<CommonToken> tokens,
             List<CommonToken> declarationTokens, 
-            Tree.MemberOrTypeExpression re, Tree.InvocationExpression ie, 
-            StringBuilder result, Tree.StaticMemberOrTypeExpression it) {
+            Tree.MemberOrTypeExpression re, 
+            Tree.InvocationExpression ie, 
+            StringBuilder result, 
+            Tree.StaticMemberOrTypeExpression it) {
         Declaration dec = it.getDeclaration();
         if (dec.isParameter() && ie!=null && 
                 it instanceof Tree.BaseMemberOrTypeExpression) {
-            Parameter param = 
-                    ((FunctionOrValue) dec).getInitializerParameter();
+            FunctionOrValue fov = (FunctionOrValue) dec;
+            Parameter param = fov.getInitializerParameter();
             if (param.getDeclaration().equals(declaration)) {
                 boolean sequenced = param.isSequenced();
                 if (ie.getPositionalArgumentList()!=null) {
@@ -606,11 +714,13 @@ public class InlineRefactoring extends AbstractRefactoring {
             }
         }
 
-        String expressionText = Nodes.toString(it, declarationTokens);
+        String expressionText = 
+                Nodes.toString(it, declarationTokens);
         if (re instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmtre = 
                     (Tree.QualifiedMemberOrTypeExpression) re;
-            String prim = Nodes.toString(qmtre.getPrimary(), tokens);
+            String prim = 
+                    Nodes.toString(qmtre.getPrimary(), tokens);
             if (it instanceof Tree.QualifiedMemberOrTypeExpression) {
                 //TODO: handle more depth, for example, foo.bar.baz
                 Tree.QualifiedMemberOrTypeExpression qmte = 
@@ -622,9 +732,12 @@ public class InlineRefactoring extends AbstractRefactoring {
                     .append(qmte.getIdentifier().getText());
                 }
                 else {
-                    String primaryText = Nodes.toString(p, declarationTokens);
+                    String primaryText = 
+                            Nodes.toString(p, declarationTokens);
                     if (p instanceof Tree.MemberOrTypeExpression) {
-                        if (((Tree.MemberOrTypeExpression) p).getDeclaration()
+                        Tree.MemberOrTypeExpression mte = 
+                                (Tree.MemberOrTypeExpression) p;
+                        if (mte.getDeclaration()
                                 .isClassOrInterfaceMember()) {
                             result.append(prim)
                             .append(".")
@@ -637,7 +750,8 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
             }
             else {
-                if (it.getDeclaration().isClassOrInterfaceMember()) {
+                if (it.getDeclaration()
+                        .isClassOrInterfaceMember()) {
                     result.append(prim)
                     .append(".")
                     .append(expressionText);
@@ -653,9 +767,11 @@ public class InlineRefactoring extends AbstractRefactoring {
 
     }
     
-    private void inlineDefinition(final List<CommonToken> tokens,
+    private void inlineDefinition(
+            final List<CommonToken> tokens,
             final List<CommonToken> declarationTokens,
-            final Tree.Term term, final TextChange tfc,
+            final Tree.Term term, 
+            final TextChange tfc,
             final Tree.InvocationExpression that,
             final Tree.MemberOrTypeExpression mte, 
             final boolean needsParens) {
@@ -665,7 +781,8 @@ public class InlineRefactoring extends AbstractRefactoring {
             final StringBuilder result = new StringBuilder();
             class InterpolationVisitor extends Visitor {
                 int start = 0;
-                final String template = Nodes.toString(term, declarationTokens);
+                final String template = 
+                        Nodes.toString(term, declarationTokens);
                 final int templateStart = term.getStartIndex();
                 void text(Node it) {
                     result.append(template.substring(start,
@@ -676,15 +793,17 @@ public class InlineRefactoring extends AbstractRefactoring {
                 public void visit(Tree.BaseMemberExpression it) {
                     super.visit(it);
                     text(it);
-                    inlineDefinitionReference(tokens, declarationTokens, 
-                            mte, that, result, it);
+                    inlineDefinitionReference(tokens, 
+                            declarationTokens, mte, that, 
+                            result, it);
                 }
                 @Override
                 public void visit(Tree.QualifiedMemberExpression it) {
                     super.visit(it);
                     text(it);
-                    inlineDefinitionReference(tokens, declarationTokens, 
-                            mte, that, result, it);
+                    inlineDefinitionReference(tokens, 
+                            declarationTokens, mte, that, 
+                            result, it);
 
                 }
                 void finish() {
@@ -710,24 +829,31 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
     }
     
-    private boolean inlineRef(Tree.MemberOrTypeExpression that, Declaration d) {
-        return (!justOne || that.getUnit().equals(node.getUnit()) && 
+    private boolean inlineRef(
+            Tree.MemberOrTypeExpression that, Declaration d) {
+        return (!justOne || 
+                    that.getUnit().equals(node.getUnit()) && 
                     that.getStartIndex()!=null &&
                     that.getStartIndex().equals(node.getStartIndex())) &&
                 d!=null && d.equals(declaration);
     }
     
-    private static void interpolatePositionalArguments(StringBuilder result, 
-            Tree.InvocationExpression that, Tree.StaticMemberOrTypeExpression it,
-            boolean sequenced, List<CommonToken> tokens) {
+    private static void interpolatePositionalArguments(
+            StringBuilder result, 
+            Tree.InvocationExpression that, 
+            Tree.StaticMemberOrTypeExpression it,
+            boolean sequenced, 
+            List<CommonToken> tokens) {
         boolean first = true;
         boolean found = false;
         if (sequenced) {
             result.append("{");
         }
-        for (Tree.PositionalArgument arg: that.getPositionalArgumentList()
-                .getPositionalArguments()) {
-            if (it.getDeclaration().equals(arg.getParameter().getModel())) {
+        for (Tree.PositionalArgument arg: 
+                that.getPositionalArgumentList()
+                    .getPositionalArguments()) {
+            if (it.getDeclaration()
+                    .equals(arg.getParameter().getModel())) {
                 if (arg.getParameter().isSequenced() &&
                         arg instanceof Tree.ListedArgument) {
                     if (first) result.append(" ");
@@ -745,16 +871,24 @@ public class InlineRefactoring extends AbstractRefactoring {
         if (!found) {} //TODO: use default value!
     }
 
-    private static void interpolateNamedArguments(StringBuilder result,
-            Tree.InvocationExpression that, Tree.StaticMemberOrTypeExpression it,
-            boolean sequenced, List<CommonToken> tokens) {
+    private static void interpolateNamedArguments(
+            StringBuilder result,
+            Tree.InvocationExpression that, 
+            Tree.StaticMemberOrTypeExpression it,
+            boolean sequenced, 
+            List<CommonToken> tokens) {
         boolean found = false;
         for (Tree.NamedArgument arg: 
-        	    that.getNamedArgumentList().getNamedArguments()) {
-            if (it.getDeclaration().equals(arg.getParameter().getModel())) {
-                Tree.SpecifiedArgument sa = (Tree.SpecifiedArgument) arg;
-				Tree.Term argTerm = sa.getSpecifierExpression()
-                                .getExpression().getTerm();
+        	    that.getNamedArgumentList()
+        	        .getNamedArguments()) {
+            if (it.getDeclaration()
+                    .equals(arg.getParameter().getModel())) {
+                Tree.SpecifiedArgument sa = 
+                        (Tree.SpecifiedArgument) arg;
+				Tree.Term argTerm = 
+				        sa.getSpecifierExpression()
+				            .getExpression()
+				            .getTerm();
                 result//.append(template.substring(start,it.getStartIndex()-templateStart))
                     .append(Nodes.toString(argTerm, tokens) );
                 //start = it.getStopIndex()-templateStart+1;
@@ -762,9 +896,11 @@ public class InlineRefactoring extends AbstractRefactoring {
             }
         }
         Tree.SequencedArgument seqArg = 
-        		that.getNamedArgumentList().getSequencedArgument();
+        		that.getNamedArgumentList()
+        		    .getSequencedArgument();
         if (seqArg!=null && 
-        		it.getDeclaration().equals(seqArg.getParameter())) {
+        		it.getDeclaration()
+        		    .equals(seqArg.getParameter())) {
             result//.append(template.substring(start,it.getStartIndex()-templateStart))
                 .append("{");
             //start = it.getStopIndex()-templateStart+1;;
