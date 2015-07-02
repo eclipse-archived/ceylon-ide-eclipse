@@ -4,7 +4,10 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+
+import java.util.List;
 
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
@@ -20,9 +23,10 @@ import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
+import org.eclipse.ui.IWorkbenchPartSite;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -69,11 +73,14 @@ public final class RenameLinkedMode
                     openPreview();
                 }
                 else {
-                    new RefactoringExecutionHelper(refactoring,
+                    IWorkbenchPartSite site = 
+                            editor.getSite();
+                    new RefactoringExecutionHelper(
+                            refactoring,
                             RefactoringStatus.WARNING,
                             RefactoringSaveHelper.SAVE_ALL,
-                            editor.getSite().getShell(),
-                            editor.getSite().getWorkbenchWindow())
+                            site.getShell(),
+                            site.getWorkbenchWindow())
                         .perform(false, true);
                 }
             } 
@@ -97,7 +104,7 @@ public final class RenameLinkedMode
     }
     
     private void addLinkedPositions(IDocument document,
-            CompilationUnit rootNode, int adjust,
+            Tree.CompilationUnit rootNode, int adjust,
             LinkedPositionGroup linkedPositionGroup) 
                     throws BadLocationException {
         
@@ -123,24 +130,30 @@ public final class RenameLinkedMode
         linkedPositionGroup.addPosition(namePosition);
         
         int i=1;
-        for (Node node: refactoring.getNodesToRename(rootNode)) {
+        List<Node> nodesToRename = 
+                refactoring.getNodesToRename(rootNode);
+        for (Node node: nodesToRename) {
             Node identifyingNode = getIdentifyingNode(node);
             try {
                 linkedPositionGroup.addPosition(
                         new LinkedPosition(document, 
                             identifyingNode.getStartIndex(), 
-                            identifyingNode.getText().length(), i++));
+                            identifyingNode.getText().length(), 
+                            i++));
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
             }
         }
-        for (Region region: refactoring.getStringsToReplace(rootNode)) {
+        List<Region> stringsToReplace = 
+                refactoring.getStringsToReplace(rootNode);
+        for (Region region: stringsToReplace) {
             try {
                 linkedPositionGroup.addPosition(
                         new LinkedPosition(document, 
                             region.getOffset(), 
-                            region.getLength(), i++));
+                            region.getLength(), 
+                            i++));
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -171,8 +184,10 @@ public final class RenameLinkedMode
                 return RenameLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(Refactoring refactoring) {
-                return new RenameWizard((RenameRefactoring) refactoring) {
+            public RefactoringWizard createWizard(
+                    Refactoring refactoring) {
+                return new RenameWizard((RenameRefactoring) 
+                            refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };
@@ -201,8 +216,10 @@ public final class RenameLinkedMode
     }
 
     @Override
-    protected void setupLinkedPositions(final IDocument document, final int adjust)
-            throws BadLocationException {
+    protected void setupLinkedPositions(
+            final IDocument document, 
+            final int adjust)
+                    throws BadLocationException {
         linkedPositionGroup = new LinkedPositionGroup();
         addLinkedPositions(document, 
                 editor.getParseController().getRootNode(), 
@@ -211,10 +228,15 @@ public final class RenameLinkedMode
     }
     
     @Override
-    protected void enterLinkedMode(IDocument document, int exitSequenceNumber,
-            int exitPosition) throws BadLocationException {
-        super.enterLinkedMode(document, exitSequenceNumber, exitPosition);
-        if (!EditorUtil.getPreferences()
+    protected void enterLinkedMode(
+            IDocument document, 
+            int exitSequenceNumber,
+            int exitPosition) 
+                    throws BadLocationException {
+        super.enterLinkedMode(document, 
+                exitSequenceNumber, 
+                exitPosition);
+        if (!getPreferences()
                 .getBoolean(LINKED_MODE_RENAME_SELECT)) {
             // by default, full word is selected; restore original selection
             editor.getCeylonSourceViewer()
@@ -236,11 +258,15 @@ public final class RenameLinkedMode
                                 IAction.AS_CHECK_BOX) {
                     @Override
                     public void run() {
-                        refactoring.setRenameValuesAndFunctions(isChecked());
+                        refactoring.setRenameValuesAndFunctions(
+                                isChecked());
                     }
                 };
-                renameLocals.setChecked(refactoring.isRenameValuesAndFunctions());
-                renameLocals.setEnabled(refactoring.getDeclaration() instanceof TypeDeclaration);
+                renameLocals.setChecked(
+                        refactoring.isRenameValuesAndFunctions());
+                renameLocals.setEnabled(
+                        refactoring.getDeclaration() 
+                            instanceof TypeDeclaration);
                 manager.add(renameLocals);
                 Action renameFile = 
                         new Action("Rename Source File", 
