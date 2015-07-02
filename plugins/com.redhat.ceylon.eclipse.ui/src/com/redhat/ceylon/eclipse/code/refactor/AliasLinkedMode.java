@@ -119,7 +119,7 @@ public final class AliasLinkedMode
 
     @Override
     protected String getName() {
-        return "Alias"; //TODO but what!?
+        return refactoring.getType().asString();
     }
     
     @Override
