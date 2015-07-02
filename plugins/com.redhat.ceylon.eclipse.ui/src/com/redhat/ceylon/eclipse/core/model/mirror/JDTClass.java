@@ -330,7 +330,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
                             && annots.containsKey(com.redhat.ceylon.compiler.java.metadata.Ceylon.class.getName())
                             && sourceFileName.endsWith(".java")) {
                         HashMap<String, Object> values = new HashMap<>();
-                        values.put("backend", "");
+                        values.put("backend", "jvm");
                         annots.put("ceylon.language.NativeAnnotation$annotation$", new JDTAnnotation(values));
                     }
                     if (annots.isEmpty()) {
