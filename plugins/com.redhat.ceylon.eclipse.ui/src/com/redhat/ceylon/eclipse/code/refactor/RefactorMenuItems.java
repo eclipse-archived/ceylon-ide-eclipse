@@ -67,7 +67,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         editor!=null && new EnterAliasRefactoring(editor).isEnabled(), 
                         IMPORT),
                 new DynamicMenuItem(PLUGIN_ID + ".action.createAlias", 
-                        "Create &Type Alias...",
+                        "Introduce &Type Alias...",
                         editor!=null && new AliasRefactoring(editor).isEnabled(), 
                         COMP_CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.changeParameters", 

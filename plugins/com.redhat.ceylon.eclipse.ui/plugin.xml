@@ -715,8 +715,8 @@
        <command
             id="com.redhat.ceylon.eclipse.ui.action.createAlias"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Create alias for selected type"
-            name="Create Type Alias"/>
+            description="Create an alias for selected type"
+            name="Introduce Type Alias"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.enterAlias"
             categoryId="com.redhat.ceylon.eclipse.ui"
