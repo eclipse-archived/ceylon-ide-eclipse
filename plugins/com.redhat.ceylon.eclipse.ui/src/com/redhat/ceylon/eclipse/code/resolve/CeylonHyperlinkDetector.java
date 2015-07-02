@@ -103,19 +103,19 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                         Declaration dec = 
                                 (Declaration) 
                                     referenceable;
-                        Backend backend = supportedBackend();
+                        Backend supportedBackend = supportedBackend();
                         if (dec.isNative()) {
-                            if (backend==null) {
+                            if (supportedBackend==null) {
                                 return null;
                             }
                             else {
                                 referenceable = 
                                         resolveNative(referenceable, 
-                                                dec, backend);
+                                                dec, supportedBackend);
                             }
                         }
                         else {
-                            if (backend!=null) {
+                            if (supportedBackend!=null) {
                                 return null;
                             }
                         }
@@ -176,16 +176,20 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
         } else {
             containerToSearchHeaderIn = dec.getContainer();
         }
-        Declaration headerDeclaration = 
-                getNativeHeader(containerToSearchHeaderIn, 
-                        dec.getName());
-        if (Backend.None.equals(backend)) {
-            referenceable = headerDeclaration;
-        } else {
-            if (headerDeclaration != null) {
-                referenceable = 
-                        getNativeDeclaration(headerDeclaration, 
-                                supportedBackend());
+
+        if (containerToSearchHeaderIn != null) {
+            Declaration headerDeclaration = 
+                    getNativeHeader(containerToSearchHeaderIn, 
+                            dec.getName());
+            if (! headerDeclaration.isNative()) return null;
+            if (Backend.None.equals(backend)) {
+                referenceable = headerDeclaration;
+            } else {
+                if (headerDeclaration != null) {
+                    referenceable = 
+                            getNativeDeclaration(headerDeclaration, 
+                                    supportedBackend());
+                }
             }
         }
         return referenceable;
