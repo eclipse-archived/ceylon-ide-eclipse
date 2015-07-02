@@ -55,6 +55,7 @@ import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.DefaultErrorHandlingPolicies;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader;
 import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
 import org.eclipse.jdt.internal.compiler.env.IBinaryAnnotation;
 import org.eclipse.jdt.internal.compiler.env.IBinaryMethod;
@@ -1057,9 +1058,10 @@ public class JDTModelLoader extends AbstractModelLoader {
                 return null;
             }
 
-            ReferenceBinding binding = toBinding(type, theLookupEnvironment, compoundName);
+            ClassFileReader[] classReaderHolder = new ClassFileReader[1];
+            ReferenceBinding binding = toBinding(type, theLookupEnvironment, compoundName, classReaderHolder);
             if (binding != null) {
-                return new JDTClass(binding, type);
+                return new JDTClass(binding, type, classReaderHolder[0]);
             }
             
         } catch (JavaModelException e) {
@@ -1069,6 +1071,10 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     private static ReferenceBinding toBinding(IType type, LookupEnvironment theLookupEnvironment, char[][] compoundName) throws JavaModelException {
+        return toBinding(type, theLookupEnvironment, compoundName, null);
+    }
+
+    private static ReferenceBinding toBinding(IType type, LookupEnvironment theLookupEnvironment, char[][] compoundName, ClassFileReader[] readerHolder) throws JavaModelException {
         ITypeRoot typeRoot = type.getTypeRoot();
         
         if (typeRoot instanceof IClassFile) {
@@ -1083,6 +1089,11 @@ public class JDTModelLoader extends AbstractModelLoader {
             BinaryTypeBinding binaryTypeBinding = null;
             try {
                 IBinaryType binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
+                if (readerHolder != null 
+                        && readerHolder.length == 1
+                        && binaryType instanceof ClassFileReader) {
+                    readerHolder[0] = (ClassFileReader) binaryType;
+                }
                 binaryTypeBinding = theLookupEnvironment.cacheBinaryType(binaryType, null);
             } catch(JavaModelException e) {
                 if (! e.isDoesNotExist()) {
@@ -1117,6 +1128,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
     }
 
+    
     private ModelLoaderNameEnvironment getNameEnvironment() {
         ModelLoaderNameEnvironment searchableEnvironment = (ModelLoaderNameEnvironment)getLookupEnvironment().nameEnvironment;
         return searchableEnvironment;

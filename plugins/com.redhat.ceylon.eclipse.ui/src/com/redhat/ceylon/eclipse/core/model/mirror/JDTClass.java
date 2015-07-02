@@ -34,6 +34,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader;
 import org.eclipse.jdt.internal.compiler.env.IDependent;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LocalTypeBinding;
@@ -242,8 +243,14 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     private String javaModelPath;
     private String fullPath;
     private char[] bindingKey;
+    private String sourceFileName=null;
     
     private static final Map<String, AnnotationMirror> noAnnotations = Collections.emptyMap();
+    
+    public JDTClass(ReferenceBinding klass, IType type, ClassFileReader classFileReader) {
+        this(klass, type);
+        sourceFileName = CharOperation.charToString(classFileReader.sourceFileName());
+    }
     
     /*
      *  the klass parameter should not be null
@@ -316,7 +323,10 @@ public class JDTClass implements ClassMirror, IBindingProvider {
                 @Override
                 public void doWithBinding(IType classModel, ReferenceBinding klass) {
                     Map<String, AnnotationMirror> annots = JDTUtils.getAnnotations(klass.getAnnotations());
-                    if (qualifiedName.startsWith("ceylon.language") && annots.containsKey(com.redhat.ceylon.compiler.java.metadata.Ceylon.class.getName())) {
+                    if (sourceFileName != null
+                            && qualifiedName.startsWith("ceylon.language") 
+                            && annots.containsKey(com.redhat.ceylon.compiler.java.metadata.Ceylon.class.getName())
+                            && sourceFileName.endsWith(".java")) {
                         HashMap<String, Object> values = new HashMap<>();
                         values.put("backend", "");
                         annots.put("ceylon.language.NativeAnnotation$annotation$", new JDTAnnotation(values));
