@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 
 import java.util.ArrayList;
@@ -35,18 +37,26 @@ public class AliasRefactoring extends AbstractRefactoring {
     private static class FindAliasedTypeVisitor 
             extends Visitor {
         private Type type;
-        private List<Tree.Type> nodes = 
-                new ArrayList<Tree.Type>();
+        private List<Node> nodes = new ArrayList<Node>();
 
         private FindAliasedTypeVisitor(Type type) {
             this.type = type;
         }
         
-        public List<Tree.Type> getNodes() {
+        public List<Node> getNodes() {
             return nodes;
         }
+        
         @Override
         public void visit(Tree.Type that) {
+            super.visit(that);
+            Type t = that.getTypeModel();
+            if (t!=null && type.isExactly(t)) {
+                nodes.add(that);
+            }
+        }
+        @Override
+        public void visit(Tree.BaseTypeExpression that) {
             super.visit(that);
             Type t = that.getTypeModel();
             if (t!=null && type.isExactly(t)) {
@@ -67,7 +77,8 @@ public class AliasRefactoring extends AbstractRefactoring {
         super(editor);
         if (rootNode!=null) {
             if (node instanceof Tree.Type) {
-                type = ((Tree.Type) node).getTypeModel();
+                Tree.Type t = (Tree.Type) node;
+                type = t.getTypeModel();
                 newName = "Alias"; //TODO but what?
             }
             else {
@@ -102,14 +113,18 @@ public class AliasRefactoring extends AbstractRefactoring {
         return "Introduce Type Alias";
     }
 
-    public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
-            throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkInitialConditions(
+            IProgressMonitor pm)
+                    throws CoreException, 
+                           OperationCanceledException {
         // Check parameters retrieved from editor context
         return new RefactoringStatus();
     }
 
-    public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
-            throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkFinalConditions(
+            IProgressMonitor pm)
+                    throws CoreException, 
+                           OperationCanceledException {
         if (!newName.matches("^[a-zA-Z_]\\w*$")) {
             return createErrorStatus("Not a legal Ceylon identifier");
         }
@@ -132,8 +147,10 @@ public class AliasRefactoring extends AbstractRefactoring {
         return new RefactoringStatus();
     }
 
-    public CompositeChange createChange(IProgressMonitor pm) 
-            throws CoreException, OperationCanceledException {
+    public CompositeChange createChange(
+            IProgressMonitor pm) 
+                    throws CoreException, 
+                           OperationCanceledException {
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
         CompositeChange cc = new CompositeChange(getName());
@@ -149,20 +166,24 @@ public class AliasRefactoring extends AbstractRefactoring {
                         .equals(editorPackage);
             if (inSamePackage && searchInFile(pu)) {
                 TextFileChange tfc = newTextFileChange(pu);
-                renameInFile(tfc, cc, pu.getCompilationUnit());
+                renameInFile(tfc, cc, 
+                        pu.getCompilationUnit());
                 pm.worked(i++);
             }
         }
         if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
-            renameInFile(dc, cc, editor.getParseController().getRootNode());
+            renameInFile(dc, cc, 
+                    editor.getParseController()
+                        .getRootNode());
             pm.worked(i++);
         }
         pm.done();
         return cc;
     }
     
-    private void renameInFile(TextChange tfc, CompositeChange cc, 
+    private void renameInFile(TextChange tfc, 
+            CompositeChange cc, 
             Tree.CompilationUnit root) {
         tfc.setEdit(new MultiTextEdit());
         if (type!=null) {
@@ -171,17 +192,22 @@ public class AliasRefactoring extends AbstractRefactoring {
                         .getRootNode()
                         .getUnit();
             Unit unit = root.getUnit();
-            if (editorUnit.getPackage().equals(unit.getPackage())) {
+            if (editorUnit.getPackage()
+                    .equals(unit.getPackage())) {
                 IDocument doc = getDocument(tfc);
-                String delim = getDefaultLineDelimiter(document);
-                for (Tree.Type node: getNodesToRename(root)) {
+                String delim = 
+                        getDefaultLineDelimiter(document);
+                for (Node node: getNodesToRename(root)) {
                     renameNode(tfc, node, root);
                 }
-                if (unit.getFilename().equals(editorUnit.getFilename())) {
-                    tfc.addEdit(new InsertEdit(doc.getLength(),
+                if (unit.getFilename()
+                        .equals(editorUnit.getFilename())) {
+                    tfc.addEdit(new InsertEdit(
+                            doc.getLength(),
                             delim + delim +
                             "shared alias " + getNewName() + 
-                            " => " + getType().asString() + ";"));
+                            " => " + getType().asString() + 
+                            ";"));
                 }
             }
 //            if (renameValuesAndFunctions) { 
@@ -195,17 +221,19 @@ public class AliasRefactoring extends AbstractRefactoring {
         }
     }
     
-    public List<Tree.Type> getNodesToRename(Tree.CompilationUnit root) {
+    public List<Node> getNodesToRename(
+            Tree.CompilationUnit root) {
         FindAliasedTypeVisitor frv = 
                 new FindAliasedTypeVisitor(type);
         root.visit(frv);
         return frv.getNodes();
     }
     
-    protected void renameNode(TextChange tfc, Tree.Type node, 
+    protected void renameNode(TextChange tfc, Node node, 
             Tree.CompilationUnit root) {
-        tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
-                node.getStopIndex()-node.getStartIndex()+1, 
+        tfc.addEdit(new ReplaceEdit(
+                getNodeStartOffset(node), 
+                getNodeLength(node), 
                 newName));
     }
     
