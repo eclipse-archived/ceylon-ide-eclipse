@@ -88,14 +88,19 @@ public final class CeylonHierarchyContentProvider
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         if (newInput!=null && newInput!=oldInput) {
             initFilters();
-            Declaration declaration = ((ModelProxy) newInput).get();
+            ModelProxy proxy = (ModelProxy) newInput;
+            Declaration declaration = proxy.get();
             if (declaration instanceof TypedDeclaration) { 
-                TypedDeclaration td = (TypedDeclaration) declaration;
+                TypedDeclaration td = 
+                        (TypedDeclaration) declaration;
                 if (td.getTypeDeclaration().isAnonymous()) {
-                    declaration = ((TypedDeclaration) declaration).getTypeDeclaration();
+                    TypedDeclaration atd = 
+                            (TypedDeclaration) declaration;
+                    declaration = atd.getTypeDeclaration();
                 }
             }
-            showingRefinements = !(declaration instanceof TypeDeclaration);
+            showingRefinements = 
+                    !(declaration instanceof TypeDeclaration);
             empty = declaration==null;
             if (!empty) {
                 String name = declaration.getQualifiedNameString();
@@ -108,8 +113,11 @@ public final class CeylonHierarchyContentProvider
                 if (//isShowingRefinements() && 
                         declaration.isClassOrInterfaceMember()) {
                     ClassOrInterface classOrInterface = 
-                            (ClassOrInterface) declaration.getContainer();
-                    description = classOrInterface.getName() + '.' + description;
+                            (ClassOrInterface) 
+                                declaration.getContainer();
+                    description = 
+                            classOrInterface.getName() + 
+                            '.' + description;
                 }
                 rebuild(declaration);
             }
@@ -146,7 +154,9 @@ public final class CeylonHierarchyContentProvider
     @Override
     public Object getParent(Object element) {
         if (element instanceof CeylonHierarchyNode) {
-            return ((CeylonHierarchyNode) element).getParent();
+            CeylonHierarchyNode chn = 
+                    (CeylonHierarchyNode) element;
+            return chn.getParent();
         }
         return null;
     }
@@ -176,7 +186,9 @@ public final class CeylonHierarchyContentProvider
             }
         }
         else if (parentElement instanceof CeylonHierarchyNode) {
-            return ((CeylonHierarchyNode) parentElement).getChildren();
+            CeylonHierarchyNode chn = 
+                    (CeylonHierarchyNode) parentElement;
+            return chn.getChildren();
         }
         else {
             return null;
@@ -279,12 +291,15 @@ public final class CeylonHierarchyContentProvider
                 new HashMap<Declaration, CeylonHierarchyNode>();
 
         private void add(Declaration td, Declaration etd) {
-            getSubtypeHierarchyNode(etd).addChild(getSubtypeHierarchyNode(td));
-            getSupertypeHierarchyNode(td).addChild(getSupertypeHierarchyNode(etd));
+            getSubtypeHierarchyNode(etd)
+                .addChild(getSubtypeHierarchyNode(td));
+            getSupertypeHierarchyNode(td)
+                .addChild(getSupertypeHierarchyNode(etd));
         }
 
         private CeylonHierarchyNode getSubtypePathNode(Declaration d) {
-            CeylonHierarchyNode n = subtypesOfSupertypes.get(d);
+            CeylonHierarchyNode n = 
+                    subtypesOfSupertypes.get(d);
             if (n==null) {
                 n = new CeylonHierarchyNode(d);
                 subtypesOfSupertypes.put(d, n);
@@ -293,7 +308,8 @@ public final class CeylonHierarchyContentProvider
         }
 
         private CeylonHierarchyNode getSubtypeHierarchyNode(Declaration d) {
-            CeylonHierarchyNode n = subtypesOfAllTypes.get(d);
+            CeylonHierarchyNode n = 
+                    subtypesOfAllTypes.get(d);
             if (n==null) {
                 n = new CeylonHierarchyNode(d);
                 subtypesOfAllTypes.put(d, n);
@@ -302,7 +318,8 @@ public final class CeylonHierarchyContentProvider
         }
 
         private CeylonHierarchyNode getSupertypeHierarchyNode(Declaration d) {
-            CeylonHierarchyNode n = supertypesOfAllTypes.get(d);
+            CeylonHierarchyNode n = 
+                    supertypesOfAllTypes.get(d);
             if (n==null) {
                 n = new CeylonHierarchyNode(d);
                 supertypesOfAllTypes.put(d, n);
@@ -515,8 +532,7 @@ public final class CeylonHierarchyContentProvider
             IEditorPart part = 
                     site.getPage().getActiveEditor();
             
-            List<Type> signature = 
-                    getSignature(declaration);
+            List<Type> signature = getSignature(declaration);
             int ps = packages.size();
             for (Package p: packages) { //workaround CME
                 int ms = p.getMembers().size();
