@@ -71,7 +71,8 @@ public final class CeylonHierarchyContentProvider
 
     private String label;
     
-    CeylonHierarchyContentProvider(IWorkbenchPartSite site, String label,
+    CeylonHierarchyContentProvider(IWorkbenchPartSite site, 
+            String label,
             boolean excludeJDK, boolean excludeOracleJDK) {
         this.site = site;
         this.label = label;
@@ -85,7 +86,8 @@ public final class CeylonHierarchyContentProvider
     }
 
     @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    public void inputChanged(Viewer viewer, 
+            Object oldInput, Object newInput) {
         if (newInput!=null && newInput!=oldInput) {
             initFilters();
             ModelProxy proxy = (ModelProxy) newInput;
@@ -103,7 +105,8 @@ public final class CeylonHierarchyContentProvider
                     !(declaration instanceof TypeDeclaration);
             empty = declaration==null;
             if (!empty) {
-                String name = declaration.getQualifiedNameString();
+                String name = 
+                        declaration.getQualifiedNameString();
                 veryAbstractType = 
                         name.equals("ceylon.language::Object") ||
                         name.equals("ceylon.language::Anything") ||
@@ -172,22 +175,25 @@ public final class CeylonHierarchyContentProvider
     }
 
     @Override
-    public CeylonHierarchyNode[] getChildren(Object parentElement) {
-        if (parentElement instanceof ModelProxy) {
+    public CeylonHierarchyNode[] getChildren(Object parent) {
+        if (parent instanceof ModelProxy) {
             switch (mode) {
             case HIERARCHY:
-                return new CeylonHierarchyNode[] { hierarchyRoot };                    
+                return new CeylonHierarchyNode[] 
+                        { hierarchyRoot };                    
             case SUPERTYPES:
-                return new CeylonHierarchyNode[] { supertypesRoot };
+                return new CeylonHierarchyNode[] 
+                        { supertypesRoot };
             case SUBTYPES:
-                return new CeylonHierarchyNode[] { subtypesRoot };
+                return new CeylonHierarchyNode[] 
+                        { subtypesRoot };
             default:
                 throw new RuntimeException();
             }
         }
-        else if (parentElement instanceof CeylonHierarchyNode) {
+        else if (parent instanceof CeylonHierarchyNode) {
             CeylonHierarchyNode chn = 
-                    (CeylonHierarchyNode) parentElement;
+                    (CeylonHierarchyNode) parent;
             return chn.getChildren();
         }
         else {
@@ -283,12 +289,15 @@ public final class CeylonHierarchyContentProvider
         
         private final Declaration declaration;
                 
-        private final Map<Declaration, CeylonHierarchyNode> subtypesOfSupertypes = 
-                new HashMap<Declaration, CeylonHierarchyNode>();
-        private final Map<Declaration, CeylonHierarchyNode> subtypesOfAllTypes = 
-                new HashMap<Declaration, CeylonHierarchyNode>();
-        private final Map<Declaration, CeylonHierarchyNode> supertypesOfAllTypes = 
-                new HashMap<Declaration, CeylonHierarchyNode>();
+        private final Map<Declaration, CeylonHierarchyNode> 
+            subtypesOfSupertypes = 
+                new HashMap<Declaration,CeylonHierarchyNode>();
+        private final Map<Declaration,CeylonHierarchyNode> 
+            subtypesOfAllTypes = 
+                new HashMap<Declaration,CeylonHierarchyNode>();
+        private final Map<Declaration,CeylonHierarchyNode> 
+            supertypesOfAllTypes = 
+                new HashMap<Declaration,CeylonHierarchyNode>();
 
         private void add(Declaration td, Declaration etd) {
             getSubtypeHierarchyNode(etd)
@@ -297,32 +306,35 @@ public final class CeylonHierarchyContentProvider
                 .addChild(getSupertypeHierarchyNode(etd));
         }
 
-        private CeylonHierarchyNode getSubtypePathNode(Declaration d) {
+        private CeylonHierarchyNode getSubtypePathNode(
+                Declaration declaration) {
             CeylonHierarchyNode n = 
-                    subtypesOfSupertypes.get(d);
+                    subtypesOfSupertypes.get(declaration);
             if (n==null) {
-                n = new CeylonHierarchyNode(d);
-                subtypesOfSupertypes.put(d, n);
+                n = new CeylonHierarchyNode(declaration);
+                subtypesOfSupertypes.put(declaration, n);
             }
             return n;
         }
 
-        private CeylonHierarchyNode getSubtypeHierarchyNode(Declaration d) {
+        private CeylonHierarchyNode getSubtypeHierarchyNode(
+                Declaration declaration) {
             CeylonHierarchyNode n = 
-                    subtypesOfAllTypes.get(d);
+                    subtypesOfAllTypes.get(declaration);
             if (n==null) {
-                n = new CeylonHierarchyNode(d);
-                subtypesOfAllTypes.put(d, n);
+                n = new CeylonHierarchyNode(declaration);
+                subtypesOfAllTypes.put(declaration, n);
             }
             return n;
         }
 
-        private CeylonHierarchyNode getSupertypeHierarchyNode(Declaration d) {
+        private CeylonHierarchyNode getSupertypeHierarchyNode(
+                Declaration declaration) {
             CeylonHierarchyNode n = 
-                    supertypesOfAllTypes.get(d);
+                    supertypesOfAllTypes.get(declaration);
             if (n==null) {
-                n = new CeylonHierarchyNode(d);
-                supertypesOfAllTypes.put(d, n);
+                n = new CeylonHierarchyNode(declaration);
+                supertypesOfAllTypes.put(declaration, n);
             }
             return n;
         }
@@ -349,7 +361,8 @@ public final class CeylonHierarchyContentProvider
                 JDTModelLoader modelLoader = 
                         getModelLoader(typeChecker);
                 Module module = 
-                        modelLoader.getLoadedModule(name, version);
+                        modelLoader.getLoadedModule(name, 
+                                version);
                 if (module!=null) { //TODO: check this with David ... could we use JDTModule.getReferencingModules()?
                     ModuleSourceMapper moduleSourceMapper = 
                             typeChecker.getPhasedUnits()
@@ -367,11 +380,14 @@ public final class CeylonHierarchyContentProvider
                         module.getAllReachablePackages()) {
                     if (!isFiltered(pack)) {
                         String packageModuleName = 
-                                pack.getModule().getNameAsString();
+                                pack.getModule()
+                                    .getNameAsString();
                         if ((!excludeJDK || 
-                                !JDKUtils.isJDKModule(packageModuleName)) && 
+                                !JDKUtils.isJDKModule(
+                                        packageModuleName)) && 
                             (!excludeOracleJDK || 
-                                !JDKUtils.isOracleJDKModule(packageModuleName))) {
+                                !JDKUtils.isOracleJDKModule(
+                                        packageModuleName))) {
                             packages.add(pack);
                         }
                     }
@@ -424,7 +440,7 @@ public final class CeylonHierarchyContentProvider
                     depthInHierarchy++;
                     root = memberDec;
                     //first walk up the superclass hierarchy
-                    String dn = declaration.getName();
+                    String decname = declaration.getName();
                     while (dec!=null) {
                         TypeDeclaration mc = 
                                 (TypeDeclaration) 
@@ -441,19 +457,22 @@ public final class CeylonHierarchyContentProvider
                             TypeDeclaration superDec = 
                                     extended.getDeclaration();
                             Declaration superMemberDec = 
-                                    superDec.getDirectMember(dn, 
+                                    superDec.getDirectMember(
+                                            decname, 
                                             signature, false);
                             if (superMemberDec!=null && 
                                     !isAbstraction(superMemberDec) &&
                                     superMemberDec.getRefinedDeclaration()
                                         .equals(refinedDeclaration)) {
                                 List<Declaration> directlyInheritedMembers = 
-                                        getInterveningRefinements(dn, 
+                                        getInterveningRefinements(
+                                                decname, 
                                                 signature, 
                                                 refinedDeclaration,
                                                 mc, superDec);
                                 List<Declaration> all = 
-                                        getInterveningRefinements(dn, 
+                                        getInterveningRefinements(
+                                                decname, 
                                                 signature, 
                                                 refinedDeclaration,
                                                 mc, rc);
@@ -488,9 +507,10 @@ public final class CeylonHierarchyContentProvider
                                     memberDec.getContainer();
                         TypeDeclaration rc = 
                                 (TypeDeclaration) 
-                                refinedDeclaration.getContainer();
+                                    refinedDeclaration.getContainer();
                         List<Declaration> directlyInheritedMembers = 
-                                getInterveningRefinements(dn, 
+                                getInterveningRefinements(
+                                        decname, 
                                         signature, 
                                         declaration.getRefinedDeclaration(),
                                         mc, rc);
@@ -501,11 +521,13 @@ public final class CeylonHierarchyContentProvider
                                     new CeylonHierarchyNode(memberDec);
                             n.setMultiple(true);
                             n.addChild(getSubtypePathNode(memberDec));
-                            getSubtypePathNode(refinedDeclaration).addChild(n);
+                            getSubtypePathNode(refinedDeclaration)
+                                .addChild(n);
                         }
                         else if (directlyInheritedMembers.size()==1) {
                             //exactly one intervening interface
-                            Declaration idec = directlyInheritedMembers.get(0);
+                            Declaration idec = 
+                                    directlyInheritedMembers.get(0);
                             getSubtypePathNode(idec)
                                 .addChild(getSubtypePathNode(memberDec));
                             getSubtypePathNode(refinedDeclaration)
@@ -543,14 +565,16 @@ public final class CeylonHierarchyContentProvider
                         //      missed for binary modules
                         for (Declaration d: u.getDeclarations()) {
                             if (!isFiltered(d)) {
-                                d = replaceWithCurrentEditorDeclaration(part, p, d); //TODO: not enough to catch *new* subtypes in the dirty editor
+                                d = replaceWithCurrentEditorDeclaration(
+                                        part, p, d); //TODO: not enough to catch *new* subtypes in the dirty editor
                                 if (d instanceof ClassOrInterface || 
                                         d instanceof TypeParameter) {
                                     try {
                                         addDeclaration(signature, d);
                                     }
                                     catch (Exception e) {
-                                        System.err.println(d.getQualifiedNameString());
+                                        String qn = d.getQualifiedNameString();
+                                        System.err.println(qn);
                                         throw e;
                                     }
                                 }
@@ -603,7 +627,8 @@ public final class CeylonHierarchyContentProvider
                                 (TypeDeclaration) 
                                     refinedDeclaration.getContainer();
                         List<Declaration> refinements = 
-                                getInterveningRefinements(name, 
+                                getInterveningRefinements(
+                                        name, 
                                         signature, 
                                         refinedDeclaration, 
                                         td, rdc);
@@ -614,7 +639,8 @@ public final class CeylonHierarchyContentProvider
                                     (TypeDeclaration) 
                                         candidate.getContainer();
                             List<Declaration> refs = 
-                                    getInterveningRefinements(name, 
+                                    getInterveningRefinements(
+                                            name, 
                                             signature, 
                                             refinedDeclaration, 
                                             td, cc);
@@ -641,7 +667,8 @@ public final class CeylonHierarchyContentProvider
                         String name = 
                                 d.getQualifiedNameString();
                         Declaration result = 
-                                getDeclarationInUnit(name, unit);
+                                getDeclarationInUnit(name, 
+                                        unit);
                         if (result!=null) {
                             return result;
                         }
@@ -657,11 +684,17 @@ public final class CeylonHierarchyContentProvider
         if (isShowingRefinements()) {
             switch (getMode()) {
             case HIERARCHY:
-                return label + " - refinement hierarchy of " + description;
+                return label + 
+                        " - refinement hierarchy of " + 
+                        description;
             case SUPERTYPES:
-                return label + " - generalizations of " + description;
+                return label + 
+                        " - generalizations of " + 
+                        description;
             case SUBTYPES:
-                return label + " - refinements of " + description;
+                return label + 
+                        " - refinements of " + 
+                        description;
             default:
                 throw new RuntimeException();
             }
@@ -669,11 +702,17 @@ public final class CeylonHierarchyContentProvider
         else {
             switch (getMode()) {
             case HIERARCHY:
-                return label + " - type hierarchy of " + description;
+                return label + 
+                        " - type hierarchy of " + 
+                        description;
             case SUPERTYPES:
-                return label + " - supertypes of " + description;
+                return label + 
+                        " - supertypes of " + 
+                        description;
             case SUBTYPES:
-                return label + " - subtypes of " + description;
+                return label + 
+                        " - subtypes of " + 
+                        description;
             default:
                 throw new RuntimeException();
             }
