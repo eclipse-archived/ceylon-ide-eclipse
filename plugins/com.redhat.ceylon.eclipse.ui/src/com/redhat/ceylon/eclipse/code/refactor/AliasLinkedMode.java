@@ -86,7 +86,17 @@ public final class AliasLinkedMode
     @Override
     public String getHintTemplate() {
         return "Enter new name for " + refactoring.getCount() + 
-                " occurrences of '" + getName()  + "' {0}";
+                " occurrences of '" + getName() + 
+                "' in current package '" + 
+                getPackageName() + "' {0}";
+    }
+
+    private String getPackageName() {
+        return this.editor.getParseController()
+                .getRootNode()
+                .getUnit()
+                .getPackage()
+                .getQualifiedNameString();
     }
     
     private void addLinkedPositions(IDocument document,

@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 
 import java.util.ArrayList;
@@ -8,11 +10,13 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
@@ -22,7 +26,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class AliasRefactoring extends AbstractRefactoring {
     
@@ -133,7 +139,15 @@ public class AliasRefactoring extends AbstractRefactoring {
         CompositeChange cc = new CompositeChange(getName());
         int i=0;
         for (PhasedUnit pu: units) {
-            if (searchInFile(pu)) {
+            Package editorPackage = 
+                    editor.getParseController()
+                        .getRootNode()
+                        .getUnit()
+                        .getPackage();
+            boolean inSamePackage = 
+                    pu.getPackage()
+                        .equals(editorPackage);
+            if (inSamePackage && searchInFile(pu)) {
                 TextFileChange tfc = newTextFileChange(pu);
                 renameInFile(tfc, cc, pu.getCompilationUnit());
                 pm.worked(i++);
@@ -144,7 +158,6 @@ public class AliasRefactoring extends AbstractRefactoring {
             renameInFile(dc, cc, editor.getParseController().getRootNode());
             pm.worked(i++);
         }
-        
         pm.done();
         return cc;
     }
@@ -153,8 +166,23 @@ public class AliasRefactoring extends AbstractRefactoring {
             Tree.CompilationUnit root) {
         tfc.setEdit(new MultiTextEdit());
         if (type!=null) {
-            for (Tree.Type node: getNodesToRename(root)) {
-                renameNode(tfc, node, root);
+            Unit editorUnit = 
+                    editor.getParseController()
+                        .getRootNode()
+                        .getUnit();
+            Unit unit = root.getUnit();
+            if (editorUnit.getPackage().equals(unit.getPackage())) {
+                IDocument doc = getDocument(tfc);
+                String delim = getDefaultLineDelimiter(document);
+                for (Tree.Type node: getNodesToRename(root)) {
+                    renameNode(tfc, node, root);
+                }
+                if (unit.getFilename().equals(editorUnit.getFilename())) {
+                    tfc.addEdit(new InsertEdit(doc.getLength(),
+                            delim + delim +
+                            "alias " + getNewName() + 
+                            " => " + getType().asString() + ";"));
+                }
             }
 //            if (renameValuesAndFunctions) { 
 //                for (Tree.Identifier id: getIdentifiersToRename(root)) {
