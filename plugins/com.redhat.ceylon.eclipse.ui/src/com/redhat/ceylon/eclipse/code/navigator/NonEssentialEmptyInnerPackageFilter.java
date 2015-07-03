@@ -26,8 +26,9 @@ public class NonEssentialEmptyInnerPackageFilter extends NonEssentialElementsFil
 				            }
 				        }
 				    }
+				    return false;
 				}
-				return !pkg.hasSubpackages() || pkg.hasChildren() || hasUnfilteredResources(viewer, pkg);
+				return pkg instanceof SourceModuleNode || !pkg.hasSubpackages() || pkg.hasChildren() || hasUnfilteredResources(viewer, pkg);
 			} catch (JavaModelException e) {
 				return false;
 			}
