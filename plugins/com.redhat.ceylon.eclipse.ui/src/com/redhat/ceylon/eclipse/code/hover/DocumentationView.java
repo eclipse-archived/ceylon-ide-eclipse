@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverTe
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
@@ -143,7 +142,7 @@ public class DocumentationView extends ViewPart {
         };
         getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
-        getCurrentTheme()
+        getWorkbench().getThemeManager()
             .addPropertyChangeListener(propertyChangeListener);
     }
 
@@ -276,7 +275,7 @@ public class DocumentationView extends ViewPart {
         instance = null;
         getPreferences()
             .removePropertyChangeListener(propertyChangeListener);
-        getCurrentTheme()
+        getWorkbench().getThemeManager()
             .removePropertyChangeListener(propertyChangeListener);
         super.dispose();
     }

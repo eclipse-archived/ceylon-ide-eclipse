@@ -80,13 +80,20 @@ public class Highlights  {
         themeManager.addPropertyChangeListener(new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
-                if (event.getProperty().startsWith(PLUGIN_ID + ".theme.color.")) {
-                    initColors(getCurrentTheme().getColorRegistry());
+                if (isColorChange(event)) {
+                    refreshColors();
                 }
             }
+
         });
     }
 
+    public static boolean isColorChange(PropertyChangeEvent event) {
+        String property = event.getProperty();
+        return property.startsWith(PLUGIN_ID + ".theme.color.") ||
+                property.equals(IThemeManager.CHANGE_CURRENT_THEME);
+    }
+    
     public static Color getCurrentThemeColor(String key) {
         return color(getCurrentTheme().getColorRegistry(), key);
     }
@@ -352,11 +359,11 @@ public class Highlights  {
 						break;
 					case "color": 
 						textStyle.foreground = 
-						    color(colorRegistry, MATCHES);
+						    color(getCurrentTheme().getColorRegistry(), MATCHES);
 						break;
 					case "background": 
 						textStyle.background = 
-						    color(colorRegistry, MATCHES);
+						    color(getCurrentTheme().getColorRegistry(), MATCHES);
 						break;
 					}					
 				}
@@ -460,7 +467,9 @@ public class Highlights  {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
-                    color(colorRegistry, TYPES);
+                    color(getCurrentTheme()
+                            .getColorRegistry(), 
+                            TYPES);
         }
     };
     public static final Styler MEMBER_STYLER = 
@@ -468,7 +477,9 @@ public class Highlights  {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
-                    color(colorRegistry, MEMBERS);
+                    color(getCurrentTheme()
+                            .getColorRegistry(), 
+                            MEMBERS);
         }
     };
     public static final Styler TYPE_ID_STYLER = 
@@ -476,7 +487,9 @@ public class Highlights  {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
-                    color(colorRegistry, TYPES);
+                    color(getCurrentTheme()
+                            .getColorRegistry(), 
+                            TYPES);
         }
     };
     public static final Styler KW_STYLER = 
@@ -484,7 +497,9 @@ public class Highlights  {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
-                    color(colorRegistry, KEYWORDS);
+                    color(getCurrentTheme()
+                            .getColorRegistry(), 
+                            KEYWORDS);
         }
     };
     public static final Styler STRING_STYLER = 
@@ -492,7 +507,9 @@ public class Highlights  {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
-                    color(colorRegistry, STRINGS);
+                    color(getCurrentTheme()
+                            .getColorRegistry(), 
+                            STRINGS);
         }
     };
     public static final Styler NUM_STYLER = 
@@ -500,7 +517,9 @@ public class Highlights  {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
-                    color(colorRegistry, NUMBERS);
+                    color(getCurrentTheme()
+                            .getColorRegistry(), 
+                            NUMBERS);
         }
     };
     public static final Styler PACKAGE_STYLER = 
@@ -508,7 +527,9 @@ public class Highlights  {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
-                    color(colorRegistry, PACKAGES);
+                    color(getCurrentTheme()
+                            .getColorRegistry(), 
+                            PACKAGES);
         }
     };
     public static final Styler ARROW_STYLER = 
@@ -516,7 +537,9 @@ public class Highlights  {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
-                    color(colorRegistry, OUTLINE_TYPES);
+                    color(getCurrentTheme()
+                            .getColorRegistry(), 
+                            OUTLINE_TYPES);
         }
     };
     public static final Styler ANN_STYLER = 
@@ -524,7 +547,9 @@ public class Highlights  {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground =
-                    color(colorRegistry, ANNOTATIONS);
+                    color(getCurrentTheme()
+                            .getColorRegistry(), 
+                            ANNOTATIONS);
         }
     };
     public static final Styler ID_STYLER = 
@@ -532,11 +557,10 @@ public class Highlights  {
         @Override
         public void applyStyles(TextStyle textStyle) {
             textStyle.foreground = 
-                    color(colorRegistry, IDENTIFIERS);
+                    color(getCurrentTheme()
+                            .getColorRegistry(), 
+                            IDENTIFIERS);
         }
     };
-    
-    private static final ColorRegistry colorRegistry = 
-            EditorUtil.getCurrentTheme().getColorRegistry();
         
 }

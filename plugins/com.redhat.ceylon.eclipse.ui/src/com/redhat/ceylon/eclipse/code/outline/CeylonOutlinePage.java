@@ -19,7 +19,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIDE_PRIVATE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
@@ -117,7 +116,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         };
         getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
-        getCurrentTheme()
+        getWorkbench().getThemeManager()
             .addPropertyChangeListener(propertyChangeListener);
     }
 
@@ -283,7 +282,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (propertyChangeListener!=null) {
             getPreferences()
                 .removePropertyChangeListener(propertyChangeListener);
-            getCurrentTheme()
+            getWorkbench().getThemeManager()
                 .removePropertyChangeListener(propertyChangeListener);
             propertyChangeListener = null;
         }
