@@ -134,15 +134,18 @@ public class AliasRefactoring extends AbstractRefactoring {
                     throws CoreException, 
                            OperationCanceledException {
         if (newName==null || !newName.matches("^[a-zA-Z_]\\w*$")) {
-            return createErrorStatus("Not a legal Ceylon identifier");
+            return createErrorStatus(
+                    "Not a legal Ceylon identifier");
         }
         else if (Escaping.KEYWORDS.contains(newName)) {
-            return createErrorStatus("'" + newName + "' is a Ceylon keyword");
+            return createErrorStatus(
+                    "'" + newName + "' is a Ceylon keyword");
         }
         else {
             int ch = newName.codePointAt(0);
             if (!Character.isUpperCase(ch)) {
-                return createErrorStatus("Not an initial uppercase identifier");
+                return createErrorStatus(
+                        "Not an initial uppercase identifier");
             }
         }
         /*Declaration existing = declaration.getContainer()

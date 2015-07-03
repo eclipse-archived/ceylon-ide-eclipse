@@ -730,7 +730,7 @@
        <command
             id="com.redhat.ceylon.eclipse.ui.action.inline"
             categoryId="com.redhat.ceylon.eclipse.ui"
-            description="Inline selected function or value"
+            description="Inline selected function, value, or type alias"
             name="Inline"/>
        <command
             id="com.redhat.ceylon.eclipse.ui.action.changeParameters"

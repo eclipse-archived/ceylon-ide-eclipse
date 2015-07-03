@@ -37,15 +37,19 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Setter;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -99,6 +103,9 @@ public class InlineRefactoring extends AbstractRefactoring {
             }
             else if (declaration instanceof TypeAlias) {
                 return true;
+            }
+            else if (declaration instanceof ClassOrInterface) {
+                return ((ClassOrInterface) declaration).isAlias();
             }
             else {
                 return false;
@@ -471,15 +478,19 @@ public class InlineRefactoring extends AbstractRefactoring {
                 		(Tree.AttributeDeclaration) 
                 		    declarationNode;
                 return att.getSpecifierOrInitializerExpression()
-                		.getExpression().getTerm();
+                		.getExpression()
+                		.getTerm();
             }
             else if (declarationNode 
                     instanceof Tree.MethodDefinition) {
                 Tree.MethodDefinition meth = 
-                		(Tree.MethodDefinition) declarationNode;
+                		(Tree.MethodDefinition) 
+                		    declarationNode;
                 List<Tree.Statement> statements = 
-                        meth.getBlock().getStatements();
-                if (meth.getType() instanceof Tree.VoidModifier) {
+                        meth.getBlock()
+                            .getStatements();
+                if (meth.getType() 
+                        instanceof Tree.VoidModifier) {
                     //TODO: in the case of a void method, tolerate 
                     //      multiple statements , including control
                     //      structures, not just expression statements
@@ -489,7 +500,8 @@ public class InlineRefactoring extends AbstractRefactoring {
                         throw new RuntimeException("method body is not a single expression statement");
                     }
                     Tree.ExpressionStatement e = 
-                    		(Tree.ExpressionStatement) statements.get(0);
+                    		(Tree.ExpressionStatement) 
+                    		    statements.get(0);
                     return e.getExpression().getTerm();
                     
                 }
@@ -499,8 +511,10 @@ public class InlineRefactoring extends AbstractRefactoring {
                                     instanceof Tree.Return)) {
                         throw new RuntimeException("method body is not a single expression statement");
                     }
-                    Tree.Return r = (Tree.Return) statements.get(0);
-                    return r.getExpression().getTerm();
+                    Tree.Return ret = 
+                            (Tree.Return) 
+                                statements.get(0);
+                    return ret.getExpression().getTerm();
                 }
             }
             else if (declarationNode 
@@ -511,12 +525,14 @@ public class InlineRefactoring extends AbstractRefactoring {
                 return meth.getSpecifierExpression()
                         .getExpression().getTerm();
             }
-            else if (declarationNode instanceof Tree.AttributeGetterDefinition) {
+            else if (declarationNode 
+                    instanceof Tree.AttributeGetterDefinition) {
                 Tree.AttributeGetterDefinition att = 
                 		(Tree.AttributeGetterDefinition) 
                 		    declarationNode;
                 List<Tree.Statement> statements = 
-                        att.getBlock().getStatements();
+                        att.getBlock()
+                            .getStatements();
                 if (statements.size()!=1 ||
                         !(statements.get(0) 
                                 instanceof Tree.Return)) {
@@ -529,13 +545,29 @@ public class InlineRefactoring extends AbstractRefactoring {
                                 .get(0);
                 return r.getExpression().getTerm();
             }
-            else if (declarationNode instanceof Tree.TypeAliasDeclaration) {
+            else if (declarationNode 
+                    instanceof Tree.ClassDeclaration) {
+                Tree.ClassDeclaration alias = 
+                        (Tree.ClassDeclaration) 
+                            declarationNode;
+                return alias.getClassSpecifier();
+            }
+            else if (declarationNode 
+                    instanceof Tree.InterfaceDeclaration) {
+                Tree.InterfaceDeclaration alias = 
+                        (Tree.InterfaceDeclaration) 
+                            declarationNode;
+                return alias.getTypeSpecifier();
+            }
+            else if (declarationNode 
+                    instanceof Tree.TypeAliasDeclaration) {
                 Tree.TypeAliasDeclaration alias = 
-                        (Tree.TypeAliasDeclaration) declarationNode;
-                return alias.getTypeSpecifier().getType();
+                        (Tree.TypeAliasDeclaration) 
+                            declarationNode;
+                return alias.getTypeSpecifier();
             }
             else {
-                throw new RuntimeException("not a value or function");
+                throw new RuntimeException("not a value, function, or type alias");
             }
         }
         else {
@@ -546,22 +578,44 @@ public class InlineRefactoring extends AbstractRefactoring {
     private void inlineReferences(
             Tree.Declaration declarationNode,
             Tree.CompilationUnit declarationUnit, 
-            Node term, 
+            Node definition, 
             List<CommonToken> declarationTokens, 
             Tree.CompilationUnit pu, 
             List<CommonToken> tokens, 
             TextChange tfc) {
         if (declarationNode instanceof Tree.AnyAttribute) {
-            inlineAttributeReferences(pu, tokens, term, 
+//            Tree.AnyAttribute value = 
+//                    (Tree.AnyAttribute) declarationNode;
+            Tree.Term expression = (Tree.Term) definition;
+            inlineAttributeReferences(pu, tokens, expression, 
             		declarationTokens, tfc);
         }
         else if (declarationNode instanceof Tree.AnyMethod) {
-            inlineFunctionReferences(pu, tokens, term,
-            		(Tree.AnyMethod) declarationNode, 
-            		declarationTokens, tfc);
+            Tree.Term expression = (Tree.Term) definition;
+            Tree.AnyMethod method = 
+                    (Tree.AnyMethod) 
+                        declarationNode;
+            inlineFunctionReferences(pu, tokens, expression,
+            		method, declarationTokens, tfc);
         }
-        else if (declarationNode instanceof Tree.TypeAliasDeclaration) {
-            inlineTypeAliasReferences(pu, tokens, term, 
+        else if (declarationNode instanceof Tree.ClassDeclaration) {
+            Tree.ClassSpecifier spec = 
+                    (Tree.ClassSpecifier) 
+                        definition;
+            Tree.ClassDeclaration classAlias = 
+                    (Tree.ClassDeclaration) declarationNode;
+            inlineClassAliasReferences(pu, tokens, 
+                    spec.getInvocationExpression(), 
+                    spec.getType(),
+                    classAlias, 
+                    declarationTokens, tfc);
+        }
+        else if (declarationNode instanceof Tree.TypeAliasDeclaration ||
+                declarationNode instanceof Tree.InterfaceDeclaration) {
+            Tree.TypeSpecifier spec = 
+                    (Tree.TypeSpecifier) definition;
+            inlineTypeAliasReferences(pu, tokens, 
+                    spec.getType(), 
                     declarationTokens, tfc);
         }
     }
@@ -569,8 +623,8 @@ public class InlineRefactoring extends AbstractRefactoring {
     private void inlineFunctionReferences(
             final Tree.CompilationUnit pu, 
             final List<CommonToken> tokens, 
-            final Node term, 
-            final Tree.AnyMethod declaration, 
+            final Tree.Term term, 
+            final Tree.AnyMethod decNode, 
             final List<CommonToken> declarationTokens, 
             final TextChange tfc) {
         new Visitor() {
@@ -592,17 +646,17 @@ public class InlineRefactoring extends AbstractRefactoring {
             public void visit(
                     final Tree.MemberOrTypeExpression that) {
             	 super.visit(that);
-            	 Declaration d = that.getDeclaration();
+            	 Declaration dec = that.getDeclaration();
             	 if (!that.getDirectlyInvoked() && 
-            	         inlineRef(that, d)) {
+            	         inlineRef(that, dec)) {
             		 StringBuilder text = new StringBuilder();
-            		 Function dec = 
-            		         declaration.getDeclarationModel();
-            		 if (dec.isDeclaredVoid()) {
+            		 Function function = 
+            		         decNode.getDeclarationModel();
+            		 if (function.isDeclaredVoid()) {
             			 text.append("void ");
             		 }
             		 for (Tree.ParameterList pl: 
-            		         declaration.getParameterLists()) {
+            		         decNode.getParameterLists()) {
             			 text.append(Nodes.toString(pl, declarationTokens));
             		 }
             		 text.append(" => ");
@@ -639,24 +693,99 @@ public class InlineRefactoring extends AbstractRefactoring {
     private void inlineTypeAliasReferences(
             final Tree.CompilationUnit pu, 
             final List<CommonToken> tokens, 
-            final Node term, 
+            final Tree.Type term, 
             final List<CommonToken> declarationTokens, 
             final TextChange tfc) {
         new Visitor() {
-            private boolean needsParens = false;
             @Override
             public void visit(Tree.SimpleType that) {
                 super.visit(that);
-                inlineDefinition(tokens, declarationTokens, term, 
-                        tfc, null, that, needsParens);
+                inlineDefinition(tokens, declarationTokens, 
+                        term, tfc, null, that, false);
             }
         }.visit(pu);
     }
 
+    private void inlineClassAliasReferences(
+            final Tree.CompilationUnit pu, 
+            final List<CommonToken> tokens, 
+            final Tree.InvocationExpression term,
+            final Tree.Type type,
+            final Tree.ClassDeclaration decNode, 
+            final List<CommonToken> declarationTokens, 
+            final TextChange tfc) {
+        new Visitor() {
+            @Override
+            public void visit(Tree.SimpleType that) {
+                super.visit(that);
+                inlineDefinition(tokens, declarationTokens, 
+                        type, tfc, null, that, false);
+            }
+            private boolean needsParens = false;
+            @Override
+            public void visit(
+                    final Tree.InvocationExpression that) {
+                super.visit(that);
+                Tree.Primary primary = that.getPrimary();
+                if (primary instanceof Tree.MemberOrTypeExpression) {
+                    Tree.MemberOrTypeExpression mte = 
+                            (Tree.MemberOrTypeExpression) 
+                                primary;
+                    inlineDefinition(tokens, declarationTokens, 
+                            term, tfc, that, mte, needsParens);
+                }
+            }
+            @Override
+            public void visit(
+                    final Tree.MemberOrTypeExpression that) {
+                 super.visit(that);
+                 Declaration d = that.getDeclaration();
+                 if (!that.getDirectlyInvoked() && 
+                         inlineRef(that, d)) {
+                     StringBuilder text = new StringBuilder();
+                     Class dec = 
+                             decNode.getDeclarationModel();
+                     if (dec.isDeclaredVoid()) {
+                         text.append("void ");
+                     }
+                     Tree.ParameterList pl = 
+                             decNode.getParameterList();
+                     text.append(Nodes.toString(pl, declarationTokens));
+                     text.append(" => ");
+                     text.append(Nodes.toString(term, declarationTokens));
+                     tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
+                             that.getStopIndex()-that.getStartIndex()+1, 
+                             text.toString()));
+                 }
+            }
+            @Override
+            public void visit(Tree.OperatorExpression that) {
+                boolean onp = needsParens;
+                needsParens=true;
+                super.visit(that);
+                needsParens = onp;
+            }
+            @Override
+            public void visit(Tree.StatementOrArgument that) {
+                boolean onp = needsParens;
+                needsParens = false;
+                super.visit(that);
+                needsParens = onp;
+            }
+            @Override
+            public void visit(Tree.Expression that) {
+                boolean onp = needsParens;
+                needsParens = false;
+                super.visit(that);
+                needsParens = onp;
+            }
+        }.visit(pu);
+    }
+    
     private void inlineAttributeReferences(
             final Tree.CompilationUnit pu, 
             final List<CommonToken> tokens, 
-            final Node term, 
+            final Tree.Term term, 
             final List<CommonToken> declarationTokens, 
             final TextChange tfc) {
         new Visitor() {
@@ -723,22 +852,20 @@ public class InlineRefactoring extends AbstractRefactoring {
             StringBuilder result, 
             Tree.Type it) {
         Type t = it.getTypeModel();
+        TypeDeclaration td = t.getDeclaration();
         if (reference instanceof Tree.SimpleType &&
-            t.getDeclaration() 
-                instanceof TypeParameter) {
-            TypeAlias ta = (TypeAlias) declaration;
-            int index = 
-                    ta.getTypeParameters()
-                        .indexOf(t.getDeclaration());
+            td instanceof TypeParameter) {
+            Generic ta = (Generic) declaration;
+            int index = ta.getTypeParameters().indexOf(td);
             if (index>=0) {
                 Tree.SimpleType st = 
                         (Tree.SimpleType) 
                             reference;
                 Tree.TypeArgumentList tal = 
                         st.getTypeArgumentList();
-                if (tal.getTypes().size()>index) {
-                    Tree.Type type = 
-                            tal.getTypes().get(index);
+                List<Tree.Type> types = tal.getTypes();
+                if (types.size()>index) {
+                    Tree.Type type = types.get(index);
                     result.append(Nodes.toString(type, tokens));
                     return;
                 }
@@ -884,12 +1011,10 @@ public class InlineRefactoring extends AbstractRefactoring {
                 @Override
                 public void visit(Tree.Type it) {
                     super.visit(it);
-                    if (declaration instanceof TypeAlias) {
-                        text(it);
-                        inlineAliasDefinitionReference(
-                                tokens, declarationTokens, 
-                                reference, result, it);
-                    }
+                    text(it);
+                    inlineAliasDefinitionReference(
+                            tokens, declarationTokens, 
+                            reference, result, it);
                 }
                 void finish() {
                     String text = 
@@ -969,8 +1094,9 @@ public class InlineRefactoring extends AbstractRefactoring {
         for (Tree.NamedArgument arg: 
         	    that.getNamedArgumentList()
         	        .getNamedArguments()) {
-            if (it.getDeclaration()
-                    .equals(arg.getParameter().getModel())) {
+            FunctionOrValue pm = 
+                    arg.getParameter().getModel();
+            if (it.getDeclaration().equals(pm)) {
                 Tree.SpecifiedArgument sa = 
                         (Tree.SpecifiedArgument) arg;
 				Tree.Term argTerm = 
@@ -986,23 +1112,25 @@ public class InlineRefactoring extends AbstractRefactoring {
         Tree.SequencedArgument seqArg = 
         		that.getNamedArgumentList()
         		    .getSequencedArgument();
-        if (seqArg!=null && 
-        		it.getDeclaration()
-        		    .equals(seqArg.getParameter())) {
-            result//.append(template.substring(start,it.getStartIndex()-templateStart))
-                .append("{");
-            //start = it.getStopIndex()-templateStart+1;;
-            boolean first=true;
-            for (Tree.PositionalArgument pa: 
-            	    seqArg.getPositionalArguments()) {
-                if (first) result.append(" ");
-                if (!first) result.append(", ");
-                first=false;
-                result.append(Nodes.toString(pa, tokens));
+        if (seqArg!=null) {
+            FunctionOrValue spm = 
+                    seqArg.getParameter().getModel();
+            if (it.getDeclaration().equals(spm)) {
+                result//.append(template.substring(start,it.getStartIndex()-templateStart))
+                    .append("{");
+                //start = it.getStopIndex()-templateStart+1;;
+                boolean first=true;
+                for (Tree.PositionalArgument pa: 
+                        seqArg.getPositionalArguments()) {
+                    if (first) result.append(" ");
+                    if (!first) result.append(", ");
+                    first=false;
+                    result.append(Nodes.toString(pa, tokens));
+                }
+                if (!first) result.append(" ");
+                result.append("}");
+                found=true;
             }
-            if (!first) result.append(" ");
-            result.append("}");
-            found=true;
         }
         if (!found) {
             if (sequenced) {
