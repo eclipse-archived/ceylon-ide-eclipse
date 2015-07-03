@@ -1270,7 +1270,7 @@ public class JDTModelLoader extends AbstractModelLoader {
         for (int i = 0; i < parts.size(); i++) {
             String part = parts.get(i);
             if (! part.isEmpty()) {
-                sb.append(part);
+                sb.append(Util.quoteIfJavaKeyword(part));
                 sb.append('/');
             }
         }
