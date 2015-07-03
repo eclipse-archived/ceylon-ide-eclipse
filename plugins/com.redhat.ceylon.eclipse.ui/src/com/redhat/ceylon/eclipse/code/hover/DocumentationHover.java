@@ -21,6 +21,7 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ALTERNATE_ICONS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getFrame;
@@ -28,6 +29,7 @@ import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getJdiProducedType
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.producedTypeFromTypeDescriptor;
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.toModelProducedType;
 import static com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover.jdiVariableForTypeParameter;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATION_STRINGS;
 import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
@@ -938,6 +940,34 @@ public class DocumentationHover extends SourceInfoHover {
         }
         else if (obj instanceof Declaration) {
             Declaration dec = (Declaration) obj;
+            if (getPreferences().getBoolean(ALTERNATE_ICONS)) {
+                if (dec instanceof Class) {
+                    if (dec.isAnonymous()) {
+                        return "anonymousClass.png";
+                    }
+                    return "class.png";
+                }
+                else if (dec instanceof Interface) {
+                    return "interface.png"; 
+                }
+                else if (dec instanceof Constructor) {
+                    return "classInitializer.png";
+                }
+                else if (dec.isParameter()) {
+                    return "parameter.png";
+                }
+                else if (dec instanceof Value) {
+                    return "field.png";
+                }
+                else if (dec instanceof Function) {
+                    return dec.isClassOrInterfaceMember() ?
+                            "method.png" :
+                            "function.png";
+                }
+                else if (dec instanceof TypeParameter) {
+                    return "variable.png";
+                }
+            }
             if (dec instanceof Class) {
                 String icon = dec.isShared() ? 
                         "class_obj.png" : 

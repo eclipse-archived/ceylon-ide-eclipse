@@ -397,7 +397,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         if (getPreferences().getBoolean(ALTERNATE_ICONS)) {
             reg.put(CEYLON_OBJECT, image("anonymousClass.png"));
             reg.put(CEYLON_LOCAL_OBJECT, image("anonymousClass.png"));
-            reg.put(CEYLON_ALIAS, image("types.png"));
             reg.put(CEYLON_CONSTRUCTOR, image("classInitializer.png"));
             reg.put(CEYLON_CLASS, image("class.png"));
             reg.put(CEYLON_INTERFACE, image("interface.png"));
@@ -427,6 +426,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
           reg.put(CEYLON_TYPE_PARAMETER, image("typevariable_obj.png"));
         }
         
+        reg.put(CEYLON_ALIAS, image("types.png"));
         reg.put(JAVA_FILE, image("jcu_obj.png"));
         reg.put(GENERIC_FILE, image("file_obj.png"));
         reg.put(CEYLON_PROJECT, image("prj_obj.png"));
