@@ -2648,6 +2648,67 @@
             value="153,153,153"/>
     </theme>
     
+    <theme id="com.redhat.ceylon.eclipse.ui.theme.darkAlt" 
+        name="Ceylon Dark Alt">
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.initializerAnnotation"
+            value="153,102,0"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.rangeIndicatorAnnotation"
+            value="51,0,0"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.matches"
+            value="102,255,255"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.matchingBracketsColor"
+            value="102,255,255"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.keywords"
+            value="255,255,255"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.semis"
+            value="102,102,102"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.braces"
+            value="255,255,255"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals"
+            value="255,255,255"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.interpolation"
+            value="0,255,0"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.annotations"
+            value="153,102,102"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.identifiers"
+            value="0,128,255"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.members"
+            value="102,102,255"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.types"
+            value="255,0,128"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.numbers"
+            value="0,255,0"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.strings"
+            value="0,255,0"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.characters"
+            value="0,255,0"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.comments"
+            value="119,110,113"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.packages"
+            value="204,102,255"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.annotationstrings"
+            value="128,128,128"/>
+    </theme>
+    
     </extension>
     
     <extension
