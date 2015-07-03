@@ -64,13 +64,23 @@ public class AliasRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.BaseTypeExpression that) {
             super.visit(that);
-            Type t = that.getTarget().getType();
-            if (t!=null && type.isExactly(t)) {
-                nodes.add(that);
+            TypeDeclaration td = type.getDeclaration();
+            if (isClassWithParameters(td)) {
+                Type t = that.getTarget().getType();
+                if (t!=null && type.isExactly(t)) {
+                    nodes.add(that);
+                }
             }
         }
+
     }
 
+    private static boolean isClassWithParameters(
+            TypeDeclaration td) {
+        return td instanceof Class && 
+                ((Class) td).getParameterList()!=null;
+    }
+    
     private String newName;
     private String typeString;
     private final Type type;
@@ -225,62 +235,57 @@ public class AliasRefactoring extends AbstractRefactoring {
                 }
                 if (unit.getFilename()
                         .equals(editorUnit.getFilename())) {
-                    TypeDeclaration td = 
-                            getType()
-                                .getDeclaration();
-                    StringBuffer header = 
-                            new StringBuffer("shared ");
+                    Type t = getType();
+                    TypeDeclaration td = t.getDeclaration();
+                    StringBuffer header = new StringBuffer();
+                    aliasOffset = 
+                            doc.getLength() + 
+                            delim.length()*2;
+                    if (td.isShared()) {
+                        header.append("shared ");
+                        aliasOffset += 7;
+                    }
                     StringBuffer args = new StringBuffer();
                     String initialName = getInitialName();
-                    if (td instanceof Class) {
-                        aliasOffset = 
-                                doc.getLength() + 
-                                delim.length()*2 +
-                                6+7;
-                        header.append("class ")
-                            .append(initialName)
-                            .append("(");
+                    if (isClassWithParameters(td)) {
                         Class c = (Class) td;
+                        aliasOffset += 6;
+                        header.append("class ")
+                        .append(initialName)
+                        .append("(");
+                        args.append("(");
+                        boolean first = true;
                         ParameterList pl = 
                                 c.getParameterList();
-                        if (pl!=null) {
-                            args.append("(");
-                            boolean first = true;
-                            for (Parameter p: pl.getParameters()) {
-                                if (first) {
-                                    first = false;
-                                }
-                                else {
-                                    header.append(", ");
-                                    args.append(", ");
-                                }
-                                Type ptype = 
-                                        getType()
-                                            .getTypedParameter(p)
-                                            .getFullType();
-                                String pname = p.getName();
-                                header.append(ptype.asString(unit)) 
-                                    .append(" ")
-                                    .append(pname);
-                                args.append(pname);
+                        for (Parameter p: 
+                            pl.getParameters()) {
+                            if (first) {
+                                first = false;
                             }
-                            header.append(")");
-                            args.append(")");
+                            else {
+                                header.append(", ");
+                                args.append(", ");
+                            }
+                            String ptype = 
+                                    t.getTypedParameter(p)
+                                    .getFullType()
+                                    .asString(unit);
+                            String pname = p.getName();
+                            header.append(ptype) 
+                            .append(" ")
+                            .append(pname);
+                            args.append(pname);
                         }
+                        header.append(")");
+                        args.append(")");
                     }
                     else if (td instanceof Interface) {
-                        aliasOffset = 
-                                doc.getLength() + 
-                                delim.length()*2 +
-                                10+7;
+                        aliasOffset += 10;
                         header.append("interface ")
                             .append(initialName);
                     }
                     else {
-                        aliasOffset = 
-                                doc.getLength() + 
-                                delim.length()*2 +
-                                6+7;
+                        aliasOffset += 6;
                         header.append("alias ")
                             .append(initialName);
                     }
@@ -288,7 +293,7 @@ public class AliasRefactoring extends AbstractRefactoring {
                             doc.getLength(),
                             delim + delim +
                             header + " => " + 
-                            getType().asString(unit) + 
+                            t.asString(unit) + 
                             args + ";"));
                 }
             }
