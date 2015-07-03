@@ -3307,8 +3307,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    if (project.findMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_INFINITE).length > 0) {
-                        project.deleteMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_INFINITE);
+                    IResource lastOverridesWithProblem = findLastOverridesProblemMarker(project);
+                    if (lastOverridesWithProblem != null) {
+                        if (lastOverridesWithProblem.findMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_ZERO).length > 0) {
+                            lastOverridesWithProblem.deleteMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_ZERO);
+                            project.setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "lastOverridesProblemMarker"), null);
+                        }
                     }
                 }
                 catch (CoreException e) {
@@ -3338,6 +3342,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
     
+    private static IResource findLastOverridesProblemMarker(final IProject project) {
+        try {
+            String projectRelativePath = project.getPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "lastOverridesProblemMarker"));
+            if (projectRelativePath != null) {
+                IResource resource = project.findMember(projectRelativePath);
+                if (resource != null && resource.isAccessible()) {
+                    return resource;
+                }
+            }
+        } catch(CoreException e) {
+        }
+        return null;
+    }
+    
     private static void createOverridesProblemMarker(final IProject project,
             final Exception e, final File overridesFile, final int line, final int column) {
         Job job = new Job("Create Overrides problem marker") {
@@ -3349,7 +3367,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     if (overridesResource != null) {
                         markerResource = overridesResource;
                     }
-                    project.deleteMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_INFINITE);
+                    
+                    IResource lastOverridesWithProblem = findLastOverridesProblemMarker(project);
+                    if (lastOverridesWithProblem != null) {
+                        lastOverridesWithProblem.deleteMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_ZERO);
+                    }
+                    
+                    project.setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "lastOverridesProblemMarker"), markerResource.getProjectRelativePath().toString());
+                    
                     IMarker marker = markerResource.createMarker(CEYLON_INVALID_OVERRIDES_MARKER);
                     marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                     marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
