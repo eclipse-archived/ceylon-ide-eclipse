@@ -76,6 +76,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.IntersectionType;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -427,6 +428,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (d==null) return null;
         boolean shared = d.isShared();
         if (d instanceof Class) {
+            if (d.isAnonymous()) {
+                if (shared) {
+                    return CEYLON_OBJECT;
+                }
+                else {
+                    return CEYLON_LOCAL_OBJECT;
+                }
+            }
             if (shared) {
                 return CEYLON_CLASS;
             }
@@ -478,6 +487,17 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return CEYLON_ALIAS; //not quite right!
         }
         else {
+            if (d instanceof Value) {
+                Value value = (Value) d;
+                if (ModelUtil.isObject(value)) {
+                    if (shared) {
+                        return CEYLON_OBJECT;
+                    }
+                    else {
+                        return CEYLON_LOCAL_OBJECT;
+                    }
+                }
+            }
             if (shared) {
                 return CEYLON_ATTRIBUTE;
             }

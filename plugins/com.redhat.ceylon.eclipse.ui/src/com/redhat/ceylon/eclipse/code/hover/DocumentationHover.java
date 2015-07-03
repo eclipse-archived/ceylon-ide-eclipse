@@ -960,7 +960,7 @@ public class DocumentationHover extends SourceInfoHover {
                     return "field.png";
                 }
                 else if (dec instanceof Function) {
-                    return dec.isClassOrInterfaceMember() ?
+                    return dec.isShared() ?
                             "method.png" :
                             "function.png";
                 }
