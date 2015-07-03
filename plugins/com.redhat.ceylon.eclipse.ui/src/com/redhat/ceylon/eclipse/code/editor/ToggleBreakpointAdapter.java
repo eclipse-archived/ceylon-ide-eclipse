@@ -13,9 +13,11 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -247,15 +249,16 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
 
     public IJavaStratumLineBreakpoint createLineBreakpoint(IFile file, int lineNumber, Map<String,Object> attributes, boolean isForRunToLine) throws CoreException {
         String srcFileName = file.getName();
-        String relativePath = null;
+        IPath relativePath = null;
         if (ExternalSourceArchiveManager.isInSourceArchive(file)) {
-            relativePath = file.getProjectRelativePath().removeFirstSegments(1).toString();
+            relativePath = file.getProjectRelativePath().removeFirstSegments(1);
         } else {
             IResourceAware unit = CeylonBuilder.getUnit(file);
             if (unit != null) {
-                relativePath = ((Unit)unit).getRelativePath();
+                relativePath = new Path(((Unit)unit).getRelativePath());
             }
         }
+        
         
         if (attributes == null) {
             attributes = new HashMap<String, Object>();
@@ -263,7 +266,7 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
 
         try {
             return JDIDebugModel.createStratumBreakpoint(isForRunToLine ? getWorkspace().getRoot() : file, null, srcFileName,
-                    relativePath, null, lineNumber, -1, -1, 0, !isForRunToLine, attributes);
+                    relativePath.toOSString(), null, lineNumber, -1, -1, 0, !isForRunToLine, attributes);
         } 
         catch (CoreException e) {
             e.printStackTrace();
