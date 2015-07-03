@@ -1,8 +1,10 @@
 package com.redhat.ceylon.eclipse.ui;
 
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ALTERNATE_ICONS;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
 
@@ -202,6 +204,19 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                     contributor, false, 
                     PLUGIN_ID + ".xmlCatalogContribution", 
                     null, key);
+        
+        /*iconChangeListener = 
+                new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                if (event.getProperty()
+                        .equals(ALTERNATE_ICONS)) {
+                    initializeImageRegistry(getImageRegistry());
+                }
+            }
+        };
+        getPreferences()
+                .addPropertyChangeListener(iconChangeListener);*/
     }
     
     @Override
@@ -212,6 +227,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         CeylonDebugElementAdapterFactory.restoreJDTDebugElementAdapters();
         CeylonDebugOptionsManager.getDefault().shutdown();
         FileUtil.deleteQuietly(getJavaSourceArchiveCacheDirectory());
+        /*getPreferences()
+            .removePropertyChangeListener(iconChangeListener);*/
     }
 
     private void addResourceFilterPreference() 
@@ -329,7 +346,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                         (libraries.length);
             for(String jar : libraries){
                 File libDir = 
-                        new File(repoDir, getRepoFolder(jar));
+                        new File(repoDir, 
+                                getRepoFolder(jar));
                 if( !libDir.exists() ) {
                     System.out.println("WARNING directory doesn't exist: " + libDir);
                 }
@@ -375,6 +393,40 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     
     @Override
     protected void initializeImageRegistry(ImageRegistry reg) {
+        
+        if (getPreferences().getBoolean(ALTERNATE_ICONS)) {
+            reg.put(CEYLON_OBJECT, image("anonymousClass.png"));
+            reg.put(CEYLON_LOCAL_OBJECT, image("anonymousClass.png"));
+            reg.put(CEYLON_ALIAS, image("types.png"));
+            reg.put(CEYLON_CONSTRUCTOR, image("classInitializer.png"));
+            reg.put(CEYLON_CLASS, image("class.png"));
+            reg.put(CEYLON_INTERFACE, image("interface.png"));
+            reg.put(CEYLON_LOCAL_CLASS, image("class.png"));
+            reg.put(CEYLON_LOCAL_INTERFACE, image("interface.png"));
+            reg.put(CEYLON_METHOD, image("method.png"));
+            reg.put(CEYLON_LOCAL_METHOD, image("function.png"));
+            reg.put(CEYLON_PARAMETER_METHOD, image("methpro_obj.png"));
+            reg.put(CEYLON_ATTRIBUTE, image("field.png"));
+            reg.put(CEYLON_LOCAL_ATTRIBUTE, image("field.png"));
+            reg.put(CEYLON_PARAMETER, image("parameter.png"));
+            reg.put(CEYLON_TYPE_PARAMETER, image("variable.png"));
+        }
+        else {
+          reg.put(CEYLON_OBJECT, image("field_public_obj.png"));
+          reg.put(CEYLON_LOCAL_OBJECT, image("field_private_obj.png"));
+          reg.put(CEYLON_CONSTRUCTOR, image("constructor.png"));
+          reg.put(CEYLON_CLASS, image("class_obj.png"));
+          reg.put(CEYLON_INTERFACE, image("int_obj.png"));
+          reg.put(CEYLON_LOCAL_CLASS, image("innerclass_private_obj.png"));
+          reg.put(CEYLON_LOCAL_INTERFACE, image("innerinterface_private_obj.png"));
+          reg.put(CEYLON_METHOD, image("methpub_obj.png"));
+          reg.put(CEYLON_LOCAL_METHOD, image("methpri_obj.png"));
+          reg.put(CEYLON_ATTRIBUTE, image("field_public_obj.png"));
+          reg.put(CEYLON_LOCAL_ATTRIBUTE, image("field_private_obj.png"));
+          reg.put(CEYLON_PARAMETER, image("field_protected_obj.png"));
+          reg.put(CEYLON_TYPE_PARAMETER, image("typevariable_obj.png"));
+        }
+        
         reg.put(JAVA_FILE, image("jcu_obj.png"));
         reg.put(GENERIC_FILE, image("file_obj.png"));
         reg.put(CEYLON_PROJECT, image("prj_obj.png"));
@@ -389,19 +441,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(CEYLON_PACKAGE, image("package_obj.png"));
         reg.put(CEYLON_IMPORT_LIST, image("impc_obj.png"));
         reg.put(CEYLON_IMPORT, image("imp_obj.png"));
-        reg.put(CEYLON_ALIAS, image("types.png"));
-        reg.put(CEYLON_CONSTRUCTOR, image("constructor.png"));
-        reg.put(CEYLON_CLASS, image("class_obj.png"));
-        reg.put(CEYLON_INTERFACE, image("int_obj.png"));
-        reg.put(CEYLON_LOCAL_CLASS, image("innerclass_private_obj.png"));
-        reg.put(CEYLON_LOCAL_INTERFACE, image("innerinterface_private_obj.png"));
-        reg.put(CEYLON_METHOD, image("methpub_obj.png"));
-        reg.put(CEYLON_LOCAL_METHOD, image("methpri_obj.png"));
-        reg.put(CEYLON_PARAMETER_METHOD, image("methpro_obj.png"));
-        reg.put(CEYLON_ATTRIBUTE, image("field_public_obj.png"));
-        reg.put(CEYLON_LOCAL_ATTRIBUTE, image("field_private_obj.png"));
-        reg.put(CEYLON_PARAMETER, image("field_protected_obj.png"));
-        reg.put(CEYLON_TYPE_PARAMETER, image("typevariable_obj.png"));
         reg.put(CEYLON_ARGUMENT, image("arg_co.gif"));
         reg.put(CEYLON_DEFAULT_REFINEMENT, image("over_co.png"));
         reg.put(CEYLON_FORMAL_REFINEMENT, image("implm_co.png"));
@@ -521,6 +560,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     IResourceChangeListener projectOpenCloseListener = 
             new ProjectChangeListener();
     private File javaSourceArchiveCacheDirectory;
+//    private IPropertyChangeListener iconChangeListener;
     
     public BundleContext getBundleContext() {
         return this.bundleContext;

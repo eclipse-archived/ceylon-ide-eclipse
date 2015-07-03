@@ -16,6 +16,8 @@ public interface CeylonResources {
     public static final String GENERIC_FILE = "generic_file";
     
     public static final String CEYLON_ALIAS = "ceylon_alias";
+    public static final String CEYLON_OBJECT = "ceylon_object";
+    public static final String CEYLON_LOCAL_OBJECT = "ceylon_local_object";
     public static final String CEYLON_CONSTRUCTOR = "ceylon_constructor";
     public static final String CEYLON_CLASS = "ceylon_class";
     public static final String CEYLON_INTERFACE = "ceylon_interface";

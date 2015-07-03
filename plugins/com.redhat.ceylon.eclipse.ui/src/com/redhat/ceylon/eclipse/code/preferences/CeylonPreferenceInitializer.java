@@ -2,11 +2,10 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.common.Constants.DEFAULT_RESOURCE_DIR;
 import static com.redhat.ceylon.common.Constants.DEFAULT_SOURCE_DIR;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
-
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -66,12 +65,13 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String RETURN_TYPES_IN_DIALOGS = "typesInDialogs";
     public static final String FULL_LOC_SEARCH_RESULTS = "fullLocationInSearchResults";
     public static final String MATCH_HIGHLIGHTING = "matchHighlighting";
+    public static final String ALTERNATE_ICONS = "alternativeIcons";
 
     public CeylonPreferenceInitializer() {}
 
     @Override
     public void initializeDefaultPreferences() {
-        IPreferenceStore store = EditorUtil.getPreferences();
+        IPreferenceStore store = getPreferences();
         store.setDefault(AUTO_INSERT, true);
         store.setDefault(AUTO_INSERT_PREFIX, false);
         store.setDefault(AUTO_ACTIVATION, true);

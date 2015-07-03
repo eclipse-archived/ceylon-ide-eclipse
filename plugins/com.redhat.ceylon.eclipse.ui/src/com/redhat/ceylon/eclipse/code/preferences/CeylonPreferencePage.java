@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ALTERNATE_ICONS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
@@ -32,6 +33,7 @@ public class CeylonPreferencePage
     private StringFieldEditor sourceFolder;
     private StringFieldEditor resourceFolder;
     private RadioGroupFieldEditor projectType;
+    private BoolFieldEditor alternateIcons;
     
     public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences";
     
@@ -174,22 +176,32 @@ public class CeylonPreferencePage
 
     @Override
     protected void createFieldEditors() {
-        final Composite group = createGroup(1, "Defaults for new Ceylon projects");
+        final Composite iconsGroup = 
+                createGroup(1, 
+                        "Icon set");
+        alternateIcons = new BoolFieldEditor(ALTERNATE_ICONS, 
+                "Use alternative icon set (takes effect after restarting Eclipse)", 
+                getFieldEditorParent(iconsGroup));
+        final Composite defaultsGroup = 
+                createGroup(1, 
+                        "Defaults for new Ceylon projects");
         projectType = new RadioGroupFieldEditor(DEFAULT_PROJECT_TYPE, 
                 "Default target virtual machine:", 3, 
                 new String[][] { new String[] { "JVM", "jvm" }, 
                         new String[] { "JavaScript", "js" },
                         new String[] { "Cross-platform", "jvm,js" } }, 
-                        getFieldEditorParent(group));
+                        getFieldEditorParent(defaultsGroup));
         sourceFolder = new StringFieldEditor(DEFAULT_SOURCE_FOLDER, 
                 "Default source folder name:", 
-                getFieldEditorParent(group));
+                getFieldEditorParent(defaultsGroup));
         resourceFolder = new StringFieldEditor(DEFAULT_RESOURCE_FOLDER, 
                 "Default resource folder name:", 
-                getFieldEditorParent(group));
+                getFieldEditorParent(defaultsGroup));
+        alternateIcons.load();
         projectType.load();
         sourceFolder.load();
         resourceFolder.load();
+        addField(alternateIcons);
         addField(projectType);
         addField(sourceFolder);
         addField(resourceFolder);
@@ -198,6 +210,7 @@ public class CeylonPreferencePage
     
     @Override
     protected void performDefaults() {
+        alternateIcons.loadDefault();
         projectType.loadDefault();
         sourceFolder.loadDefault();
         resourceFolder.loadDefault();
@@ -206,6 +219,7 @@ public class CeylonPreferencePage
     
     @Override
     public boolean performOk() {
+        alternateIcons.store();
         projectType.store();
         sourceFolder.store();
         resourceFolder.store();

@@ -385,6 +385,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (n instanceof Tree.TypeAliasDeclaration) {
             return CEYLON_ALIAS;
         }
+        else if (n instanceof Tree.ObjectDefinition) {
+            if (shared) {
+                return CEYLON_OBJECT;
+            }
+            else {
+                return CEYLON_LOCAL_OBJECT;
+            }
+        }
         else {
             if (shared) {
                 return CEYLON_ATTRIBUTE;
