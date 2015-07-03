@@ -177,7 +177,7 @@ public class HierarchyView extends ViewPart {
         };
         getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
-        getCurrentTheme()
+        getWorkbench().getThemeManager()
             .addPropertyChangeListener(propertyChangeListener);
     }
     
@@ -187,7 +187,7 @@ public class HierarchyView extends ViewPart {
         if (propertyChangeListener!=null) {
             getPreferences()
                 .removePropertyChangeListener(propertyChangeListener);
-            getCurrentTheme()
+            getWorkbench().getThemeManager()
                 .removePropertyChangeListener(propertyChangeListener);
             propertyChangeListener = null;
         }

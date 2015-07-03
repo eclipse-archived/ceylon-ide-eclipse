@@ -1692,12 +1692,10 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             new IPropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
-            if (event.getProperty()
-                    .startsWith(PLUGIN_ID + ".theme.color.")) {
-                String message = 
+            if (Highlights.isColorChange(event)) {
+                CeylonPlugin.log(Status.WARNING, 
                         event.getProperty() + "=" +
-                        event.getNewValue();
-                CeylonPlugin.log(Status.WARNING, message);
+                        event.getNewValue());
                 Highlights.refreshColors();
                 getSourceViewer()
                     .invalidateTextPresentation();

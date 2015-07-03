@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -53,7 +54,7 @@ public class CeylonRefactoringPreferencePage
     
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(EditorUtil.getPreferences());
+        setPreferenceStore(getPreferences());
         CeylonEditor.initializeBrackMatcherPreferences();
     }
     

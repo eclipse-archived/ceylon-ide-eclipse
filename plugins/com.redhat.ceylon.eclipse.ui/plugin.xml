@@ -2607,7 +2607,47 @@
           Color for highlighting a particular range of text lines.
        </description>
     </colorDefinition>
-
+    
+    <theme id="com.redhat.ceylon.eclipse.ui.theme.alt" 
+        name="Ceylon Alt">
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.keywords"
+            value="0,51,102"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.interpolation"
+            value="102,102,51"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.annotations"
+            value="153,102,102"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.identifiers"
+            value="51,41,204"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.members"
+            value="51,51,255"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.types"
+            value="255,51,0"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.numbers"
+            value="102,0,204"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.strings"
+            value="102,102,51"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.characters"
+            value="102,102,51"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.comments"
+            value="128,128,128"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.packages"
+            value="128,128,128"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.annotationstrings"
+            value="153,153,153"/>
+    </theme>
+    
     </extension>
     
     <extension
