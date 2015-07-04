@@ -17,6 +17,7 @@ import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
+import org.eclipse.ui.IWorkbenchPartSite;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -82,11 +83,14 @@ public final class AliasLinkedMode
                     openPreview();
                 }
                 else {
-                    new RefactoringExecutionHelper(refactoring,
+                    IWorkbenchPartSite site = 
+                            editor.getSite();
+                    new RefactoringExecutionHelper(
+                            refactoring,
                             RefactoringStatus.WARNING,
                             RefactoringSaveHelper.SAVE_ALL,
-                            editor.getSite().getShell(),
-                            editor.getSite().getWorkbenchWindow())
+                            site.getShell(),
+                            site.getWorkbenchWindow())
                         .perform(false, true);
                 }
             } 
@@ -125,19 +129,25 @@ public final class AliasLinkedMode
                     throws BadLocationException {
         
         Node selectedNode = refactoring.getNode();
+        int offset = refactoring.getInserted();
         namePosition = 
                 new LinkedPosition(document, 
-                    getNodeStartOffset(selectedNode), 
+                    getNodeStartOffset(selectedNode)+offset, 
                     getNodeLength(selectedNode), 
                     0);
         linkedPositionGroup.addPosition(namePosition);
         
         int i=1;
+        linkedPositionGroup.addPosition(
+                new LinkedPosition(document, 
+                        refactoring.getAliasOffset(), 
+                        refactoring.getAliasLength(), 
+                        i++));
         for (Node type: refactoring.getNodesToRename(rootNode)) {
             try {
                 linkedPositionGroup.addPosition(
                         new LinkedPosition(document, 
-                            getNodeStartOffset(type), 
+                            getNodeStartOffset(type)+offset, 
                             getNodeLength(type), 
                             i++));
             } 
@@ -146,11 +156,6 @@ public final class AliasLinkedMode
             }
         }
         
-        linkedPositionGroup.addPosition(
-                new LinkedPosition(document, 
-                        refactoring.getAliasOffset(), 
-                        refactoring.getAliasLength(), 
-                        i));
     }
 
     @Override
@@ -176,8 +181,10 @@ public final class AliasLinkedMode
                 return AliasLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(Refactoring refactoring) {
-                return new AliasWizard((AliasRefactoring) refactoring) {
+            public RefactoringWizard createWizard(
+                    Refactoring refactoring) {
+                return new AliasWizard((AliasRefactoring) 
+                        refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };
@@ -206,8 +213,9 @@ public final class AliasLinkedMode
     }
 
     @Override
-    protected void setupLinkedPositions(final IDocument document, final int adjust)
-            throws BadLocationException {
+    protected void setupLinkedPositions(
+            final IDocument document, final int adjust)
+                    throws BadLocationException {
         linkedPositionGroup = new LinkedPositionGroup();
         addLinkedPositions(document, 
                 editor.getParseController().getRootNode(), 
@@ -216,9 +224,11 @@ public final class AliasLinkedMode
     }
     
     @Override
-    protected void enterLinkedMode(IDocument document, int exitSequenceNumber,
-            int exitPosition) throws BadLocationException {
-        super.enterLinkedMode(document, exitSequenceNumber, exitPosition);
+    protected void enterLinkedMode(IDocument document, 
+            int exitSequenceNumber, int exitPosition) 
+                    throws BadLocationException {
+        super.enterLinkedMode(document, 
+                exitSequenceNumber, exitPosition);
         if (!EditorUtil.getPreferences()
                 .getBoolean(LINKED_MODE_RENAME_SELECT)) {
             // by default, full word is selected; restore original selection

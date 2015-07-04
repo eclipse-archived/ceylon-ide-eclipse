@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
@@ -143,7 +144,8 @@ public class AliasRefactoring extends AbstractRefactoring {
             IProgressMonitor pm)
                     throws CoreException, 
                            OperationCanceledException {
-        if (newName==null || !newName.matches("^[a-zA-Z_]\\w*$")) {
+        if (newName==null || 
+                !newName.matches("^[a-zA-Z_]\\w*$")) {
             return createErrorStatus(
                     "Not a legal Ceylon identifier");
         }
@@ -204,6 +206,7 @@ public class AliasRefactoring extends AbstractRefactoring {
     }
     
     private int aliasOffset;
+    private int inserted;
     
     int getAliasOffset() {
         return aliasOffset;
@@ -211,6 +214,10 @@ public class AliasRefactoring extends AbstractRefactoring {
     
     int getAliasLength() {
         return typeString.length();
+    }
+    
+    public int getInserted() {
+        return inserted;
     }
     
     void renameInFile(TextChange tfc, 
@@ -238,9 +245,19 @@ public class AliasRefactoring extends AbstractRefactoring {
                     Type t = getType();
                     TypeDeclaration td = t.getDeclaration();
                     StringBuffer header = new StringBuffer();
-                    aliasOffset = 
-                            doc.getLength() + 
-                            delim.length()*2;
+                    Tree.Statement statement = 
+                            findToplevelStatement(
+                                    this.rootNode, 
+                                    this.node);
+                    System.out.println(this.node);
+                    System.out.println(statement);
+                    int insertLoc = 
+                            statement==null ?
+                                doc.getLength() :
+                                statement.getStartIndex();
+                    aliasOffset = insertLoc;
+//                            doc.getLength() + 
+//                            delim.length()*2;
                     if (td.isShared()) {
                         header.append("shared ");
                         aliasOffset += 7;
@@ -251,8 +268,8 @@ public class AliasRefactoring extends AbstractRefactoring {
                         Class c = (Class) td;
                         aliasOffset += 6;
                         header.append("class ")
-                        .append(initialName)
-                        .append("(");
+                            .append(initialName)
+                            .append("(");
                         args.append("(");
                         boolean first = true;
                         ParameterList pl = 
@@ -268,12 +285,12 @@ public class AliasRefactoring extends AbstractRefactoring {
                             }
                             String ptype = 
                                     t.getTypedParameter(p)
-                                    .getFullType()
-                                    .asString(unit);
+                                        .getFullType()
+                                        .asString(unit);
                             String pname = p.getName();
                             header.append(ptype) 
-                            .append(" ")
-                            .append(pname);
+                                .append(" ")
+                                .append(pname);
                             args.append(pname);
                         }
                         header.append(")");
@@ -289,12 +306,14 @@ public class AliasRefactoring extends AbstractRefactoring {
                         header.append("alias ")
                             .append(initialName);
                     }
-                    tfc.addEdit(new InsertEdit(
-                            doc.getLength(),
-                            delim + delim +
+                    String text = 
                             header + " => " + 
                             t.asString(unit) + 
-                            args + ";"));
+                            args + ";" +
+                            delim + delim;
+                    inserted = text.length();
+                    tfc.addEdit(new InsertEdit(
+                            insertLoc, text));
                 }
             }
 //            if (renameValuesAndFunctions) { 
