@@ -1800,16 +1800,24 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         Color color = 
                 currentTheme.getColorRegistry()
                     .get(MATCHING_BRACKETS_PREF);
+        String colorString;
+        if (color==null) {
+            //because I can't trust the ThemeManager :-(
+            colorString = "0,120,255";
+        }
+        else {
+            colorString = 
+                    color.getRed() +"," + 
+                    color.getGreen() + "," + 
+                    color.getBlue();
+        }
         IPreferenceStore store = 
                 //can't be stored in the CeylonPlugin preferences!
                 EditorsUI.getPreferenceStore(); 
         store.setDefault(MATCHING_BRACKET, true);
         store.setDefault(ENCLOSING_BRACKETS, false);
         store.setDefault(SELECTED_BRACKET, false);
-        store.setDefault(MATCHING_BRACKETS_COLOR, 
-                color.getRed() +"," + 
-                color.getGreen() + "," + 
-                color.getBlue());
+        store.setDefault(MATCHING_BRACKETS_COLOR, colorString);
         store.setDefault(EDITOR_FOLDING_ENABLED, true);
     }
     

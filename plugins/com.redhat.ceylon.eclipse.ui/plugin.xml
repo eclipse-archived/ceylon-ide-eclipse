@@ -2611,6 +2611,18 @@
     <theme id="com.redhat.ceylon.eclipse.ui.theme.alt" 
         name="Ceylon Alt">
         <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.initializerAnnotation"
+            value="255,153,153"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.rangeIndicatorAnnotation"
+            value="COLOR_LIST_SELECTION"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.matches"
+            value="0,128,255"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.matchingBracketsColor"
+            value="0,120,255"/>
+        <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.keywords"
             value="0,51,102"/>
         <colorOverride 
@@ -2646,6 +2658,15 @@
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.annotationstrings"
             value="153,153,153"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.semis"
+            value="BLACK"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.braces"
+            value="BLACK"/>
+        <colorOverride 
+            id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals"
+            value="BLACK"/>
     </theme>
     
     <theme id="com.redhat.ceylon.eclipse.ui.theme.darkAlt" 
@@ -2664,16 +2685,16 @@
             value="102,255,255"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.keywords"
-            value="255,255,255"/>
+            value="WHITE"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.semis"
             value="102,102,102"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.braces"
-            value="255,255,255"/>
+            value="WHITE"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals"
-            value="255,255,255"/>
+            value="WHITE"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.interpolation"
             value="0,255,0"/>
