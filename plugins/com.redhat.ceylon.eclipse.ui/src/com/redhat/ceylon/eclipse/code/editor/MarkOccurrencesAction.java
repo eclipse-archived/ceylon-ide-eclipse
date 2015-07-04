@@ -38,8 +38,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationView;
@@ -48,6 +46,8 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 /**
  * Action class that implements the "Mark Occurrences" mode. This action contains a number of
@@ -55,14 +55,20 @@ import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
  * changes, and computes a set of "occurrence" annotations in the editor, using the language-specific
  * "mark occurrences" service.
  */
-public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate, 
-        CaretListener, ISelectionChangedListener, TreeLifecycleListener {
+public class MarkOccurrencesAction 
+        implements IWorkbenchWindowActionDelegate, 
+                   CaretListener, 
+                   ISelectionChangedListener, 
+                   TreeLifecycleListener {
     /**
      * The ID for the kind of annotations created for "mark occurrences"
      */
-    public static final String DECLARATION_ANNOTATION = PLUGIN_ID + ".declarationAnnotation";
-    public static final String OCCURRENCE_ANNOTATION = PLUGIN_ID + ".occurrenceAnnotation";
-    public static final String ASSIGNMENT_ANNOTATION = PLUGIN_ID + ".assignmentAnnotation";
+    public static final String DECLARATION_ANNOTATION = 
+            PLUGIN_ID + ".declarationAnnotation";
+    public static final String OCCURRENCE_ANNOTATION = 
+            PLUGIN_ID + ".occurrenceAnnotation";
+    public static final String ASSIGNMENT_ANNOTATION = 
+            PLUGIN_ID + ".assignmentAnnotation";
 
     /**
      * True if "mark occurrences" is currently on/enabled
@@ -95,7 +101,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
      * Listens to part-related events from the workbench to monitor when text editors are
      * activated/closed, and keep the necessary listeners pointed at the active editor.
      */
-    private final class EditorPartListener implements IPartListener {
+    private final class EditorPartListener 
+            implements IPartListener {
         @Override
         public void partActivated(IWorkbenchPart part) {
             if (part instanceof CeylonEditor) {
@@ -138,8 +145,9 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         if (!activeEditor.isBackgroundParsingPaused() &&
                 !activeEditor.isBlockSelectionModeEnabled() &&
                 !activeEditor.isInLinkedMode()) {
-            int offset = activeEditor.getCeylonSourceViewer()
-                    .widgetOffset2ModelOffset(event.caretOffset);
+            int offset = 
+                    activeEditor.getCeylonSourceViewer()
+                        .widgetOffset2ModelOffset(event.caretOffset);
             int length = 0;
             recomputeAnnotationsForSelection(offset, length, document);
         }
@@ -162,8 +170,11 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
     public void run(IAction action) {
         markingEnabled = action.isChecked();
         if (markingEnabled) {
-            setUpActiveEditor((CeylonEditor) 
-                    getActivePage().getActiveEditor());
+            CeylonEditor editor = 
+                    (CeylonEditor) 
+                        getActivePage()
+                            .getActiveEditor();
+            setUpActiveEditor(editor);
         } 
         else {
             unregisterListeners();
@@ -177,20 +188,28 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         // be presumed to have a document provider that has document
         IDocument document = getDocumentFromEditor();
         if (document!=null) {
-            activeEditor.getCeylonSourceViewer().getTextWidget()
+            CeylonSourceViewer sourceViewer = 
+                    activeEditor.getCeylonSourceViewer();
+            if (sourceViewer!=null) {
+                sourceViewer.getTextWidget()
                     .addCaretListener(this);
-            activeEditor.getCeylonSourceViewer().getSelectionProvider()
+                sourceViewer.getSelectionProvider()
                     .addSelectionChangedListener(this);
+            }
         }
         activeEditor.addModelListener(this);
     }
 
     private void unregisterListeners() {
         if (activeEditor!=null) {
-            activeEditor.getCeylonSourceViewer().getTextWidget()
+            CeylonSourceViewer sourceViewer = 
+                    activeEditor.getCeylonSourceViewer();
+            if (sourceViewer!=null) {
+                sourceViewer.getTextWidget()
                     .removeCaretListener(this);
-            activeEditor.getCeylonSourceViewer().getSelectionProvider()
+                sourceViewer.getSelectionProvider()
                     .removeSelectionChangedListener(this);
+            }
             activeEditor.removeModelListener(this);
         }
     }
@@ -201,10 +220,12 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             provider.getDocument(getEditorInput());
     }
 
-    private void recomputeAnnotationsForSelection(int offset, int length, 
+    private void recomputeAnnotationsForSelection(
+            int offset, int length, 
             IDocument document) {
         IAnnotationModel annotationModel = 
-                documentProvider.getAnnotationModel(getEditorInput());
+                documentProvider.getAnnotationModel(
+                        getEditorInput());
         Tree.CompilationUnit root = getCompilationUnit();
         if (root == null) {
             // Get this when "selecting" an error message that is shown in the editor view
@@ -214,23 +235,40 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
             // a parse error
             return;
         }
-        Node selectedNode = findNode(root, offset, offset+length-1);
+        Node selectedNode = 
+                findNode(root, offset, offset+length-1);
         try {
-            List<Node> declarations = getDeclarationsOf(parseController, selectedNode);
-            List<Node> occurrences = getOccurrencesOf(parseController, selectedNode);
-            List<Node> assignments = getAssignmentsOf(parseController, selectedNode);
+            List<Node> declarations = 
+                    getDeclarationsOf(parseController, 
+                            selectedNode);
+            List<Node> occurrences = 
+                    getOccurrencesOf(parseController, 
+                            selectedNode);
+            List<Node> assignments = 
+                    getAssignmentsOf(parseController, 
+                            selectedNode);
             removeEditedOccurrences(document, declarations);
             removeEditedOccurrences(document, occurrences);
             removeEditedOccurrences(document, assignments);
-            int capacity = declarations.size() + occurrences.size() + assignments.size();
+            int capacity = 
+                    declarations.size() + 
+                    occurrences.size() + 
+                    assignments.size();
             Map<Annotation,Position> annotationMap = 
-                    new HashMap<Annotation,Position>(capacity);
-            addPositionsToAnnotationMap(convertRefNodesToPositions(declarations), 
-                    DECLARATION_ANNOTATION, document, annotationMap);
-            addPositionsToAnnotationMap(convertRefNodesToPositions(occurrences), 
-                    OCCURRENCE_ANNOTATION, document, annotationMap);
-            addPositionsToAnnotationMap(convertRefNodesToPositions(assignments), 
-                    ASSIGNMENT_ANNOTATION, document, annotationMap);
+                    new HashMap<Annotation,Position>
+                        (capacity);
+            addPositionsToAnnotationMap(
+                    convertRefNodesToPositions(declarations), 
+                    DECLARATION_ANNOTATION, document, 
+                    annotationMap);
+            addPositionsToAnnotationMap(
+                    convertRefNodesToPositions(occurrences), 
+                    OCCURRENCE_ANNOTATION, document, 
+                    annotationMap);
+            addPositionsToAnnotationMap(
+                    convertRefNodesToPositions(assignments), 
+                    ASSIGNMENT_ANNOTATION, document, 
+                    annotationMap);
             placeAnnotations(annotationMap, annotationModel);
         } 
         catch (Exception e) {
@@ -239,11 +277,13 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         DocumentationView documentationView = 
                 DocumentationView.getInstance();
         if (documentationView!=null) {
-            documentationView.update(activeEditor, offset, length);
+            documentationView.update(activeEditor, 
+                    offset, length);
         }
     }
 
-    private static void removeEditedOccurrences(IDocument document, 
+    private static void removeEditedOccurrences(
+            IDocument document, 
             List<Node> occurrences)
             throws BadLocationException {
         for (Iterator<Node> i=occurrences.iterator(); 
@@ -257,7 +297,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
                         int start = tok.getStartIndex();
                         int stop = tok.getStopIndex();
                         String docText = 
-                                document.get(start, stop-start+1);
+                                document.get(start, 
+                                        stop-start+1);
                         if (!docText.equals(tok.getText())) {
                             i.remove();
                         }
@@ -270,15 +311,18 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         }
     }
 
-    private void addPositionsToAnnotationMap(Position[] positions, String type, 
-            IDocument document, Map<Annotation, Position> annotationMap) {
+    private void addPositionsToAnnotationMap(
+            Position[] positions, String type, 
+            IDocument document, 
+            Map<Annotation, Position> annotationMap) {
         for(int i=0; i<positions.length; i++) {
             Position position = positions[i];
             try { // Create & add annotation
                 String message = 
                         document.get(position.offset, 
                                 position.length);
-                annotationMap.put(new Annotation(type, false, message), 
+                annotationMap.put(
+                        new Annotation(type, false, message), 
                         position);
             } 
             catch (BadLocationException ex) {
@@ -287,7 +331,8 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         }
     }
 
-    private void placeAnnotations(Map<Annotation,Position> annotationMap, 
+    private void placeAnnotations(
+            Map<Annotation,Position> annotationMap, 
             IAnnotationModel annotationModel) {
         if (annotationModel==null || 
                 (occurrenceAnnotations==null || 
@@ -297,8 +342,10 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         }
         synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
-                ((IAnnotationModelExtension) annotationModel)
-                    .replaceAnnotations(occurrenceAnnotations, annotationMap);
+                IAnnotationModelExtension ext = 
+                        (IAnnotationModelExtension) annotationModel;
+                ext.replaceAnnotations(occurrenceAnnotations, 
+                        annotationMap);
             } 
             else {
                 removeExistingOccurrenceAnnotations();
@@ -361,8 +408,9 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
 
         synchronized (getLockObject(annotationModel)) {
             if (annotationModel instanceof IAnnotationModelExtension) {
-                ((IAnnotationModelExtension) annotationModel)
-                        .replaceAnnotations(occurrenceAnnotations, null);
+                IAnnotationModelExtension ext = 
+                        (IAnnotationModelExtension) annotationModel;
+                ext.replaceAnnotations(occurrenceAnnotations, null);
             } 
             else {
                 for (int i=0, length=occurrenceAnnotations.length; 
@@ -472,8 +520,10 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
                 if (!activeEditor.isBackgroundParsingPaused() &&
                         !activeEditor.isInLinkedMode()) {
                     try {
-                        activeEditor.getEditorSite().getShell()
-                            .getDisplay().asyncExec( 
+                        activeEditor.getEditorSite()
+                            .getShell()
+                            .getDisplay()
+                            .asyncExec( 
                                 new Runnable() {
                             @Override
                             public void run() {
@@ -501,20 +551,26 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         return Stage.TYPE_ANALYSIS;
     }
     
-    private List<Node> getDeclarationsOf(CeylonParseController controller, Node node) {
-        if (controller.getStage().ordinal() >= getStage().ordinal()) {
+    private List<Node> getDeclarationsOf(
+            CeylonParseController controller, Node node) {
+        if (controller.getStage().ordinal() 
+                >= getStage().ordinal()) {
             // Check whether we even have an AST in which to find occurrences
-            Tree.CompilationUnit root = controller.getRootNode();
+            Tree.CompilationUnit root = 
+                    controller.getRootNode();
             if (root!=null) {
                 Referenceable declaration = 
-                        getReferencedExplicitDeclaration(node, root);
+                        getReferencedExplicitDeclaration(
+                                node, root);
                 if (declaration!=null) {
                     List<Node> occurrences = 
                             new ArrayList<Node>();
                     FindReferencesVisitor frv = 
-                            new FindReferencesVisitor(declaration);
+                            new FindReferencesVisitor(
+                                    declaration);
                     FindDeclarationNodeVisitor fdv = 
-                            new FindDeclarationNodeVisitor(frv.getDeclaration());
+                            new FindDeclarationNodeVisitor(
+                                    frv.getDeclaration());
                     root.visit(fdv);
                     Tree.StatementOrArgument decNode = 
                             fdv.getDeclarationNode();
@@ -528,17 +584,24 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         return emptyList();
     }
     
-    private List<Node> getOccurrencesOf(CeylonParseController controller, Node node) {
-        if (controller.getStage().ordinal() >= getStage().ordinal()) {
+    private List<Node> getOccurrencesOf(
+            CeylonParseController controller, 
+            Node node) {
+        if (controller.getStage().ordinal() 
+                >= getStage().ordinal()) {
             // Check whether we even have an AST in which to find occurrences
-            Tree.CompilationUnit root = controller.getRootNode();
+            Tree.CompilationUnit root = 
+                    controller.getRootNode();
             if (root!=null) {
                 Referenceable declaration = 
-                        getReferencedExplicitDeclaration(node, root);
+                        getReferencedExplicitDeclaration(
+                                node, root);
                 if (declaration!=null) {
-                    List<Node> occurrences = new ArrayList<Node>();
+                    List<Node> occurrences = 
+                            new ArrayList<Node>();
                     FindReferencesVisitor frv = 
-                            new FindReferencesVisitor(declaration);
+                            new FindReferencesVisitor(
+                                    declaration);
                     root.visit(frv);
                     occurrences.addAll(frv.getNodes());
                     return occurrences;
@@ -548,16 +611,22 @@ public class MarkOccurrencesAction implements IWorkbenchWindowActionDelegate,
         return emptyList();
     }
     
-    private List<Node> getAssignmentsOf(CeylonParseController controller, Node node) {
+    private List<Node> getAssignmentsOf(
+            CeylonParseController controller, 
+            Node node) {
         // Check whether we even have an AST in which to find occurrences
-        Tree.CompilationUnit root = controller.getRootNode();
+        Tree.CompilationUnit root = 
+                controller.getRootNode();
         if (root!=null) {
             Referenceable declaration = 
-                    getReferencedExplicitDeclaration(node, root);
+                    getReferencedExplicitDeclaration(
+                            node, root);
             if (declaration instanceof Declaration) {
-                List<Node> occurrences = new ArrayList<Node>();
+                List<Node> occurrences = 
+                        new ArrayList<Node>();
                 FindAssignmentsVisitor frv = 
-                        new FindAssignmentsVisitor((Declaration) declaration);
+                        new FindAssignmentsVisitor(
+                                (Declaration) declaration);
                 root.visit(frv);
                 occurrences.addAll(frv.getNodes());
                 return occurrences;
