@@ -66,14 +66,16 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 getViewer().refresh();
             }
         };
-        getPreferences().addPropertyChangeListener(propertyChangeListener);
+        getPreferences()
+            .addPropertyChangeListener(propertyChangeListener);
     }
     
     @Override
     public void dispose() {
         super.dispose();
         if (propertyChangeListener!=null) {
-            getPreferences().removePropertyChangeListener(propertyChangeListener);
+            getPreferences()
+                .removePropertyChangeListener(propertyChangeListener);
             propertyChangeListener = null;
         }
     }

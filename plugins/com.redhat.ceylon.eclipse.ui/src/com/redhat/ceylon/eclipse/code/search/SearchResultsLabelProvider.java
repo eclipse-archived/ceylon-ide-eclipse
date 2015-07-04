@@ -9,10 +9,14 @@ import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleJavaType;
+import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
+import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
+import static org.eclipse.jdt.core.IJavaElement.TYPE;
 import static org.eclipse.jdt.core.Signature.getSignatureSimpleName;
 import static org.eclipse.jdt.internal.core.util.Util.concatWith;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
@@ -31,19 +35,20 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
 
 public class SearchResultsLabelProvider extends CeylonLabelProvider {
     
     @Override
     public Image getImage(Object element) {
         if (element instanceof WithSourceFolder) {
-            element = ((WithSourceFolder) element).element;
+            WithSourceFolder wsf = 
+                    (WithSourceFolder) element;
+            element = wsf.element;
         }
         String key;
         int decorations;
@@ -52,18 +57,21 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             decorations = 0;
         }
         else if (element instanceof CeylonElement) {
-            key = ((CeylonElement) element).getImageKey(); 
-            decorations = ((CeylonElement) element).getDecorations(); 
+            CeylonElement ce = (CeylonElement) element;
+            key = ce.getImageKey(); 
+            decorations = ce.getDecorations(); 
         }
         else if (element instanceof IType ||
                 element instanceof IField ||
                 element instanceof IMethod) {
-            key = getImageKeyForDeclaration((IJavaElement) element); 
+            IJavaElement je = (IJavaElement) element;
+            key = getImageKeyForDeclaration(je); 
             decorations = 0; 
         }
         else {
             key = super.getImageKey(element);
-            decorations = super.getDecorationAttributes(element);
+            decorations = 
+                    super.getDecorationAttributes(element);
         }
         return getDecoratedImage(key, decorations, false);
     }
@@ -71,40 +79,51 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
     @Override
     public StyledString getStyledText(Object element) {
         if (element instanceof WithSourceFolder) {
-            element = ((WithSourceFolder) element).element;
+            WithSourceFolder wsf = 
+                    (WithSourceFolder) element;
+            element = wsf.element;
         }
         if (element instanceof ArchiveMatches) {
             return new StyledString("Source Archive Matches");
         }
         else if (element instanceof CeylonElement) {
-            return getStyledLabelForSearchResult((CeylonElement) element);
+            CeylonElement ce = (CeylonElement) element;
+            return getStyledLabelForSearchResult(ce);
         }
         else if (element instanceof IType ||
                 element instanceof IField||
                 element instanceof IMethod) {
-            return getStyledLabelForSearchResult((IJavaElement) element);
+            IJavaElement je = (IJavaElement) element;
+            return getStyledLabelForSearchResult(je);
         }
         else if (element instanceof Module ||
                 element instanceof Package ||
                 element instanceof IPackageFragment ||
                 element instanceof IPackageFragmentRoot) {
+            StyledString text = super.getStyledText(element);
             StyledString styledString = 
-                    new StyledString(super.getStyledText(element).toString());
+                    new StyledString(text.toString());
             if (appendSourceLocation()) {
                 String path = null;
                 if (element instanceof JDTModule) {
-                    path = ((JDTModule) element).getSourceArchivePath();
+                    JDTModule mod = (JDTModule) element;
+                    path = mod.getSourceArchivePath();
                 }
                 else if (element instanceof JarPackageFragmentRoot) {
                     try {
-                        path = ((IPackageFragmentRoot) element).getSourceAttachmentPath().toOSString();
+                        IPackageFragmentRoot pfr = 
+                                (IPackageFragmentRoot) 
+                                    element;
+                        path = pfr.getSourceAttachmentPath()
+                                .toOSString();
                     }
                     catch (JavaModelException e) {
                         e.printStackTrace();
                     }
                 }
                 if (path!=null) {
-                    styledString.append(" - " + path, COUNTER_STYLER);
+                    styledString.append(" - " + path, 
+                            COUNTER_STYLER);
                 }
             }
             return styledString;
@@ -122,28 +141,35 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         return true;
     }
     
-    private StyledString getStyledLabelForSearchResult(CeylonElement ce) {
+    private StyledString getStyledLabelForSearchResult(
+            CeylonElement ce) {
         StyledString styledString = new StyledString();
         
         styledString.append(ce.getLabel());
         if (appendMatchPackage()) {
-            styledString.append(" - " + ce.getPackageLabel(), PACKAGE_STYLER);
+            styledString.append(
+                    " - " + ce.getPackageLabel(), 
+                    PACKAGE_STYLER);
             if (appendSourceLocation()) {
-                styledString.append(" - " + ce.getPathString(), COUNTER_STYLER);
+                styledString.append(
+                        " - " + ce.getPathString(), 
+                        COUNTER_STYLER);
             }
         }
         return styledString;
     }
 
-    private StyledString getStyledLabelForSearchResult(IJavaElement je) {
+    private StyledString getStyledLabelForSearchResult(
+            IJavaElement je) {
         StyledString styledString = new StyledString();
         String name = je.getElementName();
         IPreferenceStore prefs = EditorUtil.getPreferences();
         if (je instanceof IMethod) {
+            IMethod m = (IMethod) je;
             try {
-                String returnType = ((IMethod) je).getReturnType();
+                String returnType = m.getReturnType();
                 if (returnType.equals("V")) {
-                    styledString.append("void", Highlights.KW_STYLER);
+                    styledString.append("void", KW_STYLER);
                 }
                 else {
                     styledString.append("method", KW_STYLER);
@@ -157,17 +183,22 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             styledString.append(' ');
             IJavaElement parent = je.getParent();
             if (parent instanceof IType) {
-                styledString.append(parent.getElementName(), TYPE_ID_STYLER)
+                styledString.append(parent.getElementName(), 
+                        TYPE_ID_STYLER)
                             .append('.');
             }
             styledString.append(name, ID_STYLER);
-            boolean names = prefs.getBoolean(PARAMS_IN_OUTLINES);
-            boolean types = prefs.getBoolean(PARAM_TYPES_IN_OUTLINES);
+            boolean names = 
+                    prefs.getBoolean(PARAMS_IN_OUTLINES);
+            boolean types = 
+                    prefs.getBoolean(PARAM_TYPES_IN_OUTLINES);
             if (names || types) {
                 try {
                     styledString.append('(');
-                    String[] parameterTypes = ((IMethod) je).getParameterTypes();
-                    String[] parameterNames = ((IMethod) je).getParameterNames();
+                    String[] parameterTypes = 
+                            m.getParameterTypes();
+                    String[] parameterNames = 
+                            m.getParameterNames();
                     boolean first = true;
                     for (int i=0; 
                             i<parameterTypes.length && 
@@ -181,13 +212,15 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         }
                         if (types) {
                             styleJavaType(styledString, 
-                                    getSignatureSimpleName(parameterTypes[i]));
+                                    getSignatureSimpleName(
+                                            parameterTypes[i]));
                         }
                         if (types&&names) {
                             styledString.append(' ');
                         }
                         if (names) {
-                            styledString.append(parameterNames[i], ID_STYLER);
+                            styledString.append(parameterNames[i], 
+                                    ID_STYLER);
                         }
                     }
                     styledString.append(')');
@@ -198,7 +231,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             }
             if (prefs.getBoolean(RETURN_TYPES_IN_OUTLINES)) {
                 try {
-                    String returnType = ((IMethod) je).getReturnType();
+                    String returnType = m.getReturnType();
                     styledString.append(" ∊ ");
                     styleJavaType(styledString,
                             getSignatureSimpleName(returnType), 
@@ -219,10 +252,12 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             catch (Exception e) {
                 e.printStackTrace();
             }*/
-            styledString.append(' ').append(name, ID_STYLER);
+            styledString.append(' ')
+                .append(name, ID_STYLER);
             if (prefs.getBoolean(RETURN_TYPES_IN_OUTLINES)) {
                 try {
-                    String type = ((IField) je).getTypeSignature();
+                    IField f = (IField) je;
+                    String type = f.getTypeSignature();
                     styledString.append(" ∊ ");
                     styleJavaType(styledString,
                             getSignatureSimpleName(type), 
@@ -237,16 +272,21 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             IType type = (IType) je;
             try {
                 if (type.isAnnotation()) {
-                    styledString.append('@').append("interface ", KW_STYLER);
+                    styledString.append('@')
+                        .append("interface ", 
+                                KW_STYLER);
                 }
                 else if (type.isInterface()) {
-                    styledString.append("interface ", KW_STYLER);
+                    styledString.append("interface ", 
+                            KW_STYLER);
                 }
                 else if (type.isClass()) {
-                    styledString.append("class ", KW_STYLER);
+                    styledString.append("class ", 
+                            KW_STYLER);
                 }
                 else if (type.isEnum()) {
-                    styledString.append("enum ", KW_STYLER);
+                    styledString.append("enum ", 
+                            KW_STYLER);
                 }
             }
             catch (Exception e) {
@@ -255,36 +295,44 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             styledString.append(name, TYPE_ID_STYLER);
         }
         if (appendMatchPackage()) {
-            IPackageFragment pkg = (IPackageFragment) 
-                    je.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
+            IPackageFragment pkg = 
+                    (IPackageFragment) 
+                        je.getAncestor(PACKAGE_FRAGMENT);
             styledString.append(" - ", PACKAGE_STYLER)
-                        .append(pkg.getElementName(), PACKAGE_STYLER);
+                        .append(pkg.getElementName(), 
+                                PACKAGE_STYLER);
             if (appendSourceLocation()) {
                 try {
-                    IType type = (IType) je.getAncestor(IJavaElement.TYPE);
-                    IPackageFragmentRoot root = (IPackageFragmentRoot) 
-                            je.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                    IType type = 
+                            (IType) je.getAncestor(TYPE);
+                    IPackageFragmentRoot root = 
+                            (IPackageFragmentRoot) 
+                                je.getAncestor(
+                                        PACKAGE_FRAGMENT_ROOT);
                     if (type instanceof BinaryType) {
-                        IBinaryType info = (IBinaryType) 
-                                ((BinaryType) type).getElementInfo();
-                        info.getSourceName();
+                        BinaryType bt = (BinaryType) type;
+                        IBinaryType info = 
+                                (IBinaryType) 
+                                    bt.getElementInfo();
                         String simpleSourceFileName = 
-                                ((BinaryType) type).getSourceFileName(info);
+                                bt.getSourceFileName(info);
                         PackageFragment pkgFrag = 
-                                (PackageFragment) type.getPackageFragment();
+                                (PackageFragment) 
+                                    type.getPackageFragment();
                         String rootPath = 
                                 root.getSourceAttachmentPath()
                                     .toPortableString();
-                        if (root.getSourceAttachmentRootPath()!=null) {
+                        IPath sap = root.getSourceAttachmentRootPath();
+                        if (sap!=null) {
                             rootPath += 
-                                    root.getSourceAttachmentRootPath()
-                                        .toPortableString() + '/';
+                                    sap.toPortableString() + '/';
                         }
                         String path = 
                                 rootPath + '/' + 
                                 concatWith(pkgFrag.names, 
                                         simpleSourceFileName, '/');
-                        styledString.append(" - " + path, COUNTER_STYLER);
+                        styledString.append(" - " + path, 
+                                COUNTER_STYLER);
                     }
                     else if (type instanceof SourceType) {
                         String path = 
@@ -292,7 +340,8 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                                     .getCorrespondingResource()
                                     .getFullPath()
                                     .toPortableString();
-                        styledString.append(" - " + path, COUNTER_STYLER);
+                        styledString.append(" - " + path, 
+                                COUNTER_STYLER);
                     }
                     //new SourceMapper(root.getSourceAttachmentPath(), root.getSourceAttachmentRootPath()==null ? null : root.getSourceAttachmentRootPath().toString(), null)
                     //.findSource(t, info);
@@ -305,12 +354,14 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         return styledString;
     }
 
-    private static String getImageKeyForDeclaration(IJavaElement e) {
+    private static String getImageKeyForDeclaration(
+            IJavaElement e) {
         if (e==null) return null;
         boolean shared = false;
         if (e instanceof IMember) {
             try {
-                shared = Flags.isPublic(((IMember) e).getFlags());
+                IMember m = (IMember) e;
+                shared = Flags.isPublic(m.getFlags());
             }
             catch (JavaModelException jme) {
                 jme.printStackTrace();
