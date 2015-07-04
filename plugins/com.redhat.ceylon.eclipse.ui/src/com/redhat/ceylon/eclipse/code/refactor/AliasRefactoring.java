@@ -29,6 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Interface;
@@ -305,9 +306,12 @@ public class AliasRefactoring extends AbstractRefactoring {
                         header.append("alias ")
                             .append(initialName);
                     }
+                    String indent = 
+                            Indents.getDefaultIndent();
                     String text = 
-                            header + " => " + 
-                            t.asString(unit) + 
+                            header + delim + 
+                            indent + indent +
+                            "=> " + t.asString(unit) + 
                             args + ";" +
                             delim + delim;
                     inserted = text.length();

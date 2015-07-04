@@ -132,17 +132,17 @@ public final class AliasLinkedMode
         int offset = refactoring.getInserted();
         namePosition = 
                 new LinkedPosition(document, 
-                    getNodeStartOffset(selectedNode)+offset, 
-                    getNodeLength(selectedNode), 
-                    0);
-        linkedPositionGroup.addPosition(namePosition);
-        
-        int i=1;
-        linkedPositionGroup.addPosition(
-                new LinkedPosition(document, 
                         refactoring.getAliasOffset(), 
                         refactoring.getAliasLength(), 
-                        i++));
+                        0);
+        linkedPositionGroup.addPosition(namePosition);
+        
+        linkedPositionGroup.addPosition(
+                new LinkedPosition(document, 
+                    getNodeStartOffset(selectedNode)+offset, 
+                    getNodeLength(selectedNode), 
+                    1));
+        int i=2;
         for (Node type: refactoring.getNodesToRename(rootNode)) {
             try {
                 linkedPositionGroup.addPosition(
