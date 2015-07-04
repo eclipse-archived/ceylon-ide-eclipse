@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.search;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
@@ -37,7 +38,6 @@ import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 
@@ -144,7 +144,6 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
     private StyledString getStyledLabelForSearchResult(
             CeylonElement ce) {
         StyledString styledString = new StyledString();
-        
         styledString.append(ce.getLabel());
         if (appendMatchPackage()) {
             styledString.append(
@@ -163,7 +162,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             IJavaElement je) {
         StyledString styledString = new StyledString();
         String name = je.getElementName();
-        IPreferenceStore prefs = EditorUtil.getPreferences();
+        IPreferenceStore prefs = getPreferences();
         if (je instanceof IMethod) {
             IMethod m = (IMethod) je;
             try {

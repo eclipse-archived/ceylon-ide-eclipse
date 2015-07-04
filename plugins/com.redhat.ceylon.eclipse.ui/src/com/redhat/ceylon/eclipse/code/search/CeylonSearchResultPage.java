@@ -32,6 +32,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
@@ -40,6 +41,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 import org.eclipse.search.ui.text.Match;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -62,12 +64,14 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         propertyChangeListener = 
                 new IPropertyChangeListener() {
             @Override
-            public void propertyChange(PropertyChangeEvent event) {
+            public void propertyChange(
+                    PropertyChangeEvent event) {
                 getViewer().refresh();
             }
         };
         getPreferences()
-            .addPropertyChangeListener(propertyChangeListener);
+            .addPropertyChangeListener(
+                    propertyChangeListener);
     }
     
     @Override
@@ -75,7 +79,8 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         super.dispose();
         if (propertyChangeListener!=null) {
             getPreferences()
-                .removePropertyChangeListener(propertyChangeListener);
+                .removePropertyChangeListener(
+                        propertyChangeListener);
             propertyChangeListener = null;
         }
     }
@@ -101,16 +106,18 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     }
 
     @Override
-    protected void configureTableViewer(final TableViewer viewer) {
+    protected void configureTableViewer(TableViewer viewer) {
         contentProvider = 
-                new CeylonSearchResultContentProvider(viewer, this);
+                new CeylonSearchResultContentProvider(
+                        viewer, this);
         configureViewer(viewer);
     }
 
     @Override
     protected void configureTreeViewer(TreeViewer viewer) {
         contentProvider = 
-                new CeylonSearchResultTreeContentProvider(viewer, this);
+                new CeylonSearchResultTreeContentProvider(
+                        viewer, this);
         configureViewer(viewer);
     }
 
@@ -129,12 +136,12 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                     throws PartInitException {
         Object elem = match.getElement();
         if (elem instanceof CeylonElement) {
-            open((CeylonElement) elem, 
-                    offset, length, activate);
+            CeylonElement ce = (CeylonElement) elem;
+            open(ce, offset, length, activate);
         }
         else if (elem instanceof IJavaElement) {
-            open((IJavaElement) elem, match, 
-                    offset, length, activate);
+            IJavaElement je = (IJavaElement) elem;
+            open(je, match, offset, length, activate);
         }
     }
 
@@ -146,15 +153,18 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         if (file==null) {
             //a binary archive
             IEditorPart editor = 
-                    new JavaSearchEditorOpener().openMatch(match);
+                    new JavaSearchEditorOpener()
+                        .openMatch(match);
             if (editor instanceof ITextEditor) {
-                ((ITextEditor) editor).selectAndReveal(offset, length);
+                ITextEditor textEditor = 
+                        (ITextEditor) editor;
+                textEditor.selectAndReveal(offset, length);
             }
         }
         else {
             //a source file in the workspace
             IWorkbenchPage page = getSite().getPage();
-            if (offset >= 0 && length != 0) {
+            if (offset>=0 && length!=0) {
                 openAndSelect(page, file, 
                         offset, length, activate);
             } 
@@ -236,17 +246,24 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     }
     
     private void updateGroupingActions() {
-        fGroupProjectAction.setChecked(fCurrentGrouping == LEVEL_PROJECT);
-        fGroupFolderAction.setChecked(fCurrentGrouping == LEVEL_FOLDER);
-        fGroupModuleAction.setChecked(fCurrentGrouping == LEVEL_MODULE);
-        fGroupPackageAction.setChecked(fCurrentGrouping == LEVEL_PACKAGE);
-        fGroupFileAction.setChecked(fCurrentGrouping == LEVEL_FILE);
+        fGroupProjectAction.setChecked(
+                fCurrentGrouping == LEVEL_PROJECT);
+        fGroupFolderAction.setChecked(
+                fCurrentGrouping == LEVEL_FOLDER);
+        fGroupModuleAction.setChecked(
+                fCurrentGrouping == LEVEL_MODULE);
+        fGroupPackageAction.setChecked(
+                fCurrentGrouping == LEVEL_PACKAGE);
+        fGroupFileAction.setChecked(
+                fCurrentGrouping == LEVEL_FILE);
     }
     
     private void updateLayoutActions() {
         int layout = getLayout();
-        fLayoutFlatAction.setChecked(layout==FLAG_LAYOUT_FLAT);
-        fLayoutTreeAction.setChecked(layout==FLAG_LAYOUT_TREE);
+        fLayoutFlatAction.setChecked(
+                layout==FLAG_LAYOUT_FLAT);
+        fLayoutTreeAction.setChecked(
+                layout==FLAG_LAYOUT_TREE);
     }
     
     @Override
@@ -260,11 +277,16 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         if (getLayout() != FLAG_LAYOUT_FLAT) {
             tbm.appendToGroup(GROUP_VIEWER_SETUP, 
                     new Separator(GROUP_GROUPING));
-            tbm.appendToGroup(GROUP_GROUPING, fGroupProjectAction);
-            tbm.appendToGroup(GROUP_GROUPING, fGroupFolderAction);
-            tbm.appendToGroup(GROUP_GROUPING, fGroupModuleAction);
-            tbm.appendToGroup(GROUP_GROUPING, fGroupPackageAction);
-            tbm.appendToGroup(GROUP_GROUPING, fGroupFileAction);
+            tbm.appendToGroup(GROUP_GROUPING, 
+                    fGroupProjectAction);
+            tbm.appendToGroup(GROUP_GROUPING, 
+                    fGroupFolderAction);
+            tbm.appendToGroup(GROUP_GROUPING, 
+                    fGroupModuleAction);
+            tbm.appendToGroup(GROUP_GROUPING, 
+                    fGroupPackageAction);
+            tbm.appendToGroup(GROUP_GROUPING, 
+                    fGroupFileAction);
             try {
                 fCurrentGrouping = 
                         getSettings().getInt(KEY_GROUPING);
@@ -276,7 +298,9 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             contentProvider.setLevel(fCurrentGrouping);
             updateGroupingActions();
         }
-        getSite().getActionBars().updateActionBars();
+        getSite()
+            .getActionBars()
+            .updateActionBars();
     }
     
     @Override
@@ -301,22 +325,27 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 new Action("Show Full Paths", AS_CHECK_BOX) {
             @Override
             public void run() {
-                prefs.setValue(FULL_LOC_SEARCH_RESULTS, isChecked());
+                prefs.setValue(FULL_LOC_SEARCH_RESULTS, 
+                        isChecked());
                 getViewer().refresh();
             }
         };
-        showLocAction.setChecked(prefs.getBoolean(FULL_LOC_SEARCH_RESULTS));
+        showLocAction.setChecked(prefs.getBoolean(
+                FULL_LOC_SEARCH_RESULTS));
         menuManager.add(showLocAction);
         super.makeContributions(menuManager, 
                 toolBarManager, 
                 statusLineManager);
+        ImageDescriptor desc = 
+                CeylonPlugin.getInstance()
+                    .getImageRegistry()
+                    .getDescriptor(CONFIG_LABELS);
         Action configureAction = 
-                new Action("Configure Labels...", 
-                        CeylonPlugin.getInstance().getImageRegistry()
-                                .getDescriptor(CONFIG_LABELS)) {
+                new Action("Configure Labels...", desc) {
             @Override
             public void run() {
-                createPreferenceDialogOn(getSite().getShell(), 
+                Shell shell = getSite().getShell();
+                createPreferenceDialogOn(shell, 
                         CeylonPreferencePage.ID, 
                         new String[] {
                                 CeylonPreferencePage.ID,
@@ -335,9 +364,11 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 String imageKey, int grouping) {
             super(label);
             setToolTipText(tooltip);
-            setImageDescriptor(CeylonPlugin.getInstance()
-                    .getImageRegistry()
-                    .getDescriptor(imageKey));
+            ImageDescriptor desc = 
+                    CeylonPlugin.getInstance()
+                        .getImageRegistry()
+                        .getDescriptor(imageKey);
+            setImageDescriptor(desc);
             fGrouping = grouping;
         }
         
@@ -360,9 +391,11 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 String imageKey, int layout) {
             super(label);
             setToolTipText(tooltip);
-            setImageDescriptor(CeylonPlugin.getInstance()
-                    .getImageRegistry()
-                    .getDescriptor(imageKey));
+            ImageDescriptor desc = 
+                    CeylonPlugin.getInstance()
+                        .getImageRegistry()
+                        .getDescriptor(imageKey);
+            setImageDescriptor(desc);
             this.layout = layout;
         }
 
@@ -374,7 +407,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     }
 
     void setGrouping(int grouping) {
-        fCurrentGrouping= grouping;
+        fCurrentGrouping = grouping;
         contentProvider.setLevel(grouping);
         updateGroupingActions();
         getSettings().put(KEY_GROUPING, fCurrentGrouping);
