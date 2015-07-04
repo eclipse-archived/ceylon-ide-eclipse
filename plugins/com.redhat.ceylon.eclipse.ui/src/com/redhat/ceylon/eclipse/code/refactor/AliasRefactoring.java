@@ -79,6 +79,7 @@ public class AliasRefactoring extends AbstractRefactoring {
     private static boolean isClassWithParameters(
             TypeDeclaration td) {
         return td instanceof Class && 
+                !td.isTuple() &&
                 ((Class) td).getParameterList()!=null;
     }
     
