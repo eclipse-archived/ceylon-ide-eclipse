@@ -19,6 +19,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.UNIT_MODE;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.jface.action.IAction.AS_CHECK_BOX;
 import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.core.resources.IFile;
@@ -66,10 +67,16 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             @Override
             public void propertyChange(
                     PropertyChangeEvent event) {
-                getViewer().refresh();
+                StructuredViewer viewer = getViewer();
+                viewer.getControl()
+                    .setFont(CeylonPlugin.getOutlineFont());
+                viewer.refresh();
             }
         };
         getPreferences()
+            .addPropertyChangeListener(
+                    propertyChangeListener);
+        getWorkbench().getThemeManager()
             .addPropertyChangeListener(
                     propertyChangeListener);
     }
@@ -79,6 +86,9 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         super.dispose();
         if (propertyChangeListener!=null) {
             getPreferences()
+                .removePropertyChangeListener(
+                        propertyChangeListener);
+            getWorkbench().getThemeManager()
                 .removePropertyChangeListener(
                         propertyChangeListener);
             propertyChangeListener = null;
@@ -103,6 +113,8 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new MatchCountingLabelProvider(this));
         viewer.setComparator(new CeylonViewerComparator());
+        viewer.getControl()
+            .setFont(CeylonPlugin.getOutlineFont());
     }
 
     @Override
