@@ -33,6 +33,7 @@ public class CeylonOutlinesPreferencePage
     public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.outlines";
     
     public CeylonOutlinesPreferencePage() {
+        //note: also affects search results page
         setDescription("Customize the appearance of Ceylon outline and hierarchy views.");
     }
     
@@ -73,24 +74,28 @@ public class CeylonOutlinesPreferencePage
     @Override
     protected void createFieldEditors() {
         final Composite outlines = createGroup(2, "Labels");
-        displayOutlineTypes = new BooleanFieldEditor(RETURN_TYPES_IN_OUTLINES, 
-                "Display return types", 
-                getFieldEditorParent(outlines));
+        displayOutlineTypes = 
+                new BooleanFieldEditor(RETURN_TYPES_IN_OUTLINES, 
+                    "Display return types", 
+                    getFieldEditorParent(outlines));
         displayOutlineTypes.load();
         addField(displayOutlineTypes);
-        displayOutlineTypeParameters = new BooleanFieldEditor(TYPE_PARAMS_IN_OUTLINES, 
-                "Display type parameters", 
-                getFieldEditorParent(outlines));
+        displayOutlineTypeParameters = 
+                new BooleanFieldEditor(TYPE_PARAMS_IN_OUTLINES, 
+                    "Display type parameters", 
+                    getFieldEditorParent(outlines));
         displayOutlineTypeParameters.load();
         addField(displayOutlineTypeParameters);
-        displayOutlineParameterTypes = new BooleanFieldEditor(PARAM_TYPES_IN_OUTLINES, 
-                "Display parameter types", 
-                getFieldEditorParent(outlines));
+        displayOutlineParameterTypes = 
+                new BooleanFieldEditor(PARAM_TYPES_IN_OUTLINES, 
+                    "Display parameter types", 
+                    getFieldEditorParent(outlines));
         displayOutlineParameterTypes.load();
         addField(displayOutlineParameterTypes);
-        displayOutlineParameters = new BooleanFieldEditor(PARAMS_IN_OUTLINES, 
-                "Display parameter names ", 
-                getFieldEditorParent(outlines));
+        displayOutlineParameters = 
+                new BooleanFieldEditor(PARAMS_IN_OUTLINES, 
+                    "Display parameter names ", 
+                    getFieldEditorParent(outlines));
         displayOutlineParameters.load();
         addField(displayOutlineParameters);
         
