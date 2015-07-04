@@ -249,8 +249,6 @@ public class AliasRefactoring extends AbstractRefactoring {
                             findToplevelStatement(
                                     this.rootNode, 
                                     this.node);
-                    System.out.println(this.node);
-                    System.out.println(statement);
                     int insertLoc = 
                             statement==null ?
                                 doc.getLength() :
