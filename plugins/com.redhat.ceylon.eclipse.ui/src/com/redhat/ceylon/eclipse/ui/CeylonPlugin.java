@@ -42,6 +42,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -603,9 +604,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
     public static void log(int severity, String message) {
         Status status =
-                new Status(severity, 
-                        PLUGIN_ID, 
-                        message);
+                new Status(severity, PLUGIN_ID, message);
         getInstance().getLog().log(status);
     }
 
@@ -618,6 +617,12 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                         getCurrentTheme()
                             .getFontRegistry()
                             .get(pref);
+                if (result==null) {
+                    //because I can't trust the ThemeManager
+                    result = pref.equals(EDITOR_FONT_PREFERENCE) ?
+                            JFaceResources.getTextFont() :
+                            JFaceResources.getDialogFont();
+                }
             }
         } 
         GetFont gf = new GetFont();
