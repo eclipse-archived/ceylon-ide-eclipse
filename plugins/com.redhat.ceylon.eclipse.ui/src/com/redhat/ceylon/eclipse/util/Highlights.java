@@ -248,7 +248,8 @@ public class Highlights  {
                 }
                 else if (isUpperCase(initial)) {
                 	if (matchHighlighting) {
-                		styleIdentifier(result, prefix, token, 
+                		styleIdentifier(
+                		        result, prefix, token, 
                 		        new FontStyler(font, 
                 		                TYPE_ID_STYLER), 
                 		        font);
@@ -270,7 +271,8 @@ public class Highlights  {
                     }
                     else if (qualified) {
                     	if (matchHighlighting) {
-                    		styleIdentifier(result, prefix, token, 
+                    		styleIdentifier(
+                    		        result, prefix, token, 
                     		        new FontStyler(font, 
                     		                MEMBER_STYLER), 
                     		        font);
@@ -283,7 +285,8 @@ public class Highlights  {
                     }
                     else {
                     	if (matchHighlighting) {
-                    		styleIdentifier(result, prefix, token, 
+                    		styleIdentifier(
+                    		        result, prefix, token, 
                     		        new FontStyler(font, 
                     		                ID_STYLER), 
                     		        font);
@@ -303,10 +306,9 @@ public class Highlights  {
         }
     }
 
-    private static void append(StyledString result, final String token, Font font, Styler styler) {
-        result.append(token, 
-                new FontStyler(font, 
-                        styler));
+    private static void append(StyledString result, 
+            String token, Font font, Styler styler) {
+        result.append(token, new FontStyler(font, styler));
     }
 
     private static Font getBoldFont(Font font) {
@@ -359,11 +361,15 @@ public class Highlights  {
 						break;
 					case "color": 
 						textStyle.foreground = 
-						    color(getCurrentTheme().getColorRegistry(), MATCHES);
+						    color(getCurrentTheme()
+						            .getColorRegistry(), 
+						            MATCHES);
 						break;
 					case "background": 
 						textStyle.background = 
-						    color(getCurrentTheme().getColorRegistry(), MATCHES);
+						    color(getCurrentTheme()
+						            .getColorRegistry(), 
+						            MATCHES);
 						break;
 					}					
 				}
