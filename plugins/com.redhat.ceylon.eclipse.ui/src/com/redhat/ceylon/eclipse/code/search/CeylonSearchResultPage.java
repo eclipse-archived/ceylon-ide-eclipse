@@ -138,7 +138,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         if (contentProvider!=null) {
             contentProvider.elementsChanged(elements);
         }
-        getViewer().refresh();
+//        getViewer().refresh();
     }
     
     @Override

@@ -29,16 +29,19 @@ class CeylonSearchResultContentProvider implements
 
     @Override
     public Object[] getElements(Object input) {
-//        CeylonSearchResult csr = (CeylonSearchResult) input;
-//        return csr.getElements();
         if (input instanceof AbstractTextSearchResult) {
-            Set<Object> filteredElements = new HashSet<Object>();
-            Object[] rawElements = ((AbstractTextSearchResult) input).getElements();
+            Set<Object> filteredElements = 
+                    new HashSet<Object>();
+            AbstractTextSearchResult searchResult = 
+                    (AbstractTextSearchResult) input;
+            Object[] rawElements = searchResult.getElements();
             int limit = page.getElementLimit().intValue();
             for (int i=0; i<rawElements.length; i++) {
-                if (page.getDisplayedMatchCount(rawElements[i])>0) {
-                    filteredElements.add(rawElements[i]);
-                    if (limit!=-1 && limit<filteredElements.size()) {
+                Object element = rawElements[i];
+                if (page.getDisplayedMatchCount(element)>0) {
+                    filteredElements.add(element);
+                    if (limit!=-1 && 
+                            limit<filteredElements.size()) {
                         break;
                     }
                 }
@@ -49,7 +52,8 @@ class CeylonSearchResultContentProvider implements
     }
 
     @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    public void inputChanged(Viewer viewer, 
+            Object oldInput, Object newInput) {
         if (newInput instanceof CeylonSearchResult) {
             result = (CeylonSearchResult) newInput;
         }
@@ -58,25 +62,32 @@ class CeylonSearchResultContentProvider implements
     public void elementsChanged(Object[] updatedElements) {
         if (result!=null) {
             int addLimit = getAddLimit();
-
-            Set<Object> updated= new HashSet<Object>();
-            Set<Object> added= new HashSet<Object>();
-            Set<Object> removed= new HashSet<Object>();
-
+            
+            Set<Object> updated = new HashSet<Object>();
+            Set<Object> added = new HashSet<Object>();
+            Set<Object> removed = new HashSet<Object>();
+            
             for (int i=0; i<updatedElements.length; i++) {
-                if (page.getDisplayedMatchCount(updatedElements[i])>0) {
-                    if (viewer.testFindItem(updatedElements[i])!=null)
-                        updated.add(updatedElements[i]);
+                Object element = updatedElements[i];
+                if (page.getDisplayedMatchCount(element)>0) {
+                    if (viewer.testFindItem(element)!=null) {
+                        updated.add(element);
+                    }
                     else {
                         if (addLimit>0) {
-                            added.add(updatedElements[i]);
+                            added.add(element);
                             addLimit--;
                         }
                     }
-                } else {
-                    removed.add(updatedElements[i]);
+                }
+                else {
+                    removed.add(element);
                 }
             }
+            
+            viewer.add(added.toArray());
+            viewer.update(updated.toArray(), null);
+            viewer.remove(removed.toArray());
         }
     }
 

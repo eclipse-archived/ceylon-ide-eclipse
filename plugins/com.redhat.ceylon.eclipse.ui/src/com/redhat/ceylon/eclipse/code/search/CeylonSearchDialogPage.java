@@ -44,12 +44,12 @@ public class CeylonSearchDialogPage extends DialogPage
             new IResource[0];
     
     private String searchPattern;
-    private boolean caseSensitive = false;
-    private boolean regex = false;
-    private boolean references = true;
-    private boolean archives = true;
-    private boolean declarations = true;
-    private ISearchPageContainer container;
+    private static boolean caseSensitive = false;
+    private static boolean regex = false;
+    private static boolean references = true;
+    private static boolean archives = true;
+    private static boolean declarations = true;
+    private static ISearchPageContainer container;
     private static List<String> previousPatterns = 
             new ArrayList<String>();
     
@@ -67,12 +67,14 @@ public class CeylonSearchDialogPage extends DialogPage
         setControl(outer);
         Composite result = new Composite(outer, SWT.NONE);
         result.setLayout(new GridLayout());
-        result.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, 
+        result.setLayoutData(new GridData(
+                SWT.FILL, SWT.BEGINNING, 
                 true, false));
         Label title = new Label(result, SWT.RIGHT);  
         title.setText("Search string (* = any string, ? = any character):");
         final Combo text = new Combo(result, 0);
-        text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, 
+        text.setLayoutData(new GridData(
+                SWT.FILL, SWT.BEGINNING, 
                 true, false));
         text.setText(searchPattern);
         text.addModifyListener(new ModifyListener() {
@@ -86,10 +88,12 @@ public class CeylonSearchDialogPage extends DialogPage
         }
         Composite options = new Composite(outer, SWT.NONE);
         options.setLayout(new GridLayout());
-        options.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, 
+        options.setLayoutData(new GridData(
+                SWT.FILL, SWT.BEGINNING, 
                 false, false));
         Button regExp = new Button(options, SWT.CHECK);
-        regExp.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, 
+        regExp.setLayoutData(new GridData(
+                SWT.FILL, SWT.BEGINNING, 
                 false, false));
         regExp.setText("Regular expression");
         regExp.setSelection(regex);
@@ -103,7 +107,8 @@ public class CeylonSearchDialogPage extends DialogPage
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
         Button caseSense = new Button(options, SWT.CHECK);
-        caseSense.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, 
+        caseSense.setLayoutData(new GridData(
+                SWT.FILL, SWT.BEGINNING, 
                 false, false));
         caseSense.setText("Case sensitive");
         caseSense.setSelection(caseSensitive);
@@ -273,8 +278,8 @@ public class CeylonSearchDialogPage extends DialogPage
     }
     
     @Override
-    public void setContainer(ISearchPageContainer container) {
-        this.container = container;
+    public void setContainer(ISearchPageContainer searchContainer) {
+        container = searchContainer;
     }
     
     @Override
