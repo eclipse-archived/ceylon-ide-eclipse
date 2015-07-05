@@ -9,9 +9,6 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_OPEN_FILTERS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_DIALOGS;
@@ -40,7 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -87,6 +83,7 @@ import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
+import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -851,7 +848,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Modules modules = 
                     typeChecker.getContext().getModules();
             for (Module m: modules.getListOfModules()) {
-                if (m instanceof JDTModule) {
+                if (m instanceof JDTModule &&
+                        !filters.isFiltered(m)) {
                     JDTModule module = (JDTModule) m;
                     String moduleName = 
                             module.getNameAsString();
@@ -878,7 +876,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         ArrayList<Package> copiedPackages = 
                 new ArrayList<Package>(module.getPackages());
         for (Package pack: copiedPackages) {
-            if (!isFiltered(pack)) {
+            if (!filters.isFiltered(pack)) {
                 for (Declaration dec: pack.getMembers()) {
                     fillDeclarationAndMembers(contentProvider, 
                             itemsFilter, module, dec);
@@ -975,75 +973,21 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     protected String getFilterListAsString(String preference) {
         return getPreferences().getString(preference);
     }
-
-    private List<Pattern> filters;
-    private List<Pattern> packageFilters;
-    { initFilters(); }
     
-    void initFilters() {
-        filters = new ArrayList<Pattern>();
-        packageFilters = new ArrayList<Pattern>();
-        parseFilters(getFilterListAsString(FILTERS));
-        if (getPreferences().getBoolean(ENABLE_OPEN_FILTERS)) {
-            parseFilters(getFilterListAsString(OPEN_FILTERS)); 
+    private Filters filters = new Filters() {
+        @Override
+        protected String getFilterListAsString(String preference) {
+            return OpenDeclarationDialog.this
+                    .getFilterListAsString(preference);
         }
-    }
-
-    private void parseFilters(String filtersString) {
-        if (!filtersString.trim().isEmpty()) {
-            String[] regexes = filtersString
-                    .replaceAll("\\(\\w+\\)", "")
-                    .replace(".", "\\.")
-                    .replace("*", ".*")
-                    .split(",");
-            for (String regex: regexes) {
-                regex = regex.trim();
-                if (!regex.isEmpty()) {
-                    filters.add(Pattern.compile(regex));
-                    if (regex.endsWith("::.*")) {
-                        regex = regex.substring(0, regex.length()-4);
-                    }
-                    if (!regex.contains("::")) {
-                        packageFilters.add(Pattern.compile(regex));
-                    }
-                }
-            }
-        }
-    }
-
+    };
+    
     private boolean isFiltered(Declaration declaration) {
         if (excludeDeprecated && 
                 declaration.isDeprecated()) {
             return true;
         }
-        if (declaration.getName().contains("__") &&
-                declaration.isAnnotation()) {
-            //actually what we should really do is filter
-            //out all constructors for Java annotations
-            return true;
-        }
-        if (!filters.isEmpty()) {
-            String name = 
-                    declaration.getQualifiedNameString();
-            for (Pattern filter: filters) {
-                if (filter.matcher(name).matches()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean isFiltered(Package pack) {
-        if (!packageFilters.isEmpty()) {
-            String name = pack.getNameAsString();
-            for (Pattern filter: packageFilters) {
-                if (filter.matcher(name).matches()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return filters.isFiltered(declaration);
     }
 
     private boolean includeDeclaration(JDTModule module, 
@@ -1079,7 +1023,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     getProjectTypeChecker(project)
                         .getContext().getModules();
             for (Module m: modules.getListOfModules()) {
-                if (m instanceof JDTModule) {
+                if (m instanceof JDTModule &&
+                        !filters.isFiltered(m)) {
                     JDTModule module = (JDTModule) m;
                     String moduleName = 
                             module.getNameAsString();
@@ -1257,7 +1202,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                                 CeylonFiltersPreferencePage.ID
                         }, 
                         null).open();
-                initFilters();
+                filters.initFilters();
                 filterVersion++;
                 applyFilter();
             }

@@ -67,7 +67,7 @@ public class CeylonFiltersPreferencePage
         
         Link outlineLink = new Link(parent, 0);
         outlineLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        outlineLink.setText("See '<a>Outlines and Hierarchies</a>' to add additional filters for hierarchy views.");
+        outlineLink.setText("See '<a>Outlines, Hierarchies, and Search Results</a>' to add additional filters for views.");
         outlineLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

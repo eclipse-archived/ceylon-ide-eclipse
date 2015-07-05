@@ -2099,7 +2099,7 @@
        </page>
        <page
            id="com.redhat.ceylon.eclipse.ui.preferences.outlines"
-           name="Outlines and Hierarchies"
+           name="Outlines, Hierarchies, and Search Results"
            class="com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage"
            category="com.redhat.ceylon.eclipse.ui.preferences">
        <keywordReference id="org.eclipse.ui.editors.general"/>

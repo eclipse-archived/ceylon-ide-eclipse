@@ -30,11 +30,11 @@ public class CeylonOutlinesPreferencePage
     private BooleanFieldEditor displayOutlineParameterTypes;
     private BooleanFieldEditor displayOutlineTypeParameters;
     
-    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.outlines";
+    public static final String ID = 
+            CeylonPlugin.PLUGIN_ID + ".preferences.outlines";
     
     public CeylonOutlinesPreferencePage() {
-        //note: also affects search results page
-        setDescription("Customize the appearance of Ceylon outline and hierarchy views.");
+        setDescription("Preferences applying to the outline view, hierarchy view, and search results.");
     }
     
     @Override

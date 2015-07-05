@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -27,6 +28,7 @@ import org.eclipse.ui.IWorkbenchPage;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -36,6 +38,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
@@ -112,9 +115,11 @@ class CeylonSearchQuery implements ISearchQuery {
                     getWorkspace()
                         .getRoot()
                         .getProject(name);
+            if (project!=null) {
 //            if (CeylonNature.isEnabled(project)) {
                 result.add(project);
 //            }
+            }
         }
         return result;
     }
@@ -131,6 +136,8 @@ class CeylonSearchQuery implements ISearchQuery {
         monitor.done();
         return Status.OK_STATUS;
     }
+    
+    Filters filters = new Filters();
 
     private void search(IProgressMonitor monitor) {
         Set<String> searchedArchives = new HashSet<String>();
@@ -152,7 +159,8 @@ class CeylonSearchQuery implements ISearchQuery {
                                     .getContext()
                                     .getModules();
                     for (Module m: modules.getListOfModules()) {
-                        if (m instanceof JDTModule) {
+                        if (m instanceof JDTModule &&
+                                !filters.isFiltered(m)) {
                             JDTModule module = (JDTModule) m;
                             if (module.isCeylonArchive() && 
                                     !module.isProjectModule() && 
@@ -183,30 +191,35 @@ class CeylonSearchQuery implements ISearchQuery {
             List<? extends PhasedUnit> units) {
         for (final PhasedUnit pu: units) {
             if (isWithinSelection(pu)) {
-                final Tree.CompilationUnit cu = getRootNode(pu);
+                final Tree.CompilationUnit rootNode = 
+                        getRootNode(pu);
                 monitor.subTask("Searching source file " + 
                 pu.getUnitFile().getPath());
                 SearchVisitor sv = 
-                        new SearchVisitor(new PatternMatcher()) {
+                        new SearchVisitor(
+                                new PatternMatcher()) {
                     @Override
                     public void matchingNode(Node node) {
                         CeylonSearchMatch match = 
-                                CeylonSearchMatch.create(node, cu, 
+                                CeylonSearchMatch.create(
+                                        node, rootNode, 
                                         pu.getUnitFile());
                         result.addMatch(match);
                         count++;
                     }
                     @Override
-                    public void matchingRegion(Node node, IRegion region) {
+                    public void matchingRegion(Node node, 
+                            IRegion region) {
                         CeylonSearchMatch match = 
-                                CeylonSearchMatch.create(node, cu, 
+                                CeylonSearchMatch.create(
+                                        node, rootNode, 
                                         pu.getUnitFile());
                         match.setOffset(region.getOffset());
                         match.setLength(region.getLength());
                         result.addMatch(match);
                     }
                 };
-                cu.visit(sv);
+                rootNode.visit(sv);
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
@@ -223,7 +236,8 @@ class CeylonSearchQuery implements ISearchQuery {
                 if (archives) {
                     Modules modules = 
                             getProjectTypeChecker(project)
-                                    .getContext().getModules();
+                                    .getContext()
+                                    .getModules();
                     for (Module m: modules.getListOfModules()) {
                         if (m instanceof JDTModule) {
                             JDTModule module = (JDTModule) m;
@@ -231,9 +245,12 @@ class CeylonSearchQuery implements ISearchQuery {
                                     !module.isProjectModule() && 
                                     module.getArtifact()!=null) { 
                                 String archivePath = 
-                                        module.getArtifact().getAbsolutePath();
+                                        module.getArtifact()
+                                            .getAbsolutePath();
+                                String sourceArchivePath = 
+                                        module.getSourceArchivePath();
                                 if (searchedArchives.add(archivePath) &&
-                                        searchedArchives.add(module.getSourceArchivePath())) {
+                                    searchedArchives.add(sourceArchivePath)) {
                                     work++;
                                 }
                             }
@@ -249,8 +266,9 @@ class CeylonSearchQuery implements ISearchQuery {
     Tree.CompilationUnit getRootNode(PhasedUnit pu) {
         for (IEditorPart editor: page.getDirtyEditors()) {
             if (editor instanceof CeylonEditor) {
+                CeylonEditor ce = (CeylonEditor) editor;
                 CeylonParseController cpc = 
-                        ((CeylonEditor) editor).getParseController();
+                        ce.getParseController();
                 if ( /*editor.isDirty() &&*/
                         pu.getUnit().equals(cpc.getRootNode().getUnit()) ) {
                     return cpc.getRootNode();
@@ -261,15 +279,23 @@ class CeylonSearchQuery implements ISearchQuery {
     }
     
     public boolean isWithinSelection(PhasedUnit pu) {
+        if (filters.isFiltered(pu.getPackage())) {
+            return false;
+        }
         if (resources==null) {
             return true;
         }
         else {
             for (IResource r: resources) {
-                if (pu.getUnitFile() instanceof IFileVirtualFile &&
-                        r.getLocation().isPrefixOf(((IFileVirtualFile) pu.getUnitFile())
-                                .getResource().getLocation())) {
-                    return true;
+                VirtualFile unitFile = pu.getUnitFile();
+                if (unitFile instanceof IFileVirtualFile) {
+                    IFileVirtualFile file = 
+                            (IFileVirtualFile) unitFile;
+                    IPath loc = 
+                            file.getResource().getLocation();
+                    if (r.getLocation().isPrefixOf(loc)) {
+                        return true;
+                    }
                 }
             }
             return false;

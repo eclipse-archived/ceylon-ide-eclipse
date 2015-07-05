@@ -2,28 +2,23 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_HIERARCHY_FILTERS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.HIERARCHY_FILTERS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getSignature;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IEditorPart;
@@ -34,6 +29,7 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -89,7 +85,7 @@ public final class CeylonHierarchyContentProvider
     public void inputChanged(Viewer viewer, 
             Object oldInput, Object newInput) {
         if (newInput!=null && newInput!=oldInput) {
-            initFilters();
+            filters.initFilters();
             ModelProxy proxy = (ModelProxy) newInput;
             Declaration declaration = proxy.get();
             if (declaration instanceof TypedDeclaration) { 
@@ -611,19 +607,21 @@ public final class CeylonHierarchyContentProvider
 
         private void collectPackages(Set<Package> packages, 
                 Module module) {
-            for (Package pack: 
-                    module.getAllReachablePackages()) {
-                if (!isFiltered(pack)) {
-                    String packageModuleName = 
-                            pack.getModule()
-                                .getNameAsString();
-                    if ((!excludeJDK || 
-                            !JDKUtils.isJDKModule(
-                                    packageModuleName)) && 
-                        (!excludeOracleJDK || 
-                            !JDKUtils.isOracleJDKModule(
-                                    packageModuleName))) {
-                        packages.add(pack);
+            if (!filters.isFiltered(module)) {
+                for (Package pack: 
+                        module.getAllReachablePackages()) {
+                    if (!filters.isFiltered(pack)) {
+                        String packageModuleName = 
+                                pack.getModule()
+                                    .getNameAsString();
+                        if ((!excludeJDK || 
+                                !JDKUtils.isJDKModule(
+                                        packageModuleName)) && 
+                            (!excludeOracleJDK || 
+                                !JDKUtils.isOracleJDKModule(
+                                        packageModuleName))) {
+                            packages.add(pack);
+                        }
                     }
                 }
             }
@@ -778,41 +776,17 @@ public final class CeylonHierarchyContentProvider
         }
     }
     
-    private List<Pattern> filters;
-    private List<Pattern> packageFilters;
+    private Filters filters = new Filters() {
+        @Override
+        protected String enableExtraFiltersPref() {
+            return ENABLE_HIERARCHY_FILTERS;
+        }
+        @Override
+        protected String extraFiltersPref() {
+            return HIERARCHY_FILTERS;
+        }
+    };
     
-    private void initFilters() {
-        filters = new ArrayList<Pattern>();
-        packageFilters = new ArrayList<Pattern>();
-        IPreferenceStore preferences = getPreferences();
-        parseFilters(preferences.getString(FILTERS));
-        if (preferences.getBoolean(ENABLE_HIERARCHY_FILTERS)) {
-            parseFilters(preferences.getString(HIERARCHY_FILTERS));
-        }
-    }
-
-    private void parseFilters(String filtersString) {
-        if (!filtersString.trim().isEmpty()) {
-            String[] regexes = filtersString
-                    .replaceAll("\\(\\w+\\)", "")
-                    .replace(".", "\\.")
-                    .replace("*", ".*")
-                    .split(",");
-            for (String regex: regexes) {
-                regex = regex.trim();
-                if (!regex.isEmpty()) {
-                    filters.add(Pattern.compile(regex));
-                    if (regex.endsWith("::.*")) {
-                        regex = regex.substring(0, regex.length()-4);
-                    }
-                    if (!regex.contains("::")) {
-                        packageFilters.add(Pattern.compile(regex));
-                    }
-                }
-            }
-        }
-    }
-
     private boolean isFiltered(Declaration declaration) {
 //        if (excludeDeprecated && 
 //                declaration.isDeprecated()) {
@@ -824,28 +798,7 @@ public final class CeylonHierarchyContentProvider
             //out all constructors for Java annotations
             return true;
         }
-        if (!filters.isEmpty()) {
-            String name = 
-                    declaration.getQualifiedNameString();
-            for (Pattern filter: filters) {
-                if (filter.matcher(name).matches()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean isFiltered(Package pack) {
-        if (!packageFilters.isEmpty()) {
-            String name = pack.getNameAsString();
-            for (Pattern filter: packageFilters) {
-                if (filter.matcher(name).matches()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return filters.isFiltered(declaration);
     }
 
 }

@@ -475,7 +475,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         List<Pattern> filters = getProposalFilters();
         if (!filters.isEmpty()) {
             Iterator<DeclarationWithProximity> iterator = 
-                    proposals.values().iterator();
+                    proposals.values()
+                        .iterator();
             while (iterator.hasNext()) {
                 DeclarationWithProximity dwp = 
                         iterator.next();
@@ -507,11 +508,12 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     private void parseFilters(List<Pattern> filters, 
             String filtersString) {
         if (!filtersString.trim().isEmpty()) {
-            String[] regexes = filtersString
-                    .replaceAll("\\(\\w+\\)", "")
-                    .replace(".", "\\.")
-                    .replace("*", ".*")
-                    .split(",");
+            String[] regexes = 
+                    filtersString
+                        .replaceAll("\\(\\w+\\)", "")
+                        .replace(".", "\\.")
+                        .replace("*", ".*")
+                        .split(",");
             for (String regex: regexes) {
                 regex = regex.trim();
                 if (!regex.isEmpty()) {

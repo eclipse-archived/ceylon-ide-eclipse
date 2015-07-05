@@ -114,7 +114,7 @@ public class CeylonPreferencePage
         
         Link outlineLink = new Link(parent, 0);
         outlineLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
-        outlineLink.setText("See '<a>Outlines and Hierarchies</a>' to customize outline and hierarchy views.");
+        outlineLink.setText("See '<a>Outlines, Hierarchies, and Search Results</a>' to customize views.");
         outlineLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
