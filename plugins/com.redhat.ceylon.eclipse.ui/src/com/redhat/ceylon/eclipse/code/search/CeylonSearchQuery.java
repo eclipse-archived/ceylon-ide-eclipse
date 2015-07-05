@@ -27,8 +27,6 @@ import org.eclipse.ui.IWorkbenchPage;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -39,6 +37,8 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Modules;
 
 class CeylonSearchQuery implements ISearchQuery {
     
@@ -84,9 +84,12 @@ class CeylonSearchQuery implements ISearchQuery {
     private final boolean archives;
     private IWorkbenchPage page;
 
-    CeylonSearchQuery(String string, String[] projects, IResource[] resources,
-            boolean includeReferences, boolean includeDeclarations,
-            boolean caseSensitive, boolean regex, boolean archives) {
+    CeylonSearchQuery(String string, 
+            String[] projects, IResource[] resources,
+            boolean includeReferences, 
+            boolean includeDeclarations,
+            boolean caseSensitive, boolean regex, 
+            boolean archives) {
         this.string = string;
         this.projects = projects;
         this.caseSensitive = caseSensitive;
@@ -106,7 +109,9 @@ class CeylonSearchQuery implements ISearchQuery {
                 new ArrayList<IProject>();
         for (String name: projects) {
             IProject project = 
-                    getWorkspace().getRoot().getProject(name);
+                    getWorkspace()
+                        .getRoot()
+                        .getProject(name);
 //            if (CeylonNature.isEnabled(project)) {
                 result.add(project);
 //            }
@@ -134,7 +139,8 @@ class CeylonSearchQuery implements ISearchQuery {
                 TypeChecker typeChecker = 
                         getProjectTypeChecker(project);
                 List<PhasedUnit> phasedUnits = 
-                        typeChecker.getPhasedUnits().getPhasedUnits();
+                        typeChecker.getPhasedUnits()
+                            .getPhasedUnits();
                 findInUnits(monitor, phasedUnits);
                 monitor.worked(1);
                 if (monitor.isCanceled()) {
@@ -143,7 +149,8 @@ class CeylonSearchQuery implements ISearchQuery {
                 if (archives) {
                     Modules modules = 
                             getProjectTypeChecker(project)
-                                    .getContext().getModules();
+                                    .getContext()
+                                    .getModules();
                     for (Module m: modules.getListOfModules()) {
                         if (m instanceof JDTModule) {
                             JDTModule module = (JDTModule) m;
@@ -151,10 +158,14 @@ class CeylonSearchQuery implements ISearchQuery {
                                     !module.isProjectModule() && 
                                     module.getArtifact()!=null) { 
                                 String archivePath = 
-                                        module.getArtifact().getAbsolutePath();
+                                        module.getArtifact()
+                                            .getAbsolutePath();
+                                String sourceArchivePath = 
+                                        module.getSourceArchivePath();
                                 if (searchedArchives.add(archivePath) &&
-                                        searchedArchives.add(module.getSourceArchivePath())) {
-                                    findInUnits(monitor, module.getPhasedUnits());
+                                    searchedArchives.add(sourceArchivePath)) {
+                                    findInUnits(monitor, 
+                                            module.getPhasedUnits());
                                     monitor.worked(1);
                                     if (monitor.isCanceled()) {
                                         throw new OperationCanceledException();

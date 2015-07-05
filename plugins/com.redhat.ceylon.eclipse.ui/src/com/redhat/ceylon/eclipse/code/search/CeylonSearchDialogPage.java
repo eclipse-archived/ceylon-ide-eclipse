@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelectionText;
 import static org.eclipse.search.ui.ISearchPageContainer.SELECTED_PROJECTS_SCOPE;
 import static org.eclipse.search.ui.ISearchPageContainer.SELECTION_SCOPE;
 import static org.eclipse.search.ui.ISearchPageContainer.WORKING_SET_SCOPE;
@@ -35,18 +37,21 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.editors.text.TextEditor;
 
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-
 public class CeylonSearchDialogPage extends DialogPage 
         implements ISearchPage {
 
+    private static final IResource[] NO_RESOURCES = 
+            new IResource[0];
+    
     private String searchPattern;
     private boolean caseSensitive = false;
+    private boolean regex = false;
     private boolean references = true;
     private boolean archives = true;
     private boolean declarations = true;
     private ISearchPageContainer container;
-    private static List<String> previousPatterns = new ArrayList<String>();
+    private static List<String> previousPatterns = 
+            new ArrayList<String>();
     
     public CeylonSearchDialogPage() {
         super("Ceylon Search");
@@ -58,16 +63,17 @@ public class CeylonSearchDialogPage extends DialogPage
 
         Composite result = new Composite(parent, SWT.NONE);
         setControl(result);
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
-        result.setLayout(layout);
+        result.setLayout(new GridLayout(3,false));
         Label title = new Label(result, SWT.RIGHT);  
         title.setText("Search string (* = any string, ? = any character):");
-        GridData gd = new GridData();
-        gd.horizontalSpan=2;
-        title.setLayoutData(gd);
+        GridData tgd = new GridData();
+        tgd.horizontalSpan=3;
+        title.setLayoutData(tgd);
         final Combo text = new Combo(result, 0);
-        text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+        GridData gd = 
+                new GridData(SWT.FILL, SWT.BEGINNING, 
+                        true, false);
+        text.setLayoutData(gd);
         text.setText(searchPattern);
         text.addModifyListener(new ModifyListener() {
             @Override
@@ -78,13 +84,28 @@ public class CeylonSearchDialogPage extends DialogPage
         for (String string: previousPatterns) {
             text.add(string);
         }
-        final Button caseSense = new Button(result, SWT.CHECK);
+        final Button caseSense = 
+                new Button(result, SWT.CHECK);
         caseSense.setText("Case sensitive");
         caseSense.setSelection(caseSensitive);
-        caseSense.addSelectionListener(new SelectionListener() {
+        caseSense.addSelectionListener(
+                new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 caseSensitive = !caseSensitive;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        final Button regExp = 
+                new Button(result, SWT.CHECK);
+        regExp.setText("Regular expression");
+        regExp.setSelection(regex);
+        caseSense.addSelectionListener(
+                new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                regex = !regex;
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
@@ -99,7 +120,8 @@ public class CeylonSearchDialogPage extends DialogPage
         final Button refs = new Button(sub, SWT.CHECK);
         refs.setText("References");
         refs.setSelection(references);
-        refs.addSelectionListener(new SelectionListener() {
+        refs.addSelectionListener(
+                new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 references = !references;
@@ -110,7 +132,8 @@ public class CeylonSearchDialogPage extends DialogPage
         final Button decs = new Button(sub, SWT.CHECK);
         decs.setText("Declarations");
         decs.setSelection(declarations);
-        decs.addSelectionListener(new SelectionListener() {
+        decs.addSelectionListener(
+                new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 declarations = !declarations;
@@ -124,7 +147,8 @@ public class CeylonSearchDialogPage extends DialogPage
         final Button inArchives = new Button(sub, SWT.CHECK);
         inArchives.setText("Search in source archives");
         inArchives.setSelection(archives);
-        inArchives.addSelectionListener(new SelectionListener() {
+        inArchives.addSelectionListener(
+                new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 archives = !archives;
@@ -144,19 +168,31 @@ public class CeylonSearchDialogPage extends DialogPage
             case WORKSPACE_SCOPE:
                 break;
             case SELECTED_PROJECTS_SCOPE: //called "Enclosing Projects" in the UI
-                projectNames = container.getSelectedProjectNames();
+                projectNames = 
+                    container.getSelectedProjectNames();
                 break;
             case SELECTION_SCOPE: //the resources selected in the view with focus
                 resources = new ArrayList<IResource>();
-                ISelection selection = container.getSelection();
-                if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-                    IStructuredSelection ss = (IStructuredSelection) selection;
-                    for (@SuppressWarnings("unchecked") Iterator<Object> it = ss.iterator(); 
+                ISelection selection = 
+                        container.getSelection();
+                if (selection 
+                        instanceof IStructuredSelection && 
+                        !selection.isEmpty()) {
+                    IStructuredSelection ss = 
+                            (IStructuredSelection) 
+                                selection;
+                    for (@SuppressWarnings("unchecked") 
+                        Iterator<Object> it = ss.iterator(); 
                             it.hasNext();) {
                         Object elem = it.next();
                         if (elem instanceof IAdaptable) {
-                            IResource resource = (IResource) ((IAdaptable) elem).getAdapter(IResource.class);
-                            if (resource!=null && resource.isAccessible()) {
+                            IAdaptable a = 
+                                    (IAdaptable) elem;
+                            IResource resource = 
+                                    (IResource)
+                                    a.getAdapter(IResource.class);
+                            if (resource!=null && 
+                                    resource.isAccessible()) {
                                 resources.add(resource);
                             }
                         }
@@ -164,48 +200,65 @@ public class CeylonSearchDialogPage extends DialogPage
                 }
                 break;
             case WORKING_SET_SCOPE:
-                for (IWorkingSet ws: container.getSelectedWorkingSets()) {
+                for (IWorkingSet ws: 
+                        container.getSelectedWorkingSets()) {
                     resources = new ArrayList<IResource>();
                     for (IAdaptable a: ws.getElements()) {
-                        IResource resource = (IResource) a.getAdapter(IResource.class);
-                        if (resource!=null && resource.isAccessible()) {
+                        IResource resource = 
+                                (IResource) 
+                                a.getAdapter(IResource.class);
+                        if (resource!=null && 
+                                resource.isAccessible()) {
                             resources.add(resource);
                         }
                     }
                 }
                 break;
             default:
-                MessageDialog.openError(getShell(), "Ceylon Search Error", 
+                MessageDialog.openError(getShell(), 
+                        "Ceylon Search Error", 
                         "Unsupported scope");
                 return false;
         }
         
-        NewSearchUI.runQueryInBackground(new CeylonSearchQuery(searchPattern, 
-                projectNames, resources==null ? null : resources.toArray(new IResource[0]), 
-                references, declarations, caseSensitive, false, archives));
+        CeylonSearchQuery query = 
+                new CeylonSearchQuery(
+                        searchPattern, 
+                        projectNames, 
+                        resources==null ? null : 
+                            resources.toArray(NO_RESOURCES), 
+                            references, declarations, 
+                            caseSensitive, regex, archives);
+        NewSearchUI.runQueryInBackground(query);
         return true;
     }
 
     private void initSearchPattern() {
         searchPattern = "";
-        IEditorPart currentEditor = EditorUtil.getCurrentEditor();
+        IEditorPart currentEditor = getCurrentEditor();
         if (currentEditor instanceof TextEditor) {
-            String s = EditorUtil.getSelectionText((TextEditor) currentEditor);
-            if (s!=null) {
-                StringTokenizer tokens = new StringTokenizer(s);
+            TextEditor textEditor = 
+                    (TextEditor) 
+                        currentEditor;
+            String text = getSelectionText(textEditor);
+            if (text!=null) {
+                StringTokenizer tokens = 
+                        new StringTokenizer(text);
                 if (tokens.hasMoreTokens()) {
                     searchPattern = tokens.nextToken();
                 }
             }
         }
-        if ("".equals(searchPattern) && !previousPatterns.isEmpty()) {
+        if ("".equals(searchPattern) && 
+                !previousPatterns.isEmpty()) {
             searchPattern = previousPatterns.get(0);
         }
     }
 
     public void saveSearchPattern() {
         if (previousPatterns.isEmpty() || 
-                !previousPatterns.get(0).equals(searchPattern)) {
+                !previousPatterns.get(0)
+                    .equals(searchPattern)) {
             previousPatterns.add(0, searchPattern);
             if (previousPatterns.size()>10) {
                 previousPatterns.remove(10);
