@@ -6,6 +6,7 @@ import static org.eclipse.search.ui.ISearchPageContainer.SELECTED_PROJECTS_SCOPE
 import static org.eclipse.search.ui.ISearchPageContainer.SELECTION_SCOPE;
 import static org.eclipse.search.ui.ISearchPageContainer.WORKING_SET_SCOPE;
 import static org.eclipse.search.ui.ISearchPageContainer.WORKSPACE_SCOPE;
+import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,6 +17,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.search.ui.ISearchPage;
@@ -24,6 +26,7 @@ import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -33,9 +36,13 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.editors.text.TextEditor;
+
+import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
 
 public class CeylonSearchDialogPage extends DialogPage 
         implements ISearchPage {
@@ -122,12 +129,10 @@ public class CeylonSearchDialogPage extends DialogPage
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
         Composite grp = new Composite(result, SWT.NONE);
+        grp.setLayout(new GridLayout(2,false));
         Group sub = new Group(grp, SWT.SHADOW_ETCHED_IN);
         sub.setText("Search For");
-        GridLayout sgl = new GridLayout();
-        sgl.numColumns = 2;
-        sub.setLayout(sgl);
-        grp.setLayout(sgl);
+        sub.setLayout(new GridLayout(2,false));
         final Button refs = new Button(sub, SWT.CHECK);
         refs.setText("References");
         refs.setSelection(references);
@@ -166,7 +171,23 @@ public class CeylonSearchDialogPage extends DialogPage
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
-        });        
+        });
+        Link link = new Link(result, 0);
+        link.setText("<a>Configure filters...</a>");
+        link.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                PreferenceDialog preferenceDialog = 
+                        createPreferenceDialogOn(getShell(), 
+                        CeylonFiltersPreferencePage.ID, 
+                        new String[] {
+                                CeylonFiltersPreferencePage.ID,
+                                CeylonOutlinesPreferencePage.ID
+                        }, null);
+                preferenceDialog.setBlockOnOpen(false);
+                preferenceDialog.open();
+            }
+        });
     }
 
     @Override
