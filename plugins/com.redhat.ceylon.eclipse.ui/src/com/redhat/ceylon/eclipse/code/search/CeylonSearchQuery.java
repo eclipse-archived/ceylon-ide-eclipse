@@ -86,6 +86,11 @@ class CeylonSearchQuery implements ISearchQuery {
         public boolean includeDoc() {
             return includeDoc;
         }
+
+        @Override
+        public int kinds() {
+            return kinds;
+        }
     }
 
     private AbstractTextSearchResult result = 
@@ -101,9 +106,10 @@ class CeylonSearchQuery implements ISearchQuery {
     private final boolean includeTypes;
     private final boolean includeDeclarations;
     private final boolean includeImports;
-    private boolean includeDoc;
+    private final boolean includeDoc;
     private final boolean sources;
     private final boolean archives;
+    private final int kinds;
     private IWorkbenchPage page;
     
     CeylonSearchQuery(String string, 
@@ -114,7 +120,8 @@ class CeylonSearchQuery implements ISearchQuery {
             boolean includeImports,
             boolean includeDoc,
             boolean caseSensitive, boolean regex, 
-            boolean sources, boolean archives) {
+            boolean sources, boolean archives,
+            int kinds) {
         this.string = string;
         this.projects = projects;
         this.includeTypes = includeTypes;
@@ -127,6 +134,7 @@ class CeylonSearchQuery implements ISearchQuery {
         this.resources = resources;
         this.sources = sources;
         this.archives = archives;
+        this.kinds = kinds;
         this.page = getActivePage();
     }
     
