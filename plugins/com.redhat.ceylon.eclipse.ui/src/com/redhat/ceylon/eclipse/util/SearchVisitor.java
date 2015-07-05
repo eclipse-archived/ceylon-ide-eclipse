@@ -13,6 +13,9 @@ public class SearchVisitor extends Visitor {
         boolean matches(String string);
         boolean includeDeclarations();
         boolean includeReferences();
+        boolean includeTypes();
+        boolean includeImports();
+        boolean includeDoc();
     }
     
     private final Matcher matcher;
@@ -39,7 +42,7 @@ public class SearchVisitor extends Visitor {
         
     @Override
     public void visit(Tree.SimpleType that) {
-        if (matcher.includeReferences() &&
+        if (matcher.includeTypes() &&
                 that.getIdentifier()!=null && 
                 matcher.matches(that.getIdentifier().getText())) {
             matchingNode(that);
@@ -59,7 +62,7 @@ public class SearchVisitor extends Visitor {
         
     @Override
     public void visit(Tree.ImportMemberOrType that) {
-        if (matcher.includeReferences() &&
+        if (matcher.includeImports() &&
                 that.getIdentifier()!=null && 
                 matcher.matches(that.getIdentifier().getText())) {
             matchingNode(that);
@@ -89,12 +92,13 @@ public class SearchVisitor extends Visitor {
             
     @Override
     public void visit(DocLink that) {
-        if (matcher.includeReferences()) {
+        if (matcher.includeDoc()) {
             int i=0;
             String name;
             while ((name = DocLinks.name(that, i))!=null) {
                 if (matcher.matches(name)) {
-                    matchingRegion(that, DocLinks.nameRegion(that, i));
+                    matchingRegion(that, 
+                            DocLinks.nameRegion(that, i));
                 }
                 i++;
             }

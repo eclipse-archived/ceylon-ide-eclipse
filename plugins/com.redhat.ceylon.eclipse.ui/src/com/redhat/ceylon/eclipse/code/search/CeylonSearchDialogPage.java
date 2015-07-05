@@ -51,11 +51,16 @@ public class CeylonSearchDialogPage extends DialogPage
             new IResource[0];
     
     private String searchPattern;
+
     private static boolean caseSensitive = false;
     private static boolean regex = false;
-    private static boolean references = true;
-    private static boolean archives = true;
     private static boolean declarations = true;
+    private static boolean imports = true;
+    private static boolean references = true;
+    private static boolean types = true;
+    private static boolean archives = true;
+    private static boolean sources = true;
+    private static boolean docs = true;
     private static ISearchPageContainer container;
     private static List<String> previousPatterns = 
             new ArrayList<String>();
@@ -131,24 +136,12 @@ public class CeylonSearchDialogPage extends DialogPage
         Composite grp = new Composite(result, SWT.NONE);
         grp.setLayout(new GridLayout(2,false));
         Group sub = new Group(grp, SWT.SHADOW_ETCHED_IN);
-        sub.setText("Search For");
+        sub.setText("Limit To");
         sub.setLayout(new GridLayout(2,false));
-        final Button refs = new Button(sub, SWT.CHECK);
-        refs.setText("References");
-        refs.setSelection(references);
-        refs.addSelectionListener(
-                new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent event) {
-                references = !references;
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent event) {}
-        });
-        Button decs = new Button(sub, SWT.CHECK);
-        decs.setText("Declarations");
-        decs.setSelection(declarations);
-        decs.addSelectionListener(
+        Button dec = new Button(sub, SWT.CHECK);
+        dec.setText("Declarations");
+        dec.setSelection(declarations);
+        dec.addSelectionListener(
                 new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
@@ -157,11 +150,74 @@ public class CeylonSearchDialogPage extends DialogPage
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
+        Button imp = new Button(sub, SWT.CHECK);
+        imp.setText("Imports");
+        imp.setSelection(imports);
+        imp.addSelectionListener(
+                new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                imports = !imports;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        Button ref = new Button(sub, SWT.CHECK);
+        ref.setText("Expressions");
+        ref.setSelection(references);
+        ref.addSelectionListener(
+                new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                references = !references;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        Button type = new Button(sub, SWT.CHECK);
+        type.setText("Types");
+        type.setSelection(types);
+        type.addSelectionListener(
+                new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                types = !types;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        Button doc = new Button(sub, SWT.CHECK);
+        GridData gd = new GridData();
+        gd.horizontalSpan = 2;
+        doc.setLayoutData(gd);
+        doc.setText("Documentation strings");
+        doc.setSelection(docs);
+        doc.addSelectionListener(
+                new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                docs = !docs;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
         sub = new Group(grp, SWT.SHADOW_ETCHED_IN);
-        sub.setText("Options");
+        sub.setText("Search In");
         sub.setLayout(new GridLayout());
+        Button inSources = new Button(sub, SWT.CHECK);
+        inSources.setText("Project sources");
+        inSources.setSelection(sources);
+        inSources.addSelectionListener(
+                new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                sources = !sources;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
         Button inArchives = new Button(sub, SWT.CHECK);
-        inArchives.setText("Search in source archives");
+        inArchives.setText("Imported source archives");
         inArchives.setSelection(archives);
         inArchives.addSelectionListener(
                 new SelectionListener() {
@@ -172,7 +228,7 @@ public class CeylonSearchDialogPage extends DialogPage
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
-        Link link = new Link(result, 0);
+        Link link = new Link(sub, 0);
         link.setText("<a>Configure filters...</a>");
         link.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -259,8 +315,10 @@ public class CeylonSearchDialogPage extends DialogPage
                         projectNames, 
                         resources==null ? null : 
                             resources.toArray(NO_RESOURCES), 
-                            references, declarations, 
-                            caseSensitive, regex, archives);
+                            references, types, 
+                            declarations, imports, docs,
+                            caseSensitive, regex, 
+                            sources, archives);
         NewSearchUI.runQueryInBackground(query);
         return true;
     }

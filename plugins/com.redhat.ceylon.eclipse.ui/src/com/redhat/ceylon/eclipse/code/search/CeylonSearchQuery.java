@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -37,7 +38,6 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -71,6 +71,21 @@ class CeylonSearchQuery implements ISearchQuery {
         public boolean includeDeclarations() {
             return includeDeclarations;
         }
+
+        @Override
+        public boolean includeTypes() {
+            return includeTypes;
+        }
+
+        @Override
+        public boolean includeImports() {
+            return includeImports;
+        }
+
+        @Override
+        public boolean includeDoc() {
+            return includeDoc;
+        }
     }
 
     private AbstractTextSearchResult result = 
@@ -83,25 +98,36 @@ class CeylonSearchQuery implements ISearchQuery {
     private final boolean caseSensitive;
     private final boolean regex;
     private final boolean includeReferences;
+    private final boolean includeTypes;
     private final boolean includeDeclarations;
+    private final boolean includeImports;
+    private boolean includeDoc;
+    private final boolean sources;
     private final boolean archives;
     private IWorkbenchPage page;
-
+    
     CeylonSearchQuery(String string, 
             String[] projects, IResource[] resources,
             boolean includeReferences, 
+            boolean includeTypes,
             boolean includeDeclarations,
+            boolean includeImports,
+            boolean includeDoc,
             boolean caseSensitive, boolean regex, 
-            boolean archives) {
+            boolean sources, boolean archives) {
         this.string = string;
         this.projects = projects;
+        this.includeTypes = includeTypes;
+        this.includeImports = includeImports;
+        this.includeDoc = includeDoc;
         this.caseSensitive = caseSensitive;
         this.includeDeclarations = includeDeclarations;
         this.includeReferences = includeReferences;
         this.regex = regex;
         this.resources = resources;
+        this.sources = sources;
         this.archives = archives;
-        this.page = EditorUtil.getActivePage();
+        this.page = getActivePage();
     }
     
     private Collection<IProject> getProjectsToSearch() {
@@ -145,19 +171,20 @@ class CeylonSearchQuery implements ISearchQuery {
             if (CeylonNature.isEnabled(project)) {
                 TypeChecker typeChecker = 
                         getProjectTypeChecker(project);
-                List<PhasedUnit> phasedUnits = 
-                        typeChecker.getPhasedUnits()
-                            .getPhasedUnits();
-                findInUnits(monitor, phasedUnits);
-                monitor.worked(1);
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
+                if (sources) {
+                    List<PhasedUnit> phasedUnits = 
+                            typeChecker.getPhasedUnits()
+                                .getPhasedUnits();
+                    findInUnits(monitor, phasedUnits);
+                    monitor.worked(1);
+                    if (monitor.isCanceled()) {
+                        throw new OperationCanceledException();
+                    }
                 }
                 if (archives) {
                     Modules modules = 
-                            getProjectTypeChecker(project)
-                                    .getContext()
-                                    .getModules();
+                            typeChecker.getContext()
+                                .getModules();
                     for (Module m: modules.getListOfModules()) {
                         if (m instanceof JDTModule &&
                                 !filters.isFiltered(m)) {
@@ -232,7 +259,9 @@ class CeylonSearchQuery implements ISearchQuery {
         Set<String> searchedArchives = new HashSet<String>();
         for (IProject project: getProjectsToSearch()) {
             if (CeylonNature.isEnabled(project)) {
-                work++;
+                if (sources) {
+                    work++;
+                }
                 if (archives) {
                     Modules modules = 
                             getProjectTypeChecker(project)
