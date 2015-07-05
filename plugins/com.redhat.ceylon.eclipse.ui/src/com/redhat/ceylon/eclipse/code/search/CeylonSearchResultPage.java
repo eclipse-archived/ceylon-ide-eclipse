@@ -50,7 +50,8 @@ import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferencePage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
@@ -358,10 +359,11 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             public void run() {
                 Shell shell = getSite().getShell();
                 createPreferenceDialogOn(shell, 
-                        CeylonPreferencePage.ID, 
+                        CeylonOutlinesPreferencePage.ID,
                         new String[] {
-                                CeylonPreferencePage.ID,
-                                CeylonPlugin.COLORS_AND_FONTS_PAGE_ID
+                                CeylonOutlinesPreferencePage.ID,
+                                CeylonPlugin.COLORS_AND_FONTS_PAGE_ID,
+                                CeylonFiltersPreferencePage.ID
                         }, 
                         null).open();
             }
