@@ -134,8 +134,10 @@ public class CeylonSearchDialogPage extends DialogPage
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
         Composite grp = new Composite(result, SWT.NONE);
+        grp.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         grp.setLayout(new GridLayout(2,false));
         Group sub = new Group(grp, SWT.SHADOW_ETCHED_IN);
+        sub.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         sub.setText("Limit To");
         sub.setLayout(new GridLayout(2,false));
         Button dec = new Button(sub, SWT.CHECK);
@@ -146,18 +148,6 @@ public class CeylonSearchDialogPage extends DialogPage
             @Override
             public void widgetSelected(SelectionEvent event) {
                 declarations = !declarations;
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent event) {}
-        });
-        Button imp = new Button(sub, SWT.CHECK);
-        imp.setText("Imports");
-        imp.setSelection(imports);
-        imp.addSelectionListener(
-                new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent event) {
-                imports = !imports;
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
@@ -186,6 +176,18 @@ public class CeylonSearchDialogPage extends DialogPage
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
+        Button imp = new Button(sub, SWT.CHECK);
+        imp.setText("Imports");
+        imp.setSelection(imports);
+        imp.addSelectionListener(
+                new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                imports = !imports;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
         Button doc = new Button(sub, SWT.CHECK);
         GridData gd = new GridData();
         gd.horizontalSpan = 2;
@@ -202,6 +204,7 @@ public class CeylonSearchDialogPage extends DialogPage
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
         sub = new Group(grp, SWT.SHADOW_ETCHED_IN);
+        sub.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         sub.setText("Search In");
         sub.setLayout(new GridLayout());
         Button inSources = new Button(sub, SWT.CHECK);
