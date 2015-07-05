@@ -60,20 +60,20 @@ public class CeylonSearchDialogPage extends DialogPage
     @Override
     public void createControl(Composite parent) {
         initSearchPattern();
-
-        Composite result = new Composite(parent, SWT.NONE);
-        setControl(result);
-        result.setLayout(new GridLayout(3,false));
+        Composite outer = new Composite(parent, SWT.NONE);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 2;
+        outer.setLayout(layout);
+        setControl(outer);
+        Composite result = new Composite(outer, SWT.NONE);
+        result.setLayout(new GridLayout());
+        result.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, 
+                true, false));
         Label title = new Label(result, SWT.RIGHT);  
         title.setText("Search string (* = any string, ? = any character):");
-        GridData tgd = new GridData();
-        tgd.horizontalSpan=3;
-        title.setLayoutData(tgd);
         final Combo text = new Combo(result, 0);
-        GridData gd = 
-                new GridData(SWT.FILL, SWT.BEGINNING, 
-                        true, false);
-        text.setLayoutData(gd);
+        text.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, 
+                true, false));
         text.setText(searchPattern);
         text.addModifyListener(new ModifyListener() {
             @Override
@@ -84,8 +84,27 @@ public class CeylonSearchDialogPage extends DialogPage
         for (String string: previousPatterns) {
             text.add(string);
         }
-        final Button caseSense = 
-                new Button(result, SWT.CHECK);
+        Composite options = new Composite(outer, SWT.NONE);
+        options.setLayout(new GridLayout());
+        options.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, 
+                false, false));
+        Button regExp = new Button(options, SWT.CHECK);
+        regExp.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, 
+                false, false));
+        regExp.setText("Regular expression");
+        regExp.setSelection(regex);
+        regExp.addSelectionListener(
+                new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                regex = !regex;
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        Button caseSense = new Button(options, SWT.CHECK);
+        caseSense.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, 
+                false, false));
         caseSense.setText("Case sensitive");
         caseSense.setSelection(caseSensitive);
         caseSense.addSelectionListener(
@@ -93,19 +112,6 @@ public class CeylonSearchDialogPage extends DialogPage
             @Override
             public void widgetSelected(SelectionEvent event) {
                 caseSensitive = !caseSensitive;
-            }
-            @Override
-            public void widgetDefaultSelected(SelectionEvent event) {}
-        });
-        final Button regExp = 
-                new Button(result, SWT.CHECK);
-        regExp.setText("Regular expression");
-        regExp.setSelection(regex);
-        caseSense.addSelectionListener(
-                new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent event) {
-                regex = !regex;
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
@@ -129,7 +135,7 @@ public class CeylonSearchDialogPage extends DialogPage
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
-        final Button decs = new Button(sub, SWT.CHECK);
+        Button decs = new Button(sub, SWT.CHECK);
         decs.setText("Declarations");
         decs.setSelection(declarations);
         decs.addSelectionListener(
@@ -144,7 +150,7 @@ public class CeylonSearchDialogPage extends DialogPage
         sub = new Group(grp, SWT.SHADOW_ETCHED_IN);
         sub.setText("Options");
         sub.setLayout(new GridLayout());
-        final Button inArchives = new Button(sub, SWT.CHECK);
+        Button inArchives = new Button(sub, SWT.CHECK);
         inArchives.setText("Search in source archives");
         inArchives.setSelection(archives);
         inArchives.addSelectionListener(
