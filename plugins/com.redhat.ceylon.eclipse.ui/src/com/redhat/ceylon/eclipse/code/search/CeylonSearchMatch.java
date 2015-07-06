@@ -14,17 +14,24 @@ public class CeylonSearchMatch extends Match {
     
     private boolean inImport;
     
-    public static CeylonSearchMatch create(Node match, 
+    public static CeylonSearchMatch create(
+            Node match, 
             //the containing declaration or named arg
             Tree.CompilationUnit rootNode,
             //the file in which the match occurs
             VirtualFile file) {
-        FindContainerVisitor fcv = new FindContainerVisitor(match) {
+        FindContainerVisitor fcv = 
+                new FindContainerVisitor(match) {
             @Override
-            protected boolean accept(Tree.StatementOrArgument node) {
+            protected boolean accept(
+                    Tree.StatementOrArgument node) {
                 if (node instanceof Tree.Declaration) {
-                    Declaration d = ((Tree.Declaration) node).getDeclarationModel();
-                    return d.isToplevel() || d.isClassOrInterfaceMember();
+                    Tree.Declaration dec = 
+                            (Tree.Declaration) node;
+                    Declaration d = 
+                            dec.getDeclarationModel();
+                    return d.isToplevel() || 
+                           d.isClassOrInterfaceMember();
                 }
                 else {
                     return true;
@@ -32,9 +39,10 @@ public class CeylonSearchMatch extends Match {
             }
         };
         rootNode.visit(fcv);
-        Tree.StatementOrArgument result = fcv.getStatementOrArgument();
-        return new CeylonSearchMatch(match, 
-                result==null ? rootNode : result, file);
+        Tree.StatementOrArgument result = 
+                fcv.getStatementOrArgument();
+        Node node = result==null ? rootNode : result;
+        return new CeylonSearchMatch(match, node, file);
     }
     
     private CeylonSearchMatch(Node match, 
@@ -42,7 +50,8 @@ public class CeylonSearchMatch extends Match {
             Node node,
             //the file in which the match occurs
             VirtualFile file) {
-        super(new CeylonElement(node, file, match.getToken().getLine()),
+        super(new CeylonElement(node, file, 
+                match.getToken().getLine()),
                 //the exact location of the match:
                 getIdentifyingStartOffset(match), 
                 getIdentifyingLength(match));
