@@ -170,7 +170,7 @@ public class CeylonSearchDialogPage extends DialogPage
         bdg.horizontalAlignment = SWT.FILL;
         bdg.grabExcessHorizontalSpace = true;
         ab.setLayoutData(bdg);
-        ab.setText("Types, Functions, Values");
+        ab.setText("Anything");
         ab.setSelection(kinds==SearchVisitor.ANYTHING);
         final Button tb = new Button(sub, SWT.RADIO);
         tb.setText("Types");
@@ -184,6 +184,10 @@ public class CeylonSearchDialogPage extends DialogPage
         vb.setText("Values");
         vb.setSelection(kinds==SearchVisitor.VALUE);
         vb.setEnabled(kinds!=SearchVisitor.ANYTHING);
+        final Button pb = new Button(sub, SWT.RADIO);
+        pb.setText("Packages");
+        pb.setSelection(kinds==SearchVisitor.PACKAGES);
+        pb.setEnabled(kinds!=SearchVisitor.ANYTHING);
         ab.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -192,18 +196,22 @@ public class CeylonSearchDialogPage extends DialogPage
                     tb.setEnabled(false);
                     fb.setEnabled(false);
                     vb.setEnabled(false);
+                    pb.setEnabled(false);
                     tb.setSelection(false);
                     fb.setSelection(false);
                     vb.setSelection(false);
+                    pb.setSelection(false);
                 }
                 else {
                     kinds = SearchVisitor.TYPE;
                     tb.setEnabled(true);
                     fb.setEnabled(true);
                     vb.setEnabled(true);
+                    pb.setEnabled(true);
                     tb.setSelection(true);
                     fb.setSelection(false);
                     vb.setSelection(false);
+                    pb.setSelection(false);
                 }
             }
         });
@@ -228,6 +236,14 @@ public class CeylonSearchDialogPage extends DialogPage
             public void widgetSelected(SelectionEvent e) {
                 if (vb.getSelection()) {
                     kinds = SearchVisitor.VALUE;
+                }
+            }
+        });
+        pb.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (pb.getSelection()) {
+                    kinds = SearchVisitor.PACKAGES;
                 }
             }
         });

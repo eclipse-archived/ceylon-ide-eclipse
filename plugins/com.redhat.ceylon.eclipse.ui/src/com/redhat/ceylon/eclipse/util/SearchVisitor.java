@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
+
 import org.eclipse.jface.text.IRegion;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -18,7 +20,8 @@ public class SearchVisitor extends Visitor {
     public static final int TYPE = 1;
     public static final int FUNCTION = 1<<1;
     public static final int VALUE = 1<<2;
-    public static final int ANYTHING = TYPE|FUNCTION|VALUE;
+    public static final int PACKAGES = 1<<3;
+    public static final int ANYTHING = TYPE|FUNCTION|VALUE|PACKAGES;
     
     public interface Matcher {
         boolean matches(String string);
@@ -30,6 +33,10 @@ public class SearchVisitor extends Visitor {
         int kinds();
     }
     
+    boolean hasPackageKind(int kind) {
+        return (kind&PACKAGES)!=0;
+    }
+        
     boolean hasKind(Declaration declaration, int kind) {
         //TODO: anonymous classes
         if (declaration instanceof Constructor) {
@@ -123,6 +130,50 @@ public class SearchVisitor extends Visitor {
             matchingNode(that);
         }
         super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.ModuleDescriptor that) {
+        if (matcher.includeDeclarations() &&
+                that.getImportPath()!=null &&
+                hasPackageKind(matcher.kinds()) &&
+                matcher.matches(formatPath(that.getImportPath()
+                        .getIdentifiers()))) {
+            matchingNode(that.getImportPath());
+        }
+    }
+
+    @Override
+    public void visit(Tree.PackageDescriptor that) {
+        if (matcher.includeDeclarations() &&
+                that.getImportPath()!=null &&
+                hasPackageKind(matcher.kinds()) &&
+                matcher.matches(formatPath(that.getImportPath()
+                        .getIdentifiers()))) {
+            matchingNode(that.getImportPath());
+        }
+    }
+        
+    @Override
+    public void visit(Tree.Import that) {
+        if (matcher.includeImports() &&
+                that.getImportPath()!=null &&
+                hasPackageKind(matcher.kinds()) &&
+                matcher.matches(formatPath(that.getImportPath()
+                        .getIdentifiers()))) {
+            matchingNode(that.getImportPath());
+        }
+    }
+        
+    @Override
+    public void visit(Tree.ImportModule that) {
+        if (matcher.includeImports() &&
+                that.getImportPath()!=null &&
+                hasPackageKind(matcher.kinds()) &&
+                matcher.matches(formatPath(that.getImportPath()
+                        .getIdentifiers()))) {
+            matchingNode(that.getImportPath());
+        }
     }
         
     @Override
