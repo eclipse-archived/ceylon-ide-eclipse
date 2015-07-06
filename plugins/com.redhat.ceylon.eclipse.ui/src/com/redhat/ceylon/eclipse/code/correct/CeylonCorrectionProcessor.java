@@ -1,17 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-/*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *******************************************************************************/
-
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeAbstractDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeActualDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeContainerAbstractProposal;
@@ -60,6 +48,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertThenElseToIfElse.add
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToBlockProposal.addConvertToBlockProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToClassProposal.addConvertToClassProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToConcatenationProposal.addConvertToConcatenationProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ConvertToDefaultConstructorProposal.addConvertToDefaultConstructorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToGetterProposal.addConvertToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToInterpolationProposal.addConvertToInterpolationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
@@ -115,6 +104,19 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
+
+/*******************************************************************************
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *******************************************************************************/
+
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
@@ -161,13 +163,6 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.NamedArgumentList;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -182,6 +177,13 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.NamedArgumentList;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.ParameterList;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypeParameter;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class CeylonCorrectionProcessor extends QuickAssistAssistant 
         implements IQuickAssistProcessor {
@@ -979,7 +981,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             MoveOutProposal.add(proposals, editor, node);
             MakeReceiverProposal.add(proposals, editor, node);
             InvertBooleanProposal.add(proposals, editor);
-                    
+            
             addAssignToLocalProposal(rootNode, proposals, node, currentOffset);
             addDestructureProposal(rootNode, proposals, node, currentOffset);
             addAssignToForProposal(rootNode, proposals, node, currentOffset);
@@ -1015,6 +1017,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     declaration, currentOffset);
             
             addChangeToIfProposal(proposals, doc, file, rootNode, statement);
+            
+            addConvertToDefaultConstructorProposal(proposals, doc, file, statement);
             
             addConvertToClassProposal(proposals, declaration, editor);
             addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
