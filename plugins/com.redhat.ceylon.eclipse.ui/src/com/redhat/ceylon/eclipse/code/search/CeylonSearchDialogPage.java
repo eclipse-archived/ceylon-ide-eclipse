@@ -164,20 +164,49 @@ public class CeylonSearchDialogPage extends DialogPage
                 true, false));
         sub.setText("Search For");
         sub.setLayout(new GridLayout(2,false));
-        final Button ab = new Button(sub, SWT.RADIO);
-        ab.setText("Anything");
+        final Button ab = new Button(sub, SWT.CHECK);
+        GridData bdg = new GridData();
+        bdg.horizontalSpan = 2;
+        bdg.horizontalAlignment = SWT.FILL;
+        bdg.grabExcessHorizontalSpace = true;
+        ab.setLayoutData(bdg);
+        ab.setText("Types, Functions, Values");
         ab.setSelection(kinds==SearchVisitor.ANYTHING);
+        final Button tb = new Button(sub, SWT.RADIO);
+        tb.setText("Types");
+        tb.setSelection(kinds==SearchVisitor.TYPE);
+        tb.setEnabled(kinds!=SearchVisitor.ANYTHING);
+        final Button fb = new Button(sub, SWT.RADIO);
+        fb.setText("Functions");
+        fb.setSelection(kinds==SearchVisitor.FUNCTION);
+        fb.setEnabled(kinds!=SearchVisitor.ANYTHING);
+        final Button vb = new Button(sub, SWT.RADIO);
+        vb.setText("Values");
+        vb.setSelection(kinds==SearchVisitor.VALUE);
+        vb.setEnabled(kinds!=SearchVisitor.ANYTHING);
         ab.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (ab.getSelection()) {
                     kinds = SearchVisitor.ANYTHING;
+                    tb.setEnabled(false);
+                    fb.setEnabled(false);
+                    vb.setEnabled(false);
+                    tb.setSelection(false);
+                    fb.setSelection(false);
+                    vb.setSelection(false);
+                }
+                else {
+                    kinds = SearchVisitor.TYPE;
+                    tb.setEnabled(true);
+                    fb.setEnabled(true);
+                    vb.setEnabled(true);
+                    tb.setSelection(true);
+                    fb.setSelection(false);
+                    vb.setSelection(false);
                 }
             }
         });
-        final Button tb = new Button(sub, SWT.RADIO);
-        tb.setText("Types");
-        tb.setSelection(kinds==SearchVisitor.TYPE);
         tb.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -186,9 +215,6 @@ public class CeylonSearchDialogPage extends DialogPage
                 }
             }
         });
-        final Button fb = new Button(sub, SWT.RADIO);
-        fb.setText("Functions");
-        fb.setSelection(kinds==SearchVisitor.FUNCTION);
         fb.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -197,9 +223,6 @@ public class CeylonSearchDialogPage extends DialogPage
                 }
             }
         });
-        final Button vb = new Button(sub, SWT.RADIO);
-        vb.setText("Values");
-        vb.setSelection(kinds==SearchVisitor.VALUE);
         vb.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -264,7 +287,7 @@ public class CeylonSearchDialogPage extends DialogPage
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
         Button doc = new Button(sub, SWT.CHECK);
-        GridData gd = new GridData();
+        GridData gd = bdg;
         gd.horizontalSpan = 2;
         doc.setLayoutData(gd);
         doc.setText("Documentation strings");
