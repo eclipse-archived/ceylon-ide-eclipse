@@ -8,9 +8,11 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Font;
@@ -20,10 +22,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class CeylonElement {
     
@@ -36,7 +38,7 @@ public class CeylonElement {
     private int decorations;
     private int startOffset;
     private int endOffset;
-    private ModelProxy proxy;
+    private final ModelProxy proxy;
     
     public CeylonElement(Node node, VirtualFile file, int line) {
         //the file and line number, which get 
@@ -56,47 +58,70 @@ public class CeylonElement {
         //onto a hard ref to the container node
         imageKey = getImageKeyForNode(node);
         label = getStyledLabelForNode(node);
-        if (node.getUnit()==null) {
+        
+        Unit unit = node.getUnit();
+        if (unit==null) {
             packageLabel = "(unknown package)";
         }
         else {
-            Package pack = node.getUnit().getPackage();
+            Package pack = unit.getPackage();
             String name = pack.getQualifiedNameString();
-            packageLabel = name.isEmpty() ? "(default package)" : name;
+            packageLabel = name.isEmpty() ? 
+                    "(default package)" : name;
         }
         //TODO: this winds up caching error decorations,
         //      so it's not really very good
         decorations = getNodeDecorationAttributes(node);
         
         if (node instanceof Tree.Declaration) {
-            proxy = new ModelProxy(((Tree.Declaration) node).getDeclarationModel());
+            Tree.Declaration decl = (Tree.Declaration) node;
+            Declaration d = decl.getDeclarationModel();
+            proxy = new ModelProxy(d);
+        }
+        else {
+            proxy = null;
         }
         
         if (node instanceof Tree.Declaration) {
-            Declaration dec = ((Tree.Declaration) node).getDeclarationModel();
+            Tree.Declaration decl = (Tree.Declaration) node;
+            Declaration dec = decl.getDeclarationModel();
             qualifiedName = dec.getQualifiedNameString();
         }
         else if (node instanceof Tree.PackageDescriptor) {
-            qualifiedName = node.getUnit().getPackage().getNameAsString();
+            qualifiedName = 
+                    unit.getPackage()
+                        .getNameAsString();
         }
         else if (node instanceof Tree.ModuleDescriptor) {
-            qualifiedName = node.getUnit().getPackage().getModule().getNameAsString();
+            qualifiedName = 
+                    unit.getPackage()
+                        .getModule()
+                        .getNameAsString();
         }
         else if (node instanceof Tree.CompilationUnit) {
-            qualifiedName = node.getUnit().getPackage().getNameAsString() + 
-                    '/' + node.getUnit().getFilename();
+            qualifiedName = 
+                    unit.getPackage()
+                        .getNameAsString() 
+                    + '/' + unit.getFilename();
         }
         else if (node instanceof Tree.Import) {
-            String name = getImportedName((Tree.Import) node);
-            qualifiedName = node.getUnit().getPackage().getNameAsString() + 
-                    '/' + node.getUnit().getFilename() + 
-                    '#' + name;
+            Tree.Import imp = (Tree.Import) node;
+            String name = getImportedName(imp);
+            qualifiedName = 
+                    unit.getPackage()
+                        .getNameAsString() 
+                    + '/' + unit.getFilename() 
+                    + '#' + name;
         }
         else if (node instanceof Tree.ImportModule) {
-            String name = getImportedName((Tree.ImportModule) node);
-            qualifiedName = node.getUnit().getPackage().getNameAsString() + 
-                    '/' + node.getUnit().getFilename() + 
-                    '@' + name;
+            Tree.ImportModule imp = (Tree.ImportModule) node;
+            String name = 
+                    getImportedName(imp);
+            qualifiedName = 
+                    unit.getPackage()
+                        .getNameAsString() 
+                    + '/' + unit.getFilename() 
+                    + '@' + name;
         }
     }
     
@@ -117,7 +142,7 @@ public class CeylonElement {
             return label;
         }
         else {
-            IPreferenceStore prefs = EditorUtil.getPreferences();
+            IPreferenceStore prefs = getPreferences();
             return getQualifiedDescriptionFor(
                     proxy.get(), 
                     prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
@@ -142,7 +167,8 @@ public class CeylonElement {
     
     public IFile getFile() {
         if (file instanceof IFileVirtualFile) {
-            return ((IFileVirtualFile) file).getFile();
+            IFileVirtualFile fvf = (IFileVirtualFile) file;
+            return fvf.getFile();
         }
         else {
             return null;
@@ -153,8 +179,10 @@ public class CeylonElement {
     //return a project-relative path from getPath()
     public String getPathString() {
         if (file instanceof ResourceVirtualFile) {
-            return ((ResourceVirtualFile) file).getResource()
-                    .getFullPath().toPortableString();
+            ResourceVirtualFile rvf = 
+                    (ResourceVirtualFile) file;
+            IPath path = rvf.getResource().getFullPath();
+            return path.toPortableString();
         }
         else {
             return file.getPath();
@@ -194,7 +222,8 @@ public class CeylonElement {
     @Override
     public int hashCode() {
         return file.getName().hashCode() ^
-                (qualifiedName==null ? 0 : qualifiedName.hashCode());
+                (qualifiedName==null ? 
+                        0 : qualifiedName.hashCode());
     }
     
 }
