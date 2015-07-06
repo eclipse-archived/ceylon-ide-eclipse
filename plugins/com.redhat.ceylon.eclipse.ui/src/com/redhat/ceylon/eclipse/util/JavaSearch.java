@@ -4,12 +4,14 @@ import static com.redhat.ceylon.compiler.java.codegen.CodegenUtil.getJavaNameOfD
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
+import static com.redhat.ceylon.eclipse.util.Escaping.toInitialLowercase;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_ATTRIBUTE_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_CEYLON_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_LOCAL_DECLARATION_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_METHOD_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_NAME_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_OBJECT_ANNOTATION;
+import static java.util.Collections.emptyList;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.CLASS_AND_INTERFACE;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.FIELD;
@@ -100,7 +102,8 @@ public class JavaSearch {
         else if (declaration instanceof Value) {
             int loc = pattern.lastIndexOf('.') + 1;
             if (pattern.substring(loc).startsWith("get")) {
-                String setter = pattern.substring(0,loc) + 
+                String setter = 
+                        pattern.substring(0,loc) + 
                         "set" + pattern.substring(loc+3);
                 SearchPattern getterPattern = 
                         createPattern(pattern, METHOD, 
@@ -219,7 +222,7 @@ public class JavaSearch {
             }
             else if (name.startsWith("get") ||
                      name.startsWith("set")) {
-                name = Escaping.toInitialLowercase(name.substring(3));
+                name = toInitialLowercase(name.substring(3));
             }
         }
         
@@ -259,7 +262,8 @@ public class JavaSearch {
 
     private static boolean isCeylonObject(IMember element) {
         if (element instanceof IAnnotatable) {
-            IAnnotatable annotatable = (IAnnotatable) element;
+            IAnnotatable annotatable = 
+                    (IAnnotatable) element;
             IAnnotation ceylonAnnotation = 
                     annotatable.getAnnotation(
                             CEYLON_OBJECT_ANNOTATION);
@@ -270,7 +274,8 @@ public class JavaSearch {
     
     private static boolean isCeylonAttribute(IMember element) {
         if (element instanceof IAnnotatable) {
-            IAnnotatable annotatable = (IAnnotatable) element;
+            IAnnotatable annotatable = 
+                    (IAnnotatable) element;
             IAnnotation ceylonAnnotation = 
                     annotatable.getAnnotation(
                             CEYLON_ATTRIBUTE_ANNOTATION);
@@ -331,7 +336,8 @@ public class JavaSearch {
                 try {
                     for (IMemberValuePair mvp: 
                             nameAnnotation.getMemberValuePairs()) {
-                        if ("qualifier".equals(mvp.getMemberName())) {
+                        if ("qualifier".equals(
+                                mvp.getMemberName())) {
                             Object value = mvp.getValue();
                             if ((value instanceof String) 
                                     && ! "".equals(value)) {
@@ -371,7 +377,7 @@ public class JavaSearch {
                 IMethod method, String searchedName) {
             IType declaringType = method.getDeclaringType();
             if (declaringType == null) {
-                return Collections.emptyList();
+                return emptyList();
             }
             List<IMethod> foundMethods = new ArrayList<>();
             try {
@@ -384,7 +390,7 @@ public class JavaSearch {
                 }
             } catch (JavaModelException e) {
                 e.printStackTrace();
-                return Collections.emptyList();
+                return emptyList();
             }
             return foundMethods;
         }
@@ -407,7 +413,8 @@ public class JavaSearch {
                                 valuePairs.length > 0) {
                             paramName = 
                                     (String) 
-                                    valuePairs[0].getValue();
+                                        valuePairs[0]
+                                                .getValue();
                         }
                     }
                     if (paramName == null) {
@@ -491,7 +498,8 @@ public class JavaSearch {
                 List<MethodType> defaultArgumentMethods = 
                         new ArrayList<>();
                 for (MethodType m: 
-                        getMethodsOfDeclaringType(method, null)) {
+                        getMethodsOfDeclaringType(method, 
+                                null)) {
                     if (getMethodName(m)
                             .startsWith(parts[0] + "$")) {
                         defaultArgumentMethods.add(m);
@@ -592,10 +600,13 @@ public class JavaSearch {
                 }
             } else if (name.startsWith("$")) {
                 name = name.substring(1);
-            } else if ((name.startsWith("get") ||
-                     name.startsWith("set")) && name.length() > 3) {
+            } else if ((name.startsWith("get") 
+                     || name.startsWith("set")) 
+                    && name.length() > 3) {
                 StringBuffer newName = 
-                        new StringBuffer(Character.toLowerCase(name.charAt(3)));
+                        new StringBuffer(
+                                Character.toLowerCase(
+                                        name.charAt(3)));
                 if (name.length() > 4) { 
                         newName.append(name.substring(4));
                 }
@@ -605,9 +616,10 @@ public class JavaSearch {
             } else if (name.equals("hashCode")) {
                 name = "hash";
             } else if (name.contains("$")) {
+                IMethod method = (IMethod) dec;
                 JdtDefaultArgumentMethodSearch.Result searchResult = 
                         new JdtDefaultArgumentMethodSearch()
-                            .search((IMethod)dec);
+                            .search(method);
                 if (searchResult.defaultArgumentName != null) {
                     name = searchResult.defaultArgumentName;
                 }
@@ -624,11 +636,11 @@ public class JavaSearch {
             }
         } else if (dec instanceof IType) {
             IType type = (IType) dec;
-            
             if (name.endsWith("_")) {
                 if (isCeylonObject(type) ||
                         isCeylonMethod(type)) {
-                    name = name.substring(0, name.length()-1);
+                    name = name.substring(0, 
+                            name.length()-1);
                 }
             }
         }
@@ -711,8 +723,9 @@ public class JavaSearch {
                         (IPackageFragment) 
                         typeOrMethod.getAncestor(
                                 PACKAGE_FRAGMENT);
-                String pkgFragmentName = pkgFragment != null ? 
-                        pkgFragment.getElementName() : null;
+                String pkgFragmentName = 
+                        pkgFragment == null ? null : 
+                            pkgFragment.getElementName();
                 return ceylonDeclarationPkgName.equals(
                         pkgFragmentName);
             }
@@ -813,7 +826,8 @@ public class JavaSearch {
         // TODO : also manage the case of local declarations that are 
         // wrongly top-level (specific retrieval of the parent IMember)
         
-        IMember declaringElement = typeOrMethod.getDeclaringType();
+        IMember declaringElement = 
+                typeOrMethod.getDeclaringType();
         if (declaringElement == null) {
             if (typeOrMethod instanceof IType)  {
                 IType type = (IType) typeOrMethod;
@@ -824,7 +838,8 @@ public class JavaSearch {
                         JDTModelLoader.doOnResolvedGeneratedType(type, 
                                 new ActionOnResolvedGeneratedType() {
                             @Override
-                            public void doWithBinding(IType classModel, 
+                            public void doWithBinding(
+                                    IType classModel, 
                                     ReferenceBinding classBinding,
                                     IBinaryType binaryType) {
                                 char[] enclosingMethodSignature = 
@@ -851,15 +866,19 @@ public class JavaSearch {
                         });
 
                         if (enclosingMethodBinding[0] != null) {
-                            IMethod enclosingMethod = (IMethod) 
+                            IMethod enclosingMethod = 
+                                    (IMethod) 
                                     getUnresolvedJavaElement(
                                             enclosingMethodBinding[0], 
                                             null, null);
                             if (enclosingMethod != null && 
                                     !enclosingMethod.isResolved()) {
-                                enclosingMethod = (IMethod) 
-                                        ((JavaElement)enclosingMethod)
-                                            .resolved(enclosingMethodBinding[0]);
+                                JavaElement je = 
+                                        (JavaElement) 
+                                            enclosingMethod;
+                                enclosingMethod = 
+                                        (IMethod) 
+                                        je.resolved(enclosingMethodBinding[0]);
                                 if (enclosingMethod != null) {
                                     declaringElement = enclosingMethod;
                                 }
@@ -923,7 +942,7 @@ public class JavaSearch {
                     if ("get_".equals(methodName)
                         && ((method.getFlags() & Flags.AccStatic) > 0)
                         && (isCeylonObject(parentType) || 
-                                isCeylonAttribute(parentType))) {
+                            isCeylonAttribute(parentType))) {
                         return toCeylonDeclarationElement(
                                 parentType);
                     }
