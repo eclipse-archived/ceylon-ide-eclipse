@@ -55,7 +55,8 @@ public class CeylonSearchMatch extends Match {
                 //the exact location of the match:
                 getIdentifyingStartOffset(match), 
                 getIdentifyingLength(match));
-        inImport = node instanceof Tree.Import || 
+        inImport = 
+                node instanceof Tree.Import || 
                 node instanceof Tree.ImportModule;
     }
     
