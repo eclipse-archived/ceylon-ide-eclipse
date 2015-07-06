@@ -76,7 +76,8 @@ public class SearchVisitor extends Visitor {
     public void visit(Tree.StaticMemberOrTypeExpression that) {
         if (matcher.includeReferences() &&
                 that.getIdentifier()!=null && 
-                matcher.matches(that.getIdentifier().getText()) &&
+                matcher.matches(
+                        that.getIdentifier().getText()) &&
                 hasKind(that.getDeclaration(), 
                         matcher.kinds())) {
             matchingNode(that);
@@ -88,7 +89,8 @@ public class SearchVisitor extends Visitor {
     public void visit(Tree.SimpleType that) {
         if (matcher.includeTypes() &&
                 that.getIdentifier()!=null && 
-                matcher.matches(that.getIdentifier().getText()) &&
+                matcher.matches(
+                        that.getIdentifier().getText()) &&
                 hasKind(that.getDeclarationModel(), 
                         matcher.kinds())) {
             matchingNode(that);
@@ -100,7 +102,8 @@ public class SearchVisitor extends Visitor {
     public void visit(Tree.Declaration that) {
         if (matcher.includeDeclarations() &&
                 that.getIdentifier()!=null && 
-                matcher.matches(that.getIdentifier().getText()) &&
+                matcher.matches(
+                        that.getIdentifier().getText()) &&
                 hasKind(that.getDeclarationModel(), 
                         matcher.kinds())) {
             matchingNode(that);
@@ -112,7 +115,8 @@ public class SearchVisitor extends Visitor {
     public void visit(Tree.ImportMemberOrType that) {
         if (matcher.includeImports() &&
                 that.getIdentifier()!=null && 
-                matcher.matches(that.getIdentifier().getText()) &&
+                matcher.matches(
+                        that.getIdentifier().getText()) &&
                 hasKind(that.getDeclarationModel(), 
                         matcher.kinds())) {
             matchingNode(that);
@@ -124,7 +128,8 @@ public class SearchVisitor extends Visitor {
     public void visit(Tree.TypedArgument that) {
         if (matcher.includeReferences() &&
                 that.getIdentifier()!=null && 
-                matcher.matches(that.getIdentifier().getText()) &&
+                matcher.matches(
+                        that.getIdentifier().getText()) &&
                 hasKind(that.getDeclarationModel(), 
                         matcher.kinds())) {
             matchingNode(that);
@@ -137,8 +142,9 @@ public class SearchVisitor extends Visitor {
         if (matcher.includeDeclarations() &&
                 that.getImportPath()!=null &&
                 hasPackageKind(matcher.kinds()) &&
-                matcher.matches(formatPath(that.getImportPath()
-                        .getIdentifiers()))) {
+                matcher.matches(formatPath(
+                        that.getImportPath()
+                            .getIdentifiers()))) {
             matchingNode(that.getImportPath());
         }
     }
@@ -148,8 +154,9 @@ public class SearchVisitor extends Visitor {
         if (matcher.includeDeclarations() &&
                 that.getImportPath()!=null &&
                 hasPackageKind(matcher.kinds()) &&
-                matcher.matches(formatPath(that.getImportPath()
-                        .getIdentifiers()))) {
+                matcher.matches(formatPath(
+                        that.getImportPath()
+                            .getIdentifiers()))) {
             matchingNode(that.getImportPath());
         }
     }
@@ -159,8 +166,9 @@ public class SearchVisitor extends Visitor {
         if (matcher.includeImports() &&
                 that.getImportPath()!=null &&
                 hasPackageKind(matcher.kinds()) &&
-                matcher.matches(formatPath(that.getImportPath()
-                        .getIdentifiers()))) {
+                matcher.matches(formatPath(
+                        that.getImportPath()
+                            .getIdentifiers()))) {
             matchingNode(that.getImportPath());
         }
     }
@@ -170,8 +178,9 @@ public class SearchVisitor extends Visitor {
         if (matcher.includeImports() &&
                 that.getImportPath()!=null &&
                 hasPackageKind(matcher.kinds()) &&
-                matcher.matches(formatPath(that.getImportPath()
-                        .getIdentifiers()))) {
+                matcher.matches(formatPath(
+                        that.getImportPath()
+                            .getIdentifiers()))) {
             matchingNode(that.getImportPath());
         }
     }
@@ -180,7 +189,8 @@ public class SearchVisitor extends Visitor {
     public void visit(Tree.SpecifiedArgument that) {
         if (matcher.includeReferences() &&
                 that.getIdentifier()!=null && 
-                matcher.matches(that.getIdentifier().getText()) &&
+                matcher.matches(
+                        that.getIdentifier().getText()) &&
                 hasKind(that.getParameter().getModel(), 
                         matcher.kinds())) {
             matchingNode(that);
