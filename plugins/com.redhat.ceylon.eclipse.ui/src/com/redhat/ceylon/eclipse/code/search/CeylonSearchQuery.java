@@ -171,9 +171,11 @@ class CeylonSearchQuery implements ISearchQuery {
         return Status.OK_STATUS;
     }
     
-    Filters filters = new Filters();
+    private Filters filters = new Filters();
 
     private void search(IProgressMonitor monitor) {
+        result.removeAll();
+        count = 0;
         Set<String> searchedArchives = new HashSet<String>();
         for (IProject project: getProjectsToSearch()) {
             if (CeylonNature.isEnabled(project)) {
@@ -365,6 +367,6 @@ class CeylonSearchQuery implements ISearchQuery {
 
     @Override
     public boolean canRerun() {
-        return false;
+        return true;
     }
 }
