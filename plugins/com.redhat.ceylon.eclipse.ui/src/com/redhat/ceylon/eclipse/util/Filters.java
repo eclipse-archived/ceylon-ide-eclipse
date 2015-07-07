@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.eclipse.jdt.core.IJavaElement;
+
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -108,6 +110,23 @@ public class Filters {
             for (Pattern filter: packageFilters) {
                 if (filter.matcher(name).matches()) {
                     return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isFiltered(IJavaElement enclosingElement) {
+        if (!packageFilters.isEmpty()) {
+            IJavaElement pf = 
+                    enclosingElement.getAncestor(
+                            IJavaElement.PACKAGE_FRAGMENT);
+            if (pf!=null) {
+                for (Pattern filter: packageFilters) {
+                    String name = pf.getElementName();
+                    if (filter.matcher(name).matches()) {
+                        return true;
+                    }
                 }
             }
         }

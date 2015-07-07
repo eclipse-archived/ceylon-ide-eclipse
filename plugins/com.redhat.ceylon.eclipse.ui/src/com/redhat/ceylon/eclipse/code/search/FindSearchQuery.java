@@ -32,20 +32,21 @@ import org.eclipse.ui.IWorkbenchPage;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.DocLinks;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Filters;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Modules;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 abstract class FindSearchQuery implements ISearchQuery {
     
@@ -58,7 +59,8 @@ abstract class FindSearchQuery implements ISearchQuery {
     private String name;
     private IProject project;
     
-    FindSearchQuery(Referenceable referencedDeclaration, IProject project) {
+    FindSearchQuery(Referenceable referencedDeclaration, 
+            IProject project) {
         this.referencedDeclaration = referencedDeclaration;
         this.project = project;
         //this.project = project;
@@ -66,14 +68,19 @@ abstract class FindSearchQuery implements ISearchQuery {
         name = referencedDeclaration.getNameAsString();
         if (referencedDeclaration instanceof Declaration) {
             Declaration dec = 
-                    (Declaration) referencedDeclaration;
+                    (Declaration) 
+                        referencedDeclaration;
             if (dec.isClassOrInterfaceMember()) {
                 Declaration classOrInterface = 
-                        (Declaration) dec.getContainer();
-                name = classOrInterface.getName() + '.'  + name;
+                        (Declaration) 
+                            dec.getContainer();
+                name = classOrInterface.getName() 
+                        + '.'  + name;
             }
         }
     }
+    
+    private Filters filters = new Filters();
     
     @Override
     public IStatus run(IProgressMonitor monitor) 
@@ -98,30 +105,41 @@ abstract class FindSearchQuery implements ISearchQuery {
         Set<String> searchedArchives = new HashSet<String>();
         Package pack = getPackage();
         if (pack==null) return;
-        for (IProject project: getProjectsToSearch(this.project)) {
+        for (IProject project: 
+                getProjectsToSearch(this.project)) {
             if (CeylonNature.isEnabled(project)) {
                 TypeChecker typeChecker = 
                         getProjectTypeChecker(project);
                 List<PhasedUnit> phasedUnits = 
-                        typeChecker.getPhasedUnits().getPhasedUnits();
+                        typeChecker.getPhasedUnits()
+                            .getPhasedUnits();
                 findInUnits(phasedUnits, monitor);
                 monitor.worked(1);
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
-                Modules modules = typeChecker.getContext().getModules();
+                Modules modules = 
+                        typeChecker.getContext()
+                            .getModules();
                 for (Module m: modules.getListOfModules()) {
-                    if (m instanceof JDTModule) {
+                    if (m instanceof JDTModule &&
+                            !filters.isFiltered(m)) {
                         JDTModule module = (JDTModule) m;
                         if (module.isCeylonArchive() && 
                                 !module.isProjectModule() && 
                                 module.getArtifact()!=null) {
                             String archivePath = 
-                                    module.getArtifact().getAbsolutePath();
+                                    module.getArtifact()
+                                        .getAbsolutePath();
+                            String sourceArchivePath = 
+                                    module.getSourceArchivePath();
                             if (searchedArchives.add(archivePath) &&
-                                    searchedArchives.add(module.getSourceArchivePath()) && 
-                                    m.getAllReachablePackages().contains(pack)) {
-                                findInUnits(module.getPhasedUnits(), monitor);
+                                searchedArchives.add(sourceArchivePath) && 
+                                    m.getAllReachablePackages()
+                                        .contains(pack)) {
+                                findInUnits(
+                                        module.getPhasedUnits(), 
+                                        monitor);
                                 monitor.worked(1);
                                 if (monitor.isCanceled()) {
                                     throw new OperationCanceledException();
@@ -154,22 +172,28 @@ abstract class FindSearchQuery implements ISearchQuery {
         Set<String> searchedArchives = new HashSet<String>();
         Package pack = getPackage();
         if (pack==null) return 0;
-        for (IProject project: getProjectsToSearch(this.project)) {
+        for (IProject project: 
+                getProjectsToSearch(this.project)) {
             if (CeylonNature.isEnabled(project)) {
                 work++;
                 Modules modules = 
                         getProjectTypeChecker(project)
-                                .getContext().getModules();
+                                .getContext()
+                                .getModules();
                 for (Module m: modules.getListOfModules()) {
-                    if (m instanceof JDTModule) {
+                    if (m instanceof JDTModule &&
+                            !filters.isFiltered(m)) {
                         JDTModule module = (JDTModule) m;
                         if (module.isCeylonArchive() && 
                                 !module.isProjectModule() && 
                                 module.getArtifact()!=null) { 
                             String archivePath = 
-                                    module.getArtifact().getAbsolutePath();
+                                    module.getArtifact()
+                                        .getAbsolutePath();
+                            String sourceArchivePath = 
+                                    module.getSourceArchivePath();
                             if (searchedArchives.add(archivePath) &&
-                                    searchedArchives.add(module.getSourceArchivePath()) && 
+                                searchedArchives.add(sourceArchivePath) && 
                                     m.getAllReachablePackages().contains(pack)) {
                                 work++;
                             }
@@ -185,24 +209,40 @@ abstract class FindSearchQuery implements ISearchQuery {
         Declaration declaration = 
                 (Declaration) referencedDeclaration;
         SearchPattern searchPattern = 
-                createSearchPattern(declaration, limitTo());
-        if (searchPattern==null) return;
-        runSearch(monitor, new SearchEngine(), searchPattern, 
+                createSearchPattern(declaration, 
+                        limitTo());
+        if (searchPattern==null) {
+            return;
+        }
+        runSearch(monitor, 
+                new SearchEngine(), 
+                searchPattern, 
                 getProjectsToSearch(project), 
                 new NewSearchResultCollector(result, true) {
             @Override
             public void acceptSearchMatch(SearchMatch match)
                     throws CoreException {
-                IResource resource = match.getResource();
-                IFolder exploded = resource==null ? null :
-                    getCeylonClassesOutputFolder(resource.getProject());
-                if (exploded==null || !exploded.contains(resource)) {
-                    super.acceptSearchMatch(match);
-                    IJavaElement enclosingElement = 
-                            (IJavaElement) match.getElement();
-                    if (enclosingElement!=null && 
-                            match.getAccuracy()!=SearchMatch.A_INACCURATE) {
-                        count++;
+                IJavaElement enclosingElement = 
+                        (IJavaElement) 
+                            match.getElement();
+                if (!filters.isFiltered(enclosingElement)) {
+                    IResource resource = match.getResource();
+                    IFolder exploded;
+                    if (resource==null) {
+                        exploded = null;
+                    }
+                    else {
+                        exploded =
+                                getCeylonClassesOutputFolder(
+                                        resource.getProject());
+                    }
+                    if (exploded==null || 
+                            !exploded.contains(resource)) {
+                        super.acceptSearchMatch(match);
+                        if (enclosingElement!=null && 
+                                match.getAccuracy()!=SearchMatch.A_INACCURATE) {
+                            count++;
+                        }
                     }
                 }
             }
@@ -214,10 +254,15 @@ abstract class FindSearchQuery implements ISearchQuery {
     private void findInUnits(Iterable<? extends PhasedUnit> units, 
             IProgressMonitor monitor) {
         for (PhasedUnit pu: units) {
+            if (filters.isFiltered(pu.getPackage())) {
+                continue;
+            }
             monitor.subTask("Searching source file " + 
                     pu.getUnitFile().getPath());
-            CompilationUnit cu = getRootNode(pu);
-            Set<Node> nodes = getNodes(cu, referencedDeclaration);
+            Tree.CompilationUnit rootNode = getRootNode(pu);
+            Set<Node> nodes = 
+                    getNodes(rootNode, 
+                            referencedDeclaration);
             //TODO: should really add these as we find them:
             for (Node node: nodes) {
                 if (node.getToken()==null) {
@@ -225,11 +270,13 @@ abstract class FindSearchQuery implements ISearchQuery {
                 }
                 else {
                     CeylonSearchMatch match = 
-                            CeylonSearchMatch.create(node, cu, 
+                            CeylonSearchMatch.create(node, 
+                                    rootNode, 
                                     pu.getUnitFile());
                     if (node instanceof Tree.DocLink) {
                         Tree.DocLink link = (Tree.DocLink) node;
-                        if (link.getBase().equals(referencedDeclaration)) {
+                        if (link.getBase()
+                                .equals(referencedDeclaration)) {
                             IRegion r = DocLinks.nameRegion(link, 0);
                             match.setOffset(r.getOffset());
                             match.setLength(r.getLength());
@@ -257,10 +304,13 @@ abstract class FindSearchQuery implements ISearchQuery {
     Tree.CompilationUnit getRootNode(PhasedUnit pu) {
         for (IEditorPart editor: page.getDirtyEditors()) {
             if (editor instanceof CeylonEditor) {
+                CeylonEditor ce = (CeylonEditor) editor;
                 CeylonParseController cpc = 
-                        ((CeylonEditor) editor).getParseController();
-                if ( /*editor.isDirty() &&*/
-                        pu.getUnit().equals(cpc.getRootNode().getUnit()) ) {
+                        ce.getParseController();
+                Unit editorUnit = 
+                        cpc.getRootNode().getUnit();
+                if (/*editor.isDirty() &&*/
+                    pu.getUnit().equals(editorUnit)) {
                     return cpc.getRootNode();
                 }
             }
@@ -268,7 +318,8 @@ abstract class FindSearchQuery implements ISearchQuery {
         return pu.getCompilationUnit();
     }
     
-    protected abstract Set<Node> getNodes(Tree.CompilationUnit cu, 
+    protected abstract Set<Node> getNodes(
+            Tree.CompilationUnit cu, 
             Referenceable referencedDeclaration);
     
     protected abstract String labelString();
@@ -280,7 +331,9 @@ abstract class FindSearchQuery implements ISearchQuery {
     
     @Override
     public String getLabel() {
-        return "Displaying " + count + " " + labelString() + 
+        return "Displaying " + 
+                count + " " + 
+                labelString() + 
                 " '" + name + "'";
     }
     
