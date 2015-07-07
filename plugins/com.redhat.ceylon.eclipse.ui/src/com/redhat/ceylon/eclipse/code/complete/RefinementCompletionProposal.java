@@ -220,12 +220,18 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             string = string.substring(14);
         }
         int loc = string.indexOf(' ');
-        Highlights.styleFragment(result, 
-        		string.substring(0, loc), 
-        		false, null, font);
-        Highlights.styleFragment(result, 
-        		string.substring(loc), 
-        		false, currentPrefix, font);
+        if (loc>=0) {
+            Highlights.styleFragment(result, 
+            		string.substring(0, loc), 
+            		false, null, font);
+            Highlights.styleFragment(result, 
+            		string.substring(loc), 
+            		false, currentPrefix, font);
+        }
+        else {
+            Highlights.styleFragment(result, 
+                    string, false, null, font);
+        }
         return result;
     }
     
