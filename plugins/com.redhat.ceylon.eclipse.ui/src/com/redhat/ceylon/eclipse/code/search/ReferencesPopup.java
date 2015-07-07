@@ -363,14 +363,17 @@ public final class ReferencesPopup extends PopupDialog
 //                gotoSelectedElement();
 //            }
 //        });
-        Cursor cursor = new Cursor(getShell().getDisplay(), SWT.CURSOR_HAND);
+        Cursor cursor = 
+                new Cursor(getShell().getDisplay(), 
+                        SWT.CURSOR_HAND);
         tableViewer.getControl().setCursor(cursor);
         treeViewer.getControl().setCursor(cursor);
         tableViewer.getControl()
             .addMouseMoveListener(new MouseMoveListener() {
             @Override
             public void mouseMove(MouseEvent e) {
-                Item item = tableViewer.getTable()
+                Item item = 
+                        tableViewer.getTable()
                             .getItem(new Point(e.x, e.y));
                 if (item!=null) {
                     StructuredSelection selection = 
@@ -851,7 +854,8 @@ public final class ReferencesPopup extends PopupDialog
             name = dec.getName(unit);
             if (dec.isClassOrInterfaceMember()) {
                 Declaration container = 
-                        (Declaration) dec.getContainer();
+                        (Declaration) 
+                            dec.getContainer();
                 name = container.getName() + '.' + name;
             }
         }
@@ -874,8 +878,10 @@ public final class ReferencesPopup extends PopupDialog
                     .getPhasedUnits()
                     .getPhasedUnits();
         for (PhasedUnit pu: phasedUnits) {
-            Tree.CompilationUnit cu = pu.getCompilationUnit();
-            if (pu.getUnit().equals(unit) && editor.isDirty()) {
+            Tree.CompilationUnit cu = 
+                    pu.getCompilationUnit();
+            if (pu.getUnit().equals(unit) && 
+                    editor.isDirty()) {
                 //search in the current dirty editor
                 cu = pc.getRootNode();
             }
@@ -888,7 +894,8 @@ public final class ReferencesPopup extends PopupDialog
                 if (declaration instanceof Declaration) {
                     if (type) {
                         TypeDeclaration td = 
-                                (TypeDeclaration) declaration;
+                                (TypeDeclaration) 
+                                    declaration;
                         FindSubtypesVisitor frv = 
                                 new FindSubtypesVisitor(td);
                         frv.visit(cu);
@@ -898,7 +905,8 @@ public final class ReferencesPopup extends PopupDialog
                     }
                     else {
                         Declaration d = 
-                                (Declaration) declaration;
+                                (Declaration) 
+                                    declaration;
                         FindRefinementsVisitor frv = 
                                 new FindRefinementsVisitor(d);
                         frv.visit(cu);

@@ -26,7 +26,8 @@ public final class ExtractValueLinkedMode
     protected int performInitialChange(IDocument document) {
         try {
             DocumentChange change = 
-                    new DocumentChange("Extract Value", document);
+                    new DocumentChange("Extract Value", 
+                            document);
             refactoring.extractInFile(change);
             change.perform(new NullProgressMonitor());
         }

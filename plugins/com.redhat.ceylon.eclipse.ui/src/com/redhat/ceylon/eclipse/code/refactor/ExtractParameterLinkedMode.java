@@ -26,7 +26,8 @@ public final class ExtractParameterLinkedMode
     protected int performInitialChange(IDocument document) {
         try {
             DocumentChange change = 
-                    new DocumentChange("Extract Parameter", document);
+                    new DocumentChange("Extract Parameter", 
+                            document);
             refactoring.extractInFile(change);
             change.perform(new NullProgressMonitor());
         }

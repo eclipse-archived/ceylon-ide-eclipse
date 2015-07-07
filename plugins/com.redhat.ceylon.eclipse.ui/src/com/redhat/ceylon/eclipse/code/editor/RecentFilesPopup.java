@@ -61,7 +61,8 @@ public class RecentFilesPopup extends PopupDialog {
         layout.marginRight = 2;
         layout.marginBottom = 2;
         parent.setLayout(layout);
-        list = new TableViewer(parent, SWT.NO_TRIM|SWT.SINGLE|SWT.FULL_SELECTION);
+        list = new TableViewer(parent, 
+                SWT.NO_TRIM|SWT.SINGLE|SWT.FULL_SELECTION);
         list.setFilters(new ViewerFilter[] {new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {

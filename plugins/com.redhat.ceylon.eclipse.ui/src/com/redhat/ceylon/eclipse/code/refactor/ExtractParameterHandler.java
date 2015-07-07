@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -16,11 +17,13 @@ public class ExtractParameterHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ITextEditor editor = (ITextEditor) getCurrentEditor();
         if (useLinkedMode() && editor instanceof CeylonEditor) {
-            CeylonEditor ce = (CeylonEditor)editor;
+            final CeylonEditor ce = (CeylonEditor)editor;
             if (ce.isInLinkedMode()) {
-                if (ce.getLinkedModeOwner() instanceof ExtractParameterLinkedMode) {
+                Object owner = ce.getLinkedModeOwner();
+                if (owner instanceof ExtractParameterLinkedMode) {
                     ExtractParameterLinkedMode current = 
-                            (ExtractParameterLinkedMode) ce.getLinkedModeOwner();
+                            (ExtractParameterLinkedMode) 
+                                owner;
                     current.enterDialogMode();
                     current.openDialog();
                 }
@@ -29,7 +32,19 @@ public class ExtractParameterHandler extends AbstractHandler {
                 }
             }
             else {
-                new ExtractParameterLinkedMode(ce).start();
+                Shell shell = editor.getSite().getShell();
+                if (ce.getSelection().getLength()>0) {
+                    new ExtractParameterLinkedMode(ce).start();
+                }
+                else {
+                    new SelectExpressionPopup(shell, 0, ce,
+                            "Extract Parameter") {
+                        ExtractLinkedMode linkedMode() {
+                            return new ExtractParameterLinkedMode(ce);
+                        }
+                    }
+                    .open();
+                }
             }
         }
         else {

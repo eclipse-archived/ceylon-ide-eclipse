@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -16,11 +17,13 @@ public class ExtractValueHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ITextEditor editor = (ITextEditor) getCurrentEditor();
         if (useLinkedMode() && editor instanceof CeylonEditor) {
-            CeylonEditor ce = (CeylonEditor)editor;
+            final CeylonEditor ce = (CeylonEditor) editor;
             if (ce.isInLinkedMode()) {
-                if (ce.getLinkedModeOwner() instanceof ExtractValueLinkedMode) {
+                Object owner = ce.getLinkedModeOwner();
+                if (owner instanceof ExtractValueLinkedMode) {
                     ExtractValueLinkedMode current = 
-                            (ExtractValueLinkedMode) ce.getLinkedModeOwner();
+                            (ExtractValueLinkedMode) 
+                                owner;
                     current.enterDialogMode();
                     current.openDialog();
                 }
@@ -29,7 +32,19 @@ public class ExtractValueHandler extends AbstractHandler {
                 }
             }
             else {
-                new ExtractValueLinkedMode(ce).start();
+                Shell shell = editor.getSite().getShell();
+                if (ce.getSelection().getLength()>0) {
+                    new ExtractValueLinkedMode(ce).start();
+                }
+                else {
+                    new SelectExpressionPopup(shell, 0, ce,
+                            "Extract Value") {
+                        ExtractLinkedMode linkedMode() {
+                            return new ExtractValueLinkedMode(ce);
+                        }
+                    }
+                    .open();
+                }
             }
         }
         else {
