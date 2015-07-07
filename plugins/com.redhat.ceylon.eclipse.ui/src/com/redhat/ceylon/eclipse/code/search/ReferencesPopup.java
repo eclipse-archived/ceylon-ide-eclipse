@@ -100,7 +100,8 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public final class ReferencesPopup extends PopupDialog 
-        implements IInformationControl, IInformationControlExtension2,
+        implements IInformationControl, 
+                   IInformationControlExtension2,
                    IInformationControlExtension3 {
     
     private static final ImageRegistry imageRegistry = 

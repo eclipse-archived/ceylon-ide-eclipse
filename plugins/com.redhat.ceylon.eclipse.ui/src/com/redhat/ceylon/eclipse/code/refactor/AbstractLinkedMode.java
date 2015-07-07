@@ -44,8 +44,9 @@ public abstract class AbstractLinkedMode {
 
     protected AbstractLinkedMode(CeylonEditor ceylonEditor) {
         editor = ceylonEditor;
-        originalSelection = ceylonEditor.getCeylonSourceViewer()
-                .getSelectedRange();
+        originalSelection = 
+                ceylonEditor.getCeylonSourceViewer()
+                    .getSelectedRange();
         linkedModeModel = new LinkedModeModel();
     }
 
@@ -54,7 +55,8 @@ public abstract class AbstractLinkedMode {
     }
 
     protected void openPopup() {
-        // Must cache here, since editor context is not available in menu from popup shell:
+        // Must cache here, since editor context is not 
+        // available in menu from popup shell:
         infoPopup = new RefactorInformationPopup(editor, this);
         infoPopup.open();
     }
@@ -74,7 +76,8 @@ public abstract class AbstractLinkedMode {
                         super.ownsFocusShell();
             }
         };
-        LinkedMode.installLinkedMode(editor, linkedModeModel, this, 
+        LinkedMode.installLinkedMode(editor, 
+                linkedModeModel, this, 
                 exitSequenceNumber, exitPosition, 
                 editingSupport, createExitPolicy(document), 
                 new AbstractLinkedModeListener(editor, this) {
@@ -85,18 +88,21 @@ public abstract class AbstractLinkedMode {
                             infoPopup.close();
                             infoPopup=null;
                         }                
-                        editor.getSite().getPage().activate(editor);
+                        editor.getSite()
+                            .getPage()
+                            .activate(editor);
                         if ((flags&UPDATE_CARET)!=0) {
                             done();
                         }
                         else {
                             if ((flags&EXTERNAL_MODIFICATION)==0) {
                                 editor.getCeylonSourceViewer()
-                                        .invalidateTextPresentation();
+                                    .invalidateTextPresentation();
                             }
                             cancel();
                         }
-                        LinkedMode.unregisterEditingSupport(editor, editingSupport);
+                        LinkedMode.unregisterEditingSupport(
+                                editor, editingSupport);
                     }
                 });
         
@@ -104,13 +110,15 @@ public abstract class AbstractLinkedMode {
         //viewer.setSelectedRange(originalSelection.x+adjust, originalSelection.y+adjust); // by default, full word is selected; restore original selection
     }
 
-    DeleteBlockingExitPolicy createExitPolicy(final IDocument document) {
+    DeleteBlockingExitPolicy createExitPolicy(
+            final IDocument document) {
         return new DeleteBlockingExitPolicy(document) {
             @Override
             public ExitFlags doExit(LinkedModeModel model, 
                     VerifyEvent event, int offset, int length) {
                 showPreview = (event.stateMask & SWT.CTRL) != 0
-                        && (event.character == SWT.CR || event.character == SWT.LF);
+                        && (event.character == SWT.CR || 
+                            event.character == SWT.LF);
                 return super.doExit(model, event, offset, length);
             }
         };
@@ -131,15 +139,18 @@ public abstract class AbstractLinkedMode {
     }
 
     protected LinkedPosition getCurrentLinkedPosition() {
-        Point selection = editor.getCeylonSourceViewer().getSelectedRange();
+        Point selection = 
+                editor.getCeylonSourceViewer()
+                    .getSelectedRange();
         Position pos = new Position(selection.x, selection.y);
-        LinkedPositionGroup group = linkedModeModel.getGroupForPosition(pos);
+        LinkedPositionGroup group = 
+                linkedModeModel.getGroupForPosition(pos);
         if (group!=null) {
             LinkedPosition[] positions = group
                     .getPositions();
             for (LinkedPosition position: positions) {
                 if (position.includes(selection.x) && 
-                        position.includes(selection.x+selection.y)) {
+                    position.includes(selection.x+selection.y)) {
                     return position;
                 }
             }
@@ -169,33 +180,46 @@ public abstract class AbstractLinkedMode {
 
     protected void saveEditorState() {
         //save where we are before opening linked mode
-        IUndoManager undoManager = editor.getCeylonSourceViewer()
-                .getUndoManager();
+        IUndoManager undoManager = 
+                editor.getCeylonSourceViewer()
+                    .getUndoManager();
         if (undoManager instanceof IUndoManagerExtension) {
             IUndoManagerExtension undoManagerExtension = 
-                    (IUndoManagerExtension)undoManager;
-            IUndoContext undoContext = undoManagerExtension.getUndoContext();
+                    (IUndoManagerExtension) undoManager;
+            IUndoContext undoContext = 
+                    undoManagerExtension.getUndoContext();
             IOperationHistory oh = getOperationHistory();
-            startingUndoOperation = oh.getUndoOperation(undoContext);
+            startingUndoOperation = 
+                    oh.getUndoOperation(undoContext);
         }
     }
 
     protected void revertChanges() {
         //go back to where we were before opening linked mode
         try {
-            editor.getSite().getWorkbenchWindow().run(false, true, 
+            editor.getSite()
+                .getWorkbenchWindow()
+                .run(false, true, 
                     new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) 
-                        throws InvocationTargetException, InterruptedException {
-                    IUndoManager undoManager = editor.getCeylonSourceViewer()
-                            .getUndoManager();
+                        throws InvocationTargetException, 
+                               InterruptedException {
+                    IUndoManager undoManager = 
+                            editor.getCeylonSourceViewer()
+                                .getUndoManager();
                     if (undoManager instanceof IUndoManagerExtension) {
+                        IUndoManagerExtension ext = 
+                                (IUndoManagerExtension) 
+                                    undoManager;
                         IUndoContext undoContext = 
-                                ((IUndoManagerExtension) undoManager).getUndoContext();
-                        IOperationHistory oh = getOperationHistory();
+                                ext.getUndoContext();
+                        IOperationHistory oh = 
+                                getOperationHistory();
                         while (undoManager.undoable()) {
-                            if (startingUndoOperation != null && 
-                                    startingUndoOperation.equals(oh.getUndoOperation(undoContext))) {
+                            if (startingUndoOperation!=null && 
+                                    startingUndoOperation.equals(
+                                            oh.getUndoOperation(
+                                                    undoContext))) {
                                 return;
                             }
                             undoManager.undo();

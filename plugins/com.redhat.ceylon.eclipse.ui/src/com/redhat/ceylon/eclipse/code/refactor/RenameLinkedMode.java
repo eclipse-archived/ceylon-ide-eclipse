@@ -99,8 +99,10 @@ public final class RenameLinkedMode
 
     @Override
     public String getHintTemplate() {
-        return "Enter new name for " + refactoring.getCount() + 
-                " occurrences of '" + getName()  + "' {0}";
+        return "Enter new name for " + 
+                refactoring.getCount() + 
+                " occurrences of '" + 
+                getName()  + "' {0}";
     }
     
     private void addLinkedPositions(IDocument document,
@@ -119,14 +121,12 @@ public final class RenameLinkedMode
             offset = nameRegion(docLink, i).getOffset();
         }
         else {
-            offset = getIdentifyingNode(selectedNode).getStartIndex();
+            Node node = getIdentifyingNode(selectedNode);
+            offset = node.getStartIndex();
         }
-//        namePosition = new ProposalPosition(document, offset, 
-//                getOriginalName().length(), 0, 
-//                LinkedModeCompletionProposal.getNameProposals(offset, 0, getOriginalName()));
+        int len = getInitialName().length();
         namePosition = 
-                new LinkedPosition(document, offset, 
-                        getInitialName().length(), 0);
+                new LinkedPosition(document, offset, len, 0);
         linkedPositionGroup.addPosition(namePosition);
         
         int i=1;
@@ -220,10 +220,12 @@ public final class RenameLinkedMode
             final IDocument document, 
             final int adjust)
                     throws BadLocationException {
+        Tree.CompilationUnit rootNode = 
+                editor.getParseController()
+                    .getRootNode();
         linkedPositionGroup = new LinkedPositionGroup();
-        addLinkedPositions(document, 
-                editor.getParseController().getRootNode(), 
-                adjust, linkedPositionGroup);
+        addLinkedPositions(document, rootNode, adjust, 
+                linkedPositionGroup);
         linkedModeModel.addGroup(linkedPositionGroup);
     }
     
@@ -264,9 +266,10 @@ public final class RenameLinkedMode
                 };
                 renameLocals.setChecked(
                         refactoring.isRenameValuesAndFunctions());
-                renameLocals.setEnabled(
+                boolean typeDec = 
                         refactoring.getDeclaration() 
-                            instanceof TypeDeclaration);
+                                instanceof TypeDeclaration;
+                renameLocals.setEnabled(typeDec);
                 manager.add(renameLocals);
                 Action renameFile = 
                         new Action("Rename Source File", 
