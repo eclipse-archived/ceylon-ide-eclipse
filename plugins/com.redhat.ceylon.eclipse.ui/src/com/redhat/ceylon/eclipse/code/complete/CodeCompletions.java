@@ -1087,9 +1087,10 @@ public class CodeCompletions {
     }
 
     private static boolean isObjectField(Declaration m) {
-        return m.getName()!=null &&
-                m.getName().equals("hash") ||
-                m.getName().equals("string");
+        String name = m.getName();
+        return name!=null &&
+                (name.equals("hash") ||
+                 name.equals("string"));
     }
 
     private static void appendMembersToEquals(Unit unit, String indent,
