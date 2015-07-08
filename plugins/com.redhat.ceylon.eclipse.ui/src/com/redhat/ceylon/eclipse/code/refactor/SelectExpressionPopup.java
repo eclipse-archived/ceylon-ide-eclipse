@@ -27,13 +27,16 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -44,6 +47,7 @@ abstract class SelectExpressionPopup extends PopupDialog {
     
     private CeylonEditor editor;
     private TableViewer table;
+    private List<Term> containingExpressions;
     
     abstract ExtractLinkedMode linkedMode();
 
@@ -53,6 +57,7 @@ abstract class SelectExpressionPopup extends PopupDialog {
                 false, null, null);
         this.editor = editor;
         setTitleText(title);
+        containingExpressions = containingExpressions();
     }
     
     private Point getLocation() {
@@ -64,17 +69,24 @@ abstract class SelectExpressionPopup extends PopupDialog {
         p.x -= getShell().getBorderWidth();
         if (p.x < 0) p.x= 0;
         if (p.y < 0) p.y= 0;
-        p= new Point(p.x, p.y + text.getLineHeight(selection.x));
-        p= text.toDisplay(p);
+        p = new Point(p.x, p.y + 
+                text.getLineHeight(selection.x));
+        p = text.toDisplay(p);
         return p;
     }
     
     @Override
     public int open() {
-        int result = super.open();
-        getShell().setLocation(getLocation());
-        setFocus();
-        return result;
+        if (containingExpressions.size()>1) {
+            int result = super.open();
+            getShell().setLocation(getLocation());
+            setFocus();
+            return result;
+        }
+        else {
+            linkedMode().start();
+            return OK;
+        }
     }
     
     private List<Tree.Term> containingExpressions() {
@@ -112,9 +124,11 @@ abstract class SelectExpressionPopup extends PopupDialog {
         parent.setLayout(layout);
         table = new TableViewer(parent, 
                 SWT.NO_TRIM|SWT.SINGLE|SWT.FULL_SELECTION);
-        table.getTable().setFont(CeylonPlugin.getCompletionFont());
-        table.getTable().setCursor(new Cursor(getShell().getDisplay(), SWT.CURSOR_HAND));
-        table.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        final Table tab = table.getTable();
+        tab.setFont(CeylonPlugin.getCompletionFont());
+        Display display = getShell().getDisplay();
+        tab.setCursor(new Cursor(display, SWT.CURSOR_HAND));
+        tab.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         table.setLabelProvider(new StyledCellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
@@ -135,9 +149,9 @@ abstract class SelectExpressionPopup extends PopupDialog {
             }
         });
         table.setContentProvider(ArrayContentProvider.getInstance());
-        table.setInput(containingExpressions());
-        table.getTable().setSelection(0);
-        table.getTable().addKeyListener(new KeyListener() {
+        table.setInput(containingExpressions);
+        tab.setSelection(0);
+        tab.addKeyListener(new KeyListener() {
             @Override
             public void keyReleased(KeyEvent e) {}
 
@@ -152,17 +166,23 @@ abstract class SelectExpressionPopup extends PopupDialog {
                 }
             }
         });
-        table.getTable().addListener(SWT.MouseMove, new Listener() {
+        tab.addListener(SWT.MouseMove, 
+                new Listener() {
             @Override
             public void handleEvent(Event event) {
                 Rectangle bounds = event.getBounds();
-                TableItem item = table.getTable().getItem(new Point(bounds.x, bounds.y));
+                Point point = new Point(bounds.x, bounds.y);
+                TableItem item = 
+                        tab.getItem(point);
                 if (item!=null) {
-                    table.setSelection(new StructuredSelection(item.getData()));
+                    StructuredSelection selection = 
+                            new StructuredSelection(
+                                    item.getData());
+                    table.setSelection(selection);
                 }
             }
         });
-        table.getTable().addMouseListener(new MouseListener() {
+        tab.addMouseListener(new MouseListener() {
             @Override
             public void mouseUp(MouseEvent e) {
                 select();
