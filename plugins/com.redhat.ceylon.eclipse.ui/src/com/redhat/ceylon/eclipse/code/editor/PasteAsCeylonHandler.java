@@ -68,10 +68,8 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 		CeylonEditor editor = (CeylonEditor) getCurrentEditor();
 		IDocument doc = editor.getCeylonSourceViewer().getDocument();
 
-		ISelection s = editor.getSelectionProvider().getSelection();
-
 		int offset = 0;
-		
+
 		offset = EditorUtil.getSelection(editor).getOffset();
 
 		DocumentChange change = new DocumentChange("Paste Java as Ceylon", doc);
@@ -83,9 +81,8 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 			e.printStackTrace();
 		}
 
-		if (s instanceof ITextSelection)
-			FormatAction.format(editor.getParseController(), doc, EditorUtil.getSelection(editor), false,
-					editor.getSelectionProvider());
+		FormatAction.format(editor.getParseController(), doc, EditorUtil.getSelection(editor), false,
+				editor.getSelectionProvider());
 	}
 
 	@Override
