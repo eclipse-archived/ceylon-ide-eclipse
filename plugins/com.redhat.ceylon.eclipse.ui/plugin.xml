@@ -698,6 +698,11 @@
             description="Organize import statements in current file"
             name="Organize Imports"/>
        <command
+            id="com.redhat.ceylon.eclipse.ui.action.pasteAsCeylon"
+            categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Paste Java as Ceylon"
+            name="Paste Java as Ceylon"/>
+       <command
             id="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"
             categoryId="com.redhat.ceylon.eclipse.ui"
             description="Move selected declaration to new unit"
@@ -962,6 +967,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.cleanImports"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.editor.PasteAsCeylonHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.pasteAsCeylon"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.refactor.MoveToNewUnitHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit"/>
