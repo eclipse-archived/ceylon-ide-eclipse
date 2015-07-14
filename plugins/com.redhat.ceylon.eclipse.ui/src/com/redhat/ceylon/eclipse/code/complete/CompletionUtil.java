@@ -112,39 +112,6 @@ public class CompletionUtil {
         return -1;
     }
 
-    /**
-     * BaseMemberExpressions in Annotations have funny lying
-     * scopes, but we can extract the real scope out of the
-     * identifier! (Yick)
-     */
-    static Scope getRealScope(final Node node, CompilationUnit cu) {
-        
-        class FindScopeVisitor extends Visitor {
-            Scope scope;
-            public void visit(Tree.Declaration that) {
-                super.visit(that);
-                AnnotationList al = that.getAnnotationList();
-                if (al!=null) {
-                    for (Tree.Annotation a: al.getAnnotations()) {
-                        Integer i = a.getPrimary().getStartIndex();
-                        Integer j = node.getStartIndex();
-                        if (i.intValue()==j.intValue()) {
-                            scope = that.getDeclarationModel().getScope();
-                        }
-                    }
-                }
-            }
-            
-            public void visit(Tree.DocLink that) {
-                super.visit(that);
-                scope = ((Tree.DocLink)node).getPkg();
-            }
-        };
-        FindScopeVisitor fsv = new FindScopeVisitor();
-        fsv.visit(cu);
-        return fsv.scope==null ? node.getScope() : fsv.scope;
-    }
-
     static int getLine(final int offset, ITextViewer viewer) {
         int line=-1;
         try {
