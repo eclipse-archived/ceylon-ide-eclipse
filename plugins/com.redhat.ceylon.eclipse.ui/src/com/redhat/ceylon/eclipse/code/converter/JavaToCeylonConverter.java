@@ -19,6 +19,11 @@ public class JavaToCeylonConverter implements Java8Listener {
 	boolean enterresult = false;
 	boolean isInstanceOf = false;
 
+	String[] keywords = { "assembly", "abstracts", "alias", "assert", "assign", "break", "case", "catch", "class",
+			"continue", "dynamic", "else", "exists", "extends", "finally", "for", "function", "given", "if", "import",
+			"in", "interface", "is", "module", "nonempty", "object", "of", "out", "outer", "package", "return",
+			"satisfies", "super", "switch", "then", "this", "throw", "try", "value", "void", "while" };
+
 	boolean multipleVariables = false;
 
 	Stack<String> operators = new Stack<String>();
@@ -222,7 +227,15 @@ public class JavaToCeylonConverter implements Java8Listener {
 
 		try {
 			if (((MethodHeaderContext) ctx.getParent()).typeParameters() == null) {
-				bw.write(ctx.Identifier().getText());
+				String methodDeclarator = ctx.Identifier().getText();
+
+				for (String str : keywords) {
+					if (str.equals(methodDeclarator)) {
+						methodDeclarator = "\\i" + methodDeclarator;
+					}
+				}
+
+				bw.write(methodDeclarator);
 				if (ctx.formalParameterList() == null) {
 					bw.write("()");
 				}
@@ -1762,6 +1775,13 @@ public class JavaToCeylonConverter implements Java8Listener {
 			} else {
 				expressionName = ctx.getText();
 			}
+
+			for (String str : keywords) {
+				if (str.equals(ctx.getText())) {
+					expressionName = "\\i" + ctx.getText();
+				}
+			}
+
 			bw.write(expressionName);
 			// bw.write(ctx.getChild(0).getText());
 		} catch (IOException e) {
@@ -2511,8 +2531,18 @@ public class JavaToCeylonConverter implements Java8Listener {
 						break;
 
 					str += ctx.getChild(i).getText();
-
 				}
+
+				String str2 = str;
+
+				if (ctx.typeName() != null)
+					str2 = str.replace(ctx.typeName().getText() + ".", "");
+				for (String str1 : keywords) {
+					if (str1.equals(str2)) {
+						str = ctx.typeName().getText() + "." + "\\i" + str2;
+					}
+				}
+
 				if (!enterfor) {
 					if (str.equals("System.out.println")) {
 						bw.write("print");
@@ -2583,6 +2613,16 @@ public class JavaToCeylonConverter implements Java8Listener {
 
 			}
 
+			String str2 = str;
+
+			if (ctx.typeName() != null)
+				str2 = str.replace(ctx.typeName().getText() + ".", "");
+			for (String str1 : keywords) {
+				if (str1.equals(str2)) {
+					str = ctx.typeName().getText() + "." + "\\i" + str2;
+				}
+			}
+
 			if (str.equals("System.out.println")) {
 				bw.write("print");
 				if (ctx.argumentList() == null)
@@ -2604,7 +2644,15 @@ public class JavaToCeylonConverter implements Java8Listener {
 	public void enterMethodHeader(MethodHeaderContext ctx) {
 		try {
 			if (ctx.typeParameters() != null) {
-				bw.write(ctx.result().getText() + " " + ctx.methodDeclarator().getChild(0).getText());
+				String methodDeclarator = ctx.methodDeclarator().getChild(0).getText();
+
+				for (String str : keywords) {
+					if (str.equals(methodDeclarator)) {
+						methodDeclarator = "\\i" + ctx.methodDeclarator().getChild(0).getText();
+					}
+				}
+
+				bw.write(ctx.result().getText() + " " + methodDeclarator);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -3003,6 +3051,12 @@ public class JavaToCeylonConverter implements Java8Listener {
 				expressionName = "\\i" + ctx.getText();
 			} else {
 				expressionName = ctx.getText();
+			}
+
+			for (String str : keywords) {
+				if (str.equals(ctx.getText())) {
+					expressionName = "\\i" + ctx.getText();
+				}
 			}
 
 			if (!enterArrayAccess && !enterArrayAccess_lfno_primary) {
