@@ -38,11 +38,8 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
         CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(project);
         CeylonProjectConfig<IProject> projectConfig = 
                 ceylonProject.getConfiguration();
+        block.applyToConfiguration(projectConfig);
         projectConfig.setOutputRepo(block.getOutputRepo());
-        projectConfig.setProjectLocalRepos(
-                toCeylonStringIterable(block.getProjectLocalRepos()));
-        projectConfig.setProjectRemoteRepos(
-                toCeylonStringIterable(block.getProjectRemoteRepos()));
         projectConfig.setProjectSuppressWarningsEnum(
                 getSuppressedWarnings(project));
         projectConfig.setProjectOverrides(toCeylonString(block.getOverrides()));

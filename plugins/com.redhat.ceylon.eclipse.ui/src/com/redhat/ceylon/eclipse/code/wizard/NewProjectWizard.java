@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
 import static com.redhat.ceylon.ide.common.util.toCeylonBoolean_.toCeylonBoolean;
-import static com.redhat.ceylon.ide.common.util.toCeylonStringIterable_.toCeylonStringIterable;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
@@ -150,8 +149,7 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             
             if (thirdPage.getBlock().getProject() != null) {
                 projectConfig.setOutputRepo(thirdPage.getBlock().getOutputRepo());
-                projectConfig.setProjectLocalRepos(toCeylonStringIterable(thirdPage.getBlock().getProjectLocalRepos()));
-                projectConfig.setProjectRemoteRepos(toCeylonStringIterable(thirdPage.getBlock().getProjectRemoteRepos()));
+                thirdPage.getBlock().applyToConfiguration(projectConfig);
             }
             
             projectConfig.save();
