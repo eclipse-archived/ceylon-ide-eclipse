@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.core.typechecker;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.WeakHashMap;
@@ -24,9 +23,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
@@ -140,49 +136,11 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
             return;
         }
 
-        List<Declaration> declarationsToClean = new ArrayList<>();
-        for (Declaration packageDeclaration : getPackage().getMembers()) {
-            if (packageDeclaration.isNative()) {
-                List<Declaration> packageDeclarationOverloads = AbstractModelLoader.getOverloads(packageDeclaration);
-                if (packageDeclarationOverloads != null) {
-                    for (Declaration packageDeclarationOverload : packageDeclarationOverloads) {
-                        if (getUnit() != null 
-                                && getUnit().equals(packageDeclarationOverload.getUnit())) {
-                            declarationsToClean.add(packageDeclarationOverload);
-                        }
-                    }
-                }
-            }
-        }
-        for (Declaration declarationToClean : declarationsToClean) {
-            removeDeclarationFromOverloads(declarationToClean);
-        }
-
         PhasedUnits phasedUnits = typechecker.getPhasedUnits();
         phasedUnits.removePhasedUnitForRelativePath(getPathRelativeToSrcDir()); // remove also the ProjectSourceFile (unit) from the Package
         JDTModule module = (JDTModule) getPackage().getModule();
         for (JDTModule moduleInReferencingProject : module.getModuleInReferencingProjects()) {
         	moduleInReferencingProject.removedOriginalUnit(getPathRelativeToSrcDir());
-        }
-    }
-
-    protected void removeDeclarationFromOverloads(Declaration declarationToClean) {
-        Declaration headerDeclaration = ModelUtil.getNativeHeader(declarationToClean.getContainer(), declarationToClean.getName());
-        if (headerDeclaration != null) {
-            List<Declaration> overloadsToClean = headerDeclaration.getOverloads();
-            if (overloadsToClean == null) {
-                return;
-            }
-            
-            for (Iterator<Declaration> itr = overloadsToClean.iterator(); itr.hasNext(); ) {
-                Declaration overload = itr.next();
-                if (overload == declarationToClean) {
-                    itr.remove();
-                }
-            }
-        }
-        for (Declaration member : declarationToClean.getMembers()) {
-            removeDeclarationFromOverloads(member);
         }
     }
 }
