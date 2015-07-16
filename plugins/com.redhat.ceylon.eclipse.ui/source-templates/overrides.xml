@@ -38,6 +38,9 @@
     <remove module="org.eclipse.team.ui"/>
     <remove module="org.eclipse.ui.forms"/>
 
+    <module module="org.eclipse.ui.ide">
+        <share module="org.eclipse.ui"/>
+    </module>
     <module module="org.eclipse.core.runtime">
         <share module="org.eclipse.core.jobs"/>
     </module>
