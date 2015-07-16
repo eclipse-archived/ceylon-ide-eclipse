@@ -94,7 +94,6 @@ import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
-import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.common.JVMModuleUtil;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.loader.AnnotationLoader;
@@ -121,11 +120,13 @@ import com.redhat.ceylon.model.loader.JvmBackendUtil;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
 import com.redhat.ceylon.model.loader.Timer;
 import com.redhat.ceylon.model.loader.TypeParser;
+import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
 import com.redhat.ceylon.model.loader.mirror.MethodMirror;
 import com.redhat.ceylon.model.loader.model.AnnotationProxyClass;
 import com.redhat.ceylon.model.loader.model.AnnotationProxyMethod;
 import com.redhat.ceylon.model.loader.model.LazyClass;
+import com.redhat.ceylon.model.loader.model.LazyElement;
 import com.redhat.ceylon.model.loader.model.LazyFunction;
 import com.redhat.ceylon.model.loader.model.LazyInterface;
 import com.redhat.ceylon.model.loader.model.LazyModule;
@@ -700,7 +701,12 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    public boolean searchAgain(Module module, String name) {
+    public boolean searchAgain(ClassMirror cachedMirror, Module module, String name) {
+        if (cachedMirror != null 
+                && ( !(cachedMirror instanceof SourceClass) || 
+                        !forceLoadFromBinaries(cachedMirror))) {
+            return false;
+        }
         if (module instanceof JDTModule) {
             JDTModule jdtModule = (JDTModule) module;
             if (jdtModule.isCeylonBinaryArchive() || jdtModule.isJavaBinaryArchive()) {
@@ -742,17 +748,41 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    public boolean searchAgain(LazyPackage lazyPackage, String name) {
-        return searchAgain(lazyPackage.getModule(), lazyPackage.getQualifiedName(lazyPackage.getQualifiedNameString(), name));
+    public boolean searchAgain(Declaration cachedDeclaration, LazyPackage lazyPackage, String name) {
+        if (cachedDeclaration != null && 
+                (cachedDeclaration instanceof LazyElement || 
+                        !forceLoadFromBinaries(cachedDeclaration))) {
+            return false;
+        }
+        return searchAgain(null, lazyPackage.getModule(), lazyPackage.getQualifiedName(lazyPackage.getQualifiedNameString(), name));
     }
 
+    private boolean forceLoadFromBinaries(boolean isNativeDeclaration) {
+        return getModuleManager().isLoadDependenciesFromModelLoaderFirst() 
+                    && isNativeDeclaration;
+    }
+
+    private boolean forceLoadFromBinaries(Tree.Declaration declarationNode) {
+        return forceLoadFromBinaries(getNative(declarationNode) != null);
+    }
+
+    private boolean forceLoadFromBinaries(Declaration declaration) {
+        return forceLoadFromBinaries(declaration.isNative());
+    }
+
+    private boolean forceLoadFromBinaries(ClassMirror classMirror) {
+        return forceLoadFromBinaries(getNative(classMirror) != null);
+    }
     
     @Override
     public ClassMirror lookupNewClassMirror(Module module, String name) {
         synchronized(getLock()){
             String topLevelPartiallyQuotedName = getToplevelQualifiedName(name);
-            if (sourceDeclarations.containsKey(topLevelPartiallyQuotedName)) {  
-                return new SourceClass(sourceDeclarations.get(topLevelPartiallyQuotedName));
+            SourceDeclarationHolder foundSourceDeclaration = sourceDeclarations.get(topLevelPartiallyQuotedName);
+            if (foundSourceDeclaration != null
+                    && !forceLoadFromBinaries(
+                            foundSourceDeclaration.getAstDeclaration())) {
+                return new SourceClass(foundSourceDeclaration);
             }
             
             ClassMirror classMirror = buildClassMirror(JVMModuleUtil.quoteJavaKeywords(name));
@@ -765,8 +795,13 @@ public class JDTModelLoader extends AbstractModelLoader {
                 classMirror = buildClassMirror(JVMModuleUtil.quoteJavaKeywords(name + "_"));
             }
             
-            if(classMirror == null)
+            if(classMirror == null) {
+                if (foundSourceDeclaration != null) {
+                    return new SourceClass(foundSourceDeclaration);
+                }
+
                 return null;
+            }
             
             Module classMirrorModule = findModuleForClassMirror(classMirror);
             if(classMirrorModule == null){
@@ -1140,15 +1175,24 @@ public class JDTModelLoader extends AbstractModelLoader {
             DeclarationType declarationType) {
         synchronized (getLock()) {
             String fqn = getToplevelQualifiedName(typeName);
-            if (sourceDeclarations.containsKey(fqn)) {
-                return sourceDeclarations.get(fqn).getModelDeclaration();
+
+            SourceDeclarationHolder foundSourceDeclaration = sourceDeclarations.get(fqn);
+            if (foundSourceDeclaration != null
+                    && ! forceLoadFromBinaries(
+                            foundSourceDeclaration.getAstDeclaration())) {
+                return foundSourceDeclaration.getModelDeclaration();
             }
+
+            Declaration result = null;
             try {
-                return super.convertToDeclaration(module, typeName, declarationType);
+                result = super.convertToDeclaration(module, typeName, declarationType);
             } catch(RuntimeException e) {
                 // FIXME: pretty sure this is plain wrong as it ignores problems and especially ModelResolutionException and just plain hides them
-                return null;
             }
+            if (result == null && foundSourceDeclaration != null) {
+                result = foundSourceDeclaration.getModelDeclaration();
+            }
+            return result;
         }
     }
 
@@ -1418,12 +1462,6 @@ public class JDTModelLoader extends AbstractModelLoader {
                         @Override
                         public void loadFromSource(Tree.Declaration decl) {
                             if (decl.getIdentifier()!=null) {
-                                String nativeBackend = getNative(decl);
-                                if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() &&
-                                        nativeBackend != null && 
-                                        !Backend.Java.nativeAnnotation.equals(nativeBackend)) {
-                                    return;
-                                }
                                 String fqn = getToplevelQualifiedName(pkgName, decl.getIdentifier().getText());
                                 if (! sourceDeclarations.containsKey(fqn)) {
                                     sourceDeclarations.put(fqn, new SourceDeclarationHolder(unit, decl, isSourceToCompile));
@@ -1605,6 +1643,25 @@ public class JDTModelLoader extends AbstractModelLoader {
         annotationLoader.setAnnotationConstructor(arg0, arg1);
     }
 
+    protected String getNative(ClassMirror classMirror) {
+        if (classMirror instanceof SourceClass) {
+            return getNative(((SourceClass)classMirror).getAstDeclaration());
+        }
+        
+        AnnotationMirror annotation = classMirror.getAnnotation("ceylon.language.NativeAnnotation$annotation$");
+        if (annotation == null) {
+            return null;
+        }
+        Object backend = annotation.getValue("backend");
+        if (backend == null) {
+            return "";
+        }
+        if (backend instanceof String) {
+            return (String) backend;
+        }
+        return null;
+    }
+    
     protected String getNative(Tree.Declaration decl) {
         for (Tree.Annotation annotation : decl.getAnnotationList().getAnnotations()) {
             String text = annotation.getPrimary().getToken().getText();
