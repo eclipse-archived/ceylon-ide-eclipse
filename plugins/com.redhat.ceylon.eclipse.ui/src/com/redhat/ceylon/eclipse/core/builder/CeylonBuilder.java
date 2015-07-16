@@ -919,15 +919,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (monitor.isCanceled()) {
                     throw new OperationCanceledException();
                 }
-                    
-                monitor.subTask("Cleaning removed files for project " + project.getName());
-                cleanRemovedFilesFromCeylonModel(filesToRemove, phasedUnits, project);
-                cleanRemovedFilesFromOutputs(filesToRemove, project);
-                monitor.worked(1);
-                
-                if (monitor.isCanceled()) {
-                    throw new OperationCanceledException();
-                }
 
                 if (!isModelTypeChecked(project)) {
                     buildHook.fullTypeCheckDuringIncrementalBuild();
@@ -977,6 +968,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                        
                 calculateDependencies(project, currentDelta, 
                         changedFiles, typeChecker, phasedUnits, filesToTypecheck, filesToCompile, monitor);
+                monitor.worked(1);
+                
+                if (monitor.isCanceled()) {
+                    throw new OperationCanceledException();
+                }
+                    
+                monitor.subTask("Cleaning removed files for project " + project.getName());
+                cleanRemovedFilesFromCeylonModel(filesToRemove, phasedUnits, project);
+                cleanRemovedFilesFromOutputs(filesToRemove, project);
                 monitor.worked(1);
                 
                 if (monitor.isCanceled()) {
@@ -1326,7 +1326,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
                 TypecheckerUnit unit = phasedUnit.getUnit();
-                if (!unit.getUnresolvedReferences().isEmpty()) {
+                if (!unit.getUnresolvedReferences().isEmpty() ||
+                        !unit.getMissingNativeImplementations().isEmpty()) {
                     IFile fileToAdd = ((IFileVirtualFile)(phasedUnit.getUnitFile())).getFile();
                     if (fileToAdd.exists()) {
                         filesToAddInTypecheck.add(fileToAdd);
@@ -1754,7 +1755,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             modelLoader.clearCachesOnPackage(packageName);
                             cleanedPackages.add(packageName);
                         }
-                    }                    
+                    }
                 }
                 continue;
             }
@@ -4021,7 +4022,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     }
 
                     for (String entryToDelete : entriesToDelete) {
-                        zipFile.removeFile(entryToDelete);
+                        try {
+                            zipFile.removeFile(entryToDelete);
+                        } catch (ZipException e) {
+                        }
+
                         if (explodeModules) {
                             new File(ceylonOutputDirectory, 
                                     entryToDelete.replace('/', File.separatorChar))
