@@ -1207,36 +1207,26 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         int result = 0;
         if (node instanceof Tree.Declaration || 
                 node instanceof Tree.Import) {
-            boolean isInCeylonSourceArchive = false;
-            Unit unit = node.getUnit();
-            if (unit != null) {
-                Module m = unit.getPackage().getModule();
-                if (m instanceof JDTModule
-                        && ((JDTModule) m).isCeylonArchive()) {
-                    isInCeylonSourceArchive = true;
+            ErrorCollectionVisitor ev = 
+                    new ErrorCollectionVisitor(node, true);
+            node.visit(ev);
+            boolean warnings=false;
+            boolean errors=false;
+            for (Message m: ev.getErrors()) {
+                if (m instanceof UsageWarning) {
+                    warnings = true;
+                }
+                else {
+                    errors = true;
                 }
             }
-            if (! isInCeylonSourceArchive) {
-                ErrorCollectionVisitor ev = 
-                        new ErrorCollectionVisitor(node, true);
-                node.visit(ev);
-                boolean warnings=false;
-                boolean errors=false;
-                for (Message m: ev.getErrors()) {
-                    if (m instanceof UsageWarning) {
-                        warnings = true;
-                    }
-                    else {
-                        errors = true;
-                    }
-                }
-                if (errors) {
-                    result |= ERROR;
-                }
-                else if (warnings) {
-                    result |= WARNING;
-                }
+            if (errors) {
+                result |= ERROR;
             }
+            else if (warnings) {
+                result |= WARNING;
+            }
+
             if (node instanceof Tree.Declaration) {
                 Tree.Declaration dec = 
                         (Tree.Declaration) node;
