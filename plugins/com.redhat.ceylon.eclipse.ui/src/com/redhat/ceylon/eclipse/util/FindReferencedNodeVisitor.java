@@ -24,6 +24,10 @@ class FindReferencedNodeVisitor extends Visitor {
     
     private boolean isDeclaration(Declaration dec) {
         if (dec!=null && dec.equals(declaration)) {
+            if (dec.isNative() &&
+                    ! dec.getNativeBackend().equals(((Declaration)declaration).getNativeBackend())) {
+                return false;
+            }
             if (declaration instanceof Function) {
                 Function method = (Function) declaration;
                 if (method.isOverloaded()) {
