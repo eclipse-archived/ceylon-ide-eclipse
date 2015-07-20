@@ -13,6 +13,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.jdt.core.JavaCore.newContainerEntry;
 import static org.eclipse.jdt.core.JavaCore.newSourceEntry;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
@@ -44,7 +45,6 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.corext.util.Messages;
-import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart;
 import org.eclipse.jdt.internal.ui.preferences.CompliancePreferencePage;
@@ -94,7 +94,6 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkingSet;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.WorkingSetConfigurationBlock;
 
@@ -1154,7 +1153,9 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
      */
     public void init(IStructuredSelection selection, IWorkbenchPart activePart) {
         setWorkingSets(getSelectedWorkingSet(selection, activePart));
-        defaultProjectType = EditorUtil.getPreferences().getString(DEFAULT_PROJECT_TYPE);
+        defaultProjectType = 
+                getPreferences()
+                    .getString(DEFAULT_PROJECT_TYPE);
         compileJava = defaultProjectType.contains("jvm");
         compileJs = defaultProjectType.contains("js");
     }
@@ -1167,7 +1168,10 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     protected void setControl(Control newControl) {
         Dialog.applyDialogFont(newControl);
 
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(newControl, IJavaHelpContextIds.NEW_JAVAPROJECT_WIZARD_PAGE);
+        /*PlatformUI.getWorkbench()
+            .getHelpSystem()
+            .setHelp(newControl, 
+                    IJavaHelpContextIds.NEW_JAVAPROJECT_WIZARD_PAGE);*/
 
         super.setControl(newControl);
     }
