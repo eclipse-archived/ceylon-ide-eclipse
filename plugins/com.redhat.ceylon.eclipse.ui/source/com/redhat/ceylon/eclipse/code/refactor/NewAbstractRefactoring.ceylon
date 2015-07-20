@@ -54,6 +54,9 @@ import org.eclipse.ltk.core.refactoring {
     TextFileChange,
     TextChange
 }
+import org.eclipse.ui.texteditor {
+    ITextEditor
+}
 
 abstract class NewAbstractRefactoring(IEditorPart editor) extends Refactoring() satisfies CommonRefactoring {
     
@@ -65,11 +68,12 @@ abstract class NewAbstractRefactoring(IEditorPart editor) extends Refactoring() 
     shared late Tree.CompilationUnit? rootNode;
     shared late Node? node;
 
-    if (is CeylonEditor editor) {
-        ceylonEditor = editor;
+    if (is CeylonEditor ce=editor) {
+        assert(is ITextEditor editor);
+        ceylonEditor = ce;
         document = editor.documentProvider.getDocument(editor.editorInput);
         project = EditorUtil.getProject(editor);
-        value cpc = editor.parseController;
+        value cpc = ce.parseController;
         tokens = cpc.tokens;
         rootNode = cpc.rootNode;
         if (exists rootNode, is IFileEditorInput input = editor.editorInput) {
