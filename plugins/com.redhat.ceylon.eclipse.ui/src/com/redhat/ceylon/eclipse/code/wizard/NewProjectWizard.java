@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.ide.common.util.toCeylonBoolean_.toCeylonBoolean;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
@@ -27,25 +28,27 @@ import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMInstall2;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.ui.IPackagesViewPart;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
 import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonRepoConfigBlock;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
-public class NewProjectWizard extends NewElementWizard implements IExecutableExtension {
+public class NewProjectWizard extends NewElementWizard 
+        implements IExecutableExtension {
 
     private NewCeylonProjectWizardPageOne firstPage;
     private NewCeylonProjectWizardPageTwo secondPage;
@@ -57,32 +60,40 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         this(null, null);
     }
 
-    public NewProjectWizard(NewCeylonProjectWizardPageOne pageOne, NewCeylonProjectWizardPageTwo pageTwo) {
-        setDefaultPageImageDescriptor(CeylonPlugin.getInstance()
-                .getImageRegistry().getDescriptor(CEYLON_NEW_PROJECT));
-        setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+    public NewProjectWizard(
+            NewCeylonProjectWizardPageOne pageOne, 
+            NewCeylonProjectWizardPageTwo pageTwo) {
+        CeylonPlugin plugin = CeylonPlugin.getInstance();
+        ImageDescriptor desc = 
+                plugin.getImageRegistry()
+                    .getDescriptor(CEYLON_NEW_PROJECT);
+        setDefaultPageImageDescriptor(desc);
+        setDialogSettings(plugin.getDialogSettings());
         setWindowTitle("New Ceylon Project");
-        firstPage= pageOne;
-        secondPage= pageTwo;
+        firstPage = pageOne;
+        secondPage = pageTwo;
     }
 
     public void addPages() {
         if (firstPage == null) {
-            firstPage= new NewCeylonProjectWizardPageOne();
+            firstPage = 
+                    new NewCeylonProjectWizardPageOne();
         }
         firstPage.setTitle("New Ceylon Project");
         firstPage.setDescription("Create a Ceylon project in the workspace or in an external location.");
         addPage(firstPage);
 
         if (secondPage == null) {
-            secondPage= new NewCeylonProjectWizardPageTwo(firstPage);
+            secondPage = 
+                    new NewCeylonProjectWizardPageTwo(firstPage);
         }
         secondPage.setTitle("Ceylon Project Settings");
         secondPage.setDescription("Define the Ceylon build settings.");
         addPage(secondPage);
         
         if (thirdPage == null) {
-            thirdPage = new NewCeylonProjectWizardPageThree(secondPage);
+            thirdPage = 
+                    new NewCeylonProjectWizardPageThree(secondPage);
         }
         thirdPage.setTitle("Ceylon Module Repository Settings");
         thirdPage.setDescription("Specify the Ceylon module repositories for the project.");
@@ -91,7 +102,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
         firstPage.init(getSelection(), getActivePart());
     }
     
-    protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
+    protected void finishPage(IProgressMonitor monitor) 
+            throws InterruptedException, CoreException {
         secondPage.performFinish(monitor); // use the full progress monitor
     }
     
@@ -125,55 +137,66 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
             return false;
         }
         
-        boolean res= super.performFinish();
-        if (res) {
-            IWorkingSet[] workingSets= firstPage.getWorkingSets();
+        if (super.performFinish()) {
+            IWorkingSet[] workingSets = 
+                    firstPage.getWorkingSets();
             if (workingSets.length > 0) {
-                PlatformUI.getWorkbench().getWorkingSetManager()
-                        .addToWorkingSets(getCreatedElement(), workingSets);
+                PlatformUI.getWorkbench()
+                    .getWorkingSetManager()
+                    .addToWorkingSets(getCreatedElement(), 
+                            workingSets);
             }
             
             IProject project = getCreatedElement().getProject();
             
-            CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
-            CeylonProjectConfig<IProject> projectConfig = ceylonProject.getConfiguration();
+            CeylonProject<IProject> ceylonProject = 
+                    ceylonModel().getProject(project);
+            CeylonProjectConfig<IProject> projectConfig = 
+                    ceylonProject.getConfiguration();
             
             if (!firstPage.isShowCompilerWarnings()) {
-                projectConfig.setProjectSuppressWarningsEnum(EnumSet.allOf(Warning.class));
+                projectConfig.setProjectSuppressWarningsEnum(
+                        EnumSet.allOf(Warning.class));
             }
             
             Boolean offlineOption = firstPage.getOfflineOption();
             if (offlineOption!=null) {
-                projectConfig.setProjectOffline(toCeylonBoolean(offlineOption));
+                projectConfig.setProjectOffline(
+                        toCeylonBoolean(offlineOption));
             }
             
-            if (thirdPage.getBlock().getProject() != null) {
-                projectConfig.setOutputRepo(thirdPage.getBlock().getOutputRepo());
-                thirdPage.getBlock().applyToConfiguration(projectConfig);
+            CeylonRepoConfigBlock block = thirdPage.getBlock();
+            if (block.getProject() != null) {
+                projectConfig.setOutputRepo(
+                        block.getOutputRepo());
+                block.applyToConfiguration(projectConfig);
             }
             
             projectConfig.save();
             
             try {
-                project.setDefaultCharset(toJavaString(projectConfig.getEncoding()), new NullProgressMonitor());
-            } catch (CoreException e) {
+                project.setDefaultCharset(
+                        toJavaString(projectConfig.getEncoding()), 
+                        new NullProgressMonitor());
+            }
+            catch (CoreException e) {
                 throw new RuntimeException(e);
             }
 
-            new CeylonNature(thirdPage.getBlock().getSystemRepo(),
+            new CeylonNature(block.getSystemRepo(),
                     firstPage.isEnableJdtClassesDir(), 
                     firstPage.isCompileJava(),
                     firstPage.isCompileJs(),
                     firstPage.areAstAwareIncrementalBuildsEnabled(), 
                     null)
-                            .addToProject(getCreatedElement().getProject());
+                .addToProject(project);
 
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
-            selectAndReveal(secondPage.getJavaProject().getProject());             
+            selectAndReveal(project);             
 
             Display.getDefault().asyncExec(new Runnable() {
                 public void run() {
-                    IWorkbenchPart activePart= getActivePart();
+                    IWorkbenchPart activePart = getActivePart();
                     if (activePart instanceof IPackagesViewPart) {
                         PackageExplorerPart.openInActivePerspective()
                             .tryToReveal(getCreatedElement());
@@ -181,31 +204,40 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
                 }
             });
             
+            return true;
         }
-        
-        return res;
+        else {
+            return false;
+        }
     }
 
     private boolean checkJre() {
-        for (IClasspathEntry cpe: firstPage.getDefaultClasspathEntries()) {
+        for (IClasspathEntry cpe: 
+                firstPage.getDefaultClasspathEntries()) {
             if (cpe.getEntryKind()==IClasspathEntry.CPE_CONTAINER) {                
                 IPath path = cpe.getPath();
                 if (path.segment(0).equals(JRE_CONTAINER)) {
-                    IVMInstall vm = JavaRuntime.getVMInstall(cpe.getPath());
-                    if (!(vm instanceof IVMInstall2)) {
-                        return false;
-                    }
-                    String javaVersion = ((IVMInstall2)vm).getJavaVersion();
-                    if (!javaVersion.startsWith("1.7") && 
-                        !javaVersion.startsWith("1.8")) {
-                        return false;
-                    }
-                    if (path.segmentCount()==3) {
-                        String s = path.segment(2);
-                        if ((s.startsWith("JavaSE-") || s.startsWith("J2SE-")) &&
-                                !s.contains("1.7") && !s.contains("1.8")) {
+                    IVMInstall vm = JavaRuntime.getVMInstall(path);
+                    if (vm instanceof IVMInstall2) {
+                        IVMInstall2 ivm = (IVMInstall2) vm;
+                        String javaVersion = 
+                                ivm.getJavaVersion();
+                        if (!javaVersion.startsWith("1.7") && 
+                            !javaVersion.startsWith("1.8")) {
                             return false;
                         }
+                        if (path.segmentCount()==3) {
+                            String s = path.segment(2);
+                            if ((s.startsWith("JavaSE-") || 
+                                 s.startsWith("J2SE-")) &&
+                                    !s.contains("1.7") && 
+                                    !s.contains("1.8")) {
+                                return false;
+                            }
+                        }
+                    }
+                    else {
+                        return false;
                     }
                 }
             }
@@ -214,7 +246,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     }
     
     private boolean checkOutputPaths() {
-        String ceylonOutString = thirdPage.getBlock().getOutputRepo();
+        String ceylonOutString = 
+                thirdPage.getBlock().getOutputRepo();
         if (ceylonOutString.startsWith("."+File.separator)) {
             ceylonOutString = firstPage.getProjectName() + 
                     ceylonOutString.substring(1);
@@ -229,7 +262,8 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     private void displayError(String message) {
         for (IWizardPage page: getPages()) {
             if (page instanceof WizardPage) {
-                ((WizardPage) page).setErrorMessage(message);
+                WizardPage wizardPage = (WizardPage) page;
+                wizardPage.setErrorMessage(message);
             }
         }
     }
@@ -237,29 +271,30 @@ public class NewProjectWizard extends NewElementWizard implements IExecutableExt
     private void clearErrors() {
         for (IWizardPage page: getPages()) {
             if (page instanceof WizardPage) {
-                ((WizardPage)page).setErrorMessage(null);
+                WizardPage wizardPage = (WizardPage) page;
+                wizardPage.setErrorMessage(null);
             }
         }
     }
-    
+
     private IWorkbenchPart getActivePart() {
-        IWorkbenchWindow activeWindow= getWorkbench().getActiveWorkbenchWindow();
-        if (activeWindow != null) {
-            IWorkbenchPage activePage= activeWindow.getActivePage();
-            if (activePage != null) {
-                return activePage.getActivePart();
-            }
+        IWorkbenchPage activePage = getActivePage();
+        if (activePage != null) {
+            return activePage.getActivePart();
         }
         return null;
     }
 
-    protected void handleFinishException(Shell shell, InvocationTargetException e) {
-        String title= NewWizardMessages.JavaProjectWizard_op_error_title; 
-        String message= NewWizardMessages.JavaProjectWizard_op_error_create_message;             
-        ExceptionHandler.handle(e, getShell(), title, message);
+    protected void handleFinishException(Shell shell, 
+            InvocationTargetException e) {
+        ExceptionHandler.handle(e, getShell(), 
+                NewWizardMessages.JavaProjectWizard_op_error_title, 
+                NewWizardMessages.JavaProjectWizard_op_error_create_message);
     }   
 
-    public void setInitializationData(IConfigurationElement cfig, String propertyName, Object data) {
+    public void setInitializationData(
+            IConfigurationElement cfig, 
+            String propertyName, Object data) {
         fConfigElement= cfig;
     }
 
