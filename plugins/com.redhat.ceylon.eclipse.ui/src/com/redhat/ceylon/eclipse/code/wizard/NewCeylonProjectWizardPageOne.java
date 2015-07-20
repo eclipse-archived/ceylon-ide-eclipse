@@ -97,8 +97,6 @@ import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.WorkingSetConfigurationBlock;
 
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-
 /**
  * The first page of the New Java Project wizard. This page is typically used in combination with
  * {@link NewCeylonProjectWizardPageTwo}. Clients can extend this page to modify the UI: Add, remove
@@ -1314,7 +1312,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
      * @return returns the source class path entries for the new project
      */
     public IClasspathEntry[] getSourceClasspathEntries() {
-        String defaultSourceFolderName = EditorUtil.getPreferences().getString(DEFAULT_SOURCE_FOLDER);
+        String defaultSourceFolderName = getPreferences().getString(DEFAULT_SOURCE_FOLDER);
         IPath folderPath= new Path(getProjectName()).makeAbsolute();
         return new IClasspathEntry[] { newSourceEntry(folderPath.append(defaultSourceFolderName)) };
     }

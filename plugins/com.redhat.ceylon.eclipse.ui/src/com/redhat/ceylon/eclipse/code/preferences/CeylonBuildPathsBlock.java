@@ -16,6 +16,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.ide.common.util.toCeylonStringIterable_.toCeylonStringIterable;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 
@@ -1048,7 +1049,7 @@ public class CeylonBuildPathsBlock {
         List<CPListElement> list= new ArrayList<CPListElement>();
         IResource srcFolder;
         IPreferenceStore store= PreferenceConstants.getPreferenceStore();
-        String sourceFolderName= DEFAULT_SOURCE_FOLDER;//store.getString(PreferenceConstants.SRCBIN_SRCNAME);
+        String sourceFolderName= getPreferences().getString(DEFAULT_SOURCE_FOLDER);
         if (store.getBoolean(PreferenceConstants.SRCBIN_FOLDERS_IN_NEWPROJ) && sourceFolderName.length() > 0) {
             srcFolder= jproj.getProject().getFolder(sourceFolderName);
         } else {
