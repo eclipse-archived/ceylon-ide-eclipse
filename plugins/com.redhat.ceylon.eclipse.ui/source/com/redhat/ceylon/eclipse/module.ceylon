@@ -23,6 +23,7 @@ module com.redhat.ceylon.eclipse "1.1.1" {
     shared import jgrapht "0.8.3.jdk1_6";
     shared import zip4j "1.3.2";
     shared import "antlr-min-runtime" "4.5";
+    shared import "Java-to-Ceylon-Converter" "0.0.1-SNAPSHOT";
     shared import com.redhat.ceylon.eclipse.ui.jdt.debug.fragment "current";
     shared import org.antlr.runtime "3.4";
 }

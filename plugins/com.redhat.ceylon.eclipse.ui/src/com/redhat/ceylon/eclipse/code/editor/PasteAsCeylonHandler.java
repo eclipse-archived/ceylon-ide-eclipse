@@ -20,9 +20,9 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.eclipse.code.converter.Java8Lexer;
-import com.redhat.ceylon.eclipse.code.converter.Java8Parser;
-import com.redhat.ceylon.eclipse.code.converter.JavaToCeylonConverter;
+import com.redhat.ceylon.converter.Java8Lexer;
+import com.redhat.ceylon.converter.Java8Parser;
+import com.redhat.ceylon.converter.JavaToCeylonConverter;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractHandler;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
