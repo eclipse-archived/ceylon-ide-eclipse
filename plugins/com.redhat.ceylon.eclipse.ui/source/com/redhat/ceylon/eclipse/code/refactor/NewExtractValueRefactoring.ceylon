@@ -1,9 +1,6 @@
 import com.redhat.ceylon.ide.common.refactoring {
     CommonExtractValueRefactoring
 }
-import org.eclipse.ui {
-    IEditorPart
-}
 import org.eclipse.core.runtime {
     IProgressMonitor
 }
@@ -27,8 +24,11 @@ import com.redhat.ceylon.eclipse.util {
     Indents,
     Nodes
 }
+import com.redhat.ceylon.eclipse.code.editor {
+    CeylonEditor
+}
 
-shared class NewExtractValueRefactoring(IEditorPart editor, String newName) extends NewAbstractRefactoring(editor) satisfies CommonExtractValueRefactoring {
+class NewExtractValueRefactoring(CeylonEditor editor, String newName, Boolean explicitType, Boolean getter) extends NewAbstractRefactoring(editor) satisfies CommonExtractValueRefactoring {
 
     shared actual RefactoringStatus checkFinalConditions(IProgressMonitor? iProgressMonitor) {
         if (exists node, exists mop = node.scope.getMemberOrParameter(node.unit, newName, null, false)) {
@@ -44,6 +44,7 @@ shared class NewExtractValueRefactoring(IEditorPart editor, String newName) exte
     shared actual Change createChange(IProgressMonitor? iProgressMonitor) {
         TextChange tc = newLocalChange();
         extractInFile(tc);
+        
         return tc;
     }
     
@@ -51,7 +52,7 @@ shared class NewExtractValueRefactoring(IEditorPart editor, String newName) exte
         tfc.edit = MultiTextEdit();
         value doc = tfc.getCurrentDocument(null);
 
-        assert (node is Tree.Term);
+        assert (exists node, node is Tree.Term);
 
         value result = extractValue(node, rootNode, newName, explicitType, getter);
         variable Integer il = 0;

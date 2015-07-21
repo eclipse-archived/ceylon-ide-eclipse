@@ -1,46 +1,14 @@
-import org.antlr.runtime {
-    CommonToken
+import com.redhat.ceylon.compiler.typechecker.context {
+    PhasedUnit
+}
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Node
 }
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree,
-    Node
-}
-import com.redhat.ceylon.ide.common.refactoring {
-    CommonRefactoring
-}
-import org.eclipse.core.resources {
-    IFile,
-    IProject
-}
-import org.eclipse.jface.text {
-    IDocument
-}
-import com.redhat.ceylon.eclipse.util {
-    EditorUtil,
-    Nodes
-}
-import java.util {
-    List,
-    ArrayList
-}
-import org.eclipse.ui {
-    IEditorPart,
-    IFileEditorInput
-}
-import com.redhat.ceylon.compiler.typechecker.context {
-    PhasedUnit
-}
-import ceylon.interop.java {
-    CeylonIterable
-}
 import com.redhat.ceylon.eclipse.core.builder {
     CeylonBuilder
-}
-import com.redhat.ceylon.model.typechecker.model {
-    Declaration
 }
 import com.redhat.ceylon.eclipse.core.model {
     CrossProjectSourceFile,
@@ -49,48 +17,60 @@ import com.redhat.ceylon.eclipse.core.model {
     EditedSourceFile,
     ProjectSourceFile
 }
+import com.redhat.ceylon.eclipse.util {
+    EditorUtil,
+    Nodes
+}
+import com.redhat.ceylon.ide.common.refactoring {
+    CommonRefactoring
+}
+import com.redhat.ceylon.model.typechecker.model {
+    Declaration
+}
+
+import java.util {
+    List,
+    ArrayList
+}
+
+import org.antlr.runtime {
+    CommonToken
+}
+import org.eclipse.core.resources {
+    IFile,
+    IProject
+}
+import org.eclipse.jface.text {
+    IDocument
+}
 import org.eclipse.ltk.core.refactoring {
     DocumentChange,
     TextFileChange,
     TextChange
 }
-import org.eclipse.ui.texteditor {
-    ITextEditor
+import org.eclipse.ui {
+    IFileEditorInput
 }
 
-abstract class NewAbstractRefactoring(IEditorPart editor) extends Refactoring() satisfies CommonRefactoring {
+abstract class NewAbstractRefactoring(CeylonEditor editor) extends Refactoring() satisfies CommonRefactoring {
     
     late IProject? project;
     late IFile? sourceFile;
     late List<CommonToken>? tokens;
     late IDocument? document;
-    late CeylonEditor? ceylonEditor;
-    shared late Tree.CompilationUnit? rootNode;
     shared late Node? node;
 
-    if (is CeylonEditor ce=editor) {
-        assert(is ITextEditor editor);
-        ceylonEditor = ce;
-        document = editor.documentProvider.getDocument(editor.editorInput);
-        project = EditorUtil.getProject(editor);
-        value cpc = ce.parseController;
-        tokens = cpc.tokens;
-        rootNode = cpc.rootNode;
-        if (exists rootNode, is IFileEditorInput input = editor.editorInput) {
-            sourceFile = EditorUtil.getFile(input);
-            node = Nodes.findNode(rootNode, EditorUtil.getSelection(editor));
-        } else {
-            sourceFile = null;
-            node = null;
-        }
+    document = editor.documentProvider.getDocument(editor.editorInput);
+    project = EditorUtil.getProject(editor);
+    value cpc = editor.parseController;
+    tokens = cpc.tokens;
+    rootNode = cpc.rootNode;
+    if (is IFileEditorInput input = editor.editorInput) {
+        sourceFile = EditorUtil.getFile(input);
+        node = Nodes.findNode(rootNode, EditorUtil.getSelection(editor));
     } else {
-        ceylonEditor = null;
-        document = null;
-        tokens = null;
-        rootNode = null;
         sourceFile = null;
         node = null;
-        project = null;
     }
     
     shared Boolean inSameProject(Declaration declaration) {
@@ -106,19 +86,16 @@ abstract class NewAbstractRefactoring(IEditorPart editor) extends Refactoring() 
         return false;
     }
     
-    shared Boolean isEditable() => rootNode?.unit is EditedSourceFile || rootNode?.unit is ProjectSourceFile;
+    shared Boolean isEditable() => rootNode.unit is EditedSourceFile || rootNode.unit is ProjectSourceFile;
     
     shared actual String toString(Node term) {
         return Nodes.toString(term, tokens);
     }
     
     shared DocumentChange? newDocumentChange() {
-        if (exists ceylonEditor, exists document) {
-            value dc = DocumentChange((ceylonEditor.editorInput.name else "") + " - current editor", document);
-            dc.textType = "ceylon";
-            return dc;
-        }
-        return null;
+        value dc = DocumentChange(editor.editorInput.name + " - current editor", document);
+        dc.textType = "ceylon";
+        return dc;
     }
     
     shared TextFileChange newTextFileChange(PhasedUnit pu) {
@@ -127,16 +104,11 @@ abstract class NewAbstractRefactoring(IEditorPart editor) extends Refactoring() 
         return tfc;
     }
 
-    shared actual Boolean searchInEditor()
-            => if (exists ceylonEditor, ceylonEditor.dirty) then true else false;
+    shared actual Boolean searchInEditor() => editor.dirty;
     
     shared actual Boolean searchInFile(PhasedUnit pu) {
-        if (exists ceylonEditor) {
-            return if (!ceylonEditor.dirty || !pu.unit.equals(ceylonEditor.parseController.rootNode.unit))
+        return if (!editor.dirty || !pu.unit.equals(editor.parseController.rootNode.unit))
             then true else false;
-        } else {
-            return true;
-        }
     }
 
     shared TextChange newLocalChange() {
