@@ -11,7 +11,6 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_L
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -32,12 +31,12 @@ import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.ide.common.util.NodePrinter;
 import com.redhat.ceylon.ide.common.util.nodes_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class Nodes {
@@ -430,32 +429,14 @@ public class Nodes {
 
     public static void appendParameters(StringBuilder result,
             Tree.FunctionArgument fa, Unit unit, 
-            List<CommonToken> tokens) {
+            final List<CommonToken> tokens) {
 
-        // TODO need to figure out of to pass a Callable to delegate
-
-        for (Tree.ParameterList pl: fa.getParameterLists()) {
-            result.append('(');
-            boolean first=true;
-            for (Tree.Parameter p: pl.getParameters()) {
-                if (first) {
-                    first=false;
-                }
-                else {
-                    result.append(", ");
-                }
-                if (p instanceof Tree.InitializerParameter) {
-                    Type type = 
-                            p.getParameterModel().getType();
-                    if (!isTypeUnknown(type)) {
-                        result.append(type.asSourceCodeString(unit))
-                              .append(" ");
-                    }
-                }
-                result.append(toString(p, tokens));
+        delegate.appendParameters(result, fa, unit, new NodePrinter() {
+            @Override
+            public String $toString(Node node) {
+                return Nodes.toString(node, tokens);
             }
-            result.append(')');
-        }
+        });
     }
 
     public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, 
