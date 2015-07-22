@@ -67,7 +67,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return (node instanceof Tree.AnyMethod || 
                 node instanceof Tree.ClassDefinition) &&
                     ((Tree.Declaration) node).getDeclarationModel()!=null &&

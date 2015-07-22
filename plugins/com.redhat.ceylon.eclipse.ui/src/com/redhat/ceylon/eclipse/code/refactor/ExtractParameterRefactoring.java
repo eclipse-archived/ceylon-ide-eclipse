@@ -97,7 +97,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     
     
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return node instanceof Tree.Term && 
                 methodOrClass!=null &&
                 methodOrClass.getDeclarationModel()!=null &&

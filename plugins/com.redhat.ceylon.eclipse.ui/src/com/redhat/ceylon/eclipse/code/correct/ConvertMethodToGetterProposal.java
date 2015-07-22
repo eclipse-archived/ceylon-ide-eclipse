@@ -83,7 +83,7 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
             
             if (refactoring.getDeclaration() == null 
                     || !refactoring.getDeclaration().equals(method) 
-                    || !refactoring.isEnabled()
+                    || !refactoring.getEnabled()
                     || !refactoring.checkAllConditions(new NullProgressMonitor()).isOK()) {
                 return;
             }

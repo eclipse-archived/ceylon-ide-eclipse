@@ -54,7 +54,7 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return value != null
                 && value.getTypeDeclaration() instanceof Class
                 && value.getTypeDeclaration()

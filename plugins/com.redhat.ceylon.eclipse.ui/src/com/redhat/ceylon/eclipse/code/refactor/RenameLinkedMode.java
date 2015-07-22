@@ -52,7 +52,7 @@ public final class RenameLinkedMode
     
     @Override
     protected boolean canStart() {
-        return refactoring.isEnabled();
+        return refactoring.getEnabled();
     }
         
     private boolean isEnabled() {

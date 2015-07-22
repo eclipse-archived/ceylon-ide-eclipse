@@ -39,7 +39,7 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected boolean canStart() {
-        return refactoring.isEnabled();
+        return refactoring.getEnabled();
     }
     
     @Override

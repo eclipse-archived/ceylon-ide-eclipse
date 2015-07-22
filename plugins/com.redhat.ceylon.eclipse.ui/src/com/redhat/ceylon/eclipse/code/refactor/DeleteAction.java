@@ -20,7 +20,7 @@ public class DeleteAction extends AbstractHandler {
     
     @Override
     protected boolean isEnabled(CeylonEditor editor) {
-        return new DeleteRefactoring(editor).isEnabled();
+        return new DeleteRefactoring(editor).getEnabled();
     }
     
 }

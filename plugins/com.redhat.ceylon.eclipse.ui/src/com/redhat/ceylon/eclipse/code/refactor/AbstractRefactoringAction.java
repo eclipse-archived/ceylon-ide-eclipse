@@ -29,7 +29,7 @@ public abstract class AbstractRefactoringAction {
                 return false;
             }
         }
-        if (refactoring.isEnabled()) {
+        if (refactoring.getEnabled()) {
             return new RefactoringStarter().activate(createWizard(refactoring),
                     editor.getSite().getShell(),
                             refactoring.getName(), 4);

@@ -82,7 +82,7 @@ class ChangeParametersProposal implements ICompletionProposal,
     public static void add(Collection<ICompletionProposal> proposals,
             CeylonEditor editor) {
         ChangeParametersRefactoring cpr = new ChangeParametersRefactoring(editor);
-        if (cpr.isEnabled()) {
+        if (cpr.getEnabled()) {
             proposals.add(new ChangeParametersProposal(cpr.getDeclaration(), 
                     editor));
         }

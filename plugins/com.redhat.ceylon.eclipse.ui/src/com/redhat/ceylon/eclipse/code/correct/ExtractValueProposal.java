@@ -75,7 +75,7 @@ public class ExtractValueProposal implements ICompletionProposal, ICompletionPro
             }
         }
         ExtractValueRefactoring evr = new ExtractValueRefactoring(editor);
-        if (evr.isEnabled()) {
+        if (evr.getEnabled()) {
             proposals.add(new ExtractValueProposal(editor));
         }
     }
