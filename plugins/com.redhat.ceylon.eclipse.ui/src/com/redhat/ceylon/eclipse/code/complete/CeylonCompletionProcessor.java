@@ -33,7 +33,6 @@ import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.ad
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addImportProposal;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.anonFunctionHeader;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getLine;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getRealScope;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isEmptyModuleDescriptor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isEmptyPackageDescriptor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
@@ -100,13 +99,11 @@ import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_PARAMETER_R
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.VALUE_REF;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
-import static com.redhat.ceylon.eclipse.util.Types.getResultType;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isLetter;
-import static java.util.Collections.emptyMap;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
@@ -118,7 +115,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -146,6 +142,8 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
+import com.redhat.ceylon.ide.common.completion.FindScopeVisitor;
+import com.redhat.ceylon.ide.common.completion.IdeCompletionManager;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
@@ -154,7 +152,6 @@ import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.ImportList;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -169,11 +166,12 @@ import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
-public class CeylonCompletionProcessor implements IContentAssistProcessor {
+public class CeylonCompletionProcessor extends IdeCompletionManager implements IContentAssistProcessor {
     
     static final Image LARGE_CORRECTION_IMAGE = 
             getDecoratedImage(CeylonResources.CEYLON_CORRECTION, 0, false);
 
+    private static final CeylonCompletionProcessor DUMMY_INSTANCE = new CeylonCompletionProcessor(null);
     private static final char[] CONTEXT_INFO_ACTIVATION_CHARS = 
             ",(;{".toCharArray();
     
@@ -429,7 +427,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
         }
         
-        Scope scope = getRealScope(node, rn);
+        FindScopeVisitor fsv = new FindScopeVisitor(node);
+        fsv.visit(rn);
+        Scope scope = fsv.getScope();
         
         //construct completions when outside ordinary code
         ICompletionProposal[] completions = 
@@ -811,7 +811,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 token.getStopIndex()>=offset-2;
     }
     
-    private static ICompletionProposal[] 
+    private ICompletionProposal[] 
     constructCompletions(int offset, String prefix, 
             Set<DeclarationWithProximity> sortedProposals, 
             Set<DeclarationWithProximity> sortedFunctionProposals, 
@@ -1227,21 +1227,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
     }
 
-    private static boolean isQualifiedType(Node node) {
-        if (node instanceof Tree.QualifiedType) {
-            return true;
-        }
-        else if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
-            Tree.QualifiedMemberOrTypeExpression qmte = 
-                    (Tree.QualifiedMemberOrTypeExpression) 
-                        node;
-            return qmte.getStaticMethodReference();
-        }
-        else {
-            return false;
-        }
-    }
-
     private static boolean noParametersFollow(CommonToken nextToken) {
         return nextToken==null ||
                 //should we disable this, since a statement
@@ -1492,43 +1477,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     public static Map<String, DeclarationWithProximity> 
     getProposals(Node node, Scope scope, 
             Tree.CompilationUnit rootNode) {
-       return getProposals(node, scope, "", false, rootNode); 
+       return DUMMY_INSTANCE.getProposals(node, scope, "", false, rootNode); 
     }
     
-    private static Map<String, DeclarationWithProximity> 
-    getFunctionProposals(Node node, Scope scope, 
-            String prefix, boolean memberOp) {
-        Unit unit = node.getUnit();
-        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
-            Tree.QualifiedMemberOrTypeExpression qmte = 
-                    (Tree.QualifiedMemberOrTypeExpression) 
-                        node;
-            Type type = getPrimaryType(qmte);
-            if (!qmte.getStaticMethodReference() && 
-                    !isTypeUnknown(type)) {
-                return collectUnaryFunctions(type, 
-                        scope.getMatchingDeclarations(
-                                unit, prefix, 0));
-            }
-        }
-        else if (memberOp && node instanceof Tree.Term) {
-            Type type = null;
-            if (node instanceof Tree.Term) {
-                Tree.Term term = (Tree.Term) node;
-                type = term.getTypeModel();
-            } 
-            if (type!=null) {
-                return collectUnaryFunctions(type, 
-                        scope.getMatchingDeclarations(
-                                unit, prefix, 0));
-            }
-            else {
-                return emptyMap();
-            }
-        }
-        return emptyMap();
-    }
-
     public static Map<String, DeclarationWithProximity> 
     collectUnaryFunctions(Type type, 
             Map<String, DeclarationWithProximity> candidates) {
@@ -1566,213 +1517,4 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         return matches;
     }
-    
-    private static Map<String, DeclarationWithProximity> 
-    getProposals(Node node, Scope scope, String prefix, 
-            boolean memberOp, Tree.CompilationUnit rootNode) {
-        Unit unit = node.getUnit();
-        if (node instanceof Tree.MemberLiteral) {
-            Tree.MemberLiteral ml = (Tree.MemberLiteral) node;
-            Tree.StaticType mlt = ml.getType();
-            if (mlt!=null) {
-                Type type = mlt.getTypeModel();
-                if (type!=null) {
-                    return type.resolveAliases()
-                            .getDeclaration()
-                            .getMatchingMemberDeclarations(
-                                    unit, scope, prefix, 0);
-                }
-                else {
-                    return emptyMap();
-                }
-            }
-        }
-        else if (node instanceof Tree.TypeLiteral) {
-            Tree.TypeLiteral tl = (Tree.TypeLiteral) node;
-            Tree.StaticType tlt = tl.getType();
-            if (tlt instanceof Tree.BaseType) {
-                Tree.BaseType bt = (Tree.BaseType) tlt;
-                if (bt.getPackageQualified()) {
-                    return unit.getPackage()
-                            .getMatchingDirectDeclarations(
-                                    prefix, 0);
-                }
-            }
-            if (tlt!=null) {
-                Type type = tlt.getTypeModel();
-                if (type!=null) {
-                    return type.resolveAliases()
-                            .getDeclaration()
-                            .getMatchingMemberDeclarations(
-                                    unit, scope, prefix, 0);
-                }
-                else {
-                    return emptyMap();
-                }
-            }
-        }
-        
-        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
-            Tree.QualifiedMemberOrTypeExpression qmte = 
-                    (Tree.QualifiedMemberOrTypeExpression) 
-                        node;
-            Type type = getPrimaryType(qmte);
-            if (qmte.getStaticMethodReference()) {
-                type = unit.getCallableReturnType(type);
-            }
-            if (type!=null && !type.isUnknown()) {
-                return type.resolveAliases()
-                        .getDeclaration()
-                        .getMatchingMemberDeclarations(
-                                unit, scope, prefix, 0);
-            }
-            else {
-                Tree.Primary primary = qmte.getPrimary();
-                if (primary instanceof Tree.MemberOrTypeExpression) {
-                    //it might be a qualified type or even a static method reference
-                    Tree.MemberOrTypeExpression pmte = 
-                            (Tree.MemberOrTypeExpression) 
-                                primary;
-                    Declaration d = pmte.getDeclaration();
-                    if (d instanceof TypeDeclaration) {
-                        TypeDeclaration td = 
-                                (TypeDeclaration) d;
-                        type = td.getType();
-                        if (type!=null) {
-                            return type.resolveAliases()
-                                    .getDeclaration()
-                                    .getMatchingMemberDeclarations(
-                                            unit, scope, prefix, 0);
-                        }
-                    }
-                }
-                else if (primary instanceof Tree.Package) {
-                    return unit.getPackage()
-                            .getMatchingDirectDeclarations(
-                                    prefix, 0);
-                }
-            }
-            return emptyMap();
-        } 
-        else if (node instanceof Tree.QualifiedType) {
-            Tree.QualifiedType type = 
-                    (Tree.QualifiedType) node;
-            Type t = type.getOuterType().getTypeModel();
-            if (t!=null) {
-                return t.resolveAliases()
-                        .getDeclaration()
-                        .getMatchingMemberDeclarations(
-                                unit, scope, prefix, 0);
-            }
-            else {
-                return emptyMap();
-            }
-        }
-        else if (node instanceof Tree.BaseType) {
-            Tree.BaseType type = (Tree.BaseType) node;
-            if (type.getPackageQualified()) {
-                return unit.getPackage()
-                        .getMatchingDirectDeclarations(
-                                prefix, 0);
-            }
-            else if (scope!=null) {
-                return scope.getMatchingDeclarations(
-                        unit, prefix, 0);
-            }
-            else {
-                return emptyMap();
-            }
-        }
-        else if (memberOp && 
-                (node instanceof Tree.Term || 
-                 node instanceof Tree.DocLink)) {
-            Type type = null;
-            if (node instanceof Tree.DocLink) {
-                Tree.DocLink docLink = (Tree.DocLink) node;
-                Declaration d = docLink.getBase();
-                if (d != null) {
-                    type = getResultType(d);
-                    if (type == null) {
-                        type = d.getReference().getFullType();
-                    }
-                }
-            }
-//            else if (node instanceof Tree.StringLiteral) {
-//                type = null;
-//            }
-            else if (node instanceof Tree.Term) {
-                Tree.Term term = (Tree.Term) node;
-                type = term.getTypeModel();
-            } 
-            
-            if (type!=null) {
-                return type.resolveAliases()
-                        .getDeclaration()
-                        .getMatchingMemberDeclarations(
-                                unit, scope, prefix, 0);
-            }
-            else {
-                return scope.getMatchingDeclarations(
-                        unit, prefix, 0);
-            }
-        }
-        else {
-            if (scope instanceof ImportList) {
-                ImportList IL = (ImportList) scope;
-                return IL.getMatchingDeclarations(
-                        unit, prefix, 0);
-            }
-            else {
-                return scope==null ? //a null scope occurs when we have not finished parsing the file
-                        getUnparsedProposals(rootNode, prefix) :
-                        scope.getMatchingDeclarations(
-                                unit, prefix, 0);
-            }
-        }
-    }
-
-    private static Type getPrimaryType(
-            Tree.QualifiedMemberOrTypeExpression qme) {
-        Type type = 
-                qme.getPrimary().getTypeModel();
-        if (type==null) {
-            return null;
-        }
-        else {
-            Tree.MemberOperator mo = qme.getMemberOperator();
-            Unit unit = qme.getUnit();
-            if (mo instanceof Tree.SafeMemberOp) {
-                return unit.getDefiniteType(type);
-            }
-            else if (mo instanceof Tree.SpreadOp) {
-                return unit.getIteratedType(type);
-            }
-            else {
-                return type;
-            }
-        }
-    }
-    
-    private static Map<String, DeclarationWithProximity> 
-    getUnparsedProposals(Node node, String prefix) {
-        if (node == null) {
-            return newEmptyProposals();
-        }
-        Unit unit = node.getUnit();
-        if (unit == null) {
-            return newEmptyProposals();
-        }
-        Package pkg = unit.getPackage();
-        if (pkg == null) {
-            return newEmptyProposals();
-        }
-        return pkg.getModule()
-                .getAvailableDeclarations(prefix);
-    }
-    
-    private static TreeMap<String, DeclarationWithProximity> 
-    newEmptyProposals() {
-        return new TreeMap<String,DeclarationWithProximity>();
-    }
-    
 }

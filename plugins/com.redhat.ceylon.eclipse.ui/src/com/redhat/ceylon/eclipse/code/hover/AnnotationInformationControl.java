@@ -6,8 +6,14 @@ import static java.lang.Math.min;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlExtension2;
@@ -47,6 +53,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
@@ -72,6 +79,18 @@ class AnnotationInformationControl
     private Control fFocusControl;
     private AnnotationInfo fInput;
     private Composite fParent;
+    private final ISchedulingRule retrievingQuickFixesRule = new ISchedulingRule() {
+        @Override
+        public boolean isConflicting(ISchedulingRule rule) {
+            return rule == this;
+        }
+        
+        @Override
+        public boolean contains(ISchedulingRule rule) {
+            return rule == this;
+        }
+    };
+    AtomicBoolean quickFixesRetrieved = new AtomicBoolean(false);
 
     AnnotationInformationControl(Shell parentShell, 
             String statusFieldText) {
@@ -134,6 +153,7 @@ class AnnotationInformationControl
         for (int i=0; i<children.length; i++) {
             children[i].dispose();
         }
+        quickFixesRetrieved.set(false);
         ToolBarManager toolBarManager = getToolBarManager();
         if (toolBarManager != null)
             toolBarManager.removeAll();
@@ -142,6 +162,7 @@ class AnnotationInformationControl
     @Override
     protected void createContent(Composite parent) {
         fParent = parent;
+        quickFixesRetrieved.set(false);
         GridLayout layout = new GridLayout(1, false);
         layout.verticalSpacing = 0;
         layout.marginWidth = 0;
@@ -177,19 +198,65 @@ class AnnotationInformationControl
      */
     protected void deferredCreateContent() {
         createAnnotationInformation(fParent);
+        quickFixesRetrieved.set(false);
+        final Composite quickFixProgressGroup = new Composite(fParent, SWT.FILL);
+        GridData qk1 = 
+                new GridData(SWT.FILL, SWT.FILL, 
+                        true, true);
+        qk1.horizontalSpan=2;
+        quickFixProgressGroup.setLayoutData(qk1);
+        GridLayout layout2 = new GridLayout(2, true);
+        layout2.marginHeight = 0;
+        layout2.marginWidth = 10;
+        layout2.verticalSpacing = 2;
+        quickFixProgressGroup.setLayout(layout2);
+        Label progressLabel = new Label(quickFixProgressGroup, SWT.NONE);
+        progressLabel.setText("Searching for fixes");
+        new ProgressBar(quickFixProgressGroup, SWT.INDETERMINATE | SWT.FILL);
         setColorAndFont(fParent, 
                 fParent.getForeground(), 
                 fParent.getBackground(), 
                 CeylonPlugin.getHoverFont());
-
-        ICompletionProposal[] proposals = 
-                getAnnotationInfo().getCompletionProposals();
-        if (proposals.length > 0) {
-            createCompletionProposalsControl(fParent, 
-                    proposals);
-        }
-
         fParent.layout(true);
+        final Composite currentParent = fParent;
+
+        Job completionProposalsJob = new Job("Retrieving Fixes") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                final ICompletionProposal[] proposals = 
+                        getAnnotationInfo().getCompletionProposals();
+                if (fParent == currentParent  
+                        && ! fParent.isDisposed()) {
+                    final Display display= fParent.getDisplay();
+                    if (display != null) {
+                        display.asyncExec(new Runnable() {
+                            public void run() {
+                                if (fParent.isVisible()) {
+                                    if (! quickFixProgressGroup.isDisposed()) {
+                                        quickFixProgressGroup.dispose();
+                                    }
+                                    if (proposals.length > 0
+                                            && quickFixesRetrieved.compareAndSet(false, true)) {
+                                        createCompletionProposalsControl(fParent, 
+                                                proposals);
+                                    }
+                                    fParent.layout(true);
+                                    fParent.pack(true);
+                                    Point sizeHint = computeSizeHint();
+                                    setSize(sizeHint.x, sizeHint.y);
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    System.out.print("");
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        completionProposalsJob.setSystem(true);
+        completionProposalsJob.setRule(retrievingQuickFixesRule);
+        completionProposalsJob.schedule();
     }
 
     private void setColorAndFont(Control control, 

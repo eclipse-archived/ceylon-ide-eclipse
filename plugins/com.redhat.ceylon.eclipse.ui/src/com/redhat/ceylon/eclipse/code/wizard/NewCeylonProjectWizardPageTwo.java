@@ -51,7 +51,6 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.corext.util.Messages;
-import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.dialogs.StatusInfo;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
@@ -67,7 +66,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyDelegatingOperation;
 
 /**
@@ -153,8 +151,8 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
         Control control = getBuildPathsBlock().createControl(composite);
         control.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         Dialog.applyDialogFont(composite);
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(composite, 
-                IJavaHelpContextIds.NEW_JAVAPROJECT_WIZARD_PAGE);
+        /*PlatformUI.getWorkbench().getHelpSystem().setHelp(composite, 
+                IJavaHelpContextIds.NEW_JAVAPROJECT_WIZARD_PAGE);*/
         setControl(composite);
     }
 

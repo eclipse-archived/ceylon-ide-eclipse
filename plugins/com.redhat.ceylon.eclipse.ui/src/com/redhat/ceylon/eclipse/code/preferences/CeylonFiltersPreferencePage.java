@@ -120,7 +120,8 @@ public class CeylonFiltersPreferencePage
     @Override
     protected String getLabelText() {
         return "Filtered packages and declarations are excluded from completion\n" +
-               "proposal lists, 'Open' dialogs, and type hierarchy views.";
+               "proposal lists, 'Open' dialogs, type hierarchies, and the search results\n" +
+               "view.";
     }
     
     @Override

@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.WizardPage;
@@ -12,7 +11,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.PlatformUI;
 
 import com.redhat.ceylon.eclipse.code.preferences.CeylonRepoConfigBlock;
 
@@ -62,7 +60,12 @@ public class NewCeylonProjectWizardPageThree extends WizardPage {
     @Override
     protected void setControl(Control newControl) {
         Dialog.applyDialogFont(newControl);
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(newControl, IJavaHelpContextIds.NEW_JAVAPROJECT_WIZARD_PAGE);
+        
+        /*PlatformUI.getWorkbench()
+            .getHelpSystem()
+            .setHelp(newControl, 
+                    IJavaHelpContextIds.NEW_JAVAPROJECT_WIZARD_PAGE);*/
+        
         super.setControl(newControl);
     }
 

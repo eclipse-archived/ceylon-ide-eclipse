@@ -2,15 +2,12 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
-import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -27,13 +24,11 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
@@ -49,9 +44,10 @@ import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.ide.common.configuration.CeylonRepositoryConfigurator;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
-public class CeylonRepoConfigBlock {
+public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
 
     public interface ValidationCallback {
         void validationResultChange(boolean isValid, String message);
@@ -59,11 +55,6 @@ public class CeylonRepoConfigBlock {
 
     private IProject project;
     private ValidationCallback validationCallback;
-
-    private List<String> projectLocalRepos;
-    private List<String> globalLookupRepos;
-    private List<String> projectRemoteRepos;
-    private List<String> otherRemoteRepos;
 
     private Text systemRepoText;
     private Text outputRepoText;
@@ -110,14 +101,6 @@ public class CeylonRepoConfigBlock {
         return outputRepoText.getText();
     }
 
-    public List<String> getProjectLocalRepos() {
-        return projectLocalRepos;
-    }
-    
-    public List<String> getProjectRemoteRepos() {
-        return projectRemoteRepos;
-    }
-
     public void performDefaults() {
         systemRepoText.setText("");
         outputRepoText.setText(Repositories.withConfig(
@@ -125,11 +108,7 @@ public class CeylonRepoConfigBlock {
                         .getOutputRepository()
                         .getUrl());
 
-        projectLocalRepos = new ArrayList<String>();
-        projectRemoteRepos = new ArrayList<String>();
         lookupRepoTable.removeAll();
-        addLookupRepos(globalLookupRepos, true);
-        addLookupRepos(otherRemoteRepos, true);
         
         moduleResolutionBlock.performDefaults();
 
@@ -154,30 +133,17 @@ public class CeylonRepoConfigBlock {
         outputRepoBrowseButton.setEnabled(isCeylonNatureEnabled);
         
         lookupRepoTable.setEnabled(isCeylonNatureEnabled);
-
+        lookupRepoTable.removeAll();
         
         if (isCeylonNatureEnabled) {
             CeylonProjectConfig<IProject> config = 
                     ceylonModel().getProject(project).getConfiguration();
 
-            projectLocalRepos = 
-                    new ArrayList<>(toJavaStringList(config.getProjectLocalRepos()));
-            projectRemoteRepos = 
-                    new ArrayList<>(toJavaStringList(config.getProjectRemoteRepos()));
-            globalLookupRepos = 
-                    new ArrayList<>(toJavaStringList(config.getGlobalLookupRepos()));
-            otherRemoteRepos = 
-                    new ArrayList<>(toJavaStringList(config.getOtherRemoteRepos()));
+            loadFromConfiguration(config);
             outputRepoText.setText(config.getOutputRepo());
         } else {
             outputRepoText.setText(Constants.DEFAULT_MODULE_DIR);
         }
-        
-        lookupRepoTable.removeAll();
-        addLookupRepos(projectLocalRepos, false);
-        addLookupRepos(globalLookupRepos, true);
-        addLookupRepos(projectRemoteRepos, false);
-        addLookupRepos(otherRemoteRepos, true);
         
         addRepoButton.setEnabled(isCeylonNatureEnabled);
         addExternalRepoButton.setEnabled(isCeylonNatureEnabled);
@@ -375,7 +341,8 @@ public class CeylonRepoConfigBlock {
                             "." + File.separator + 
                             result.getFullPath()
                                 .removeFirstSegments(1);
-                    addProjectRepo(repo, 0, true);
+                    addExternalRepo(repo);
+                    validate();
                 }
             }
         });
@@ -395,7 +362,8 @@ public class CeylonRepoConfigBlock {
                         new DirectoryDialog(buttons.getShell(), 
                                 SWT.SHEET).open();
                 if (result != null) {
-                    addProjectRepo(result, 0, true);
+                    addExternalRepo(result);
+                    validate();
                 }
             }
         });
@@ -415,17 +383,7 @@ public class CeylonRepoConfigBlock {
                         new AetherRepositoryDialog(buttons.getShell());
                 int result = dlg.open();
                 if (result == InputDialog.OK) {
-                    int index = 
-                            projectLocalRepos.size() + 
-                            globalLookupRepos.size() + 
-                            projectRemoteRepos.size();
-                    String value = dlg.getValue();
-                    if (value.isEmpty()) {
-                        addProjectRepo("aether", index, false);
-                    } else {
-                        addProjectRepo("aether:" + dlg.getValue(), 
-                                index, false);
-                    }
+                    addAetherRepo(dlg.getValue());
                 }
             }
         });
@@ -465,12 +423,7 @@ public class CeylonRepoConfigBlock {
                                 inputValidator);
                 int result = input.open();
                 if (result == InputDialog.OK) {
-                    int index = 
-                            projectLocalRepos.size() + 
-                            globalLookupRepos.size() + 
-                            projectRemoteRepos.size();
-                    addProjectRepo(input.getValue(), 
-                            index, false);
+                    addRemoteRepo(input.getValue());
                 }
             }
         });
@@ -485,22 +438,8 @@ public class CeylonRepoConfigBlock {
         removeRepoButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int[] selection = 
-                        lookupRepoTable.getSelectionIndices();
-                Arrays.sort(selection);
-                for (int i = selection.length - 1; i >= 0; i--) {
-                    int index = selection[i];
-                    if (!isFixedRepoIndex(index)) {
-                        String repo = 
-                                lookupRepoTable.getItem(index)
-                                    .getText();
-                        lookupRepoTable.remove(index);
-                        projectLocalRepos.remove(repo);
-                        projectRemoteRepos.remove(repo);
-                    }
-                }
+                removeSelectedRepo();
                 lookupRepoTable.deselectAll();
-                updateButtonState();
             }
         });
     }
@@ -516,35 +455,7 @@ public class CeylonRepoConfigBlock {
         upButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int index = 
-                        lookupRepoTable.getSelectionIndex();
-                if( index != -1 ) {
-                    String repo = 
-                            lookupRepoTable.getItem(index)
-                                .getText();
-                    lookupRepoTable.remove(index);
-                    if (index > 0 && 
-                            index <= projectLocalRepos.size()) {
-                        projectLocalRepos.remove(index);
-                        addProjectRepo(repo, 
-                                index - 1, 
-                                true);
-                    }
-                    if (index == projectLocalRepos.size() + 
-                            globalLookupRepos.size()) {
-                        projectRemoteRepos.remove(repo);
-                        addProjectRepo(repo, 
-                                projectLocalRepos.size(), 
-                                true);
-                    }
-                    if (index > projectLocalRepos.size() + 
-                            globalLookupRepos.size()) {
-                        projectRemoteRepos.remove(repo);
-                        addProjectRepo(repo, 
-                                index - 1, 
-                                false);
-                    }                
-                }
+                moveSelectedReposUp();
             }
         });
         
@@ -557,84 +468,9 @@ public class CeylonRepoConfigBlock {
         downButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int index = 
-                        lookupRepoTable.getSelectionIndex();
-                if( index != -1 ) {
-                    String repo = 
-                            lookupRepoTable.getItem(index)
-                                .getText();
-                    lookupRepoTable.remove(index);
-                    if (index < projectLocalRepos.size() - 1 && 
-                            !projectLocalRepos.isEmpty()) {
-                        projectLocalRepos.remove(repo);
-                        addProjectRepo(repo, 
-                                index + 1, 
-                                true);
-                    }
-                    if( index == projectLocalRepos.size() - 1 && 
-                            !projectLocalRepos.isEmpty()) {
-                        projectLocalRepos.remove(repo);
-                        addProjectRepo(repo, 
-                                projectLocalRepos.size() + 
-                                globalLookupRepos.size(), 
-                                false);
-                    }
-                    if( index >= projectLocalRepos.size() + 
-                            globalLookupRepos.size() 
-                            && index < projectLocalRepos.size() + 
-                                globalLookupRepos.size() + 
-                                projectRemoteRepos.size() - 1 ) {
-                        projectRemoteRepos.remove(repo);
-                        addProjectRepo(repo, 
-                                index + 1, 
-                                false);
-                    }
-                }
+                moveSelectedReposDown();
             }
         });
-    }
-    
-    private void updateButtonState() {
-        updateRemoveRepoButtonState();
-        updateUpDownButtonState();
-    }
-
-    private void updateRemoveRepoButtonState() {
-        int[] selectionIndices = 
-                lookupRepoTable.getSelectionIndices();
-        for (int index : selectionIndices) {
-            if (!isFixedRepoIndex(index)) {
-                removeRepoButton.setEnabled(true);
-                return;
-            }
-        }
-        removeRepoButton.setEnabled(false);
-    }
-
-    private void updateUpDownButtonState() {
-        boolean isUpEnabled = false;
-        boolean isDownEnabled = false;
-
-        int[] selectionIndices = 
-                lookupRepoTable.getSelectionIndices();
-        if (selectionIndices.length == 1) {
-            int index = selectionIndices[0];
-            if (index > 0 && 
-                    !isFixedRepoIndex(index)) {
-                isUpEnabled = true;
-            }
-            int maxIndex = 
-                    projectLocalRepos.size() + 
-                    globalLookupRepos.size() + 
-                    projectRemoteRepos.size() - 1;
-            if (index < maxIndex && 
-                    !isFixedRepoIndex(index)) {
-                isDownEnabled = true;
-            }
-        }
-
-        upButton.setEnabled(isUpEnabled);
-        downButton.setEnabled(isDownEnabled);
     }
 
     private void validate() {
@@ -647,26 +483,6 @@ public class CeylonRepoConfigBlock {
         } else {
             validationCallback.validationResultChange(true, null);
         }
-    }
-
-    private boolean isFixedRepoIndex(int index) {
-        if (!globalLookupRepos.isEmpty() 
-                && index >= projectLocalRepos.size()
-                && index < projectLocalRepos.size() + 
-                    globalLookupRepos.size()) {
-            return true;
-        }
-        if (!otherRemoteRepos.isEmpty() 
-                && index >= projectLocalRepos.size() + 
-                    globalLookupRepos.size() + 
-                    projectRemoteRepos.size()
-                && index < projectLocalRepos.size() + 
-                    globalLookupRepos.size() + 
-                    projectRemoteRepos.size() + 
-                    otherRemoteRepos.size()) {
-            return true;
-        }
-        return false;
     }
 
     private boolean isSystemRepoValid() {
@@ -750,50 +566,54 @@ public class CeylonRepoConfigBlock {
         return null;
     }
 
-    private void addProjectRepo(String repo, int index, boolean isLocalRepo) {
-        if (isLocalRepo && 
-                projectLocalRepos.contains(repo)) {
-            return;
+    @Override
+    public Object addAllRepositoriesToList(String[] repos) {
+        for (String repo : repos) {
+            TableItem tableItem = new TableItem(lookupRepoTable, SWT.NONE);
+            tableItem.setText(repo);
+            tableItem.setImage(CeylonResources.REPO);
         }
-        if (!isLocalRepo && 
-                projectRemoteRepos.contains(repo)) {
-            return;
-        }
-        
-        if (isLocalRepo) {
-            projectLocalRepos.add(index, repo);
-        } else {
-            int remoteIndex = index - 
-                    projectLocalRepos.size() - 
-                    globalLookupRepos.size();
-            projectRemoteRepos.add(remoteIndex, repo);
-        }
-        
-        TableItem tableItem = 
-                new TableItem(lookupRepoTable, SWT.NONE, index);
-        tableItem.setText(repo);
-        tableItem.setImage(CeylonResources.REPO);
-        lookupRepoTable.setSelection(index);
-
-        validate();
-        updateButtonState();
+        return null;
     }
 
-    private void addLookupRepos(List<String> repos, boolean isGlobalRepo) {
-        if (repos != null) {
-            for (String repo : repos) {
-                TableItem tableItem = 
-                        new TableItem(lookupRepoTable, SWT.NONE);
-                tableItem.setText(repo);
-                tableItem.setImage(CeylonResources.REPO);
-                if (isGlobalRepo) {
-                    Color color = 
-                            Display.getCurrent()
-                                .getSystemColor(SWT.COLOR_TITLE_INACTIVE_FOREGROUND);
-                    tableItem.setForeground(color);
-                }
-            }
-        }
+    @Override
+    public Object addRepositoryToList(long index, String repo) {
+       TableItem tableItem = new TableItem(lookupRepoTable, SWT.NONE, (int) index);
+       tableItem.setText(repo);
+       tableItem.setImage(CeylonResources.REPO);
+       lookupRepoTable.setSelection((int) index);
+
+       return null;
     }
 
+    @Override
+    public Object enableDownButton(boolean enabled) {
+        downButton.setEnabled(enabled);
+        return null;
+    }
+
+    @Override
+    public Object enableRemoveButton(boolean enabled) {
+        removeRepoButton.setEnabled(enabled);
+        return null;
+    }
+
+    @Override
+    public Object enableUpButton(boolean enabled) {
+        upButton.setEnabled(enabled);
+        return null;
+    }
+
+    @Override
+    public int[] getSelection() {
+        return lookupRepoTable.getSelectionIndices();
+    }
+
+    @Override
+    public String removeRepositoryFromList(long index) {
+        String repo = lookupRepoTable.getItem((int) index).getText();
+        lookupRepoTable.deselectAll();
+        lookupRepoTable.remove((int) index);
+        return repo;
+    }
 }

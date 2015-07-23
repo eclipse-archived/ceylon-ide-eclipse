@@ -150,15 +150,17 @@ public class EditorUtil {
 
     public static IEditorPart getCurrentEditor() {
         IWorkbenchPage page = getActivePage();
-        return page==null ? null : page.getActiveEditor();
+        return page==null ? null : 
+            page.getActiveEditor();
     }
 
     public static IWorkbenchPage getActivePage() {
         try {
-            IWorkbenchWindow window = getWorkbench()
-                    .getActiveWorkbenchWindow();
-            return window==null ? 
-                    null : window.getActivePage();
+            IWorkbenchWindow window = 
+                    getWorkbench()
+                        .getActiveWorkbenchWindow();
+            return window==null ? null : 
+                window.getActivePage();
         }
         catch (IllegalStateException ise) {
             return null;
@@ -166,8 +168,9 @@ public class EditorUtil {
     }
     
     public static Shell getShell() {
-        IWorkbenchWindow activeWindow = getWorkbench()
-                .getActiveWorkbenchWindow();
+        IWorkbenchWindow activeWindow = 
+                getWorkbench()
+                    .getActiveWorkbenchWindow();
         if (activeWindow != null) {
             return activeWindow.getShell();
         } else {

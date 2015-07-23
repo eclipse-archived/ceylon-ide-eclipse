@@ -34,7 +34,7 @@ public class CeylonOutlinesPreferencePage
             CeylonPlugin.PLUGIN_ID + ".preferences.outlines";
     
     public CeylonOutlinesPreferencePage() {
-        setDescription("Preferences applying to the outline view, hierarchy view, and search results.");
+        setDescription("Preferences applying to outlines, type hierarchies, and the search results view.");
     }
     
     @Override
@@ -137,7 +137,7 @@ public class CeylonOutlinesPreferencePage
     
     @Override
     protected String getLabelText() {
-        return "Filtered packages and declarations are excluded from type hierarchy view.";
+        return "Filtered packages and declarations are excluded from type hierarchies\nand the search results view.";
     }
 
 }
