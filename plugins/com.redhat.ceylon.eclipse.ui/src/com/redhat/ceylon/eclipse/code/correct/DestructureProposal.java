@@ -27,6 +27,7 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 
@@ -114,9 +115,9 @@ class DestructureProposal extends LocalProposal {
         return nameProposals.size()+1;
     }
     
-    public DestructureProposal(Tree.CompilationUnit cu, 
+    public DestructureProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 
             Node node, int currentOffset) {
-        super(cu, node, currentOffset);
+        super(ceylonEditor, cu, node, currentOffset);
     }
     
     protected void addLinkedPositions(IDocument document, Unit unit)
@@ -157,11 +158,11 @@ class DestructureProposal extends LocalProposal {
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }
 
-    static void addDestructureProposal(Tree.CompilationUnit cu, 
+    static void addDestructureProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 
             Collection<ICompletionProposal> proposals,
             Node node, int currentOffset) {
         DestructureProposal prop = 
-                new DestructureProposal(cu, node, currentOffset);
+                new DestructureProposal(ceylonEditor, cu, node, currentOffset);
         if (prop.isEnabled()) {
             proposals.add(prop);
         }

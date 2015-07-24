@@ -35,7 +35,7 @@ public class DestructureHandler extends AbstractHandler {
                 Node node = findNode(rootNode, start, end);
                 List<ICompletionProposal> list = 
                         new ArrayList<ICompletionProposal>();
-                DestructureProposal.addDestructureProposal(rootNode, list, node, start);
+                DestructureProposal.addDestructureProposal(ce, rootNode, list, node, start);
                 if (!list.isEmpty()) {
                     IDocument doc = ce.getCeylonSourceViewer().getDocument();
                     ICompletionProposal proposal = list.get(0);

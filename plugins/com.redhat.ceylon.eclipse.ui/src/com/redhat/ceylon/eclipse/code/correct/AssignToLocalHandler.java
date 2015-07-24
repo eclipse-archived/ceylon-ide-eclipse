@@ -36,7 +36,7 @@ public class AssignToLocalHandler extends AbstractHandler {
                 Node node = findNode(rootNode, start, end);
                 List<ICompletionProposal> list = 
                         new ArrayList<ICompletionProposal>();
-                addAssignToLocalProposal(rootNode, list, node, start);
+                addAssignToLocalProposal((CeylonEditor)editor, rootNode, list, node, start);
                 if (!list.isEmpty()) {
                     IDocument doc = ce.getCeylonSourceViewer().getDocument();
                     ICompletionProposal proposal = list.get(0);

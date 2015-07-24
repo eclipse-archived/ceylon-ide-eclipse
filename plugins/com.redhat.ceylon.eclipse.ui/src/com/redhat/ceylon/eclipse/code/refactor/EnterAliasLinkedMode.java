@@ -100,7 +100,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         private void addLinkedPosition(int pos, int len, Declaration d) {
             if (d!=null && refactoring.isReference(d)) {
                 try {
-                    int offset = originalSelection.x;
+                    int offset = getOriginalSelection().x;
                     int seq;
                     if (offset<pos || offset>pos+len) {
                         seq = i++;

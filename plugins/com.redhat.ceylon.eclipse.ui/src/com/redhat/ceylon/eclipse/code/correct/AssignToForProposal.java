@@ -20,6 +20,7 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -60,9 +61,9 @@ class AssignToForProposal extends LocalProposal {
         return est;
     }
     
-    public AssignToForProposal(Tree.CompilationUnit cu, 
+    public AssignToForProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 
             Node node, int currentOffset) {
-        super(cu, node, currentOffset);
+        super(ceylonEditor, cu, node, currentOffset);
     }
     
     protected void addLinkedPositions(IDocument document, Unit unit)
@@ -104,11 +105,11 @@ class AssignToForProposal extends LocalProposal {
                 rootNode.getUnit().isIterableType(resultType);
     }
 
-    static void addAssignToForProposal(Tree.CompilationUnit cu, 
+    static void addAssignToForProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 
             Collection<ICompletionProposal> proposals,
             Node node, int currentOffset) {
         AssignToForProposal prop = 
-                new AssignToForProposal(cu, node, currentOffset);
+                new AssignToForProposal(ceylonEditor, cu, node, currentOffset);
         if (prop.isEnabled()) {
             proposals.add(prop);
         }

@@ -153,6 +153,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.dialogs.PreferencesUtil;
@@ -486,6 +487,17 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         return true;
     }
     
+    CeylonEditor getCurrentCeylonEditor() {
+        if (editor != null) {
+            return editor;
+        }
+        IEditorPart editorPart = EditorUtil.getCurrentEditor();
+        if (editorPart instanceof CeylonEditor) {
+            return (CeylonEditor) editorPart;
+        }
+        return null;
+    }
+    
     private void addProposals(IQuickAssistInvocationContext context, 
             ProblemLocation problem, IFile file, 
             Tree.CompilationUnit rootNode,
@@ -688,13 +700,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addTypeParameterProposal(file, rootNode, proposals, node);
             break;
         case 3000:
-            addAssignToLocalProposal(rootNode, proposals, node, start);
-            addDestructureProposal(rootNode, proposals, node, start);
-            addAssignToForProposal(rootNode, proposals, node, start);
-            addAssignToIfExistsProposal(rootNode, proposals, node, start);
-            addAssignToIfNonemptyProposal(rootNode, proposals, node, start);
-            addAssignToTryProposal(rootNode, proposals, node, start);
-            addAssignToIfIsProposal(rootNode, proposals, node, start);
+            CeylonEditor currentEditor = getCurrentCeylonEditor();
+            addAssignToLocalProposal(currentEditor, rootNode, proposals, node, start);
+            addDestructureProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToForProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToIfExistsProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToIfNonemptyProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToTryProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToIfIsProposal(currentEditor, rootNode, proposals, node, start);
             addPrintProposal(rootNode, proposals, node, start);
             break;
         case 3100:
@@ -982,13 +995,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             MakeReceiverProposal.add(proposals, editor, node);
             InvertBooleanProposal.add(proposals, editor);
             
-            addAssignToLocalProposal(rootNode, proposals, node, currentOffset);
-            addDestructureProposal(rootNode, proposals, node, currentOffset);
-            addAssignToForProposal(rootNode, proposals, node, currentOffset);
-            addAssignToIfExistsProposal(rootNode, proposals, node, currentOffset);
-            addAssignToIfNonemptyProposal(rootNode, proposals, node, currentOffset);
-            addAssignToTryProposal(rootNode, proposals, node, currentOffset);
-            addAssignToIfIsProposal(rootNode, proposals, node, currentOffset);
+            CeylonEditor currentEditor = getCurrentCeylonEditor();
+            addAssignToLocalProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addDestructureProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToForProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToIfExistsProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToIfNonemptyProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToTryProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToIfIsProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addPrintProposal(rootNode, proposals, node, currentOffset);
             
             addConvertToNamedArgumentsProposal(proposals, file, rootNode, 
