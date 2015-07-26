@@ -28,6 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
@@ -81,7 +82,8 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         return node;
     }
 
-    private ObjectClassDefinitionGenerator(String brokenName, 
+    private ObjectClassDefinitionGenerator(
+            String brokenName, 
             Tree.MemberOrTypeExpression node, 
             Tree.CompilationUnit rootNode,
             String desc,
@@ -89,7 +91,9 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             Type returnType,
             LinkedHashMap<String, Type> paramTypes) {
         this.brokenName = brokenName;
-        this.isUpperCase = Character.isUpperCase(brokenName.codePointAt(0));
+        this.isUpperCase = 
+                Character.isUpperCase(
+                        brokenName.codePointAt(0));
         this.node = node;
         this.rootNode = rootNode;
         this.desc = desc;
@@ -99,7 +103,8 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
     }
         
     String generateShared(String indent, String delim) {
-        return "shared " + generateInternal(indent, delim, false);
+        return "shared " + 
+                generateInternal(indent, delim, false);
     }
     
     String generate(String indent, String delim) {
@@ -107,35 +112,49 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
     }
     
     String generateSharedFormal(String indent, String delim) {
-        return "shared formal "+ generateInternal(indent, delim, true);
+        return "shared formal "+ 
+                generateInternal(indent, delim, true);
     }
     
     boolean isFormalSupported(){
         return isClassGenerator();
     }
     
-    private String generateInternal(String indent, String delim, boolean isFormal) {
+    private String generateInternal(String indent, 
+            String delim, boolean isFormal) {
         StringBuffer def = new StringBuffer();
         boolean isVoid = returnType==null;
         if (isClassGenerator()) {
-            List<TypeParameter> typeParams = new ArrayList<TypeParameter>();
-            StringBuilder typeParamDef = new StringBuilder();
-            StringBuilder typeParamConstDef = new StringBuilder();
-            appendTypeParams(typeParams, typeParamDef, typeParamConstDef, returnType);
-            appendTypeParams(typeParams, typeParamDef, typeParamConstDef, parameters.values());
+            List<TypeParameter> typeParams = 
+                    new ArrayList<TypeParameter>();
+            StringBuilder typeParamDef = 
+                    new StringBuilder();
+            StringBuilder typeParamConstDef = 
+                    new StringBuilder();
+            appendTypeParams(typeParams, 
+                    typeParamDef, typeParamConstDef, 
+                    returnType);
+            appendTypeParams(typeParams, 
+                    typeParamDef, typeParamConstDef, 
+                    parameters.values());
             if (typeParamDef.length() > 0) {
                 typeParamDef.insert(0, "<");
                 typeParamDef.setLength(typeParamDef.length() - 1);
                 typeParamDef.append(">");
             }
             String defIndent = getDefaultIndent();
-            String supertype = isVoid ? 
-                    null : supertypeDeclaration(returnType);
-            def.append("class ").append(brokenName).append(typeParamDef);
+            String supertype = isVoid ? null : 
+                supertypeDeclaration(returnType);
+            def.append("class ")
+                .append(brokenName)
+                .append(typeParamDef);
             appendParameters(parameters, def, 
                     getDefaultedSupertype());
             if (supertype!=null) {
-                def.append(delim).append(indent).append(defIndent).append(defIndent)
+                def.append(delim)
+                    .append(indent)
+                    .append(defIndent)
+                    .append(defIndent)
                     .append(supertype);
             }
             def.append(typeParamConstDef);
@@ -147,11 +166,14 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         }
         else if (isObjectGenerator()) {
             String defIndent = getDefaultIndent();
-            String supertype = isVoid ? 
-                    null : supertypeDeclaration(returnType);
+            String supertype = isVoid ? null : 
+                supertypeDeclaration(returnType);
             def.append("object ").append(brokenName);
             if (supertype!=null) {
-                def.append(delim).append(indent).append(defIndent).append(defIndent)
+                def.append(delim)
+                    .append(indent)
+                    .append(defIndent)
+                    .append(defIndent)
                     .append(supertype);
             }
             def.append(" {").append(delim);
@@ -190,9 +212,11 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         //TODO: this is a major copy/paste from appendMembers() below
         TypeDeclaration td = getDefaultedSupertype();
         Set<String> ambiguousNames = new HashSet<String>();
+        Unit unit = rootNode.getUnit();
         Collection<DeclarationWithProximity> members = 
-                td.getMatchingMemberDeclarations(rootNode.getUnit(), 
-                        null, "", 0).values();
+                td.getMatchingMemberDeclarations(unit, null, 
+                        "", 0)
+                    .values();
         for (DeclarationWithProximity dwp: members) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
@@ -202,10 +226,13 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                 }
             }
         }
-        for (TypeDeclaration superType: td.getSupertypeDeclarations()) {
+        for (TypeDeclaration superType: 
+                td.getSupertypeDeclarations()) {
             for (Declaration m: superType.getMembers()) {
                 if (m.isShared()) {
-                    Declaration r = td.getMember(m.getName(), null, false);
+                    Declaration r = 
+                            td.getMember(m.getName(), 
+                                    null, false);
                     if (r==null || 
                             !r.refines(m) && 
 //                                !r.getContainer().equals(ut) && 
@@ -217,34 +244,40 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         }
     }
 
-    private void appendMembers(String indent, String delim, StringBuffer def,
-            String defIndent) {
+    private void appendMembers(
+            String indent, String delim, 
+            StringBuffer def, String defIndent) {
         TypeDeclaration td = getDefaultedSupertype();
         Set<String> ambiguousNames = new HashSet<String>();
+        Unit unit = rootNode.getUnit();
         Collection<DeclarationWithProximity> members = 
-                td.getMatchingMemberDeclarations(rootNode.getUnit(),
-                        null, "", 0).values();
+                td.getMatchingMemberDeclarations(unit, null, 
+                        "", 0)
+                    .values();
         for (DeclarationWithProximity dwp: members) {
             Declaration dec = dwp.getDeclaration();
             if (ambiguousNames.add(dec.getName())) {
                 for (Declaration d: overloads(dec)) {
                     if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
-                        appendRefinementText(indent, delim, def,
-                                defIndent, d);
+                        appendRefinementText(indent, delim, 
+                                def, defIndent, d);
                     }
                 }
             }
         }
-        for (TypeDeclaration superType: td.getSupertypeDeclarations()) {
+        for (TypeDeclaration superType: 
+                td.getSupertypeDeclarations()) {
             for (Declaration m: superType.getMembers()) {
                 if (m.isShared()) {
-                    Declaration r = td.getMember(m.getName(), null, false);
+                    Declaration r = 
+                            td.getMember(m.getName(), 
+                                    null, false);
                     if ((r==null || 
                             !r.refines(m)) && 
 //                            !r.getContainer().equals(ut)) && 
                             ambiguousNames.add(m.getName())) {
-                        appendRefinementText(indent, delim, def,
-                                defIndent, m);
+                        appendRefinementText(indent, delim, 
+                                def, defIndent, m);
                     }
                 }
             }
@@ -258,42 +291,51 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         else {
             Unit unit = rootNode.getUnit();
             return intersectionType(returnType, 
-                    unit.getBasicDeclaration().getType(),
-                    unit).getDeclaration();
+                    unit.getBasicType(), unit)
+                        .getDeclaration();
         }
     }
 
-    private void appendRefinementText(String indent, String delim,
-            StringBuffer def, String defIndent, Declaration d) {
+    private void appendRefinementText(
+            String indent, String delim,
+            StringBuffer def, String defIndent, 
+            Declaration d) {
         Reference pr = 
                 getRefinedProducedReference(returnType, d);
-        String text = getRefinementTextFor(d, pr, node.getUnit(), 
-                false, null, "", false);
+        Unit unit = node.getUnit();
+        String text = 
+                getRefinementTextFor(d, pr, unit, false, 
+                        null, "", false);
         if (parameters.containsKey(d.getName())) {
             text = text.substring(0, text.indexOf(" =>")) + ";";
         }
-        def.append(indent).append(defIndent).append(text).append(delim);
+        def.append(indent)
+            .append(defIndent)
+            .append(text)
+            .append(delim);
     }
 
-    static ObjectClassDefinitionGenerator create(String brokenName, 
+    static ObjectClassDefinitionGenerator create(
+            String brokenName, 
             Tree.MemberOrTypeExpression node, 
             Tree.CompilationUnit rootNode) {
-        boolean isUpperCase = Character.isUpperCase(brokenName.charAt(0));
-        FindArgumentsVisitor fav = new FindArgumentsVisitor(node);
+        boolean isUpperCase = 
+                Character.isUpperCase(
+                        brokenName.charAt(0));
+        FindArgumentsVisitor fav = 
+                new FindArgumentsVisitor(node);
         rootNode.visit(fav);
         Unit unit = node.getUnit();
-        Type returnType = unit.denotableType(fav.expectedType);
+        Type returnType = 
+                unit.denotableType(fav.expectedType);
         StringBuilder params = new StringBuilder();
-        LinkedHashMap<String, Type> paramTypes = getParameters(fav);
+        LinkedHashMap<String,Type> paramTypes = getParameters(fav);
         if (returnType!=null) {
-            if(unit.isOptionalType(returnType)){
+            if (unit.isOptionalType(returnType)) {
                 returnType = returnType.eliminateNull();
             }
-            TypeDeclaration rtd = returnType.getDeclaration();
-            if ( (rtd instanceof Class) && (
-                    rtd.equals(unit.getObjectDeclaration()) || 
-                    rtd.equals(unit.getAnythingDeclaration()))
-            ) {
+            if (returnType.isObject() || 
+                returnType.isAnything()) {
                 returnType = null;
             }
         }
@@ -301,16 +343,23 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             return null;
         }
         if (paramTypes!=null && isUpperCase) {
-            String supertype = supertypeDeclaration(returnType);
-            if (supertype==null) supertype = "";
-            String desc = "class '" + brokenName + params + supertype + "'";
-            return new ObjectClassDefinitionGenerator(brokenName, node, rootNode, 
-                    desc, LOCAL_CLASS, returnType, paramTypes);
+            String supertype = 
+                    supertypeDeclaration(returnType);
+            if (supertype==null) {
+                supertype = "";
+            }
+            String desc = 
+                    "class '" + 
+                    brokenName + params + supertype + "'";
+            return new ObjectClassDefinitionGenerator(
+                    brokenName, node, rootNode, desc, 
+                    LOCAL_CLASS, returnType, paramTypes);
         }
         else if (paramTypes==null && !isUpperCase) {
             String desc = "object '" + brokenName + "'";
-            return new ObjectClassDefinitionGenerator(brokenName, node, rootNode, 
-                    desc, LOCAL_ATTRIBUTE, returnType, null);
+            return new ObjectClassDefinitionGenerator(
+                    brokenName, node, rootNode, desc, 
+                    LOCAL_ATTRIBUTE, returnType, null);
         }
         else {
             return null;
@@ -323,17 +372,21 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         }
         else {
             if (returnType.isClass()) {
-                return " extends " + returnType.asString() + "()"; //TODO: supertype arguments!
+                return " extends " + 
+                        returnType.asString() + "()"; //TODO: supertype arguments!
             }
             else if (returnType.isInterface()) {
-                return " satisfies " + returnType.asString();
+                return " satisfies " + 
+                        returnType.asString();
             }
             else if (returnType.isIntersection()) {
                 String extendsClause = "";
-                StringBuilder satisfiesClause = new StringBuilder();
+                StringBuilder satisfiesClause = 
+                        new StringBuilder();
                 for (Type st: returnType.getSatisfiedTypes()) {
                     if (st.isClass()) {
-                        extendsClause = " extends " + st.asString() + "()"; //TODO: supertype arguments!
+                        extendsClause = 
+                                " extends " + st.asString() + "()"; //TODO: supertype arguments!
                     }
                     else if (st.isInterface()) {
                         if (satisfiesClause.length()==0) {
@@ -345,7 +398,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                         satisfiesClause.append(st.asString());
                     }
                 }
-                return extendsClause+satisfiesClause;
+                return extendsClause + satisfiesClause;
             }
             else {
                 return null;
@@ -361,13 +414,16 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             if (returnType.getCaseTypes()!=null) {
                 return false;
             }
+            TypeDeclaration rtd = 
+                    returnType.getDeclaration();
             if (returnType.isClass()) {
-                return !returnType.getDeclaration().isFinal();
+                return !rtd.isFinal();
             }
             else if (returnType.isInterface()) {
-                Unit unit = returnType.getDeclaration().getUnit();
-                return !returnType.getDeclaration()
-                        .equals(unit.getCallableDeclaration());
+                Interface cd = 
+                        rtd.getUnit()
+                            .getCallableDeclaration();
+                return !rtd.equals(cd);
             }
             else if (returnType.isIntersection()) {
                 for (Type st: returnType.getSatisfiedTypes()) {
@@ -388,9 +444,13 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             return false;
         }
         else {
-            Unit unit = returnType.getDeclaration().getUnit();
+            TypeDeclaration rtd = 
+                    returnType.getDeclaration();
+            Class bd = 
+                    rtd.getUnit()
+                        .getBasicDeclaration();
             if (returnType.isClass()) {
-                return returnType.getSupertype(unit.getBasicDeclaration())==null;
+                return rtd.inherits(bd);
             }
             else if (returnType.isInterface()) {
                 return false;
@@ -398,7 +458,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             else if (returnType.isIntersection()) {
                 for (Type st: returnType.getSatisfiedTypes()) {
                     if (st.isClass()) {
-                        return returnType.getSupertype(unit.getBasicDeclaration())==null;
+                        return rtd.inherits(bd);
                     }
                 }
                 return false;
