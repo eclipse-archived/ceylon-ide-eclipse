@@ -38,7 +38,6 @@ import org.antlr.runtime {
     CommonToken
 }
 import org.eclipse.core.resources {
-    IFile,
     IProject
 }
 import org.eclipse.jface.text {
@@ -58,38 +57,39 @@ import org.eclipse.ui {
 import org.eclipse.ui.texteditor {
     ITextEditor
 }
+import com.redhat.ceylon.eclipse.core.vfs {
+    IFileVirtualFile
+}
 
 abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends LtkRefactoring() satisfies AbstractRefactoring {
-
-    shared class CeylonEditorData() {
+    shared class CeylonEditorData() satisfies EditorData {
         assert (is CeylonEditor ce=editorPart);
         assert(is ITextEditor editorPart);
         shared CeylonEditor editor=ce;
         shared IDocument? document = editor.documentProvider.getDocument(editorPart.editorInput);
         shared IProject? project = EditorUtil.getProject(editorPart);
-        shared List<CommonToken>? tokens = editor.parseController.tokens;
-        shared Tree.CompilationUnit? rootNode = editor.parseController.rootNode;
-        shared Node? node;
-        shared IFile? sourceFile;
+        shared actual List<CommonToken>? tokens = editor.parseController.tokens;
+        shared actual Tree.CompilationUnit? rootNode = editor.parseController.rootNode;
+        shared actual Node? node;
+        shared actual IFileVirtualFile? sourceVirtualFile;
         if (exists existingRootNode=rootNode,
             is IFileEditorInput input = editorPart.editorInput) {
-            sourceFile = EditorUtil.getFile(input);
+            sourceVirtualFile = if (exists file=EditorUtil.getFile(input)) then IFileVirtualFile(file) else null;
             node = Nodes.findNode(rootNode, EditorUtil.getSelection(editorPart));
         } else {
-            sourceFile = null;
+            sourceVirtualFile = null;
             node = null;
         }
     }
 
-    shared CeylonEditorData? ceylonEditorData;
-
+    shared actual CeylonEditorData? editorData;
     if (is CeylonEditor ce=editorPart) {
-        ceylonEditorData = CeylonEditorData();
+        editorData = CeylonEditorData();
     } else {
-        ceylonEditorData = null;
+        editorData = null;
     }
 
-    shared actual Tree.CompilationUnit? rootNode => ceylonEditorData?.rootNode;
+    shared actual Tree.CompilationUnit? rootNode => editorData?.rootNode;
 
     shared Boolean inSameProject(Declaration declaration) {
         value unit = declaration.unit;
@@ -98,7 +98,7 @@ abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends LtkRef
         }
         if (is IResourceAware unit) {
             if (exists p = unit.projectResource,
-                exists editorProject=ceylonEditorData?.project) {
+                exists editorProject=editorData?.project) {
                 return p.equals(editorProject);
             }
         }
@@ -110,13 +110,13 @@ abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends LtkRef
             rootNode?.unit is ProjectSourceFile;
 
     shared actual String toString(Node term) {
-        assert(ceylonEditorData exists);
-        return Nodes.toString(term, ceylonEditorData?.tokens);
+        assert(editorData exists);
+        return Nodes.toString(term, editorData?.tokens);
     }
 
     shared DocumentChange? newDocumentChange() {
-        assert(ceylonEditorData exists);
-        value dc = DocumentChange(editorPart.editorInput.name + " - current editor", ceylonEditorData?.document);
+        assert(editorData exists);
+        value dc = DocumentChange(editorPart.editorInput.name + " - current editor", editorData?.document);
         dc.textType = "ceylon";
         return dc;
     }
@@ -128,29 +128,33 @@ abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends LtkRef
     }
 
     shared actual Boolean searchInEditor()
-            => if (exists ceylonEditor=ceylonEditorData?.editor)
+            => if (exists ceylonEditor=editorData?.editor)
             then ceylonEditor.dirty
             else false;
 
     shared actual Boolean searchInFile(PhasedUnit pu)
-            => if (exists ceylonEditor=ceylonEditorData?.editor)
+            => if (exists ceylonEditor=editorData?.editor)
             then !ceylonEditor.dirty
             || pu.unit != ceylonEditor.parseController.rootNode.unit
             else true;
 
     shared TextChange newLocalChange() {
-        assert(ceylonEditorData exists);
-        TextChange tc = if (searchInEditor())
-                then DocumentChange(name, ceylonEditorData?.document)
-                else TextFileChange(name, ceylonEditorData?.sourceFile);
-
+        assert(exists editorData);
+        TextChange tc;
+        if (searchInEditor()) {
+            assert(exists doc = editorData.document);
+            tc = DocumentChange(name, editorData.document);
+        } else {
+            assert(exists file = editorData.sourceVirtualFile?.nativeResource);
+            tc = TextFileChange(name, file);
+        }
         tc.textType = "ceylon";
         return tc;
     }
 
     shared actual List<PhasedUnit> getAllUnits() {
-        assert(ceylonEditorData exists);
-        assert(exists project = ceylonEditorData?.project);
+        assert(editorData exists);
+        assert(exists project = editorData?.project);
         List<PhasedUnit> units = ArrayList<PhasedUnit>();
         units.addAll(CeylonBuilder.getUnits(project));
         for (p in project.referencingProjects.iterable) {

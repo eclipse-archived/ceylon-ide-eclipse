@@ -30,15 +30,22 @@ import org.eclipse.ui {
 import org.eclipse.jface.text {
     Region
 }
+import com.redhat.ceylon.model.typechecker.model {
+    Type
+}
 
-class EclipseExtractValueRefactoring(IEditorPart editorPart, String newName, Boolean explicitType, Boolean getter) extends EclipseAbstractRefactoring(editorPart) satisfies ExtractValueRefactoring {
+class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbstractRefactoring(editorPart) satisfies ExtractValueRefactoring {
+    shared actual variable String? internalNewName=null;
     shared actual variable Boolean canBeInferred=false;
+    shared actual variable Boolean explicitType=false;
+    shared actual variable Type? type=null;
     shared variable Region? typeRegion=null;
     shared variable Region? decRegion=null;
     shared variable Region? refRegion=null;
+    shared actual variable Boolean getter=false;
 
     shared actual RefactoringStatus checkFinalConditions(IProgressMonitor? iProgressMonitor)
-            => if (exists node=ceylonEditorData?.node,
+            => if (exists node=editorData?.node,
                     exists mop=node.scope.getMemberOrParameter(node.unit, newName, null, false))
                 then RefactoringStatus.createWarningStatus(
                         "An existing declaration named '``newName``' already exists in the same scope")
@@ -54,15 +61,15 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart, String newName, Boo
     }
 
     void extractInFile(TextChange tfc) {
-        "This method will only be called when the [[ceylonEditorData]]is not [[null]]"
-        assert(exists ceylonEditorData);
+        "This method will only be called when the [[editorData]]is not [[null]]"
+        assert(exists editorData);
+        assert (is Tree.Term node=editorData.node,
+            exists rootNode=editorData.rootNode);
+
         tfc.edit = MultiTextEdit();
         value doc = tfc.getCurrentDocument(null);
 
-        assert (is Tree.Term node=ceylonEditorData.node,
-                    exists rootNode=ceylonEditorData.rootNode);
-
-        value result = extractValue(node, rootNode, newName, explicitType, getter);
+        value result = extractValue();
 
         Integer il;
         if (!result.declarationsToImport.empty) {
@@ -87,15 +94,6 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart, String newName, Boo
         }
     }
 
-    shared actual Boolean enabled
-            => if (exists ceylonEditorData,
-                    exists sourceFile=ceylonEditorData.sourceFile,
-                    isEditable() &&
-                    sourceFile.name != "module.ceylon" &&
-                    sourceFile.name != "package.ceylon" &&
-                    ceylonEditorData.node is Tree.Term)
-                then true
-                else false;
-
     shared actual String name => "Extract Value";
+
 }
