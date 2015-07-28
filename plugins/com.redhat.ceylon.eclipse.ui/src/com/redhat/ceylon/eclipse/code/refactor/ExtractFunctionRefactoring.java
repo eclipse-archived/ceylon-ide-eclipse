@@ -387,7 +387,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     @Override
     public boolean getEnabled() {
         return sourceFile!=null &&
-                isEditable() &&
+                getEditable() &&
                 !sourceFile.getName().equals("module.ceylon") &&
                 !sourceFile.getName().equals("package.ceylon") &&
                 (node instanceof Tree.Term || 

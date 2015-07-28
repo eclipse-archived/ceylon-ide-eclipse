@@ -85,9 +85,9 @@ import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper;
 import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
@@ -766,7 +766,7 @@ public class CeylonParseController {
     private VirtualFile getSourceFolder(IProject project, IPath resolvedPath) {
         for (IFolder sourceFolder: getSourceFolders(project)) {
             if (sourceFolder.getFullPath().isPrefixOf(resolvedPath)) {
-                return new IFolderVirtualFile(project, 
+                return vfsJ2C.createVirtualFolder(project, 
                         sourceFolder.getProjectRelativePath());
             }
         }

@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -33,7 +35,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 
 public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
@@ -139,9 +142,9 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
                 if (!edits.isEmpty()) {
                     try {
-                        IFileVirtualFile virtualFile = 
-                                (IFileVirtualFile) phasedUnit.getUnitFile();
-                        IFile file = virtualFile.getFile();
+                        FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
+                                vfsJ2C.getIFileVirtualFile(phasedUnit.getUnitFile());
+                        IFile file = virtualFile.getNativeResource();
                         String path = file.getProjectRelativePath().toPortableString();
                         TextFileChange change = fileChanges.get(path);
                         if (change==null) {

@@ -11,7 +11,6 @@ import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationCo
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVA_MODULE;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
-import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getShell;
 import static java.lang.Character.charCount;
 import static java.lang.Character.isUpperCase;
@@ -42,6 +41,7 @@ import org.eclipse.jface.window.Window;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -50,7 +50,7 @@ import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -94,8 +94,8 @@ public class LaunchHelper {
             TypeChecker typeChecker = 
                     getProjectTypeChecker(project);
             if (typeChecker != null) {
-                IFileVirtualFile virtualFile = 
-                        createResourceVirtualFile(file);
+                FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
+                        vfsJ2C.createVirtualFile(file);
                 PhasedUnit phasedUnit = 
                         typeChecker.getPhasedUnits()
                             .getPhasedUnit(virtualFile);

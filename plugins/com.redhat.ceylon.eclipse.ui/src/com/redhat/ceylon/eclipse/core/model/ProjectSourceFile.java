@@ -4,6 +4,7 @@ import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -15,9 +16,11 @@ import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
 import com.redhat.ceylon.ide.common.model.delta.DeltaBuilderFactory;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
+import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 
@@ -53,8 +56,8 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
         try {
             final ProjectPhasedUnit modelPhaseUnit = getPhasedUnit();
             if (modelPhaseUnit != null) {
-                final ResourceVirtualFile virtualSrcFile = ResourceVirtualFile.createResourceVirtualFile(modelPhaseUnit.getSourceFileResource());
-                final ResourceVirtualFile virtualSrcDir = ResourceVirtualFile.createResourceVirtualFile(modelPhaseUnit.getSourceFolderResource());
+                final FileVirtualFile<IResource, IFolder, IFile> virtualSrcFile = vfsJ2C.createVirtualFile(modelPhaseUnit.getSourceFileResource());
+                final FolderVirtualFile<IResource, IFolder, IFile> virtualSrcDir = vfsJ2C.createVirtualFolder(modelPhaseUnit.getSourceFolderResource());
                 final TypeChecker currentTypechecker = modelPhaseUnit.getTypeChecker();
                 final ModuleManager currentModuleManager = currentTypechecker.getPhasedUnits().getModuleManager();
                 final ModuleSourceMapper currentModuleSourceMapper = currentTypechecker.getPhasedUnits().getModuleSourceMapper();

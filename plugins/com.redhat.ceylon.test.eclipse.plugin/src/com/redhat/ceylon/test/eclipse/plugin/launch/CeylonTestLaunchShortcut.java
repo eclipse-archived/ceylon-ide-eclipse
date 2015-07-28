@@ -49,7 +49,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -195,7 +195,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         String fileName = file.getName().substring(0, file.getName().length() - file.getFileExtension().length() - 1);
         names.add(fileName);
 
-        PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(ResourceVirtualFile.createResourceVirtualFile(file));
+        PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(vfsJ2C.createVirtualFile(file));
         if (phasedUnit != null) {
             List<Declaration> declarations = phasedUnit.getDeclarations();
             for (Declaration d : declarations) {
