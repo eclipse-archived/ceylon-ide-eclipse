@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -36,6 +37,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 /**
@@ -48,7 +50,7 @@ public class AnnotationHover
     /**
      * Action to configure the annotation preferences.
      */
-    class ConfigureAnnotationsAction extends Action {
+    static class ConfigureAnnotationsAction extends Action {
 
         private final AnnotationInformationControl fInfoControl;
         
@@ -195,6 +197,7 @@ public class AnnotationHover
                     @Override
                     public IInformationControlCreator 
                     getInformationPresenterControlCreator() {
+                        final AnnotationInformationControl simpleAnnotationControl = this;
                         return new AbstractReusableInformationControlCreator() {
                             @Override
                             public IInformationControl 
@@ -203,7 +206,21 @@ public class AnnotationHover
                                         new ToolBarManager(SWT.FLAT);
                                 AnnotationInformationControl control = 
                                         new AnnotationInformationControl(
-                                                parent, tbm);
+                                                parent, tbm) {
+                                    @Override
+                                    public void setInput(Object input) {
+                                        Assert.isLegal(input instanceof AnnotationInfo);
+                                        AnnotationInfo oldInput = simpleAnnotationControl.getAnnotationInfo();
+                                        AnnotationInfo newInput = (AnnotationInfo) input;
+                                        Tree.CompilationUnit oldRootNode = getTypecheckedRootNode(oldInput);
+                                        Tree.CompilationUnit newRootNode = getTypecheckedRootNode(newInput);
+                                        
+                                        if (newRootNode == oldRootNode) {
+                                            newInput.setProposals(oldInput.getProposals());
+                                        }
+                                        super.setInput(newInput);
+                                    };
+                                };
                                 ConfigureAnnotationsAction config = 
                                         new ConfigureAnnotationsAction(
                                                 control);

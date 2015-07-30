@@ -35,6 +35,7 @@ class AnnotationInfo {
             new ICompletionProposal[0];
     
     private final CeylonEditor editor;
+    private ICompletionProposal[] proposals = null;
 
     AnnotationInfo(CeylonEditor editor, 
             Map<Annotation,Position> annotationPositions,
@@ -142,4 +143,13 @@ class AnnotationInfo {
     ITextViewer getViewer() {
         return viewer;
     }
+
+    public ICompletionProposal[] getProposals() {
+        return proposals;
+    }
+
+    public void setProposals(ICompletionProposal[] proposals) {
+        this.proposals = proposals;
+    }
+
 }
