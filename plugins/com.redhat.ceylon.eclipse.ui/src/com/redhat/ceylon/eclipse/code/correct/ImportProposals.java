@@ -305,7 +305,7 @@ public class ImportProposals {
                                 .append(delim);
                         }
                     }
-                    sb.setLength(sb.length()-2);
+                    sb.setLength(sb.length()-1-delim.length());
                     sb.append(delim).append("}");
                     int start = imtl.getStartIndex();
                     int stop = imtl.getStopIndex();
