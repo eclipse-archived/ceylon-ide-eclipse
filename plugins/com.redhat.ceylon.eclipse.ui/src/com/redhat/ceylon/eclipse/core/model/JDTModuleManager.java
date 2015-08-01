@@ -37,7 +37,6 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 
-import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
@@ -329,15 +328,4 @@ public class JDTModuleManager extends LazyModuleManager {
             modelLoader.addJDKModuleToClassPath(module);
     }
     
-    @Override
-    public boolean supportsBackend(Backend backend) {
-        if (backend == Backend.Java)
-            return javaProject != null && CeylonBuilder.compileToJava(javaProject.getProject());
-        if (backend == Backend.JavaScript)
-            return javaProject != null && CeylonBuilder.compileToJs(javaProject.getProject());
-        // HACK As long as the JS ModelLoader can't deal with native "stitched" files we need this
-        if (backend == Backend.None)
-            return javaProject == null || !CeylonBuilder.compileToJava(javaProject.getProject()) && CeylonBuilder.compileToJs(javaProject.getProject());
-        return false;
-    }
 }

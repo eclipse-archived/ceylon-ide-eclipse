@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -20,7 +21,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.common.BackendSupport;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
@@ -64,9 +64,11 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         // or at least depend on the backends that are enabled
         // in the project configuration
         backendSupport = new BackendSupport() {
+            Set<String> set = new HashSet<String>();
+            { set.add("jvm"); set.add("js"); }
             @Override
-            public boolean supportsBackend(Backend backend) {
-                return true;
+            public Set<String> supportedBackends() {
+                return set;
             }
         };
     }
