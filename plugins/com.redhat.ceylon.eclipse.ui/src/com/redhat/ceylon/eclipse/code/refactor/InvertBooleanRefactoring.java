@@ -134,7 +134,7 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void invertTerm(Tree.Term term, TextChange change) {
+    public static void invertTerm(Tree.Term term, TextChange change) {
         CommonToken token = (CommonToken) term.getMainToken();
         if (term instanceof Tree.BaseMemberExpression) {
             Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) term;

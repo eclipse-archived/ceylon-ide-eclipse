@@ -28,6 +28,9 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAss
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.addAssignToIfNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
+import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addInvertOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addParenthesizeBinaryOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addSwapBinaryOperandsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeArgumentReferenceProposals;
@@ -146,13 +149,11 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMarkerResolution;
@@ -1076,53 +1077,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         
     }
 
-    private void addBinaryOperatorProposals(
+    private static void addBinaryOperatorProposals(
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.BinaryOperatorExpression boe) {
         if (boe!=null) {
             addParenthesizeBinaryOperatorProposal(proposals, file, boe);
+            addInvertOperatorProposal(proposals, file, boe);
             addSwapBinaryOperandsProposal(proposals, file, boe);
         }
-    }
-
-    private void addSwapBinaryOperandsProposal(
-            Collection<ICompletionProposal> proposals, IFile file,
-            Tree.BinaryOperatorExpression boe) {
-        TextChange change = new TextFileChange("Swap Operands", file);
-        change.setEdit(new MultiTextEdit());
-        Tree.Term lt = boe.getLeftTerm();
-        Tree.Term rt = boe.getRightTerm();
-        if (lt!=null && rt!=null) {
-            IDocument document = getDocument(change);
-            int lto = lt.getStartIndex();
-            int ltl = lt.getStopIndex()-lto+1;
-            int rto = rt.getStartIndex();
-            int rtl = rt.getStopIndex()-rto+1;
-            try {
-                change.addEdit(new ReplaceEdit(lto, ltl, 
-                        document.get(rto, rtl)));
-                change.addEdit(new ReplaceEdit(rto, rtl, 
-                        document.get(lto, ltl)));
-                proposals.add(new CorrectionProposal("Swap operands of " + 
-                        boe.getMainToken().getText() + 
-                        " expression", change, null));
-            }
-            catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void addParenthesizeBinaryOperatorProposal(
-            Collection<ICompletionProposal> proposals, IFile file,
-            Tree.BinaryOperatorExpression boe) {
-        TextChange change = new TextFileChange("Parenthesize Expression", file);
-        change.setEdit(new MultiTextEdit());
-        change.addEdit(new InsertEdit(boe.getStartIndex(), "("));
-        change.addEdit(new InsertEdit(boe.getStopIndex()+1, ")"));
-        proposals.add(new CorrectionProposal("Parenthesize " + 
-                boe.getMainToken().getText() + 
-                " expression", change, null));
     }
 
     private void addAnnotationProposals(Collection<ICompletionProposal> proposals, 
