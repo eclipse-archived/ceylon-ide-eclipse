@@ -30,6 +30,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAs
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
 import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addInvertOperatorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addParenthesizeBinaryOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addReverseOperatorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addSwapBinaryOperandsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
@@ -1082,6 +1083,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.BinaryOperatorExpression boe) {
         if (boe!=null) {
             addParenthesizeBinaryOperatorProposal(proposals, file, boe);
+            addReverseOperatorProposal(proposals, file, boe);
             addInvertOperatorProposal(proposals, file, boe);
             addSwapBinaryOperandsProposal(proposals, file, boe);
         }
