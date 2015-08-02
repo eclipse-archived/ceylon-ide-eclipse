@@ -761,14 +761,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             });
             
             BackendSupport backendSupport = 
-                    new BackendSupport() {
-                @Override
-                public Set<String> supportedBackends() {
-                    return getProjectModuleManager(
-                            refactoring.project)
-                            .supportedBackends();
-                }
-            };
+                    getProjectModuleManager(
+                            refactoring.project);
             parameters.visit(new TypeVisitor(unit, 
                     backendSupport));
             parameters.visit(new ExpressionVisitor(unit, 

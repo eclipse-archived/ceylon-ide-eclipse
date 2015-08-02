@@ -61,13 +61,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         unit = node.getUnit();
         type = unit.getAnythingDeclaration().getType();
         argument = "nothing";
-        backendSupport = new BackendSupport() {
-            @Override
-            public Set<String> supportedBackends() {
-                return getProjectModuleManager(project)
-                        .supportedBackends();
-            }
-        };
+        backendSupport = getProjectModuleManager(project);
     }
     
     @Override
