@@ -45,30 +45,30 @@ public class ImportProposalTests {
     
     @Test
     public void testSingleImport1() {
-    	ImportMemberOrTypeList imtl = prepareImportMemberOrTypeList();
+    	ImportMemberOrTypeList imtl = prepareSingleImportMemberOrTypeList();
 		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
 		
 		String result = ImportProposals.formatImportMembers("\r\n", "  ", ignoredDeclarations, imtl);
-		assertEquals(result, "{\r\n  Bar");
+		assertEquals(result, "{\r\n  Bar\r\n}");
 	}
     
     @Test
     public void testSingleImport2() {
-    	ImportMemberOrTypeList imtl = prepareImportMemberOrTypeList();
+    	ImportMemberOrTypeList imtl = prepareSingleImportMemberOrTypeList();
 		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
 		
-		String result = ImportProposals.formatImportMembers("\r\n", "  ", ignoredDeclarations, imtl);
-		assertEquals(result, "{\n  Bar}");
+		String result = ImportProposals.formatImportMembers("\n", "  ", ignoredDeclarations, imtl);
+		assertEquals(result, "{\n  Bar\n}");
 	}
 
 
     @Test
     public void testSingleImport3() {
-    	ImportMemberOrTypeList imtl = prepareImportMemberOrTypeList();
+    	ImportMemberOrTypeList imtl = prepareSingleImportMemberOrTypeList();
 		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
 		
 		String result = ImportProposals.formatImportMembers("|||", "  ", ignoredDeclarations, imtl);
-		assertEquals(result, "{|||  Bar}");
+		assertEquals(result, "{|||  Bar|||}");
 	}
     
 	private ImportMemberOrTypeList prepareSingleImportMemberOrTypeList() {
