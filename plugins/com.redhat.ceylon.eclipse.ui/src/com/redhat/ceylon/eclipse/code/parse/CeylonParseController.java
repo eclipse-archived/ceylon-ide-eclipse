@@ -33,7 +33,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -480,7 +479,7 @@ public class CeylonParseController {
             });
             return builtPhasedUnit;
         }
-        PhasedUnit phasedUnit;
+        PhasedUnit newPhasednit;
         Package pkg;
         if (srcDir==null) {
             srcDir = new TemporaryFile();
@@ -497,20 +496,20 @@ public class CeylonParseController {
         JDTModuleSourceMapper moduleSourceMapper = (JDTModuleSourceMapper) 
                 typeChecker.getPhasedUnits().getModuleSourceMapper();
         if (builtPhasedUnit instanceof ProjectPhasedUnit) {
-            phasedUnit = 
+            newPhasednit = 
                     new EditedPhasedUnit(file, srcDir, cu, pkg, 
                             moduleManager, moduleSourceMapper, typeChecker, tokens, 
                             (ProjectPhasedUnit) builtPhasedUnit);  
         }
         else {
-            phasedUnit = 
+            newPhasednit = 
                     new EditedPhasedUnit(file, srcDir, cu, pkg, 
                     moduleManager, moduleSourceMapper, typeChecker, tokens, null);
             moduleManager.getModelLoader()
-                         .setupSourceFileObjects(asList(phasedUnit));
+                         .setupSourceFileObjects(asList(newPhasednit));
         }
         
-        final PhasedUnit phasedUnitToTypeCheck = phasedUnit;
+        final PhasedUnit phasedUnitToTypeCheck = newPhasednit;
         
         useTypechecker(phasedUnitToTypeCheck, new Runnable() {
             @Override
@@ -534,7 +533,7 @@ public class CeylonParseController {
             }
         });
         
-        return phasedUnit;
+        return newPhasednit;
     }
 
     private void useTypechecker(final PhasedUnit phasedUnitToTypeCheck,
@@ -548,7 +547,6 @@ public class CeylonParseController {
                 return Status.OK_STATUS;
             }
         };
-        typecheckJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
         CeylonParserScheduler scheduler = getScheduler();
         if (scheduler != null) {
             typecheckJob.setPriority(scheduler.getPriority());
