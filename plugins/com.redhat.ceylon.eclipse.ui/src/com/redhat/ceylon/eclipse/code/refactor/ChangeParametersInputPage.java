@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModuleManager;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static org.eclipse.jface.viewers.ArrayContentProvider.getInstance;
 import static org.eclipse.swt.layout.GridData.FILL_BOTH;
@@ -47,7 +46,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.common.BackendSupport;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
@@ -760,13 +758,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 }
             });
             
-            BackendSupport backendSupport = 
-                    getProjectModuleManager(
-                            refactoring.project);
-            parameters.visit(new TypeVisitor(unit, 
-                    backendSupport));
-            parameters.visit(new ExpressionVisitor(unit, 
-                    backendSupport));
+            parameters.visit(new TypeVisitor(unit));
+            parameters.visit(new ExpressionVisitor(unit));
             
             setErrorMessage(null);
             

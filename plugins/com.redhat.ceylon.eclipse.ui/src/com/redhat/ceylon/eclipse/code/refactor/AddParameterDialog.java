@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModuleManager;
-
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +20,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.common.BackendSupport;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
@@ -49,7 +46,6 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
     private Node node;
     private Set<String> parameterNames;
     private TypecheckerUnit unit;
-    private final BackendSupport backendSupport;
     
     public AddParameterDialog(Shell parentShell, 
             Node node, final IProject project, 
@@ -61,7 +57,6 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         unit = node.getUnit();
         type = unit.getAnythingDeclaration().getType();
         argument = "nothing";
-        backendSupport = getProjectModuleManager(project);
     }
     
     @Override
@@ -187,8 +182,8 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                     super.visitAny(that);
                 }
             });
-            staticType.visit(new TypeVisitor(unit, backendSupport));
-            staticType.visit(new ExpressionVisitor(unit, backendSupport));
+            staticType.visit(new TypeVisitor(unit));
+            staticType.visit(new ExpressionVisitor(unit));
             
             errorLabel.setVisible(false);
             
@@ -276,8 +271,8 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                     super.visit(that);
                 }
             });
-            parameters.visit(new TypeVisitor(unit, backendSupport));
-            parameters.visit(new ExpressionVisitor(unit, backendSupport));
+            parameters.visit(new TypeVisitor(unit));
+            parameters.visit(new ExpressionVisitor(unit));
             
             errorLabel.setVisible(false);
             
