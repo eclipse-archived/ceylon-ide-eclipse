@@ -110,7 +110,6 @@ import static org.eclipse.ui.PlatformUI.getWorkbench;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -154,8 +153,6 @@ import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -1480,41 +1477,4 @@ public class CeylonCompletionProcessor extends IdeCompletionManager implements I
        return DUMMY_INSTANCE.getProposals(node, scope, "", false, rootNode); 
     }
     
-    public static Map<String, DeclarationWithProximity> 
-    collectUnaryFunctions(Type type, 
-            Map<String, DeclarationWithProximity> candidates) {
-        Map<String,DeclarationWithProximity> matches = 
-                new HashMap<String, DeclarationWithProximity>();
-        for (Map.Entry<String,DeclarationWithProximity> e: 
-                candidates.entrySet()) {
-            Declaration declaration = 
-                    e.getValue().getDeclaration();
-            if (declaration instanceof Function && 
-                    !declaration.isAnnotation()) {
-                Function m = (Function) declaration;
-                List<ParameterList> pls = 
-                        m.getParameterLists();
-                if (!pls.isEmpty()) {
-                    ParameterList pl = pls.get(0);
-                    List<Parameter> params = 
-                            pl.getParameters();
-                    if (!params.isEmpty()) {
-                        boolean unary=true;
-                        for (int i=1; i<params.size(); i++) {
-                            if (!params.get(i).isDefaulted()) {
-                                unary = false;
-                            }
-                        }
-                        Type t = params.get(0).getType();
-                        if (unary && !isTypeUnknown(t) && 
-                                type.isSubtypeOf(t)) {
-                            matches.put(e.getKey(), 
-                                    e.getValue());
-                        }
-                    }
-                }
-            }
-        }
-        return matches;
-    }
 }
