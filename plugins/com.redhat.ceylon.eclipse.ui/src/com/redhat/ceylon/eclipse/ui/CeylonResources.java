@@ -13,6 +13,7 @@ public interface CeylonResources {
     public static final String CEYLON_FILE_WARNING = "ceylon_file_warning";
     public static final String CEYLON_FILE_ERROR = "ceylon_file_error";
     public static final String JAVA_FILE = "java_file";
+    public static final String JAVA_CLASS_FILE = "java_class_file";
     public static final String GENERIC_FILE = "generic_file";
     
     public static final String CEYLON_ALIAS = "ceylon_alias";

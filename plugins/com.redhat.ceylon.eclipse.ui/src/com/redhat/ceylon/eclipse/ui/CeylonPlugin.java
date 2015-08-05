@@ -429,6 +429,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         
         reg.put(CEYLON_ALIAS, image("types.png"));
         reg.put(JAVA_FILE, image("jcu_obj.png"));
+        reg.put(JAVA_CLASS_FILE, image("jclassf_obj.png"));
         reg.put(GENERIC_FILE, image("file_obj.png"));
         reg.put(CEYLON_PROJECT, image("prj_obj.png"));
         reg.put(CEYLON_FILE, image("unit.gif"));
