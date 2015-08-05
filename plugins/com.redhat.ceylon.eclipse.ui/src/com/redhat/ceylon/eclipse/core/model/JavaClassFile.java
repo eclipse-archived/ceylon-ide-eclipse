@@ -7,7 +7,6 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 
 public class JavaClassFile extends JavaUnit {
-
     IClassFile classFileElement;
     
     public JavaClassFile(IClassFile typeRoot, String fileName, String relativePath, String fullPath, Package pkg) {
@@ -23,5 +22,29 @@ public class JavaClassFile extends JavaUnit {
     @Override
     public IJavaElement toJavaElement(Declaration ceylonDeclaration) {
         return new CeylonToJavaMatcher(this).searchInClass(ceylonDeclaration);
+    }
+
+    @Override
+    public String getSourceFileName() {
+        String sourceRelativePath = getSourceRelativePath();
+        if (sourceRelativePath == null) {
+            return null;
+        }
+        String[] pathElements = sourceRelativePath.split("/");
+        return pathElements[pathElements.length-1];
+    }
+    
+    @Override
+    public String getSourceRelativePath() {
+        return getModule().toSourceUnitRelativePath(getRelativePath());
+    }
+    
+    @Override
+    public String getSourceFullPath() {
+        String sourceArchivePath = getModule().getSourceArchivePath();
+        if (sourceArchivePath == null) {
+            return null;
+        }
+        return sourceArchivePath + "!/" + getSourceRelativePath();
     }
 }
