@@ -13,6 +13,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.internal.ui.wizards.TypedElementSelectionValidator;
 import org.eclipse.jdt.internal.ui.wizards.TypedViewerFilter;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.FolderSelectionDialog;
@@ -501,9 +503,13 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
         String ceylonLanguageFileName = 
                 File.separator + "ceylon.language-" + 
                         LANGUAGE_MODULE_VERSION + ".car";
-
+        IPath systemRepoPath = new Path(systemRepoUrl);
+        if (! systemRepoPath.isAbsolute()) {
+            systemRepoPath = project.getLocation().append(systemRepoPath);
+        }
+        File systemRepoFile = systemRepoPath.toFile();
         File ceylonLanguageFile = 
-                new File(systemRepoUrl + 
+                new File(systemRepoFile + 
                         ceylonLanguageSubdir + 
                         ceylonLanguageFileName);
         if (ceylonLanguageFile.exists() && 
