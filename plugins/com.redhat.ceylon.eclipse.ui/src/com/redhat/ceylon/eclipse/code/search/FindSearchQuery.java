@@ -239,8 +239,6 @@ abstract class FindSearchQuery implements ISearchQuery {
                             // it's a class file built from Ceylon : 
                             //   we should find it from the Ceylon source archives.
                             return;
-                        } else {
-                            System.out.print("");
                         }
                     }
                     IResource resource = match.getResource();
