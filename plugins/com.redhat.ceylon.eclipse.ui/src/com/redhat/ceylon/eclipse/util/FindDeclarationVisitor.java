@@ -1,13 +1,11 @@
 package com.redhat.ceylon.eclipse.util;
 
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class FindDeclarationVisitor 
-        extends Visitor 
-        implements NaturalVisitor {
+        extends Visitor {
 
     private final Node term;
     private Tree.Declaration declaration;

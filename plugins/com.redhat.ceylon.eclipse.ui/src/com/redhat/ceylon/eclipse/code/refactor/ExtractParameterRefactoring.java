@@ -23,13 +23,12 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Type;
 
 public class ExtractParameterRefactoring extends AbstractRefactoring {
     
@@ -38,8 +37,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     private Type type;
 
     private static class FindFunctionVisitor 
-            extends Visitor 
-            implements NaturalVisitor {
+            extends Visitor {
         
         private final Node term;
         private Tree.Declaration declaration;

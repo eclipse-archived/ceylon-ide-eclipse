@@ -13,13 +13,12 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
 
 class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
     
@@ -124,8 +123,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
     }
 
     private static class FindNamedArgumentsVisitor 
-        extends Visitor 
-        implements NaturalVisitor {
+        extends Visitor {
         
         Tree.NamedArgumentList argumentList;
         int offset;

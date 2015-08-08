@@ -1,12 +1,10 @@
 package com.redhat.ceylon.eclipse.util;
 
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-class FindScopeVisitor extends Visitor
-        implements NaturalVisitor {
+class FindScopeVisitor extends Visitor {
     
     FindScopeVisitor(int fStartOffset, int fEndOffset) {
         this.fStartOffset = fStartOffset;

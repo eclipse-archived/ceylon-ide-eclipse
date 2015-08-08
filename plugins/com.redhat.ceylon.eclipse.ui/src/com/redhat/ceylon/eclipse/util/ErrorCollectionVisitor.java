@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class ErrorCollectionVisitor extends Visitor implements NaturalVisitor {
+public class ErrorCollectionVisitor extends Visitor {
     
     private final List<Message> errors = new ArrayList<Message>();
     private boolean withinDeclaration;

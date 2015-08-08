@@ -19,7 +19,6 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -30,7 +29,7 @@ final class TerminateStatementAction extends Action {
     private final CeylonEditor editor;
     private int line;
     
-    private abstract class Processor extends Visitor implements NaturalVisitor {}
+    private abstract class Processor extends Visitor {}
 
     TerminateStatementAction(CeylonEditor editor) {
         super(null);

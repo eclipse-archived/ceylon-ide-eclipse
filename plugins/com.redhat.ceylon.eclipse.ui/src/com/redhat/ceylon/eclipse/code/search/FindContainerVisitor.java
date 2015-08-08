@@ -1,12 +1,10 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public class FindContainerVisitor extends Visitor 
-        implements NaturalVisitor {
+public class FindContainerVisitor extends Visitor {
     
     private final Node node;
     

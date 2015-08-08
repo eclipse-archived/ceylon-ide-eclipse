@@ -167,7 +167,6 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -192,7 +191,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         implements IQuickAssistProcessor {
     
     private static final class CollectWarningsToSuppressVisitor 
-            extends Visitor implements NaturalVisitor {
+            extends Visitor {
         private final StringBuilder sb;
         private final StyledString ss;
 

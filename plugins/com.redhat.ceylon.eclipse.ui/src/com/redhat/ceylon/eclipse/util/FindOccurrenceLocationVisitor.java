@@ -27,15 +27,13 @@ import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_PARAMETER_R
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.VALUE_REF;
 
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-class FindOccurrenceLocationVisitor extends Visitor
-        implements NaturalVisitor {
+class FindOccurrenceLocationVisitor extends Visitor {
     
     private Node node;
     private int offset;
