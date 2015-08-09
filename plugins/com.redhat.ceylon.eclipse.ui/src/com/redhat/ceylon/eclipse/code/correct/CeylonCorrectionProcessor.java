@@ -1183,13 +1183,15 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         if (decNode==null) return;
         
         if (decNode.getAnnotationList()!=null) {
-            Integer stopIndex = decNode.getAnnotationList().getStopIndex();
+            Integer stopIndex = 
+                    decNode.getAnnotationList().getStopIndex();
             if (stopIndex!=null && currentOffset<=stopIndex+1) {
                 return;
             }
         }
         if (decNode instanceof Tree.TypedDeclaration) {
-            Tree.TypedDeclaration tdn = (Tree.TypedDeclaration) decNode;
+            Tree.TypedDeclaration tdn = 
+                    (Tree.TypedDeclaration) decNode;
             if (tdn.getType()!=null) {
                 Integer stopIndex = tdn.getType().getStopIndex();
                 if (stopIndex!=null && currentOffset<=stopIndex+1) {
@@ -1199,7 +1201,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
             
         if (decNode instanceof Tree.AttributeDeclaration) {
-            Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
+            Tree.AttributeDeclaration attDecNode = 
+                    (Tree.AttributeDeclaration) decNode;
             Tree.SpecifierOrInitializerExpression se = 
                     attDecNode.getSpecifierOrInitializerExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
@@ -1210,31 +1213,39 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             }
         }
         if (decNode instanceof Tree.MethodDeclaration) {
+            Tree.MethodDeclaration methodDecNode = 
+                    (Tree.MethodDeclaration) decNode;
             Tree.SpecifierOrInitializerExpression se = 
-                    ((Tree.MethodDeclaration) decNode).getSpecifierExpression(); 
+                    methodDecNode.getSpecifierExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
                 addConvertToBlockProposal(doc, proposals, file, decNode);
             }
         }
         if (decNode instanceof Tree.AttributeSetterDefinition) {
+            Tree.AttributeSetterDefinition setterDefNode = 
+                    (Tree.AttributeSetterDefinition) decNode;
             Tree.SpecifierOrInitializerExpression se = 
-                    ((Tree.AttributeSetterDefinition) decNode).getSpecifierExpression();
+                    setterDefNode.getSpecifierExpression();
             if (se instanceof Tree.LazySpecifierExpression) {
                 addConvertToBlockProposal(doc, proposals, file, decNode);
             }
-            Tree.Block b = ((Tree.AttributeSetterDefinition) decNode).getBlock(); 
+            Tree.Block b = setterDefNode.getBlock(); 
             if (b!=null) {
                 addConvertToSpecifierProposal(doc, proposals, file, b);
             }
         }
         if (decNode instanceof Tree.AttributeGetterDefinition) {
-            Tree.Block b = ((Tree.AttributeGetterDefinition) decNode).getBlock(); 
+            Tree.AttributeGetterDefinition getterDefNode = 
+                    (Tree.AttributeGetterDefinition) decNode;
+            Tree.Block b = getterDefNode.getBlock(); 
             if (b!=null) {
                 addConvertToSpecifierProposal(doc, proposals, file, b);
             }
         }
         if (decNode instanceof Tree.MethodDefinition) {
-            Tree.Block b = ((Tree.MethodDefinition) decNode).getBlock(); 
+            Tree.MethodDefinition methodDefNode = 
+                    (Tree.MethodDefinition) decNode;
+            Tree.Block b = methodDefNode.getBlock(); 
             if (b!=null) {
                 addConvertToSpecifierProposal(doc, proposals, file, b);
             }
