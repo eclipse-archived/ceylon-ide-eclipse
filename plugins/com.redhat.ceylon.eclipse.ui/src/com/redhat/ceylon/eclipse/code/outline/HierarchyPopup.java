@@ -312,7 +312,10 @@ public class HierarchyPopup extends TreeViewPopup {
 
     @Override
     public void setInput(Object information) {
-        ModelProxy input = new ModelProxy(getSelectedDeclaration());
+        Declaration dec = getSelectedDeclaration();
+        ModelProxy input = 
+                dec == null ? null : 
+                    new ModelProxy(dec);
         inputChanged(input, input);
         updateTitle();
     }
