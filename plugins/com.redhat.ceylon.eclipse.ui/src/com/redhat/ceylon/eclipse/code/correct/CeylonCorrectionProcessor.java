@@ -517,17 +517,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             if (tc!=null) {
                 addImportProposals(rootNode, node, proposals, file);
             }
-            addCreateEnumProposal(rootNode, node, problem, proposals, 
-                    project, tc, file);
-            addCreationProposals(rootNode, node, problem, proposals, 
-                    project, tc, file);
+            addCreateEnumProposal(rootNode, node, problem, proposals, project);
+            addCreationProposals(rootNode, node, problem, proposals, project, file);
             if (tc!=null) {
                 addChangeReferenceProposals(rootNode, node, problem, proposals, file);
             }
             break;
         case 101:
-            addCreateParameterProposals(rootNode, node, problem, proposals, 
-                    project, tc, file);
+            addCreateParameterProposals(rootNode, node, problem, proposals, project);
             if (tc!=null) {
                 addChangeArgumentReferenceProposals(rootNode, node, problem, proposals, file);
             }
@@ -683,8 +680,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addRemoveAnnotationDecProposal(proposals, "annotation", project, node);
             break;
         case 2000:
-            addCreateParameterProposals(rootNode, node, problem, proposals, 
-                    project, tc, file);
+            addCreateParameterProposals(rootNode, node, problem, proposals, project);
             break;
         case 2100:
             addChangeTypeProposals(rootNode, node, problem, proposals, project);
@@ -1285,9 +1281,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    private void addCreationProposals(Tree.CompilationUnit cu, final Node node, 
-            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
-            IProject project, TypeChecker tc, IFile file) {
+    private void addCreationProposals(
+            Tree.CompilationUnit cu, 
+            final Node node, 
+            ProblemLocation problem, 
+            Collection<ICompletionProposal> proposals, 
+            IProject project,
+            IFile file) {
         if (node instanceof Tree.MemberOrTypeExpression) {
             addCreateProposals(cu, node, proposals, project, file);
         }
@@ -1298,14 +1298,17 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 public void visit(Tree.ExtendedType that) {
                     super.visit(that);
                     if (that.getType()==node) {
-                        invocationExpression = that.getInvocationExpression();
+                        invocationExpression = 
+                                that.getInvocationExpression();
                     }
                 }
             }
-            FindExtendedTypeExpressionVisitor v = new FindExtendedTypeExpressionVisitor();
+            FindExtendedTypeExpressionVisitor v = 
+                    new FindExtendedTypeExpressionVisitor();
             v.visit(cu);
             if (v.invocationExpression!=null) {
-                addCreateProposals(cu, v.invocationExpression.getPrimary(), 
+                addCreateProposals(cu, 
+                        v.invocationExpression.getPrimary(), 
                         proposals, project, file);
             }
         }
@@ -1337,9 +1340,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    public void collectAnnotationCorrections(CeylonAnnotation annotation,
+    public void collectAnnotationCorrections(
+            CeylonAnnotation annotation,
             IQuickAssistInvocationContext context,
-            ProblemLocation location, Collection<ICompletionProposal> proposals) {
+            ProblemLocation location, 
+            Collection<ICompletionProposal> proposals) {
         if (annotation.getSeverity()==IMarker.SEVERITY_WARNING) {
             Tree.CompilationUnit rootNode = getRootNode();
             Tree.Statement st = Nodes.findStatement(rootNode,
