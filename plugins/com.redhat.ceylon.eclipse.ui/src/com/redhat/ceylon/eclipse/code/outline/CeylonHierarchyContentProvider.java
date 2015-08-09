@@ -309,8 +309,8 @@ public final class CeylonHierarchyContentProvider
         private boolean inherits(Declaration td) {
             if (declaration instanceof TypeDeclaration &&
                     td instanceof TypeDeclaration) {
-                return ((TypeDeclaration) td)
-                        .inherits((TypeDeclaration) declaration);
+                return ((TypeDeclaration) declaration)
+                        .inherits((TypeDeclaration) td);
             }
             else if (declaration instanceof TypedDeclaration &&
                     td instanceof TypedDeclaration) {
