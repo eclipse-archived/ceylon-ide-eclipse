@@ -8,6 +8,7 @@ Bundle-Localization: plugin
 Require-Bundle: ceylon.bootstrap;bundle-version="1.1.1",
  com.github.rjeschke.txtmark;bundle-version="0.11.0",
  org.antlr.runtime;bundle-version="3.4.0",
+ org.antlr.antlr4-runtime-osgi;bundle-version="4.5.0",
  ceylon.runtime;bundle-version="1.1.1";visibility:=reexport,
  com.redhat.ceylon.maven-support;bundle-version="2.0.0";visibility:=reexport,
  com.redhat.ceylon.module-resolver;bundle-version="1.1.1";visibility:=reexport,
@@ -51,20 +52,18 @@ Require-Bundle: ceylon.bootstrap;bundle-version="1.1.1",
  org.eclipse.ui.navigator.resources,
  org.eclipse.ui.views.properties.tabbed,
  ceylon.formatter;bundle-version="1.1.1",
+ com.redhat.ceylon.converter;bundle-version="1.0.0",
  ceylon.collection;bundle-version="1.1.1",
  ceylon.interop.java;bundle-version="1.1.1",
  com.redhat.ceylon.ide.common;bundle-version="1.1.1";visibility:=reexport
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlugin"
 Bundle-ClassPath: ./,
- lib/antlr-min-runtime-4.5.jar,
  lib/zip4j-1.3.2.jar,
- lib/Java-to-Ceylon-Converter-0.0.1-SNAPSHOT.jar,
  lib/jgrapht-0.8.3.jdk1_6.jar,
  modules/com/redhat/ceylon/eclipse/1.1.1/com.redhat.ceylon.eclipse-1.1.1.car
 Import-Package: org.eclipse.help
-Export-Package: com.redhat.ceylon.converter,
- com.redhat.ceylon.eclipse.code.complete;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
+Export-Package: com.redhat.ceylon.eclipse.code.complete;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.code.correct;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.code.editor;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.code.explorer;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
@@ -98,13 +97,6 @@ Export-Package: com.redhat.ceylon.converter,
  net.lingala.zip4j.progress;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  net.lingala.zip4j.unzip;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  net.lingala.zip4j.util;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
- net.lingala.zip4j.zip;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
- org.antlr.v4.runtime,
- org.antlr.v4.runtime.atn,
- org.antlr.v4.runtime.dfa,
- org.antlr.v4.runtime.misc,
- org.antlr.v4.runtime.tree,
- org.antlr.v4.runtime.tree.pattern,
- org.antlr.v4.runtime.tree.xpath
+ net.lingala.zip4j.zip;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin"
 Eclipse-BundleShape: dir
 

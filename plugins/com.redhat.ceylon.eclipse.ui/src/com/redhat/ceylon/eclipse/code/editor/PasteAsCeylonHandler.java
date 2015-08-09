@@ -59,7 +59,13 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 		ParseTreeWalker.DEFAULT.walk(converter, tree);
 		converter.close();
 
-		return out.toString();
+		String ceylonCode = out.toString();
+
+		if (ceylonCode.equals("")) {
+			return javaCode;
+		}
+
+		return ceylonCode;
 	}
 
 	private void insertTextInEditor(String ceylonCode) {

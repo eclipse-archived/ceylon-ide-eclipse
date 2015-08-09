@@ -45,14 +45,20 @@
    <repository>
      <id>ceylon-sdk</id>
      <layout>p2</layout>
-     <url>file:../ceylon-sdk/osgi/dist</url>     
+     <url>file:../ceylon-sdk/osgi/dist</url>
    </repository>
 
    <repository>
      <id>ceylon-formatter</id>
      <layout>p2</layout>
-     <url>file:../ceylon.formatter/osgi/dist</url>     
+     <url>file:../ceylon.formatter/osgi/dist</url>
    </repository>
+
+	<repository>
+		<id>com-redhat-ceylon-converter</id>
+		<layout>p2</layout>
+		<url>file:../java-to-ceylon-converter/osgi/dist</url>
+	</repository>
 
    <repository>
      <id>ceylon-ide-common</id>
@@ -68,7 +74,7 @@
     <module>tests</module>
     <module>site</module>
   </modules>
-  
+
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
@@ -96,7 +102,7 @@
             </configuration>
           </execution>
         </executions>
-      </plugin> 
+      </plugin>
       <plugin>
 	<groupId>org.eclipse.tycho</groupId>
 	<artifactId>tycho-packaging-plugin</artifactId>
