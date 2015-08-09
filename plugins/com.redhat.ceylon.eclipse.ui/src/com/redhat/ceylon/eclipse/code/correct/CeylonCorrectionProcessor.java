@@ -822,22 +822,26 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Collection<ICompletionProposal> proposals, 
             Node node) {
         if (node instanceof Tree.SwitchClause) {
-            Tree.SwitchStatement ss = (Tree.SwitchStatement) 
+            Tree.Statement st = 
                     findStatement(rootNode, node);
-            TextFileChange tfc = 
-                    new TextFileChange("Add Else", file);
-            IDocument doc = getDocument(tfc);
-            String text = 
-                    getDefaultLineDelimiter(doc) + 
-                    getIndent(node, doc) + 
-                    "else {}";
-            int offset = getNodeEndOffset(ss);
-            tfc.setEdit(new InsertEdit(offset, 
-                    text));
-            proposals.add(new CorrectionProposal("Add 'else' clause", 
-                    tfc, new Region(offset+text.length()-1, 0)));
+            if (st instanceof Tree.SwitchStatement) {
+                int offset = getNodeEndOffset(st);
+                TextFileChange tfc = 
+                        new TextFileChange("Add Else", file);
+                IDocument doc = getDocument(tfc);
+                String text = 
+                        getDefaultLineDelimiter(doc) + 
+                        getIndent(node, doc) + 
+                        "else {}";
+                tfc.setEdit(new InsertEdit(offset, text));
+                Region selection =
+                        new Region(offset+text.length()-1, 0);
+                proposals.add(new CorrectionProposal(
+                        "Add 'else' clause", 
+                        tfc, selection));
+            }
+            //TODO: else handle switch *expressions* 
         }
-        
     }
 
     private void addCasesProposal(IFile file, 
@@ -846,8 +850,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Node node) {
         if (node instanceof Tree.SwitchClause) {
             Tree.SwitchClause sc = (Tree.SwitchClause) node;
-            Tree.SwitchStatement ss = (Tree.SwitchStatement) 
-                    findStatement(rootNode, node);
+            Tree.SwitchStatement ss = 
+                    (Tree.SwitchStatement) 
+                        findStatement(rootNode, node);
             Tree.Expression e = 
                     sc.getSwitched().getExpression();
             if (e!=null) {
@@ -878,8 +883,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                             for (Tree.Expression ex: 
                                 il.getExpressions()) {
                                 if (ex!=null) {
-                                    Type t = 
-                                            ex.getTypeModel();
+                                    Type t = ex.getTypeModel();
                                     if (t!=null && 
                                             !isTypeUnknown(t)) {
                                         type = type.minus(t);
@@ -930,9 +934,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Node node) {
         Tree.TypeConstraint tcn = (Tree.TypeConstraint) node;
         TypeParameter tp = tcn.getDeclarationModel();
-        Tree.Declaration decNode = (Tree.Declaration) 
-                getReferencedNodeInUnit(tp.getDeclaration(), 
-                        rootNode);
+        Tree.Declaration decNode = 
+                (Tree.Declaration) 
+                    getReferencedNodeInUnit(
+                            tp.getDeclaration(), 
+                            rootNode);
         Tree.TypeParameterList tpl;
         if (decNode instanceof Tree.ClassOrInterface) {
             Tree.ClassOrInterface ci = 
@@ -955,7 +961,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 new TextFileChange("Add Type Parameter", file);
         InsertEdit edit;
         if (tpl==null) {
-            edit = new InsertEdit(decNode.getIdentifier().getStopIndex()+1, 
+            Tree.Identifier id = decNode.getIdentifier();
+            edit = new InsertEdit(id.getStopIndex()+1, 
                     "<" + tp.getName() + ">");
         }
         else {
