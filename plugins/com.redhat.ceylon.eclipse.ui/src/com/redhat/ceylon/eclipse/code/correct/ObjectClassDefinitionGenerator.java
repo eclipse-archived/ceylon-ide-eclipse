@@ -306,7 +306,8 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
         String text = 
                 getRefinementTextFor(d, pr, unit, false, 
                         null, "", false);
-        if (parameters.containsKey(d.getName())) {
+        if (parameters!=null &&
+                parameters.containsKey(d.getName())) {
             text = text.substring(0, text.indexOf(" =>")) + ";";
         }
         def.append(indent)
