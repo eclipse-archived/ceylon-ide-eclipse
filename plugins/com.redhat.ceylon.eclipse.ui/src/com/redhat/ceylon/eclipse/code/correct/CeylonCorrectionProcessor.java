@@ -846,82 +846,88 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Node node) {
         if (node instanceof Tree.SwitchClause) {
             Tree.SwitchClause sc = (Tree.SwitchClause) node;
-            Tree.SwitchStatement ss = 
-                    (Tree.SwitchStatement) 
-                        findStatement(rootNode, node);
-            Tree.Expression e = 
-                    sc.getSwitched().getExpression();
-            if (e!=null) {
-                Type type = e.getTypeModel();
-                if (type!=null) {
-                    Tree.SwitchCaseList scl = 
-                            ss.getSwitchCaseList();
-                    for (Tree.CaseClause cc: 
-                            scl.getCaseClauses()) {
-                        Tree.CaseItem item = cc.getCaseItem();
-                        if (item instanceof Tree.IsCase) {
-                            Tree.IsCase ic = 
-                                    (Tree.IsCase) item;
-                            Tree.Type tn = ic.getType();
-                            if (tn!=null) {
-                                Type t = 
-                                        tn.getTypeModel();
-                                if (!isTypeUnknown(t)) {
-                                    type = type.minus(t);
-                                }
-                            }
-                        }
-                        else if (item instanceof Tree.MatchCase) {
-                            Tree.MatchCase ic = 
-                                    (Tree.MatchCase) item;
-                            Tree.ExpressionList il = 
-                                    ic.getExpressionList();
-                            for (Tree.Expression ex: 
-                                il.getExpressions()) {
-                                if (ex!=null) {
-                                    Type t = ex.getTypeModel();
-                                    if (t!=null && 
-                                            !isTypeUnknown(t)) {
+            Tree.Statement st = 
+                    findStatement(rootNode, node);
+            if (st instanceof Tree.SwitchStatement) {
+                //TODO: handle switch expressions!
+                Tree.SwitchStatement ss = 
+                        (Tree.SwitchStatement) st;
+                Tree.Expression e = 
+                        sc.getSwitched()
+                            .getExpression();
+                if (e!=null) {
+                    Type type = e.getTypeModel();
+                    if (type!=null) {
+                        Tree.SwitchCaseList scl = 
+                                ss.getSwitchCaseList();
+                        for (Tree.CaseClause cc: 
+                                scl.getCaseClauses()) {
+                            Tree.CaseItem item = 
+                                    cc.getCaseItem();
+                            if (item instanceof Tree.IsCase) {
+                                Tree.IsCase ic = 
+                                        (Tree.IsCase) item;
+                                Tree.Type tn = ic.getType();
+                                if (tn!=null) {
+                                    Type t = 
+                                            tn.getTypeModel();
+                                    if (!isTypeUnknown(t)) {
                                         type = type.minus(t);
                                     }
                                 }
                             }
+                            else if (item instanceof Tree.MatchCase) {
+                                Tree.MatchCase ic = 
+                                        (Tree.MatchCase) item;
+                                Tree.ExpressionList il = 
+                                        ic.getExpressionList();
+                                for (Tree.Expression ex: 
+                                    il.getExpressions()) {
+                                    if (ex!=null) {
+                                        Type t = ex.getTypeModel();
+                                        if (t!=null && 
+                                                !isTypeUnknown(t)) {
+                                            type = type.minus(t);
+                                        }
+                                    }
+                                }
+                            }
                         }
+                        TextFileChange tfc = 
+                                new TextFileChange(
+                                        "Add Cases", file);
+                        IDocument doc = getDocument(tfc);
+                        String text = "";
+                        List<Type> list;
+                        List<Type> cts = type.getCaseTypes();
+                        if (cts!=null) {
+                            list = cts;
+                        }
+                        else {
+                            list = singletonList(type);
+                        }
+                        for (Type pt: list) {
+                            String is = 
+                                    pt.getDeclaration()
+                                        .isAnonymous() ? 
+                                    "" : "is ";
+                            Unit unit = rootNode.getUnit();
+                            text += getDefaultLineDelimiter(doc) + 
+                                    getIndent(node, doc) +
+                                    "case (" +
+                                    is + 
+                                    pt.asString(unit) +
+                                    ") {}"; 
+                        }
+                        int offset = getNodeEndOffset(ss);
+                        tfc.setEdit(new InsertEdit(offset, text));
+                        proposals.add(new CorrectionProposal(
+                                "Add missing 'case' clauses", tfc, 
+                                new Region(offset+text.length()-1, 0)));
                     }
-                    TextFileChange tfc = 
-                            new TextFileChange("Add Cases", 
-                                    file);
-                    IDocument doc = getDocument(tfc);
-                    String text = "";
-                    List<Type> list;
-                    if (type.getCaseTypes()!=null) {
-                        list = type.getCaseTypes();
-                    }
-                    else {
-                        list = singletonList(type);
-                    }
-                    for (Type pt: list) {
-                        String is = 
-                                pt.getDeclaration()
-                                    .isAnonymous() ? 
-                                "" : "is ";
-                        Unit unit = rootNode.getUnit();
-                        text += getDefaultLineDelimiter(doc) + 
-                                getIndent(node, doc) +
-                                "case (" +
-                                is + 
-                                pt.asString(unit) +
-                                ") {}"; 
-                    }
-                    int offset = getNodeEndOffset(ss);
-                    tfc.setEdit(new InsertEdit(offset, text));
-                    proposals.add(new CorrectionProposal(
-                            "Add missing 'case' clauses", tfc, 
-                            new Region(offset+text.length()-1, 0)));
                 }
             }
-        }
-        
+        }        
     }
 
     void addTypeParameterProposal(IFile file, 
