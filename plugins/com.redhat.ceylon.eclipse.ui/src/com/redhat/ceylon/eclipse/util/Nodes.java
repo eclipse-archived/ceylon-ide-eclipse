@@ -11,181 +11,74 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_L
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.Token;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 
 import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.ide.common.util.FindNodeVisitor;
+import com.redhat.ceylon.ide.common.util.NodePrinter;
+import com.redhat.ceylon.ide.common.util.nodes_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class Nodes {
 
-    private static final String[] NO_STRINGS = new String[0];
-    private static final Pattern IDPATTERN = 
-            Pattern.compile("(^|[A-Z])([A-Z]*)([_a-z]+)");
+    private static final nodes_ delegate = nodes_.get_();
     
-
     public static Tree.Declaration findDeclaration(Tree.CompilationUnit cu, Node node) {
-        FindDeclarationVisitor fcv = 
-                new FindDeclarationVisitor(node);
-        fcv.visit(cu);
-        return fcv.getDeclarationNode();
+        return delegate.findDeclaration(cu, node);
     }
 
     public static Tree.Declaration findDeclarationWithBody(Tree.CompilationUnit cu, Node node) {
-        FindBodyContainerVisitor fcv = 
-                new FindBodyContainerVisitor(node);
-        fcv.visit(cu);
-        return fcv.getDeclarationNode();
+        return delegate.findDeclarationWithBody(cu, node);
     }
 
     public static Tree.NamedArgument findArgument(Tree.CompilationUnit cu, Node node) {
-        FindArgumentVisitor fcv = 
-                new FindArgumentVisitor(node);
-        fcv.visit(cu);
-        return fcv.getArgumentNode();
+        return delegate.findArgument(cu, node);
     }
 
     public static Tree.BinaryOperatorExpression findBinaryOperator(Tree.CompilationUnit cu, 
             final Node node) {
-        class FindBinaryVisitor extends Visitor {
-            Tree.BinaryOperatorExpression result;
-            @Override
-            public void visit(Tree.BinaryOperatorExpression that) {
-                if (node.getStartIndex()>=that.getStartIndex() && 
-                        node.getStopIndex()<=that.getStopIndex()) {
-                    result = that;
-                }
-                super.visit(that);
-            }
-        }
-        FindBinaryVisitor fcv = new FindBinaryVisitor();
-        fcv.visit(cu);
-        return fcv.result;
+        return delegate.findBinaryOperator(cu, node);
     }
 
     public static Statement findStatement(Tree.CompilationUnit cu, Node node) {
-        FindStatementVisitor visitor = 
-                new FindStatementVisitor(node, false);
-        cu.visit(visitor);
-        return visitor.getStatement();
+        return delegate.findStatement(cu, node);
     }
 
     public static Statement findToplevelStatement(Tree.CompilationUnit cu, Node node) {
-        FindStatementVisitor visitor = 
-                new FindStatementVisitor(node, true);
-        cu.visit(visitor);
-        return visitor.getStatement();
+        return delegate.findTopLevelStatement(cu, node);
     }
 
     public static Declaration getAbstraction(Declaration d) {
-        if (isOverloadedVersion(d)) {
-            return d.getContainer()
-                    .getDirectMember(d.getName(), null, false);
-        }
-        else {
-            return d;
-        }
+        return delegate.getAbstraction(d);
     }
 
     public static Tree.Declaration getContainer(Tree.CompilationUnit cu,
             final Declaration dec) {
-        class FindContainer extends Visitor {
-            final Scope container = dec.getContainer();
-            Tree.Declaration result;
-            @Override
-            public void visit(Tree.Declaration that) {
-                super.visit(that);
-                if (that.getDeclarationModel().equals(container)) {
-                    result = that;
-                }
-            }
-        }
-        FindContainer fc = new FindContainer();
-        cu.visit(fc);
-        return fc.result;
+        return delegate.getContainer(cu, dec);
     }
 
     public static Tree.ImportMemberOrType findImport(Tree.CompilationUnit cu, Node node) {
-        
-        if (node instanceof Tree.ImportMemberOrType) {
-            return (Tree.ImportMemberOrType) node;
-        }
-        
-        final Declaration declaration;
-        if (node instanceof Tree.MemberOrTypeExpression) {
-            Tree.MemberOrTypeExpression mte = 
-                    (Tree.MemberOrTypeExpression) node;
-            declaration = mte.getDeclaration();
-        }
-        else if (node instanceof Tree.SimpleType) {
-            Tree.SimpleType st = (Tree.SimpleType) node;
-            declaration = st.getDeclarationModel();
-        }
-        else if (node instanceof Tree.MemberLiteral) {
-            Tree.MemberLiteral ml = (Tree.MemberLiteral) node;
-            declaration = ml.getDeclaration();
-        }
-        else {
-            return null;
-        }
-        
-        class FindImportVisitor extends Visitor {
-            Tree.ImportMemberOrType result;
-            @Override
-            public void visit(Tree.Declaration that) {}
-            @Override
-            public void visit(Tree.ImportMemberOrType that) {
-                super.visit(that);
-                Declaration dec = that.getDeclarationModel();
-                if (dec!=null && dec.equals(declaration)) {
-                    result = that;
-                }
-            }
-        }
-        
-        if (declaration!=null) {
-            FindImportVisitor visitor = new FindImportVisitor();
-            visitor.visit(cu);
-            return visitor.result;
-        }
-        else {
-            return null;
-        }
-    
+        return delegate.findImport(cu, node);
     }
 
     public static Node findNode(Tree.CompilationUnit cu, int offset) {
@@ -194,18 +87,12 @@ public class Nodes {
 
     public static Node findNode(Node node, 
             int startOffset, int endOffset) {
-        FindNodeVisitor visitor = 
-                new FindNodeVisitor(startOffset, endOffset);
-        node.visit(visitor);
-        return visitor.getNode();
+        return delegate.findNode(node, startOffset, endOffset);
     }
 
     private static Node findScope(Tree.CompilationUnit cu, 
             int startOffset, int endOffset) {
-        FindScopeVisitor visitor = 
-                new FindScopeVisitor(startOffset, endOffset);
-        cu.visit(visitor);
-        return visitor.getNode();
+        return delegate.findScope(cu, startOffset, endOffset);
     }
 
     public static Node findNode(Tree.CompilationUnit cu, 
@@ -223,109 +110,23 @@ public class Nodes {
     }
     
     public static int getIdentifyingStartOffset(Node node) {
-        return getNodeStartOffset(getIdentifyingNode(node));
+        return (int) delegate.getIdentifyingStartOffset(node);
     }
 
     public static int getIdentifyingEndOffset(Node node) {
-        return getNodeEndOffset(getIdentifyingNode(node));
+        return (int) delegate.getIdentifyingEndOffset(node);
     }
 
     public static int getIdentifyingLength(Node node) {
-        return getIdentifyingEndOffset(node) - 
-                getIdentifyingStartOffset(node);
+        return (int) delegate.getIdentifyingLength(node);
     }
 
     public static int getNodeLength(Node node) {
-        return getNodeEndOffset(node) - 
-               getNodeStartOffset(node);
+        return (int) delegate.getNodeLength(node);
     }
 
     public static Node getIdentifyingNode(Node node) {
-        if (node instanceof Tree.Declaration) {
-            Tree.Declaration declaration = 
-                    (Tree.Declaration) node;
-            Tree.Identifier identifier = 
-                    declaration.getIdentifier();
-            if (identifier==null && 
-                    !(node instanceof Tree.MissingDeclaration)) {
-                //TODO: whoah! this is really ugly!
-                Token tok = node.getMainToken();
-                if (tok==null) {
-                    return null;
-                }
-                else {
-                    CommonToken fakeToken = 
-                            new CommonToken(tok);
-                    identifier = 
-                            new Tree.Identifier(fakeToken);
-                }
-            }
-            return identifier;
-        }
-        else if (node instanceof Tree.ModuleDescriptor) {
-            return ((Tree.ModuleDescriptor) node).getImportPath();
-        }
-        else if (node instanceof Tree.PackageDescriptor) {
-            return ((Tree.PackageDescriptor) node).getImportPath();
-        }
-        else if (node instanceof Tree.Import) {
-            return ((Tree.Import) node).getImportPath();
-        }
-        else if (node instanceof Tree.ImportModule) {
-            return ((Tree.ImportModule) node).getImportPath();
-        }
-        else if (node instanceof Tree.NamedArgument) {
-            Tree.Identifier id = 
-                    ((Tree.NamedArgument) node).getIdentifier();
-            if (id==null || id.getToken()==null) {
-                return node;
-            }
-            else {
-                return id;
-            }
-        }
-        else if (node instanceof Tree.StaticMemberOrTypeExpression) {
-            return ((Tree.StaticMemberOrTypeExpression) node).getIdentifier();
-        }
-        else if (node instanceof Tree.ExtendedTypeExpression) {
-            //TODO: whoah! this is really ugly!
-            return ((CustomTree.ExtendedTypeExpression) node).getType()
-                            .getIdentifier();
-        }
-        else if (node instanceof Tree.SimpleType) {
-            return ((Tree.SimpleType) node).getIdentifier();
-        }
-        else if (node instanceof Tree.ImportMemberOrType) {
-            return ((Tree.ImportMemberOrType) node).getIdentifier();
-        }
-        else if (node instanceof Tree.InitializerParameter) {
-            return ((Tree.InitializerParameter) node).getIdentifier();
-        }
-        else if (node instanceof Tree.MemberLiteral) {
-            return ((Tree.MemberLiteral) node).getIdentifier();
-        }
-        else if (node instanceof Tree.TypeLiteral) {
-            return getIdentifyingNode(((Tree.TypeLiteral) node).getType());
-        }
-        //TODO: this would be better for navigation to refinements
-        //      so I guess we should split this method into two
-        //      versions :-/
-        /*else if (node instanceof Tree.SpecifierStatement) {
-            Tree.SpecifierStatement st = (Tree.SpecifierStatement) node;
-            if (st.getRefinement()) {
-                Tree.Term lhs = st.getBaseMemberExpression();
-                while (lhs instanceof Tree.ParameterizedExpression) {
-                    lhs = ((Tree.ParameterizedExpression) lhs).getPrimary();
-                }
-                if (lhs instanceof Tree.StaticMemberOrTypeExpression) {
-                    return ((Tree.StaticMemberOrTypeExpression) lhs).getIdentifier();
-                }
-            }
-            return node;
-        }*/
-        else {    
-            return node;
-        }
+        return delegate.getIdentifyingNode(node);
     }
 
     public static Iterator<CommonToken> getTokenIterator(List<CommonToken> tokens, 
@@ -382,23 +183,11 @@ public class Nodes {
     }
 
     public static int getNodeStartOffset(Node node) {
-        if (node==null) {
-            return 0;
-        }
-        else {
-            Integer index = node.getStartIndex();
-            return index==null?0:index;
-        }
+        return (int) delegate.getNodeStartOffset(node);
     }
 
     public static int getNodeEndOffset(Node node) {
-        if (node==null) {
-            return 0;
-        }
-        else {
-            Integer index = node.getStopIndex();
-            return index==null?0:index+1;
-        }
+        return (int) delegate.getNodeEndOffset(node);
     }
     
     /** 
@@ -458,89 +247,11 @@ public class Nodes {
 
     public static Referenceable getReferencedExplicitDeclaration(Node node, 
             Tree.CompilationUnit rn) {
-        Referenceable dec = getReferencedDeclaration(node);
-        if (dec!=null && dec.getUnit()!=null &&
-                dec.getUnit().equals(node.getUnit())) {
-            FindDeclarationNodeVisitor fdv = 
-                    new FindDeclarationNodeVisitor(dec);
-            fdv.visit(rn);
-            Node decNode = fdv.getDeclarationNode();
-            if (decNode instanceof Tree.Variable) {
-                Tree.Variable var = (Tree.Variable) decNode;
-                if (var.getType() instanceof Tree.SyntheticVariable) {
-                    Tree.Term term = var.getSpecifierExpression()
-                            .getExpression().getTerm();
-                    return getReferencedExplicitDeclaration(term, rn);
-                }
-            }
-        }
-        return dec;
+        return delegate.getReferencedExplicitDeclaration(node, rn);
     }
 
     public static Referenceable getReferencedDeclaration(Node node) {
-        //NOTE: this must accept a null node, returning null!
-        if (node instanceof Tree.MemberOrTypeExpression) {
-            Tree.MemberOrTypeExpression mte = 
-                    (Tree.MemberOrTypeExpression) node;
-            return mte.getDeclaration();
-        } 
-        else if (node instanceof Tree.SimpleType) {
-            Tree.SimpleType st = (Tree.SimpleType) node;
-            return st.getDeclarationModel();
-        } 
-        else if (node instanceof Tree.ImportMemberOrType) {
-            Tree.ImportMemberOrType imt = 
-                    (Tree.ImportMemberOrType) node;
-            return imt.getDeclarationModel();
-        } 
-        else if (node instanceof Tree.Declaration) {
-            Tree.Declaration d = (Tree.Declaration) node;
-            return d.getDeclarationModel();
-        } 
-        else if (node instanceof Tree.NamedArgument) {
-            Tree.NamedArgument na = (Tree.NamedArgument) node;
-            Parameter p = na.getParameter();
-            return p==null ? null : p.getModel();
-        }
-        else if (node instanceof Tree.InitializerParameter) {
-            Tree.InitializerParameter ip = 
-                    (Tree.InitializerParameter) node;
-            Parameter p = ip.getParameterModel();
-            return  p==null ? null : p.getModel();
-        }
-        else if (node instanceof Tree.MetaLiteral) {
-            Tree.MetaLiteral ml = (Tree.MetaLiteral) node;
-            return ml.getDeclaration();
-        }
-        else if (node instanceof Tree.SelfExpression) {
-            Tree.SelfExpression se = (Tree.SelfExpression) node;
-            return se.getDeclarationModel();
-        }
-        else if (node instanceof Tree.Outer) {
-            Tree.Outer o = (Tree.Outer) node;
-            return o.getDeclarationModel();
-        }
-        else if (node instanceof Tree.Return) {
-            Tree.Return r = (Tree.Return) node;
-            return r.getDeclaration();
-        }
-        else if (node instanceof Tree.DocLink) {
-            DocLink docLink = (Tree.DocLink) node;
-            List<Declaration> qualified = docLink.getQualified();
-            if (qualified!=null && !qualified.isEmpty()) {
-                return qualified.get(qualified.size()-1);
-            }
-            else {
-                return docLink.getBase();
-            }
-        }
-        else if (node instanceof Tree.ImportPath) {
-            Tree.ImportPath ip = (Tree.ImportPath) node;
-            return ip.getModel();
-        }
-        else {
-            return null;
-        }
+        return delegate.getReferencedDeclaration(node);
     }
     
     /**
@@ -641,136 +352,12 @@ public class Nodes {
         return nameProposals(node, false);
     }
     public static String[] nameProposals(Node node, boolean unplural) {
-    	if (node instanceof Tree.FunctionArgument) {
-    		Tree.FunctionArgument fa = (Tree.FunctionArgument) node;
-			if (fa.getExpression()!=null) {
-    			node = fa.getExpression();
-			}
-    	}
-        Set<String> names = new LinkedHashSet<String>();
-        Node identifyingNode = node;
-        if (identifyingNode instanceof Tree.Expression) {
-            identifyingNode = 
-                    ((Tree.Expression) identifyingNode).getTerm();
-        }
-        if (identifyingNode instanceof Tree.InvocationExpression) {
-            identifyingNode = 
-                    ((Tree.InvocationExpression) identifyingNode)
-                            .getPrimary();
-        }
-        
-        if (identifyingNode instanceof Tree.QualifiedMemberOrTypeExpression) {
-            Tree.QualifiedMemberOrTypeExpression qmte = 
-                    (Tree.QualifiedMemberOrTypeExpression) identifyingNode;
-            Declaration declaration = qmte.getDeclaration();
-            if (declaration!=null) {
-                addNameProposals(names, false, declaration.getName());
-                //TODO: propose a compound name like personName for person.name
-            }
-        }
-        if (identifyingNode instanceof Tree.FunctionType) {
-            Tree.StaticType type = 
-                    ((Tree.FunctionType) identifyingNode).getReturnType();
-            if (type instanceof Tree.SimpleType) {
-                String name = ((Tree.SimpleType) type).getDeclarationModel().getName();
-                addNameProposals(names, false, name);
-            }
-        }
-        if (identifyingNode instanceof Tree.BaseMemberOrTypeExpression) {
-            BaseMemberOrTypeExpression bmte = 
-                    (Tree.BaseMemberOrTypeExpression) identifyingNode;
-            Declaration declaration = bmte.getDeclaration();
-            if (unplural) {
-                String name = declaration.getName();
-                if (name.endsWith("s") && name.length()>1) {
-                    addNameProposals(names, false, name.substring(0, name.length()-1));
-                }
-            }
-        }
-        if (identifyingNode instanceof Tree.SumOp) {
-            names.add("sum");
-        }
-        else if (identifyingNode instanceof Tree.DifferenceOp) {
-            names.add("difference");
-        }
-        else if (identifyingNode instanceof Tree.ProductOp) {
-            names.add("product");
-        }
-        else if (identifyingNode instanceof Tree.QuotientOp) {
-            names.add("ratio");
-        }
-        else if (identifyingNode instanceof Tree.RemainderOp) {
-            names.add("remainder");
-        }
-        else if (identifyingNode instanceof Tree.UnionOp) {
-            names.add("union");
-        }
-        else if (identifyingNode instanceof Tree.IntersectionOp) {
-            names.add("intersection");
-        }
-        else if (identifyingNode instanceof Tree.ComplementOp) {
-            names.add("complement");
-        }
-        else if (identifyingNode instanceof Tree.RangeOp) {
-            names.add("range");
-        }
-        else  if (identifyingNode instanceof Tree.EntryOp) {
-            names.add("entry");
-        }
-
-        if (identifyingNode instanceof Tree.Term) {
-            Tree.Term term = (Tree.Term) node;
-            Type type = term.getTypeModel();
-            if (!isTypeUnknown(type)) {
-                if (!unplural) {
-                    if (type.isClassOrInterface() || 
-                        type.isTypeParameter()) {
-                        addNameProposals(names, false, 
-                                type.getDeclaration()
-                                    .getName());
-                    }
-                }
-                Unit unit = node.getUnit();
-                if (unit.isIterableType(type)) {
-                    Type iteratedType = 
-                            unit.getIteratedType(type);
-                    if (iteratedType!=null) {
-                        if (iteratedType.isClassOrInterface() || 
-                            iteratedType.isTypeParameter()) {
-                            addNameProposals(names, 
-                                    true && !unplural, 
-                                    iteratedType.getDeclaration()
-                                        .getName());
-                        }
-                    }
-                }
-            }
-        }
-        if (names.isEmpty()) {
-            names.add("it");
-        }
-        return names.toArray(NO_STRINGS);
+    	return delegate.nameProposals(node, unplural);
     }
 
     public static void addNameProposals(Set<String> names, 
             boolean plural, String tn) {
-        String name = Escaping.toInitialLowercase(tn);
-        Matcher matcher = IDPATTERN.matcher(name);
-        while (matcher.find()) {
-            int loc = matcher.start(2);
-            String initial = name.substring(matcher.start(1), loc);
-            if (Character.isLowerCase(name.codePointAt(0))) {
-                initial = initial.toLowerCase();
-            }
-            String subname = initial + name.substring(loc);
-            if (plural) subname += "s";
-            if (Escaping.KEYWORDS.contains(subname)) {
-                names.add("\\i" + subname);
-            }
-            else {
-                names.add(subname);
-            }
-        }
+        delegate.addNameProposals(names, plural, tn);
     }
 
     public static Tree.SpecifierOrInitializerExpression getDefaultArgSpecifier(
@@ -842,29 +429,14 @@ public class Nodes {
 
     public static void appendParameters(StringBuilder result,
             Tree.FunctionArgument fa, Unit unit, 
-            List<CommonToken> tokens) {
-        for (Tree.ParameterList pl: fa.getParameterLists()) {
-            result.append('(');
-            boolean first=true;
-            for (Tree.Parameter p: pl.getParameters()) {
-                if (first) {
-                    first=false;
-                }
-                else {
-                    result.append(", ");
-                }
-                if (p instanceof Tree.InitializerParameter) {
-                    Type type = 
-                            p.getParameterModel().getType();
-                    if (!isTypeUnknown(type)) {
-                        result.append(type.asSourceCodeString(unit))
-                              .append(" ");
-                    }
-                }
-                result.append(toString(p, tokens));
+            final List<CommonToken> tokens) {
+
+        delegate.appendParameters(result, fa, unit, new NodePrinter() {
+            @Override
+            public String $toString(Node node) {
+                return Nodes.toString(node, tokens);
             }
-            result.append(')');
-        }
+        });
     }
 
     public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, 

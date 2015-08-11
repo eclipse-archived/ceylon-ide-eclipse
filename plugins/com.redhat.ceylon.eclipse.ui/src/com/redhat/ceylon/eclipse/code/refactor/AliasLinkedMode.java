@@ -62,7 +62,7 @@ public final class AliasLinkedMode
     
     @Override
     protected boolean canStart() {
-        return refactoring.isEnabled();
+        return refactoring.getEnabled();
     }
         
     private boolean isEnabled() {

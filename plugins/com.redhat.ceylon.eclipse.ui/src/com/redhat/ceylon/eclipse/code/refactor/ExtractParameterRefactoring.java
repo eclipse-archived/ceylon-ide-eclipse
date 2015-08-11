@@ -30,7 +30,7 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
-public class ExtractParameterRefactoring extends AbstractRefactoring {
+public class ExtractParameterRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled {
     
     private String newName;
     private Tree.Declaration methodOrClass;
@@ -97,7 +97,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
     
     
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return node instanceof Tree.Term && 
                 methodOrClass!=null &&
                 methodOrClass.getDeclarationModel()!=null &&
@@ -169,15 +169,40 @@ public class ExtractParameterRefactoring extends AbstractRefactoring {
         return tfc;
     }
 
-    IRegion decRegion;
-    IRegion refRegion;
-    IRegion typeRegion;
+    private IRegion decRegion;
+    private IRegion refRegion;
+    private IRegion typeRegion;
+    @Override
+    public IRegion getTypeRegion() {
+        return typeRegion;
+    }
+    @Override
+    public void setTypeRegion(IRegion region) {
+        typeRegion = region;
+    }
+    @Override
+    public IRegion getDecRegion() {
+        return decRegion;
+    }
+    @Override
+    public void setDecRegion(IRegion region) {
+        decRegion = region;
+    }
+    @Override
+    public IRegion getRefRegion() {
+        return refRegion;
+    }
+    @Override
+    public void setRefRegion(IRegion region) {
+        refRegion=region;
+    }
 
+    
     private boolean isParameterOfMethodOrClass(Declaration d) {
         return d.isParameter() &&
                 d.getContainer().equals(methodOrClass.getDeclarationModel());
     }
-    void extractInFile(TextChange tfc) 
+    public void extractInFile(TextChange tfc) 
             throws CoreException {
         tfc.setEdit(new MultiTextEdit());
         IDocument doc = tfc.getCurrentDocument(null);

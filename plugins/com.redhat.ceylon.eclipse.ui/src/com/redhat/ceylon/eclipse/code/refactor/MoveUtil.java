@@ -50,7 +50,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.DocLinks;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -148,7 +148,7 @@ public class MoveUtil {
         if (!originalPackage.equals(targetPackage)) {
             for (PhasedUnit pu: getAllUnits(originalFile.getProject())) {
 //                if (!node.getUnit().equals(pu.getUnit())) {
-                    IFile file = ((IFileVirtualFile) pu.getUnitFile()).getFile();
+                    IFile file = vfsJ2C.getIFileVirtualFile(pu.getUnitFile()).getNativeResource();
                     if (!file.equals(originalFile) && !file.equals(targetFile)) {
                         TextFileChange tfc = new TextFileChange("Fix Import", file);
                         tfc.setEdit(new MultiTextEdit());

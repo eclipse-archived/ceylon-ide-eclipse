@@ -75,7 +75,7 @@ public class ExtractParameterProposal implements ICompletionProposal, ICompletio
             }
         }
         ExtractParameterRefactoring epr = new ExtractParameterRefactoring(editor);
-        if (epr.isEnabled()) {
+        if (epr.getEnabled()) {
             proposals.add(new ExtractParameterProposal(editor));
         }
     }

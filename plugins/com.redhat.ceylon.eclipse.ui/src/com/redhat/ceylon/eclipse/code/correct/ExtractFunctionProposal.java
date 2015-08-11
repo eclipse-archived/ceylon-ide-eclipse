@@ -75,7 +75,7 @@ public class ExtractFunctionProposal implements ICompletionProposal, ICompletion
             }
         }
         ExtractFunctionRefactoring efr = new ExtractFunctionRefactoring(editor);
-        if (efr.isEnabled()) {
+        if (efr.getEnabled()) {
             proposals.add(new ExtractFunctionProposal(editor));
         }
     }

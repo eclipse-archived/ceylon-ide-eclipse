@@ -79,7 +79,7 @@ public class SourceMenuItems extends CompoundContributionItem {
                         new CleanImportsHandler().isEnabled(), DELETE_IMPORT),
                 new DynamicMenuItem(PLUGIN_ID + ".action.delete", 
                         "Safe &Delete...",
-                        editor!=null && new DeleteRefactoring(editor).isEnabled(), DELETE),
+                        editor!=null && new DeleteRefactoring(editor).getEnabled(), DELETE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.revealInferredType", 
                         "Reveal Inferred &Types",
                         editor!=null && new RevealInferredTypeHandler().isEnabled(), REVEAL),

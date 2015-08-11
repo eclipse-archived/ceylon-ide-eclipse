@@ -83,7 +83,7 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return extractableMembers != null && extractableMembers.length > 0;
     }
 

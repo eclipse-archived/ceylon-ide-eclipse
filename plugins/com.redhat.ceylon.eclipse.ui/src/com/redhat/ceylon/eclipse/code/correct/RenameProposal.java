@@ -81,7 +81,7 @@ class RenameProposal implements ICompletionProposal,
     public static void add(Collection<ICompletionProposal> proposals,
             CeylonEditor editor) {
         RenameRefactoring rr = new RenameRefactoring(editor);
-        if (rr.isEnabled()) {
+        if (rr.getEnabled()) {
             proposals.add(new RenameProposal(rr.getDeclaration(), editor));
         }
     }

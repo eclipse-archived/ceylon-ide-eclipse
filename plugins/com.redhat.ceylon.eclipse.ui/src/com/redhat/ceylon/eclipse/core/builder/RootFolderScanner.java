@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.formatPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isCompilable;
-import static com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile.createResourceVirtualFile;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -19,21 +18,22 @@ import org.eclipse.core.runtime.SubMonitor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
+import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper;
-import com.redhat.ceylon.eclipse.core.vfs.IFolderVirtualFile;
-import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 
 final class RootFolderScanner implements IResourceVisitor {
     private final Module defaultModule;
     private final JDTModelLoader modelLoader;
     private final JDTModuleManager moduleManager;
     private final JDTModuleSourceMapper moduleSourceMapper;
-    private final IFolderVirtualFile rootDir;
+    private final FolderVirtualFile<IResource, IFolder, IFile> rootDir;
     private final TypeChecker typeChecker;
     private final List<IFile> scannedFiles;
     private final PhasedUnits phasedUnits;
@@ -45,7 +45,8 @@ final class RootFolderScanner implements IResourceVisitor {
     
 
     RootFolderScanner(RootFolderType rootFolderType, Module defaultModule, JDTModelLoader modelLoader,
-            JDTModuleManager moduleManager, JDTModuleSourceMapper moduleSourceMapper, IFolderVirtualFile rootDir, TypeChecker typeChecker,
+            JDTModuleManager moduleManager, JDTModuleSourceMapper moduleSourceMapper, 
+            FolderVirtualFile<IResource, IFolder, IFile> rootDir, TypeChecker typeChecker,
             List<IFile> scannedFiles, PhasedUnits phasedUnits, SubMonitor monitor) {
         this.rootFolderType = rootFolderType;
         this.isInResourceForlder = rootFolderType.equals(RootFolderType.RESOURCE);
@@ -67,14 +68,14 @@ final class RootFolderScanner implements IResourceVisitor {
         monitor.setWorkRemaining(10000);
         monitor.worked(1);
 
-        if (resource.equals(rootDir.getResource())) {
+        if (resource.equals(rootDir.getNativeResource())) {
             resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_PACKAGE_MODEL, new WeakReference<Package>(modelLoader.findPackage("")));
-            resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, rootDir.getFolder());
+            resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, rootDir.getNativeResource());
             resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER_TYPE, rootFolderType);
             return true;
         }
 
-        if (resource.getParent().equals(rootDir.getResource())) {
+        if (resource.getParent().equals(rootDir.getNativeResource())) {
             // We've come back to a source directory child : 
             //  => reset the current Module to default and set the package to emptyPackage
             module = defaultModule;
@@ -108,7 +109,7 @@ final class RootFolderScanner implements IResourceVisitor {
 
         if (resource instanceof IFolder) {
             resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_PACKAGE_MODEL, new WeakReference<Package>(pkg));
-            resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, rootDir.getFolder());
+            resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, rootDir.getNativeResource());
             return true;
         }
 
@@ -123,7 +124,7 @@ final class RootFolderScanner implements IResourceVisitor {
                     
                     if (isSourceFile) {
                         if (CeylonBuilder.isCeylon(file)) {
-                            ResourceVirtualFile virtualFile = createResourceVirtualFile(file);
+                            ResourceVirtualFile<IResource, IFolder, IFile> virtualFile = vfsJ2C.createVirtualFile(file);
                             try {
                                 PhasedUnit newPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, moduleSourceMapper,
                                         typeChecker, virtualFile, rootDir, pkg);
@@ -142,7 +143,7 @@ final class RootFolderScanner implements IResourceVisitor {
 
     private List<String> getPackageName(IContainer container) {
         List<String> pkgName = Arrays.asList(container.getProjectRelativePath()
-                .makeRelativeTo(rootDir.getResource().getProjectRelativePath()).segments());
+                .makeRelativeTo(rootDir.getNativeResource().getProjectRelativePath()).segments());
         return pkgName;
     }
 }

@@ -154,7 +154,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return declaration!=null && 
                 !parameters.isEmpty();
     }

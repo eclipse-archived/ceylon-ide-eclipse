@@ -37,7 +37,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -327,11 +327,9 @@ class CeylonSearchQuery implements ISearchQuery {
         else {
             for (IResource r: resources) {
                 VirtualFile unitFile = pu.getUnitFile();
-                if (unitFile instanceof IFileVirtualFile) {
-                    IFileVirtualFile file = 
-                            (IFileVirtualFile) unitFile;
+                if (vfsJ2C.instanceOfIFileVirtualFile(unitFile)) {
                     IPath loc = 
-                            file.getResource().getLocation();
+                            vfsJ2C.getIFileVirtualFile(unitFile).getNativeResource().getLocation();
                     if (r.getLocation().isPrefixOf(loc)) {
                         return true;
                     }

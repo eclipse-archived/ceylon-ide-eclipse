@@ -78,7 +78,7 @@ public class InlineRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         if (declaration!=null &&
                 project != null &&
                 inSameProject(declaration)) {

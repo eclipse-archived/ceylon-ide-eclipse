@@ -39,22 +39,22 @@ public final class ExtractParameterLinkedMode
     
     @Override
     protected boolean canStart() {
-        return refactoring.isEnabled();
+        return refactoring.getEnabled();
     }
     
     @Override
     protected int getNameOffset() {
-        return refactoring.decRegion.getOffset();
+        return refactoring.getDecRegion().getOffset();
     }
     
     @Override
     protected int getTypeOffset() {
-        return refactoring.typeRegion.getOffset();
+        return refactoring.getTypeRegion().getOffset();
     }
     
     @Override
     protected int getExitPosition(int selectionOffset, int adjust) {
-        return refactoring.refRegion.getOffset();
+        return refactoring.getRefRegion().getOffset();
     }
     
     @Override
@@ -67,14 +67,14 @@ public final class ExtractParameterLinkedMode
             CompilationUnit rootNode, int adjust) {
         
         addNamePosition(document, 
-                refactoring.refRegion.getOffset(),
-                refactoring.refRegion.getLength());
+                refactoring.getRefRegion().getOffset(),
+                refactoring.getRefRegion().getLength());
         
         Type type = refactoring.getType();
         if (!isTypeUnknown(type)) {
             addTypePosition(document, type, 
-                    refactoring.typeRegion.getOffset(), 
-                    refactoring.typeRegion.getLength());
+                    refactoring.getTypeRegion().getOffset(), 
+                    refactoring.getTypeRegion().getLength());
         }
         
     }

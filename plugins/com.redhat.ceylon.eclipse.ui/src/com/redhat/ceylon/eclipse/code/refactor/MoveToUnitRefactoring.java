@@ -82,7 +82,7 @@ public class MoveToUnitRefactoring extends Refactoring {
     }
     
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return node!=null;
     }
 

@@ -33,6 +33,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolderType;
+import static com.redhat.ceylon.eclipse.core.vfs.vfsJ2C.instanceOfIFileVirtualFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
@@ -174,7 +175,6 @@ import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -2065,7 +2065,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
                                             sourcePhasedUnits.getPhasedUnitFromRelativePath(
                                                     relativePath.toString());
                                     if (unit instanceof ProjectPhasedUnit) {
-                                        if (unit.getUnitFile() instanceof IFileVirtualFile) {
+                                        if (instanceOfIFileVirtualFile(unit.getUnitFile())) {
                                             IFile newFile = 
                                                     CeylonBuilder.getFile(unit);
                                             if (newFile.exists() &&

@@ -53,7 +53,7 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
-public class ExtractFunctionRefactoring extends AbstractRefactoring {
+public class ExtractFunctionRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled {
     
     private final class FindOuterReferencesVisitor extends Visitor {
         final Declaration declaration;
@@ -385,9 +385,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return sourceFile!=null &&
-                isEditable() &&
+                getEditable() &&
                 !sourceFile.getName().equals("module.ceylon") &&
                 !sourceFile.getName().equals("package.ceylon") &&
                 (node instanceof Tree.Term || 
@@ -482,9 +482,36 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         return new RefactoringStatus();
     }
 
-    IRegion decRegion;
-    IRegion refRegion;
-    IRegion typeRegion;
+    private IRegion decRegion;
+    private IRegion refRegion;
+    private IRegion typeRegion;
+
+    @Override
+    public IRegion getTypeRegion() {
+        return typeRegion;
+    }
+    @Override
+    public void setTypeRegion(IRegion region) {
+        typeRegion = region;
+    }
+    @Override
+    public IRegion getDecRegion() {
+        return decRegion;
+    }
+    @Override
+    public void setDecRegion(IRegion region) {
+        decRegion = region;
+    }
+    @Override
+    public IRegion getRefRegion() {
+        return refRegion;
+    }
+    @Override
+    public void setRefRegion(IRegion region) {
+        refRegion=region;
+    }
+
+    
 	private boolean canBeInferred;
 
     public Change createChange(IProgressMonitor pm) 
@@ -495,7 +522,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
         return tfc;
     }
 
-    void extractInFile(TextChange tfc) 
+    public void extractInFile(TextChange tfc) 
             throws CoreException {
         if (node instanceof Tree.Term) {
             extractExpressionInFile(tfc);
@@ -979,5 +1006,4 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring {
     public boolean canBeInferred() {
         return canBeInferred;
     }
-
 }
