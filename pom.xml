@@ -54,11 +54,11 @@
      <url>file:../ceylon.formatter/osgi/dist</url>
    </repository>
 
-	<repository>
-		<id>com-redhat-ceylon-converter</id>
-		<layout>p2</layout>
-		<url>file:../java-to-ceylon-converter/osgi/dist</url>
-	</repository>
+   <repository>
+     <id>com-redhat-ceylon-converter</id>
+	 <layout>p2</layout>
+	 <url>file:../java-to-ceylon-converter/osgi/dist</url>
+   </repository>
 
    <repository>
      <id>ceylon-ide-common</id>
