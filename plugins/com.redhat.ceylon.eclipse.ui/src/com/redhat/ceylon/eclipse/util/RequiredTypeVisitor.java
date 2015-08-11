@@ -1,13 +1,18 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.unionType;
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.unionType;
 
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.NamedArgumentList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.SwitchCaseList;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -15,15 +20,8 @@ import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.NamedArgumentList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SwitchCaseList;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-class RequiredTypeVisitor extends Visitor 
-        implements NaturalVisitor {
+class RequiredTypeVisitor extends Visitor {
     
     private Node node;
     private Type requiredType = null;

@@ -38,6 +38,7 @@ import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -47,7 +48,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class MoveFileRefactoringParticipant extends MoveParticipant {
@@ -365,9 +366,9 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             PhasedUnit movedPhasedUnit, 
             Map<Declaration, String> imports) {
         try {
-            IFileVirtualFile virtualFile = 
-                    (IFileVirtualFile) movedPhasedUnit.getUnitFile();
-            IFile file = virtualFile.getFile();
+            FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
+                    vfsJ2C.getIFileVirtualFile( movedPhasedUnit.getUnitFile());
+            IFile file = virtualFile.getNativeResource();
             String path = file.getProjectRelativePath().toPortableString();
             TextFileChange change = fileChanges.get(path);
             if (change==null) {
@@ -405,9 +406,9 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             Tree.CompilationUnit cu = 
                     phasedUnit.getCompilationUnit();
             if (!imports.isEmpty()) {
-                IFileVirtualFile virtualFile = 
-                        (IFileVirtualFile) phasedUnit.getUnitFile();
-                IFile file = virtualFile.getFile();
+                FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
+                        vfsJ2C.getIFileVirtualFile(phasedUnit.getUnitFile());
+                IFile file = virtualFile.getNativeResource();
                 String path = file.getProjectRelativePath().toPortableString();
                 TextFileChange change = fileChanges.get(path);
                 if (change==null) {

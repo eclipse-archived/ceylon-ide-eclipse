@@ -18,7 +18,6 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -34,14 +33,17 @@ class CreateEnumProposal extends CorrectionProposal {
         super(desc, change, new Region(offset, 0), image);
     }
     
-    static void addCreateEnumProposal(Tree.CompilationUnit cu, Node node, 
-            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
-            IProject project, TypeChecker tc, IFile file) {
+    static void addCreateEnumProposal(
+            Tree.CompilationUnit rootNode, 
+            Node node, 
+            ProblemLocation problem, 
+            Collection<ICompletionProposal> proposals, 
+            IProject project) {
             Node idn = Nodes.getIdentifyingNode(node);
             if (idn==null) return;
             String brokenName = idn.getText();
             if (brokenName.isEmpty()) return;
-            Tree.Declaration dec = findDeclaration(cu, node);
+            Tree.Declaration dec = findDeclaration(rootNode, node);
             if (dec instanceof Tree.ClassDefinition) {
                 Tree.ClassDefinition cd = (Tree.ClassDefinition) dec;
                 if (cd.getCaseTypes()!=null) {
@@ -54,7 +56,7 @@ class CreateEnumProposal extends CorrectionProposal {
                                     arguments(cd.getParameterList()) + " {}", 
                                 "class '"+ brokenName + parameters(cd.getTypeParameterList()) +
                                 parameters(cd.getParameterList()) + "'", 
-                                CeylonResources.CLASS, cu, cd);
+                                CeylonResources.CLASS, rootNode, cd);
                     }
                     if (cd.getCaseTypes().getBaseMemberExpressions().contains(node)) {
                         addCreateEnumProposal(proposals, project, 
@@ -63,7 +65,7 @@ class CreateEnumProposal extends CorrectionProposal {
                                     parameters(cd.getTypeParameterList()) + 
                                     arguments(cd.getParameterList()) + " {}", 
                                 "object '"+ brokenName + "'", 
-                                ATTRIBUTE, cu, cd);
+                                ATTRIBUTE, rootNode, cd);
                     }
                 }
             }
@@ -76,7 +78,7 @@ class CreateEnumProposal extends CorrectionProposal {
                                     " satisfies " + cd.getDeclarationModel().getName() + 
                                     parameters(cd.getTypeParameterList()) + " {}", 
                                 "interface '"+ brokenName + parameters(cd.getTypeParameterList()) +  "'", 
-                                INTERFACE, cu, cd);
+                                INTERFACE, rootNode, cd);
                     }
                     if (cd.getCaseTypes().getBaseMemberExpressions().contains(node)) {
                         addCreateEnumProposal(proposals, project, 
@@ -84,7 +86,7 @@ class CreateEnumProposal extends CorrectionProposal {
                                     " satisfies " + cd.getDeclarationModel().getName() + 
                                     parameters(cd.getTypeParameterList()) + " {}", 
                                 "object '"+ brokenName + "'", 
-                                ATTRIBUTE, cu, cd);
+                                ATTRIBUTE, rootNode, cd);
                     }
                 }
             }

@@ -28,6 +28,10 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAss
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.addAssignToIfNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
+import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addInvertOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addParenthesizeBinaryOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addReverseOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addSwapBinaryOperandsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeArgumentReferenceProposals;
@@ -146,13 +150,12 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.dialogs.PreferencesUtil;
@@ -164,7 +167,6 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -189,7 +191,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         implements IQuickAssistProcessor {
     
     private static final class CollectWarningsToSuppressVisitor 
-            extends Visitor implements NaturalVisitor {
+            extends Visitor {
         private final StringBuilder sb;
         private final StyledString ss;
 
@@ -486,6 +488,17 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         return true;
     }
     
+    CeylonEditor getCurrentCeylonEditor() {
+        if (editor != null) {
+            return editor;
+        }
+        IEditorPart editorPart = EditorUtil.getCurrentEditor();
+        if (editorPart instanceof CeylonEditor) {
+            return (CeylonEditor) editorPart;
+        }
+        return null;
+    }
+    
     private void addProposals(IQuickAssistInvocationContext context, 
             ProblemLocation problem, IFile file, 
             Tree.CompilationUnit rootNode,
@@ -504,17 +517,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             if (tc!=null) {
                 addImportProposals(rootNode, node, proposals, file);
             }
-            addCreateEnumProposal(rootNode, node, problem, proposals, 
-                    project, tc, file);
-            addCreationProposals(rootNode, node, problem, proposals, 
-                    project, tc, file);
+            addCreateEnumProposal(rootNode, node, problem, proposals, project);
+            addCreationProposals(rootNode, node, problem, proposals, project, file);
             if (tc!=null) {
                 addChangeReferenceProposals(rootNode, node, problem, proposals, file);
             }
             break;
         case 101:
-            addCreateParameterProposals(rootNode, node, problem, proposals, 
-                    project, tc, file);
+            addCreateParameterProposals(rootNode, node, problem, proposals, project);
             if (tc!=null) {
                 addChangeArgumentReferenceProposals(rootNode, node, problem, proposals, file);
             }
@@ -670,8 +680,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addRemoveAnnotationDecProposal(proposals, "annotation", project, node);
             break;
         case 2000:
-            addCreateParameterProposals(rootNode, node, problem, proposals, 
-                    project, tc, file);
+            addCreateParameterProposals(rootNode, node, problem, proposals, project);
             break;
         case 2100:
             addChangeTypeProposals(rootNode, node, problem, proposals, project);
@@ -688,13 +697,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addTypeParameterProposal(file, rootNode, proposals, node);
             break;
         case 3000:
-            addAssignToLocalProposal(rootNode, proposals, node, start);
-            addDestructureProposal(rootNode, proposals, node, start);
-            addAssignToForProposal(rootNode, proposals, node, start);
-            addAssignToIfExistsProposal(rootNode, proposals, node, start);
-            addAssignToIfNonemptyProposal(rootNode, proposals, node, start);
-            addAssignToTryProposal(rootNode, proposals, node, start);
-            addAssignToIfIsProposal(rootNode, proposals, node, start);
+            CeylonEditor currentEditor = getCurrentCeylonEditor();
+            addAssignToLocalProposal(currentEditor, rootNode, proposals, node, start);
+            addDestructureProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToForProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToIfExistsProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToIfNonemptyProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToTryProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToIfIsProposal(currentEditor, rootNode, proposals, node, start);
             addPrintProposal(rootNode, proposals, node, start);
             break;
         case 3100:
@@ -808,22 +818,26 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Collection<ICompletionProposal> proposals, 
             Node node) {
         if (node instanceof Tree.SwitchClause) {
-            Tree.SwitchStatement ss = (Tree.SwitchStatement) 
+            Tree.Statement st = 
                     findStatement(rootNode, node);
-            TextFileChange tfc = 
-                    new TextFileChange("Add Else", file);
-            IDocument doc = getDocument(tfc);
-            String text = 
-                    getDefaultLineDelimiter(doc) + 
-                    getIndent(node, doc) + 
-                    "else {}";
-            int offset = getNodeEndOffset(ss);
-            tfc.setEdit(new InsertEdit(offset, 
-                    text));
-            proposals.add(new CorrectionProposal("Add 'else' clause", 
-                    tfc, new Region(offset+text.length()-1, 0)));
+            if (st instanceof Tree.SwitchStatement) {
+                int offset = getNodeEndOffset(st);
+                TextFileChange tfc = 
+                        new TextFileChange("Add Else", file);
+                IDocument doc = getDocument(tfc);
+                String text = 
+                        getDefaultLineDelimiter(doc) + 
+                        getIndent(node, doc) + 
+                        "else {}";
+                tfc.setEdit(new InsertEdit(offset, text));
+                Region selection =
+                        new Region(offset+text.length()-1, 0);
+                proposals.add(new CorrectionProposal(
+                        "Add 'else' clause", 
+                        tfc, selection));
+            }
+            //TODO: else handle switch *expressions* 
         }
-        
     }
 
     private void addCasesProposal(IFile file, 
@@ -832,8 +846,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Node node) {
         if (node instanceof Tree.SwitchClause) {
             Tree.SwitchClause sc = (Tree.SwitchClause) node;
-            Tree.SwitchStatement ss = (Tree.SwitchStatement) 
-                    findStatement(rootNode, node);
+            Tree.SwitchStatement ss = 
+                    (Tree.SwitchStatement) 
+                        findStatement(rootNode, node);
             Tree.Expression e = 
                     sc.getSwitched().getExpression();
             if (e!=null) {
@@ -864,8 +879,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                             for (Tree.Expression ex: 
                                 il.getExpressions()) {
                                 if (ex!=null) {
-                                    Type t = 
-                                            ex.getTypeModel();
+                                    Type t = ex.getTypeModel();
                                     if (t!=null && 
                                             !isTypeUnknown(t)) {
                                         type = type.minus(t);
@@ -916,9 +930,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Node node) {
         Tree.TypeConstraint tcn = (Tree.TypeConstraint) node;
         TypeParameter tp = tcn.getDeclarationModel();
-        Tree.Declaration decNode = (Tree.Declaration) 
-                getReferencedNodeInUnit(tp.getDeclaration(), 
-                        rootNode);
+        Tree.Declaration decNode = 
+                (Tree.Declaration) 
+                    getReferencedNodeInUnit(
+                            tp.getDeclaration(), 
+                            rootNode);
         Tree.TypeParameterList tpl;
         if (decNode instanceof Tree.ClassOrInterface) {
             Tree.ClassOrInterface ci = 
@@ -941,7 +957,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 new TextFileChange("Add Type Parameter", file);
         InsertEdit edit;
         if (tpl==null) {
-            edit = new InsertEdit(decNode.getIdentifier().getStopIndex()+1, 
+            Tree.Identifier id = decNode.getIdentifier();
+            edit = new InsertEdit(id.getStopIndex()+1, 
                     "<" + tp.getName() + ">");
         }
         else {
@@ -982,13 +999,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             MakeReceiverProposal.add(proposals, editor, node);
             InvertBooleanProposal.add(proposals, editor);
             
-            addAssignToLocalProposal(rootNode, proposals, node, currentOffset);
-            addDestructureProposal(rootNode, proposals, node, currentOffset);
-            addAssignToForProposal(rootNode, proposals, node, currentOffset);
-            addAssignToIfExistsProposal(rootNode, proposals, node, currentOffset);
-            addAssignToIfNonemptyProposal(rootNode, proposals, node, currentOffset);
-            addAssignToTryProposal(rootNode, proposals, node, currentOffset);
-            addAssignToIfIsProposal(rootNode, proposals, node, currentOffset);
+            CeylonEditor currentEditor = getCurrentCeylonEditor();
+            addAssignToLocalProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addDestructureProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToForProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToIfExistsProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToIfNonemptyProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToTryProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToIfIsProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addPrintProposal(rootNode, proposals, node, currentOffset);
             
             addConvertToNamedArgumentsProposal(proposals, file, rootNode, 
@@ -1062,53 +1080,15 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         
     }
 
-    private void addBinaryOperatorProposals(
+    private static void addBinaryOperatorProposals(
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.BinaryOperatorExpression boe) {
         if (boe!=null) {
             addParenthesizeBinaryOperatorProposal(proposals, file, boe);
+            addReverseOperatorProposal(proposals, file, boe);
+            addInvertOperatorProposal(proposals, file, boe);
             addSwapBinaryOperandsProposal(proposals, file, boe);
         }
-    }
-
-    private void addSwapBinaryOperandsProposal(
-            Collection<ICompletionProposal> proposals, IFile file,
-            Tree.BinaryOperatorExpression boe) {
-        TextChange change = new TextFileChange("Swap Operands", file);
-        change.setEdit(new MultiTextEdit());
-        Tree.Term lt = boe.getLeftTerm();
-        Tree.Term rt = boe.getRightTerm();
-        if (lt!=null && rt!=null) {
-            IDocument document = getDocument(change);
-            int lto = lt.getStartIndex();
-            int ltl = lt.getStopIndex()-lto+1;
-            int rto = rt.getStartIndex();
-            int rtl = rt.getStopIndex()-rto+1;
-            try {
-                change.addEdit(new ReplaceEdit(lto, ltl, 
-                        document.get(rto, rtl)));
-                change.addEdit(new ReplaceEdit(rto, rtl, 
-                        document.get(lto, ltl)));
-                proposals.add(new CorrectionProposal("Swap operands of " + 
-                        boe.getMainToken().getText() + 
-                        " expression", change, null));
-            }
-            catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void addParenthesizeBinaryOperatorProposal(
-            Collection<ICompletionProposal> proposals, IFile file,
-            Tree.BinaryOperatorExpression boe) {
-        TextChange change = new TextFileChange("Parenthesize Expression", file);
-        change.setEdit(new MultiTextEdit());
-        change.addEdit(new InsertEdit(boe.getStartIndex(), "("));
-        change.addEdit(new InsertEdit(boe.getStopIndex()+1, ")"));
-        proposals.add(new CorrectionProposal("Parenthesize " + 
-                boe.getMainToken().getText() + 
-                " expression", change, null));
     }
 
     private void addAnnotationProposals(Collection<ICompletionProposal> proposals, 
@@ -1199,13 +1179,15 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         if (decNode==null) return;
         
         if (decNode.getAnnotationList()!=null) {
-            Integer stopIndex = decNode.getAnnotationList().getStopIndex();
+            Integer stopIndex = 
+                    decNode.getAnnotationList().getStopIndex();
             if (stopIndex!=null && currentOffset<=stopIndex+1) {
                 return;
             }
         }
         if (decNode instanceof Tree.TypedDeclaration) {
-            Tree.TypedDeclaration tdn = (Tree.TypedDeclaration) decNode;
+            Tree.TypedDeclaration tdn = 
+                    (Tree.TypedDeclaration) decNode;
             if (tdn.getType()!=null) {
                 Integer stopIndex = tdn.getType().getStopIndex();
                 if (stopIndex!=null && currentOffset<=stopIndex+1) {
@@ -1215,7 +1197,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
             
         if (decNode instanceof Tree.AttributeDeclaration) {
-            Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) decNode;
+            Tree.AttributeDeclaration attDecNode = 
+                    (Tree.AttributeDeclaration) decNode;
             Tree.SpecifierOrInitializerExpression se = 
                     attDecNode.getSpecifierOrInitializerExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
@@ -1226,31 +1209,39 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             }
         }
         if (decNode instanceof Tree.MethodDeclaration) {
+            Tree.MethodDeclaration methodDecNode = 
+                    (Tree.MethodDeclaration) decNode;
             Tree.SpecifierOrInitializerExpression se = 
-                    ((Tree.MethodDeclaration) decNode).getSpecifierExpression(); 
+                    methodDecNode.getSpecifierExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
                 addConvertToBlockProposal(doc, proposals, file, decNode);
             }
         }
         if (decNode instanceof Tree.AttributeSetterDefinition) {
+            Tree.AttributeSetterDefinition setterDefNode = 
+                    (Tree.AttributeSetterDefinition) decNode;
             Tree.SpecifierOrInitializerExpression se = 
-                    ((Tree.AttributeSetterDefinition) decNode).getSpecifierExpression();
+                    setterDefNode.getSpecifierExpression();
             if (se instanceof Tree.LazySpecifierExpression) {
                 addConvertToBlockProposal(doc, proposals, file, decNode);
             }
-            Tree.Block b = ((Tree.AttributeSetterDefinition) decNode).getBlock(); 
+            Tree.Block b = setterDefNode.getBlock(); 
             if (b!=null) {
                 addConvertToSpecifierProposal(doc, proposals, file, b);
             }
         }
         if (decNode instanceof Tree.AttributeGetterDefinition) {
-            Tree.Block b = ((Tree.AttributeGetterDefinition) decNode).getBlock(); 
+            Tree.AttributeGetterDefinition getterDefNode = 
+                    (Tree.AttributeGetterDefinition) decNode;
+            Tree.Block b = getterDefNode.getBlock(); 
             if (b!=null) {
                 addConvertToSpecifierProposal(doc, proposals, file, b);
             }
         }
         if (decNode instanceof Tree.MethodDefinition) {
-            Tree.Block b = ((Tree.MethodDefinition) decNode).getBlock(); 
+            Tree.MethodDefinition methodDefNode = 
+                    (Tree.MethodDefinition) decNode;
+            Tree.Block b = methodDefNode.getBlock(); 
             if (b!=null) {
                 addConvertToSpecifierProposal(doc, proposals, file, b);
             }
@@ -1290,9 +1281,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    private void addCreationProposals(Tree.CompilationUnit cu, final Node node, 
-            ProblemLocation problem, Collection<ICompletionProposal> proposals, 
-            IProject project, TypeChecker tc, IFile file) {
+    private void addCreationProposals(
+            Tree.CompilationUnit cu, 
+            final Node node, 
+            ProblemLocation problem, 
+            Collection<ICompletionProposal> proposals, 
+            IProject project,
+            IFile file) {
         if (node instanceof Tree.MemberOrTypeExpression) {
             addCreateProposals(cu, node, proposals, project, file);
         }
@@ -1303,14 +1298,17 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 public void visit(Tree.ExtendedType that) {
                     super.visit(that);
                     if (that.getType()==node) {
-                        invocationExpression = that.getInvocationExpression();
+                        invocationExpression = 
+                                that.getInvocationExpression();
                     }
                 }
             }
-            FindExtendedTypeExpressionVisitor v = new FindExtendedTypeExpressionVisitor();
+            FindExtendedTypeExpressionVisitor v = 
+                    new FindExtendedTypeExpressionVisitor();
             v.visit(cu);
             if (v.invocationExpression!=null) {
-                addCreateProposals(cu, v.invocationExpression.getPrimary(), 
+                addCreateProposals(cu, 
+                        v.invocationExpression.getPrimary(), 
                         proposals, project, file);
             }
         }
@@ -1342,9 +1340,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    public void collectAnnotationCorrections(CeylonAnnotation annotation,
+    public void collectAnnotationCorrections(
+            CeylonAnnotation annotation,
             IQuickAssistInvocationContext context,
-            ProblemLocation location, Collection<ICompletionProposal> proposals) {
+            ProblemLocation location, 
+            Collection<ICompletionProposal> proposals) {
         if (annotation.getSeverity()==IMarker.SEVERITY_WARNING) {
             Tree.CompilationUnit rootNode = getRootNode();
             Tree.Statement st = Nodes.findStatement(rootNode,

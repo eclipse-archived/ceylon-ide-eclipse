@@ -54,7 +54,7 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return value != null
                 && value.getTypeDeclaration() instanceof Class
                 && value.getTypeDeclaration()
@@ -134,7 +134,7 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void invertTerm(Tree.Term term, TextChange change) {
+    public static void invertTerm(Tree.Term term, TextChange change) {
         CommonToken token = (CommonToken) term.getMainToken();
         if (term instanceof Tree.BaseMemberExpression) {
             Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) term;

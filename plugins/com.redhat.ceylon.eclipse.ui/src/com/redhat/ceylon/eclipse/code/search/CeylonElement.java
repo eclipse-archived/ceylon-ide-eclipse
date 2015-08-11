@@ -12,7 +12,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Font;
@@ -20,9 +20,9 @@ import org.eclipse.swt.graphics.Font;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
-import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
+import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -166,9 +166,8 @@ public class CeylonElement {
     }
     
     public IFile getFile() {
-        if (file instanceof IFileVirtualFile) {
-            IFileVirtualFile fvf = (IFileVirtualFile) file;
-            return fvf.getFile();
+        if (vfsJ2C.instanceOfIFileVirtualFile(file)) {
+            return vfsJ2C.getIFileVirtualFile(file).getNativeResource();
         }
         else {
             return null;
@@ -177,16 +176,19 @@ public class CeylonElement {
     
     //for no good reason that I can see, ResourceVirtualFiles
     //return a project-relative path from getPath()
+    @SuppressWarnings("rawtypes")
     public String getPathString() {
         if (file instanceof ResourceVirtualFile) {
             ResourceVirtualFile rvf = 
                     (ResourceVirtualFile) file;
-            IPath path = rvf.getResource().getFullPath();
-            return path.toPortableString();
+            Object nativeResource = rvf.getNativeResource();
+            if (nativeResource instanceof IResource) {
+                return ((IResource)nativeResource)
+                            .getFullPath()
+                            .toPortableString();
+            }
         }
-        else {
-            return file.getPath();
-        }
+        return file.getPath();
     }
     
     public int getStartOffset() {

@@ -25,7 +25,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -225,9 +224,9 @@ public abstract class LocalProposal extends AbstractLinkedMode
         return null;
     }
 
-    public LocalProposal(Tree.CompilationUnit cu, Node node, 
+    public LocalProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, Node node, 
             int currentOffset) {
-        super((CeylonEditor) EditorUtil.getCurrentEditor());
+        super(ceylonEditor);
         this.rootNode = cu;
         this.node = node;
         this.currentOffset = currentOffset;

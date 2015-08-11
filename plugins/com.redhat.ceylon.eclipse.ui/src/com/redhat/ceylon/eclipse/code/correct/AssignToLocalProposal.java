@@ -19,6 +19,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 
 class AssignToLocalProposal extends LocalProposal {
@@ -41,9 +42,9 @@ class AssignToLocalProposal extends LocalProposal {
         return change;
     }
     
-    public AssignToLocalProposal(Tree.CompilationUnit cu, 
+    public AssignToLocalProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 
             Node node, int currentOffset) {
-        super(cu, node, currentOffset);
+        super(ceylonEditor, cu, node, currentOffset);
     }
     
     protected void addLinkedPositions(IDocument document, Unit unit)
@@ -84,11 +85,11 @@ class AssignToLocalProposal extends LocalProposal {
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }
 
-    static void addAssignToLocalProposal(Tree.CompilationUnit cu, 
+    static void addAssignToLocalProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 
             Collection<ICompletionProposal> proposals,
             Node node, int currentOffset) {
         AssignToLocalProposal prop = 
-                new AssignToLocalProposal(cu, node, currentOffset);
+                new AssignToLocalProposal(ceylonEditor, cu, node, currentOffset);
         if (prop.isEnabled()) {
             proposals.add(prop);
         }

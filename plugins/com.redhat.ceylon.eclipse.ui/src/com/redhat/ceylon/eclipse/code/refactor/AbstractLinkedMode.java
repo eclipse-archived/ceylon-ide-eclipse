@@ -35,7 +35,7 @@ import com.redhat.ceylon.eclipse.util.LinkedMode;
 public abstract class AbstractLinkedMode {
 
     protected final CeylonEditor editor;
-    protected final Point originalSelection;
+    private Point originalSelection;
     protected final LinkedModeModel linkedModeModel;
     
     private boolean showPreview = false;
@@ -44,12 +44,18 @@ public abstract class AbstractLinkedMode {
 
     protected AbstractLinkedMode(CeylonEditor ceylonEditor) {
         editor = ceylonEditor;
-        originalSelection = 
-                ceylonEditor.getCeylonSourceViewer()
-                    .getSelectedRange();
         linkedModeModel = new LinkedModeModel();
     }
 
+    synchronized Point getOriginalSelection() {
+        if (originalSelection == null) {
+            originalSelection = editor.getCeylonSourceViewer()
+                    .getSelectedRange();
+        }
+        return originalSelection;
+    }
+
+    
     protected RefactorInformationPopup getInfoPopup() {
         return infoPopup;
     }

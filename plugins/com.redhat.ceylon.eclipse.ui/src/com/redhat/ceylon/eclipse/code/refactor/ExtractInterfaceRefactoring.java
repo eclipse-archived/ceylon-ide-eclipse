@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImports;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingEndOffset;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,15 +29,16 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -81,7 +83,7 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return extractableMembers != null && extractableMembers.length > 0;
     }
 
@@ -173,11 +175,12 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
     private void collectExtractedTypeParametersFromTheirConstrains() {
         if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            if (containerAsClassOrInter.getTypeConstraintList() != null) {
+            TypeConstraintList typeConstraintList = typeConstraintList();
+            if (typeConstraintList != null) {
                 boolean repeat = true;
                 while (repeat) {
                     int size = extractedTypeParameters.size();
-                    for (Tree.TypeConstraint tc : containerAsClassOrInter.getTypeConstraintList().getTypeConstraints()) {
+                    for (Tree.TypeConstraint tc : typeConstraintList.getTypeConstraints()) {
                         if (extractedTypeParameters.contains(tc.getDeclarationModel())) {
                             if (tc.getSatisfiedTypes() != null && tc.getSatisfiedTypes().getTypes() != null) {
                                 for (Tree.StaticType t : tc.getSatisfiedTypes().getTypes()) {
@@ -221,15 +224,17 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
     private void collectExtractedImports() {
         if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            if (containerAsClassOrInter.getTypeParameterList() != null) {
-                for (Tree.TypeParameterDeclaration tp : containerAsClassOrInter.getTypeParameterList().getTypeParameterDeclarations()) {
+            TypeParameterList typeParameterList = containerAsClassOrInter.getTypeParameterList();
+            if (typeParameterList != null) {
+                for (Tree.TypeParameterDeclaration tp : typeParameterList.getTypeParameterDeclarations()) {
                     if (extractedTypeParameters.contains(tp.getDeclarationModel())) {
                         collectExtractedImports(tp);
                     }
                 }
             }
-            if (containerAsClassOrInter.getTypeConstraintList() != null) {
-                for (Tree.TypeConstraint tc : containerAsClassOrInter.getTypeConstraintList().getTypeConstraints()) {
+            TypeConstraintList typeConstraintList = typeConstraintList();
+            if (typeConstraintList != null) {
+                for (Tree.TypeConstraint tc : typeConstraintList.getTypeConstraints()) {
                     if (extractedTypeParameters.contains(tc.getDeclarationModel())) {
                         collectExtractedImports(tc);
                     }
@@ -278,9 +283,10 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
     private void addInterfaceTypeParameters(StringBuilder content) {
         if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            if (containerAsClassOrInter.getTypeParameterList() != null) {
+            TypeParameterList typeParameterList = containerAsClassOrInter.getTypeParameterList();
+            if (typeParameterList != null) {
                 boolean first = true;
-                for (Tree.TypeParameterDeclaration tp : containerAsClassOrInter.getTypeParameterList().getTypeParameterDeclarations()) {
+                for (Tree.TypeParameterDeclaration tp : typeParameterList.getTypeParameterDeclarations()) {
                     if (extractedTypeParameters.contains(tp.getDeclarationModel())) {
                         if (first) {
                             first = false;
@@ -300,8 +306,9 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
     private void addInterfaceTypeConstraints(StringBuilder content) {
         if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            if (containerAsClassOrInter.getTypeConstraintList() != null) {
-                for (Tree.TypeConstraint tc : containerAsClassOrInter.getTypeConstraintList().getTypeConstraints()) {
+            TypeConstraintList typeConstraintList = typeConstraintList();
+            if (typeConstraintList != null) {
+                for (Tree.TypeConstraint tc : typeConstraintList.getTypeConstraints()) {
                     if (extractedTypeParameters.contains(tc.getDeclarationModel())) {
                         content.append(" ");
                         content.append(toString(tc));
@@ -309,6 +316,19 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
                 }
             }
         }
+    }
+
+    private TypeConstraintList typeConstraintList() {
+        TypeConstraintList typeConstraintList = null;
+        if (containerAsClassOrInter instanceof Tree.AnyClass) {
+            Tree.AnyClass cl = (Tree.AnyClass) containerAsClassOrInter;
+            typeConstraintList = cl.getTypeConstraintList();
+        }
+        if (containerAsClassOrInter instanceof Tree.AnyInterface) {
+            Tree.AnyInterface in = (Tree.AnyInterface) containerAsClassOrInter;
+            typeConstraintList = in.getTypeConstraintList();
+        }
+        return typeConstraintList;
     }
 
     private void addInterfaceBody(StringBuilder content) {
@@ -375,36 +395,55 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
         int offset = -1;
         boolean containsSatisfies = false;
         if (containerAsClassOrInter != null) {
-            if (containerAsClassOrInter.getSatisfiedTypes() != null) {
-                offset = Nodes.getIdentifyingEndOffset(containerAsClassOrInter.getSatisfiedTypes());
-                containsSatisfies = true;
+            if (containerAsClassOrInter instanceof Tree.AnyClass) {
+                Tree.AnyClass cl = (Tree.AnyClass) containerAsClassOrInter;
+                if (cl.getSatisfiedTypes() != null) {
+                    offset = getIdentifyingEndOffset(cl.getSatisfiedTypes());
+                    containsSatisfies = true;
+                }
+                else if (cl.getExtendedType() != null) {
+                    offset = getIdentifyingEndOffset(cl.getExtendedType());
+                }
+                else if (cl.getCaseTypes() != null) {
+                    offset = getIdentifyingEndOffset(cl.getCaseTypes());
+                }
+                else if (cl.getParameterList() != null) {
+                    offset = getIdentifyingEndOffset(cl.getParameterList());
+                }
+                else if (cl.getTypeParameterList() != null) {
+                    offset = getIdentifyingEndOffset(cl.getTypeParameterList());
+                }
+                else {
+                    offset = getIdentifyingEndOffset(cl.getIdentifier());
+                }
             }
-            else if (containerAsClassOrInter instanceof Tree.AnyClass && ((Tree.AnyClass) containerAsClassOrInter).getExtendedType() != null) {
-                offset = Nodes.getIdentifyingEndOffset(((Tree.AnyClass) containerAsClassOrInter).getExtendedType());
-            }
-            else if (containerAsClassOrInter.getCaseTypes() != null) {
-                offset = Nodes.getIdentifyingEndOffset(containerAsClassOrInter.getCaseTypes());
-            }
-            else if (containerAsClassOrInter instanceof Tree.AnyClass && ((Tree.AnyClass) containerAsClassOrInter).getParameterList() != null) {
-                offset = Nodes.getIdentifyingEndOffset(((Tree.AnyClass) containerAsClassOrInter).getParameterList());
-            }
-            else if (containerAsClassOrInter.getTypeParameterList() != null) {
-                offset = Nodes.getIdentifyingEndOffset(containerAsClassOrInter.getTypeParameterList());
-            }
-            else {
-                offset = Nodes.getIdentifyingEndOffset(containerAsClassOrInter.getIdentifier());
+            if (containerAsClassOrInter instanceof Tree.AnyInterface) {
+                Tree.AnyInterface in = (Tree.AnyInterface) containerAsClassOrInter;
+                if (in.getSatisfiedTypes() != null) {
+                    offset = getIdentifyingEndOffset(in.getSatisfiedTypes());
+                    containsSatisfies = true;
+                }
+                else if (in.getCaseTypes() != null) {
+                    offset = getIdentifyingEndOffset(in.getCaseTypes());
+                }
+                else if (in.getTypeParameterList() != null) {
+                    offset = getIdentifyingEndOffset(in.getTypeParameterList());
+                }
+                else {
+                    offset = getIdentifyingEndOffset(in.getIdentifier());
+                }
             }
         }
         if (containerAsObjectDef != null) {
             if (containerAsObjectDef.getSatisfiedTypes() != null) {
-                offset = Nodes.getIdentifyingEndOffset(containerAsObjectDef.getSatisfiedTypes());
+                offset = getIdentifyingEndOffset(containerAsObjectDef.getSatisfiedTypes());
                 containsSatisfies = true;
             }
             else if (containerAsObjectDef.getExtendedType() != null) {
-                offset = Nodes.getIdentifyingEndOffset(containerAsObjectDef.getExtendedType());
+                offset = getIdentifyingEndOffset(containerAsObjectDef.getExtendedType());
             }
             else {
-                offset = Nodes.getIdentifyingEndOffset(containerAsObjectDef.getIdentifier());
+                offset = getIdentifyingEndOffset(containerAsObjectDef.getIdentifier());
             }
         }
 

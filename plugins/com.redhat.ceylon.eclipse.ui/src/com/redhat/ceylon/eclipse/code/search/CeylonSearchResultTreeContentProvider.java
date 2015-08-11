@@ -30,7 +30,13 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
+import com.redhat.ceylon.eclipse.core.model.IdeUnit;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -341,6 +347,17 @@ class CeylonSearchResultTreeContentProvider implements
             child instanceof IField ||
             child instanceof IImportDeclaration) {
             IJavaElement javaElement = (IJavaElement) child;
+            IJavaModelAware unit = CeylonBuilder.getUnit(javaElement);
+            if (unit instanceof CeylonBinaryUnit || unit instanceof JavaClassFile) {
+                IdeUnit ideUnit = (IdeUnit) unit;
+                Module module = ideUnit.getPackage().getModule();
+                if (module instanceof JDTModule) {
+                    JDTModule jdtModule = (JDTModule) module;
+                    if (jdtModule.isCeylonBinaryArchive()) {
+                        return new WithSourceFolder(unit, null);
+                    }
+                }
+            }
             IFile file = (IFile) javaElement.getResource();
             //there is never a Unit for a .java file, since
             //I can't figure out any way to navigate to the

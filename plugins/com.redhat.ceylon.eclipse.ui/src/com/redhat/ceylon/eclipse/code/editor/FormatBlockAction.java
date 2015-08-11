@@ -65,36 +65,43 @@ final class FormatBlockAction extends Action {
         Node bodyNode = fbv.result;
         if (bodyNode instanceof Tree.Body) {
             Tree.Body body = (Tree.Body) bodyNode;
-            String bodyIndent = getIndent(findDeclarationWithBody(rootNode, body), document);
+            Tree.Declaration bodyDec = 
+                    findDeclarationWithBody(rootNode, body);
+            String bodyIndent = 
+                    getIndent(bodyDec, document);
             String indent = bodyIndent + getDefaultIndent();
             String delim = getDefaultLineDelimiter(document);
             if (!body.getStatements().isEmpty()) {
                 builder.append(delim);
                 for (Tree.Statement st: body.getStatements()) {
                     builder.append(indent)
-                    .append(Nodes.toString(st, pc.getTokens()))
-                    .append(delim);
+                        .append(Nodes.toString(st, pc.getTokens()))
+                        .append(delim);
                 }
                 builder.append(bodyIndent);
             }
         }
         else if (bodyNode instanceof Tree.NamedArgumentList) {
-            Tree.NamedArgumentList body = (Tree.NamedArgumentList) bodyNode;
+            Tree.NamedArgumentList body = 
+                    (Tree.NamedArgumentList) bodyNode;
             String bodyIndent = getIndent(body, document);
             String indent = bodyIndent + getDefaultIndent();
             String delim = getDefaultLineDelimiter(document);
             if (!body.getNamedArguments().isEmpty()) {
-                for (Tree.NamedArgument st: body.getNamedArguments()) {
+                for (Tree.NamedArgument st: 
+                        body.getNamedArguments()) {
                     builder.append(indent)
-                    .append(Nodes.toString(st, pc.getTokens()))
-                    .append(delim);
+                        .append(Nodes.toString(st, pc.getTokens()))
+                        .append(delim);
                 }
             }
-            if (body.getSequencedArgument()!=null) {
+            Tree.SequencedArgument sequencedArg = 
+                    body.getSequencedArgument();
+            if (sequencedArg!=null) {
                 builder.append(indent)
-                .append(Nodes.toString(body.getSequencedArgument(), 
-                        pc.getTokens()))
-                .append(delim);
+                    .append(Nodes.toString(sequencedArg, 
+                            pc.getTokens()))
+                    .append(delim);
             }
             if (builder.length()!=0) {
                 builder.insert(0, delim);
@@ -102,23 +109,27 @@ final class FormatBlockAction extends Action {
             }
         }
         else if (bodyNode instanceof Tree.ImportMemberOrTypeList) {
-            Tree.ImportMemberOrTypeList body = (Tree.ImportMemberOrTypeList) bodyNode;
+            Tree.ImportMemberOrTypeList body = 
+                    (Tree.ImportMemberOrTypeList) bodyNode;
             String bodyIndent = getIndent(body, document);
             String indent = bodyIndent + getDefaultIndent();
             String delim = getDefaultLineDelimiter(document);
             if (!body.getImportMemberOrTypes().isEmpty()) {
-                for (Tree.ImportMemberOrType st: body.getImportMemberOrTypes()) {
+                for (Tree.ImportMemberOrType st: 
+                        body.getImportMemberOrTypes()) {
                     builder.append(indent)
-                    .append(Nodes.toString(st, pc.getTokens()))
-                    .append(",")
-                    .append(delim);
+                        .append(Nodes.toString(st, pc.getTokens()))
+                        .append(",")
+                        .append(delim);
                 }
             }
-            if (body.getImportWildcard()!=null) {
+            Tree.ImportWildcard wildcard = 
+                    body.getImportWildcard();
+            if (wildcard!=null) {
                 builder.append(indent)
-                .append(Nodes.toString(body.getImportWildcard(), 
-                        pc.getTokens()))
-                .append(delim);
+                    .append(Nodes.toString(wildcard, 
+                            pc.getTokens()))
+                    .append(delim);
             }
             if (builder.toString().endsWith(","+delim)) {
                 builder.setLength(builder.length()-1-delim.length());

@@ -58,9 +58,12 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
@@ -113,6 +116,23 @@ class AnnotationInformationControl
         //replaced by IInformationControlExtension2#setInput
     }
 
+    public Tree.CompilationUnit getTypecheckedRootNode(AnnotationInfo info) {
+        if (info == null) {
+            return null;
+        }
+        
+        CeylonEditor editor = info.getEditor();
+        if (editor == null) {
+            return null;
+        }
+        
+        CeylonParseController cpc = editor.getParseController();
+        if (cpc == null || ! Stage.TYPE_ANALYSIS.equals(cpc.getStage())) {
+            return null;
+        }
+        return cpc.getRootNode();
+    }
+    
     @Override
     public void setInput(Object input) {
         Assert.isLegal(input instanceof AnnotationInfo);
@@ -192,6 +212,8 @@ class AnnotationInformationControl
         return new Point(width, height);
     }
 
+    private final static ICompletionProposal[] NO_PROPOSAL = new ICompletionProposal[0];
+    
     /**
      * Create content of the hover. This is called after
      * the input has been set.
@@ -199,33 +221,43 @@ class AnnotationInformationControl
     protected void deferredCreateContent() {
         createAnnotationInformation(fParent);
         quickFixesRetrieved.set(false);
-        final Composite quickFixProgressGroup = new Composite(fParent, SWT.FILL);
-        GridData qk1 = 
-                new GridData(SWT.FILL, SWT.FILL, 
-                        true, true);
-        qk1.horizontalSpan=2;
-        quickFixProgressGroup.setLayoutData(qk1);
-        GridLayout layout2 = new GridLayout(2, true);
-        layout2.marginHeight = 0;
-        layout2.marginWidth = 10;
-        layout2.verticalSpacing = 2;
-        quickFixProgressGroup.setLayout(layout2);
-        Label progressLabel = new Label(quickFixProgressGroup, SWT.NONE);
-        progressLabel.setText("Searching for fixes");
-        new ProgressBar(quickFixProgressGroup, SWT.INDETERMINATE | SWT.FILL);
-        setColorAndFont(fParent, 
-                fParent.getForeground(), 
-                fParent.getBackground(), 
-                CeylonPlugin.getHoverFont());
-        fParent.layout(true);
-        final Composite currentParent = fParent;
+        
+        final ICompletionProposal[] existingProposals = fInput.getProposals();
+        if (existingProposals == null) {
+            final Composite quickFixProgressGroup = createQuickFixProgressBar();
+            fParent.layout(true);
+            final Composite currentParent = fParent;
+            Job completionProposalsJob = createQuickFixesRetrievalJob(
+                    quickFixProgressGroup, currentParent);
+            completionProposalsJob.schedule();
+        } else {
+            setColorAndFont(fParent, 
+                    fParent.getForeground(), 
+                    fParent.getBackground(), 
+                    CeylonPlugin.getHoverFont());
+            if (existingProposals.length > 0) {
+                createCompletionProposalsControl(fParent, 
+                        existingProposals);
+            }
+            fParent.layout(true);
+        }
+    }
 
+    private Job createQuickFixesRetrievalJob(
+            final Composite quickFixProgressGroup, final Composite currentParent) {
         Job completionProposalsJob = new Job("Retrieving Fixes") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                final ICompletionProposal[] proposals = 
-                        getAnnotationInfo().getCompletionProposals();
-                if (fParent == currentParent  
+                AnnotationInfo info = fInput;
+                final ICompletionProposal[] proposals;
+                if (getTypecheckedRootNode(info) == null) {
+                    proposals = NO_PROPOSAL;
+                } else {
+                    proposals = getAnnotationInfo().getCompletionProposals();
+                    fInput.setProposals(proposals);
+                }
+
+                if (fParent == currentParent
                         && ! fParent.isDisposed()) {
                     final Display display= fParent.getDisplay();
                     if (display != null) {
@@ -248,15 +280,36 @@ class AnnotationInformationControl
                             }
                         });
                     }
-                } else {
-                    System.out.print("");
                 }
                 return Status.OK_STATUS;
             }
         };
         completionProposalsJob.setSystem(true);
         completionProposalsJob.setRule(retrievingQuickFixesRule);
-        completionProposalsJob.schedule();
+        return completionProposalsJob;
+    }
+
+    private Composite createQuickFixProgressBar() {
+        final Composite quickFixProgressGroup;
+        quickFixProgressGroup = new Composite(fParent, SWT.FILL);
+        GridData qk1 = 
+                new GridData(SWT.FILL, SWT.FILL, 
+                        true, true);
+        qk1.horizontalSpan=2;
+        quickFixProgressGroup.setLayoutData(qk1);
+        GridLayout layout2 = new GridLayout(2, true);
+        layout2.marginHeight = 0;
+        layout2.marginWidth = 10;
+        layout2.verticalSpacing = 2;
+        quickFixProgressGroup.setLayout(layout2);
+        Label progressLabel = new Label(quickFixProgressGroup, SWT.NONE);
+        progressLabel.setText("Searching for fixes");
+        new ProgressBar(quickFixProgressGroup, SWT.INDETERMINATE | SWT.FILL);
+        setColorAndFont(fParent, 
+                fParent.getForeground(), 
+                fParent.getBackground(), 
+                CeylonPlugin.getHoverFont());
+        return quickFixProgressGroup;
     }
 
     private void setColorAndFont(Control control, 

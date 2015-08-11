@@ -29,7 +29,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -165,7 +164,7 @@ class CreateParameterProposal extends InitializerProposal {
             Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, 
-            IProject project, TypeChecker tc, IFile file) {
+            IProject project) {
         FindInvocationVisitor fav = 
                 new FindInvocationVisitor(node);
         fav.visit(cu);
@@ -186,7 +185,8 @@ class CreateParameterProposal extends InitializerProposal {
                     if (parameterName!=null) {
                         parameterName = 
                                 toInitialLowercase(parameterName)
-                                    .replace("?", "").replace("[]", "");
+                                    .replace("?", "")
+                                    .replace("[]", "");
                         if ("string".equals(parameterName)) {
                             parameterName = "text";
                         }

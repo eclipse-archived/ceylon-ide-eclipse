@@ -906,6 +906,8 @@ public class JDTModule extends LazyModule {
         return p;
     }
 
+    private static final Set<String> JVM_BACKEND = Collections.singleton("jvm");
+
     @SuppressWarnings("unchecked")
     private ExternalPhasedUnit buildPhasedUnitForBinaryUnit(String sourceUnitFullPath) {
         if (sourceArchivePath == null || sourceUnitFullPath == null) {
@@ -945,9 +947,14 @@ public class JDTModule extends LazyModule {
                             Tree.CompilationUnit cu = parser.compilationUnit();
                             List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
                             tokens.addAll(tokenStream.getTokens());
+                            SingleSourceUnitPackage proxyPackage = new SingleSourceUnitPackage(pkg, ceylonSourceUnitFullPath) {
+                                public Set<String> getScopedBackends() {
+                                    return JVM_BACKEND;
+                                };
+                            };
                             if(originalProject == null) {
                                 phasedUnit = new ExternalPhasedUnit(archiveEntry, sourceArchive, cu, 
-                                        new SingleSourceUnitPackage(pkg, ceylonSourceUnitFullPath), moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens) {
+                                        proxyPackage, moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens) {
                                     @Override
                                     protected boolean isAllowedToChangeModel(Declaration declaration) {
                                         return !IdePhasedUnit.isCentralModelDeclaration(declaration);
@@ -955,7 +962,7 @@ public class JDTModule extends LazyModule {
                                 };
                             } else {
                                 phasedUnit = new CrossProjectPhasedUnit(archiveEntry, sourceArchive, cu, 
-                                        new SingleSourceUnitPackage(pkg, ceylonSourceUnitFullPath), moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens, originalProject) {
+                                        proxyPackage, moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens, originalProject) {
                                     @Override
                                     protected boolean isAllowedToChangeModel(Declaration declaration) {
                                         return !IdePhasedUnit.isCentralModelDeclaration(declaration);

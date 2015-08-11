@@ -15,7 +15,6 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.CustomTree.AttributeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignOp;
@@ -138,8 +137,9 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
         if (attributeIdentifier != null) {
             Statement prevStatement = findPreviousStatement(cu, doc, statement);
             if (prevStatement != null) {
-                if (prevStatement instanceof AttributeDeclaration) {
-                    AttributeDeclaration attrDecl = (AttributeDeclaration) prevStatement;
+                if (prevStatement instanceof Tree.AttributeDeclaration) {
+                    Tree.AttributeDeclaration attrDecl = 
+                            (Tree.AttributeDeclaration) prevStatement;
                     if (attributeIdentifier.equals(getTerm(doc, attrDecl.getIdentifier()))) {
                         action = removeSemiColon(getTerm(doc, attrDecl)) + operator;
                         replaceFrom = attrDecl.getStartIndex();
@@ -150,7 +150,8 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
         
         boolean abbreviateToElse = false;
         if (condition instanceof Tree.ExistsCondition) {
-            Tree.ExistsCondition existsCond = (Tree.ExistsCondition) condition;
+            Tree.ExistsCondition existsCond = 
+                    (Tree.ExistsCondition) condition;
             Tree.Statement st = existsCond.getVariable();
             if (st instanceof Tree.Variable) {
                 Tree.Variable variable = (Tree.Variable) st;

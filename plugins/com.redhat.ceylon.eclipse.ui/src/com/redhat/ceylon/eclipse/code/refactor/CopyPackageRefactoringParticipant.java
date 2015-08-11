@@ -26,11 +26,11 @@ import org.eclipse.ltk.core.refactoring.participants.ReorgExecutionLog;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
 
 public class CopyPackageRefactoringParticipant extends CopyParticipant {
 
@@ -128,7 +128,7 @@ public class CopyPackageRefactoringParticipant extends CopyParticipant {
         });
         if (!edits.isEmpty()) {
             try {
-                IFile file = ((IFileVirtualFile) phasedUnit.getUnitFile()).getFile();
+                IFile file = vfsJ2C.getIFileVirtualFile(phasedUnit.getUnitFile()).getNativeResource();
                 IFile newFile = getMovedFile(newName, file);
                 TextFileChange change= new TextFileChange(newFile.getName(), newFile);
                 change.setEdit(new MultiTextEdit());

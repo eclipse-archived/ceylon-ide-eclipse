@@ -1,11 +1,11 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_METHOD;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,10 +15,6 @@ import java.util.Set;
 
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignmentOp;
@@ -26,6 +22,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.UnaryOperatorExpression;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypeParameter;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
     
@@ -73,7 +73,8 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
         return node;
     }
 
-    private ValueFunctionDefinitionGenerator(String brokenName, 
+    private ValueFunctionDefinitionGenerator(
+            String brokenName, 
             Tree.MemberOrTypeExpression node, 
             Tree.CompilationUnit rootNode,
             String desc,
@@ -92,7 +93,8 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
     }
         
     String generateShared(String indent, String delim) {
-        return "shared " + generateInternal(indent, delim, false);
+        return "shared " + 
+                generateInternal(indent, delim, false);
     }
     
     String generate(String indent, String delim) {
@@ -100,23 +102,32 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
     }
     
     String generateSharedFormal(String indent, String delim) {
-        return "shared formal "+ generateInternal(indent, delim, true);
+        return "shared formal "+ 
+                generateInternal(indent, delim, true);
     }
     
     boolean isFormalSupported(){
         return true;
     }
     
-    private String generateInternal(String indent, String delim, boolean isFormal) {
+    private String generateInternal(
+            String indent, String delim, boolean isFormal) {
         StringBuffer def = new StringBuffer();
         boolean isVoid = returnType==null;
         Unit unit = node.getUnit();
         if (parameters!=null) {            
-            List<TypeParameter> typeParams = new ArrayList<TypeParameter>();
-            StringBuilder typeParamDef = new StringBuilder();
-            StringBuilder typeParamConstDef = new StringBuilder();
-            appendTypeParams(typeParams, typeParamDef, typeParamConstDef, returnType);
-            appendTypeParams(typeParams, typeParamDef, typeParamConstDef, parameters.values());
+            List<TypeParameter> typeParams = 
+                    new ArrayList<TypeParameter>();
+            StringBuilder typeParamDef = 
+                    new StringBuilder();
+            StringBuilder typeParamConstDef = 
+                    new StringBuilder();
+            appendTypeParams(typeParams, 
+                    typeParamDef, typeParamConstDef, 
+                    returnType);
+            appendTypeParams(typeParams, 
+                    typeParamDef, typeParamConstDef, 
+                    parameters.values());
             if (typeParamDef.length() > 0) {
                 typeParamDef.insert(0, "<");
                 typeParamDef.setLength(typeParamDef.length() - 1);
@@ -180,7 +191,8 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
     }
     
     Set<Declaration> getImports() {
-        Set<Declaration> imports = new HashSet<Declaration>();
+        Set<Declaration> imports = 
+                new HashSet<Declaration>();
         importType(imports, returnType, rootNode);
         if (parameters!=null) {
             importTypes(imports, parameters.values(), rootNode);
@@ -188,31 +200,44 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
         return imports;
     }
     
-    static ValueFunctionDefinitionGenerator create(String brokenName, 
+    static ValueFunctionDefinitionGenerator create(
+            String brokenName, 
             Tree.MemberOrTypeExpression node, 
             Tree.CompilationUnit rootNode) {
-        boolean isUpperCase = Character.isUpperCase(brokenName.codePointAt(0));
+        boolean isUpperCase = 
+                Character.isUpperCase(
+                        brokenName.codePointAt(0));
         if (isUpperCase) return null;
-        FindValueFunctionVisitor fav = new FindValueFunctionVisitor(node);
+        FindValueFunctionVisitor fav = 
+                new FindValueFunctionVisitor(node);
         rootNode.visit(fav);
         Type et = fav.expectedType;
         final boolean isVoid = et==null;
-        Type returnType = isVoid ? null : node.getUnit().denotableType(et);
+        Type returnType = isVoid ? null : 
+            node.getUnit().denotableType(et);
         StringBuilder params = new StringBuilder();
-        LinkedHashMap<String, Type> paramTypes = getParameters(fav);
+        LinkedHashMap<String, Type> paramTypes = 
+                getParameters(fav);
         if (paramTypes!=null) {         
-            String desc = "function '" + brokenName + params + "'";
-            return new ValueFunctionDefinitionGenerator(brokenName, node, rootNode, 
-                    desc, LOCAL_METHOD, returnType, paramTypes, null);
+            String desc = 
+                    "function '" + brokenName + params + "'";
+            return new ValueFunctionDefinitionGenerator(
+                    brokenName, node, rootNode, desc, 
+                    LOCAL_METHOD, returnType, paramTypes, 
+                    null);
         }
         else {
-            String desc = "value '" + brokenName + "'";
-            return new ValueFunctionDefinitionGenerator(brokenName, node, rootNode, 
-                    desc, LOCAL_ATTRIBUTE, returnType, null, fav.isVariable);
+            String desc = 
+                    "value '" + brokenName + "'";
+            return new ValueFunctionDefinitionGenerator(
+                    brokenName, node, rootNode, desc, 
+                    LOCAL_ATTRIBUTE, returnType, null, 
+                    fav.isVariable);
         }
     }
     
-    private static class FindValueFunctionVisitor extends FindArgumentsVisitor{
+    private static class FindValueFunctionVisitor 
+            extends FindArgumentsVisitor{
 
         boolean isVariable = false;
         
@@ -222,19 +247,24 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
         
         @Override
         public void visit(AssignmentOp that) {
-            isVariable = ((Tree.AssignmentOp) that).getLeftTerm() == smte;
+            Tree.AssignmentOp ao = (Tree.AssignmentOp) that;
+            isVariable = ao.getLeftTerm() == smte;
             super.visit(that);
         }
         
         @Override
         public void visit(UnaryOperatorExpression that) {
-            isVariable = ((Tree.UnaryOperatorExpression) that).getTerm() == smte;
+            Tree.UnaryOperatorExpression uoe = 
+                    (Tree.UnaryOperatorExpression) that;
+            isVariable = uoe.getTerm() == smte;
             super.visit(that);
         }
 
         @Override
         public void visit(SpecifierStatement that) {
-            isVariable = ((Tree.SpecifierStatement) that).getBaseMemberExpression() == smte;
+            Tree.SpecifierStatement ss = 
+                    (Tree.SpecifierStatement) that;
+            isVariable = ss.getBaseMemberExpression() == smte;
             super.visit(that);
         }
         

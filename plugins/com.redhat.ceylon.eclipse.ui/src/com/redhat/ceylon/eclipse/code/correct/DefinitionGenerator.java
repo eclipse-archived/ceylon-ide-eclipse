@@ -28,14 +28,15 @@ public abstract class DefinitionGenerator {
     abstract String getBrokenName();
     abstract String getDescription();
     abstract Type getReturnType();
-    abstract LinkedHashMap<String, Type> getParameters();
+    abstract Map<String, Type> getParameters();
     abstract Image getImage();
     abstract Tree.CompilationUnit getRootNode();
     abstract Node getNode();
     
     static void appendParameters(
-            LinkedHashMap<String,Type> parameters,
-            StringBuffer buffer, TypeDeclaration supertype) {
+            Map<String,Type> parameters,
+            StringBuffer buffer, 
+            TypeDeclaration supertype) {
         if (parameters.isEmpty()) {
             buffer.append("()");
         }
@@ -47,7 +48,8 @@ public abstract class DefinitionGenerator {
                         supertype.getMember(e.getKey(), 
                                 null, false);
                 if (member==null || !member.isFormal()) {
-                    buffer.append(e.getValue().asString()).append(" ");
+                    buffer.append(e.getValue().asString())
+                        .append(" ");
                 }
                 buffer.append(e.getKey()).append(", ");
             }
@@ -57,7 +59,8 @@ public abstract class DefinitionGenerator {
     }
 
     static LinkedHashMap<String,Type> 
-    getParametersFromPositionalArgs(Tree.PositionalArgumentList pal) {
+    getParametersFromPositionalArgs(
+            Tree.PositionalArgumentList pal) {
         LinkedHashMap<String,Type> types = 
                 new LinkedHashMap<String,Type>();
         int i=0;
@@ -83,7 +86,8 @@ public abstract class DefinitionGenerator {
                                 (Tree.StaticMemberOrTypeExpression) 
                                     term;
                         String id = 
-                                smte.getIdentifier().getText();
+                                smte.getIdentifier()
+                                    .getText();
                         name = toInitialLowercase(id);
                     }
                     else {
@@ -119,18 +123,14 @@ public abstract class DefinitionGenerator {
                         na.getSpecifierExpression()
                             .getExpression();
                 String name = na.getIdentifier().getText();
-                Type t;
                 Unit unit = a.getUnit();
-                if (e==null) {
-                    t = unit.getAnythingType();
-                }
-                else {
-                    t = unit.denotableType(e.getTypeModel());
-                }
+                Type type = e==null ? 
+                        unit.getAnythingType() : 
+                        unit.denotableType(e.getTypeModel());
                 if (types.containsKey(name)) {
                     name = name + ++i;
                 }
-                types.put(name, t);
+                types.put(name, type);
             }
         }
         return types;
@@ -155,7 +155,7 @@ public abstract class DefinitionGenerator {
         }
         typeParamDef.append(typeParam.getName());
         Type dta = typeParam.getDefaultTypeArgument();
-        if (typeParam.isDefaulted() && dta != null) {
+        if (typeParam.isDefaulted() && dta!=null) {
             typeParamDef.append("=");
             typeParamDef.append(dta.asString());
         }
@@ -199,8 +199,10 @@ public abstract class DefinitionGenerator {
         }        
     }
 
-    static void appendTypeParams(List<TypeParameter> typeParams, 
-            StringBuilder typeParamDef, StringBuilder typeParamConstDef, 
+    static void appendTypeParams(
+            List<TypeParameter> typeParams, 
+            StringBuilder typeParamDef, 
+            StringBuilder typeParamConstDef, 
             Type pt) {
         if (pt != null) {
             if (pt.isUnion()) {
@@ -236,10 +238,12 @@ public abstract class DefinitionGenerator {
     static LinkedHashMap<String,Type> getParameters(
             FindArgumentsVisitor fav) {
         if (fav.positionalArgs!=null) {
-            return getParametersFromPositionalArgs(fav.positionalArgs);
+            return getParametersFromPositionalArgs(
+                    fav.positionalArgs);
         }
         else if (fav.namedArgs!=null) {
-            return getParametersFromNamedArgs(fav.namedArgs);
+            return getParametersFromNamedArgs(
+                    fav.namedArgs);
         }
         else {
             return null;

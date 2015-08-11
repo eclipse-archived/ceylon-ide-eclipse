@@ -15,13 +15,18 @@ public abstract class SourceFile extends CeylonUnit {
     protected IdePhasedUnit setPhasedUnitIfNecessary() { return phasedUnitRef.get(); }
     
     @Override
-    public String getSourceFullPath() {
-        return getFullPath();
+    public String getSourceFileName() {
+        return getFilename();
     }
 
     @Override
     public String getSourceRelativePath() {
         return getRelativePath();
+    }
+
+    @Override
+    public String getSourceFullPath() {
+        return getFullPath();
     }
 
     @Override

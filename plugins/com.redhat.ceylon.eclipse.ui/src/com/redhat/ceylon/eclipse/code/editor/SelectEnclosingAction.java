@@ -6,7 +6,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ArgumentList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
@@ -48,7 +47,7 @@ class SelectEnclosingAction extends Action {
         setEnabled(this.editor!=null);
     }
     
-    private static class EnclosingVisitor extends Visitor implements NaturalVisitor {
+    private static class EnclosingVisitor extends Visitor {
         private Node result;
         private int startOffset; 
         private int endOffset;

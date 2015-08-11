@@ -25,7 +25,7 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 
 class CorrectionUtil {
     
-    static int getLevenshteinDistance(String x, String y) {
+    static int levenshteinDistance(String x, String y) {
         
         int n = x.length(); // length of s
         int m = y.length(); // length of t

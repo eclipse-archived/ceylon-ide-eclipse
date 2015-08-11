@@ -70,7 +70,7 @@ class CollectParametersProposal implements ICompletionProposal,
     public static void add(Collection<ICompletionProposal> proposals,
             CeylonEditor editor) {
         CollectParametersRefactoring cpr = new CollectParametersRefactoring(editor);
-        if (cpr.isEnabled()) {
+        if (cpr.getEnabled()) {
             proposals.add(new CollectParametersProposal(editor));
         }
     }

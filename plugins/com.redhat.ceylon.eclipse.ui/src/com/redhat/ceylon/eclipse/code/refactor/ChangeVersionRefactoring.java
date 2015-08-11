@@ -89,7 +89,7 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return module!=null &&
                 project != null;
     }

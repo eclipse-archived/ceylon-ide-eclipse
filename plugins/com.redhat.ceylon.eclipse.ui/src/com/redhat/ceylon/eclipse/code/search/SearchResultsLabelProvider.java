@@ -37,7 +37,12 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
+import com.redhat.ceylon.eclipse.core.model.IdeUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 
@@ -67,6 +72,23 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             IJavaElement je = (IJavaElement) element;
             key = getImageKeyForDeclaration(je); 
             decorations = 0; 
+        } else if (element instanceof IJavaModelAware && 
+                element instanceof IdeUnit) {
+            IdeUnit unit = (IdeUnit) element;
+            String sourceFileName = unit.getSourceFileName();
+            if (sourceFileName != null  &&
+                    sourceFileName.endsWith("java")) {
+                key = JAVA_FILE;
+                decorations = 0; 
+            } else if (sourceFileName == null &&
+                    unit.getModule().isJava()) {
+                key = JAVA_CLASS_FILE;
+                decorations = 0; 
+            } else {
+                key = super.getImageKey(element);
+                decorations = 
+                        super.getDecorationAttributes(element);
+            }
         }
         else {
             key = super.getImageKey(element);
@@ -127,6 +149,13 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                 }
             }
             return styledString;
+        } else if (element instanceof IdeUnit) {
+            IdeUnit unit = (IdeUnit) element;
+            String displayedFileName = unit.getSourceFileName();
+            if (displayedFileName == null) {
+                displayedFileName = unit.getFilename();
+            }
+            return new StyledString(displayedFileName);
         }
         else {
             return super.getStyledText(element);
@@ -304,6 +333,30 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                 try {
                     IType type = 
                             (IType) je.getAncestor(TYPE);
+                    
+                    IJavaModelAware unit = CeylonBuilder.getUnit(type);
+                    if (unit instanceof CeylonBinaryUnit) {
+                        String path = ((CeylonBinaryUnit)unit).getSourceFullPath();
+                        if (path != null) {
+                            styledString.append(" - " + path, 
+                                COUNTER_STYLER);
+                        }
+                    }
+                    if (unit instanceof JavaClassFile) {
+                        JavaClassFile javaClassFile = (JavaClassFile) unit;
+                        JDTModule module = javaClassFile.getModule();
+                        if (module.isCeylonBinaryArchive()) {
+                            String sourceRelativePath = module.toSourceUnitRelativePath(javaClassFile.getRelativePath());
+                            if (sourceRelativePath != null) {
+                                String sourceArchivePath = module.getSourceArchivePath();
+                                if (sourceArchivePath != null) {
+                                    String path = sourceArchivePath + "!/" + sourceRelativePath;
+                                    return styledString.append(" - " + path, 
+                                            COUNTER_STYLER);
+                                }
+                            }
+                        }
+                    }
                     IPackageFragmentRoot root = 
                             (IPackageFragmentRoot) 
                                 je.getAncestor(

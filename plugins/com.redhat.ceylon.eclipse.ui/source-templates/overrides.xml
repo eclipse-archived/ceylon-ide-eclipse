@@ -38,6 +38,16 @@
     <remove module="org.eclipse.team.ui"/>
     <remove module="org.eclipse.ui.forms"/>
 
+    <module module="org.eclipse.ui">
+        <add module="org.eclipse.ui.ide" version="current" shared="true"/>
+        <add module="org.eclipse.ui.editors" version="current" shared="true"/>
+    </module>
+    <module module="org.eclipse.ui.editors">
+        <add module="org.eclipse.ui.workbench.texteditor" version="current" shared="true"/>
+    </module>
+    <module module="org.eclipse.ltk.core.refactoring">
+        <add module="org.eclipse.jface.text" version="current" shared="true"/>
+    </module>
     <module module="org.eclipse.core.runtime">
         <share module="org.eclipse.core.jobs"/>
     </module>

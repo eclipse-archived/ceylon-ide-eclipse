@@ -29,13 +29,12 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 
 public class EnterAliasLinkedMode extends RefactorLinkedMode {
@@ -46,7 +45,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
     private EnterAliasRefactoring refactoring;
 
     private final class LinkedPositionsVisitor 
-            extends Visitor implements NaturalVisitor {
+            extends Visitor {
         private final int adjust;
         private final IDocument document;
         private final LinkedPositionGroup linkedPositionGroup;
@@ -100,7 +99,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         private void addLinkedPosition(int pos, int len, Declaration d) {
             if (d!=null && refactoring.isReference(d)) {
                 try {
-                    int offset = originalSelection.x;
+                    int offset = getOriginalSelection().x;
                     int seq;
                     if (offset<pos || offset>pos+len) {
                         seq = i++;
@@ -240,7 +239,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
 
     @Override
     protected boolean canStart() {
-        return refactoring.isEnabled();
+        return refactoring.getEnabled();
     }
 
     @Override

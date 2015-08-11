@@ -25,7 +25,7 @@ public class InvertBooleanRefactoringAction extends AbstractRefactoringAction {
     }
 
     public boolean isEnabled() {
-        return refactoring.isEnabled();
+        return refactoring.getEnabled();
     }
 
     public String getValueName() {

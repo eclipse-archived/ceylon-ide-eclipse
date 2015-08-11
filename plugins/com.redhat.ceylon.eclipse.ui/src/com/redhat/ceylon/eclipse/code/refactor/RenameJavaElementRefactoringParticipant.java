@@ -9,7 +9,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -27,6 +29,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
@@ -37,7 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExp
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.vfs.IFileVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.DocLinks;
 
 public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
@@ -169,9 +172,9 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                 });
                 if (!edits.isEmpty()) {
                     try {
-                        IFileVirtualFile unitFile = 
-                                (IFileVirtualFile) phasedUnit.getUnitFile();
-                        IFile file = unitFile.getFile();
+                        FileVirtualFile<IResource, IFolder, IFile> unitFile = 
+                                vfsJ2C.getIFileVirtualFile(phasedUnit.getUnitFile());
+                        IFile file = unitFile.getNativeResource();
                         TextFileChange change = 
                                 new TextFileChange(file.getName(), file);
                         change.setEdit(new MultiTextEdit());

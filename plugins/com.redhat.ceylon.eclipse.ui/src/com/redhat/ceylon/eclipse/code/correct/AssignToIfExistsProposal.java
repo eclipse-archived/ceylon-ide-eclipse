@@ -17,6 +17,7 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 
 class AssignToIfExistsProposal extends LocalProposal {
@@ -40,9 +41,9 @@ class AssignToIfExistsProposal extends LocalProposal {
         return change;
     }
     
-    public AssignToIfExistsProposal(Tree.CompilationUnit cu, 
+    public AssignToIfExistsProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 
             Node node, int currentOffset) {
-        super(cu, node, currentOffset);
+        super(ceylonEditor, cu, node, currentOffset);
     }
     
     protected void addLinkedPositions(IDocument document, Unit unit)
@@ -76,11 +77,11 @@ class AssignToIfExistsProposal extends LocalProposal {
                 rootNode.getUnit().isOptionalType(resultType);
     }
 
-    static void addAssignToIfExistsProposal(Tree.CompilationUnit cu, 
+    static void addAssignToIfExistsProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 
             Collection<ICompletionProposal> proposals,
             Node node, int currentOffset) {
         AssignToIfExistsProposal prop = 
-                new AssignToIfExistsProposal(cu, node, currentOffset);
+                new AssignToIfExistsProposal(ceylonEditor, cu, node, currentOffset);
         if (prop.isEnabled()) {
             proposals.add(prop);
         }

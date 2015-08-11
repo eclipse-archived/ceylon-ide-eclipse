@@ -52,7 +52,7 @@ public final class RenameLinkedMode
     
     @Override
     protected boolean canStart() {
-        return refactoring.isEnabled();
+        return refactoring.getEnabled();
     }
         
     private boolean isEnabled() {
@@ -242,8 +242,8 @@ public final class RenameLinkedMode
                 .getBoolean(LINKED_MODE_RENAME_SELECT)) {
             // by default, full word is selected; restore original selection
             editor.getCeylonSourceViewer()
-                .setSelectedRange(originalSelection.x, 
-                        originalSelection.y); 
+                .setSelectedRange(getOriginalSelection().x, 
+                        getOriginalSelection().y); 
         }
     }
     

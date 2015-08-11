@@ -104,7 +104,7 @@ abstract class AbstractRefactoring extends Refactoring {
         return false;
     }
 
-    boolean isEditable() {
+    boolean getEditable() {
         return rootNode.getUnit() instanceof EditedSourceFile ||
                 rootNode.getUnit() instanceof ProjectSourceFile;
     }

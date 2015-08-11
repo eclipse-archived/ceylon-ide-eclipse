@@ -245,7 +245,8 @@ class CreateProposal extends InitializerProposal {
     static void addCreateProposals(Tree.CompilationUnit cu, Node node,
             Collection<ICompletionProposal> proposals, IProject project,
             IFile file) {
-        Tree.MemberOrTypeExpression smte = (Tree.MemberOrTypeExpression) node;
+        Tree.MemberOrTypeExpression smte = 
+                (Tree.MemberOrTypeExpression) node;
         String brokenName = Nodes.getIdentifyingNode(node).getText();
         if (!brokenName.isEmpty()) {
             ValueFunctionDefinitionGenerator vfdg = 

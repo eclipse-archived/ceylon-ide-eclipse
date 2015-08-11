@@ -23,4 +23,19 @@ public class JavaCompilationUnit extends JavaUnit {
     public IJavaElement toJavaElement(final Declaration ceylonDeclaration) {
         return new CeylonToJavaMatcher(this).searchInClass(ceylonDeclaration);
     }
+
+    @Override
+    public String getSourceFileName() {
+        return getFilename();
+    }
+    
+    @Override
+    public String getSourceRelativePath() {
+        return getRelativePath();
+    }
+
+    @Override
+    public String getSourceFullPath() {
+        return getFullPath();
+    }
 }

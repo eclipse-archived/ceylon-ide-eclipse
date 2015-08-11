@@ -249,16 +249,29 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
 
     public IJavaStratumLineBreakpoint createLineBreakpoint(IFile file, int lineNumber, Map<String,Object> attributes, boolean isForRunToLine) throws CoreException {
         String srcFileName = file.getName();
+        String srcPath = null;
         IPath relativePath = null;
+        String classnamePattern = null;
+        IPath projectRelativePath = file.getProjectRelativePath();
         if (ExternalSourceArchiveManager.isInSourceArchive(file)) {
-            relativePath = file.getProjectRelativePath().removeFirstSegments(1);
+            relativePath = projectRelativePath.removeFirstSegments(1);
         } else {
             IResourceAware unit = CeylonBuilder.getUnit(file);
             if (unit != null) {
                 relativePath = new Path(((Unit)unit).getRelativePath());
             }
         }
-        
+        if (relativePath != null) {
+            srcPath = relativePath.toOSString();
+        } else {
+            String[] segments = projectRelativePath.segments();
+            if (segments.length == 1) {
+                srcPath=srcFileName;
+            } else {
+                String pattern = buildClassNamePattern(segments);
+                classnamePattern = pattern;
+            }
+        }
         
         if (attributes == null) {
             attributes = new HashMap<String, Object>();
@@ -266,12 +279,26 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
 
         try {
             return JDIDebugModel.createStratumBreakpoint(isForRunToLine ? getWorkspace().getRoot() : file, null, srcFileName,
-                    relativePath.toOSString(), null, lineNumber, -1, -1, 0, !isForRunToLine, attributes);
+                    srcPath, classnamePattern, lineNumber, -1, -1, 0, !isForRunToLine, attributes);
         } 
         catch (CoreException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private String buildClassNamePattern(String[] projectRelativePathSegments) {
+        String currentPattern = "*";
+        String[] patterns = new String[projectRelativePathSegments.length-1];
+        for (int i=projectRelativePathSegments.length-2; i>=0; i--) {
+            currentPattern = projectRelativePathSegments[i] + "." + currentPattern;
+            patterns[i] = currentPattern;
+        }
+        String pattern = patterns[0];
+        for (int i=1; i<patterns.length; i++) {
+            pattern += "," + patterns[i];
+        }
+        return pattern;
     }
 
     public void clearLineBreakpoint(IFile file, int lineNumber) throws CoreException {

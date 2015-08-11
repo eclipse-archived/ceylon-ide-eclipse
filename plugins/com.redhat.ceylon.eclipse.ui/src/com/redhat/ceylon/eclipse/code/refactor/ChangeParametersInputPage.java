@@ -46,8 +46,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.common.BackendSupport;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
@@ -76,19 +74,9 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 public class ChangeParametersInputPage extends UserInputWizardPage {
     
     private StyledText signatureText;
-    private final BackendSupport backendSupport;
 
     public ChangeParametersInputPage(String name) {
         super(name);
-        // FIXME this should really come from the ModuleManager
-        // or at least depend on the backends that are enabled
-        // in the project configuration
-        backendSupport = new BackendSupport() {
-            @Override
-            public boolean supportsBackend(Backend backend) {
-                return true;
-            }
-        };
     }
     
     private boolean isDefaulted(
@@ -641,17 +629,25 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 ref.getDeclaration();
         Node decNode = getReferencedNode(declaration);
         Tree.ParameterList pl;
+        int startIndex;
         if (decNode instanceof Tree.AnyMethod) {
             Tree.AnyMethod m = (Tree.AnyMethod) decNode;
             pl = m.getParameterLists().get(0);
+            startIndex = m.getType().getStartIndex();
         }
         else if (decNode instanceof Tree.AnyClass) {
             Tree.AnyClass c = (Tree.AnyClass) decNode;
             pl = c.getParameterList();
+            startIndex = 
+                    ((CommonToken) c.getMainToken())
+                        .getStartIndex();
         }
         else if (decNode instanceof Tree.Constructor) {
             Tree.Constructor c = (Tree.Constructor) decNode;
             pl = c.getParameterList();
+            startIndex = 
+                    ((CommonToken) c.getMainToken())
+                        .getStartIndex();
         }
         else {
             return;
@@ -666,10 +662,9 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 ref.reorderParamsEdit(pl, 
                         reorderedParameters, 
                         false, tokens);
-        CommonToken token = 
-                (CommonToken) decNode.getMainToken();
+         
         int start = 
-                token.getStartIndex() - 
+                startIndex - 
                 decNode.getStartIndex();
         int end = 
                 pl.getStartIndex() - 
@@ -762,10 +757,9 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                     super.visit(that);
                 }
             });
-            parameters.visit(new TypeVisitor(unit, 
-                    backendSupport));
-            parameters.visit(new ExpressionVisitor(unit, 
-                    backendSupport));
+            
+            parameters.visit(new TypeVisitor(unit));
+            parameters.visit(new ExpressionVisitor(unit));
             
             setErrorMessage(null);
             

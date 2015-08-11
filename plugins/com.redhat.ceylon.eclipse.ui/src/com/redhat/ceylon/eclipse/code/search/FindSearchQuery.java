@@ -36,7 +36,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.DocLinks;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -226,6 +229,18 @@ abstract class FindSearchQuery implements ISearchQuery {
                         (IJavaElement) 
                             match.getElement();
                 if (!filters.isFiltered(enclosingElement)) {
+                    IJavaModelAware unit = CeylonBuilder.getUnit(enclosingElement);
+                    if (unit == null) {
+                        return;
+                    }
+                    if (unit instanceof CeylonBinaryUnit) {
+                        CeylonBinaryUnit binaryUnit = (CeylonBinaryUnit) unit;
+                        if (binaryUnit.getCeylonSourceRelativePath() != null) {
+                            // it's a class file built from Ceylon : 
+                            //   we should find it from the Ceylon source archives.
+                            return;
+                        }
+                    }
                     IResource resource = match.getResource();
                     IFolder exploded;
                     if (resource==null) {

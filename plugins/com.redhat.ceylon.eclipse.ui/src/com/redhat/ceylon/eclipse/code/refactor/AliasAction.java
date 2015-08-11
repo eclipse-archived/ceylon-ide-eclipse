@@ -26,7 +26,7 @@ public class AliasAction extends AbstractHandler {
 
     @Override
     protected boolean isEnabled(CeylonEditor editor) {
-        return new AliasRefactoring(editor).isEnabled();
+        return new AliasRefactoring(editor).getEnabled();
     }
             
 }

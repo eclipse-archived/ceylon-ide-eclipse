@@ -8,6 +8,7 @@ import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
@@ -22,7 +23,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.vfs.ResourceVirtualFile;
+import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
+import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
@@ -30,13 +32,14 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
     private IFolder sourceFolderResource;
     private WeakHashMap<EditedPhasedUnit, String> workingCopies = new WeakHashMap<EditedPhasedUnit, String>();
     
-    public ProjectPhasedUnit(ResourceVirtualFile unitFile, ResourceVirtualFile srcDir,
+    public ProjectPhasedUnit(ResourceVirtualFile<IResource, IFolder, IFile> unitFile, 
+            ResourceVirtualFile<IResource, IFolder, IFile> srcDir,
             CompilationUnit cu, Package p, ModuleManager moduleManager,
             ModuleSourceMapper moduleSourceMapper,
             TypeChecker typeChecker, List<CommonToken> tokenStream) {
         super(unitFile, srcDir, cu, p, moduleManager, moduleSourceMapper, typeChecker, tokenStream);
-        sourceFolderResource = (IFolder) srcDir.getResource();
-        srcDir.getResource().getProject();
+        sourceFolderResource = (IFolder) srcDir.getNativeResource();
+        srcDir.getNativeResource().getProject();
     }
     
     public ProjectPhasedUnit(PhasedUnit other) {
@@ -44,7 +47,7 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
     }
 
     public IFile getSourceFileResource() {
-        return (IFile) ((ResourceVirtualFile) getUnitFile()).getResource();
+        return (IFile) vfsJ2C.getIFileVirtualFile(getUnitFile()).getNativeResource();
     }
     
 

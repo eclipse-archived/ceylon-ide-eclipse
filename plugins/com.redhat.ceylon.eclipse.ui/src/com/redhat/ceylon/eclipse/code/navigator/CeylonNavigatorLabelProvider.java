@@ -132,8 +132,9 @@ public class CeylonNavigatorLabelProvider extends
         }
         
         CeylonProject<IProject> ceylonProject = ceylonModel().getProject(repoNode.project);
-        
-        Repositories mergedRepos = ceylonProject.getConfiguration().getRepositories();
+        Repositories mergedRepos = ceylonProject != null ? 
+                ceylonProject.getConfiguration().getRepositories() :
+                    Repositories.get();
 
         if (stringToDisplay == null && mergedRepos.getCacheRepoDir().getAbsolutePath().equals(displayString)) {
             stringToDisplay = "Cached Modules";

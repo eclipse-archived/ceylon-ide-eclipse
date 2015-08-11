@@ -24,7 +24,6 @@ import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
-import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
@@ -42,7 +41,7 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
     protected LinkedPositionGroup linkedPositionGroup;
 
     private final class LinkedPositionsVisitor 
-            extends Visitor implements NaturalVisitor {
+            extends Visitor {
         private final int adjust;
         private final IDocument document;
         private final LinkedPositionGroup linkedPositionGroup;
@@ -138,7 +137,7 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
     
     @Override
     protected boolean canStart() {
-        return refactoring.isEnabled();
+        return refactoring.getEnabled();
     }
     
     @Override

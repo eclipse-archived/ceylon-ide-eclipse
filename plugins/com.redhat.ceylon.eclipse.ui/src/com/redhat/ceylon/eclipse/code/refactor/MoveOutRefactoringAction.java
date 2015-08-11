@@ -25,7 +25,7 @@ public class MoveOutRefactoringAction extends AbstractRefactoringAction {
     }
 
     public boolean isEnabled() {
-        return refactoring.isEnabled();
+        return refactoring.getEnabled();
     }
 
 }

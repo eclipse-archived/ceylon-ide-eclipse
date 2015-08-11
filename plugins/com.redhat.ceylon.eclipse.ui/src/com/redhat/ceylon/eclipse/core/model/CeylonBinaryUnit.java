@@ -73,13 +73,18 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
     }
 
     @Override
-    public String getSourceRelativePath() {
-        return getModule().toSourceUnitRelativePath(getRelativePath());
+    public String getSourceFileName() {
+        String sourceRelativePath = getSourceRelativePath();
+        if (sourceRelativePath == null) {
+            return null;
+        }
+        String[] pathElements = sourceRelativePath.split("/");
+        return pathElements[pathElements.length-1];
     }
     
     @Override
-    public String getCeylonSourceRelativePath() {
-        return getModule().getCeylonDeclarationFile(getSourceRelativePath());
+    public String getSourceRelativePath() {
+        return getModule().toSourceUnitRelativePath(getRelativePath());
     }
     
     @Override
@@ -91,6 +96,11 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
         return sourceArchivePath + "!/" + getSourceRelativePath();
     }
 
+    @Override
+    public String getCeylonSourceRelativePath() {
+        return getModule().getCeylonDeclarationFile(getSourceRelativePath());
+    }
+    
     @Override
     public String getCeylonSourceFullPath() {
         String sourceArchivePath = getModule().getSourceArchivePath();

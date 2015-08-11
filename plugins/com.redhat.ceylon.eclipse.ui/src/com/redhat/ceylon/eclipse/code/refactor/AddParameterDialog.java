@@ -20,8 +20,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.common.BackendSupport;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
@@ -48,10 +46,9 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
     private Node node;
     private Set<String> parameterNames;
     private TypecheckerUnit unit;
-    private final BackendSupport backendSupport;
     
     public AddParameterDialog(Shell parentShell, 
-            Node node, IProject project, 
+            Node node, final IProject project, 
             Set<String> parameterNames) {
         super(parentShell);
         this.parameterNames = parameterNames;
@@ -60,15 +57,6 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         unit = node.getUnit();
         type = unit.getAnythingDeclaration().getType();
         argument = "nothing";
-        // FIXME this should really come from the ModuleManager
-        // or at least depend on the backends that are enabled
-        // in the project configuration
-        backendSupport = new BackendSupport() {
-            @Override
-            public boolean supportsBackend(Backend backend) {
-                return true;
-            }
-        };
     }
     
     @Override
@@ -194,8 +182,8 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                     super.visitAny(that);
                 }
             });
-            staticType.visit(new TypeVisitor(unit, backendSupport));
-            staticType.visit(new ExpressionVisitor(unit, backendSupport));
+            staticType.visit(new TypeVisitor(unit));
+            staticType.visit(new ExpressionVisitor(unit));
             
             errorLabel.setVisible(false);
             
@@ -283,8 +271,8 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                     super.visit(that);
                 }
             });
-            parameters.visit(new TypeVisitor(unit, backendSupport));
-            parameters.visit(new ExpressionVisitor(unit, backendSupport));
+            parameters.visit(new TypeVisitor(unit));
+            parameters.visit(new ExpressionVisitor(unit));
             
             errorLabel.setVisible(false);
             

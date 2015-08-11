@@ -231,7 +231,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return declarationToDelete!=null &&
                 project != null &&
                 inSameProject(declarationToDelete);

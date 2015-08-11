@@ -51,7 +51,7 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
             ISourceViewer viewer = 
                     editor.getCeylonSourceViewer();
             IDocument document = viewer.getDocument();
-            int offset = originalSelection.x;
+            int offset = getOriginalSelection().x;
             initialName = getName();
             int adjust = performInitialChange(document);        
             try {
