@@ -46,8 +46,7 @@ import org.eclipse.jface.text {
 import org.eclipse.ltk.core.refactoring {
     DocumentChange,
     TextFileChange,
-    TextChange,
-    LtkRefactoring = Refactoring
+    TextChange
 
 }
 import org.eclipse.ui {
@@ -61,7 +60,7 @@ import com.redhat.ceylon.eclipse.core.vfs {
     IFileVirtualFile
 }
 
-abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends LtkRefactoring() satisfies AbstractRefactoring {
+abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends Refactoring() satisfies AbstractRefactoring {
     shared class CeylonEditorData() satisfies EditorData {
         assert (is CeylonEditor ce=editorPart);
         assert(is ITextEditor editorPart);

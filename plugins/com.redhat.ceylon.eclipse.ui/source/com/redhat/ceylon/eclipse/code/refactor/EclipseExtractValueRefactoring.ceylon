@@ -28,20 +28,26 @@ import org.eclipse.ui {
     IEditorPart
 }
 import org.eclipse.jface.text {
-    Region
+    Region,
+    IRegion
 }
 import com.redhat.ceylon.model.typechecker.model {
     Type
 }
+import java.lang {
+    ObjectArray,
+    JavaString=String
+}
 
-class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbstractRefactoring(editorPart) satisfies ExtractValueRefactoring {
+class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbstractRefactoring(editorPart)
+        satisfies ExtractValueRefactoring & ExtractLinkedModeEnabled {
     shared actual variable String? internalNewName=null;
     shared actual variable Boolean canBeInferred=false;
     shared actual variable Boolean explicitType=false;
     shared actual variable Type? type=null;
-    shared variable Region? typeRegion=null;
-    shared variable Region? decRegion=null;
-    shared variable Region? refRegion=null;
+    shared actual variable IRegion? typeRegion=null;
+    shared actual variable IRegion? decRegion=null;
+    shared actual variable IRegion? refRegion=null;
     shared actual variable Boolean getter=false;
 
     shared actual RefactoringStatus checkFinalConditions(IProgressMonitor? iProgressMonitor)
@@ -60,7 +66,7 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
         return tc;
     }
 
-    void extractInFile(TextChange tfc) {
+    shared actual void extractInFile(TextChange tfc) {
         "This method will only be called when the [[editorData]]is not [[null]]"
         assert(exists editorData);
         assert (is Tree.Term node=editorData.node,
@@ -96,4 +102,6 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
 
     shared actual String name => "Extract Value";
 
+    shared actual ObjectArray<JavaString> nameProposals
+        => Nodes.nameProposals(editorData?.node);
 }

@@ -28,7 +28,7 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
-public class ExtractValueRefactoring extends AbstractRefactoring {
+public class ExtractValueRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled {
     
     private String newName;
     private boolean explicitType;
@@ -84,11 +84,32 @@ public class ExtractValueRefactoring extends AbstractRefactoring {
         return tfc;
     }
     
-    IRegion typeRegion;
-    IRegion decRegion;
-    IRegion refRegion;
+    private IRegion typeRegion;
+    public IRegion getTypeRegion() {
+        return typeRegion;
+    }
+    public void setTypeRegion(IRegion typeRegion) {
+        this.typeRegion = typeRegion;
+    }
 
-    void extractInFile(TextChange tfc) throws CoreException {
+    private IRegion decRegion;
+    public IRegion getDecRegion() {
+        return decRegion;
+    }
+    public void setDecRegion(IRegion decRegion) {
+        this.decRegion = decRegion;
+    }
+
+    private IRegion refRegion;
+    public IRegion getRefRegion() {
+        return refRegion;
+    }
+    public void setRefRegion(IRegion refRegion) {
+        this.refRegion = refRegion;
+    }
+
+
+    public void extractInFile(TextChange tfc) throws CoreException {
         tfc.setEdit(new MultiTextEdit());
         IDocument doc = tfc.getCurrentDocument(null);
         Unit unit = node.getUnit();

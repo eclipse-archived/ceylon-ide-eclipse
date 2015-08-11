@@ -16,7 +16,7 @@ public class ExtractValueRefactoringAction extends AbstractRefactoringAction {
     
     @Override
     public RefactoringWizard createWizard(Refactoring refactoring) {
-        return new ExtractValueWizard((ExtractValueRefactoring) refactoring);
+        return new ExtractValueWizard(refactoring);
     }
     
     @Override
