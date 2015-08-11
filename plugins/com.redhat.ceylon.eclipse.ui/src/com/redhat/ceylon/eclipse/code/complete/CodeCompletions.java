@@ -13,7 +13,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleIdentifier;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
@@ -26,7 +26,9 @@ import org.eclipse.swt.graphics.Font;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -67,7 +69,7 @@ public class CodeCompletions {
             //      necessary (variance, etc)
             if (d instanceof Functional) {
                 Functional fun = (Functional) d;
-                List<ParameterList> pls = 
+                List<ParameterList> pls =
                         fun.getParameterLists();
                 return pls.isEmpty() || 
                         pls.get(0)
@@ -122,7 +124,7 @@ public class CodeCompletions {
             Declaration dec, OccurrenceLocation ol,
             Reference pr, Unit unit, boolean includeDefaulted,
             String typeArgs) {
-        StringBuilder result = 
+        StringBuilder result =
                 new StringBuilder(escapeName(dec, unit));
         if (typeArgs!=null) {
             result.append(typeArgs);
@@ -130,17 +132,17 @@ public class CodeCompletions {
         else if (forceExplicitTypeArgs(dec, ol)) {
             appendTypeParameters(dec, result);
         }
-        appendPositionalArgs(dec, pr, unit, result, 
+        appendPositionalArgs(dec, pr, unit, result,
                 includeDefaulted, false);
         appendSemiToVoidInvocation(result, dec);
         return result.toString();
     }
 
     public static String getNamedInvocationTextFor(
-            Declaration dec, Reference pr, Unit unit, 
+            Declaration dec, Reference pr, Unit unit,
             boolean includeDefaulted,
             String typeArgs) {
-        StringBuilder result = 
+        StringBuilder result =
                 new StringBuilder(escapeName(dec, unit));
         if (typeArgs!=null) {
             result.append(typeArgs);
@@ -148,7 +150,7 @@ public class CodeCompletions {
         else if (forceExplicitTypeArgs(dec, null)) {
             appendTypeParameters(dec, result);
         }
-        appendNamedArgs(dec, pr, unit, result, 
+        appendNamedArgs(dec, pr, unit, result,
                 includeDefaulted, false);
         appendSemiToVoidInvocation(result, dec);
         return result.toString();
@@ -158,7 +160,7 @@ public class CodeCompletions {
             StringBuilder result, Declaration dd) {
         if (dd instanceof Function) {
             Function fun = (Function) dd;
-            if (fun.isDeclaredVoid() && 
+            if (fun.isDeclaredVoid() &&
                     fun.getParameterLists().size()==1) {
                 result.append(';');
             }
@@ -167,7 +169,7 @@ public class CodeCompletions {
     
     public static String getDescriptionFor(
             Declaration dec, Unit unit) {
-        StringBuilder result = 
+        StringBuilder result =
                 new StringBuilder(dec.getName(unit));
         appendTypeParameters(dec, result);
         return result.toString();
@@ -175,7 +177,7 @@ public class CodeCompletions {
 
     public static String getDescriptionFor(
             DeclarationWithProximity dwp, Unit unit, boolean addTypeParameters) {
-        StringBuilder result = 
+        StringBuilder result =
                 new StringBuilder();
         Declaration dec = dwp.getDeclaration();
         if(dwp.isAlias()){
@@ -190,10 +192,10 @@ public class CodeCompletions {
 
     public static String getPositionalInvocationDescriptionFor(
             DeclarationWithProximity dwp, Declaration dec, OccurrenceLocation ol,
-            Reference pr, Unit unit, 
+            Reference pr, Unit unit,
             boolean includeDefaulted,
             String typeArgs) {
-        StringBuilder result = 
+        StringBuilder result =
                 new StringBuilder();
         if(dwp != null && dwp.isAlias()){
             result.append(dwp.getName());
@@ -212,10 +214,10 @@ public class CodeCompletions {
     }
     
     public static String getNamedInvocationDescriptionFor(
-            Declaration dec, Reference pr, Unit unit, 
-            boolean includeDefaulted, 
+            Declaration dec, Reference pr, Unit unit,
+            boolean includeDefaulted,
             String typeArgs) {
-        StringBuilder result = 
+        StringBuilder result =
                 new StringBuilder(dec.getName(unit));
         if (typeArgs!=null) {
             result.append(typeArgs);
@@ -229,20 +231,20 @@ public class CodeCompletions {
     }
     
     public static String getRefinementTextFor(
-            Declaration d, Reference pr, Unit unit, 
-            boolean isInterface, 
-            ClassOrInterface ci, String indent, 
+            Declaration d, Reference pr, Unit unit,
+            boolean isInterface,
+            ClassOrInterface ci, String indent,
             boolean containsNewline) {
-        return getRefinementTextFor(d, pr, unit, 
-                isInterface, ci, indent, containsNewline, 
+        return getRefinementTextFor(d, pr, unit,
+                isInterface, ci, indent, containsNewline,
                 true);
     }
     
     public static String getRefinementTextFor(
-            Declaration d, Reference pr, Unit unit, 
+            Declaration d, Reference pr, Unit unit,
             boolean isInterface,
-            ClassOrInterface ci, String indent, 
-            boolean containsNewline, 
+            ClassOrInterface ci, String indent,
+            boolean containsNewline,
             boolean preamble) {
         StringBuilder result = new StringBuilder();
         if (preamble) {
@@ -255,8 +257,8 @@ public class CodeCompletions {
         appendTypeParameters(d, result);
         appendParametersText(d, pr, unit, result);
         if (d instanceof Class) {
-            String extraIndent = 
-                    extraIndent(extraIndent(indent, containsNewline), 
+            String extraIndent =
+                    extraIndent(extraIndent(indent, containsNewline),
                             containsNewline);
             result.append(extraIndent)
                 .append(" extends super.")
@@ -268,17 +270,17 @@ public class CodeCompletions {
         return result.toString();
     }
 
-    private static void appendConstraints(Declaration d, 
-            Reference pr, Unit unit, String indent, 
-            boolean containsNewline, 
+    private static void appendConstraints(Declaration d,
+            Reference pr, Unit unit, String indent,
+            boolean containsNewline,
             StringBuilder result) {
         if (d instanceof Generic) {
             Generic generic = (Generic) d;
             for (TypeParameter tp: generic.getTypeParameters()) {
                 List<Type> sts = tp.getSatisfiedTypes();
                 if (!sts.isEmpty()) {
-                    String extraIndent = 
-                            extraIndent(extraIndent(indent, containsNewline), 
+                    String extraIndent =
+                            extraIndent(extraIndent(indent, containsNewline),
                                     containsNewline);
                     result.append(extraIndent)
                         .append("given ")
@@ -321,7 +323,7 @@ public class CodeCompletions {
     }
 
     public static boolean isVariable(Declaration d) {
-        if (d instanceof TypedDeclaration) { 
+        if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
             return td.isVariable();
         }
@@ -332,7 +334,7 @@ public class CodeCompletions {
     
     static String getRefinementDescriptionFor(
             Declaration d, Reference pr, Unit unit) {
-        StringBuilder result = 
+        StringBuilder result =
                 new StringBuilder("shared actual ");
         if (isVariable(d)) {
             result.append("variable ");
@@ -340,7 +342,7 @@ public class CodeCompletions {
         appendDeclarationHeaderDescription(d, pr, unit, result);
         appendTypeParameters(d, result);
         appendParametersDescription(d, pr, unit, result);
-        /*result.append(" \u2014 refine declaration in ") 
+        /*result.append(" \u2014 refine declaration in ")
             .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
     }
@@ -360,7 +362,7 @@ public class CodeCompletions {
     }    
     
     public static String getLabelDescriptionFor(
-            Declaration d, 
+            Declaration d,
             boolean typeParams, boolean params) {
         StringBuilder result = new StringBuilder();
         if (d!=null) {
@@ -405,15 +407,15 @@ public class CodeCompletions {
     }
     
     public static StyledString getQualifiedDescriptionFor(
-            Declaration d, 
+            Declaration d,
             boolean typeParameters, boolean parameters, boolean parameterTypes, 
             boolean types) {
     	 return getQualifiedDescriptionFor(d, 
-    	            typeParameters, parameters, parameterTypes, 
+    	            typeParameters, parameters, parameterTypes,
     	            types, null, null);
     }
     public static StyledString getQualifiedDescriptionFor(
-            Declaration d, 
+            Declaration d,
             boolean typeParameters, boolean parameters, boolean parameterTypes, 
             boolean types, String prefix, Font font) {
         StyledString result = new StyledString();
@@ -421,8 +423,8 @@ public class CodeCompletions {
             appendDeclarationDescription(d, result);
             result.append(' ');
             if (d.isClassOrInterfaceMember()) {
-                Declaration ci = 
-                        (Declaration) 
+                Declaration ci =
+                        (Declaration)
                             d.getContainer();
                 appendQualifyingTypeName(result, ci, prefix, font);
                 appendMemberName(d, result, prefix, font);
@@ -434,16 +436,16 @@ public class CodeCompletions {
                 appendTypeParameters(d, result, true);
             }
             if (parameters||parameterTypes) {
-                appendParametersDescription(d, result, 
+                appendParametersDescription(d, result,
                         parameters, parameterTypes);
             }
             if (d instanceof TypedDeclaration) {
                 if (types) {
-                    TypedDeclaration td = 
+                    TypedDeclaration td =
                             (TypedDeclaration) d;
                     if (!td.isParameter() && 
                             !td.isDynamicallyTyped() &&
-                            !(td instanceof Function && 
+                            !(td instanceof Function &&
                                     ((Function) td).isDeclaredVoid())) {
                         Type t = td.getType();
                         if (t!=null) {
@@ -453,14 +455,14 @@ public class CodeCompletions {
                     }
                 }
             }
-            /*result.append(" \u2014 refines declaration in ") 
+            /*result.append(" \u2014 refines declaration in ")
                 .append(((Declaration) d.getContainer()).getName());*/
         }
         return result;
     }
 
 	private static void appendQualifyingTypeName(
-	        StyledString result, 
+	        StyledString result,
 	        Declaration ci, String prefix, Font font) {
 		String name = ci.getName();
 		if (prefix!=null) {
@@ -468,7 +470,7 @@ public class CodeCompletions {
 			if (loc>0) {
 				prefix = prefix.substring(0, loc);
 			}
-			styleIdentifier(result, prefix, name, 
+			styleIdentifier(result, prefix, name,
 					TYPE_ID_STYLER, font);
 		}
 		else {
@@ -490,11 +492,11 @@ public class CodeCompletions {
             if (d instanceof TypedDeclaration) {
                 if (CeylonPlugin.getPreferences()
                         .getBoolean(RETURN_TYPES_IN_OUTLINES)) {
-                    TypedDeclaration td = 
+                    TypedDeclaration td =
                             (TypedDeclaration) d;
                     if (!td.isParameter() && 
                             !td.isDynamicallyTyped() &&
-                            !(td instanceof Function && 
+                            !(td instanceof Function &&
                                     ((Function) td).isDeclaredVoid())) {
                         Type t = td.getType();
                         if (t!=null) {
@@ -504,7 +506,7 @@ public class CodeCompletions {
                     }
                 }
             }
-            /*result.append(" \u2014 refines declaration in ") 
+            /*result.append(" \u2014 refines declaration in ")
                 .append(((Declaration) d.getContainer()).getName());*/
         }
         return result;
@@ -535,7 +537,7 @@ public class CodeCompletions {
     }
     
     private static void appendPositionalArgs(
-            Declaration d, Reference pr, 
+            Declaration d, Reference pr,
             Unit unit, StringBuilder result, boolean includeDefaulted,
             boolean descriptionOnly) {
         if (d instanceof Functional) {
@@ -546,7 +548,7 @@ public class CodeCompletions {
             }
             else {
                 boolean paramTypes = 
-                        descriptionOnly && 
+                        descriptionOnly &&
                         CeylonPlugin.getPreferences()
                             .getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                 result.append("(");
@@ -595,12 +597,12 @@ public class CodeCompletions {
         }
     }
     
-    static void appendSuperArgsText(Declaration d, 
-            Reference pr, Unit unit, StringBuilder result, 
+    static void appendSuperArgsText(Declaration d,
+            Reference pr, Unit unit, StringBuilder result,
             boolean includeDefaulted) {
         if (d instanceof Functional) {
-            List<Parameter> params = 
-                    getParameters((Functional) d, 
+            List<Parameter> params =
+                    getParameters((Functional) d,
                             includeDefaulted, false);
             if (params.isEmpty()) {
                 result.append("()");
@@ -633,13 +635,13 @@ public class CodeCompletions {
     }
 
     private static void appendNamedArgs(
-            Declaration d, Reference pr, 
-            Unit unit, StringBuilder result, 
-            boolean includeDefaulted, 
+            Declaration d, Reference pr,
+            Unit unit, StringBuilder result,
+            boolean includeDefaulted,
             boolean descriptionOnly) {
         if (d instanceof Functional) {
-            List<Parameter> params = 
-                    getParameters((Functional) d, 
+            List<Parameter> params =
+                    getParameters((Functional) d,
                             includeDefaulted, true);
             if (params.isEmpty()) {
                 result.append(" {}");
@@ -659,7 +661,7 @@ public class CodeCompletions {
                             result.append("void ");
                         }
                         else {
-                            if (paramTypes && 
+                            if (paramTypes &&
                                     !isTypeUnknown(p.getType())) {
                                 String ptn = p.getType().asString(unit);
                                 result.append(ptn).append(" ");
@@ -692,7 +694,7 @@ public class CodeCompletions {
 //                            result.append(" ");
                         }
                         else {
-                            if (paramTypes && 
+                            if (paramTypes &&
                                     !isTypeUnknown(p.getType())) {
                                 String ptn = p.getType().asString(unit);
                                 result.append(ptn).append(" ");
@@ -716,11 +718,11 @@ public class CodeCompletions {
     }
     
     private static void appendTypeParameters(
-            Declaration d, StringBuilder result, 
+            Declaration d, StringBuilder result,
             boolean variances) {
         if (d instanceof Generic) {
             Generic g = (Generic) d;
-            List<TypeParameter> types = 
+            List<TypeParameter> types =
                     g.getTypeParameters();
             if (!types.isEmpty()) {
                 result.append("<");
@@ -743,12 +745,12 @@ public class CodeCompletions {
     }
     
     private static void appendTypeParameters(
-            Declaration d, Reference pr, 
-            StringBuilder result, 
+            Declaration d, Reference pr,
+            StringBuilder result,
             boolean variances, Unit unit) {
         if (d instanceof Generic) {
             Generic g = (Generic) d;
-            List<TypeParameter> types = 
+            List<TypeParameter> types =
                     g.getTypeParameters();
             if (!types.isEmpty()) {
                 result.append("<");
@@ -760,7 +762,7 @@ public class CodeCompletions {
                     else {
                         result.append(", ");
                     }
-                    Type arg = pr==null ? null : 
+                    Type arg = pr==null ? null :
                         pr.getTypeArguments().get(tp);
                     if (arg == null) {
                         if (variances) {
@@ -777,7 +779,7 @@ public class CodeCompletions {
                         if (pr instanceof Type) {
                             if (variances) {
                                 Type t = (Type) pr;
-                                SiteVariance variance = 
+                                SiteVariance variance =
                                         t.getVarianceOverrides()
                                             .get(tp);
                                 if (variance==null) {
@@ -805,11 +807,11 @@ public class CodeCompletions {
     }
     
     private static void appendTypeParameters(
-            Declaration d, StyledString result, 
+            Declaration d, StyledString result,
             boolean variances) {
         if (d instanceof Generic) {
             Generic g = (Generic) d;
-            List<TypeParameter> types = 
+            List<TypeParameter> types =
                     g.getTypeParameters();
             if (!types.isEmpty()) {
                 result.append("<");
@@ -834,25 +836,25 @@ public class CodeCompletions {
     }
     
     private static void appendDeclarationHeaderDescription(
-            Declaration d, Unit unit, 
+            Declaration d, Unit unit,
             StringBuilder result) {
         appendDeclarationHeader(d, null, unit, result, true);
     }
     
     private static void appendDeclarationHeaderDescription(
-            Declaration d, Reference pr, Unit unit, 
+            Declaration d, Reference pr, Unit unit,
             StringBuilder result) {
         appendDeclarationHeader(d, pr, unit, result, true);
     }
     
     private static void appendDeclarationHeaderText(
-            Declaration d, Reference pr, Unit unit, 
+            Declaration d, Reference pr, Unit unit,
             StringBuilder result) {
         appendDeclarationHeader(d, pr, unit, result, false);
     }
     
     private static void appendDeclarationHeader(
-            Declaration d, Reference pr, Unit unit, 
+            Declaration d, Reference pr, Unit unit,
             StringBuilder result, 
             boolean descriptionOnly) {
         if (d instanceof TypeAlias && d.isAnonymous()) {
@@ -878,8 +880,8 @@ public class CodeCompletions {
         else if (d instanceof TypedDeclaration) {
             TypedDeclaration td = (TypedDeclaration) d;
             FunctionOrValue fov = (FunctionOrValue) d;
-            boolean isSequenced = 
-                    d.isParameter() && 
+            boolean isSequenced =
+                    d.isParameter() &&
                     fov.getInitializerParameter()
                             .isSequenced();
             Type type;
@@ -901,8 +903,8 @@ public class CodeCompletions {
             if (type==null) {
                 type = unit.getUnknownType();
             }
-            String typeName = 
-                    descriptionOnly ? 
+            String typeName =
+                    descriptionOnly ?
                         type.asString(unit) :
                         type.asSourceCodeString(unit);
             if (td.isDynamicallyTyped()) {
@@ -944,7 +946,7 @@ public class CodeCompletions {
     }
     
     private static void appendNamedArgumentHeader(
-            Parameter p, Reference pr, 
+            Parameter p, Reference pr,
             StringBuilder result,
             boolean descriptionOnly) {
         if (p.getModel() instanceof Functional) {
@@ -956,7 +958,7 @@ public class CodeCompletions {
         }
         result.append(" ")
             .append(descriptionOnly ? 
-                    p.getName() : 
+                    p.getName() :
                     escapeName(p.getModel()));
     }
     
@@ -987,7 +989,7 @@ public class CodeCompletions {
             }
             else if (type!=null) {
                 FunctionOrValue fov = (FunctionOrValue) d;
-                boolean isSequenced = //d.isParameter() && 
+                boolean isSequenced = //d.isParameter() &&
                         fov.getInitializerParameter()
                                 .isSequenced();
                 if (isSequenced) {
@@ -1045,20 +1047,20 @@ public class CodeCompletions {
     }
 
     private static void appendMemberName(
-            Declaration d, 
-    		StyledString result, 
+            Declaration d,
+    		StyledString result,
     		String prefix, Font font) {
         String name = d.getName();
         if (name!=null) {
-        	Styler styler = 
-                    d instanceof TypeDeclaration ? 
+        	Styler styler =
+                    d instanceof TypeDeclaration ?
                             TYPE_STYLER : MEMBER_STYLER;
             if (prefix!=null) {
             	int loc = prefix.indexOf('.');
             	if (loc>0) {
             		prefix = prefix.substring(loc);
             	}
-            	styleIdentifier(result, prefix, name, 
+            	styleIdentifier(result, prefix, name,
             			styler, font);
             }
             else {
@@ -1068,16 +1070,16 @@ public class CodeCompletions {
     }
     
     private static void appendDeclarationName(
-            Declaration d, 
-    		StyledString result, 
+            Declaration d,
+    		StyledString result,
     		String prefix, Font font) {
         String name = d.getName();
         if (name!=null) {
-            Styler styler = 
-                    d instanceof TypeDeclaration ? 
+            Styler styler =
+                    d instanceof TypeDeclaration ?
                             TYPE_STYLER : MEMBER_STYLER;
             if (prefix!=null) {
-            	styleIdentifier(result, prefix, name, 
+            	styleIdentifier(result, prefix, name,
             			styler, font);
             }
             else {
@@ -1087,7 +1089,7 @@ public class CodeCompletions {
     }
     
     private static void appendDeclarationName(
-            Declaration d, 
+            Declaration d,
     		StyledString result) {
     	appendDeclarationName(d, result, null, null);
     }
@@ -1104,21 +1106,21 @@ public class CodeCompletions {
   }*/
     
     private static void appendImplText(
-            Declaration d, Reference pr, 
-            boolean isInterface, Unit unit, 
+            Declaration d, Reference pr,
+            boolean isInterface, Unit unit,
             String indent, StringBuilder result,
             ClassOrInterface ci) {
         if (d instanceof Function) {
             Function fun = (Function) d;
             if (ci!=null && !ci.isAnonymous()) {
                 if (d.getName().equals("equals")) {
-                    List<ParameterList> pl = 
+                    List<ParameterList> pl =
                             fun.getParameterLists();
                     if (!pl.isEmpty()) {
-                        List<Parameter> ps = 
+                        List<Parameter> ps =
                                 pl.get(0).getParameters();
                         if (!ps.isEmpty()) {
-                            appendEqualsImpl(unit, indent, 
+                            appendEqualsImpl(unit, indent,
                                     result, ci, ps);
                             return;
                         }
@@ -1169,7 +1171,7 @@ public class CodeCompletions {
             else {
                 //we can have a references, so use = instead 
                 //of => for variables
-                String arrow = 
+                String arrow =
                         isVariable(d) ? " = " : " => ";
                 if (d.isFormal()) {
                     result.append(arrow)
@@ -1231,8 +1233,8 @@ public class CodeCompletions {
                  name.equals("string"));
     }
 
-    private static void appendMembersToEquals(Unit unit, 
-            String indent, StringBuilder result, 
+    private static void appendMembersToEquals(Unit unit,
+            String indent, StringBuilder result,
             ClassOrInterface ci, Parameter p) {
         boolean found = false;
         Type nt = unit.getNullValueDeclaration().getType();
@@ -1263,8 +1265,8 @@ public class CodeCompletions {
         }
     }
 
-    private static void appendMembersToHash(Unit unit, 
-            String indent, StringBuilder result, 
+    private static void appendMembersToHash(Unit unit,
+            String indent, StringBuilder result,
             ClassOrInterface ci) {
         Type nt = unit.getNullValueDeclaration().getType();
         for (Declaration m: ci.getMembers()) {

@@ -72,33 +72,36 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 import static com.redhat.ceylon.eclipse.util.Nodes.getTokenIndexAtCharacter;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.ALIAS_REF;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CASE;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CATCH;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.DOCLINK;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXISTS;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXPRESSION;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.FUNCTION_REF;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.IMPORT;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.IS;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.META;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.NONEMPTY;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.OF;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ALIAS;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ARGUMENT_LIST;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_PARAMETER_LIST;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_PARAMETER_REF;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.UPPER_BOUND;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.VALUE_REF;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.ALIAS_REF;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.CASE;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.CATCH;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.CLASS_ALIAS;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.DOCLINK;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXISTS;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXPRESSION;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.FUNCTION_REF;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.IS;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.META;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.NONEMPTY;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.OF;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.PARAMETER_LIST;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.SATISFIES;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.TYPE_ALIAS;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.TYPE_ARGUMENT_LIST;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.TYPE_PARAMETER_LIST;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.TYPE_PARAMETER_REF;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.UPPER_BOUND;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.VALUE_REF;
 import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
@@ -144,8 +147,8 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Escaping;
-import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 import com.redhat.ceylon.eclipse.util.Types;
+import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 import com.redhat.ceylon.ide.common.completion.FindScopeVisitor;
 import com.redhat.ceylon.ide.common.completion.IdeCompletionManager;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -191,175 +194,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         secondLevel = false;
         lastOffset=-1;
     }
-    
-    // THIS IS JUST A TEMPORARY HACK THAT WILL BE REMOVED WHEN MIGRATING FULLY TO THE COMPLETION ABSTRACTIONS
-    private static final IdeCompletionManager<CeylonParseController, ICompletionProposal, IDocument> DUMMY_INSTANCE = 
-            new IdeCompletionManager<CeylonParseController, ICompletionProposal, IDocument>(
-                    TypeDescriptor.klass(CeylonParseController.class),
-                    TypeDescriptor.klass(ICompletionProposal.class),
-                    TypeDescriptor.klass(IDocument.class)) {
 
-                        @Override
-                        public String getInexactMatches() {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newNamedInvocationCompletion(
-                                long arg0,
-                                String arg1,
-                                Declaration arg2,
-                                Reference arg3,
-                                Scope arg4,
-                                CeylonParseController arg5,
-                                boolean arg6,
-                                com.redhat.ceylon.ide.common.util.OccurrenceLocation arg7,
-                                ceylon.language.String arg8, boolean arg9) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newPositionalInvocationCompletion(
-                                long arg0,
-                                String arg1,
-                                Declaration arg2,
-                                Reference arg3,
-                                Scope arg4,
-                                CeylonParseController arg5,
-                                boolean arg6,
-                                com.redhat.ceylon.ide.common.util.OccurrenceLocation arg7,
-                                ceylon.language.String arg8, boolean arg9) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newReferenceCompletion(
-                                long arg0, String arg1, Declaration arg2,
-                                Unit arg3, Reference arg4, Scope arg5,
-                                CeylonParseController arg6, boolean arg7,
-                                boolean arg8) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public boolean getShowParameterTypes() {
-                            // TODO Auto-generated method stub
-                            return false;
-                        }
-
-                        @Override
-                        public ICompletionProposal newParametersCompletionProposal(
-                                long arg0, Type arg1, List<Type> arg2,
-                                Node arg3, CeylonParseController arg4) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newRefinementCompletionProposal(
-                                long arg0, String arg1, Declaration arg2,
-                                Reference arg3, Scope arg4,
-                                CeylonParseController arg5, boolean arg6,
-                                ClassOrInterface arg7, Node arg8, Unit arg9,
-                                IDocument arg10, boolean arg11) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public Tree.CompilationUnit getCompilationUnit(
-                                CeylonParseController cmp) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public String getDocumentSubstring(IDocument arg0,
-                                long arg1, long arg2) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newKeywordCompletionProposal(
-                                long arg0, String arg1, String arg2) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newMemberNameCompletionProposal(
-                                long arg0, String arg1, String arg2,
-                                String arg3) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newBasicCompletionProposal(
-                                long arg0, String arg1, String arg2,
-                                String arg3, Declaration arg4,
-                                CeylonParseController arg5) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newInlineFunctionProposal(
-                                long arg0, FunctionOrValue arg1, Scope arg2,
-                                Node arg3, String arg4,
-                                CeylonParseController arg5, IDocument arg6) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newNamedArgumentProposal(
-                                long arg0, String arg1,
-                                CeylonParseController arg2,
-                                Tree.CompilationUnit arg3, Declaration arg4,
-                                Scope arg5) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public List<CommonToken> getTokens(
-                                CeylonParseController cmp) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public CommonToken getNextToken(
-                                CeylonParseController cmp, CommonToken token) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newAnonFunctionProposal(
-                                long arg0, Type arg1, Unit arg2, String arg3,
-                                String arg4, boolean arg5) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-
-                        @Override
-                        public ICompletionProposal newProgramElementReferenceCompletion(
-                                long arg0, String arg1, Declaration arg2,
-                                Unit arg3, Reference arg4, Scope arg5,
-                                CeylonParseController arg6, boolean arg7) {
-                            // TODO Auto-generated method stub
-                            return null;
-                        }
-        
-    };
-    
     public CeylonCompletionProcessor(CeylonEditor editor) {
         this.editor=editor;
     }
@@ -443,14 +278,14 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             final ITextViewer viewer, final int offset) {
         CeylonParseController controller = 
                 editor.getParseController();
-        PhasedUnit phasedUnit = 
+        PhasedUnit phasedUnit =
                 controller.parseAndTypecheck(
-                viewer.getDocument(), 
+                viewer.getDocument(),
                 10,
                 new NullProgressMonitor(), 
                 null);
         if (phasedUnit != null) {
-            return computeParameterContextInformation(offset, 
+            return computeParameterContextInformation(offset,
                     phasedUnit.getCompilationUnit(), viewer)
                     .toArray(NO_CONTEXTS);
         } else {
@@ -489,8 +324,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             return null;
         }
         
-        PhasedUnit typecheckedPhasedUnit = 
-                controller.parseAndTypecheck(viewer.getDocument(), 
+        PhasedUnit typecheckedPhasedUnit =
+                controller.parseAndTypecheck(viewer.getDocument(),
                 10,
                 monitor, null);
         if (typecheckedPhasedUnit == null) {
@@ -547,8 +382,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         //      an expression, since RequiredTypeVisitor
         //      doesn't know how to search up the tree for
         //      the containing InvocationExpression
-        Types.Required required = 
-                getRequiredType(typecheckedRootNode, node, 
+        Types.Required required =
+                getRequiredType(typecheckedRootNode, node,
                         adjustedToken);
         
         String prefix = "";
@@ -621,30 +456,30 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         if (completions==null) {
             //finally, construct and sort proposals
             Map<String, DeclarationWithProximity> proposals = 
-                    DUMMY_INSTANCE.getProposals(node, scope, prefix, 
-                            isMemberOp, typecheckedRootNode);
+                    eclipseCompletionManager_.get_().getProposals(node, scope, prefix,
+                            isMemberOp, rn);
             Map<String, DeclarationWithProximity> functionProposals =
-                    DUMMY_INSTANCE.getFunctionProposals(node, scope, prefix, 
+                    eclipseCompletionManager_.get_().getFunctionProposals(node, scope, prefix,
                             isMemberOp);
             filterProposals(proposals);
             filterProposals(functionProposals);
             Set<DeclarationWithProximity> sortedProposals = 
-                    sortProposals(prefix, required, 
+                    sortProposals(prefix, required,
                             proposals);
             Set<DeclarationWithProximity> sortedFunctionProposals = 
-                    sortProposals(prefix, required, 
+                    sortProposals(prefix, required,
                             functionProposals);
             completions =
                     constructCompletions(offset, 
                             inDoc ? qualified : fullPrefix, 
                             sortedProposals, 
-                            sortedFunctionProposals, 
+                            sortedFunctionProposals,
                             controller, scope, node, 
                             adjustedToken, isMemberOp, 
                             viewer.getDocument(), 
                             secondLevel, inDoc,
-                            required.getType(), 
-                            previousTokenType, 
+                            required.getType(),
+                            previousTokenType,
                             tokenType);
         }
         return completions;
@@ -917,10 +752,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     monitor);
         }
         else if (node instanceof Tree.ImportPath) {
-            Tree.CompilationUnit upToDateAndTypechecked = 
+            Tree.CompilationUnit upToDateAndTypechecked =
                     cpc.getTypecheckedRootNode();
             if (upToDateAndTypechecked != null) {
-                new ImportVisitor(prefix, token, offset, 
+                new ImportVisitor(prefix, token, offset,
                         node, cpc, result, monitor)
                             .visit(upToDateAndTypechecked);
             }
@@ -1003,7 +838,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     constructCompletions(int offset, String prefix, 
             Set<DeclarationWithProximity> sortedProposals, 
             Set<DeclarationWithProximity> sortedFunctionProposals, 
-            CeylonParseController controller, Scope scope, 
+            CeylonParseController controller, Scope scope,
             final Node node, CommonToken token, 
             boolean memberOp, IDocument doc, 
             boolean secondLevel, boolean inDoc,
@@ -1012,12 +847,12 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         
         List<ICompletionProposal> result = 
                 new ArrayList<ICompletionProposal>();
-        Tree.CompilationUnit rootNode = 
+        Tree.CompilationUnit rootNode =
                 controller.getTypecheckedRootNode();
         if (rootNode == null) {
             return result.toArray(NO_COMPLETIONS);
         }
-        OccurrenceLocation ol = 
+        OccurrenceLocation ol =
                 getOccurrenceLocation(rootNode, node, offset);
         Unit unit = node.getUnit();
         if (node instanceof Tree.Term) {
@@ -1047,7 +882,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             for (DeclarationWithProximity dwp: sortedProposals) {
                 Declaration dec = dwp.getDeclaration();
                 if (isTypeParameterOfCurrentDeclaration(node, dec)) {
-                    addReferenceProposal(offset, prefix, controller, 
+                    addReferenceProposal(offset, prefix, controller,
                             result, dwp, scope, false, null, ol);
                 }
             }
@@ -1101,7 +936,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             if (dnt!=null && dnt.getTypeModel()!=null) {
                 Type t = dnt.getTypeModel();
                 addRefinementProposals(offset, sortedProposals, 
-                        controller, scope, node, doc, secondLevel, 
+                        controller, scope, node, doc, secondLevel,
                         result, ol, t, true);
             }
             //otherwise guess something from the type
@@ -1115,7 +950,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                             ((Tree.MemberLiteral) node).getType()!=null;
             
             if (!secondLevel && !inDoc && !memberOp) {
-                addKeywordProposals(controller, offset, prefix, 
+                addKeywordProposals(controller, offset, prefix,
                         result, node, ol, isMember, tokenType);
                 //addTemplateProposal(offset, prefix, result);
             }
@@ -1130,7 +965,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
             
             boolean isPackageOrModuleDescriptor = 
-                    isModuleDescriptor(controller) || 
+                    isModuleDescriptor(controller) ||
                     isPackageDescriptor(controller);
             for (DeclarationWithProximity dwp: sortedProposals) {
                 Declaration dec = dwp.getDeclaration();
@@ -1158,7 +993,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 if (!secondLevel && 
                         isParameterOfNamedArgInvocation(scope, dwp) &&
                         isDirectlyInsideNamedArgumentList(controller, node, token)) {
-                    addNamedArgumentProposal(offset, prefix, controller, 
+                    addNamedArgumentProposal(offset, prefix, controller,
                             result, dec, scope);
                     addInlineFunctionProposal(offset, dec, scope, 
                             node, prefix, controller, doc, result);
@@ -1169,7 +1004,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 
                 if (!secondLevel && !inDoc && noParamsFollow &&
                         isInvocationProposable(dwp, ol, previousTokenType) && 
-                        (!DUMMY_INSTANCE.isQualifiedType(node) || 
+                        (!eclipseCompletionManager_.get_().isQualifiedType(node) ||
                                 isConstructor(dec) || 
                                 dec.isStaticallyImportable()) &&
                         (!(scope instanceof Constructor) || 
@@ -1179,9 +1014,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         Reference pr = isMember ? 
                                 getQualifiedProducedReference(node, d) :
                                 getRefinedProducedReference(scope, d);
-                        addInvocationProposals(
-                                offset, prefix, controller, result, 
-                                dwp, d, pr, scope, ol, null, isMember);
+                        InvocationCompletionProposal.addInvocationProposals(
+                                offset, prefix, cpc, result,
+                                d, pr, scope, ol, null, isMember);
                     }
                 }
                 
@@ -1207,7 +1042,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         if (isReferenceProposable(ol, dec)) {
                             addProgramElementReferenceProposal(
                                     offset, prefix, 
-                                    controller, result, dec, scope, 
+                                    controller, result, dec, scope,
                                     isMember);
                         }
                     }
@@ -1218,7 +1053,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         if (secondLevel) {
                             addSecondLevelProposal(
                                     offset, prefix, 
-                                    controller, result, dec, scope, 
+                                    controller, result, dec, scope,
                                     false, pr, requiredType, ol);
                         }
                         else {
@@ -1227,7 +1062,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                     !noParamsFollow) {
                                 addReferenceProposal(
                                         offset, prefix, 
-                                        controller, result, dwp, scope, 
+                                        controller, result, dwp, scope,
                                         isMember, pr, ol);
                             }
                         }
@@ -1244,11 +1079,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                             controller, result, dwp, dec);
                     addIfExistsProposal(offset, prefix, 
                             controller, result, dwp, dec);
-                    addAssertExistsProposal(offset, prefix, 
+                    addAssertExistsProposal(offset, prefix,
                             controller, result, dwp, dec);
                     addIfNonemptyProposal(offset, prefix, 
                             controller, result, dwp, dec);
-                    addAssertNonemptyProposal(offset, prefix, 
+                    addAssertNonemptyProposal(offset, prefix,
                             controller, result, dwp, dec);
                     addTryProposal(offset, prefix, 
                             controller, result, dwp, dec);
@@ -1279,13 +1114,13 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                             (Tree.QualifiedMemberOrTypeExpression) 
                                 node;
                     Tree.Primary primary = qmte.getPrimary();
-                    addFunctionProposal(offset, controller, primary, 
+                    addFunctionProposal(offset, controller, primary,
                             result, dwp.getDeclaration(), doc);
                 }
             }
         }
         if (previousTokenType==CeylonLexer.OBJECT_DEFINITION) {
-            addKeywordProposals(controller, offset, prefix, 
+            addKeywordProposals(controller, offset, prefix,
                         result, node, ol, false, tokenType);
         }
         return result.toArray(NO_COMPLETIONS);
@@ -1354,6 +1189,31 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else {
             return false;
+        }
+    }
+
+    private static void addAnonFunctionProposal(int offset,
+            Type requiredType,
+            List<ICompletionProposal> result,
+            Unit unit) {
+        String text = eclipseCompletionManager_.get_().anonFunctionHeader(requiredType, unit);
+        String funtext = text + " => nothing";
+        result.add(new CompletionProposal(offset, "",
+                LARGE_CORRECTION_IMAGE, funtext, funtext) {
+            @Override
+            public Point getSelection(IDocument document) {
+                return new Point(offset + text.indexOf("nothing"), 7);
+            }
+        });
+        if (unit.getCallableReturnType(requiredType).isAnything()) {
+            String voidtext = "void " + text + " {}";
+            result.add(new CompletionProposal(offset, "",
+                    LARGE_CORRECTION_IMAGE, voidtext, voidtext) {
+                @Override
+                public Point getSelection(IDocument document) {
+                    return new Point(offset + text.length()-1, 0);
+                }
+            });
         }
     }
 
@@ -1662,7 +1522,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     private static Set<DeclarationWithProximity> 
-    sortProposals(String prefix, Types.Required required, 
+    sortProposals(String prefix, Types.Required required,
             Map<String, DeclarationWithProximity> proposals) {
         Set<DeclarationWithProximity> set = 
                 new TreeSet<DeclarationWithProximity>
@@ -1674,7 +1534,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     public static Map<String, DeclarationWithProximity> 
     getProposals(Node node, Scope scope, 
             Tree.CompilationUnit rootNode) {
-       return DUMMY_INSTANCE.getProposals(node, scope, "", false, rootNode); 
+       return eclipseCompletionManager_.get_().getProposals(node, scope, "", false, rootNode);
     }
-    
 }

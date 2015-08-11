@@ -9,7 +9,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getOccurrenceLocation;
-import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.IMPORT;
+import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.IMPORT;
 import static java.lang.Character.isUpperCase;
 import static java.util.Collections.singleton;
 
@@ -29,7 +29,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
+import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Module;

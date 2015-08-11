@@ -124,59 +124,59 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     public static Image FORMAL_REFINEMENT = 
             imageRegistry().get(CEYLON_FORMAL_REFINEMENT);
     
-    static void addRefinementProposal(int offset, 
-            Declaration dec, ClassOrInterface ci, 
-            Node node, Scope scope, String prefix, 
+    static void addRefinementProposal(int offset,
+            Declaration dec, ClassOrInterface ci,
+            Node node, Scope scope, String prefix,
             CeylonParseController cpc, IDocument doc, 
-            List<ICompletionProposal> result, 
+            List<ICompletionProposal> result,
             boolean preamble) {
         boolean isInterface = scope instanceof Interface;
         Reference pr = getRefinedProducedReference(scope, dec);
         Unit unit = node.getUnit();
-        result.add(new RefinementCompletionProposal(offset, 
+        result.add(new RefinementCompletionProposal(offset,
                 prefix, pr,
                 getRefinementDescriptionFor(dec, pr, unit), 
-                getRefinementTextFor(dec, pr, unit, 
-                        isInterface, ci, 
-                        getDefaultLineDelimiter(doc) 
-                            + getIndent(node, doc), 
+                getRefinementTextFor(dec, pr, unit,
+                        isInterface, ci,
+                        getDefaultLineDelimiter(doc)
+                            + getIndent(node, doc),
                         true, preamble), 
                 cpc, dec, scope, false, true));
     }
     
-    static void addNamedArgumentProposal(int offset, 
-            String prefix, 
-            CeylonParseController cpc, 
-            List<ICompletionProposal> result, 
+    static void addNamedArgumentProposal(int offset,
+            String prefix,
+            CeylonParseController cpc,
+            List<ICompletionProposal> result,
             Declaration dec, Scope scope) {
-        //TODO: type argument substitution using the 
+        //TODO: type argument substitution using the
         //     Reference of the primary node
         Unit unit = cpc.getLastCompilationUnit().getUnit();
-        result.add(new RefinementCompletionProposal(offset, 
-                prefix, 
+        result.add(new RefinementCompletionProposal(offset,
+                prefix,
                 dec.getReference(), //TODO: this needs to do type arg substitution
                 getDescriptionFor(dec, unit), 
                 getTextFor(dec, unit) + " = nothing;", 
                 cpc, dec, scope, true, false));
     }
 
-    static void addInlineFunctionProposal(int offset, 
-            Declaration dec, Scope scope, Node node, 
-            String prefix, CeylonParseController cpc, 
-            IDocument doc, 
+    static void addInlineFunctionProposal(int offset,
+            Declaration dec, Scope scope, Node node,
+            String prefix, CeylonParseController cpc,
+            IDocument doc,
             List<ICompletionProposal> result) {
-        //TODO: type argument substitution using the 
+        //TODO: type argument substitution using the
         //      Reference of the primary node
         if (dec.isParameter()) {
             FunctionOrValue fov = (FunctionOrValue) dec;
             Parameter p = fov.getInitializerParameter();
             Unit unit = node.getUnit();
             result.add(new RefinementCompletionProposal(
-                    offset, prefix, 
+                    offset, prefix,
                     dec.getReference(), //TODO: this needs to do type arg substitution
                     getInlineFunctionDescriptionFor(p, null, unit),
                     getInlineFunctionTextFor(p, null, unit, 
-                            getDefaultLineDelimiter(doc) + 
+                            getDefaultLineDelimiter(doc) +
                             getIndent(node, doc)),
                     cpc, dec, scope, false, false));
         }
@@ -192,7 +192,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             Type superType, Declaration d) {
         if (superType.isIntersection()) {
             for (Type pt: superType.getSatisfiedTypes()) {
-                Reference result = 
+                Reference result =
                         getRefinedProducedReference(pt, d);
                 if (result!=null) return result;
             }
@@ -229,13 +229,13 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     private final Scope scope;
     private boolean explicitReturnType;
 
-    private RefinementCompletionProposal(int offset, 
-            String prefix, Reference pr, 
-            String desc, String text, 
-            CeylonParseController cpc, 
+    RefinementCompletionProposal(int offset,
+            String prefix, Reference pr,
+            String desc, String text,
+            CeylonParseController cpc,
             Declaration dec, Scope scope,
             boolean fullType, boolean explicitReturnType) {
-        super(offset, prefix, getRefinementIcon(dec), 
+        super(offset, prefix, getRefinementIcon(dec),
                 desc, text);
         this.cpc = cpc;
         this.declaration = dec;
@@ -315,10 +315,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     private DocumentChange createChange(IDocument document)
             throws BadLocationException {
         DocumentChange change = 
-                new DocumentChange("Complete Refinement", 
+                new DocumentChange("Complete Refinement",
                         document);
         change.setEdit(new MultiTextEdit());
-        HashSet<Declaration> decs = 
+        HashSet<Declaration> decs =
                 new HashSet<Declaration>();
         Tree.CompilationUnit cu = cpc.getLastCompilationUnit();
         if (explicitReturnType) {
@@ -357,10 +357,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         new ProposalPosition(document, 
                                 loc+pos, 7, 0, 
                                 props.toArray(NO_COMPLETIONS));
-                LinkedMode.addLinkedPosition(linkedModeModel, 
+                LinkedMode.addLinkedPosition(linkedModeModel,
                         linkedPosition);
                 CeylonEditor editor = 
-                		(CeylonEditor) 
+                		(CeylonEditor)
                 		    getCurrentEditor();
 				LinkedMode.installLinkedMode(editor,
                         document, linkedModeModel, this, 
@@ -379,28 +379,28 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         return new ReturnValueContextInfo();
     }
     @Override
-    public boolean validate(IDocument document, int offset, 
+    public boolean validate(IDocument document, int offset,
             DocumentEvent event) {
         if (offset<this.offset) {
             return false;
         }
         currentPrefix = getCurrentPrefix(document, offset);
         return currentPrefix==null ? false :
-        	isNameMatching(currentPrefix, 
+        	isNameMatching(currentPrefix,
         	        declaration.getName());
     }
     
-    private void addProposals(int loc, String prefix, 
+    private void addProposals(int loc, String prefix,
             List<ICompletionProposal> props) {
         Type type = getType();
         if (type==null) return;
         Unit unit = getUnit();
         //nothing:
         props.add(new NestedCompletionProposal(
-                unit.getLanguageModuleDeclaration("nothing"), 
+                unit.getLanguageModuleDeclaration("nothing"),
                 loc));
         //this:
-        ClassOrInterface ci = 
+        ClassOrInterface ci =
                 getContainingClassOrInterface(scope);
         if (ci!=null) {
             if (ci.getType().isSubtypeOf(type)) {
@@ -409,7 +409,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             }
         }
         //literals:
-        for (String value: 
+        for (String value:
                 getAssignableLiterals(type, unit)) {
             props.add(new NestedLiteralCompletionProposal(
                         value, loc));
@@ -434,10 +434,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     name.equals(split[split.length-1])) {
                 continue;
             }
-            String pname = 
+            String pname =
                     d.getUnit().getPackage()
                         .getNameAsString();
-            boolean inLanguageModule = 
+            boolean inLanguageModule =
                     pname.equals(Module.LANGUAGE_MODULE_NAME);
             if (d instanceof Value && 
                     !d.equals(declaration)) {
@@ -449,13 +449,13 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 }
                 Type vt = value.getType();
                 if (vt!=null && !vt.isNothing() &&
-                    (isTypeParamInBounds(td, vt) || 
+                    (isTypeParamInBounds(td, vt) ||
                             vt.isSubtypeOf(type))) {
                     props.add(new NestedCompletionProposal(d, loc));
                 }
             }
-            if (d instanceof Function && 
-                    !d.equals(declaration) && 
+            if (d instanceof Function &&
+                    !d.equals(declaration) &&
                     !d.isAnnotation()) {
                 Function method = (Function) d;
                 if (inLanguageModule &&
@@ -464,22 +464,22 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 }
                 Type mt = method.getType();
                 if (mt!=null && !mt.isNothing() &&
-                    (isTypeParamInBounds(td, mt) || 
+                    (isTypeParamInBounds(td, mt) ||
                             mt.isSubtypeOf(type))) {
                     props.add(new NestedCompletionProposal(d, loc));
                 }
             }
             if (d instanceof Class) {
                 Class clazz = (Class) d;
-                if (!clazz.isAbstract() && 
+                if (!clazz.isAbstract() &&
                         !d.isAnnotation()) {
-                    if (inLanguageModule 
+                    if (inLanguageModule
                             && isIgnoredLanguageModuleClass(clazz)) {
                             continue;
                     }
                     Type ct = clazz.getType();
                     if (ct!=null && !ct.isNothing() &&
-                            (isTypeParamInBounds(td, ct) || 
+                            (isTypeParamInBounds(td, ct) ||
                                     ct.getDeclaration()
                                         .equals(type.getDeclaration()) ||
                                     ct.isSubtypeOf(type))) {
@@ -487,7 +487,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                             props.add(new NestedCompletionProposal(d, loc));
                         }
                         for (Declaration m: clazz.getMembers()) {
-                            if (m instanceof Constructor && 
+                            if (m instanceof Constructor &&
                                     m.isShared() &&
                                     m.getName()!=null) {
                                 props.add(new NestedCompletionProposal(m, loc));
@@ -508,11 +508,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             return false;
         }
     }
-    
-    //TODO: this class is a big copy/paste of 
+
+    //TODO: this class is a big copy/paste of
     //     InitializerProposal.NestedCompletionProposal
-    final class NestedCompletionProposal 
-            implements ICompletionProposal, 
+    final class NestedCompletionProposal
+            implements ICompletionProposal,
                        ICompletionProposalExtension2,
                        ICompletionProposalExtension6 {
         
@@ -527,10 +527,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         @Override
         public void apply(IDocument document) {
             try {
-                IRegion region = 
-                        getCurrentSpecifierRegion(document, 
+                IRegion region =
+                        getCurrentSpecifierRegion(document,
                                 offset);
-                document.replace(region.getOffset(), 
+                document.replace(region.getOffset(),
                         region.getLength(), getText(false));
             }
             catch (BadLocationException e) {
@@ -577,7 +577,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             Unit unit = getUnit();
             sb.append(getProposedName(null, dec, unit));
             if (dec instanceof Functional) {
-                appendPositionalArgs(dec, unit, 
+                appendPositionalArgs(dec, unit,
                         sb, false, description);
             }
             return sb.toString();
@@ -596,18 +596,18 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         public void unselected(ITextViewer viewer) {}
 
         @Override
-        public boolean validate(IDocument document, 
+        public boolean validate(IDocument document,
                 int currentOffset, DocumentEvent event) {
             if (event==null) {
                 return true;
             }
             else {
                 try {
-                    IRegion region = 
-                            getCurrentSpecifierRegion(document, 
+                    IRegion region =
+                            getCurrentSpecifierRegion(document,
                                     offset);
-                    String content = 
-                            document.get(region.getOffset(), 
+                    String content =
+                            document.get(region.getOffset(),
                                     currentOffset-region.getOffset());
                     return isContentValid(content);
                 }
@@ -627,42 +627,42 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
 
     }
-    
-    private final class NestedLiteralCompletionProposal 
-            implements ICompletionProposal, 
+
+    private final class NestedLiteralCompletionProposal
+            implements ICompletionProposal,
                        ICompletionProposalExtension2,
                        ICompletionProposalExtension6 {
 
         private final String value;
         private final int offset;
-        
+
         private NestedLiteralCompletionProposal(String value, int offset) {
             this.offset = offset;
             this.value = value;
         }
-        
+
         @Override
         public Point getSelection(IDocument document) {
             return null;
         }
-        
+
         public void apply(IDocument document) {
             try {
-                IRegion region = 
-                        getCurrentSpecifierRegion(document, 
+                IRegion region =
+                        getCurrentSpecifierRegion(document,
                                 offset);
-                document.replace(region.getOffset(), 
+                document.replace(region.getOffset(),
                         region.getLength(), value);
-            } 
+            }
             catch (BadLocationException e) {
                 e.printStackTrace();
             }
         }
-        
+
         public String getDisplayString() {
             return value;
         }
-        
+
         @Override
         public StyledString getStyledDisplayString() {
             StyledString result = new StyledString();
@@ -671,46 +671,46 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     getCompletionFont());
             return result;
         }
-        
+
         @Override
         public Image getImage() {
             return getDecoratedImage(CEYLON_LITERAL, 0, false);
         }
-        
+
         public String getAdditionalProposalInfo() {
             return null;
         }
-        
+
         @Override
         public IContextInformation getContextInformation() {
             return null;
         }
-        
+
         @Override
-        public void apply(ITextViewer viewer, char trigger, 
+        public void apply(ITextViewer viewer, char trigger,
                 int stateMask, int offset) {
             apply(viewer.getDocument());
         }
-        
+
         @Override
         public void selected(ITextViewer viewer, boolean smartToggle) {}
-        
+
         @Override
         public void unselected(ITextViewer viewer) {}
-        
+
         @Override
-        public boolean validate(IDocument document, 
+        public boolean validate(IDocument document,
                 int currentOffset, DocumentEvent event) {
             if (event==null) {
                 return true;
             }
             else {
                 try {
-                    IRegion region = 
-                            getCurrentSpecifierRegion(document, 
+                    IRegion region =
+                            getCurrentSpecifierRegion(document,
                                     offset);
-                    String content = 
-                            document.get(region.getOffset(), 
+                    String content =
+                            document.get(region.getOffset(),
                                     currentOffset-region.getOffset());
                     String filter = content.trim().toLowerCase();
                     if (value.toLowerCase().startsWith(filter)) {
@@ -723,6 +723,6 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 return false;
             }
         }
-        
+
         }
 }
