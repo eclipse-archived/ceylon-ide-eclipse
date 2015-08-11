@@ -133,8 +133,10 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -163,12 +165,11 @@ import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
-public class CeylonCompletionProcessor extends IdeCompletionManager implements IContentAssistProcessor {
+public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
     static final Image LARGE_CORRECTION_IMAGE = 
             getDecoratedImage(CeylonResources.CEYLON_CORRECTION, 0, false);
 
-    private static final CeylonCompletionProcessor DUMMY_INSTANCE = new CeylonCompletionProcessor(null);
     private static final char[] CONTEXT_INFO_ACTIVATION_CHARS = 
             ",(;{".toCharArray();
     
@@ -187,6 +188,100 @@ public class CeylonCompletionProcessor extends IdeCompletionManager implements I
         secondLevel = false;
         lastOffset=-1;
     }
+    
+    // THIS IS JUST A TEMPORARY HACK THAT WILL BE REMOVED WHEN MIGRATING FULLY TO THE COMPLETION ABSTRACTIONS
+    private static final IdeCompletionManager<CeylonParseController, ICompletionProposal, IDocument> DUMMY_INSTANCE = 
+            new IdeCompletionManager<CeylonParseController, ICompletionProposal, IDocument>(
+                    TypeDescriptor.klass(CeylonParseController.class),
+                    TypeDescriptor.klass(ICompletionProposal.class),
+                    TypeDescriptor.klass(IDocument.class)) {
+
+                        @Override
+                        public String getInexactMatches() {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public ICompletionProposal newNamedInvocationCompletion(
+                                long arg0,
+                                String arg1,
+                                Declaration arg2,
+                                Reference arg3,
+                                Scope arg4,
+                                CeylonParseController arg5,
+                                boolean arg6,
+                                com.redhat.ceylon.ide.common.util.OccurrenceLocation arg7,
+                                ceylon.language.String arg8, boolean arg9) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public ICompletionProposal newPositionalInvocationCompletion(
+                                long arg0,
+                                String arg1,
+                                Declaration arg2,
+                                Reference arg3,
+                                Scope arg4,
+                                CeylonParseController arg5,
+                                boolean arg6,
+                                com.redhat.ceylon.ide.common.util.OccurrenceLocation arg7,
+                                ceylon.language.String arg8, boolean arg9) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public ICompletionProposal newReferenceCompletion(
+                                long arg0, String arg1, Declaration arg2,
+                                Unit arg3, Reference arg4, Scope arg5,
+                                CeylonParseController arg6, boolean arg7,
+                                boolean arg8) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public boolean getShowParameterTypes() {
+                            // TODO Auto-generated method stub
+                            return false;
+                        }
+
+                        @Override
+                        public ICompletionProposal newParametersCompletionProposal(
+                                long arg0, Type arg1, List<Type> arg2,
+                                Node arg3, CeylonParseController arg4) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public ICompletionProposal newRefinementCompletionProposal(
+                                long arg0, String arg1, Declaration arg2,
+                                Reference arg3, Scope arg4,
+                                CeylonParseController arg5, boolean arg6,
+                                ClassOrInterface arg7, Node arg8, Unit arg9,
+                                IDocument arg10, boolean arg11) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public CompilationUnit getCompilationUnit(
+                                CeylonParseController cmp) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public String getDocumentSubstring(IDocument arg0,
+                                long arg1, long arg2) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+        
+    };
     
     public CeylonCompletionProcessor(CeylonEditor editor) {
         this.editor=editor;
@@ -438,10 +533,10 @@ public class CeylonCompletionProcessor extends IdeCompletionManager implements I
         if (completions==null) {
             //finally, construct and sort proposals
             Map<String, DeclarationWithProximity> proposals = 
-                    getProposals(node, scope, prefix, 
+                    DUMMY_INSTANCE.getProposals(node, scope, prefix, 
                             isMemberOp, rn);
             Map<String, DeclarationWithProximity> functionProposals =
-                    getFunctionProposals(node, scope, prefix, 
+                    DUMMY_INSTANCE.getFunctionProposals(node, scope, prefix, 
                             isMemberOp);
             filterProposals(proposals);
             filterProposals(functionProposals);
@@ -975,7 +1070,7 @@ public class CeylonCompletionProcessor extends IdeCompletionManager implements I
                 
                 if (!secondLevel && !inDoc && noParamsFollow &&
                         isInvocationProposable(dwp, ol, previousTokenType) && 
-                        (!isQualifiedType(node) || 
+                        (!DUMMY_INSTANCE.isQualifiedType(node) || 
                                 isConstructor(dec) || 
                                 dec.isStaticallyImportable()) &&
                         (!(scope instanceof Constructor) || 
