@@ -21,7 +21,7 @@
 
     <property name="eclipseBinariesRepo" value="${basedir}/target/repo"/>
     <property name="eclipseSourcesRepo" value="${basedir}/eclipse-sources-repo"/>
-		
+
     <path id="ant-tasks">
         <pathelement location="${ceylon.ant.lib}" />
     </path>
@@ -42,15 +42,16 @@
         <delete dir="${basedir}/target" failonerror="false"/>
         <delete dir="${basedir}/generated-source" failonerror="false"/>
     </target>
-    
+
     <reposet id="repos">
     	<repo url="${modules.dir}"/>
     	<repo url="flat:${basedir}/lib"/>
         <repo url="flat:${eclipseBinariesRepo}/plugins"/>
         <repo url="flat:${basedir}/../com.redhat.ceylon.eclipse.ui.jdt.debug.fragment/target/ceylonRepo"/>
         <repo url="${basedir}/../../../ceylon-dist/osgi/embeddedRepository/repo"/>
+    	<repo url="${basedir}/../../../java-to-ceylon-converter/repo/"/>
     </reposet>
-	
+
 	<target name="compile">
         <ceylon-compile
             src="${generated-source.dir}"
@@ -85,7 +86,7 @@
             verbose="${ceylon.verbosity}"
             encoding="UTF-8" pack200="true"
             mavenoverrides="${basedir}/generated-source/overrides.xml">
-            
+
             <moduleset>
                 <module name="test.com.redhat.ceylon.eclipse" />
             </moduleset>
@@ -97,7 +98,7 @@
             executable="${ceylon.executable}"
             verbose="${ceylon.verbosity}"
             mavenoverrides="${basedir}/generated-source/overrides.xml">
-            
+
             <moduleset>
                 <module name="com.redhat.ceylon.eclipse" />
                 <module name="test.com.redhat.ceylon.eclipse" />
@@ -133,13 +134,13 @@
                                 <isset property="no-import.${Bundle-SymbolicName}"/>
                     		</not>
                             <then>
-                                <echo append="true" file="${generatedImportsFile}" 
+                                <echo append="true" file="${generatedImportsFile}"
                                     message='    shared import ${Bundle-SymbolicName} "${Bundle-Version}";'/>
                                 <echo append="true" file="${generatedImportsFile}"><![CDATA[
 ]]></echo>
                             </then>
                     	</if>
-                        <echo append="true" file="${generatedOverridesFile}" 
+                        <echo append="true" file="${generatedOverridesFile}"
                             message='    &lt;set module="${Bundle-SymbolicName}" version="${Bundle-Version}"/&gt;'/>
                         <echo append="true" file="${generatedOverridesFile}"><![CDATA[
 ]]></echo>
@@ -192,7 +193,7 @@
             </then>
         </if>
     </target>
-	
+
 	<property name="eclipseBundleRegexp" value=".*(org\.eclipse\.[^=,]+)"/>
 	<loadproperties prefix="no-import" srcfile="${basedir}/AdditionalBundles.properties">
 		<filterchain>
@@ -215,10 +216,10 @@
                 <replaceregex byline="true" pattern="${eclipseBundleRegexp}.*" replace="\1="/>
             </tokenfilter>
             <uniqfilter/>
-            
+
         </filterchain>
     </loadproperties>
-	
+
     <loadresource property="bundlesToDownload">
     	<resources>
             <concat >
@@ -242,11 +243,11 @@
         	<replaceregex pattern="(.*)," replace="\1"/>
         </filterchain>
     </loadresource>
-	
+
 	<target name="dumpBundlesToDownload">
 		<echo file="${file}">${bundlesToDownload}</echo>
 	</target>
-	
+
 	<target name="mirrorBundle">
         <echo>Mirror ${bundleName} to ${repository}</echo>
 		<if>
@@ -270,7 +271,7 @@
     		<then>
     	        <p2.mirror source="${eclipseUpdateSite}"
     	            verbose="true" validate="false" includepacked="false" ignoreerrors="true">
-    	            <slicingOptions includeFeatures="false" 
+    	            <slicingOptions includeFeatures="false"
     	                            includeOptional="false"
     	                            includeNonGreedy="true"
     	                            followStrict="true"
@@ -304,7 +305,7 @@
                     <then>
                         <p2.mirror source="${eclipseUpdateSite}"
                             verbose="true" validate="false" includepacked="false" ignoreerrors="true">
-                            <slicingOptions includeFeatures="false" 
+                            <slicingOptions includeFeatures="false"
                                             includeOptional="false"
                                             includeNonGreedy="true"
                                             followStrict="true"
@@ -321,7 +322,7 @@
                             <then>
                                 <p2.mirror source="${eclipseUpdateSite}"
                                     verbose="true" validate="false" includepacked="false" ignoreerrors="true">
-                                    <slicingOptions includeFeatures="false" 
+                                    <slicingOptions includeFeatures="false"
                                                     includeOptional="false"
                                                     includeNonGreedy="true"
                                                     followStrict="true"
@@ -336,7 +337,7 @@
     		</else>
     	</if>
     </target>
-	
+
     <target name="renameBundles">
         <foreach target="renameModuleArchive" param="currentFile">
             <path>
@@ -344,7 +345,7 @@
             </path>
         </foreach>
     </target>
-	
+
     <target name="mirrorBundles">
         <delete dir="${repository}/" failonerror="false"/>
         <mkdir dir="${repository}/"/>
@@ -361,7 +362,7 @@
         	<param name="repository" value="${eclipseBinariesRepo}"/>
         </antcall>
     </target>
-	
+
     <target name="mirrorSourceBundles">
         <antcall target="mirrorBundles">
             <param name="repository" value="${eclipseSourcesRepo}"/>
@@ -395,7 +396,7 @@
                 <replacestring byline="false" from="&lt;!-- ADD GENERATED SET VERSION LINES HERE  --&gt;" to="${generatedOverrides}"/>
             </filterchain>
         </loadfile>
-		
+
 		<echo append="false" file="${moduleFileFolder}/module.ceylon"
               message="${generatedModuleContent}" />
         <echo append="false" file="${basedir}/generated-source/overrides.xml"
@@ -403,7 +404,7 @@
 		<delete file="${generatedImportsFile}" failonerror="false"/>
         <delete file="${generatedOverridesFile}" failonerror="false"/>
 	</target>
-	
+
 	<uptodate property="dontMirror" targetfile="${moduleFileFolder}/module.ceylon" >
 	    <srcfiles dir= "${basedir}">
 	    	<include name="META-INF/MANIFEST.MF"/>
@@ -415,12 +416,12 @@
             <include name="source-templates/*.*"/>
         </srcfiles>
     </uptodate>
-	
+
 	<target name="update-eclipse-dependencies-inside-eclipse">
         <antcall target="generate-eclipseDependenciesModule"/>
         <eclipse.refreshLocal resource="/com.redhat.ceylon.eclipse.ui/generated-source" depth="infinite"/>
 	</target>
-	
+
 	<target name="update-eclipse-dependencies-as-necessary">
 		<if>
 			<or>
