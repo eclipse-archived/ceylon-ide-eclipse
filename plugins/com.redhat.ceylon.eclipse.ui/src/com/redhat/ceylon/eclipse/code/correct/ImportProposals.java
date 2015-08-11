@@ -284,33 +284,11 @@ public class ImportProposals {
                 }
                 else {
                     //TODO: format it better!!!!
-                    StringBuilder sb = 
-                            new StringBuilder("{").append(delim);
-                    for (Tree.ImportMemberOrType imt: 
-                            imtl.getImportMemberOrTypes()) {
-                        Declaration dec = imt.getDeclarationModel();
-                        if (!set.contains(dec)) {
-                            sb.append(getDefaultIndent());
-                            if (imt.getAlias()!=null) {
-                                String alias = 
-                                        imt.getAlias()
-                                            .getIdentifier()
-                                            .getText();
-                                sb.append(alias).append('=');
-                            }
-                            String id = 
-                                    imt.getIdentifier()
-                                        .getText();
-                            sb.append(id).append(",")
-                                .append(delim);
-                        }
-                    }
-                    sb.setLength(sb.length()-2);
-                    sb.append(delim).append("}");
-                    int start = imtl.getStartIndex();
-                    int stop = imtl.getStopIndex();
-                    result.add(new ReplaceEdit(start, stop-start+1, 
-                            sb.toString()));
+
+            		int start = imtl.getStartIndex();
+            		int stop = imtl.getStopIndex();
+            		String formattedImport = formatImportMembers(delim, getDefaultIndent(), set, imtl);
+            		result.add(new ReplaceEdit(start, stop-start+1, formattedImport));
                 }
             }
         }
@@ -351,6 +329,34 @@ public class ImportProposals {
         }
         return result;
     }
+
+	public static String formatImportMembers(String delim, String indent, Set<Declaration> set,
+			Tree.ImportMemberOrTypeList imtl) {
+		StringBuilder sb = 
+		        new StringBuilder("{").append(delim);
+		for (Tree.ImportMemberOrType imt: 
+		        imtl.getImportMemberOrTypes()) {
+		    Declaration dec = imt.getDeclarationModel();
+		    if (!set.contains(dec)) {
+		        sb.append(indent);
+		        if (imt.getAlias()!=null) {
+		            String alias = 
+		                    imt.getAlias()
+		                        .getIdentifier()
+		                        .getText();
+		            sb.append(alias).append('=');
+		        }
+		        String id = 
+		                imt.getIdentifier()
+		                    .getText();
+		        sb.append(id).append(",")
+		            .append(delim);
+		    }
+		}
+		sb.setLength(sb.length()-1-delim.length());
+		sb.append(delim).append("}");
+		return sb.toString();
+	}
     
     public static int getBestImportInsertPosition(
             Tree.CompilationUnit cu) {
