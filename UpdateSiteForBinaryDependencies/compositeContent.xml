@@ -1,0 +1,11 @@
+<?compositeMetadataRepository version='1.0.0'?>
+<repository name="Ceylon IDE Required Binary Dependencies - available from locally built sibling projects" type="org.eclipse.equinox.internal.p2.metadata.repository.CompositeMetadataRepository" version="1.0.0">
+ <properties size="2">
+   <property name="p2.compressed" value="false"/>
+   <property name="p2.timestamp" value="1316559185000"/>
+ </properties>
+ <children size="2">
+   <child location="../../ceylon-dist/osgi/build/dist"/>
+   <child location="../../java-to-ceylon-converter/osgi/dist"/>
+ </children>
+</repository>
