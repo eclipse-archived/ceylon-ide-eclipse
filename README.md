@@ -23,11 +23,12 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 2.  Make sure that your JAVA_HOME is set to the right JDK 7 installation
 
 3.  Make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
-	- ceylon-dist
-	- ceylon-sdk
-	- ceylon.formatter
-	- ceylon-ide-common
-	- ceylon-ide-eclipse	
+	- ceylon/ceylon-dist
+	- ceylon/ceylon-sdk
+	- ceylon/ceylon.formatter
+	- ceylon/ceylon-ide-common
+	- rohitmohan96/java-to-ceylon-converter
+	- ceylon/ceylon-ide-eclipse	
 	
 	
 4.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
@@ -45,12 +46,17 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
     - This should have produced an eclipse update site available at the following path :
       `.../ceylon.formatter/osgi/dist`
 
-5.  Build the Ceylon IDE Common components locally (see [here](https://github.com/ceylon/ceylon-ide-common) for more details) :
+6.  Build the Ceylon IDE Common components locally (see [here](https://github.com/ceylon/ceylon-ide-common) for more details) :
     - In the `ceylon-ide-common` directory run : `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path :
       `.../ceylon-ide-common/osgi/dist`
 
-6.  From this directory (`ceylon-ide-eclipse`), type :
+7.  Build the Java To Ceylon Converter components locally (see [here](https://github.com/rohitmohan96/java-to-ceylon-converter) for more details) :
+    - In the `java-to-ceylon-converter` directory run : `ant clean publish ide-quick`
+    - This should have produced an eclipse update site available at the following path :
+      `.../java-to-ceylon-converter/osgi/dist`
+
+8.  From this directory (`ceylon-ide-eclipse`), type :
     
         `mvn clean install -fae`
 
@@ -58,7 +64,7 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 
         `mvn clean install -DskipTests` 
    
-7.  The directory `site/target/repository` now contains an update site you can 
+9.  The directory `site/target/repository` now contains an update site you can 
     install from.
 
 ## Building with (pure) Eclipse
@@ -102,9 +108,6 @@ Then :
 		- In the `ceylon-dist` directory run : `ant clean publish-all ide-quick`
 		- This should have produced an eclipse update site available at the following path :
         	`.../ceylon-dist/osgi/build/dist`
-		- Add this folder as a local update site in your Eclipse _Available Software Sites_ list.
-		- From this new update site, install _*only*_ the `Ceylon Distribution Binary Dependencies Feature` available under the `Ceylon Distribution - Only Binary Dependencies` category.
-		This provides (as OSGI bundles) only the external archives required by the various siblings projects of the local ceylon dist (jboss modules, etc ...).
 
 	- build the Ceylon SDK :
 		- In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
@@ -114,6 +117,16 @@ Then :
 
 	- build the _ceylon-ide-common_ module that is also required now (see [here](https://github.com/ceylon/ceylon-ide-common) for more details):
 		- In the `ceylon-ide-common` directory run : `ant clean publish ide-quick`
+
+    - build the Java To Ceylon Converter components locally (see [here](https://github.com/rohitmohan96/java-to-ceylon-converter) for more details) :
+        - In the `java-to-ceylon-converter` directory run : `ant clean publish ide-quick`
+        - This should have produced an eclipse update site available at the following path :
+            `.../java-to-ceylon-converter/osgi/dist`
+
+	- add the following folder as a local update site in your Eclipse _Available Software Sites_ list :
+        	`.../ceylon-ide-eclipse/UpdateSiteForBinaryDependencies/`	    
+	    - From this new update site, install _*only*_ the elements that are under the categories whose name contain ` - Only Binary Dependencies`.
+		This provides (as OSGI bundles) only the external archives required by the various siblings projects required by the IDE Plugin (jboss modules, antlr-runtime v4, etc ...).
 
 	- make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
 	```
