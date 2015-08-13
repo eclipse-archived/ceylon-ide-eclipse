@@ -1,8 +1,10 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 import static java.lang.Integer.parseInt;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -14,6 +16,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
@@ -22,7 +25,6 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IHyperlink;
 import org.eclipse.ui.console.IPatternMatchListenerDelegate;
 import org.eclipse.ui.console.PatternMatchEvent;
@@ -32,7 +34,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonPatternMatchListenerDelegate 
         implements IPatternMatchListenerDelegate {
@@ -55,7 +56,9 @@ public class CeylonPatternMatchListenerDelegate
             //strip off leading "at " in match
             int offset = event.getOffset()+3;
             int length = event.getLength()-4;
-            String text = console.getDocument().get(offset, length);
+            String text = 
+                    console.getDocument()
+                        .get(offset, length);
             int j = text.indexOf("(");
             int i = text.indexOf(":", j);
             final String pack = text.substring(0,j);
@@ -71,7 +74,9 @@ public class CeylonPatternMatchListenerDelegate
                 public void linkActivated() {
                     gotoFileAndLine(file, line, pack);
                 }
-            }, event.getOffset()+4+j, event.getLength()-5-j);
+            }, 
+            event.getOffset()+4+j, 
+            event.getLength()-5-j);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -80,32 +85,39 @@ public class CeylonPatternMatchListenerDelegate
     
     public static void gotoFileAndLine(String fileName, 
             String line, String qualifiedName) {
-        String packageName = extractPackageName(qualifiedName);
+        String packageName = 
+                extractPackageName(qualifiedName);
         IWorkspaceRoot root = getWorkspace().getRoot();
-        IEditorInput input = null;
         for (IProject p: root.getProjects()) {
             try {
-                if (p.isAccessible() && CeylonNature.isEnabled(p)) {
+                if (p.isAccessible() && 
+                        CeylonNature.isEnabled(p)) {
+                    IJavaProject jp = JavaCore.create(p);
                     IPackageFragmentRoot[] roots = 
-                            JavaCore.create(p).getAllPackageFragmentRoots();
+                            jp.getAllPackageFragmentRoots();
                     // TODO : now use the JDTModule.getPhasedUnit() instead of using PackageFragment roots
                     for (IPackageFragmentRoot pfr: roots) {
                         if (pfr.exists()) {
                             if (pfr.getKind()==PackageFragmentRoot.K_BINARY) {
-                                IPath sourceAttachmentPath = pfr.getSourceAttachmentPath();
-                                if (sourceAttachmentPath!=null) {
-                                    String ext = sourceAttachmentPath.getFileExtension();
-                                    if (ext!=null && ext.equalsIgnoreCase("src")) {
-                                        String packagePath = packageName.replace('.', '/'); //TODO: I *think* this works on windows
+                                IPath sourcePath = 
+                                        pfr.getSourceAttachmentPath();
+                                if (sourcePath!=null) {
+                                    String ext = sourcePath.getFileExtension();
+                                    if (ext!=null && 
+                                            ext.equalsIgnoreCase("src")) {
+                                        String packagePath = 
+                                                packageName.replace('.', '/'); //TODO: I *think* this works on windows
                                         IFileStore archiveFileStore = 
-                                                EFS.getStore(URIUtil.toURI(sourceAttachmentPath));
+                                                EFS.getStore(URIUtil.toURI(
+                                                        sourcePath));
                                         if (archiveFileStore.fetchInfo().exists()) {
                                             CeylonArchiveFileStore sourceFileStore = 
-                                                    new CeylonArchiveFileStore(archiveFileStore, 
-                                                            new Path(packagePath).append(fileName));
+                                                    new CeylonArchiveFileStore(
+                                                            archiveFileStore, 
+                                                            new Path(packagePath)
+                                                                .append(fileName));
                                             if (sourceFileStore.fetchInfo().exists()) {
-                                                input = EditorUtil.getEditorInput(sourceFileStore);
-                                                open(line, input);
+                                                open(line, getEditorInput(sourceFileStore));
                                                 return;
                                             }
                                         }
@@ -113,14 +125,16 @@ public class CeylonPatternMatchListenerDelegate
                                 }
                             }
                             if (pfr.getKind()==PackageFragmentRoot.K_SOURCE) {
-                                IPackageFragment pf = pfr.getPackageFragment(packageName);
+                                IPackageFragment pf = 
+                                        pfr.getPackageFragment(
+                                                packageName);
                                 if (pf.exists()) {
                                     IResource folder = pf.getResource();
                                     if (folder instanceof IFolder) {
-                                        IFile file = ((IFolder) folder).getFile(fileName);
+                                        IFolder f = (IFolder) folder;
+                                        IFile file = f.getFile(fileName);
                                         if (file!=null && file.exists()) {
-                                            input = new FileEditorInput(file);
-                                            open(line, input);
+                                            open(line, new FileEditorInput(file));
                                             return;
                                         }
                                     }
@@ -151,14 +165,23 @@ public class CeylonPatternMatchListenerDelegate
     
     private static void open(String line, IEditorInput input) {
         if (input!=null) {
-            IWorkbenchPage activePage = PlatformUI.getWorkbench()
-                    .getActiveWorkbenchWindow().getActivePage();
+            IWorkbenchPage activePage = 
+                    getWorkbench()
+                        .getActiveWorkbenchWindow()
+                        .getActivePage();
             try {
-                CeylonEditor editor = (CeylonEditor) 
-                        activePage.openEditor(input, EDITOR_ID, true);
-                IRegion li = editor.getCeylonSourceViewer().getDocument()
-                        .getLineInformation(parseInt(line)-1);
-                editor.selectAndReveal(li.getOffset(), li.getLength());
+                CeylonEditor editor = 
+                        (CeylonEditor) 
+                            activePage.openEditor(input, 
+                                    EDITOR_ID, true);
+                IRegion li = 
+                        editor.getCeylonSourceViewer()
+                            .getDocument()
+                            .getLineInformation(
+                                    parseInt(line)-1);
+                editor.selectAndReveal(
+                        li.getOffset(), 
+                        li.getLength());
             } 
             catch (Exception e) {
                 e.printStackTrace();
