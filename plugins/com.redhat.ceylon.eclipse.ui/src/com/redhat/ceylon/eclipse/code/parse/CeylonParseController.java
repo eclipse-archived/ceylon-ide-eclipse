@@ -23,6 +23,8 @@ import static org.eclipse.core.runtime.jobs.Job.getJobManager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
@@ -235,7 +237,7 @@ public class CeylonParseController {
             }
             
             if (path.isAbsolute()) {
-                for (IProject p: getProjects()) {
+                for (IProject p: new ArrayList<IProject>(getProjects())) {
                     if (project != null && project != p) continue;
                     
                     JDTModuleManager moduleManager = (JDTModuleManager) 
