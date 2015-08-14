@@ -4171,8 +4171,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static IFolder getCeylonModulesOutputFolder(IProject project) {
-        CeylonProjectConfig<IProject> config = ceylonModel().getProject(project).getConfiguration();
-        return project.getFolder(config.getOutputRepoProjectRelativePath());
+        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        String outputRepoRelativePath;
+        if (ceylonProject != null) {
+            CeylonProjectConfig<IProject> config = ceylonModel().getProject(project).getConfiguration();
+            outputRepoRelativePath = config.getOutputRepoProjectRelativePath();
+        } else {
+            outputRepoRelativePath = "modules";
+        }
+        return project.getFolder(outputRepoRelativePath);
     }
     
     public static String getCeylonSystemRepo(IProject project) {
