@@ -179,16 +179,21 @@ class CreateParameterProposal extends InitializerProposal {
                 Type t=null;
                 String parameterName=null;
                 if (node instanceof Tree.Term) {
-                    t = ((Tree.Term) node).getTypeModel();
-                    parameterName = 
-                            t.getDeclaration().getName();
-                    if (parameterName!=null) {
+                    Tree.Term term = (Tree.Term) node;
+                    t = term.getTypeModel();
+                    if (t!=null) {
                         parameterName = 
-                                toInitialLowercase(parameterName)
-                                    .replace("?", "")
-                                    .replace("[]", "");
-                        if ("string".equals(parameterName)) {
-                            parameterName = "text";
+                                t.getDeclaration()
+                                    .getName();
+                        if (parameterName!=null) {
+                            parameterName = 
+                                    toInitialLowercase(
+                                            parameterName)
+                                        .replace("?", "")
+                                        .replace("[]", "");
+                            if ("string".equals(parameterName)) {
+                                parameterName = "text";
+                            }
                         }
                     }
                 }
@@ -197,8 +202,12 @@ class CreateParameterProposal extends InitializerProposal {
                             (Tree.SpecifiedArgument) node;
                     Tree.SpecifierExpression se = 
                             sa.getSpecifierExpression();
-                    if (se!=null && se.getExpression()!=null) {
-                        t = se.getExpression().getTypeModel();
+                    if (se!=null) {
+                        Tree.Expression e = 
+                                se.getExpression();
+                        if (e!=null) {
+                            t = e.getTypeModel();
+                        }
                     }
                     parameterName = 
                             sa.getIdentifier().getText();
