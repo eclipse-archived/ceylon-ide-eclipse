@@ -610,7 +610,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
 
     @Override
     public boolean isLoadedFromSource() {
-        return false;
+        return isJavaSource;
     }
 
     @Override
