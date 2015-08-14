@@ -1364,30 +1364,32 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
     
     @Override
-    public synchronized void removeDeclarations(List<Declaration> declarations) {
-        List<Declaration> allDeclarations = new ArrayList<Declaration>(declarations.size());
-        Set<Package> changedPackages = new HashSet<Package>();
-        
-        allDeclarations.addAll(declarations);
+    public void removeDeclarations(List<Declaration> declarations) {
+        synchronized(getLock()){
+            List<Declaration> allDeclarations = new ArrayList<Declaration>(declarations.size());
+            Set<Package> changedPackages = new HashSet<Package>();
+            
+            allDeclarations.addAll(declarations);
 
-        for (Declaration declaration : declarations) {
-        	Unit unit = declaration.getUnit();
-        	if (unit != null) {
-            	changedPackages.add(unit.getPackage());
-        	}
-            retrieveInnerDeclarations(declaration, allDeclarations);
+            for (Declaration declaration : declarations) {
+                Unit unit = declaration.getUnit();
+                if (unit != null) {
+                    changedPackages.add(unit.getPackage());
+                }
+                retrieveInnerDeclarations(declaration, allDeclarations);
+            }
+            
+            for (Declaration decl : allDeclarations) {
+                String fqn = getToplevelQualifiedName(decl.getContainer().getQualifiedNameString(), decl.getName());
+                sourceDeclarations.remove(fqn);
+            }
+            
+            super.removeDeclarations(allDeclarations);
+            for (Package changedPackage : changedPackages) {
+                loadedPackages.remove(cacheKeyByModule(changedPackage.getModule(), changedPackage.getNameAsString()));
+            }
+            mustResetLookupEnvironment = true;
         }
-        
-        for (Declaration decl : allDeclarations) {
-            String fqn = getToplevelQualifiedName(decl.getContainer().getQualifiedNameString(), decl.getName());
-            sourceDeclarations.remove(fqn);
-        }
-        
-        super.removeDeclarations(allDeclarations);
-        for (Package changedPackage : changedPackages) {
-        	loadedPackages.remove(cacheKeyByModule(changedPackage.getModule(), changedPackage.getNameAsString()));
-        }
-        mustResetLookupEnvironment = true;
     }
 
     private void retrieveInnerDeclarations(Declaration declaration,
