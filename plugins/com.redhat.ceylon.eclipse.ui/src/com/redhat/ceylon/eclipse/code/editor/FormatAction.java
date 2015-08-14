@@ -12,6 +12,7 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenSource;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -37,6 +38,7 @@ import com.redhat.ceylon.eclipse.code.style.CeylonStyle;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 final class FormatAction extends Action {
     private final CeylonEditor editor;
@@ -206,8 +208,12 @@ final class FormatAction extends Action {
                 }
             }
         } catch (Exception e) {
+            CeylonPlugin.log(IStatus.ERROR, "Error during code formatting");
+            e.printStackTrace();
             return;
         } catch (AssertionError e) {
+            CeylonPlugin.log(IStatus.ERROR, "Error during code formatting");
+            e.printStackTrace();
             return;
         }
         
