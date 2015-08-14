@@ -726,10 +726,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 8000:
             addRenameDescriptorProposal(rootNode, context, problem, proposals, file);
-            //TODO: figure out some other way to get a Shell!
             if (context.getSourceViewer()!=null) {
                 addMoveDirProposal(file, rootNode, project, proposals, 
-                        context.getSourceViewer().getTextWidget().getShell());
+                        context);
             }
             break;
         case 9000:
