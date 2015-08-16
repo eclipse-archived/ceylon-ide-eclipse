@@ -42,6 +42,10 @@ public abstract class SourceInfoHover
     }
 
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
+        return findWord(textViewer, offset);
+    }
+
+    static IRegion findWord(ITextViewer textViewer, int offset) {
         IDocument document = textViewer.getDocument();
         int start = -2;
         int end = -1;

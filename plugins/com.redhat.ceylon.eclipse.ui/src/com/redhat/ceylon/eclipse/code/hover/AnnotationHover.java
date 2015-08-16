@@ -22,7 +22,6 @@ import org.eclipse.jface.text.IInformationControlExtension4;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationHoverExtension;
@@ -247,12 +246,6 @@ public class AnnotationHover
                 return true;
             }
         };
-    }
-    
-    @Override
-    public IRegion getHoverRegion(ITextViewer textViewer, 
-            int offset) {
-        return new Region(offset, 0);
     }
     
     /**

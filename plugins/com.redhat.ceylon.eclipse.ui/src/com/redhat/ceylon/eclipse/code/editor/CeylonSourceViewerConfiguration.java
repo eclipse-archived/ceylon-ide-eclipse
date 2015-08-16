@@ -47,8 +47,9 @@ import com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor;
 import com.redhat.ceylon.eclipse.code.correct.CeylonCorrectionProcessor;
 import com.redhat.ceylon.eclipse.code.hover.AnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
+import com.redhat.ceylon.eclipse.code.hover.CeylonInformationControlCreator;
+import com.redhat.ceylon.eclipse.code.hover.CeylonInformationProvider;
 import com.redhat.ceylon.eclipse.code.hover.CeylonSourceHover;
-import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.outline.HierarchyPopup;
 import com.redhat.ceylon.eclipse.code.outline.OutlinePopup;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -153,12 +154,9 @@ public class CeylonSourceViewerConfiguration
         contentAssistant.setStatusMessage(key.format() + 
                 " to toggle second-level completions");
         contentAssistant.setStatusLineVisible(true);
-        IInformationControlCreator creator = 
-                new DocumentationHover(editor)
-                    .getHoverControlCreator(
-                            "Tab or click for focus");
         contentAssistant.setInformationControlCreator(
-                creator);
+                new CeylonInformationControlCreator(editor, 
+                        "Tab or click for focus"));
         contentAssistant.setContextInformationPopupOrientation(
                 IContentAssistant.CONTEXT_INFO_ABOVE);
         return contentAssistant;
@@ -238,12 +236,25 @@ public class CeylonSourceViewerConfiguration
     //      having to extend this class and override
     //      is just sucky.
     protected CeylonParseController getParseController() {
-        if (editor==null) {
-            return null;
-        }
-        else {
-            return editor.getParseController();
-        }
+        return editor==null ? null : 
+            editor.getParseController();
+    }
+    
+    @Override
+    public IInformationPresenter getInformationPresenter(
+            ISourceViewer sourceViewer) {
+        InformationPresenter presenter = 
+                new InformationPresenter(
+                        new CeylonInformationControlCreator(
+                                editor, "F2 for focus"));
+        presenter.setDocumentPartitioning(
+                getConfiguredDocumentPartitioning(sourceViewer));
+        presenter.setInformationProvider(
+                new CeylonInformationProvider(editor), 
+                DEFAULT_CONTENT_TYPE);
+        // sizes: see org.eclipse.jface.text.TextViewer.TEXT_HOVER_*_CHARS
+        presenter.setSizeConstraints(100, 40, false, true);
+        return presenter;
     }
     
     /**
@@ -256,8 +267,7 @@ public class CeylonSourceViewerConfiguration
             public IInformationControl 
             createInformationControl(Shell parent) {
                 return new BrowserInformationControl(parent, 
-                        APPEARANCE_JAVADOC_FONT,
-                        (String) null);
+                        APPEARANCE_JAVADOC_FONT, false);
             }
         };
     }

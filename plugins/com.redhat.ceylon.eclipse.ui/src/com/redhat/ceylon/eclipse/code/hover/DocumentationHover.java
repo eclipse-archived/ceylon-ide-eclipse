@@ -16,7 +16,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDocDesc
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.isVariable;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getInitialValueDescription;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.getJavaElement;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
@@ -42,9 +41,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isResolvable;
 import static java.lang.Character.codePointCount;
 import static java.lang.Double.parseDouble;
-import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
-import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
@@ -69,19 +66,11 @@ import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.text.AbstractReusableInformationControlCreator;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
-import org.eclipse.jface.text.IInputChangedListener;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
 
 import com.github.rjeschke.txtmark.Configuration;
@@ -95,21 +84,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnonymousAnnotation;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
-import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
-import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
-import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
-import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
-import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
-import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -150,138 +130,6 @@ public class DocumentationHover extends SourceInfoHover {
         super(editor);
     }
 
-    final class CeylonLocationListener implements LocationListener {
-        
-        private final BrowserInformationControl control;
-        
-        CeylonLocationListener(BrowserInformationControl control) {
-            this.control = control;
-        }
-        
-        @Override
-        public void changing(LocationEvent event) {
-            String location = event.location;
-            
-            //necessary for windows environment (fix for blank page)
-            //somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
-            if (!"about:blank".equals(location) && 
-                    !location.startsWith("http:")) {
-                event.doit = false;
-                handleLink(location);
-            }
-            
-            /*else if (location.startsWith("javadoc:")) {
-                final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
-                int beginIndex = input.getHtml().indexOf("javadoc:")+8;
-                final String handle = input.getHtml().substring(beginIndex, input.getHtml().indexOf("\"",beginIndex));
-                new Job("Fetching Javadoc") {
-                    @Override
-                    protected IStatus run(IProgressMonitor monitor) {
-                        final IJavaElement elem = JavaCore.create(handle);
-                        try {
-                            final String javadoc = JavadocContentAccess2.getHTMLContent((IMember) elem, true);
-                            if (javadoc!=null) {
-                                PlatformUI.getWorkbench().getProgressService()
-                                        .runInUI(editor.getSite().getWorkbenchWindow(), new IRunnableWithProgress() {
-                                    @Override
-                                    public void run(IProgressMonitor monitor) 
-                                            throws InvocationTargetException, InterruptedException {
-                                        StringBuilder sb = new StringBuilder();
-                                        HTMLPrinter.insertPageProlog(sb, 0, getStyleSheet());
-                                        appendJavadoc(elem, javadoc, sb);
-                                        HTMLPrinter.addPageEpilog(sb);
-                                        control.setInput(new DocBrowserInformationControlInput(input, null, sb.toString(), 0));
-                                    }
-                                }, null);
-                            }
-                        } 
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return Status.OK_STATUS;
-                    }
-                }.schedule();
-            }*/
-        }
-        
-        private void handleLink(String location) {
-            if (location.startsWith("dec:")) {
-                Referenceable target = 
-                        getLinkedModel(location,editor);
-                if (target!=null) {
-                    close(control); //FIXME: should have protocol to hide, rather than dispose
-                    gotoDeclaration(target);
-                }
-            }
-            else if (location.startsWith("doc:")) {
-                Referenceable target = 
-                        getLinkedModel(location,editor);
-                if (target!=null) {
-                    String text = 
-                            getDocumentationHoverText(target, 
-                                    editor, null);
-                    CeylonBrowserInput input = 
-                            new CeylonBrowserInput(control.getInput(), 
-                                    target, text);
-                    control.setInput(input);
-                }
-            }
-            else if (location.startsWith("ref:")) {
-                Declaration target = (Declaration)
-                        getLinkedModel(location,editor);
-                close(control);
-                new FindReferencesAction(editor,target).run();
-            }
-            else if (location.startsWith("sub:")) {
-                Declaration target = (Declaration)
-                        getLinkedModel(location,editor);
-                close(control);
-                new FindSubtypesAction(editor,target).run();
-            }
-            else if (location.startsWith("act:")) {
-                Declaration target = (Declaration)
-                        getLinkedModel(location,editor);
-                close(control);
-                new FindRefinementsAction(editor,target).run();
-            }
-            else if (location.startsWith("ass:")) {
-                Declaration target = (Declaration)
-                        getLinkedModel(location,editor);
-                close(control);
-                new FindAssignmentsAction(editor,target).run();
-            }
-            else {
-                CeylonParseController controller = 
-                        editor.getParseController();
-                IDocument document = 
-                        controller.getDocument();
-                if (location.startsWith("stp:")) {
-                    close(control);
-                    Tree.CompilationUnit rootNode = 
-                            controller.getRootNode();
-                    int offset = parseInt(location.substring(4));
-                    Node node = findNode(rootNode, offset);
-                    SpecifyTypeProposal
-                        .createProposal(rootNode, node, editor)
-                        .apply(document);
-                }
-                else if (location.startsWith("exv:")) {
-                    close(control);
-                    new ExtractValueProposal(editor)
-                        .apply(document);
-                }
-                else if (location.startsWith("exf:")) {
-                    close(control);
-                    new ExtractFunctionProposal(editor)
-                        .apply(document);
-                }
-            }
-        }
-        
-        @Override
-        public void changed(LocationEvent event) {}
-    }
-    
     /**
      * Action to go back to the previous input in the hover control.
      */
@@ -289,9 +137,9 @@ public class DocumentationHover extends SourceInfoHover {
         private final BrowserInformationControl fInfoControl;
 
         public BackAction(BrowserInformationControl infoControl) {
-            fInfoControl= infoControl;
+            fInfoControl = infoControl;
             setText("Back");
-            ISharedImages images= getWorkbench().getSharedImages();
+            ISharedImages images = getWorkbench().getSharedImages();
             setImageDescriptor(images.getImageDescriptor(IMG_TOOL_BACK));
             setDisabledImageDescriptor(images.getImageDescriptor(IMG_TOOL_BACK_DISABLED));
 
@@ -334,7 +182,7 @@ public class DocumentationHover extends SourceInfoHover {
         public ForwardAction(BrowserInformationControl infoControl) {
             fInfoControl = infoControl;
             setText("Forward");
-            ISharedImages images= getWorkbench().getSharedImages();
+            ISharedImages images = getWorkbench().getSharedImages();
             setImageDescriptor(images.getImageDescriptor(IMG_TOOL_FORWARD));
             setDisabledImageDescriptor(images.getImageDescriptor(IMG_TOOL_FORWARD_DISABLED));
 
@@ -366,105 +214,17 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
     
-    /**
-     * Action that opens the current hover input element.
-     */
-    final class OpenDeclarationAction extends Action {
-        
-        private final BrowserInformationControl fInfoControl;
-        
-        public OpenDeclarationAction(BrowserInformationControl infoControl) {
-            fInfoControl = infoControl;
-            setText("Open Declaration");
-            setToolTipText("Open Declaration");
-            setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.GOTO));
-        }
-        @Override
-        public void run() {
-            close(fInfoControl); //FIXME: should have protocol to hide, rather than dispose
-            CeylonBrowserInput input = (CeylonBrowserInput) 
-                    fInfoControl.getInput();
-            gotoDeclaration(getLinkedModel(input.getAddress(), 
-                    editor));
-        }
-    }
-
-    private static void close(BrowserInformationControl control) {
+    static void close(BrowserInformationControl control) {
         control.notifyDelayedInputChange(null);
         control.dispose();
     }
     
     @Override
     public IInformationControlCreator getHoverControlCreator() {
-        return getHoverControlCreator("F2 for focus");
+        return new CeylonInformationControlCreator(editor, 
+                "F2 for focus");
     }
 
-    public IInformationControlCreator getHoverControlCreator(
-            final String statusLineMessage) {
-        return new AbstractReusableInformationControlCreator() {
-            @Override
-            public IInformationControl doCreateInformationControl(Shell parent) {
-                BrowserInformationControl control = 
-                        new BrowserInformationControl(parent, 
-                                APPEARANCE_JAVADOC_FONT, 
-                                statusLineMessage) {
-                    /**
-                     * Create the "enriched" control when 
-                     * the hover receives focus
-                     */
-                    @Override
-                    public IInformationControlCreator getInformationPresenterControlCreator() {
-                        return new AbstractReusableInformationControlCreator() {
-                            @Override
-                            public IInformationControl doCreateInformationControl(Shell parent) {
-                                ToolBarManager tbm = new ToolBarManager(SWT.FLAT);
-                                BrowserInformationControl control = 
-                                        new BrowserInformationControl(parent, 
-                                                APPEARANCE_JAVADOC_FONT, tbm);
-
-                                final BackAction backAction = 
-                                        new BackAction(control);
-                                backAction.setEnabled(false);
-                                tbm.add(backAction);
-                                final ForwardAction forwardAction = 
-                                        new ForwardAction(control);
-                                tbm.add(forwardAction);
-                                forwardAction.setEnabled(false);
-
-                                final OpenDeclarationAction openDeclarationAction = 
-                                        new OpenDeclarationAction(control);
-                                tbm.add(openDeclarationAction);
-
-                                IInputChangedListener inputChangeListener = 
-                                        new IInputChangedListener() {
-                                    public void inputChanged(Object newInput) {
-                                        backAction.update();
-                                        forwardAction.update();
-                                        boolean isDeclaration = false;
-                                        if (newInput instanceof CeylonBrowserInput) {
-                                            CeylonBrowserInput input = 
-                                                    (CeylonBrowserInput) newInput;
-                                            isDeclaration = input.getAddress()!=null;
-                                        }
-                                        openDeclarationAction.setEnabled(isDeclaration);
-                                    }
-                                };
-                                control.addInputChangeListener(inputChangeListener);
-
-                                tbm.update(true);
-
-                                control.addLocationListener(new CeylonLocationListener(control));
-                                return control;
-                            }
-                        };
-                    }
-                };
-                control.addLocationListener(new CeylonLocationListener(control));
-                return control;
-            }
-        };
-    }
-    
     public static Referenceable getLinkedModel(String location, 
             CeylonEditor editor) {
         CeylonParseController controller = 
@@ -635,8 +395,8 @@ public class DocumentationHover extends SourceInfoHover {
         CeylonParseController parseController = 
                 editor.getParseController();
 
-        Node node = getHoverNode(hoverRegion, 
-                parseController);
+        Node node = 
+                getHoverNode(hoverRegion, parseController);
         if (node!=null) {
             IProject project = 
                     parseController.getProject();
@@ -649,8 +409,7 @@ public class DocumentationHover extends SourceInfoHover {
                         editor.getCeylonSourceViewer()
                             .getDocument();
                 return getTermTypeHoverText(node, null, 
-                        document,
-                        project);
+                        document, project);
             }
             else {
                 Referenceable model = 
@@ -2563,6 +2322,10 @@ public class DocumentationHover extends SourceInfoHover {
         else {
             return resolveModule(scope.getContainer());
         }
+    }
+
+    public IInformationControlCreator getInformationPresenterControlCreator() {
+        return new CeylonEnrichedInformationControlCreator(editor);
     }
     
 }
