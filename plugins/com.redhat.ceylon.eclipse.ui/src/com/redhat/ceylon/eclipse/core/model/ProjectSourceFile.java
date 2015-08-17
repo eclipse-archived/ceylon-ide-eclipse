@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
+import com.redhat.ceylon.compiler.java.runtime.metamodel.ModelError;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
@@ -114,7 +115,7 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
                 }
             }
         } catch(Exception e) {
-        } catch(ceylon.language.AssertionError e) {
+        } catch(ceylon.language.AssertionError | ModelError e) {
             e.printStackTrace();
         }
         
