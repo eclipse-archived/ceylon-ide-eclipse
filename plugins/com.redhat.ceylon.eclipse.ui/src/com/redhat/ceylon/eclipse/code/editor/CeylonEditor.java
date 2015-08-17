@@ -2240,6 +2240,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         }
         else {
             return findNode(cpc.getRootNode(), 
+                    cpc.getTokens(), 
                     EditorUtil.getSelection(this));
         }
     }

@@ -324,6 +324,7 @@ final class PeekDefinitionPopup extends PopupDialog
                 controller.getRootNode();
         referencedNode = 
                 getReferencedNode(findNode(rootNode, 
+                        controller.getTokens(), 
                         offset, offset+length));
         if (referencedNode==null) return;
         IProject project = controller.getProject();

@@ -33,7 +33,7 @@ public class RefineFormalMembersHandler extends AbstractHandler {
                 IRegion selection = ce.getSelection();
                 int start = selection.getOffset();
                 int end = start + selection.getLength();
-                Node node = findNode(rootNode, start, end);
+                Node node = findNode(rootNode, ce.getParseController().getTokens(), start, end);
                 List<ICompletionProposal> list = 
                         new ArrayList<ICompletionProposal>();
                 addRefineFormalMembersProposal(list, node, rootNode, false);

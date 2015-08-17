@@ -725,13 +725,13 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             int adjustedStart, int adjustedEnd,
             int tokenType, Tree.CompilationUnit rootNode, 
             int offset) {
-        Node node = findNode(rootNode, 
+        Node node = findNode(rootNode, null, 
                 adjustedStart, adjustedEnd);
         if (node instanceof Tree.StringLiteral) {
             Tree.StringLiteral sl = 
                     (Tree.StringLiteral) node;
             if (!sl.getDocLinks().isEmpty()) {
-                node = findNode(node, offset, offset);
+                node = findNode(node, null, offset, offset);
             }
         }
         if (tokenType==RBRACE && 

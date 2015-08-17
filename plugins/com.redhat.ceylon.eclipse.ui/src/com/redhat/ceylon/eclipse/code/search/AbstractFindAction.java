@@ -48,7 +48,7 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
             if (element.getVirtualFile() != null) {
                 CeylonUnit unit = getUnit(element.getVirtualFile());
                 Tree.CompilationUnit rn = unit.getCompilationUnit();
-                Node node = findNode(rn, element.getStartOffset(), 
+                Node node = findNode(rn, null, element.getStartOffset(), 
                         element.getEndOffset());
                 if (node instanceof Tree.Declaration) {
                     declaration = ((Tree.Declaration) node).getDeclarationModel();

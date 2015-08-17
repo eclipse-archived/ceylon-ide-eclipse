@@ -90,6 +90,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
         else {
             Node node = 
                     findNode(pc.getRootNode(), 
+                            pc.getTokens(), 
                             region.getOffset(), 
                             region.getOffset()+region.getLength());
             if (node==null) {

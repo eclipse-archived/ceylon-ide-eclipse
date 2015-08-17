@@ -86,6 +86,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
         else {
             Node node = 
                     findNode(controller.getRootNode(), 
+                            controller.getTokens(), 
                             region.getOffset(), 
                             region.getOffset()+region.getLength());
             if (node==null) {

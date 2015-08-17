@@ -237,7 +237,7 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
                 Matcher m = Pattern.compile("(\\s*)\\w+").matcher(prevLine);
                 if (m.find()) {
                     int whitespaceLen = m.group(1).length();
-                    Node node = Nodes.findNode(cu, lineInfo.getOffset() + whitespaceLen, 
+                    Node node = Nodes.findNode(cu, null, lineInfo.getOffset() + whitespaceLen, 
                             lineInfo.getOffset() + whitespaceLen + 1);
                     return Nodes.findStatement(cu, node);
                 }

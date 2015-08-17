@@ -38,7 +38,7 @@ public class AddParameterListHandler extends AbstractHandler {
                 int start = selection.getOffset();
                 int end = start + selection.getLength();
                 Node node = findDeclarationWithBody(rootNode, 
-                        findNode(rootNode, start, end));
+                        findNode(rootNode, ce.getParseController().getTokens(), start, end));
                 List<ICompletionProposal> list = 
                         new ArrayList<ICompletionProposal>();
                 addParameterListProposal(getFile(editor), list, node, rootNode);

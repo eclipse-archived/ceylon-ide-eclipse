@@ -594,6 +594,7 @@ public class DocumentationHover extends SourceInfoHover {
                 int length = selection.getLength();
                 if (offset<=hoffset && offset+length>=hoffset) {
                     Node node = findNode(rootNode, 
+                            parseController.getTokens(), 
                             offset, offset+length-1);
                     IDocument document = 
                             editor.getCeylonSourceViewer()

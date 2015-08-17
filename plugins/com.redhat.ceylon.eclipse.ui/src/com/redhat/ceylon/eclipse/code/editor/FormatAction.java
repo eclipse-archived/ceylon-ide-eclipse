@@ -95,7 +95,7 @@ final class FormatAction extends Action {
         boolean formatAll = !selected || document.getLength()==ts.getLength();
         if (!formatAll) {
             // a node was selected, format only that
-            Node selectedRootNode = Nodes.findNode(pc.getRootNode(), ts);
+            Node selectedRootNode = Nodes.findNode(pc.getRootNode(), pc.getTokens(), ts);
             if (selectedRootNode == null)
                 return;
             if (selectedRootNode instanceof Body || selectedRootNode instanceof CompilationUnit) {

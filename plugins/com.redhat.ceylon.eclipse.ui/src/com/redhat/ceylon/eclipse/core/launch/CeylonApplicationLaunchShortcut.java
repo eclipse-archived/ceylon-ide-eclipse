@@ -129,7 +129,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                 if (cu!=null) {
                     ISelection selection = ce.getSelectionProvider().getSelection();
                     if (selection instanceof ITextSelection) {
-                        Node node = Nodes.findToplevelStatement(cu, Nodes.findNode(cu, (ITextSelection) selection));
+                        Node node = Nodes.findToplevelStatement(cu, Nodes.findNode(cu, cpc.getTokens(), (ITextSelection) selection));
                         if (node instanceof Tree.AnyMethod) {
                             Function method = ((Tree.AnyMethod) node).getDeclarationModel();
                             if (method.isToplevel() && 

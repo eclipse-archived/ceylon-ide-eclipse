@@ -483,7 +483,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         //this method never gets called :-/
         /*Tree.CompilationUnit cu = (CompilationUnit) context.getModel()
                 .getAST(new NullMessageHandler(), new NullProgressMonitor());
-        return CeylonSourcePositionLocator.findNode(cu, context.getOffset(), 
+        return CeylonSourcePositionLocator.findNode(cu, null, context.getOffset(), 
                 context.getOffset()+context.getLength()) instanceof Tree.Term;*/
         return true;
     }
@@ -508,7 +508,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         TypeChecker tc = getProjectTypeChecker(project);
         int start = problem.getOffset();
         int end = start + problem.getLength();
-        Node node = findNode(rootNode, start, end);
+        Node node = findNode(rootNode, null, start, end);
         switch (problem.getProblemId()) {
         case 100:
             addDeclareLocalProposal(rootNode, node, proposals, file, editor);
@@ -990,7 +990,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         if (rootNode!=null) {
             int start = context.getOffset();
             int end = start + context.getLength();
-            Node node = findNode(rootNode, start, end);
+            Node node = findNode(rootNode, editor.getParseController().getTokens(), start, end);
             int currentOffset = editor.getSelection().getOffset();
             
             RenameProposal.add(proposals, editor);
@@ -1353,7 +1353,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         if (annotation.getSeverity()==IMarker.SEVERITY_WARNING) {
             Tree.CompilationUnit rootNode = getRootNode();
             Tree.Statement st = Nodes.findStatement(rootNode,
-                    Nodes.findNode(rootNode, location.getOffset(), 
+                    Nodes.findNode(rootNode, null, location.getOffset(), 
                             location.getOffset()+location.getLength()));
             if (st==null) return;
             if (!(st instanceof Tree.Declaration)) {
