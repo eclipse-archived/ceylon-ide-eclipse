@@ -3,8 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
@@ -47,6 +45,7 @@ import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.ide.common.util.nodes_;
 
 public class ImportProposals {
     private final static ImportProposals importProposals = new ImportProposals();
@@ -62,7 +61,7 @@ public class ImportProposals {
             IFile file) {
         if (node instanceof Tree.BaseMemberOrTypeExpression ||
                 node instanceof Tree.SimpleType) {
-            Node id = getIdentifyingNode(node);
+            Node id = nodes_.get_().getIdentifyingNode(node);
             if (id!=null) {
                 String brokenName = id.getText();
                 Module module = 
@@ -525,7 +524,7 @@ public class ImportProposals {
             Tree.CompilationUnit rootNode) {
         for (Import i: rootNode.getUnit().getImports()) {
             if (i.getDeclaration()
-                    .equals(getAbstraction(declaration))) {
+                    .equals(nodes_.get_().getAbstraction(declaration))) {
                 return true;
             }
         }
