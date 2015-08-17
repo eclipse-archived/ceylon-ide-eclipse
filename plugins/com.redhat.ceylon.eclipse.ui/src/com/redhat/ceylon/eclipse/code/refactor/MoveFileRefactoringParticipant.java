@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.findImportNode;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEditForMove;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 
 import java.util.ArrayList;
@@ -382,14 +380,14 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             Tree.CompilationUnit cu = 
                     movedPhasedUnit.getCompilationUnit();
             if (!imports.isEmpty()) {
-                List<InsertEdit> edits = importEdits(cu, 
+                List<InsertEdit> edits = importProposals().importEdits(cu, 
                         imports.keySet(), imports.values(), null, 
                         EditorUtil.getDocument(change));
                 for (TextEdit edit: edits) {
                     change.addEdit(edit);
                 }
             }
-            Tree.Import toDelete = findImportNode(cu, newName);
+            Tree.Import toDelete = importProposals().findImportNode(cu, newName);
             if (toDelete!=null) {
                 change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
                         toDelete.getDistance()));
@@ -420,7 +418,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                     fileChanges.put(path, change);
                 }
                 List<TextEdit> edits = 
-                        importEditForMove(cu, 
+                        importProposals().importEditForMove(cu, 
                                 imports.keySet(), imports.values(), 
                                 newName, oldName, 
                                 EditorUtil.getDocument(change));

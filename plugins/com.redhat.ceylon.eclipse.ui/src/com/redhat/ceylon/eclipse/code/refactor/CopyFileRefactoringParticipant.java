@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.findImportNode;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 
@@ -172,7 +171,7 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                 }
                 if (!imports.isEmpty()) {
                     List<InsertEdit> list = 
-                            importEdits(cu, 
+                            importProposals().importEdits(cu, 
                                 imports.keySet(), 
                                 imports.values(), 
                                 null, getDocument(change));
@@ -181,7 +180,7 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                     }
                 }
                 Tree.Import toDelete = 
-                        findImportNode(cu, newName);
+                        importProposals().findImportNode(cu, newName);
                 if (toDelete!=null) {
                     int start = toDelete.getStartIndex();
                     int len = toDelete.getDistance();

@@ -49,7 +49,7 @@ import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
-class RefineFormalMembersProposal 
+class RefineFormalMembersProposal
         implements ICompletionProposal,
                    ICompletionProposalExtension6 {
 
@@ -82,7 +82,7 @@ class RefineFormalMembersProposal
 
     @Override
     public StyledString getStyledDisplayString() {
-        String hint = 
+        String hint =
                 CorrectionUtil.shortcut(
                         "com.redhat.ceylon.eclipse.ui.action.refineFormalMembers");
         return Highlights.styleProposal(getDisplayString(), false)
@@ -114,32 +114,32 @@ class RefineFormalMembersProposal
             throws ExecutionException {
         if (rootNode==null) return;
         TextChange change = 
-                new DocumentChange("Refine Members", 
+                new DocumentChange("Refine Members",
                         document);
         change.setEdit(new MultiTextEdit());
         //TODO: copy/pasted from CeylonQuickFixAssistant
         Tree.Body body;
         int offset;
         if (node instanceof Tree.ClassDefinition) {
-            ClassDefinition classDefinition = 
+            ClassDefinition classDefinition =
                     (Tree.ClassDefinition) node;
             body = classDefinition.getClassBody();
             offset = -1;
         }
         else if (node instanceof Tree.InterfaceDefinition) {
-            Tree.InterfaceDefinition interfaceDefinition = 
+            Tree.InterfaceDefinition interfaceDefinition =
                     (Tree.InterfaceDefinition) node;
             body = interfaceDefinition.getInterfaceBody();
             offset = -1;
         }
         else if (node instanceof Tree.ObjectDefinition) {
-            Tree.ObjectDefinition objectDefinition = 
+            Tree.ObjectDefinition objectDefinition =
                     (Tree.ObjectDefinition) node;
             body = objectDefinition.getClassBody();
             offset = -1;
         }
         else if (node instanceof Tree.ObjectExpression) {
-            Tree.ObjectExpression objectExpression = 
+            Tree.ObjectExpression objectExpression =
                     (Tree.ObjectExpression) node;
             body = objectExpression.getClassBody();
             offset = -1;
@@ -185,10 +185,10 @@ class RefineFormalMembersProposal
             }
         }
         StringBuilder result = new StringBuilder();
-        Set<Declaration> already = 
+        Set<Declaration> already =
                 new HashSet<Declaration>();
         ClassOrInterface ci = 
-                (ClassOrInterface) 
+                (ClassOrInterface)
                     node.getScope();
         Unit unit = node.getUnit();
         Set<String> ambiguousNames = new HashSet<String>();
@@ -204,7 +204,7 @@ class RefineFormalMembersProposal
                 try {
                     if (d.isFormal() && 
                             ci.isInheritedFromSupertype(d)) {
-                        appendRefinementText(isInterface, 
+                        appendRefinementText(isInterface,
                                 indent, result, ci, unit, d);
                         importSignatureTypes(d, rootNode, already);
                         ambiguousNames.add(d.getName());
@@ -221,13 +221,13 @@ class RefineFormalMembersProposal
                 try {
                     if (m.getName()!=null && m.isShared()) {
                         Declaration r = 
-                                ci.getMember(m.getName(), 
+                                ci.getMember(m.getName(),
                                         null, false);
                         if ((r==null || 
                                 !r.refines(m) && 
                                 !r.getContainer().equals(ci)) && 
                                 ambiguousNames.add(m.getName())) {
-                            appendRefinementText(isInterface, 
+                            appendRefinementText(isInterface,
                                     indent, result, ci, unit, m);
                             importSignatureTypes(m, rootNode, already);
                         }
@@ -249,12 +249,12 @@ class RefineFormalMembersProposal
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        applyImports(change, already, rootNode, document);
+        importProposals().applyImports(change, already, rootNode, document);
         change.addEdit(new InsertEdit(offset, result.toString()));
         change.initializeValidationData(null);
         try {
             getWorkspace()
-                .run(new PerformChangeOperation(change), 
+                .run(new PerformChangeOperation(change),
                         new NullProgressMonitor());
         }
         catch (CoreException ce) {
@@ -277,7 +277,7 @@ class RefineFormalMembersProposal
     
     static void addRefineFormalMembersProposal(
             Collection<ICompletionProposal> proposals, 
-            Node n, Tree.CompilationUnit rootNode, 
+            Node n, Tree.CompilationUnit rootNode,
             boolean ambiguousError) {
         for (ICompletionProposal p: proposals) {
             if (p instanceof RefineFormalMembersProposal) {
@@ -294,7 +294,7 @@ class RefineFormalMembersProposal
             node = n;
         }
         else {
-            FindBodyContainerVisitor v = 
+            FindBodyContainerVisitor v =
                     new FindBodyContainerVisitor(n);
             v.visit(rootNode);
             node = v.getDeclarationNode();
@@ -302,7 +302,7 @@ class RefineFormalMembersProposal
         if (node!=null) {
             Scope scope = node.getScope();
             if (scope instanceof ClassOrInterface) {
-                ClassOrInterface ci = 
+                ClassOrInterface ci =
                         (ClassOrInterface) scope;
                 String name = ci.getName();
                 if (name==null) {
@@ -314,7 +314,7 @@ class RefineFormalMembersProposal
                 else {
                     name = "'" + name + "'";
                 }
-                String desc = 
+                String desc =
                         ambiguousError ?
                             "Refine inherited ambiguous and formal members of " + name:
                             "Refine inherited formal members of " + name;

@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_METHOD;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
@@ -193,9 +192,9 @@ class ValueFunctionDefinitionGenerator extends DefinitionGenerator {
     Set<Declaration> getImports() {
         Set<Declaration> imports = 
                 new HashSet<Declaration>();
-        importType(imports, returnType, rootNode);
+        importProposals().importType(imports, returnType, rootNode);
         if (parameters!=null) {
-            importTypes(imports, parameters.values(), rootNode);
+            importProposals().importTypes(imports, parameters.values(), rootNode);
         }
         return imports;
     }

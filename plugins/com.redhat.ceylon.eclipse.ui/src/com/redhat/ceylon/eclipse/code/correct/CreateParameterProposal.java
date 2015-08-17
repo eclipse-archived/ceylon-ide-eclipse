@@ -113,8 +113,8 @@ class CreateParameterProposal extends InitializerProposal {
         }
         HashSet<Declaration> decs = new HashSet<Declaration>();
         Tree.CompilationUnit cu = unit.getCompilationUnit();
-        importType(decs, returnType, cu);
-        int il = applyImports(change, decs, cu, doc);
+        importProposals().importType(decs, returnType, cu);
+        int il = importProposals().applyImports(change, decs, cu, doc);
         change.addEdit(new InsertEdit(offset, pdef));
         change.addEdit(new InsertEdit(offset2, indent+adef+indentAfter));
         int exitPos = node.getEndIndex();
@@ -151,12 +151,12 @@ class CreateParameterProposal extends InitializerProposal {
                 if (u instanceof ModifiableSourceFile) {
                     ModifiableSourceFile cu = (ModifiableSourceFile) u;
                     addCreateParameterProposal(
-                            proposals, paramDef, paramDesc, 
-                            ADD_CORR, 
-                            decl.getDeclarationModel(), 
-                            cu.getPhasedUnit(), decl, paramList, 
+                            proposals, paramDef, paramDesc,
+                            ADD_CORR,
+                            decl.getDeclarationModel(),
+                            cu.getPhasedUnit(), decl, paramList,
                             dg.getReturnType(),
-                            dg.getImports(), 
+                            dg.getImports(),
                             dg.getNode());
                 }
             }
@@ -278,25 +278,25 @@ class CreateParameterProposal extends InitializerProposal {
             if (u instanceof ModifiableSourceFile) {
                 ModifiableSourceFile cu = (ModifiableSourceFile) u;
                 ModifiablePhasedUnit unit = cu.getPhasedUnit();
-                FindDeclarationNodeVisitor fdv = 
+                FindDeclarationNodeVisitor fdv =
                         new FindDeclarationNodeVisitor(typeDec);
                 unit.getCompilationUnit().visit(fdv);
-                Tree.Declaration decNode = 
-                        (Tree.Declaration) 
+                Tree.Declaration decNode =
+                        (Tree.Declaration)
                             fdv.getDeclarationNode();
-                Tree.ParameterList paramList = 
+                Tree.ParameterList paramList =
                         getParameters(decNode);
                 if (paramList!=null) {
                     if (!paramList.getParameters().isEmpty()) {
                         def = ", " + def;
                     }
-                    Set<Declaration> imports = 
+                    Set<Declaration> imports =
                             new HashSet<Declaration>();
-                    importType(imports, t, 
+                    importType(imports, t,
                             unit.getCompilationUnit());
                     addCreateParameterProposal(
-                            proposals, def, desc, 
-                            ADD_CORR, typeDec, unit, decNode, 
+                            proposals, def, desc,
+                            ADD_CORR, typeDec, unit, decNode,
                             paramList, t, imports, node);
                 }
             }
@@ -312,24 +312,24 @@ class CreateParameterProposal extends InitializerProposal {
             Unit u = typeDec.getUnit();
             if (u instanceof ModifiableSourceFile) {
                 ModifiablePhasedUnit phasedUnit = ((ModifiableSourceFile) u).getPhasedUnit();
-                FindDeclarationNodeVisitor fdv = 
+                FindDeclarationNodeVisitor fdv =
                         new FindDeclarationNodeVisitor(typeDec);
                 phasedUnit.getCompilationUnit().visit(fdv);
-                Tree.Declaration decNode = 
-                        (Tree.Declaration) 
+                Tree.Declaration decNode =
+                        (Tree.Declaration)
                             fdv.getDeclarationNode();
-                Tree.ParameterList paramList = 
+                Tree.ParameterList paramList =
                         getParameters(decNode);
-                Tree.Body body = 
+                Tree.Body body =
                         getClassOrInterfaceBody(decNode);
-                if (body!=null 
+                if (body!=null
                         && paramList!=null) {
                     if (!paramList.getParameters().isEmpty()) {
                         pdef = ", " + pdef;
                     }
                     addCreateParameterAndAttributeProposal(
-                            proposals, pdef, adef, desc, 
-                            ADD_CORR, typeDec, phasedUnit, decNode, 
+                            proposals, pdef, adef, desc,
+                            ADD_CORR, typeDec, phasedUnit, decNode,
                             paramList, body, t, node);
                 }
             }

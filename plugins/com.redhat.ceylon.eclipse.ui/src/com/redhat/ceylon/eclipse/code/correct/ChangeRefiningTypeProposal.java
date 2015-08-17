@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterText;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
@@ -44,7 +43,7 @@ public class ChangeRefiningTypeProposal {
             Node node) {
         Tree.Declaration decNode = findDeclaration(cu, node);
         if (decNode instanceof Tree.TypedDeclaration) {
-            Tree.TypedDeclaration td = 
+            Tree.TypedDeclaration td =
                     (Tree.TypedDeclaration) decNode;
             TypedDeclaration dec = td.getDeclarationModel();
             //TODO: this can return the wrong member when
@@ -53,10 +52,10 @@ public class ChangeRefiningTypeProposal {
             Declaration rd = getRefinedDeclaration(dec);
             if (rd instanceof TypedDeclaration) {
                 TypeDeclaration decContainer =
-                        (TypeDeclaration) 
+                        (TypeDeclaration)
                             dec.getContainer();
                 TypeDeclaration rdContainer =
-                        (TypeDeclaration) 
+                        (TypeDeclaration)
                             rd.getContainer();
                 Type supertype =
                         decContainer.getType()
@@ -65,37 +64,37 @@ public class ChangeRefiningTypeProposal {
                         rd.appliedReference(supertype, 
                                 Collections.<Type>emptyList());
                 Type t = ref.getType();
-                String type = 
+                String type =
                         t.asSourceCodeString(
                                 decNode.getUnit());
-                Set<Declaration> declarations = 
+                Set<Declaration> declarations =
                         new HashSet<Declaration>();
                 importType(declarations, t, cu);
                 TextFileChange change = 
-                        new TextFileChange("Change Type", 
+                        new TextFileChange("Change Type",
                                 file);
                 int offset = node.getStartIndex();
                 int length = node.getDistance();
                 change.setEdit(new MultiTextEdit());
-                applyImports(change, declarations, cu, 
+                applyImports(change, declarations, cu,
                         getDocument(change));
                 change.addEdit(new ReplaceEdit(
                         offset, length, type));
-                Region selection = 
+                Region selection =
                         new Region(offset, type.length());
                 proposals.add(new CorrectionProposal(
-                        "Change type to '" + type + "'", 
+                        "Change type to '" + type + "'",
                         change, selection));
             }
         }
     }
 
     static void addChangeRefiningParametersProposal(
-            IFile file, Tree.CompilationUnit cu, 
+            IFile file, Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals,
             Node node) {
-        Tree.Declaration decNode = 
-                (Tree.Declaration) 
+        Tree.Declaration decNode =
+                (Tree.Declaration)
                     findStatement(cu, node);
         Tree.ParameterList list;
         if (decNode instanceof Tree.AnyMethod) {
@@ -116,7 +115,7 @@ public class ChangeRefiningTypeProposal {
                     .getDirectMember(dec.getName(), 
                             null, false);
         }
-        if (rd instanceof Functional && 
+        if (rd instanceof Functional &&
             dec instanceof Functional) {
             Functional rf = (Functional) rd;
             Functional f = (Functional) dec;
@@ -139,12 +138,12 @@ public class ChangeRefiningTypeProposal {
             if (decContainer instanceof TypeDeclaration &&
                 rdContainer instanceof TypeDeclaration) {
                 TypeDeclaration dctd = 
-                        (TypeDeclaration) 
+                        (TypeDeclaration)
                             decContainer;
                 TypeDeclaration rdctd = 
-                        (TypeDeclaration) 
+                        (TypeDeclaration)
                             rdContainer;
-                supertype = 
+                supertype =
                         dctd.getType()
                             .getSupertype(rdctd);
             }
@@ -154,11 +153,11 @@ public class ChangeRefiningTypeProposal {
             Reference pr =
                     rd.appliedReference(supertype, 
                             Collections.<Type>emptyList());
-            List<Tree.Parameter> params = 
+            List<Tree.Parameter> params =
                     list.getParameters();
             TextFileChange change =
                     new TextFileChange(
-                            "Fix Refining Parameter List", 
+                            "Fix Refining Parameter List",
                             file);
             change.setEdit(new MultiTextEdit());
             Unit unit = decNode.getUnit();
@@ -171,7 +170,7 @@ public class ChangeRefiningTypeProposal {
                             list.getStartIndex()+1 : 
                             params.get(i-1)
                                 .getEndIndex();
-                    int stop = 
+                    int stop =
                             params.get(params.size()-1)
                                 .getEndIndex();
                     change.addEdit(new DeleteEdit(start, stop-start));
@@ -188,19 +187,18 @@ public class ChangeRefiningTypeProposal {
                                     .getFullType();
                     if (!dt.isExactly(pt)) {
                         change.addEdit(new ReplaceEdit(
-                                p.getStartIndex(), 
-                                p.getDistance(), 
+                                p.getStartIndex(),
+                                p.getDistance(),
                                 //TODO: better handling for callable parameters
-                                pt.asSourceCodeString(unit) 
-                                    + " " + rdp.getName()));
+                                pt.asSourceCodeString(unit) + " " + rdp.getName()));
                         importType(declarations, pt, cu);
                     }
                 }
             }
             if (rdpl.size()>params.size()) {
                 StringBuilder buf = new StringBuilder();
-                for (int i=params.size(); 
-                        i<rdpl.size(); 
+                for (int i=params.size();
+                        i<rdpl.size();
                         i++) {
                     Parameter rdp = rdpl.get(i);
                     if (i>0) {
@@ -208,26 +206,24 @@ public class ChangeRefiningTypeProposal {
                     }
                     appendParameterText(buf, pr, rdp, unit);
                     Type pt = 
-                            pr.getTypedParameter(rdp)
-                                .getFullType();
+                            pr.getTypedParameter(rdp).getFullType();
                     importType(declarations, pt, cu);
                 }
-                Integer offset = 
-                        params.isEmpty() ? 
-                            list.getStartIndex()+1 : 
+                Integer offset =
+                        params.isEmpty() ?
+                            list.getStartIndex()+1 :
                             params.get(params.size()-1)
                                 .getEndIndex();
-                change.addEdit(new InsertEdit(offset, 
+                change.addEdit(new InsertEdit(offset,
                         buf.toString()));
             }
-            applyImports(change, declarations, cu, 
-                    getDocument(change));
+            applyImports(change, declarations, cu, getDocument(change));
             if (change.getEdit().hasChildren()) {
-                Region selection = 
-                        new Region(list.getStartIndex()+1, 
+                Region selection =
+                        new Region(list.getStartIndex()+1,
                                 0);
                 proposals.add(new CorrectionProposal(
-                        "Fix refining parameter list", 
+                        "Fix refining parameter list",
                         change, selection));
             }
         }

@@ -18,7 +18,7 @@ import org.eclipse.text.edits {
     ReplaceEdit
 }
 import com.redhat.ceylon.eclipse.code.correct {
-    ImportProposals
+    ImportProposals { importProposals }
 }
 import com.redhat.ceylon.eclipse.util {
     Indents,
@@ -80,7 +80,7 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
         
         Integer il;
         if (!result.declarationsToImport.empty) {
-            il = ImportProposals.applyImports(tfc, result.declarationsToImport, rootNode, doc);
+            il = importProposals().applyImports(tfc, result.declarationsToImport, rootNode, doc);
         } else {
             il=0;
         }

@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createFatalErrorStatus;
@@ -356,7 +355,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 super.visit(that);
                 Declaration dec = that.getDeclaration();
                 if (dec!=null) {
-                    importDeclaration(already, dec, cu);
+                    importProposals().importDeclaration(already, dec, cu);
                     Package refPack = 
                             dec.getUnit().getPackage();
                     importedFromDeclarationPackage = 
@@ -374,7 +373,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         declarationNode.visit(aiv);
         Declaration dnd = 
                 declarationNode.getDeclarationModel();
-        applyImports(change, already, dnd, cu, document);
+        importProposals().applyImports(change, already, dnd, cu, document);
         return aiv.importedFromDeclarationPackage;
     }
 

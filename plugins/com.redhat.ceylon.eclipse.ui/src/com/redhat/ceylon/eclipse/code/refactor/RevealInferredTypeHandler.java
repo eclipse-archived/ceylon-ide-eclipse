@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -93,7 +92,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                             localModifier.getStartIndex(), 
                             localModifier.getText().length(), 
                             pt.asSourceCodeString(unit)));
-                    importType(imports, pt, rootNode);
+                    importProposals().importType(imports, pt, rootNode);
                 }
             }
 
@@ -109,7 +108,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                     tfc.addEdit(new InsertEdit(
                             variable.getStartIndex(), 
                             pt.asSourceCodeString(unit) + " "));
-                    importType(imports,  
+                    importProposals().importType(imports,  
                             variable.getType().getTypeModel(), 
                             rootNode);
                 }
@@ -117,7 +116,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
             
             try {
                 IDocument doc = tfc.getCurrentDocument(null);
-                applyImports(tfc, imports, rootNode, doc);
+                importProposals().applyImports(tfc, imports, rootNode, doc);
 
                 PerformChangeOperation changeOperation = 
                         new PerformChangeOperation(tfc);

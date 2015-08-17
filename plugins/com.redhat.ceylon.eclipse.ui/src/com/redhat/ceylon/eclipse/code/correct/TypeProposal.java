@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
@@ -62,10 +61,10 @@ class TypeProposal
 
     @Override
     public void apply(IDocument document) {
-        final DocumentChange change = 
+        final DocumentChange change =
                 new DocumentChange("Specify Type", document);
         change.setEdit(new MultiTextEdit());
-        HashSet<Declaration> decs = 
+        HashSet<Declaration> decs =
                 new HashSet<Declaration>();
         if (type!=null) {
             importType(decs, type, rootNode);
@@ -118,8 +117,8 @@ class TypeProposal
     public boolean validate(IDocument document, int offset,
             DocumentEvent event) {
         try {
-            String prefix = 
-                    document.get(this.offset, 
+            String prefix =
+                    document.get(this.offset,
                             offset-this.offset);
             String filter = prefix.trim().toLowerCase();
             return ModelUtil.isNameMatching(prefix, text) ||

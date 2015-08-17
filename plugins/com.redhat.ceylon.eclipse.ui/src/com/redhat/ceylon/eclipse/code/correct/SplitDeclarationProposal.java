@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
@@ -202,8 +201,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
                                 decNode.getUnit());
                 HashSet<Declaration> decs = 
                         new HashSet<Declaration>();
-                importType(decs, infType, rootNode);
-                il=applyImports(change, decs, rootNode, doc);
+                importProposals().importType(decs, infType, rootNode);
+                il=importProposals().applyImports(change, decs, rootNode, doc);
             }
             int typeOffset = type.getStartIndex();
             int typeLen = type.getDistance();

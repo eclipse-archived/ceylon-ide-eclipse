@@ -84,16 +84,16 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
     }
 
     public boolean forceWizardMode() {
-        Declaration existing = 
+        Declaration existing =
                 node.getScope()
-                    .getMemberOrParameter(node.getUnit(), 
+                    .getMemberOrParameter(node.getUnit(),
                             newName, null, false);
         return existing!=null;
     }
     
     public RefactoringStatus checkInitialConditions
             (IProgressMonitor pm)
-                    throws CoreException, 
+                    throws CoreException,
                            OperationCanceledException {
         // Check parameters retrieved from editor context
         return new RefactoringStatus();
@@ -101,16 +101,16 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
 
     public RefactoringStatus checkFinalConditions
             (IProgressMonitor pm)
-                    throws CoreException, 
+                    throws CoreException,
                            OperationCanceledException {
-        Declaration existing = 
+        Declaration existing =
                 node.getScope()
-                    .getMemberOrParameter(node.getUnit(), 
+                    .getMemberOrParameter(node.getUnit(),
                             newName, null, false);
         if (null!=existing) {
             return createWarningStatus(
                     "An existing declaration named '" +
-                    newName + 
+                    newName +
                     "' already exists in the same scope");
         }
         return new RefactoringStatus();
@@ -153,14 +153,14 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         IDocument doc = getDocument(tfc);
         Unit unit = node.getUnit();
         Tree.Term term = (Tree.Term) node;
-        final Tree.Statement statement = 
+        final Tree.Statement statement =
                 findStatement(rootNode, node);
         int start = statement.getStartIndex();
         int il = 0;
-        String newLineOrReturn = 
-                getDefaultLineDelimiter(doc) + 
+        String newLineOrReturn =
+                getDefaultLineDelimiter(doc) +
                 getIndent(statement, doc);
-        FindAnonFunctionVisitor visitor = 
+        FindAnonFunctionVisitor visitor =
                 new FindAnonFunctionVisitor(statement);
         visitor.visit(statement);
         Tree.FunctionArgument anon = visitor.result;
@@ -168,9 +168,9 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         if (anon!=null && anon.getBlock()==null) {
             Tree.Expression ex = anon.getExpression();
             if (ex!=null) {
-                List<Tree.ParameterList> pls = 
+                List<Tree.ParameterList> pls =
                         anon.getParameterLists();
-                Node pl = 
+                Node pl =
                         pls.get(pls.size()-1);
                 if (anon.getTypeConstraintList()!=null) {
                     pl = anon.getTypeConstraintList();
@@ -195,17 +195,17 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
             }
         }
         else if (statement instanceof Tree.Declaration) {
-            Tree.Declaration dec = 
+            Tree.Declaration dec =
                     (Tree.Declaration) statement;
             if (dec instanceof Tree.MethodDeclaration) {
-                Tree.MethodDeclaration md = 
+                Tree.MethodDeclaration md =
                         (Tree.MethodDeclaration) dec;
-                Tree.SpecifierExpression se = 
+                Tree.SpecifierExpression se =
                         md.getSpecifierExpression();
                 if (se!=null) {
                     Tree.Expression ex = se.getExpression();
                     if (ex!=null) {
-                        List<Tree.ParameterList> pls = 
+                        List<Tree.ParameterList> pls =
                                 md.getParameterLists();
                         Node pl = pls.get(pls.size()-1);
                         if (md.getTypeConstraintList()!=null) {
@@ -247,7 +247,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         if (anonFunction) {
             type = unit.getCallableReturnType(type);
             Tree.FunctionArgument fa = 
-                    (Tree.FunctionArgument) 
+                    (Tree.FunctionArgument)
                         unparened;
             StringBuilder sb = new StringBuilder();
             if (fa.getType() instanceof Tree.VoidModifier) {
@@ -281,7 +281,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         }
         else if (explicitType || toplevel) {
             typeDec = type.asSourceCodeString(unit);
-            HashSet<Declaration> decs = 
+            HashSet<Declaration> decs =
                     new HashSet<Declaration>();
             importType(decs, type, rootNode);
             il += applyImports(tfc, decs, rootNode, doc);
@@ -326,7 +326,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
     public void setGetter() {
         this.getter = !getter;
     }
-    
+
     Type getType() {
         return type;
     }

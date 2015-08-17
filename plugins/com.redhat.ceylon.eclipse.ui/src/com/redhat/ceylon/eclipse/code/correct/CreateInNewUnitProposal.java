@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.findImportNode;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.getBestImportInsertPosition;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.getBestImportMemberInsertPosition;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
@@ -125,17 +123,17 @@ class CreateInNewUnitProposal implements ICompletionProposal,
         TextFileChange tfc = 
                 new TextFileChange("Add Import", file);
         Tree.Import importNode = 
-                findImportNode(rootNode, packageName);
+                importProposals().findImportNode(rootNode, packageName);
         if (importNode==null) {
             tfc.setEdit(new InsertEdit(
-                    getBestImportInsertPosition(rootNode), 
+                    importProposals().getBestImportInsertPosition(rootNode), 
                     "import " + packageName + 
                     " { " + dg.getBrokenName() + " }" + 
                     getDefaultLineDelimiter(doc)));
         }
         else {
             tfc.setEdit(new InsertEdit(
-                    getBestImportMemberInsertPosition(importNode), 
+                    importProposals().getBestImportMemberInsertPosition(importNode), 
                     "," + getDefaultLineDelimiter(doc) + 
                     getDefaultIndent() + dg.getBrokenName()));
         }

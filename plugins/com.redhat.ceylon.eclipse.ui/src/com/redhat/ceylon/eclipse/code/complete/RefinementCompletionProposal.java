@@ -16,9 +16,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLa
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importParameterTypes;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
@@ -322,10 +320,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 new HashSet<Declaration>();
         Tree.CompilationUnit cu = cpc.getLastCompilationUnit();
         if (explicitReturnType) {
-            importSignatureTypes(declaration, cu, decs);
+            importProposals().importSignatureTypes(declaration, cu, decs);
         }
         else {
-            importParameterTypes(declaration, cu, decs);
+            importProposals().importParameterTypes(declaration, cu, decs);
         }
         int il = applyImports(change, decs, cu, document);
         change.addEdit(createEdit(document));

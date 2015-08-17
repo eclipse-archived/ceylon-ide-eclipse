@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -38,8 +38,8 @@ class VerboseRefinementProposal extends CorrectionProposal {
                     Unit unit = ss.getUnit();
                     Type t = unit.denotableType(e.getTypeModel());
                     HashSet<Declaration> decs = new HashSet<Declaration>();
-                    ImportProposals.importType(decs, t, cu);
-                    applyImports(change, decs, cu, EditorUtil.getDocument(change));
+                    importProposals().importType(decs, t, cu);
+                    importProposals().applyImports(change, decs, cu, EditorUtil.getDocument(change));
                     String type = t.asSourceCodeString(unit);
                     change.addEdit(new InsertEdit(statement.getStartIndex(), 
                             "shared actual " + type + " "));

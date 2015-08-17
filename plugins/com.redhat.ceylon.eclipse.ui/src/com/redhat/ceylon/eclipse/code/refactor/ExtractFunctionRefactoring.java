@@ -2,8 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
@@ -666,8 +665,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
             else if (explicitType || dec.isToplevel()) {
                 type = returnType.asSourceCodeString(unit);
                 HashSet<Declaration> decs = new HashSet<Declaration>();
-                importType(decs, returnType, rootNode);
-                il = applyImports(tfc, decs, rootNode, doc);
+                importProposals().importType(decs, returnType, rootNode);
+                il = importProposals().applyImports(tfc, decs, rootNode, doc);
             }
             else {
                 type = "function";
@@ -867,8 +866,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                 content = returnType.asSourceCodeString(unit);
                 HashSet<Declaration> already = 
                         new HashSet<Declaration>();
-                importType(already, returnType, rootNode);
-                il = applyImports(tfc, already, rootNode, doc);
+                importProposals().importType(already, returnType, rootNode);
+                il = importProposals().applyImports(tfc, already, rootNode, doc);
             }
             else {
                 content = "function";

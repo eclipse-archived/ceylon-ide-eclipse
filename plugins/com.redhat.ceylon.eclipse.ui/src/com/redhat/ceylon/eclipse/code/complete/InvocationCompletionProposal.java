@@ -20,9 +20,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLa
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importCallableParameterParamTypes;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
@@ -758,16 +756,16 @@ class InvocationCompletionProposal extends CompletionProposal {
                 new HashSet<Declaration>();
         Tree.CompilationUnit cu = cpc.getLastCompilationUnit();
         if (qualifyingValue!=null) {
-            importDeclaration(decs, qualifyingValue, cu);
+            importProposals().importDeclaration(decs, qualifyingValue, cu);
         }
         if (!qualified) {
-            importDeclaration(decs, declaration, cu);
+            importProposals().importDeclaration(decs, declaration, cu);
         }
         if (positionalInvocation||namedInvocation) {
             importCallableParameterParamTypes(declaration,
                     decs, cu);
         }
-        int il=applyImports(change, decs, cu, document);
+        int il=importProposals().applyImports(change, decs, cu, document);
         change.addEdit(createEdit(document));
         offset+=il;
         return change;

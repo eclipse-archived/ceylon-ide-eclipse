@@ -49,8 +49,13 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
 public class ImportProposals {
-
-    static void addImportProposals(
+    private final static ImportProposals importProposals = new ImportProposals();
+    
+    public static ImportProposals importProposals() {
+        return importProposals;
+    }
+    
+    void addImportProposals(
             Tree.CompilationUnit rootNode, 
             Node node,
             Collection<ICompletionProposal> proposals, 
@@ -78,7 +83,7 @@ public class ImportProposals {
         }
     }
     
-    private static Set<Declaration> findImportCandidates(
+    Set<Declaration> findImportCandidates(
             Module module, String name, 
             Tree.CompilationUnit rootNode) {
         Set<Declaration> result = 
@@ -109,7 +114,7 @@ public class ImportProposals {
         return result;
     }
     
-    private static ICompletionProposal createImportProposal(
+    private ICompletionProposal createImportProposal(
             Tree.CompilationUnit rootNode, 
             IFile file, Declaration declaration) {
         TextFileChange change = 
@@ -144,7 +149,7 @@ public class ImportProposals {
         };
     }
     
-    public static List<InsertEdit> importEdits(
+    public List<InsertEdit> importEdits(
             Tree.CompilationUnit rootNode,
             Iterable<Declaration> declarations, 
             Iterable<String> aliases,
@@ -232,7 +237,7 @@ public class ImportProposals {
         return result;
     }
     
-    public static List<TextEdit> importEditForMove(
+    public List<TextEdit> importEditForMove(
             Tree.CompilationUnit rootNode,
             Iterable<Declaration> declarations, 
             Iterable<String> aliases,
@@ -330,7 +335,7 @@ public class ImportProposals {
         return result;
     }
 
-	public static String formatImportMembers(String delim, String indent, Set<Declaration> set,
+	public String formatImportMembers(String delim, String indent, Set<Declaration> set,
 			Tree.ImportMemberOrTypeList imtl) {
 		StringBuilder sb = 
 		        new StringBuilder("{").append(delim);
@@ -358,7 +363,7 @@ public class ImportProposals {
 		return sb.toString();
 	}
     
-    public static int getBestImportInsertPosition(
+    public int getBestImportInsertPosition(
             Tree.CompilationUnit cu) {
         Integer endIndex = 
                 cu.getImportList()
@@ -366,7 +371,7 @@ public class ImportProposals {
         return endIndex == null ? 0 : endIndex;
     }
 
-    public static Tree.Import findImportNode(
+    public Tree.Import findImportNode(
             Tree.CompilationUnit cu, 
             String packageName) {
         FindImportNodeVisitor visitor = 
@@ -375,7 +380,7 @@ public class ImportProposals {
         return visitor.getResult();
     }
 
-    public static int getBestImportMemberInsertPosition(
+    public int getBestImportMemberInsertPosition(
             Tree.Import importNode) {
         Tree.ImportMemberOrTypeList imtl = 
                 importNode.getImportMemberOrTypeList();
@@ -395,14 +400,14 @@ public class ImportProposals {
         }
     }
 
-    public static int applyImports(TextChange change,
+    public int applyImports(TextChange change,
             Set<Declaration> declarations, 
             Tree.CompilationUnit cu, IDocument doc) {
         return applyImports(change, declarations, null, 
                 cu, doc);
     }
     
-    public static int applyImports(TextChange change,
+    public int applyImports(TextChange change,
             Set<Declaration> declarations, 
             Declaration declarationBeingDeleted,
             Tree.CompilationUnit cu, IDocument doc) {
@@ -416,7 +421,7 @@ public class ImportProposals {
         return il;
     }
 
-    public static int applyImports(TextChange change,
+    public int applyImports(TextChange change,
             Map<Declaration,String> declarations, 
             Tree.CompilationUnit cu, IDocument doc,
             Declaration declarationBeingDeleted) {
@@ -431,7 +436,7 @@ public class ImportProposals {
         return il;
     }
 
-    public static void importSignatureTypes(
+    public void importSignatureTypes(
             Declaration declaration, 
             Tree.CompilationUnit rootNode, 
             Set<Declaration> declarations) {
@@ -452,7 +457,7 @@ public class ImportProposals {
         }
     }
     
-    public static void importTypes(
+    public void importTypes(
             Set<Declaration> declarations, 
             Collection<Type> types, 
             Tree.CompilationUnit rootNode) {
@@ -462,7 +467,7 @@ public class ImportProposals {
         }
     }
     
-    public static void importType(
+    public void importType(
             Set<Declaration> declarations, 
             Type type, 
             Tree.CompilationUnit rootNode) {
@@ -496,7 +501,7 @@ public class ImportProposals {
         }
     }
 
-    public static void importDeclaration(
+    public void importDeclaration(
             Set<Declaration> declarations,
             Declaration declaration, 
             Tree.CompilationUnit rootNode) {
@@ -515,7 +520,7 @@ public class ImportProposals {
         }
     }
 
-    public static boolean isImported(
+    public boolean isImported(
             Declaration declaration,
             Tree.CompilationUnit rootNode) {
         for (Import i: rootNode.getUnit().getImports()) {
@@ -527,7 +532,7 @@ public class ImportProposals {
         return false;
     }
 
-    public static void importCallableParameterParamTypes(
+    public void importCallableParameterParamTypes(
             Declaration declaration, 
             HashSet<Declaration> decs, 
             Tree.CompilationUnit cu) {
@@ -544,7 +549,7 @@ public class ImportProposals {
         }
     }
 
-    public static void importParameterTypes(
+    public void importParameterTypes(
             Declaration dec,
             Tree.CompilationUnit cu, 
             HashSet<Declaration> decs) {

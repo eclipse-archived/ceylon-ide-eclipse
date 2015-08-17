@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
@@ -59,7 +58,7 @@ public class MoveUtil {
         Package p = ncu.getUnit().getPackage();
         Map<Declaration, String> imports = 
                 getImports(node, p.getNameAsString(), ncu, packages);
-        return applyImports(fc, imports, ncu, doc, declaration);
+        return importProposals().applyImports(fc, imports, ncu, doc, declaration);
     }
 
     public static Map<Declaration,String> getImports(Node node,
@@ -74,7 +73,7 @@ public class MoveUtil {
                     if (d.isToplevel() &&
                             !pn.equals(packageName) &&
                             !pn.equals(Module.LANGUAGE_MODULE_NAME) &&
-                            (ncu==null || !isImported(d, ncu))) {
+                            (ncu==null || !importProposals().isImported(d, ncu))) {
                         imports.put(d, id.getText());
                         packages.add(pn);
                     }

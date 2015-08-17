@@ -44,7 +44,7 @@ class ChangeTypeProposal extends CorrectionProposal {
 
     private Unit unit;
 
-    ChangeTypeProposal(ProblemLocation problem, 
+    ChangeTypeProposal(ProblemLocation problem,
             String name, String type, 
             int offset, int len, Unit unit,
             TextFileChange change) {
@@ -52,12 +52,12 @@ class ChangeTypeProposal extends CorrectionProposal {
                 change, new Region(offset, len));
         this.unit = unit;
     }
-    
+
     @Override
     public void apply(IDocument document) {
         CeylonEditor editor = null;
         if (unit instanceof ModifiableSourceFile) {
-            ModifiableSourceFile cu = 
+            ModifiableSourceFile cu =
                     (ModifiableSourceFile) unit;
             IFile file = cu.getResourceFile();
             if (file!=null) {
@@ -65,7 +65,7 @@ class ChangeTypeProposal extends CorrectionProposal {
                 //NOTE: the document we're given is the one
                 //for the editor from which the quick fix was
                 //invoked, not the one to which the fix applies
-                IDocument ed = 
+                IDocument ed =
                         editor.getParseController()
                             .getDocument();
                 if (ed!=document) {
@@ -79,7 +79,7 @@ class ChangeTypeProposal extends CorrectionProposal {
             editor.selectAndReveal(point.x, point.y);
         }
     }
-    
+
     @Override
     public Point getSelection(IDocument document) {
         //we don't apply a selection because
@@ -88,8 +88,8 @@ class ChangeTypeProposal extends CorrectionProposal {
         //which the quick fix was invoked.
         return null;
     }
-        
-    private static void addChangeTypeProposal(Node node, 
+
+    private static void addChangeTypeProposal(Node node,
             ProblemLocation problem, 
             Collection<ICompletionProposal> proposals,
             Declaration dec, 
@@ -124,27 +124,27 @@ class ChangeTypeProposal extends CorrectionProposal {
         String name;
         if (dec.isParameter()) {
             Declaration container = 
-                    (Declaration) 
+                    (Declaration)
                         dec.getContainer();
-            name = "parameter '" + 
-                    dec.getName() + "' of '" + 
+            name = "parameter '" +
+                    dec.getName() + "' of '" +
                     container.getName() + "'";
         }
         else if (dec.isClassOrInterfaceMember()) {
             ClassOrInterface container = 
-                    (ClassOrInterface) 
+                    (ClassOrInterface)
                         dec.getContainer();
-            name = "member '" +  
-                    dec.getName() + "' of '" + 
+            name = "member '" +
+                    dec.getName() + "' of '" +
                     container.getName() + "'";
         }
         else {
             name = "'" + dec.getName() + "'";
         }
         proposals.add(new ChangeTypeProposal(
-                problem, name, 
-                newType.asString(unit), 
-                offset+il, newTypeName.length(), 
+                problem, name,
+                newType.asString(unit),
+                offset+il, newTypeName.length(),
                 unit, change));
     }
     
@@ -216,7 +216,7 @@ class ChangeTypeProposal extends CorrectionProposal {
     }
     
     static void addChangeTypeProposals(
-            Tree.CompilationUnit rootNode, Node node, 
+            Tree.CompilationUnit rootNode, Node node,
             ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, 
             IProject project) {
@@ -280,72 +280,72 @@ class ChangeTypeProposal extends CorrectionProposal {
         if (dec!=null) {
             Unit u = dec.getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiableSourceFile msf = 
+                ModifiableSourceFile msf =
                         (ModifiableSourceFile) u;
-                ModifiablePhasedUnit phasedUnit = 
+                ModifiablePhasedUnit phasedUnit =
                         msf.getPhasedUnit();
                 Type t = null;
                 Node typeNode = null;
-                
+
                 if (dec instanceof TypeParameter) {
-                    TypeParameter tp = 
+                    TypeParameter tp =
                             (TypeParameter) dec;
                     t = tp.getType();
                     typeNode = node;
                 }
-                
+
                 if (dec instanceof TypedDeclaration) {
-                    TypedDeclaration typedDec = 
+                    TypedDeclaration typedDec =
                             (TypedDeclaration) dec;
-                    FindDeclarationNodeVisitor fdv = 
+                    FindDeclarationNodeVisitor fdv =
                             new FindDeclarationNodeVisitor(
                                     typedDec);
                     phasedUnit.getCompilationUnit()
                             .visit(fdv);
-                    Tree.StatementOrArgument dn = 
+                    Tree.StatementOrArgument dn =
                             fdv.getDeclarationNode();
                     if (dn instanceof Tree.TypedDeclaration) {
-                        Tree.TypedDeclaration decNode = 
+                        Tree.TypedDeclaration decNode =
                                 (Tree.TypedDeclaration) dn;
                         if (decNode!=null) {
                             typeNode = decNode.getType();
                             if (typeNode!=null) {
-                                Tree.Type tn = 
-                                        (Tree.Type) 
+                                Tree.Type tn =
+                                        (Tree.Type)
                                             typeNode;
                                 t = tn.getTypeModel();
                             }
                         }
                     }
                 }
-                
-                //TODO: fix this condition to properly 
-                //      distinguish between a method 
+
+                //TODO: fix this condition to properly
+                //      distinguish between a method
                 //      reference and an invocation
                 Unit nu = node.getUnit();
-                if (dec instanceof Function && 
+                if (dec instanceof Function &&
                         nu.isCallableType(type)) {
                     type = nu.getCallableReturnType(type);
                 }
-                
+
                 IFile file = phasedUnit.getResourceFile();
                 if (typeNode != null
                         && file != null
                             && !isTypeUnknown(type)) {
-                    Tree.CompilationUnit rootNode = 
+                    Tree.CompilationUnit rootNode =
                             phasedUnit.getCompilationUnit();
-                    addChangeTypeProposal(typeNode, 
-                            problem, proposals, dec, 
+                    addChangeTypeProposal(typeNode,
+                            problem, proposals, dec,
                             type, file, rootNode);
                     if (t != null) {
-                        Type newType = intersect ? 
-                                intersectionType(t, type, u) : 
+                        Type newType = intersect ?
+                                intersectionType(t, type, u) :
                                 unionType(t, type, u);
-                        if (!newType.isExactly(t) && 
+                        if (!newType.isExactly(t) &&
                                 !newType.isExactly(type)) {
-                            addChangeTypeProposal(typeNode, 
-                                    problem, proposals, 
-                                    dec, newType, file, 
+                            addChangeTypeProposal(typeNode,
+                                    problem, proposals,
+                                    dec, newType, file,
                                     rootNode);
                         }
                     }

@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -341,8 +340,8 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
             Type tm, StringBuilder builder) {
         Type type = node.getUnit().denotableType(tm);
         HashSet<Declaration> decs = new HashSet<Declaration>();
-        importType(decs, type, rootNode);
-        int il = applyImports(tfc, decs, rootNode, doc);
+        importProposals().importType(decs, type, rootNode);
+        int il = importProposals().applyImports(tfc, decs, rootNode, doc);
         builder.append(type.asSourceCodeString(rootNode.getUnit()));
         return il;
     }

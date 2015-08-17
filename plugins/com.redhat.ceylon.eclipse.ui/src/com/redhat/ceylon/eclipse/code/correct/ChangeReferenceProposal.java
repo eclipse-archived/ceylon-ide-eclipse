@@ -2,8 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.getProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.levenshteinDistance;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
@@ -57,14 +56,14 @@ class ChangeReferenceProposal extends CorrectionProposal {
             Declaration dec, int dist,
             Tree.CompilationUnit rootNode) {
         TextFileChange change = 
-                new TextFileChange("Change Reference", 
+                new TextFileChange("Change Reference",
                         file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
         String pkg = "";
         int problemOffset = problem.getOffset();
         if (dec.isToplevel() && 
-                !isImported(dec, rootNode) && 
+                !importProposals().isImported(dec, rootNode) &&
                 isInPackage(rootNode, dec)) {
             String pn = 
                     dec.getContainer()
@@ -73,12 +72,12 @@ class ChangeReferenceProposal extends CorrectionProposal {
             if (!pn.isEmpty() && 
                     !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
                 OccurrenceLocation ol = 
-                        getOccurrenceLocation(rootNode, 
+                        getOccurrenceLocation(rootNode,
                                 findNode(rootNode, problemOffset),
                                 problemOffset);
                 if (ol!=IMPORT) {
                     List<InsertEdit> ies = 
-                            importEdits(rootNode, 
+                            importProposals().importEdits(rootNode,
                                     singleton(dec), 
                                     null, null, doc);
                     for (InsertEdit ie: ies) {
@@ -98,9 +97,9 @@ class ChangeReferenceProposal extends CorrectionProposal {
         return !dec.getUnit().getPackage()
                 .equals(cu.getUnit().getPackage());
     }
-    
+
     static void addChangeReferenceProposals(
-            Tree.CompilationUnit rootNode, 
+            Tree.CompilationUnit rootNode,
             Node node, ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, 
             IFile file) {
@@ -114,7 +113,7 @@ class ChangeReferenceProposal extends CorrectionProposal {
                         getProposals(node, scope, rootNode)
                             .values();
                 for (DeclarationWithProximity dwp: dwps) {
-                    processProposal(rootNode, problem, 
+                    processProposal(rootNode, problem,
                             proposals, file,
                             brokenName, 
                             dwp.getDeclaration());
@@ -124,7 +123,7 @@ class ChangeReferenceProposal extends CorrectionProposal {
     }
 
     static void addChangeArgumentReferenceProposals(
-            Tree.CompilationUnit rootNode, 
+            Tree.CompilationUnit rootNode,
             Node node, 
             ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, 
@@ -149,7 +148,7 @@ class ChangeReferenceProposal extends CorrectionProposal {
                         Declaration declaration = 
                                 parameter.getModel();
                         if (declaration!=null) {
-                            processProposal(rootNode, problem, 
+                            processProposal(rootNode, problem,
                                     proposals, file,
                                     brokenName, 
                                     declaration);

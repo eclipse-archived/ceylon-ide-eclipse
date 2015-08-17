@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importDeclaration;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecorationAttributes;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FUN;

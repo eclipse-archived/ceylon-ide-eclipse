@@ -3,9 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importTypes;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_CLASS;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
@@ -198,9 +196,9 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
     
     Set<Declaration> getImports() {
         Set<Declaration> imports = new HashSet<Declaration>();
-        importType(imports, returnType, rootNode);
+        importProposals().importType(imports, returnType, rootNode);
         if (parameters!=null) {
-            importTypes(imports, parameters.values(), rootNode);
+            importProposals().importTypes(imports, parameters.values(), rootNode);
         }
         if (returnType!=null) {
             importMembers(imports);            
@@ -221,7 +219,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
                 if (d.isFormal() /*&& td.isInheritedFromSupertype(d)*/) {
-                    importSignatureTypes(d, rootNode, imports);
+                    importProposals().importSignatureTypes(d, rootNode, imports);
                     ambiguousNames.add(d.getName());
                 }
             }
@@ -237,7 +235,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                             !r.refines(m) && 
 //                                !r.getContainer().equals(ut) && 
                             !ambiguousNames.add(m.getName())) {
-                        importSignatureTypes(m, rootNode, imports);
+                        importProposals().importSignatureTypes(m, rootNode, imports);
                     }
                 }
             }
