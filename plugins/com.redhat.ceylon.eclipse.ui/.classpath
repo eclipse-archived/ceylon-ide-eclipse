@@ -4,19 +4,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/com.redhat.ceylon.eclipse.ui.jdt.debug.fragment"/>
 	<classpathentry kind="con" path="com.redhat.ceylon.eclipse.ui.cpcontainer.RUNTIME_CONTAINER/default"/>
 	<classpathentry kind="con" path="com.redhat.ceylon.eclipse.ui.cpcontainer.CEYLON_CONTAINER/default"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins">
-		<accessrules>
-			<accessrule kind="accessible" pattern="org/eclipse/jdt/internal/**"/>
-			<accessrule kind="accessible" pattern="org/eclipse/core/internal/events/NotificationManager"/>
-			<accessrule kind="accessible" pattern="org/eclipse/osgi/util/*"/>
-			<accessrule kind="accessible" pattern="org/osgi/framework/**"/>
-			<accessrule kind="accessible" pattern="com/sun/jdi/**"/>
-			<accessrule kind="accessible" pattern="org/eclipse/debug/internal/**"/>
-			<accessrule kind="accessible" pattern="org/eclipse/core/internal/runtime/AdapterManager"/>
-			<accessrule kind="accessible" pattern="org/eclipse/core/internal/utils/Cache*"/>
-			<accessrule kind="accessible" pattern="org/eclipse/core/internal/registry/ExtensionRegistry"/>
-		</accessrules>
-	</classpathentry>
 	<classpathentry kind="src" path="generated-source"/>
 	<classpathentry kind="src" path="source"/>
 	<classpathentry kind="src" path="src"/>

@@ -476,4 +476,17 @@ Some generated elements are not there :
             <mapper type="glob" from="AdditionalBundles.txt" to="${moduleFileFolder}/module.ceylon" />
         </touch>
 	</target>
+	
+    <target name="Retrieve Eclipse Sources" 
+    	description="It retrieves the source bundles of the Eclipse dependencies as a Ceylon repository"
+    	depends="mirrorSourceBundles"/>
+    <target name="Retrieve Eclipse Dependencies" 
+        description="It retrieves the binary bundles of the Eclipse dependencies as a Ceylon repository"
+        depends="mirrorRequiredBundles, update-eclipse-dependencies-inside-eclipse"/>
+    <target name="Regenerate Eclipse Imports" 
+        description="It regenerates the eclise dependencies module descriptor and overrides.xml file"
+        depends="generate-eclipseDependenciesModule"/>
+	<target name="Remove Eclipse Dependencies Warning" 
+        description="It removes the up-to-date warning when you are sure that generated files (module descriptor and overrides file) are up-to-date "
+        depends="remove-up-to-date-warning"/>
 </project>
