@@ -49,7 +49,7 @@
         <add module="org.eclipse.jface" version="current" shared="true"/>
     </module>
     <module module="org.eclipse.ui.ide">
-        <add module="org.eclipse.jface" version="current" shared="true"/>
+        <share module="org.eclipse.ui.workbench"/>
     </module>
     <module module="org.eclipse.ui.editors">
         <add module="org.eclipse.ui.workbench.texteditor" version="current" shared="true"/>
