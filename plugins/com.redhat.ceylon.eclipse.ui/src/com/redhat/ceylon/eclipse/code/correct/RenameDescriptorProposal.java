@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CHANGE;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 
 import java.util.Collection;
 

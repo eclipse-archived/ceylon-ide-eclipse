@@ -14,11 +14,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 public class MoveOutInputPage extends UserInputWizardPage {
-    
+
     public MoveOutInputPage(String name) {
         super(name);
     }

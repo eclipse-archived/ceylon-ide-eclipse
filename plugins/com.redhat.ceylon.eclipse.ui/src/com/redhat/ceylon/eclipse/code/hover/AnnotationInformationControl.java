@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.util.Escaping.toInitialUppercase;
+import static com.redhat.ceylon.ide.common.util.Escaping.toInitialUppercase;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 

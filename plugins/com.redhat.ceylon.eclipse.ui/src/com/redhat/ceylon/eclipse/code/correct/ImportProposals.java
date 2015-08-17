@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static java.util.Collections.singleton;
 

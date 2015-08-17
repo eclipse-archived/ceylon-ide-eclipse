@@ -25,9 +25,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Highlights.FontStyler;
+import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 
 public class KeywordCompletionProposal extends CompletionProposal {

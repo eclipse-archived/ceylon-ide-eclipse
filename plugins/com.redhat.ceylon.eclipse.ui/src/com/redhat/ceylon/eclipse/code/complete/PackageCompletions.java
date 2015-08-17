@@ -88,7 +88,7 @@ public class PackageCompletions {
         public void apply(IDocument document) {
             super.apply(document);
             ModuleImportUtil.addModuleImport(controller.getProject(), 
-                    controller.getLastPhasedUnit().getPackage().getModule(), 
+                    controller.getLastPhasedUnit().getPackage().getModule(),
                     version.getModule(), version.getVersion());
         }
 
@@ -96,10 +96,10 @@ public class PackageCompletions {
         public String getAdditionalProposalInfo() {
             return getAdditionalProposalInfo(null);
         }
-        
+
         @Override
         public String getAdditionalProposalInfo(IProgressMonitor monitor) {
-            return getDocumentationFor(md, version.getVersion(), 
+            return getDocumentationFor(md, version.getVersion(),
                     fullPackageName,
                     controller.getLastCompilationUnit().getScope(), unit);
         }
@@ -107,19 +107,19 @@ public class PackageCompletions {
 
     private static final class ImportedModulePackageProposal extends
             PackageProposal {
-        
-        private final class PackageMemberCompletionProposal 
+
+        private final class PackageMemberCompletionProposal
             implements ICompletionProposal,
                        ICompletionProposalExtension2,
                        ICompletionProposalExtension6  {
-            
+
             private final Point selection;
             private final LinkedModeModel linkedModeModel;
             private final Declaration d;
 
             private PackageMemberCompletionProposal(
-                    Point selection, 
-                    LinkedModeModel linkedModeModel, 
+                    Point selection,
+                    LinkedModeModel linkedModeModel,
                     Declaration d) {
                 this.selection = selection;
                 this.linkedModeModel = linkedModeModel;
@@ -154,10 +154,10 @@ public class PackageCompletions {
             int length(IDocument document) {
                 int length = 0;
                 try {
-                    for (int i=selection.x; 
-                            i<document.getLength() && 
+                    for (int i=selection.x;
+                            i<document.getLength() &&
                             (Character.isJavaIdentifierPart(document.getChar(i)) ||
-                            document.getChar(i)=='.'); 
+                            document.getChar(i)=='.');
                             i++) {
                         length++;
                     }
@@ -167,12 +167,12 @@ public class PackageCompletions {
                 }
                 return length;
             }
-            
+
             @Override
             public void apply(IDocument document) {
                 try {
-                    document.replace(selection.x, 
-                            length(document), 
+                    document.replace(selection.x,
+                            length(document),
                             d.getName());
                 }
                 catch (BadLocationException e) {
@@ -184,10 +184,10 @@ public class PackageCompletions {
             @Override
             public StyledString getStyledDisplayString() {
                 StyledString result = new StyledString();
-                Highlights.styleIdentifier(result, prefix, 
+                Highlights.styleIdentifier(result, prefix,
                         getDisplayString(),
-                        d instanceof TypeDeclaration ? 
-                                TYPE_STYLER : MEMBER_STYLER, 
+                        d instanceof TypeDeclaration ?
+                                TYPE_STYLER : MEMBER_STYLER,
                         getCompletionFont());
                 return result;
             }
@@ -238,10 +238,10 @@ public class PackageCompletions {
                     CeylonPlugin.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
                 final LinkedModeModel linkedModeModel = new LinkedModeModel();
                 final Point selection = getSelection(document);
-                List<ICompletionProposal> proposals = 
+                List<ICompletionProposal> proposals =
                         new ArrayList<ICompletionProposal>();
                 for (final Declaration d: candidate.getMembers()) {
-                    if (ModelUtil.isResolvable(d) && d.isShared() && 
+                    if (ModelUtil.isResolvable(d) && d.isShared() &&
                             !isOverloadedVersion(d)) {
                         proposals.add(
                                 new PackageMemberCompletionProposal(
@@ -276,7 +276,7 @@ public class PackageCompletions {
         public String getAdditionalProposalInfo() {
             return getAdditionalProposalInfo(null);
         }
-        
+
         @Override
         public String getAdditionalProposalInfo(IProgressMonitor monitor) {
             return getDocumentationFor(controller, candidate);
@@ -326,19 +326,19 @@ public class PackageCompletions {
         protected boolean qualifiedNameIsPath() {
             return true;
         }
-        
+
         @Override
         public StyledString getStyledDisplayString() {
             String text = getDisplayString();
             if (withBody) {
                 int loc = text.indexOf(" {");
                 return new StyledString(
-                        text.substring(0, loc), 
+                        text.substring(0, loc),
                         Highlights.PACKAGE_STYLER)
                             .append(text.substring(loc));
             }
             else {
-                return new StyledString(text, 
+                return new StyledString(text,
                         Highlights.PACKAGE_STYLER);
             }
         }

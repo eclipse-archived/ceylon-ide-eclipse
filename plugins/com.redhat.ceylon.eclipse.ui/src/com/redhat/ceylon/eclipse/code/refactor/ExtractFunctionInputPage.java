@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.common.util.Escaping;
 
 public class ExtractFunctionInputPage extends UserInputWizardPage {
     public ExtractFunctionInputPage(String name) {

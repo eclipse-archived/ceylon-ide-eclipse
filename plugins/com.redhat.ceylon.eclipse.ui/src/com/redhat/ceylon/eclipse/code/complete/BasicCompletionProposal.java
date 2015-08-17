@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextForDocLink;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 
 import java.util.List;
 

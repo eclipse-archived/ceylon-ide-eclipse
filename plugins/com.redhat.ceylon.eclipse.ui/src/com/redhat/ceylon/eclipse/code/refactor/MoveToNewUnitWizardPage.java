@@ -51,7 +51,7 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 import com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog;
 import com.redhat.ceylon.eclipse.code.wizard.EditDialog;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.common.util.Escaping;
 
 /*
  * TODO: this class is a huge copy/paste job of NewUnitWizardPage

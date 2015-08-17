@@ -32,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.Task;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.util.Escaping;
 
 public class Highlights  {
     

@@ -35,6 +35,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.installLinkedMode;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.SATISFIES;
@@ -112,7 +113,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         result.add(new InvocationCompletionProposal(
                 offset, prefix,
                 dec.getName(unit), escapeName(dec, unit),
-                dec, dec.getReference(), scope, controller, 
+                dec, dec.getReference(), scope, controller,
                 true, false, false, false, isMember, null));
     }
     
@@ -131,7 +132,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     offset, prefix,
                     getDescriptionFor(dwp, unit, true),
                     getTextFor(dec, unit), 
-                    dec, pr, scope, controller, 
+                    dec, pr, scope, controller,
                     true, false, false,
                     ol==UPPER_BOUND ||
                     ol==EXTENDS ||
@@ -155,7 +156,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     offset, prefix,
                     getDescriptionFor(dwp, unit, false),
                     escapeName(dec, unit), 
-                    dec, pr, scope, controller, 
+                    dec, pr, scope, controller,
                     true, false, false, false,
                     isMember, null));
         }
@@ -633,8 +634,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         @Override
         public StyledString getStyledDisplayString() {
             StyledString result = new StyledString();
-            Highlights.styleFragment(result, 
-                    getDisplayString(), false, null, 
+            Highlights.styleFragment(result,
+                    getDisplayString(), false, null,
                     getCompletionFont());
             return result;
         }
@@ -712,10 +713,10 @@ class InvocationCompletionProposal extends CompletionProposal {
             Scope scope,
             CeylonParseController controller,
             boolean includeDefaulted,
-            boolean positionalInvocation, 
+            boolean positionalInvocation,
             boolean namedInvocation,
             boolean inheritance,
-            boolean qualified, 
+            boolean qualified,
             Declaration qualifyingValue) {
         super(offset, prefix, getImageForDeclaration(dec), 
                 desc, text);

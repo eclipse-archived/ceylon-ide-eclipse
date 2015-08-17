@@ -51,7 +51,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.common.util.Escaping;
 
 class NewUnitWizardPage extends WizardPage {
 

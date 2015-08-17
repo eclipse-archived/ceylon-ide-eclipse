@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Escaping.toInitialLowercase;
+import static com.redhat.ceylon.ide.common.util.Escaping.toInitialLowercase;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;

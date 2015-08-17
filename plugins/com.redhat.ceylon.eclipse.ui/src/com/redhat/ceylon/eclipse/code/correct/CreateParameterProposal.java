@@ -6,11 +6,11 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrIn
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
-import static com.redhat.ceylon.eclipse.util.Escaping.toInitialLowercase;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
+import static com.redhat.ceylon.ide.common.util.Escaping.toInitialLowercase;
 
 import java.util.Collection;
 import java.util.HashSet;

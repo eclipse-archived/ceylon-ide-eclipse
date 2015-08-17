@@ -33,7 +33,7 @@ import org.osgi.framework.Bundle;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;

@@ -13,6 +13,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleIdentifier;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;

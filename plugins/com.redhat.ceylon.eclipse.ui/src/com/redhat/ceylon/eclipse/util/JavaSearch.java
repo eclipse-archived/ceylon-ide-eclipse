@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClas
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
-import static com.redhat.ceylon.eclipse.util.Escaping.toInitialLowercase;
+import static com.redhat.ceylon.ide.common.util.Escaping.toInitialLowercase;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_ATTRIBUTE_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_CEYLON_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_LOCAL_DECLARATION_ANNOTATION;

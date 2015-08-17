@@ -52,9 +52,9 @@ import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.Evaluatio
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.redhat.ceylon.eclipse.util.JavaSearch.DefaultArgumentMethodSearch;
+import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;

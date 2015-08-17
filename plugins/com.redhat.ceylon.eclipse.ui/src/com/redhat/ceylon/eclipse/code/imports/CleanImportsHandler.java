@@ -2,11 +2,11 @@ package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeAliasedName;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapeAliasedName;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 
 import java.util.ArrayList;
 import java.util.Collections;
