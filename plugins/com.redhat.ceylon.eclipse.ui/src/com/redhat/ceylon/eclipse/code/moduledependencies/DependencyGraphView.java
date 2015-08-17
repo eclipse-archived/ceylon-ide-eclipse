@@ -27,8 +27,11 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
@@ -48,6 +51,7 @@ import org.eclipse.zest.core.viewers.GraphViewer;
 import org.eclipse.zest.core.viewers.IGraphContentProvider;
 import org.eclipse.zest.core.viewers.ISelfStyleProvider;
 import org.eclipse.zest.core.widgets.GraphConnection;
+import org.eclipse.zest.core.widgets.GraphItem;
 import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
 import org.eclipse.zest.layouts.LayoutAlgorithm;
@@ -242,8 +246,12 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                 }
             }
             if (overriding) {
-                connection.setLineColor(connection.getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE));
+                connection.setLineColor(connection.getDisplay().getSystemColor(SWT.COLOR_BLUE));
+                connection.setHighlightColor(connection.getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE));
                 connection.setImage(overridesImage);
+            } else {
+                connection.setLineColor(connection.getDisplay().getSystemColor(SWT.COLOR_GRAY));
+                connection.setHighlightColor(connection.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
             }
             Label tooltip = new Label(tooltipText);
             connection.setTooltip(tooltip);
@@ -353,7 +361,49 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
         viewer.setLabelProvider(new GraphLabelProvider());
         viewer.setLayoutAlgorithm(getCurrentLayoutAlgorithm());
         viewer.getControl().setLayoutData(GridDataFactory.fillDefaults().span(4, 1).grab(true, true).create());
-
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                ModuleDependencies deps = (ModuleDependencies) viewer.getInput();
+                Object selection = event.getSelection();
+                if (selection instanceof StructuredSelection) {
+                    selection = ((StructuredSelection) selection).getFirstElement();
+                }
+                if (selection instanceof ModuleReference) {
+                    for (Dependency dep : deps.getDirectDependencies((ModuleReference) selection)) {
+                        GraphItem item = viewer.findGraphItem((ModuleReference) dep.getTarget());
+                        if (item instanceof GraphNode) {
+                            item.setVisible(true);
+                            item.highlight();
+                            item.unhighlight();
+                        }
+                    }
+                    for (Dependency dep : deps.getDirectReverseDependencies((ModuleReference) selection)) {
+                        GraphItem item = viewer.findGraphItem((ModuleReference) dep.getSource());
+                        if (item instanceof GraphNode) {
+                            item.setVisible(true);
+                            item.highlight();
+                            item.unhighlight();
+                        }
+                    }
+                } else if (selection instanceof Dependency) {
+                    Dependency dep = (Dependency) selection;
+                    GraphItem item = viewer.findGraphItem((ModuleReference) dep.getSource());
+                    if (item instanceof GraphNode) {
+                        item.setVisible(true);
+                        item.highlight();
+                        item.unhighlight();
+                    }
+                    item = viewer.findGraphItem((ModuleReference) dep.getTarget());
+                    if (item instanceof GraphNode) {
+                        item.setVisible(true);
+                        item.highlight();
+                        item.unhighlight();
+                    }
+                }
+            }
+        });
     }
     
     private void initViewCombo(Composite parent) {
