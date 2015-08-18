@@ -1,9 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
 import org.eclipse.jface.action.Action;
@@ -69,9 +67,9 @@ final class FormatBlockAction extends Action {
             Tree.Declaration bodyDec = 
                     findDeclarationWithBody(rootNode, body);
             String bodyIndent = 
-                    getIndent(bodyDec, document);
-            String indent = bodyIndent + getDefaultIndent();
-            String delim = getDefaultLineDelimiter(document);
+                    indents().getIndent(bodyDec, document);
+            String indent = bodyIndent + indents().getDefaultIndent();
+            String delim = indents().getDefaultLineDelimiter(document);
             if (!body.getStatements().isEmpty()) {
                 builder.append(delim);
                 for (Tree.Statement st: body.getStatements()) {
@@ -85,9 +83,9 @@ final class FormatBlockAction extends Action {
         else if (bodyNode instanceof Tree.NamedArgumentList) {
             Tree.NamedArgumentList body = 
                     (Tree.NamedArgumentList) bodyNode;
-            String bodyIndent = getIndent(body, document);
-            String indent = bodyIndent + getDefaultIndent();
-            String delim = getDefaultLineDelimiter(document);
+            String bodyIndent = indents().getIndent(body, document);
+            String indent = bodyIndent + indents().getDefaultIndent();
+            String delim = indents().getDefaultLineDelimiter(document);
             if (!body.getNamedArguments().isEmpty()) {
                 for (Tree.NamedArgument st: 
                         body.getNamedArguments()) {
@@ -112,9 +110,9 @@ final class FormatBlockAction extends Action {
         else if (bodyNode instanceof Tree.ImportMemberOrTypeList) {
             Tree.ImportMemberOrTypeList body = 
                     (Tree.ImportMemberOrTypeList) bodyNode;
-            String bodyIndent = getIndent(body, document);
-            String indent = bodyIndent + getDefaultIndent();
-            String delim = getDefaultLineDelimiter(document);
+            String bodyIndent = indents().getIndent(body, document);
+            String indent = bodyIndent + indents().getDefaultIndent();
+            String delim = indents().getDefaultLineDelimiter(document);
             if (!body.getImportMemberOrTypes().isEmpty()) {
                 for (Tree.ImportMemberOrType st: 
                         body.getImportMemberOrTypes()) {

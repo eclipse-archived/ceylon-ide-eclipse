@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.Collection;
 import java.util.List;
@@ -50,19 +49,19 @@ class JoinIfStatementsProposal {
                             if (ocl!=null && icl!=null) {
                                 TextChange change = 
                                         new TextFileChange(
-                                                "Join If Statements", 
+                                                "Join If Statements",
                                                 file);
                                 change.setEdit(new MultiTextEdit());
-                                change.addEdit(new ReplaceEdit(ocl.getEndIndex()-1, 
-                                        icl.getStartIndex()-ocl.getEndIndex()+2, 
+                                change.addEdit(new ReplaceEdit(ocl.getEndIndex()-1,
+                                        icl.getStartIndex()-ocl.getEndIndex()+2,
                                         ", "));
                                 decrementIndent(doc, inner, icl, change,
                                         getIndent(inner, doc),
                                         getIndent(outer, doc));
-                                change.addEdit(new DeleteEdit(inner.getEndIndex(), 
+                                change.addEdit(new DeleteEdit(inner.getEndIndex(),
                                         outer.getEndIndex()-inner.getEndIndex()));
                                 proposals.add(new CorrectionProposal(
-                                        "Join 'if' statements at condition list", 
+                                        "Join 'if' statements at condition list",
                                         change, null));
                             }
                         }
@@ -74,19 +73,19 @@ class JoinIfStatementsProposal {
                 if (block!=null &&
                         block.getToken().getType()
                             != CeylonLexer.IF_CLAUSE) {
-                    List<Tree.Statement> statements = 
+                    List<Tree.Statement> statements =
                             block.getStatements();
                     if (statements.size()==1) {
                         Tree.Statement st = statements.get(0);
                         if (st instanceof Tree.IfStatement) {
-                            Tree.IfStatement inner = 
+                            Tree.IfStatement inner =
                                     (Tree.IfStatement) st;
-                            Tree.ConditionList icl = 
+                            Tree.ConditionList icl =
                                     inner.getIfClause()
                                         .getConditionList();
-                            TextChange change = 
+                            TextChange change =
                                     new TextFileChange(
-                                            "Join If Statements", 
+                                            "Join If Statements",
                                             file);
                             change.setEdit(new MultiTextEdit());
                             int from = block.getStartIndex();
@@ -95,60 +94,60 @@ class JoinIfStatementsProposal {
                             decrementIndent(doc, inner, icl, change,
                                     getIndent(inner, doc),
                                     getIndent(outer, doc));
-                            change.addEdit(new DeleteEdit(inner.getEndIndex(), 
+                            change.addEdit(new DeleteEdit(inner.getEndIndex(),
                                     outer.getEndIndex()-inner.getEndIndex()));
                             proposals.add(new CorrectionProposal(
-                                    "Join 'if' statements at 'else'", 
+                                    "Join 'if' statements at 'else'",
                                     change, null));
                         }
                     }
                 }
-            }            
+            }
         }
     }
 
     private static void decrementIndent(IDocument doc, Tree.IfStatement is,
             Tree.ConditionList cl, TextChange change, String indent,
             String outerIndent) {
-        String defaultIndent = getDefaultIndent();
+        String defaultIndent = indents().getDefaultIndent();
         try {
             for (int line = doc.getLineOfOffset(cl.getStopIndex())+1;
                     line < doc.getLineOfOffset(is.getStopIndex()); 
                     line++) {
                 IRegion lineInformation = doc.getLineInformation(line);
-                String lineText = 
-                        doc.get(lineInformation.getOffset(), 
+                String lineText =
+                        doc.get(lineInformation.getOffset(),
                                 lineInformation.getLength());
-                if (lineText.startsWith(indent) && 
+                if (lineText.startsWith(indent) &&
                         indent.startsWith(outerIndent)) {
                     change.addEdit(new DeleteEdit(
-                            lineInformation.getOffset() + outerIndent.length(), 
+                            lineInformation.getOffset() + outerIndent.length(),
                             indent.length()-outerIndent.length()));
                 }
                 else if (lineText.startsWith(outerIndent+defaultIndent)) {
                     change.addEdit(new DeleteEdit(
-                            lineInformation.getOffset() + 
-                            outerIndent.length(), 
+                            lineInformation.getOffset() +
+                            outerIndent.length(),
                             defaultIndent.length()));
                 }
             }
             int line = doc.getLineOfOffset(is.getStopIndex());
             IRegion lineInformation = doc.getLineInformation(line);
-            String lineText = 
-                    doc.get(lineInformation.getOffset(), 
+            String lineText =
+                    doc.get(lineInformation.getOffset(),
                             lineInformation.getLength());
-            if (lineText.startsWith(indent) && 
+            if (lineText.startsWith(indent) &&
                     indent.startsWith(outerIndent)) {
                 change.addEdit(new ReplaceEdit(
                         lineInformation.getOffset(),
-                        indent.length(), 
+                        indent.length(),
                         outerIndent));
             }
             else if (lineText.startsWith(outerIndent+defaultIndent)) {
                 change.addEdit(new ReplaceEdit(
-                        lineInformation.getOffset(), 
+                        lineInformation.getOffset(),
                         outerIndent.length() +
-                        defaultIndent.length(), 
+                        defaultIndent.length(),
                         outerIndent));
             }
         }

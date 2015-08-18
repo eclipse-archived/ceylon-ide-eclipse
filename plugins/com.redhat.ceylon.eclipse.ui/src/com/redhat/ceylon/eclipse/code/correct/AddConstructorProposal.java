@@ -2,9 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.collectUninitializedMembers;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
 import java.util.Collection;
@@ -51,12 +49,12 @@ public class AddConstructorProposal extends CorrectionProposal {
                 List<TypedDeclaration> uninitialized = 
                         collectUninitializedMembers(body);
                 Tree.Statement les = findLastExecutable(body);
-                String defaultIndent = getDefaultIndent();
-                String delim = getDefaultLineDelimiter(doc);
+                String defaultIndent = indents().getDefaultIndent();
+                String delim = indents().getDefaultLineDelimiter(doc);
                 String indent;
                 indent = les==null ? 
-                        getIndent(cd, doc) + defaultIndent : 
-                        getIndent(les, doc);                
+                        indents().getIndent(cd, doc) + defaultIndent :
+                            indents().getIndent(les, doc);
                 Unit unit = node.getUnit();
                 StringBuilder params = new StringBuilder();
                 StringBuilder initializers = new StringBuilder();
@@ -194,7 +192,7 @@ public class AddConstructorProposal extends CorrectionProposal {
     
     @Override
     public StyledString getStyledDisplayString() {
-        String hint = 
+        String hint =
                 CorrectionUtil.shortcut(
                         "com.redhat.ceylon.eclipse.ui.action.addConstructor");
         return Highlights.styleProposal(getDisplayString(), false)

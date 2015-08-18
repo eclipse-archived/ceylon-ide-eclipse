@@ -91,19 +91,19 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 !(node instanceof Tree.MissingDeclaration)) {
             Unit u = dec.getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiableSourceFile msf = 
+                ModifiableSourceFile msf =
                         (ModifiableSourceFile) u;
-                ModifiablePhasedUnit phasedUnit = 
+                ModifiablePhasedUnit phasedUnit =
                         msf.getPhasedUnit();
-                FindDeclarationNodeVisitor fdv = 
+                FindDeclarationNodeVisitor fdv =
                         new FindDeclarationNodeVisitor(dec);
                 phasedUnit.getCompilationUnit().visit(fdv);
-                Tree.StatementOrArgument decNode = 
-                        (Tree.StatementOrArgument) 
+                Tree.StatementOrArgument decNode =
+                        (Tree.StatementOrArgument)
                             fdv.getDeclarationNode();
                 if (decNode!=null) {
-                    addAddAnnotationProposal(annotation, 
-                            desc, dec, proposals, phasedUnit, 
+                    addAddAnnotationProposal(annotation,
+                            desc, dec, proposals, phasedUnit,
                             node, decNode);
                 }
             }
@@ -113,7 +113,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
     private static void addAddAnnotationProposal(
             String annotation, String desc, Referenceable dec, 
             Collection<ICompletionProposal> proposals, 
-            ModifiablePhasedUnit unit, Node node, 
+            ModifiablePhasedUnit unit, Node node,
             Tree.StatementOrArgument decNode) {
         IFile file = unit.getResourceFile();
         if (file == null) {
@@ -273,9 +273,9 @@ public class AddAnnotionProposal extends CorrectionProposal {
                     nextAnnotation.getStartIndex();
         }
         else {
-            CommonToken tok = 
+            CommonToken tok =
                     (CommonToken) node.getMainToken();
-            if (node instanceof Tree.AnyAttribute || 
+            if (node instanceof Tree.AnyAttribute ||
                 node instanceof Tree.AnyMethod ) {
                 Tree.TypedDeclaration tdn = 
                         (Tree.TypedDeclaration) node;
@@ -303,13 +303,13 @@ public class AddAnnotionProposal extends CorrectionProposal {
                             getAnnotationIdentifier(prevAnnotation))) {
                 newAnnotationOffset = prevAnnotation.getEndIndex();
                 newAnnotationText.append(System.lineSeparator());
-                newAnnotationText.append(getIndent(node, doc));
+                newAnnotationText.append(indents().getIndent(node, doc));
                 newAnnotationText.append(newAnnotation);
             } else {
                 newAnnotationOffset = nextNodeStartIndex;
                 newAnnotationText.append(newAnnotation);
                 newAnnotationText.append(System.lineSeparator());
-                newAnnotationText.append(getIndent(node, doc));
+                newAnnotationText.append(indents().getIndent(node, doc));
             }
         } else {
             newAnnotationOffset = nextNodeStartIndex;
@@ -437,12 +437,12 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
         
         addAddAnnotationProposal(node,
-                "default", "Make Default", 
+                "default", "Make Default",
                 d, proposals, project);
-        
+
         /*if (d.isClassOrInterfaceMember()) {
-            ClassOrInterface container = 
-                    (ClassOrInterface) 
+            ClassOrInterface container =
+                    (ClassOrInterface)
                         d.getContainer();
             String name = d.getName();
             List<Declaration> rds = 
@@ -501,16 +501,16 @@ public class AddAnnotionProposal extends CorrectionProposal {
     }
 
     public static void addMakeNativeProposal(
-            final Collection<ICompletionProposal> proposals, 
-            final IProject project, final Node node, 
-            final Tree.CompilationUnit rootNode, 
+            final Collection<ICompletionProposal> proposals,
+            final IProject project, final Node node,
+            final Tree.CompilationUnit rootNode,
             final IFile file) {
         if (node instanceof Tree.ImportPath) {
             new Visitor() {
                 @Override
                 public void visit(Tree.ModuleDescriptor that) {
                     if (node instanceof Tree.ImportPath) {
-                        Tree.ImportPath ip = 
+                        Tree.ImportPath ip =
                                 (Tree.ImportPath) node;
                         Module module =
                                 (Module) ip.getModel();
@@ -560,7 +560,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
             }.visit(rootNode);
         }
     }
-    
+
     static void addMakeContainerAbstractProposal(
             Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {

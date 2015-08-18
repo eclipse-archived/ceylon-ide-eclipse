@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.Collection;
 
@@ -81,7 +80,7 @@ class ConvertToClassProposal extends AbstractLinkedMode implements ICompletionPr
         int offset = od.getEndIndex();
         //TODO: handle actual object declarations
         String mods = declaration.isShared() ? "shared " : "";
-        String ws = getDefaultLineDelimiter(doc) + getIndent(od, doc);
+        String ws = indents().getDefaultLineDelimiter(doc) + indents().getIndent(od, doc);
         String impl = " = " + initialName + "();";
         String dec = ws + mods + initialName + " " + name;
         change.addEdit(new InsertEdit(offset, dec + impl));

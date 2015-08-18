@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.Collection;
 import java.util.List;
@@ -225,8 +223,8 @@ public class ConvertSwitchToIfProposal {
                     }
                     
                     String newline = 
-                            getDefaultLineDelimiter(doc) +
-                            getIndent(is, doc);
+                            indents().getDefaultLineDelimiter(doc) +
+                            indents().getIndent(is, doc);
                     tfc.addEdit(new ReplaceEdit(is.getStartIndex(),
                             cl.getEndIndex()-is.getStartIndex(), 
                             "switch (" + var + ")" + newline +
@@ -243,13 +241,13 @@ public class ConvertSwitchToIfProposal {
                             int end = b.getEndIndex();
                             tfc.addEdit(new InsertEdit(start, 
                                     "{" + newline + 
-                                    getDefaultIndent()));
+                                    indents().getDefaultIndent()));
                             try {
                                 for (int line=doc.getLineOfOffset(start)+1;
                                         line<=doc.getLineOfOffset(end);
                                         line++) {
                                     tfc.addEdit(new InsertEdit(doc.getLineOffset(line),
-                                            getDefaultIndent()));
+                                            indents().getDefaultIndent()));
                                 }
                             }
                             catch (Exception e) {

@@ -30,8 +30,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEM
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingClassOrInterface;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 
@@ -116,10 +115,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
     }
 
-    public static Image DEFAULT_REFINEMENT = 
+    public static Image DEFAULT_REFINEMENT =
             imageRegistry().get(CEYLON_DEFAULT_REFINEMENT);
 
-    public static Image FORMAL_REFINEMENT = 
+    public static Image FORMAL_REFINEMENT =
             imageRegistry().get(CEYLON_FORMAL_REFINEMENT);
     
     static void addRefinementProposal(int offset,
@@ -136,8 +135,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 getRefinementDescriptionFor(dec, pr, unit), 
                 getRefinementTextFor(dec, pr, unit,
                         isInterface, ci,
-                        getDefaultLineDelimiter(doc)
-                            + getIndent(node, doc),
+                        indents().getDefaultLineDelimiter(doc)
+                            + indents().getIndent(node, doc),
                         true, preamble), 
                 cpc, dec, scope, false, true));
     }
@@ -173,9 +172,9 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     offset, prefix,
                     dec.getReference(), //TODO: this needs to do type arg substitution
                     getInlineFunctionDescriptionFor(p, null, unit),
-                    getInlineFunctionTextFor(p, null, unit, 
-                            getDefaultLineDelimiter(doc) +
-                            getIndent(node, doc)),
+                    getInlineFunctionTextFor(p, null, unit,
+                            indents().getDefaultLineDelimiter(doc) +
+                            indents().getIndent(node, doc)),
                     cpc, dec, scope, false, false));
         }
     }
@@ -335,7 +334,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     public String getAdditionalProposalInfo() {
         return getAdditionalProposalInfo(null);
     }
-    
+
     @Override
     public String getAdditionalProposalInfo(IProgressMonitor monitor) {
         return getDocumentationFor(cpc, declaration, monitor);
@@ -437,7 +436,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         .getNameAsString();
             boolean inLanguageModule =
                     pname.equals(Module.LANGUAGE_MODULE_NAME);
-            if (d instanceof Value && 
+            if (d instanceof Value &&
                     !d.equals(declaration)) {
                 Value value = (Value) d;
                 if (inLanguageModule) {
@@ -554,8 +553,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         @Override
         public StyledString getStyledDisplayString() {
             StyledString result = new StyledString();
-            Highlights.styleFragment(result, 
-                    getDisplayString(), false, null, 
+            Highlights.styleFragment(result,
+                    getDisplayString(), false, null,
                     getCompletionFont());
             return result;
         }
@@ -664,8 +663,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         @Override
         public StyledString getStyledDisplayString() {
             StyledString result = new StyledString();
-            Highlights.styleFragment(result, 
-                    getDisplayString(), false, null, 
+            Highlights.styleFragment(result,
+                    getDisplayString(), false, null,
                     getCompletionFont());
             return result;
         }

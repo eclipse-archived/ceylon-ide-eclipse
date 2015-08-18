@@ -1195,7 +1195,7 @@ public class CodeCompletions {
     private static void appendHashImpl(Unit unit, String indent, 
             StringBuilder result, ClassOrInterface ci) {
         result.append(" {")
-            .append(indent).append(getDefaultIndent())
+            .append(indent).append(indents().getDefaultIndent())
             .append("variable value hash = 1;")
             .append(indent).append(getDefaultIndent());
         String ind = indent + getDefaultIndent();
@@ -1209,19 +1209,19 @@ public class CodeCompletions {
             StringBuilder result, ClassOrInterface ci, List<Parameter> ps) {
         Parameter p = ps.get(0);
         result.append(" {")
-            .append(indent).append(getDefaultIndent())
+            .append(indent).append(indents().getDefaultIndent())
             .append("if (is ").append(ci.getName()).append(" ").append(p.getName()).append(") {")
-            .append(indent).append(getDefaultIndent()).append(getDefaultIndent())
+            .append(indent).append(indents().getDefaultIndent()).append(indents().getDefaultIndent())
             .append("return ");
-        String ind = indent+getDefaultIndent()+getDefaultIndent()+getDefaultIndent();
+        String ind = indent+indents().getDefaultIndent()+indents().getDefaultIndent()+indents().getDefaultIndent();
         appendMembersToEquals(unit, ind, result, ci, p);
-        result.append(indent).append(getDefaultIndent())
+        result.append(indent).append(indents().getDefaultIndent())
             .append("}")
-            .append(indent).append(getDefaultIndent())
+            .append(indent).append(indents().getDefaultIndent())
             .append("else {")
-            .append(indent).append(getDefaultIndent()).append(getDefaultIndent())
+            .append(indent).append(indents().getDefaultIndent()).append(indents().getDefaultIndent())
             .append("return false;")
-            .append(indent).append(getDefaultIndent())
+            .append(indent).append(indents().getDefaultIndent())
             .append("}")
             .append(indent)
             .append("}");
@@ -1287,7 +1287,7 @@ public class CodeCompletions {
     }
 
     private static String extraIndent(String indent, boolean containsNewline) {
-        return containsNewline ? indent + getDefaultIndent() : indent;
+        return containsNewline ? indent + indents().getDefaultIndent() : indent;
     }
     
     public static void appendParametersDescription(Declaration d, StringBuilder result, 

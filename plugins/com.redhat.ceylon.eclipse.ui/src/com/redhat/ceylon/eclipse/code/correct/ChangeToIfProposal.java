@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.Collection;
 import java.util.List;
@@ -48,8 +46,8 @@ public class ChangeToIfProposal {
                 TextFileChange change = 
                         new TextFileChange("Change Assert To If", file);
                 change.setEdit(new MultiTextEdit());
-                String newline = getDefaultLineDelimiter(doc);
-                String indent = getIndent(last, doc);
+                String newline = indents().getDefaultLineDelimiter(doc);
+                String indent = indents().getIndent(last, doc);
                 int begin = statement.getStartIndex();
                 int end = conditionList.getStartIndex();
                 change.addEdit(new ReplaceEdit(begin, end-begin, "if "));
@@ -58,14 +56,14 @@ public class ChangeToIfProposal {
                 //TODO: this is wrong, need to look for lines, not statements!
                 for (int i=statements.indexOf(statement)+1; i<statements.size(); i++) {
                     change.addEdit(new InsertEdit(statements.get(i).getStartIndex(), 
-                            getDefaultIndent()));
+                            indents().getDefaultIndent()));
                 }
                 if (!isLast) {
                     change.addEdit(new InsertEdit(last.getEndIndex(), 
                             newline + indent + "}"));
                 }
                 String elseBlock = newline + indent +
-                        "else {" + newline + indent + getDefaultIndent() + 
+                        "else {" + newline + indent + indents().getDefaultIndent() + 
                         "assert (false);" + newline + indent + "}" ;
                 change.addEdit(new InsertEdit(last.getEndIndex(), elseBlock));
                 proposals.add(new CorrectionProposal("Change 'assert' to 'if'", change, 

@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 
@@ -235,7 +235,7 @@ public class AliasRefactoring extends AbstractRefactoring {
                     .equals(unit.getPackage())) {
                 IDocument doc = getDocument(tfc);
                 String delim = 
-                        getDefaultLineDelimiter(document);
+                        indents().getDefaultLineDelimiter(document);
                 if (newName!=null) {
                     for (Node node: getNodesToRename(root)) {
                         renameNode(tfc, node, root);
@@ -306,7 +306,7 @@ public class AliasRefactoring extends AbstractRefactoring {
                             .append(initialName);
                     }
                     String indent = 
-                            Indents.getDefaultIndent();
+                            indents().getDefaultIndent();
                     String text = 
                             header + delim + 
                             indent + indent +

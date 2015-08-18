@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
 
 import java.util.ArrayList;
@@ -311,7 +311,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     private void createNewClassDeclaration(final TextChange tfc,
             Tree.CompilationUnit root) {
         if (declaration.getUnit().equals(root.getUnit())) {
-            String delim = getDefaultLineDelimiter(document);
+            String delim = indents().getDefaultLineDelimiter(document);
             //TODO: for unshared declarations, we don't 
             //      need to make it toplevel, I guess
             int loc = findToplevelStatement(rootNode, node).getStartIndex();

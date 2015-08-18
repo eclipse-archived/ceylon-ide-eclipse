@@ -30,43 +30,43 @@ class ShadowReferenceProposal extends CorrectionProposal {
                 new Region(offset, length));
     }
     
-    static void addShadowSwitchReferenceProposal(IFile file, 
-            Node node, Tree.CompilationUnit rootNode, 
+    static void addShadowSwitchReferenceProposal(IFile file,
+            Node node, Tree.CompilationUnit rootNode,
             Collection<ICompletionProposal> proposals) {
         if (node instanceof Tree.Term) {
-            Tree.Statement statement = 
+            Tree.Statement statement =
                     findStatement(rootNode, node);
             if (statement instanceof Tree.SwitchStatement) {
                 String name = nameProposals(node)[0];
-                TextFileChange change = 
+                TextFileChange change =
                         new TextFileChange("Shadow Reference", file);
                 change.setEdit(new MultiTextEdit());
 //                Integer offset = statement.getStartIndex();
-//                change.addEdit(new ReplaceEdit(offset, 
+//                change.addEdit(new ReplaceEdit(offset,
 //                        node.getStartIndex()-offset,
 //                        "value " + name + " = "));
 //                IDocument doc = getDocument(change);
-//                change.addEdit(new InsertEdit(node.getEndIndex(), 
-//                        ";" + 
-//                        getDefaultLineDelimiter(doc) + 
+//                change.addEdit(new InsertEdit(node.getEndIndex(),
+//                        ";" +
+//                        getDefaultLineDelimiter(doc) +
 //                        getIndent(statement, doc) +
 //                        "switch (" + name));
-                Tree.SwitchStatement ss = 
+                Tree.SwitchStatement ss =
                         (Tree.SwitchStatement) statement;
                 int loc = node.getStartIndex();
                 change.addEdit(new InsertEdit(loc, name + " = "));
                 if (node instanceof BaseMemberExpression) {
-                    Tree.BaseMemberExpression bme = 
+                    Tree.BaseMemberExpression bme =
                             (BaseMemberExpression) node;
                     Declaration d = bme.getDeclaration();
                     if (d!=null) {
-                        FindReferencesVisitor frv = 
+                        FindReferencesVisitor frv =
                                 new FindReferencesVisitor(d);
                         frv.visit(ss.getSwitchCaseList());
                         for (Node n: frv.getNodes()) {
-                            Node identifyingNode = 
+                            Node identifyingNode =
                                     getIdentifyingNode(n);
-                            Integer start = 
+                            Integer start =
                                     identifyingNode.getStartIndex();
                             if (start!=loc) {
                                 int len = identifyingNode.getText().length();
@@ -81,24 +81,24 @@ class ShadowReferenceProposal extends CorrectionProposal {
         }
     }
     
-    static void addShadowReferenceProposal(IFile file, 
-            Node node, Tree.CompilationUnit rootNode, 
+    static void addShadowReferenceProposal(IFile file,
+            Node node, Tree.CompilationUnit rootNode,
             Collection<ICompletionProposal> proposals) {
         if (node instanceof Tree.Variable) {
             Tree.Variable var = (Tree.Variable) node;
-            int offset = 
+            int offset =
                     var.getIdentifier()
                         .getStartIndex();
-            Tree.Term term = 
+            Tree.Term term =
                     var.getSpecifierExpression()
                         .getExpression()
                         .getTerm();
 			String name = nameProposals(term)[0];
-            TextChange change = 
+            TextChange change =
                     new TextFileChange("Shadow Reference", file);
             change.setEdit(new MultiTextEdit());
             change.addEdit(new InsertEdit(offset, name + " = "));
-            Tree.Statement statement = 
+            Tree.Statement statement =
                     Nodes.findStatement(rootNode, node);
             Value dec = var.getDeclarationModel();
             FindReferencesVisitor frv = 
@@ -106,7 +106,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
             frv.visit(statement);
             for (Node n: frv.getNodes()) {
                 Node identifyingNode = getIdentifyingNode(n);
-                Integer start = 
+                Integer start =
                         identifyingNode.getStartIndex();
                 if (start!=offset) {
                     int len = identifyingNode.getText().length();
@@ -118,7 +118,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
         }
         else if (node instanceof Tree.Term) {
             String name = nameProposals(node)[0];
-            TextChange change = 
+            TextChange change =
                     new TextFileChange("Shadow Reference", file);
 //            change.setEdit(new MultiTextEdit());
             Integer offset = node.getStartIndex();

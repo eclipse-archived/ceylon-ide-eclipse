@@ -5,8 +5,7 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -129,19 +128,19 @@ class CreateInNewUnitProposal implements ICompletionProposal,
                     importProposals().getBestImportInsertPosition(rootNode), 
                     "import " + packageName + 
                     " { " + dg.getBrokenName() + " }" + 
-                    getDefaultLineDelimiter(doc)));
+                    indents().getDefaultLineDelimiter(doc)));
         }
         else {
             tfc.setEdit(new InsertEdit(
                     importProposals().getBestImportMemberInsertPosition(importNode), 
-                    "," + getDefaultLineDelimiter(doc) + 
-                    getDefaultIndent() + dg.getBrokenName()));
+                    "," + indents().getDefaultLineDelimiter(doc) + 
+                    indents().getDefaultIndent() + dg.getBrokenName()));
         }
         return tfc;
     }
 
     private String getText(IDocument doc, boolean samePackage) {
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = indents().getDefaultLineDelimiter(doc);
         String definition = samePackage ? 
                 dg.generate("", delim) :
                 dg.generateShared("", delim);

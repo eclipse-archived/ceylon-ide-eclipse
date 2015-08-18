@@ -7,6 +7,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_L
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.Collection;
 
@@ -20,7 +21,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Indents;
 
 class FixMultilineStringIndentationProposal 
         extends CorrectionProposal {
@@ -69,7 +69,7 @@ class FixMultilineStringIndentationProposal
                 //the non-whitespace content
                 result.append(line);
             }
-            result.append(Indents.getDefaultLineDelimiter(doc));
+            result.append(indents().getDefaultLineDelimiter(doc));
         }
         result.setLength(result.length()-1);
         return result.toString();

@@ -32,7 +32,7 @@ public class ConvertToDefaultConstructorProposal {
     static void addConvertToDefaultConstructorProposal(
             Collection<ICompletionProposal> proposals, 
             IDocument doc, IFile file, 
-            Tree.CompilationUnit rootNode, 
+            Tree.CompilationUnit rootNode,
             Tree.Statement statement) {
         if (statement instanceof Tree.ClassDefinition) {
             Tree.ClassDefinition cd = 
@@ -56,10 +56,10 @@ public class ConvertToDefaultConstructorProposal {
                 Tree.ExtendedType et = cd.getExtendedType();
                 if (et!=null) {
                     try {
-                        String text = 
-                                doc.get(et.getStartIndex(), 
+                        String text =
+                                doc.get(et.getStartIndex(),
                                         et.getDistance());
-                        extend = 
+                        extend =
                                 new StringBuilder()
                                     .append(delim)
                                     .append(indent)
@@ -77,18 +77,18 @@ public class ConvertToDefaultConstructorProposal {
                                 .getPositionalArgumentList();
                     if (pal!=null) {
                         change.addEdit(new DeleteEdit(
-                                pal.getStartIndex(), 
+                                pal.getStartIndex(),
                                 pal.getDistance()));
                     }
                 }
                 for (Tree.Parameter p: pl.getParameters()) {
                     if (p instanceof Tree.InitializerParameter) {
-                        Node pdn = 
-                                findReferencedNode(rootNode, 
+                        Node pdn =
+                                findReferencedNode(rootNode,
                                         p.getParameterModel()
                                             .getModel());
                         if (pdn!=null) {
-                            //the constructor has to come 
+                            //the constructor has to come
                             //after the declarations of the
                             //parameters
                             int index = pdn.getEndIndex();
@@ -105,14 +105,14 @@ public class ConvertToDefaultConstructorProposal {
                     int end = p.getEndIndex();
                     int start = p.getStartIndex();
                     if (p instanceof Tree.ParameterDeclaration) {
-                        Tree.ParameterDeclaration pd = 
+                        Tree.ParameterDeclaration pd =
                                 (Tree.ParameterDeclaration) p;
-                        Tree.TypedDeclaration td = 
+                        Tree.TypedDeclaration td =
                                 pd.getTypedDeclaration();
                         Tree.Type t = td.getType();
                         try {
-                            String text = 
-                                    doc.get(t.getStartIndex(), 
+                            String text =
+                                    doc.get(t.getStartIndex(),
                                             p.getEndIndex()
                                             - t.getStartIndex());
                             paramDef.append(text);
@@ -120,16 +120,16 @@ public class ConvertToDefaultConstructorProposal {
                         catch (BadLocationException e) {
                             e.printStackTrace();
                         }
-                        Tree.TypedDeclaration tdn = 
+                        Tree.TypedDeclaration tdn =
                                 pd.getTypedDeclaration();
                         Tree.SpecifierOrInitializerExpression se;
                         if (tdn instanceof Tree.AttributeDeclaration) {
-                            Tree.AttributeDeclaration ad = 
+                            Tree.AttributeDeclaration ad =
                                     (Tree.AttributeDeclaration) tdn;
                             se = ad.getSpecifierOrInitializerExpression();
                         }
                         else if (tdn instanceof Tree.MethodDeclaration) {
-                            Tree.MethodDeclaration md = 
+                            Tree.MethodDeclaration md =
                                     (Tree.MethodDeclaration) tdn;
                             se = md.getSpecifierExpression();
                         }
@@ -150,11 +150,11 @@ public class ConvertToDefaultConstructorProposal {
                         FunctionOrValue dec = model.getModel();
                         if (dec instanceof Function) {
                             Function run = (Function) dec;
-                            for (ParameterList npl: 
+                            for (ParameterList npl:
                                     run.getParameterLists()) {
                                 paramDef.append("(");
                                 boolean first = true;
-                                for (Parameter np: 
+                                for (Parameter np:
                                         npl.getParameters()) {
                                     if (first) {
                                         first = false;
@@ -170,12 +170,12 @@ public class ConvertToDefaultConstructorProposal {
                                 paramDef.append(")");
                             }
                         }
-                        Tree.SpecifierExpression se = 
+                        Tree.SpecifierExpression se =
                                 ip.getSpecifierExpression();
                         if (se!=null) {
                             try {
-                            String text = 
-                                    doc.get(se.getStartIndex(), 
+                            String text =
+                                    doc.get(se.getStartIndex(),
                                             se.getDistance());
                                 paramDef.append(text);
                             }

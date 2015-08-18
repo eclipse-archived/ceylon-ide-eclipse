@@ -10,7 +10,7 @@ import com.redhat.ceylon.eclipse.code.preferences {
 }
 import com.redhat.ceylon.eclipse.util {
     EditorUtil,
-    Indents
+    Indents { indents }
 }
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager
@@ -53,13 +53,13 @@ import org.antlr.runtime {
 }
 
 object eclipseCompletionManager extends IdeCompletionManager<CeylonParseController, ICompletionProposal, IDocument>() {
-    
-    shared actual ICompletionProposal newParametersCompletionProposal(Integer offset, 
-            Type type, JList<Type> argTypes, 
+
+    shared actual ICompletionProposal newParametersCompletionProposal(Integer offset,
+            Type type, JList<Type> argTypes,
             Node node, CeylonParseController cpc) {
 
         value unit = node.unit;
-    
+
         value cd = unit.callableDeclaration;
         value paramTypes = showParameterTypes;
         value desc = StringBuilder();
@@ -67,12 +67,12 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
 
         desc.append("(");
         text.append("(");
-        
+
         for (i in 0..argTypes.size()) {
             variable Type argType = argTypes.get(i);
             if (desc.size > 1) { desc.append(", "); }
             if (text.size > 1) { text.append(", "); }
-            
+
             if (argType.classOrInterface, argType.declaration.equals(cd)) {
                 value anon = anonFunctionHeader(argType, unit);
                 text.append(anon).append(" => ");
@@ -83,7 +83,7 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
                 desc.append(argType.asString(unit))
                         .append(" ");
             }
-            
+
             value name = if (argType.classOrInterface || argType.typeParameter)
             then escaping.toInitialLowercase(argType.declaration.getName(unit))
             else "arg";
@@ -93,51 +93,51 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
         text.append(")");
         desc.append(")");
 
-        return ParametersCompletionProposal(offset, 
-                            desc.string, text.string, 
+        return ParametersCompletionProposal(offset,
+                            desc.string, text.string,
                             argTypes, node.scope, cpc);
     }
-    
+
     shared actual Boolean showParameterTypes => EditorUtil.preferences.getBoolean(CeylonPreferenceInitializer.\iPARAMETER_TYPES_IN_COMPLETIONS);
-    
+
     shared actual Tree.CompilationUnit getCompilationUnit(CeylonParseController cpc) => cpc.rootNode;
-    
+
     shared actual String inexactMatches => EditorUtil.preferences.getString(CeylonPreferenceInitializer.\iINEXACT_MATCHES);
-    
+
     shared actual String getDocumentSubstring(IDocument doc, Integer start, Integer length) => doc.get(start, length);
-    
+
     shared actual ICompletionProposal newPositionalInvocationCompletion(Integer offset, String prefix,
         Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember,
         OccurrenceLocation? ol, String? typeArgs, Boolean includeDefaulted) {
-        
+
         value desc = CodeCompletions.getPositionalInvocationDescriptionFor(dec, ol, pr, cpc.rootNode.unit, includeDefaulted, typeArgs);
         value text = CodeCompletions.getPositionalInvocationTextFor(dec, ol, pr, cpc.rootNode.unit, includeDefaulted, typeArgs);
         return InvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, includeDefaulted, true, false, isMember, null);
     }
-    
+
     shared actual ICompletionProposal newNamedInvocationCompletion(Integer offset, String prefix,
         Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember,
         OccurrenceLocation? ol, String? typeArgs, Boolean includeDefaulted) {
-        
+
         value desc = CodeCompletions.getNamedInvocationDescriptionFor(dec, pr, cpc.rootNode.unit, includeDefaulted, typeArgs);
         value text = CodeCompletions.getNamedInvocationTextFor(dec, pr, cpc.rootNode.unit, includeDefaulted, typeArgs);
         return InvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, includeDefaulted, false, true, isMember, null);
     }
-    
+
     shared actual ICompletionProposal newReferenceCompletion(Integer offset, String prefix,
         Declaration dec, Unit u, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember, Boolean includeTypeArgs) {
-        
+
         value desc = CodeCompletions.getDescriptionFor(dec, cpc.rootNode.unit);
         value text = CodeCompletions.getTextFor(dec, cpc.rootNode.unit);
         return InvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, true, false, false, isMember, null);
     }
-    
+
     shared actual ICompletionProposal newRefinementCompletionProposal(Integer offset, String prefix,
         Declaration dec, Reference? pr, Scope scope, CeylonParseController cmp, Boolean isInterface,
         ClassOrInterface ci, Node node, Unit unit, IDocument doc, Boolean preamble) {
-        
-        value lineDeliniter = Indents.getDefaultLineDelimiter(doc);
-        value indent = Indents.getIndent(node, doc);
+
+        value lineDeliniter = indents().getDefaultLineDelimiter(doc);
+        value indent = indents().getIndent(node, doc);
         value desc = CodeCompletions.getRefinementDescriptionFor(dec, pr, unit);
         value text = CodeCompletions.getRefinementTextFor(dec, pr, unit, isInterface, ci, lineDeliniter + indent, true, preamble);
         return RefinementCompletionProposal(offset, prefix, pr, desc, text, cmp, dec, scope, false, true);

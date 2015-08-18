@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.Collection;
 import java.util.List;
@@ -253,9 +251,9 @@ class InvertIfElseProposal extends CorrectionProposal {
                     test = "!" + term;
                 }
             }
-            String baseIndent = getIndent(ifStmt, doc);
-            String indent = getDefaultIndent();
-            String delim = getDefaultLineDelimiter(doc);
+            String baseIndent = indents().getIndent(ifStmt, doc);
+            String indent = indents().getDefaultIndent();
+            String delim = indents().getDefaultLineDelimiter(doc);
 
             String elseStr = getTerm(doc, elseBlock);
             elseStr = 

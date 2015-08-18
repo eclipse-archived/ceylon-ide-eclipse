@@ -107,8 +107,7 @@ import static com.redhat.ceylon.eclipse.core.builder.MarkerCreator.ERROR_CODE_KE
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
@@ -967,8 +966,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     int lastLine = 
                             doc.getLineOfOffset(stop);
                     if (firstLine!=lastLine) {
-                        sep = getDefaultLineDelimiter(doc) + 
-                                getIndent(last, doc);
+                        sep = indents().getDefaultLineDelimiter(doc) +
+                                indents().getIndent(last, doc);
                     }
                 }
                 catch (BadLocationException e) {
@@ -1014,8 +1013,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                         new TextFileChange("Add Else", file);
                 IDocument doc = getDocument(tfc);
                 String text = 
-                        getDefaultLineDelimiter(doc) + 
-                        getIndent(node, doc) + 
+                        indents().getDefaultLineDelimiter(doc) +
+                        indents().getIndent(node, doc) +
                         "else {}";
                 tfc.setEdit(new InsertEdit(offset, text));
                 Region selection =
@@ -1100,8 +1099,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                                         .isAnonymous() ? 
                                     "" : "is ";
                             Unit unit = rootNode.getUnit();
-                            text += getDefaultLineDelimiter(doc) + 
-                                    getIndent(node, doc) +
+                        text += indents().getDefaultLineDelimiter(doc) +
+                                indents().getIndent(node, doc) +
                                     "case (" +
                                     is + 
                                     pt.asString(unit) +

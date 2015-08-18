@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 
 import java.util.List;
@@ -49,9 +47,9 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         private final Declaration parameter;
         private final TextChange tfc;
 
-        private MoveVisitor(TypeDeclaration newOwner, 
-                IDocument doc, Declaration parameter, 
-                Tree.Declaration fun, Tree.Term defaultArg, 
+        private MoveVisitor(TypeDeclaration newOwner,
+                IDocument doc, Declaration parameter,
+                Tree.Declaration fun, Tree.Term defaultArg,
                 TextChange tfc) {
             this.newOwner = newOwner;
             this.doc = doc;
@@ -60,7 +58,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             this.defaultArg = defaultArg;
             this.tfc = tfc;
         }
-        
+
         private String string(Node node) {
             return MakeReceiverRefactoring.this.toString(node);
         }
@@ -74,7 +72,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                     if (that.getDeclarationModel()
                             .equals(parameter)) {
                         int len = node.getDistance();
-                        int start = 
+                        int start =
                                 node.getStartIndex()
                                 - fun.getStartIndex()
                                 + offset;
@@ -115,13 +113,13 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                     if (that.getDeclaration()
                             .equals(parameter)) {
                         int len = that.getDistance();
-                        int start = 
+                        int start =
                                 that.getStartIndex()
                                 - fun.getStartIndex()
                                 + offset;
-                        String outerRef = 
-                                fun.getDeclarationModel() 
-                                    instanceof Class ? 
+                        String outerRef =
+                                fun.getDeclarationModel()
+                                    instanceof Class ?
                                         "outer" : "this";
                         def.replace(start, start+len, outerRef);
                         offset += outerRef.length()-len;
@@ -136,31 +134,31 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         }
 
         private void insert(Tree.Body body, Tree.Declaration that) {
-            String delim = getDefaultLineDelimiter(document);
-            String originalIndent = 
-                    delim+getIndent(fun, document);
+            String delim = indents().getDefaultLineDelimiter(document);
+            String originalIndent =
+                    delim+indents().getIndent(fun, document);
             String text;
             List<Tree.Statement> sts = body.getStatements();
             int loc;
             if (sts.isEmpty()) {
-                String outerIndent = 
-                        delim + getIndent(that,doc);
-                String newIndent = 
-                        outerIndent + getDefaultIndent();
-                String def = 
+                String outerIndent =
+                        delim + indents().getIndent(that,doc);
+                String newIndent =
+                        outerIndent + indents().getDefaultIndent();
+                String def =
                         getDefinition()
-                            .replaceAll(originalIndent, 
+                            .replaceAll(originalIndent,
                                     newIndent);
                 text = newIndent + def + outerIndent;
                 loc = body.getEndIndex()-1;
             }
             else {
                 Tree.Statement st = sts.get(sts.size()-1);
-                String newIndent = 
-                        delim + getIndent(st, doc);
-                String def = 
+                String newIndent =
+                        delim + indents().getIndent(st, doc);
+                String def =
                         getDefinition()
-                            .replaceAll(originalIndent, 
+                            .replaceAll(originalIndent,
                                     newIndent);
                 text = newIndent + def;
                 loc = st.getEndIndex();
@@ -193,7 +191,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             if (d!=null &&
                     d.equals(fun.getDeclarationModel())) {
                 tfc.addEdit(new InsertEdit(
-                        that.getIdentifier().getStartIndex(), 
+                        that.getIdentifier().getStartIndex(),
                         newOwner.getName(that.getUnit()) + "."));
             }
         }
@@ -204,27 +202,27 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             if (leaveDelegate) return;
             Tree.Primary p = that.getPrimary();
             if (p instanceof Tree.BaseMemberOrTypeExpression) {
-                Tree.BaseMemberOrTypeExpression bmte = 
+                Tree.BaseMemberOrTypeExpression bmte =
                         (Tree.BaseMemberOrTypeExpression) p;
                 Declaration d = bmte.getDeclaration();
-                if (d!=null && 
+                if (d!=null &&
                         d.equals(fun.getDeclarationModel())) {
-                    Tree.PositionalArgumentList pal = 
+                    Tree.PositionalArgumentList pal =
                             that.getPositionalArgumentList();
-                    Tree.NamedArgumentList nal = 
+                    Tree.NamedArgumentList nal =
                             that.getNamedArgumentList();
                     if (pal!=null) {
-                        List<Tree.PositionalArgument> pas = 
+                        List<Tree.PositionalArgument> pas =
                                 pal.getPositionalArguments();
                         for (int i=0; i<pas.size(); i++) {
-                            Tree.PositionalArgument arg = 
+                            Tree.PositionalArgument arg =
                                     pas.get(i);
                             if (arg.getParameter()
                                     .getModel()
                                     .equals(parameter)) {
                                 tfc.addEdit(new InsertEdit(
-                                        p.getStartIndex(), 
-                                        string(arg) + 
+                                        p.getStartIndex(),
+                                        string(arg) +
                                         "."));
                                 int start, stop;
                                 if (i>0) {
@@ -250,33 +248,33 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                         }
                     }
                     if (nal!=null) {
-                        List<Tree.NamedArgument> nas = 
+                        List<Tree.NamedArgument> nas =
                                 nal.getNamedArguments();
                         for (int i=0; i<nas.size(); i++) {
                             Tree.NamedArgument arg = nas.get(i);
                             Parameter param = arg.getParameter();
-                            if (param!=null && 
+                            if (param!=null &&
                                     param.getModel()
                                         .equals(parameter)) {
                                 if (arg instanceof Tree.SpecifiedArgument) {
-                                    Tree.SpecifiedArgument sa = 
+                                    Tree.SpecifiedArgument sa =
                                             (Tree.SpecifiedArgument) arg;
-                                    Tree.Expression e = 
+                                    Tree.Expression e =
                                             sa.getSpecifierExpression()
                                                 .getExpression();
                                     tfc.addEdit(new InsertEdit(
-                                            p.getStartIndex(), 
+                                            p.getStartIndex(),
                                             string(e) + "."));
                                 }
                                 else {
-                                    String name = 
+                                    String name =
                                             arg.getIdentifier()
                                                 .getText();
                                     tfc.addEdit(new InsertEdit(
-                                            p.getStartIndex(), 
-                                            string(arg) + 
-                                            getDefaultLineDelimiter(doc) + 
-                                            Indents.getIndent(that, doc) + 
+                                            p.getStartIndex(),
+                                            string(arg) +
+                                            indents().getDefaultLineDelimiter(doc) +
+                                            indents().getIndent(that, doc) +
                                             name + "."));
                                 }
                                 int start, stop;
@@ -316,7 +314,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
     public boolean getEnabled() {
         if (node instanceof Tree.AttributeDeclaration && 
                 project != null) {
-            Tree.AttributeDeclaration ad = 
+            Tree.AttributeDeclaration ad =
                     (Tree.AttributeDeclaration) node;
             Value param = ad.getDeclarationModel();
             if (param!=null && 
@@ -324,7 +322,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                     param.getInitializerParameter()
                         .getDeclaration()
                         .isToplevel()) {
-                TypeDeclaration target = 
+                TypeDeclaration target =
                         param.getTypeDeclaration();
                 return target!=null &&
                         inSameProject(target) && 
@@ -341,7 +339,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
 
     public RefactoringStatus checkInitialConditions
             (IProgressMonitor pm)
-                    throws CoreException, 
+                    throws CoreException,
                            OperationCanceledException {
         RefactoringStatus result = new RefactoringStatus();
         return result;
@@ -349,16 +347,16 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
 
     public RefactoringStatus checkFinalConditions
             (IProgressMonitor pm)
-                    throws CoreException, 
+                    throws CoreException,
                            OperationCanceledException {
         return new RefactoringStatus();
     }
 
-    public Change createChange(IProgressMonitor pm) 
+    public Change createChange(IProgressMonitor pm)
             throws CoreException,
                    OperationCanceledException {
         CompositeChange cc = new CompositeChange(getName());
-        Tree.AttributeDeclaration decNode = 
+        Tree.AttributeDeclaration decNode =
                 (Tree.AttributeDeclaration) node;
         Value param = decNode.getDeclarationModel();
         TypeDeclaration target = param.getTypeDeclaration();
@@ -384,7 +382,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                         deleteOld(pufc, fun);
                     }
                 }
-                new MoveVisitor(target, doc, param, fun, 
+                new MoveVisitor(target, doc, param, fun,
                                 defaultArg, pufc)
                         .visit(pu.getCompilationUnit());
                 if (pufc.getEdit().hasChildren()) {
@@ -401,7 +399,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             else {
                 deleteOld(tfc, fun);
             }
-            new MoveVisitor(target, document, param, fun, 
+            new MoveVisitor(target, document, param, fun,
                             defaultArg, tfc)
                     .visit(rootNode);
             cc.add(tfc);
@@ -454,7 +452,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         else {
             return; //impossible!
         }
-        for (Tree.Parameter parameter: 
+        for (Tree.Parameter parameter:
                 parameterList.getParameters()) {
             Parameter p = parameter.getParameterModel();
             FunctionOrValue model = p.getModel();
@@ -483,7 +481,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
     }
 
     public boolean isMethod() {
-        Tree.AttributeDeclaration ad = 
+        Tree.AttributeDeclaration ad =
                 (Tree.AttributeDeclaration) node;
         Value dec = ad.getDeclarationModel();
         return dec.getContainer() instanceof Function;

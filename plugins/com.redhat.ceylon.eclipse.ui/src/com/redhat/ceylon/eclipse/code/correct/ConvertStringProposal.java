@@ -13,7 +13,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Indents;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 class ConvertStringProposal extends CorrectionProposal {
 
@@ -76,7 +76,7 @@ class ConvertStringProposal extends CorrectionProposal {
                 }
                 result.append(line);
             }
-            result.append(Indents.getDefaultLineDelimiter(doc));
+            result.append(indents().getDefaultLineDelimiter(doc));
         }
         result.setLength(result.length()-1);
         return result.toString();

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.ui.test.headless;
 
 import static org.junit.Assert.assertEquals;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 
 import java.util.HashSet;
 import java.util.List;
@@ -11,7 +12,6 @@ import org.junit.Test;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
-import com.redhat.ceylon.eclipse.code.correct.ImportProposals;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 public class ImportProposalTests {
@@ -20,7 +20,7 @@ public class ImportProposalTests {
     	ImportMemberOrTypeList imtl = prepareImportMemberOrTypeList();
 		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
 		
-		String result = ImportProposals.formatImportMembers("\n", "  ", ignoredDeclarations, imtl);
+		String result = importProposals().formatImportMembers("\n", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{\n  Bar,\n  Foo\n}");
 		
 	}
@@ -30,7 +30,7 @@ public class ImportProposalTests {
     	ImportMemberOrTypeList imtl = prepareImportMemberOrTypeList();
 		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
 		
-		String result = ImportProposals.formatImportMembers("\r\n", "  ", ignoredDeclarations, imtl);
+		String result = importProposals().formatImportMembers("\r\n", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{\r\n  Bar,\r\n  Foo\r\n}");
 	}
 
@@ -39,7 +39,7 @@ public class ImportProposalTests {
     	ImportMemberOrTypeList imtl = prepareImportMemberOrTypeList();
 		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
 		
-		String result = ImportProposals.formatImportMembers("|||", "  ", ignoredDeclarations, imtl);
+		String result = importProposals().formatImportMembers("|||", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{|||  Bar,|||  Foo|||}");
 	}
     
@@ -48,7 +48,7 @@ public class ImportProposalTests {
     	ImportMemberOrTypeList imtl = prepareSingleImportMemberOrTypeList();
 		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
 		
-		String result = ImportProposals.formatImportMembers("\r\n", "  ", ignoredDeclarations, imtl);
+		String result = importProposals().formatImportMembers("\r\n", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{\r\n  Bar\r\n}");
 	}
     
@@ -57,7 +57,7 @@ public class ImportProposalTests {
     	ImportMemberOrTypeList imtl = prepareSingleImportMemberOrTypeList();
 		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
 		
-		String result = ImportProposals.formatImportMembers("\n", "  ", ignoredDeclarations, imtl);
+		String result = importProposals().formatImportMembers("\n", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{\n  Bar\n}");
 	}
 
@@ -67,7 +67,7 @@ public class ImportProposalTests {
     	ImportMemberOrTypeList imtl = prepareSingleImportMemberOrTypeList();
 		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
 		
-		String result = ImportProposals.formatImportMembers("|||", "  ", ignoredDeclarations, imtl);
+		String result = importProposals().formatImportMembers("|||", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{|||  Bar|||}");
 	}
     

@@ -13,8 +13,13 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 
 public class Indents {
-
-    public static String getIndent(Node node, IDocument doc) {
+    private final static Indents indents = new Indents();
+    
+    public static Indents indents() {
+        return indents;
+    }
+    
+    public String getIndent(Node node, IDocument doc) {
         if (node==null||node.getEndToken()==null||
                 node.getEndToken().getLine()==0) {
             return "";
@@ -35,23 +40,23 @@ public class Indents {
         }
     }
     
-    public static String getDefaultIndent() {
+    public String getDefaultIndent() {
         StringBuilder result = new StringBuilder();
         initialIndent(result);
         return result.toString();
     }
     
-    public static int getIndentSpaces() {
+    public int getIndentSpaces() {
         IPreferenceStore store = EditorsUI.getPreferenceStore();
         return store==null ? 4 : store.getInt(EDITOR_TAB_WIDTH);
     }
     
-    public static boolean getIndentWithSpaces() {
+    public boolean getIndentWithSpaces() {
         IPreferenceStore store = EditorsUI.getPreferenceStore();
         return store==null ? false : store.getBoolean(EDITOR_SPACES_FOR_TABS);
     }
 
-    public static void initialIndent(StringBuilder buf) {
+    public void initialIndent(StringBuilder buf) {
         //guess an initial indent level
         if (getIndentWithSpaces()) {
             int spaces = getIndentSpaces();
@@ -64,7 +69,7 @@ public class Indents {
         }
     }
 
-    public static String getDefaultLineDelimiter(IDocument document) {
+    public String getDefaultLineDelimiter(IDocument document) {
         if (document instanceof IDocumentExtension4) {
             return ((IDocumentExtension4) document).getDefaultLineDelimiter();
         }

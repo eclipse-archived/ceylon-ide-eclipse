@@ -168,8 +168,8 @@ class RefineFormalMembersProposal
                 body.getStatements();
         String indent;
 //        String bodyIndent = getIndent(body, document);
-        String bodyIndent = getIndent(node, document);
-        String delim = getDefaultLineDelimiter(document);
+        String bodyIndent = indents().getIndent(node, document);
+        String delim = indents().getDefaultLineDelimiter(document);
         if (statements.isEmpty()) {
             indent = delim + bodyIndent + getDefaultIndent();
             if (offset<0) {

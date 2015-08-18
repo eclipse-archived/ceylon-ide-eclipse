@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
@@ -154,7 +153,7 @@ public class ImportProposals {
             Iterable<String> aliases,
             Declaration declarationBeingDeleted, 
             IDocument doc) {
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = indents().getDefaultLineDelimiter(doc);
         List<InsertEdit> result = 
                 new ArrayList<InsertEdit>();
         Set<Package> packages = new HashSet<Package>();
@@ -168,7 +167,7 @@ public class ImportProposals {
                     if (d.getUnit().getPackage().equals(p)) {
                         text.append(",")
                             .append(delim)
-                            .append(getDefaultIndent())
+                            .append(indents().getDefaultIndent())
                             .append(escapeName(d));
                     }
                 }
@@ -181,7 +180,7 @@ public class ImportProposals {
                     if (d.getUnit().getPackage().equals(p)) {
                         text.append(",")
                             .append(delim)
-                            .append(getDefaultIndent());
+                            .append(indents().getDefaultIndent());
                         if (alias!=null && 
                                 !alias.equals(d.getName())) {
                             text.append(alias).append('=');
@@ -242,7 +241,7 @@ public class ImportProposals {
             Iterable<String> aliases,
             String newPackageName, String oldPackageName, 
             IDocument doc) {
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = indents().getDefaultLineDelimiter(doc);
         List<TextEdit> result = new ArrayList<TextEdit>();
         Set<Declaration> set = new HashSet<Declaration>();
         for (Declaration d: declarations) {
@@ -252,7 +251,7 @@ public class ImportProposals {
         if (aliases==null) {
             for (Declaration d: declarations) {
                 text.append(",")
-                    .append(delim).append(getDefaultIndent())
+                    .append(delim).append(indents().getDefaultIndent())
                     .append(d.getName());
             }
         }
@@ -261,7 +260,7 @@ public class ImportProposals {
             for (Declaration d: declarations) {
                 String alias = aliasIter.next();
                 text.append(",")
-                    .append(delim).append(getDefaultIndent());
+                    .append(delim).append(indents().getDefaultIndent());
                 if (alias!=null && !alias.equals(d.getName())) {
                     text.append(alias).append('=');
                 }
@@ -364,7 +363,7 @@ public class ImportProposals {
     
     public int getBestImportInsertPosition(
             Tree.CompilationUnit cu) {
-        Integer endIndex = 
+        Integer endIndex =
                 cu.getImportList()
                     .getEndIndex();
         return endIndex == null ? 0 : endIndex;

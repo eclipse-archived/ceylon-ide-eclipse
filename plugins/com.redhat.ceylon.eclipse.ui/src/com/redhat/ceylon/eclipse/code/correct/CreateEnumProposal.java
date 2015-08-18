@@ -3,8 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.INTERFACE;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 
 import java.util.Collection;
@@ -50,23 +49,23 @@ class CreateEnumProposal extends CorrectionProposal {
             if (caseTypes!=null) {
                 Tree.TypeParameterList tpl = cd.getTypeParameterList();
                 if (caseTypes.getTypes().contains(node)) {
-                    addCreateEnumProposal(proposals, project, 
+                    addCreateEnumProposal(proposals, project,
                             "class " + brokenName + parameters(tpl) +
                                 parameters(cd.getParameterList()) +
-                                " extends " + cd.getDeclarationModel().getName() + 
-                                parameters(tpl) + 
-                                arguments(cd.getParameterList()) + " {}", 
+                                " extends " + cd.getDeclarationModel().getName() +
+                                parameters(tpl) +
+                                arguments(cd.getParameterList()) + " {}",
                             "class '"+ brokenName + parameters(tpl) +
-                            parameters(cd.getParameterList()) + "'", 
+                            parameters(cd.getParameterList()) + "'",
                             CeylonResources.CLASS, rootNode, cd);
                 }
                 if (caseTypes.getBaseMemberExpressions().contains(node)) {
-                    addCreateEnumProposal(proposals, project, 
-                            "object " + brokenName + 
-                                " extends " + cd.getDeclarationModel().getName() + 
-                                parameters(tpl) + 
-                                arguments(cd.getParameterList()) + " {}", 
-                            "object '"+ brokenName + "'", 
+                    addCreateEnumProposal(proposals, project,
+                            "object " + brokenName +
+                                " extends " + cd.getDeclarationModel().getName() +
+                                parameters(tpl) +
+                                arguments(cd.getParameterList()) + " {}",
+                            "object '"+ brokenName + "'",
                             ATTRIBUTE, rootNode, cd);
                 }
             }
@@ -77,61 +76,61 @@ class CreateEnumProposal extends CorrectionProposal {
             if (caseTypes!=null) {
                 Tree.TypeParameterList tpl = cd.getTypeParameterList();
                 if (caseTypes.getTypes().contains(node)) {
-                    addCreateEnumProposal(proposals, project, 
+                    addCreateEnumProposal(proposals, project,
                             "interface " + brokenName + parameters(tpl) +
-                                " satisfies " + cd.getDeclarationModel().getName() + 
-                                parameters(tpl) + " {}", 
-                            "interface '"+ brokenName + parameters(tpl) +  "'", 
+                                " satisfies " + cd.getDeclarationModel().getName() +
+                                parameters(tpl) + " {}",
+                            "interface '"+ brokenName + parameters(tpl) +  "'",
                             INTERFACE, rootNode, cd);
                 }
                 if (caseTypes.getBaseMemberExpressions().contains(node)) {
-                    addCreateEnumProposal(proposals, project, 
-                            "object " + brokenName + 
-                                " satisfies " + cd.getDeclarationModel().getName() + 
-                                parameters(tpl) + " {}", 
-                            "object '"+ brokenName + "'", 
+                    addCreateEnumProposal(proposals, project,
+                            "object " + brokenName +
+                                " satisfies " + cd.getDeclarationModel().getName() +
+                                parameters(tpl) + " {}",
+                            "object '"+ brokenName + "'",
                             ATTRIBUTE, rootNode, cd);
                 }
             }
         }
     }
-    
+
     private static void addCreateEnumProposal(
-            Collection<ICompletionProposal> proposals, 
-            String def, String desc, Image image, 
-            ModifiablePhasedUnit unit, 
+            Collection<ICompletionProposal> proposals,
+            String def, String desc, Image image,
+            ModifiablePhasedUnit unit,
             Tree.Statement statement) {
         IFile file = unit.getResourceFile();
         if (file != null) {
-            TextFileChange change = 
-                    new TextFileChange("Create Enumerated", 
+            TextFileChange change =
+                    new TextFileChange("Create Enumerated",
                             file);
             IDocument doc = getDocument(change);
-            String indent = getIndent(statement, doc);
-            String s = 
-                    indent + def + 
-                    getDefaultLineDelimiter(doc);
+            String indent = indents().getIndent(statement, doc);
+            String s =
+                    indent + def +
+                    indents().getDefaultLineDelimiter(doc);
             int offset = statement.getEndIndex()+1;
             if (offset>doc.getLength()) {
                 offset = doc.getLength();
-                s = getDefaultLineDelimiter(doc) + s;
+                s = indents().getDefaultLineDelimiter(doc) + s;
             }
             change.setEdit(new InsertEdit(offset, s));
-            proposals.add(new CreateEnumProposal(def, 
-                    "Create enumerated " + desc, 
-                    image, offset + def.indexOf("{}")+1, 
+            proposals.add(new CreateEnumProposal(def,
+                    "Create enumerated " + desc,
+                    image, offset + def.indexOf("{}")+1,
                     change));
         }
     }
 
     private static void addCreateEnumProposal(
             Collection<ICompletionProposal> proposals,
-            IProject project, String def, String desc, Image image, 
+            IProject project, String def, String desc, Image image,
             Tree.CompilationUnit rootNode, Tree.TypeDeclaration cd) {
             TypecheckerUnit u = rootNode.getUnit();
         if (u instanceof ModifiableSourceFile) {
             ModifiableSourceFile cu = (ModifiableSourceFile) u;
-                addCreateEnumProposal(proposals, def, desc, image, 
+                addCreateEnumProposal(proposals, def, desc, image,
                         cu.getPhasedUnit(), cd);
         }
     }
@@ -148,17 +147,17 @@ class CreateEnumProposal extends CorrectionProposal {
             for (Tree.Parameter p: pl.getParameters()) {
                 if (p!=null) {
                     if (p instanceof Tree.ParameterDeclaration) {
-                        Tree.ParameterDeclaration pd = 
+                        Tree.ParameterDeclaration pd =
                                 (Tree.ParameterDeclaration) p;
                         Tree.TypedDeclaration td = pd.getTypedDeclaration();
-                        result.append(td.getType().getTypeModel().asString()) 
+                        result.append(td.getType().getTypeModel().asString())
                                 .append(" ")
                                 .append(td.getIdentifier().getText());
                     }
                     else if (p instanceof Tree.InitializerParameter) {
-                        Tree.InitializerParameter ip = 
+                        Tree.InitializerParameter ip =
                                 (Tree.InitializerParameter) p;
-                        result.append(p.getParameterModel().getType().asString()) 
+                        result.append(p.getParameterModel().getType().asString())
                             .append(" ")
                             .append(ip.getIdentifier().getText());
                     }
@@ -176,7 +175,7 @@ class CreateEnumProposal extends CorrectionProposal {
         }
         return result.toString();
     }
-    
+
     private static String parameters(Tree.TypeParameterList tpl) {
         StringBuilder result = new StringBuilder();
         if (tpl!=null &&
@@ -184,7 +183,7 @@ class CreateEnumProposal extends CorrectionProposal {
             result.append("<");
             int len = tpl.getTypeParameterDeclarations().size();
             int i=0;
-            for (Tree.TypeParameterDeclaration p: 
+            for (Tree.TypeParameterDeclaration p:
                     tpl.getTypeParameterDeclarations()) {
                 result.append(p.getIdentifier().getText());
                 if (++i<len) result.append(", ");
@@ -193,7 +192,7 @@ class CreateEnumProposal extends CorrectionProposal {
         }
         return result.toString();
     }
-    
+
     private static String arguments(Tree.ParameterList pl) {
         StringBuilder result = new StringBuilder();
         if (pl==null ||
@@ -207,12 +206,12 @@ class CreateEnumProposal extends CorrectionProposal {
                 if (p!=null) {
                     Tree.Identifier id;
                     if (p instanceof Tree.InitializerParameter) {
-                        Tree.InitializerParameter ip = 
+                        Tree.InitializerParameter ip =
                                 (Tree.InitializerParameter) p;
                         id = ip.getIdentifier();
                     }
                     else if (p instanceof Tree.ParameterDeclaration) {
-                        Tree.ParameterDeclaration pd = 
+                        Tree.ParameterDeclaration pd =
                                 (Tree.ParameterDeclaration) p;
                         id = pd.getTypedDeclaration().getIdentifier();
                     }
@@ -234,5 +233,5 @@ class CreateEnumProposal extends CorrectionProposal {
         }
         return result.toString();
     }
-    
+
 }

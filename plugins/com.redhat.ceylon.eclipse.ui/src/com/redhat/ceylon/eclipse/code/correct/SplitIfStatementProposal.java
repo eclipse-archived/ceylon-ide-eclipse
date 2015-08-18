@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.Collection;
 import java.util.List;
@@ -54,9 +52,9 @@ class SplitIfStatementProposal {
                                 indent = "";
                             }
                             else {
-                                ws = getDefaultLineDelimiter(doc) + 
-                                        getIndent(is, doc);
-                                indent = getDefaultIndent();
+                                ws = indents().getDefaultLineDelimiter(doc) + 
+                                        indents().getIndent(is, doc);
+                                indent = indents().getDefaultIndent();
                             }
                             int start = c1.getEndIndex();
                             int stop = c2.getStartIndex();

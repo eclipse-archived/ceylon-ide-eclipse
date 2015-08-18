@@ -2,8 +2,7 @@ package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.ide.common.util.Escaping.escapeAliasedName;
 import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
@@ -73,7 +72,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 if (il==null || il.getImports().isEmpty()) {
                     start=0;
                     length=0;
-                    extra=getDefaultLineDelimiter(doc);
+                    extra=indents().getDefaultLineDelimiter(doc);
                 }
                 else {
                     start = il.getStartIndex();
@@ -161,7 +160,7 @@ public class CleanImportsHandler extends AbstractHandler {
         
         StringBuilder builder = new StringBuilder();
         String lastToplevel=null;
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = indents().getDefaultLineDelimiter(doc);
         for (Map.Entry<String, List<Tree.Import>> pack: 
                 packages.entrySet()) {
             String packageName = pack.getKey();
@@ -224,7 +223,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 currentPackage.substring(0, index);
         if (lastToplevel!=null && 
                 !topLevel.equals(lastToplevel)) {
-            builder.append(getDefaultLineDelimiter(doc));
+            builder.append(indents().getDefaultLineDelimiter(doc));
         }
         return topLevel;
     }
@@ -235,8 +234,8 @@ public class CleanImportsHandler extends AbstractHandler {
             List<Declaration> proposed, 
             boolean hasWildcard, StringBuilder builder, 
             IDocument doc) {
-        String indent = getDefaultIndent();
-        String delim = getDefaultLineDelimiter(doc);
+        String indent = indents().getDefaultIndent();
+        String delim = indents().getDefaultLineDelimiter(doc);
         for (Tree.ImportMemberOrType i: elements) {
             Declaration d = i.getDeclarationModel();
             if (d!=null && isErrorFree(i)) {
@@ -280,8 +279,8 @@ public class CleanImportsHandler extends AbstractHandler {
             Tree.ImportMemberOrType imt,
             List<Declaration> unused, StringBuilder builder, 
             IDocument doc) {
-        String indent = getDefaultIndent();
-        String delim = getDefaultLineDelimiter(doc);
+        String indent = indents().getDefaultIndent();
+        String delim = indents().getDefaultLineDelimiter(doc);
         if (imt.getImportMemberOrTypeList()!=null) {
             builder.append(" {");
             boolean found=false;

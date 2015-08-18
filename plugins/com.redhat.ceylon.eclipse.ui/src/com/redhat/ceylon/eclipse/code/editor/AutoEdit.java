@@ -1055,7 +1055,7 @@ class AutoEdit extends Indents {
             return document.getLineDelimiter(line-1);
         }
         else {
-            return getDefaultLineDelimiter(document);
+            return indents().getDefaultLineDelimiter(document);
         }
     }
 

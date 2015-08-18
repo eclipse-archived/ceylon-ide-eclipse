@@ -6,9 +6,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrIn
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 import static com.redhat.ceylon.ide.common.util.Escaping.toInitialLowercase;
 
@@ -68,7 +66,7 @@ class CreateParameterProposal extends InitializerProposal {
         change.setEdit(new MultiTextEdit());
         IDocument doc = EditorUtil.getDocument(change);
         int offset = paramList.getEndIndex()-1;
-        int il = applyImports(change, imports, 
+        int il = applyImports(change, imports,
                 unit.getCompilationUnit(), doc);
         change.addEdit(new InsertEdit(offset, def));
         int exitPos = node.getEndIndex();
@@ -98,9 +96,9 @@ class CreateParameterProposal extends InitializerProposal {
         int offset2;
         List<Tree.Statement> statements = body.getStatements();
         if (statements.isEmpty()) {
-            indentAfter = getDefaultLineDelimiter(doc) + 
-                    getIndent(decNode, doc);
-            indent = indentAfter + getDefaultIndent();
+            indentAfter = indents().getDefaultLineDelimiter(doc) +
+                    indents().getIndent(decNode, doc);
+            indent = indentAfter + indents().getDefaultIndent();
             offset2 = body.getStartIndex()+1;
         }
         else {

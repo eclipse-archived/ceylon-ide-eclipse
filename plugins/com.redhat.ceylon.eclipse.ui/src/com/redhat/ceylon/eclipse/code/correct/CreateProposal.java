@@ -76,8 +76,8 @@ class CreateProposal extends InitializerProposal {
                 body.getStatements();
         String delim = getDefaultLineDelimiter(doc);
         if (statements.isEmpty()) {
-            String bodyIndent = getIndent(decNode, doc);
-            indent = bodyIndent + getDefaultIndent();
+            String bodyIndent = indents().getIndent(decNode, doc);
+            indent = bodyIndent + indents().getDefaultIndent();
             indentBefore = delim + indent;
             try {
                 boolean singleLineBody = 
@@ -109,14 +109,14 @@ class CreateProposal extends InitializerProposal {
                         st = s;
                     }
                 }
-                indent = getIndent(st, doc);
+                indent = indents().getIndent(st, doc);
                 indentBefore = "";
                 indentAfter = delim + indent;
                 offset = st.getStartIndex();
             }
             else {
                 st = statements.get(statements.size()-1);
-                indent = getIndent(st, doc);
+                indent = indents().getIndent(st, doc);
                 indentBefore = delim + indent;
                 indentAfter = "";
                 offset = st.getEndIndex();
