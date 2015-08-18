@@ -3,7 +3,7 @@ Ant-Version: Apache Ant 1.9.4
 Created-By: 1.8.0_51-b16 (Oracle Corporation)
 Bundle-SymbolicName: ceylon.converter.java
 Export-Package: ceylon.converter.java;version=1.0.0
-Bundle-Version: 1.0.0.v20150818-1302
+Bundle-Version: 1.0.0.v20150818-1326
 Require-Bundle: com.redhat.ceylon.common;bundle-version=1.1.1;visibili
  ty:=reexport,org.antlr.antlr4-runtime-osgi;bundle-version=4.5.1;visib
  ility:=reexport,ceylon.language;bundle-version=1.1.1;visibility:=reex
