@@ -12,7 +12,7 @@
             <target name="publish"/>
             <target name="ide-quick"/>
         </ant>
-        <ant dir="../../../java-to-ceylon-converter" antfile="build.xml">
+        <ant dir="../../../ceylon.converter.java" antfile="build.xml">
     	      <target name="publish"/>
     	      <target name="ide-quick"/>
     	  </ant>

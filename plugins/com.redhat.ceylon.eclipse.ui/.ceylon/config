@@ -15,7 +15,7 @@ offline=true
 [repositories]
 output=./modules
 lookup=flat:./lib
-lookup=./../../../java-to-ceylon-converter/repo
+lookup=./../../../ceylon.converter.java/repo
 lookup=flat:./../com.redhat.ceylon.eclipse.ui.jdt.debug.fragment/target/ceylonRepo
 lookup=flat:./target/repo/plugins
 lookup=./../../../ceylon-dist/osgi/embeddedRepository/repo
