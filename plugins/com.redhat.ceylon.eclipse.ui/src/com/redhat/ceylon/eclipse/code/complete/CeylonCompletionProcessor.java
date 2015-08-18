@@ -280,6 +280,80 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                             // TODO Auto-generated method stub
                             return null;
                         }
+
+                        @Override
+                        public ICompletionProposal newKeywordCompletionProposal(
+                                long arg0, String arg1, String arg2) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public ICompletionProposal newMemberNameCompletionProposal(
+                                long arg0, String arg1, String arg2,
+                                String arg3) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public ICompletionProposal newBasicCompletionProposal(
+                                long arg0, String arg1, String arg2,
+                                String arg3, Declaration arg4,
+                                CeylonParseController arg5) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public ICompletionProposal newInlineFunctionProposal(
+                                long arg0, FunctionOrValue arg1, Scope arg2,
+                                Node arg3, String arg4,
+                                CeylonParseController arg5, IDocument arg6) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public ICompletionProposal newNamedArgumentProposal(
+                                long arg0, String arg1,
+                                CeylonParseController arg2,
+                                CompilationUnit arg3, Declaration arg4,
+                                Scope arg5) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public List<CommonToken> getTokens(
+                                CeylonParseController cmp) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public CommonToken getNextToken(
+                                CeylonParseController cmp, CommonToken token) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public ICompletionProposal newAnonFunctionProposal(
+                                long arg0, Type arg1, Unit arg2, String arg3,
+                                String arg4, boolean arg5) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
+
+                        @Override
+                        public ICompletionProposal newProgramElementReferenceCompletion(
+                                long arg0, String arg1, Declaration arg2,
+                                Unit arg3, Reference arg4, Scope arg5,
+                                CeylonParseController arg6, boolean arg7) {
+                            // TODO Auto-generated method stub
+                            return null;
+                        }
         
     };
     
