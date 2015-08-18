@@ -22,7 +22,7 @@
    <feature id="com.redhat.ceylon.dist.feature" version="1.1.1.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </feature>
-   <feature id="com.redhat.ceylon.converter.feature" version="1.0.0.qualifier">
+   <feature id="ceylon.converter.java.feature" version="1.0.0.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </feature>
    <bundle id="ceylon.formatter" version="1.1.1.qualifier">

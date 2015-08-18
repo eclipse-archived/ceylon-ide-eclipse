@@ -55,7 +55,7 @@
    </repository>
 
    <repository>
-     <id>com-redhat-ceylon-converter</id>
+     <id>ceylon.converter.java</id>
      <layout>p2</layout>
      <url>file:../ceylon.converter.java/osgi/dist</url>
    </repository>
