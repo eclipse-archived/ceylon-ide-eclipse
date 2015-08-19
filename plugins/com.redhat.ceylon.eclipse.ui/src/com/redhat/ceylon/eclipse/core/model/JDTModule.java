@@ -403,62 +403,64 @@ public class JDTModule extends LazyModule {
         return result;
     }
     
-    public synchronized List<IPackageFragmentRoot> getPackageFragmentRoots() {
-        if (packageFragmentRoots.isEmpty() && 
-                ! moduleManager.isExternalModuleLoadedFromSource(getNameAsString())) {
-            IJavaProject javaProject = moduleManager.getJavaProject();
-            if (javaProject != null) {
-                if (this.equals(getLanguageModule())) {
-                    IClasspathEntry runtimeClasspathEntry = null;
-                    
-                    try {
-                        for (IClasspathEntry entry : javaProject.getRawClasspath()) {
-                            if (entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER &&
-                                    entry.getPath().segment(0).equals(CeylonLanguageModuleContainer.CONTAINER_ID)) {
-                                runtimeClasspathEntry = entry;
-                                break;
-                            }
-                        }
+    public List<IPackageFragmentRoot> getPackageFragmentRoots() {
+        synchronized (packageFragmentRoots) {
+            if (packageFragmentRoots.isEmpty() && 
+                    ! moduleManager.isExternalModuleLoadedFromSource(getNameAsString())) {
+                IJavaProject javaProject = moduleManager.getJavaProject();
+                if (javaProject != null) {
+                    if (this.equals(getLanguageModule())) {
+                        IClasspathEntry runtimeClasspathEntry = null;
                         
-                        if (runtimeClasspathEntry != null) {
-                            for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
-                                    if (root.exists() && 
-                                            javaProject.isOnClasspath(root) &&
-                                            root.getRawClasspathEntry().equals(runtimeClasspathEntry)) {
-                                        packageFragmentRoots.add(root);
-                                    }
-                            }
-                        }
-                    } catch (JavaModelException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-                else {
-                    File jarToSearch = null;
-                    try {
-                        jarToSearch = returnCarFile();
-                        if (jarToSearch == null) {
-                            RepositoryManager repoMgr = CeylonBuilder.getProjectRepositoryManager(javaProject.getProject());
-                            if (repoMgr != null) {
-                                jarToSearch = CeylonProjectModulesContainer.getModuleArtifact(repoMgr, this);
-                            }
-                        }
-                        
-                        if (jarToSearch != null) {
-                            IPackageFragmentRoot root = moduleManager.getJavaProject().getPackageFragmentRoot(jarToSearch.toString());
-                            if (root instanceof JarPackageFragmentRoot) {
-                                JarPackageFragmentRoot jarRoot = (JarPackageFragmentRoot) root;
-                                if (jarRoot.getJar().getName().equals(jarToSearch.getPath())) {
-                                    packageFragmentRoots.add(root);
+                        try {
+                            for (IClasspathEntry entry : javaProject.getRawClasspath()) {
+                                if (entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER &&
+                                        entry.getPath().segment(0).equals(CeylonLanguageModuleContainer.CONTAINER_ID)) {
+                                    runtimeClasspathEntry = entry;
+                                    break;
                                 }
                             }
+                            
+                            if (runtimeClasspathEntry != null) {
+                                for (IPackageFragmentRoot root : javaProject.getPackageFragmentRoots()) {
+                                        if (root.exists() && 
+                                                javaProject.isOnClasspath(root) &&
+                                                root.getRawClasspathEntry().equals(runtimeClasspathEntry)) {
+                                            packageFragmentRoots.add(root);
+                                        }
+                                }
+                            }
+                        } catch (JavaModelException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
                         }
-                    } catch (CoreException e) {
-                        if (jarToSearch != null) {
-                            System.err.println("Exception trying to get Jar file '" + jarToSearch + "' :");
+                    }
+                    else {
+                        File jarToSearch = null;
+                        try {
+                            jarToSearch = returnCarFile();
+                            if (jarToSearch == null) {
+                                RepositoryManager repoMgr = CeylonBuilder.getProjectRepositoryManager(javaProject.getProject());
+                                if (repoMgr != null) {
+                                    jarToSearch = CeylonProjectModulesContainer.getModuleArtifact(repoMgr, this);
+                                }
+                            }
+                            
+                            if (jarToSearch != null) {
+                                IPackageFragmentRoot root = moduleManager.getJavaProject().getPackageFragmentRoot(jarToSearch.toString());
+                                if (root instanceof JarPackageFragmentRoot) {
+                                    JarPackageFragmentRoot jarRoot = (JarPackageFragmentRoot) root;
+                                    if (jarRoot.getJar().getName().equals(jarToSearch.getPath())) {
+                                        packageFragmentRoots.add(root);
+                                    }
+                                }
+                            }
+                        } catch (CoreException e) {
+                            if (jarToSearch != null) {
+                                System.err.println("Exception trying to get Jar file '" + jarToSearch + "' :");
+                            }
+                            e.printStackTrace();
                         }
-                        e.printStackTrace();
                     }
                 }
             }
@@ -625,7 +627,7 @@ public class JDTModule extends LazyModule {
         return ModuleType.CEYLON_SOURCE_ARCHIVE.equals(moduleType);
     }
     
-    public synchronized List<? extends PhasedUnit> getPhasedUnits() {
+    public List<? extends PhasedUnit> getPhasedUnits() {
         PhasedUnitMap<? extends PhasedUnit, ?> phasedUnitMap = null;
         if (isCeylonBinaryArchive()) {
             phasedUnitMap = binaryModulePhasedUnits;
