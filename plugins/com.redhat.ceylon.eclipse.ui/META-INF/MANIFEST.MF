@@ -51,7 +51,7 @@ Require-Bundle: ceylon.bootstrap;bundle-version="1.1.1",
  org.eclipse.ui.navigator.resources,
  org.eclipse.ui.views.properties.tabbed,
  ceylon.formatter;bundle-version="1.1.1",
- ceylon.converter.java;bundle-version="1.0.0",
+ ceylon.tool.converter.java2ceylon;bundle-version="1.0.0",
  ceylon.collection;bundle-version="1.1.1",
  ceylon.interop.java;bundle-version="1.1.1",
  com.redhat.ceylon.ide.common;bundle-version="1.1.1";visibility:=reexport

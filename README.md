@@ -27,7 +27,7 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 	- ceylon/ceylon-sdk
 	- ceylon/ceylon.formatter
 	- ceylon/ceylon-ide-common
-	- ceylon/ceylon.converter.java
+	- ceylon/ceylon.tool.converter.java2ceylon
 	- ceylon/ceylon-ide-eclipse
 
 
@@ -51,10 +51,10 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
     - This should have produced an eclipse update site available at the following path :
       `.../ceylon-ide-common/osgi/dist`
 
-7.  Build the Java To Ceylon Converter components locally (see [here](https://github.com/ceylon/ceylon.converter.java) for more details) :
-    - In the `ceylon.converter.java` directory run : `ant clean publish ide-quick`
+7.  Build the Java To Ceylon Converter components locally (see [here](https://github.com/ceylon/ceylon.tool.converter.java2ceylon) for more details) :
+    - In the `ceylon.tool.converter.java2ceylon` directory run : `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path :
-      `.../ceylon.converter.java/osgi/dist`
+      `.../ceylon.tool.converter.java2ceylon/osgi/dist`
 
 8.  From this directory (`ceylon-ide-eclipse`), type :
 
@@ -118,10 +118,10 @@ Then :
 	- build the _ceylon-ide-common_ module that is also required now (see [here](https://github.com/ceylon/ceylon-ide-common) for more details):
 		- In the `ceylon-ide-common` directory run : `ant clean publish ide-quick`
 
-    - build the Java To Ceylon Converter components locally (see [here](https://github.com/ceylon/ceylon.converter.java) for more details) :
-        - In the `ceylon.converter.java` directory run : `ant clean publish ide-quick`
+    - build the Java To Ceylon Converter components locally (see [here](https://github.com/ceylon/ceylon.tool.converter.java2ceylon) for more details) :
+        - In the `ceylon.tool.converter.java2ceylon` directory run : `ant clean publish ide-quick`
         - This should have produced an eclipse update site available at the following path :
-            `.../ceylon.converter.java/osgi/dist`
+            `.../ceylon.tool.converter.java2ceylon/osgi/dist`
 
 	- add the following folder as a local update site in your Eclipse _Available Software Sites_ list :
         	`.../ceylon-ide-eclipse/UpdateSiteForBinaryDependencies/`

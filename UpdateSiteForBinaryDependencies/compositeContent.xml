@@ -6,6 +6,6 @@
  </properties>
  <children size="2">
    <child location="../../ceylon-dist/osgi/build/dist"/>
-   <child location="../../ceylon.converter.java/osgi/dist"/>
+   <child location="../../ceylon.tool.converter.java2ceylon/osgi/dist"/>
  </children>
 </repository>

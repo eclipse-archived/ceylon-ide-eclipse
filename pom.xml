@@ -55,9 +55,9 @@
    </repository>
 
    <repository>
-     <id>ceylon.converter.java</id>
+     <id>ceylon.tool.converter.java2ceylon</id>
      <layout>p2</layout>
-     <url>file:../ceylon.converter.java/osgi/dist</url>
+     <url>file:../ceylon.tool.converter.java2ceylon/osgi/dist</url>
    </repository>
 
    <repository>

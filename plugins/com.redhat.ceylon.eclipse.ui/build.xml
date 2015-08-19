@@ -49,7 +49,7 @@
         <repo url="flat:${eclipseBinariesRepo}/plugins"/>
         <repo url="flat:${basedir}/../com.redhat.ceylon.eclipse.ui.jdt.debug.fragment/target/ceylonRepo"/>
         <repo url="${basedir}/../../../ceylon-dist/osgi/embeddedRepository/repo"/>
-    	<repo url="${basedir}/../../../ceylon.converter.java/repo/"/>
+    	<repo url="${basedir}/../../../ceylon.tool.converter.java2ceylon/repo/"/>
     </reposet>
 
 	<target name="compile">
