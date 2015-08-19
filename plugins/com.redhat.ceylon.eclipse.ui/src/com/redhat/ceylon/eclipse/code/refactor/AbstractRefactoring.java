@@ -67,7 +67,7 @@ abstract class AbstractRefactoring extends Refactoring {
             IEditorInput input = editor.getEditorInput();
             if (rootNode!=null && input instanceof IFileEditorInput) {
                 sourceFile = EditorUtil.getFile(input);
-                node = findNode(rootNode, getSelection(ce));
+                node = findNode(rootNode, tokens, getSelection(ce));
             }
             else {
                 sourceFile = null;

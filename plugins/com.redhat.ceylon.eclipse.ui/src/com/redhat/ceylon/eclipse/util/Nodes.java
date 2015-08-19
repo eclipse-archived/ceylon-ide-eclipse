@@ -82,12 +82,13 @@ public class Nodes {
     }
 
     public static Node findNode(Tree.CompilationUnit cu, int offset) {
-        return findNode(cu, offset, offset+1);
+        return findNode(cu, null, offset, offset+1);
     }
 
     public static Node findNode(Node node, 
+            List<CommonToken> tokens, 
             int startOffset, int endOffset) {
-        return delegate.findNode(node, startOffset, endOffset);
+        return delegate.findNode(node, tokens, startOffset, endOffset);
     }
 
     private static Node findScope(Tree.CompilationUnit cu, 
@@ -96,8 +97,10 @@ public class Nodes {
     }
 
     public static Node findNode(Tree.CompilationUnit cu, 
+            List<CommonToken> tokens, 
             ITextSelection s) {
         return findNode(cu, 
+                tokens, 
                 s.getOffset(), 
                 s.getOffset()+s.getLength());
     }

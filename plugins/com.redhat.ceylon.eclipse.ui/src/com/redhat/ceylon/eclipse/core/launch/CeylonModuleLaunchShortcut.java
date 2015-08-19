@@ -241,7 +241,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                     ISelection selection = ce.getSelectionProvider().getSelection();
                     if (selection instanceof ITextSelection) {
                         Node node = Nodes.findToplevelStatement(cu, 
-                                Nodes.findNode(cu, (ITextSelection) selection));
+                                Nodes.findNode(cu, cpc.getTokens(), (ITextSelection) selection));
                         if (node instanceof Tree.AnyMethod) {
                             Function method = 
                                     ((Tree.AnyMethod) node).getDeclarationModel();
@@ -348,7 +348,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                 if (cu!=null) {
                     ITextSelection selection = ce.getSelectionFromThread();
                     Node node = Nodes.findToplevelStatement(cu, 
-                            Nodes.findNode(cu,selection));
+                            Nodes.findNode(cu,cpc.getTokens(),selection));
                     if (node instanceof Tree.AnyMethod) {
                         Function method = 
                                 ((Tree.AnyMethod) node).getDeclarationModel();

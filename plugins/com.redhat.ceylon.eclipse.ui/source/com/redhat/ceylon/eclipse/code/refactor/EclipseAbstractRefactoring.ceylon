@@ -74,7 +74,7 @@ abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends Refact
         if (exists existingRootNode=rootNode,
             is IFileEditorInput input = editorPart.editorInput) {
             sourceVirtualFile = if (exists file=EditorUtil.getFile(input)) then IFileVirtualFile(file) else null;
-            node = Nodes.findNode(rootNode, EditorUtil.getSelection(editorPart));
+            node = Nodes.findNode(rootNode, tokens, EditorUtil.getSelection(editorPart));
         } else {
             sourceVirtualFile = null;
             node = null;

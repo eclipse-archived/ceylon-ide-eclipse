@@ -235,8 +235,11 @@ public class MarkOccurrencesAction
             // a parse error
             return;
         }
+        List<CommonToken> tokens = activeEditor != null ?
+            activeEditor.getParseController().getTokens() :
+            null;
         Node selectedNode = 
-                findNode(root, offset, offset+length-1);
+            findNode(root, tokens, offset, offset+length-1);
         try {
             List<Node> declarations = 
                     getDeclarationsOf(parseController, 
