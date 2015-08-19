@@ -232,7 +232,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
             return;
         }
 
-        Node node = Nodes.findNode(cu, (ITextSelection) selection);
+        Node node = Nodes.findNode(cu, cpc.getTokens(), (ITextSelection) selection);
         FindContainerVisitor fcv = new FindContainerVisitor(node);
         fcv.visit(cu);
         node = fcv.getDeclaration();
