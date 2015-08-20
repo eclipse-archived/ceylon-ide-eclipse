@@ -58,6 +58,7 @@
         <share module="org.eclipse.ui.workbench"/>
     </module>
     <module module="org.eclipse.ui.editors">
+        <add module="org.eclipse.jface" version="current" shared="true"/>
         <add module="org.eclipse.ui.workbench.texteditor" version="${org.eclipse.ui.workbench.texteditor.version.override}" shared="true"/>
     </module>
     <module module="org.eclipse.text">
