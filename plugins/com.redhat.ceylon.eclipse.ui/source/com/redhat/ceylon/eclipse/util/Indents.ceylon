@@ -22,7 +22,9 @@ import org.eclipse.ui.texteditor {
     }
 }
 
-shared object indents satisfies Indents<IDocument> {
+shared alias EclipseIndents => Indents<IDocument>;
+
+shared object eclipseIndents satisfies Indents<IDocument> {
 
     shared actual String getLine(Node node, IDocument doc) {
         try {

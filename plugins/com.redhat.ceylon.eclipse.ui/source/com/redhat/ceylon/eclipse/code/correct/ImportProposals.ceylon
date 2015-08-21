@@ -26,7 +26,7 @@ import org.eclipse.ltk.core.refactoring {
 import com.redhat.ceylon.eclipse.util {
     EditorUtil,
     Highlights,
-    eclipseIndents=indents
+    eclipseIndents
 }
 import com.redhat.ceylon.eclipse.ui {
     CeylonResources {
@@ -34,7 +34,9 @@ import com.redhat.ceylon.eclipse.ui {
     }
 }
 
-shared object importProposals satisfies ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange> {
+shared alias EclipseImportProposals => ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>;
+
+shared object eclipseImportProposals satisfies ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange> {
     shared actual Indents<IDocument> indents => eclipseIndents;
 
     shared actual [TextFileChange, IDocument] getTextChangeAndDocument(IFile file) {

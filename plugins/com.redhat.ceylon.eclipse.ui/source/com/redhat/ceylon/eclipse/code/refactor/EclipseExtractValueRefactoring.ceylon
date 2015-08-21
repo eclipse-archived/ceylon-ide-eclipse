@@ -18,7 +18,8 @@ import org.eclipse.text.edits {
     ReplaceEdit
 }
 import com.redhat.ceylon.eclipse.code.correct {
-    ImportProposals { importProposals }
+    EclipseImportProposals,
+    eclipseImportProposals
 }
 import com.redhat.ceylon.eclipse.util {
     Indents,
@@ -42,6 +43,7 @@ import java.lang {
 
 class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbstractRefactoring(editorPart)
         satisfies ExtractValueRefactoring & ExtractLinkedModeEnabled {
+    shared actual EclipseImportProposals importProposals => eclipseImportProposals;
     shared actual variable String? internalNewName=null;
     shared actual variable Boolean canBeInferred=false;
     shared actual variable Boolean explicitType=false;
@@ -80,7 +82,7 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
 
         Integer il;
         if (!result.declarationsToImport.empty) {
-            il = importProposals().applyImports(tfc, result.declarationsToImport, rootNode, doc);
+            il = importProposals.applyImports(tfc, result.declarationsToImport, rootNode, doc);
         } else {
             il=0;
         }

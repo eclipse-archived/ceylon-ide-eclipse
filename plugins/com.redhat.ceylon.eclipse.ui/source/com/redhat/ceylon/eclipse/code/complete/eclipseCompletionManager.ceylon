@@ -10,7 +10,7 @@ import com.redhat.ceylon.eclipse.code.preferences {
 }
 import com.redhat.ceylon.eclipse.util {
     EditorUtil,
-    Indents { indents }
+    eclipseIndents
 }
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager
@@ -136,8 +136,8 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
         Declaration dec, Reference? pr, Scope scope, CeylonParseController cmp, Boolean isInterface,
         ClassOrInterface ci, Node node, Unit unit, IDocument doc, Boolean preamble) {
 
-        value lineDeliniter = indents().getDefaultLineDelimiter(doc);
-        value indent = indents().getIndent(node, doc);
+        value lineDeliniter = eclipseIndents.getDefaultLineDelimiter(doc);
+        value indent = eclipseIndents.getIndent(node, doc);
         value desc = CodeCompletions.getRefinementDescriptionFor(dec, pr, unit);
         value text = CodeCompletions.getRefinementTextFor(dec, pr, unit, isInterface, ci, lineDeliniter + indent, true, preamble);
         return RefinementCompletionProposal(offset, prefix, pr, desc, text, cmp, dec, scope, false, true);
@@ -150,10 +150,10 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
     shared actual ICompletionProposal newKeywordCompletionProposal(Integer offset, String prefix, String keyword) {
         return KeywordCompletionProposal(offset, prefix, keyword);
     }
-    
+
     shared actual ICompletionProposal newAnonFunctionProposal(Integer _offset, Type? requiredType,
             Unit unit, String _text, String header, Boolean isVoid) {
-        
+
         value largeCorrectionImage = CeylonLabelProvider.getDecoratedImage(CeylonResources.\iCEYLON_CORRECTION, 0, false);
         return object extends CompletionProposal(_offset, "", largeCorrectionImage, _text, _text) {
             shared actual Point getSelection(IDocument document) {
@@ -163,14 +163,14 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
             }
         };
     }
-    
+
     shared actual JList<CommonToken> getTokens(CeylonParseController cpc) {
         return cpc.tokens;
     }
-    
-    shared actual ICompletionProposal newNamedArgumentProposal(Integer offset, String prefix, 
+
+    shared actual ICompletionProposal newNamedArgumentProposal(Integer offset, String prefix,
         CeylonParseController cpc, Tree.CompilationUnit cu, Declaration dec, Scope scope) {
-        
+
         value desc = CodeCompletions.getDescriptionFor(dec, cu.unit);
         value text = CodeCompletions.getTextFor(dec, cu.unit) + " = nothing;";
         return RefinementCompletionProposal(offset, prefix, dec.reference, desc, text, cpc, dec, scope, true, false);
@@ -178,23 +178,23 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
 
     shared actual ICompletionProposal newInlineFunctionProposal(Integer offset, FunctionOrValue dec,
             Scope scope, Node node, String prefix, CeylonParseController cpc, IDocument doc) {
-        
+
         value p = dec.initializerParameter;
         value unit = node.unit;
         value desc = CodeCompletions.getInlineFunctionDescriptionFor(p, null, unit);
-        value text = CodeCompletions.getInlineFunctionTextFor(p, null, unit, 
-            Indents.getDefaultLineDelimiter(doc) + Indents.getIndent(node, doc));
-        
+        value text = CodeCompletions.getInlineFunctionTextFor(p, null, unit,
+            eclipseIndents.getDefaultLineDelimiter(doc) + eclipseIndents.getIndent(node, doc));
+
         return RefinementCompletionProposal(offset, prefix, dec.reference, desc, text, cpc,
-            dec, scope, false, false); 
+            dec, scope, false, false);
     }
 
     shared actual ICompletionProposal newProgramElementReferenceCompletion(Integer offset, String prefix,
         Declaration dec, Unit? u, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember) => nothing;
-    
+
     shared actual CommonToken? getNextToken(CeylonParseController cpc, CommonToken token) => null;
-    
-    shared actual ICompletionProposal newBasicCompletionProposal(Integer offset, String prefix, 
+
+    shared actual ICompletionProposal newBasicCompletionProposal(Integer offset, String prefix,
         String text, String escapedText, Declaration decl, CeylonParseController cpc) => nothing;
 
 }
