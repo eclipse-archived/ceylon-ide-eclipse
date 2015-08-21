@@ -76,6 +76,6 @@
         <add module="org.eclipse.swt.gtk.linux.x86_64" version="${org.eclipse.swt.gtk.linux.x86_64.version.override}" shared="true"/>
     </module>
     <module module="org.eclipse.jface.text">
-        <add module="org.eclipse.swt.gtk.linux.x86_64" version="current" shared="true"/>
+        <share module="org.eclipse.jface"/>
     </module>
 </overrides>
