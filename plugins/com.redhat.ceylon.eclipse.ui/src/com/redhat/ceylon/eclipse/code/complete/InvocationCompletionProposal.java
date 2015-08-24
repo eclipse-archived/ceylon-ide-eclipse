@@ -766,7 +766,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             importCallableParameterParamTypes(declaration,
                     decs, cu);
         }
-        int il=importProposals().applyImports(change, decs, cu, document);
+        int il= (int) importProposals().applyImports(change, decs, cu, document);
         change.addEdit(createEdit(document));
         offset+=il;
         return change;

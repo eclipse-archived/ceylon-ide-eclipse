@@ -664,7 +664,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                 type = returnType.asSourceCodeString(unit);
                 HashSet<Declaration> decs = new HashSet<Declaration>();
                 importProposals().importType(decs, returnType, rootNode);
-                il = importProposals().applyImports(tfc, decs, rootNode, doc);
+                il = (int) importProposals().applyImports(tfc, decs, rootNode, doc);
             }
             else {
                 type = "function";
@@ -865,7 +865,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                 HashSet<Declaration> already = 
                         new HashSet<Declaration>();
                 importProposals().importType(already, returnType, rootNode);
-                il = importProposals().applyImports(tfc, already, rootNode, doc);
+                il = (int) importProposals().applyImports(tfc, already, rootNode, doc);
             }
             else {
                 content = "function";

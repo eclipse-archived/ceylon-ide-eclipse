@@ -202,7 +202,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 HashSet<Declaration> decs = 
                         new HashSet<Declaration>();
                 importProposals().importType(decs, infType, rootNode);
-                il=importProposals().applyImports(change, decs, rootNode, doc);
+                il= (int) importProposals().applyImports(change, decs, rootNode, doc);
             }
             int typeOffset = type.getStartIndex();
             int typeLen = type.getDistance();

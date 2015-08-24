@@ -40,8 +40,9 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.eclipse.util.eclipseIndents_;
 
-class AutoEdit extends Indents {
+class AutoEdit {
     
     public AutoEdit(IDocument document, 
             List<CommonToken> tokens,
@@ -81,7 +82,7 @@ class AutoEdit extends Indents {
                     if (getIndentWithSpaces()) {
                         int overhang = 
                                 getPrefix().length() % 
-                                        getIndentSpaces();
+                                getIndentSpaces();
                         command.text = 
                                 getDefaultIndent()
                                         .substring(overhang);
@@ -116,7 +117,19 @@ class AutoEdit extends Indents {
             }
         }
     }
-    
+
+    private String getDefaultIndent() {
+        return eclipseIndents_.get_().getDefaultIndent();
+    }
+
+    private int getIndentSpaces() {
+        return (int) eclipseIndents_.get_().getIndentSpaces();
+    }
+
+    private boolean getIndentWithSpaces() {
+        return eclipseIndents_.get_().getIndentWithSpaces();
+    }
+
     private static String[][] FENCES = {
             { "'", "'", CLOSE_QUOTES },
             { "\"", "\"", CLOSE_QUOTES },
@@ -1055,8 +1068,12 @@ class AutoEdit extends Indents {
             return document.getLineDelimiter(line-1);
         }
         else {
-            return indents().getDefaultLineDelimiter(document);
+            return getDefaultLineDelimiter(document);
         }
+    }
+
+    private static String getDefaultLineDelimiter(IDocument document) {
+        return eclipseIndents_.get_().getDefaultLineDelimiter(document);
     }
 
     private String getIndent(int start, int end) 
@@ -1130,6 +1147,10 @@ class AutoEdit extends Indents {
         else {
             initialIndent(buf);
         }
+    }
+
+    private void initialIndent(StringBuilder buf) {
+        eclipseIndents_.get_().initialIndent(buf);
     }
 
     private boolean endsWithTab(String indent) {
@@ -1347,5 +1368,4 @@ class AutoEdit extends Indents {
         }
         return false;
     }
-    
 }

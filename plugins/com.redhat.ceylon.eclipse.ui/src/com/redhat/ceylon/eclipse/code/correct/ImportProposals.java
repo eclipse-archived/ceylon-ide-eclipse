@@ -1,5 +1,13 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.TextEdit;
+
+/*
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
@@ -46,13 +54,16 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.ide.common.util.nodes_;
 
+*/
 public class ImportProposals {
-    private final static ImportProposals importProposals = new ImportProposals();
+    private final static com.redhat.ceylon.ide.common.correct.ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange> importProposals
+        = correctJ2C.importProposals();
     
-    public static ImportProposals importProposals() {
+    public static com.redhat.ceylon.ide.common.correct.ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange> importProposals() {
         return importProposals;
     }
-    
+
+    /*    
     void addImportProposals(
             Tree.CompilationUnit rootNode, 
             Node node,
@@ -95,20 +106,20 @@ public class ImportProposals {
                 }
             }
         }
-        /*if (result.isEmpty()) {
-            for (Package pkg: module.getAllPackages()) {
-                for (Declaration member: pkg.getMembers()) {
-                    if (!isImported(member, cu)) {
-                        int dist = getLevenshteinDistance(name, member.getName());
-                        //TODO: would it be better to just sort by dist, and
-                        //      then select the 3 closest possibilities?
-                        if (dist<=name.length()/3+1) {
-                            result.add(member);
-                        }
-                    }
-                }
-            }
-        }*/
+        //if (result.isEmpty()) {
+        //  for (Package pkg: module.getAllPackages()) {
+        //      for (Declaration member: pkg.getMembers()) {
+        //          if (!isImported(member, cu)) {
+        //                int dist = getLevenshteinDistance(name, member.getName());
+        //                //TODO: would it be better to just sort by dist, and
+        //                //      then select the 3 closest possibilities?
+        //                if (dist<=name.length()/3+1) {
+        //                    result.add(member);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
         return result;
     }
     
@@ -128,11 +139,11 @@ public class ImportProposals {
             change.addEdit(ie);
         }
         String proposedName = declaration.getName();
-        /*String brokenName = id.getText();
-        if (!brokenName.equals(proposedName)) {
-            change.addEdit(new ReplaceEdit(id.getStartIndex(), brokenName.length(), 
-                    proposedName));
-        }*/
+        //String brokenName = id.getText();
+        //if (!brokenName.equals(proposedName)) {
+        //    change.addEdit(new ReplaceEdit(id.getStartIndex(), brokenName.length(), 
+        //            proposedName));
+        //}
         String pname = 
                 declaration.getUnit().getPackage()
                         .getNameAsString();
@@ -561,5 +572,5 @@ public class ImportProposals {
             }
         }
     }
-    
+*/
 }

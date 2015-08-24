@@ -104,7 +104,7 @@ class CreateParameterProposal extends InitializerProposal {
         else {
             Tree.Statement statement = 
                     statements.get(statements.size()-1);
-            indent = getDefaultLineDelimiter(doc) + 
+            indent = getDefaultLineDelimiter(doc) +
                     getIndent(statement, doc);
             offset2 = statement.getEndIndex();
             indentAfter = "";
@@ -112,7 +112,7 @@ class CreateParameterProposal extends InitializerProposal {
         HashSet<Declaration> decs = new HashSet<Declaration>();
         Tree.CompilationUnit cu = unit.getCompilationUnit();
         importProposals().importType(decs, returnType, cu);
-        int il = importProposals().applyImports(change, decs, cu, doc);
+        int il = (int) importProposals().applyImports(change, decs, cu, doc);
         change.addEdit(new InsertEdit(offset, pdef));
         change.addEdit(new InsertEdit(offset2, indent+adef+indentAfter));
         int exitPos = node.getEndIndex();

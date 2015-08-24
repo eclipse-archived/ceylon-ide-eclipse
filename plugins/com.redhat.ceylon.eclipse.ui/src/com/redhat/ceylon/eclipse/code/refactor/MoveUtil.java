@@ -58,7 +58,7 @@ public class MoveUtil {
         Package p = ncu.getUnit().getPackage();
         Map<Declaration, String> imports = 
                 getImports(node, p.getNameAsString(), ncu, packages);
-        return importProposals().applyImports(fc, imports, ncu, doc, declaration);
+        return (int) importProposals().applyImports(fc, imports, ncu, doc, declaration);
     }
 
     public static Map<Declaration,String> getImports(Node node,

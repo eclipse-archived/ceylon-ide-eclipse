@@ -373,7 +373,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         declarationNode.visit(aiv);
         Declaration dnd = 
                 declarationNode.getDeclarationModel();
-        importProposals().applyImports(change, already, dnd, cu, document);
+        importProposals().applyImports(change, already, cu, document, dnd);
         return aiv.importedFromDeclarationPackage;
     }
 

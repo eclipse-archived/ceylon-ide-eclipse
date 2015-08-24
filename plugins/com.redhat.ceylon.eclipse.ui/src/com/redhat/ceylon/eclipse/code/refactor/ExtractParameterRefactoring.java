@@ -341,7 +341,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
         Type type = node.getUnit().denotableType(tm);
         HashSet<Declaration> decs = new HashSet<Declaration>();
         importProposals().importType(decs, type, rootNode);
-        int il = importProposals().applyImports(tfc, decs, rootNode, doc);
+        int il = (int) importProposals().applyImports(tfc, decs, rootNode, doc);
         builder.append(type.asSourceCodeString(rootNode.getUnit()));
         return il;
     }

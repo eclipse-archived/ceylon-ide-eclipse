@@ -70,7 +70,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         HashSet<Declaration> decs = 
                 new HashSet<Declaration>();
         CompilationUnit cu = unit.getCompilationUnit();
-        int il = importProposals().applyImports(change, decs, cu, doc);
+        int il = (int) importProposals().applyImports(change, decs, cu, doc);
         change.addEdit(new InsertEdit(offset, def));
         if (constraints!=null) {
             int loc = getConstraintLoc(decNode);

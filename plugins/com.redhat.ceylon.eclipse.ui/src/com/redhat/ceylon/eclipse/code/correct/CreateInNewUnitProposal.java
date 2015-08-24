@@ -125,14 +125,14 @@ class CreateInNewUnitProposal implements ICompletionProposal,
                 importProposals().findImportNode(rootNode, packageName);
         if (importNode==null) {
             tfc.setEdit(new InsertEdit(
-                    importProposals().getBestImportInsertPosition(rootNode), 
+                    (int) importProposals().getBestImportInsertPosition(rootNode), 
                     "import " + packageName + 
                     " { " + dg.getBrokenName() + " }" + 
                     indents().getDefaultLineDelimiter(doc)));
         }
         else {
             tfc.setEdit(new InsertEdit(
-                    importProposals().getBestImportMemberInsertPosition(importNode), 
+                    (int) importProposals().getBestImportMemberInsertPosition(importNode), 
                     "," + indents().getDefaultLineDelimiter(doc) + 
                     indents().getDefaultIndent() + dg.getBrokenName()));
         }
