@@ -345,8 +345,8 @@ public class AliasRefactoring extends AbstractRefactoring {
     protected void renameNode(TextChange tfc, Node node, 
             Tree.CompilationUnit root) {
         tfc.addEdit(new ReplaceEdit(
-                node.getStartIndex(), 
-                node.getDistance(), 
+                node.getStartIndex(),
+                node.getDistance(),
                 newName));
     }
     

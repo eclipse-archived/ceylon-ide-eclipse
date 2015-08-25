@@ -27,10 +27,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
-public class ExtractParameterRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled {
+public class ExtractParameterRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled<IRegion> {
     
     private String newName;
     private Tree.Declaration methodOrClass;
@@ -361,5 +362,9 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
 	public String[] getNameProposals() {
 		return Nodes.nameProposals(node);
 	}
-    
+
+	@Override
+    public IRegion newRegion(long start, long length) {
+        return new Region((int) start, (int) length);
+    }
 }

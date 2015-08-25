@@ -63,7 +63,10 @@ import com.redhat.ceylon.eclipse.core.vfs {
     IFileVirtualFile
 }
 
-abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends Refactoring() satisfies AbstractRefactoring {
+abstract class EclipseAbstractRefactoring<RefactoringData>(IEditorPart editorPart)
+        extends Refactoring()
+        satisfies AbstractRefactoring<RefactoringData> {
+
     shared class CeylonEditorData() satisfies EditorData {
         assert (is CeylonEditor ce=editorPart);
         assert(is ITextEditor editorPart);

@@ -36,36 +36,17 @@ import com.redhat.ceylon.eclipse.ui {
 
 shared alias EclipseImportProposals => ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>;
 
-shared object eclipseImportProposals satisfies ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange> {
+shared object eclipseImportProposals
+        satisfies ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>
+        & EclipseDocumentChanges  {
     shared actual Indents<IDocument> indents => eclipseIndents;
 
-    shared actual [TextFileChange, IDocument] getTextChangeAndDocument(IFile file) {
-        TextFileChange importChange =
-                TextFileChange("Add Import", file);
-        importChange.edit = MultiTextEdit();
-
-        IDocument doc = EditorUtil.getDocument(importChange);
-        return [importChange, doc];
-    }
+    shared actual TextChange createImportChange(IFile file)
+        => TextFileChange("Add Import", file);
 
     shared actual ICompletionProposal newImportProposal(String description, TextChange correctionChange)
         => object extends CorrectionProposal(description, correctionChange, null, \iIMPORT) {
             styledDisplayString
                 => Highlights.styleProposal(displayString, true);
         };
-
-    shared actual TextEdit newDeleteEdit(Integer start, Integer stop)
-        => DeleteEdit(start, stop);
-
-    shared actual TextEdit newReplaceEdit(Integer start, Integer stop, String text)
-        => ReplaceEdit(start, stop, text);
-
-    shared actual InsertEdit newInsertEdit(Integer position, String text)
-        => InsertEdit(position, text);
-
-    shared actual void addEditToChange(TextChange change, TextEdit edit)
-        => change.addEdit(edit);
-
-    shared actual String getInsertedText(InsertEdit edit)
-        => edit.text;
 }

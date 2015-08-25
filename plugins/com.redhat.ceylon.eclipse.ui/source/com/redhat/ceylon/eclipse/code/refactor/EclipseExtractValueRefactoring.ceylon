@@ -9,14 +9,6 @@ import org.eclipse.ltk.core.refactoring {
     RefactoringStatus,
     TextChange
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree
-}
-import org.eclipse.text.edits {
-    MultiTextEdit,
-    InsertEdit,
-    ReplaceEdit
-}
 import com.redhat.ceylon.eclipse.code.correct {
     EclipseImportProposals,
     eclipseImportProposals
@@ -30,19 +22,28 @@ import org.eclipse.ui {
     IEditorPart
 }
 import org.eclipse.jface.text {
-    Region,
-    IRegion
+    IRegion,
+    IDocument,
+    Region
 }
 import com.redhat.ceylon.model.typechecker.model {
     Type
 }
-import java.lang {
-    ObjectArray,
-    JavaString=String
+import org.eclipse.core.resources {
+    IFile
+}
+import org.eclipse.jface.text.contentassist {
+    ICompletionProposal
+}
+import org.eclipse.text.edits {
+    InsertEdit,
+    TextEdit
 }
 
-class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbstractRefactoring(editorPart)
-        satisfies ExtractValueRefactoring & ExtractLinkedModeEnabled {
+class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbstractRefactoring<TextChange>(editorPart)
+        satisfies ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>
+        & EclipseDocumentChanges
+        & EclipseExtractLinkedModeEnabled {
     shared actual EclipseImportProposals importProposals => eclipseImportProposals;
     shared actual variable String? internalNewName=null;
     shared actual variable Boolean canBeInferred=false;
@@ -69,16 +70,13 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
         return tc;
     }
 
-    shared actual void extractInFile(TextChange tfc) {
-        "This method will only be called when the [[editorData]]is not [[null]]"
-        assert(exists editorData);
-        assert (is Tree.Term node=editorData.node,
-            exists rootNode=editorData.rootNode);
+    shared actual IRegion newRegion(Integer start, Integer length)
+        => Region(start, length);
 
         tfc.edit = MultiTextEdit();
         value doc = EditorUtil.getDocument(tfc);
 
-        value result = extractValue();
+    shared actual String name => (super of ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>).name;
 
         Integer il;
         if (!result.declarationsToImport.empty) {

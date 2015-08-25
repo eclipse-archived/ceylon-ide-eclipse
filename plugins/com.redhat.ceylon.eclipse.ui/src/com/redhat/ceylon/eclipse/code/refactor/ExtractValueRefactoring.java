@@ -35,7 +35,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
-public class ExtractValueRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled {
+public class ExtractValueRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled<IRegion> {
     
     private final class FindAnonFunctionVisitor extends Visitor {
         private final Statement statement;
@@ -338,5 +338,9 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
 	public boolean isFunction() {
 		return node instanceof Tree.FunctionArgument;
 	}
-    
+
+    @Override
+    public IRegion newRegion(long start, long length) {
+        return new Region((int) start, (int) length);
+    }
 }

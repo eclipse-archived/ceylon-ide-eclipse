@@ -41,6 +41,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Scope;
@@ -51,7 +52,7 @@ import com.redhat.ceylon.model.typechecker.model.UnionType;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
-public class ExtractFunctionRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled {
+public class ExtractFunctionRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled<IRegion> {
     
     private final class FindOuterReferencesVisitor extends Visitor {
         final Declaration declaration;
@@ -691,7 +692,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                 String header = 
                         Nodes.toString(cpl, tokens) + " => ";
                 invocation = header + newName + "(" + args + ")";
-                refStart = start + header.length();
+                refStart = start + header.length(); {
+                    
+                }
             }
         }
         else {
@@ -734,7 +737,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                         node.getScope(),
                         getContainingScope(decNode));
         for (Tree.Statement s: statements) {
-            s.visit(flrv);
+            s.visit(flrv); {
+                
+            }
         }
         final List<TypeDeclaration> localTypes = 
                 new ArrayList<TypeDeclaration>();
@@ -786,6 +791,10 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                     if (bmed instanceof Value && 
                             ((Value) bmed).isVariable()) {
                         params += "variable ";
+                    } { {
+                        
+                    }
+                        
                     }
                     if (bmed instanceof TypedDeclaration && 
                             ((TypedDeclaration) bmed).isDynamicallyTyped()) {
@@ -1006,5 +1015,10 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
     
     public boolean canBeInferred() {
         return canBeInferred;
+    }
+
+    @Override
+    public IRegion newRegion(long start, long length) {
+        return new Region((int) start, (int) length);
     }
 }
