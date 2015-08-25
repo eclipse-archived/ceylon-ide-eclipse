@@ -40,7 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
-import com.redhat.ceylon.eclipse.util.eclipseIndents_;
+import static com.redhat.ceylon.eclipse.util.utilJ2C.indents;
 
 class AutoEdit {
     
@@ -119,15 +119,15 @@ class AutoEdit {
     }
 
     private String getDefaultIndent() {
-        return eclipseIndents_.get_().getDefaultIndent();
+        return indents().getDefaultIndent();
     }
 
     private int getIndentSpaces() {
-        return (int) eclipseIndents_.get_().getIndentSpaces();
+        return (int) indents().getIndentSpaces();
     }
 
     private boolean getIndentWithSpaces() {
-        return eclipseIndents_.get_().getIndentWithSpaces();
+        return indents().getIndentWithSpaces();
     }
 
     private static String[][] FENCES = {
@@ -1073,7 +1073,7 @@ class AutoEdit {
     }
 
     private static String getDefaultLineDelimiter(IDocument document) {
-        return eclipseIndents_.get_().getDefaultLineDelimiter(document);
+        return indents().getDefaultLineDelimiter(document);
     }
 
     private String getIndent(int start, int end) 
@@ -1150,7 +1150,7 @@ class AutoEdit {
     }
 
     private void initialIndent(StringBuilder buf) {
-        eclipseIndents_.get_().initialIndent(buf);
+        indents().initialIndent(buf);
     }
 
     private boolean endsWithTab(String indent) {
