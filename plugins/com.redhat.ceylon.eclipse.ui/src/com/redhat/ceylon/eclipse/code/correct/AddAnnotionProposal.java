@@ -83,7 +83,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
             String annotation, String desc, Referenceable dec, 
             Collection<ICompletionProposal> proposals, 
             IProject project) {
-        if (dec!=null && 
+        if (dec!=null &&
+                dec.getUnit() != null && 
                 !(node instanceof Tree.MissingDeclaration)) {
             for (PhasedUnit unit: getUnits(project)) {
                 if (dec.getUnit().equals(unit.getUnit())) {
