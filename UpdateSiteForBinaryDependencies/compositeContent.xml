@@ -4,8 +4,9 @@
    <property name="p2.compressed" value="false"/>
    <property name="p2.timestamp" value="1316559185000"/>
  </properties>
- <children size="2">
+<children size="3">
    <child location="../../ceylon-dist/osgi/build/dist"/>
    <child location="../../ceylon.tool.converter.java2ceylon/osgi/dist"/>
+   <child location="../../ceylon-ide-common/osgi/dist"/>
  </children>
 </repository>

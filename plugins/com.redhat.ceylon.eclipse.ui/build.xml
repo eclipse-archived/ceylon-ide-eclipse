@@ -50,6 +50,7 @@
         <repo url="flat:${basedir}/../com.redhat.ceylon.eclipse.ui.jdt.debug.fragment/target/ceylonRepo"/>
         <repo url="${basedir}/../../../ceylon-dist/osgi/embeddedRepository/repo"/>
     	<repo url="${basedir}/../../../ceylon.tool.converter.java2ceylon/repo/"/>
+        <repo url="${basedir}/../../../ceylon-ide-common/repo/"/>
     </reposet>
 
 	<target name="compile">

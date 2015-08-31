@@ -1,13 +1,7 @@
 target
 .settings
 **/*.index
-
 /modules/
 /.exploded/
 /generated-source/
-/.exploded/
-/.exploded/
-/.exploded/
-/.exploded/
 /eclipse-sources-repo/
-/.exploded/

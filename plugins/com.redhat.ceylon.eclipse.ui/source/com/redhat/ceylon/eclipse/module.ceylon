@@ -20,7 +20,6 @@ module com.redhat.ceylon.eclipse "1.1.1" {
     shared import com.redhat.ceylon.dist "1.1.1";
     shared import org.tautua.markdownpapers.core "1.2.7";
     shared import com.github.rjeschke.txtmark "0.11";
-    shared import jgrapht "0.8.3.jdk1_6";
     shared import zip4j "1.3.2";
     shared import "org.antlr.antlr4-runtime-osgi" "4.5.1";
     shared import ceylon.tool.converter.java2ceylon "1.0.0";

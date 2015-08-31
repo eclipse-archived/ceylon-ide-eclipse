@@ -69,13 +69,14 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.model.ModuleDependencies;
-import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.Dependency;
-import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.ModuleReference;
-import com.redhat.ceylon.eclipse.core.model.ModuleDependencies.ModuleWeakReference;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.model.ModuleDependencies;
+import com.redhat.ceylon.ide.common.model.ModuleDependencies.Dependency;
+import com.redhat.ceylon.ide.common.model.ModuleDependencies.ModuleReference;
+import com.redhat.ceylon.ide.common.model.ModuleDependencies.ModuleWeakReference;
+
 
 public class DependencyGraphView extends ViewPart implements IShowInTarget, ICeylonModelListener {
 
