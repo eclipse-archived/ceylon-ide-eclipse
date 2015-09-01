@@ -31,8 +31,8 @@ shared interface EclipseDocumentChanges
     shared actual TextEdit newDeleteEdit(Integer start, Integer stop)
             => DeleteEdit(start, stop);
 
-    shared actual TextEdit newReplaceEdit(Integer start, Integer stop, String text)
-            => ReplaceEdit(start, stop, text);
+    shared actual TextEdit newReplaceEdit(Integer start, Integer length, String text)
+            => ReplaceEdit(start, length, text);
 
     shared actual InsertEdit newInsertEdit(Integer position, String text)
             => InsertEdit(position, text);
