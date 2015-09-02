@@ -67,7 +67,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>(IEditorPart editorPar
         extends Refactoring()
         satisfies AbstractRefactoring<RefactoringData> {
 
-    shared class CeylonEditorData() satisfies EditorData {
+    shared class EclipseEditorData() satisfies EditorData {
         assert (is CeylonEditor ce=editorPart);
         assert(is ITextEditor editorPart);
         shared CeylonEditor editor=ce;
@@ -87,9 +87,9 @@ abstract class EclipseAbstractRefactoring<RefactoringData>(IEditorPart editorPar
         }
     }
 
-    shared actual CeylonEditorData? editorData;
+    shared actual EclipseEditorData? editorData;
     if (is CeylonEditor ce=editorPart) {
-        editorData = CeylonEditorData();
+        editorData = EclipseEditorData();
     } else {
         editorData = null;
     }
