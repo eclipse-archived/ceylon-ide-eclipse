@@ -208,12 +208,10 @@ final class FormatAction extends Action {
                 }
             }
         } catch (Exception e) {
-            CeylonPlugin.log(IStatus.ERROR, "Error during code formatting");
-            e.printStackTrace();
+            CeylonPlugin.log(IStatus.ERROR, "Error during code formatting", e);
             return;
         } catch (AssertionError e) {
-            CeylonPlugin.log(IStatus.ERROR, "Error during code formatting");
-            e.printStackTrace();
+            CeylonPlugin.log(IStatus.ERROR, "Error during code formatting", e);
             return;
         }
         

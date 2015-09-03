@@ -609,6 +609,12 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         getInstance().getLog().log(status);
     }
 
+    public static void log(int severity, String message, Throwable cause) {
+        Status status =
+            new Status(severity, PLUGIN_ID, message, cause);
+        getInstance().getLog().log(status);
+    }
+
     private static Font getFont(final String pref) {
         class GetFont implements Runnable {
             public Font result;
