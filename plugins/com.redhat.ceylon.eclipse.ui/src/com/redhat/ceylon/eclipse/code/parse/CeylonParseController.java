@@ -94,7 +94,7 @@ import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
-public class CeylonParseController {
+public class CeylonParseController implements LocalAnalysisResult<IDocument> {
     
     /**
      * The project containing the source being parsed. May be 
@@ -209,7 +209,7 @@ public class CeylonParseController {
         }
         return null;
     }
-    
+
     private VirtualFile createSourceCodeVirtualFile(String contents, 
             IPath path) {
         if (path == null) {
@@ -582,11 +582,11 @@ public class CeylonParseController {
     public Tree.CompilationUnit getLastCompilationUnit() {
         return phasedUnit != null ? phasedUnit.getCompilationUnit() : null;
     }
-    
+
     /*
      * returns the most recently parsed AST.
-     * 
-     * Be careful it can be returned *before* the typechecking or 
+     *
+     * Be careful it can be returned *before* the typechecking or
      * *during* the typechecking (in case of cancellation)
      * So *never* use this from places that need a fully typechecked AST
      * (with model elements such as declarations or units).
@@ -597,10 +597,10 @@ public class CeylonParseController {
     
     /*
      * returns the last parsed AST only if it is fully typechecked.
-     * 
-     * Returns null if the last parsed AST could not be fully 
+     *
+     * Returns null if the last parsed AST could not be fully
      * typechecked
-     * (cancellation, source model read lock not obtained, 
+     * (cancellation, source model read lock not obtained,
      * running typechecking ...)
      */
     public Tree.CompilationUnit getTypecheckedRootNode() {
@@ -616,18 +616,18 @@ public class CeylonParseController {
      * until the end (=> stage == TYPE_ANALYSIS)
      */
     public PhasedUnit parseAndTypecheck(
-                    IDocument doc, 
-                    long waitForModelInSeconds, 
-                    final IProgressMonitor monitor, 
+                    IDocument doc,
+                    long waitForModelInSeconds,
+                    final IProgressMonitor monitor,
                     final Stager stager) {
       document = doc;
       final String contents = doc.get();
       IPath path = this.filePath;
       IProject project = this.project;
       IPath resolvedPath = path;
-      
+
       stage = Stage.NONE;
-      
+
       if (path!=null) {
           String ext = path.getFileExtension();
           if (ext==null || !ext.equals("ceylon")) {
@@ -642,13 +642,13 @@ public class CeylonParseController {
                   project = null;
               }
           }
-          
+
           if (path.isAbsolute()) {
               IdePhasedUnit builtPhasedUnit = null;
               for (IProject p: new ArrayList<IProject>(getProjects())) {
                   if (project != null && project != p) continue;
-                  
-                  JDTModuleManager moduleManager = (JDTModuleManager) 
+
+                  JDTModuleManager moduleManager = (JDTModuleManager)
                           getProjectTypeChecker(p).getPhasedUnits().getModuleManager();
                   JDTModule module = moduleManager.getArchiveModuleFromSourcePath(path);
                   if (module != null) {
@@ -684,7 +684,7 @@ public class CeylonParseController {
                           }
                       }
                   });
-                  
+
                   stage = TYPE_ANALYSIS;
                   if (stager!=null) {
                       stager.afterStage(FOR_OUTLINE, monitor);
@@ -694,27 +694,27 @@ public class CeylonParseController {
               }
           }
       }
-      
+
       if (isCanceling(monitor)) {
           return null;
       }
-      
-      NewlineFixingStringStream stream = 
+
+      NewlineFixingStringStream stream =
               new NewlineFixingStringStream(contents);
       CeylonLexer lexer = new CeylonLexer(stream);
       CommonTokenStream tokenStream = new CommonTokenStream(lexer);
       tokenStream.fill();
       tokens = tokenStream.getTokens();
-      
+
       stage = LEXICAL_ANALYSIS;
       if (stager!=null) {
           stager.afterStage(LEXICAL_ANALYSIS, monitor);
       }
-      
+
       if (isCanceling(monitor)) {
           return null;
       }
-      
+
       CeylonParser parser = new CeylonParser(tokenStream);
       Tree.CompilationUnit cu;
       try {
@@ -723,23 +723,23 @@ public class CeylonParseController {
       catch (RecognitionException e) {
           throw new RuntimeException(e);
       }
-      
+
       //TODO: make the AST available now, so that
       //      services like FoldingUpdater can
       //      make use of it in the callback
       rootNode = cu;
-      
+
       collectLexAndParseErrors(lexer, parser, cu);
-      
+
       stage = SYNTACTIC_ANALYSIS;
       if (stager!=null) {
           stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
       }
-      
+
       if (isCanceling(monitor)) {
           return null;
       }
-      
+
       VirtualFile srcDir = null;
       if (project!=null) {
           srcDir = getSourceFolder(project, resolvedPath);
@@ -748,32 +748,32 @@ public class CeylonParseController {
           srcDir = inferSrcDir(path);
           project = findProject(path);
       }
-      
+
       if (!allClasspathContainersInitialized() ||
-              CeylonNature.isEnabled(project) 
+              CeylonNature.isEnabled(project)
               && !isModelTypeChecked(project)) {
-          // Ceylon projects have not been setup, so don't try to typecheck 
+          // Ceylon projects have not been setup, so don't try to typecheck
           //
-          // or  
+          // or
           //
           // TypeChecking has not been performed
-          // on the main model, so don't do it 
+          // on the main model, so don't do it
           // on the editor's tree
           stage = FOR_OUTLINE;
           if (stager!=null) {
               stager.afterStage(FOR_OUTLINE, monitor);
           }
-          return null; 
+          return null;
       }
-      
+
       final IProject finalProject = project;
       final IPath finalPath = path;
       final VirtualFile finalSrcDir = srcDir;
       try {
           return CeylonBuilder.doWithSourceModel(
-                  project, 
-                  true, 
-                  waitForModelInSeconds, 
+                  project,
+                  true,
+                  waitForModelInSeconds,
                   new Callable<PhasedUnit>() {
                     @Override
                     public PhasedUnit call() throws Exception {
@@ -782,7 +782,7 @@ public class CeylonParseController {
                         }
 
                         boolean showWarnings = showWarnings(finalProject);
-                        
+
                         if (isCanceling(monitor)) {
                             return null;
                         }
@@ -790,19 +790,19 @@ public class CeylonParseController {
                         if (typeChecker==null) {
                             try {
                                 typeChecker = createTypeChecker(finalProject, showWarnings);
-                            } 
+                            }
                             catch (CoreException e) {
-                                return null; 
+                                return null;
                             }
                         }
-                        
+
                         if (isCanceling(monitor)) {
                             return null;
                         }
 
                         VirtualFile file = createSourceCodeVirtualFile(contents, finalPath);
                         IdePhasedUnit builtPhasedUnit = (IdePhasedUnit) typeChecker.getPhasedUnit(file); // TODO : refactor !
-                        phasedUnit = typecheck(finalPath, file, rootNode, finalSrcDir, 
+                        phasedUnit = typecheck(finalPath, file, rootNode, finalSrcDir,
                                 showWarnings, builtPhasedUnit);
                         rootNode = phasedUnit.getCompilationUnit();
                         if (finalProject != null && !CeylonNature.isEnabled(finalProject)) {
@@ -813,7 +813,7 @@ public class CeylonParseController {
                                     List<Message> errorsToRemove = new ArrayList<>();
                                     List<Message> nodeErrors = node.getErrors();
                                     for (Message error: nodeErrors) {
-                                        
+
                                         if (! (error instanceof RecognitionError)) {
                                             errorsToRemove.add(error);
                                         }
@@ -825,16 +825,16 @@ public class CeylonParseController {
                             });
                         }
                         collectErrors(rootNode);
-                        
+
                         stage = TYPE_ANALYSIS;
                         if (stager!=null) {
                             stager.afterStage(FOR_OUTLINE, monitor);
                             stager.afterStage(TYPE_ANALYSIS, monitor);
                         }
-                        
+
                         return phasedUnit;
                     }
-                      
+
                   });
           } catch(OperationCanceledException e) {
               if (monitor!= null) {
@@ -842,14 +842,14 @@ public class CeylonParseController {
                   // so that the scheduler will reschedule it later
                   monitor.setCanceled(true);
               }
-              
-              // Consider that the previous steps of the anaysis 
+
+              // Consider that the previous steps of the anaysis
               // are OK, and still notify the related model listeners
               stage = FOR_OUTLINE;
               if (stager!=null) {
                   stager.afterStage(FOR_OUTLINE, monitor);
               }
-              return null; 
+              return null;
           }
     }
 

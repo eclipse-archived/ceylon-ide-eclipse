@@ -51,6 +51,13 @@ import org.eclipse.swt.graphics {
 import org.antlr.runtime {
     CommonToken
 }
+import java.util.regex {
+    Pattern
+}
+import ceylon.collection {
+    MutableList,
+    ArrayList
+}
 
 object eclipseCompletionManager extends IdeCompletionManager<CeylonParseController, ICompletionProposal, IDocument>() {
 
@@ -192,9 +199,29 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
     shared actual ICompletionProposal newProgramElementReferenceCompletion(Integer offset, String prefix,
         Declaration dec, Unit? u, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember) => nothing;
 
-    shared actual CommonToken? getNextToken(CeylonParseController cpc, CommonToken token) => null;
-
     shared actual ICompletionProposal newBasicCompletionProposal(Integer offset, String prefix,
         String text, String escapedText, Declaration decl, CeylonParseController cpc) => nothing;
 
+    shared actual List<Pattern> proposalFilters {
+        value filters = ArrayList<Pattern>();
+        value preferences = EditorUtil.preferences;
+        parseFilters(filters, preferences.getString(CeylonPreferenceInitializer.\iFILTERS));
+        if (preferences.getBoolean(CeylonPreferenceInitializer.\iENABLE_COMPLETION_FILTERS)) {
+            parseFilters(filters, preferences.getString(CeylonPreferenceInitializer.\iCOMPLETION_FILTERS));
+        }
+        return filters;
+    }
+    
+    // see CeylonCompletionProcessor.parseFilters()
+    void parseFilters(MutableList<Pattern> filters, String filtersString) {
+        if (!filtersString.trimmed.empty) {
+            value regexes = filtersString.replace("\\(\\w+\\)", "").replace(".", "\\.").replace("*", ".*").split(','.equals);
+            for (String regex in regexes) {
+                value trimmedRegex = regex.trimmed;
+                if (!trimmedRegex.empty) {
+                    filters.add(Pattern.compile(trimmedRegex));
+                }
+            }
+        }
+    }
 }
