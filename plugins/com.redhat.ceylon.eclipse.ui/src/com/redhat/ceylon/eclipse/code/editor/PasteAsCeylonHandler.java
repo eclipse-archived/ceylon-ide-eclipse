@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -24,6 +25,7 @@ import ceylon.tool.converter.java2ceylon.Java8Lexer;
 import ceylon.tool.converter.java2ceylon.Java8Parser;
 import ceylon.tool.converter.java2ceylon.JavaToCeylonConverter;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractHandler;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class PasteAsCeylonHandler extends AbstractHandler {
@@ -37,7 +39,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 		try {
 			ceylonCode = transformJavaToCeylon(javaCode);
 		} catch (IOException e) {
-			e.printStackTrace();
+			CeylonPlugin.log(IStatus.ERROR, "Could not transform Java code", e);
 		}
 
 		insertTextInEditor(ceylonCode);
@@ -53,11 +55,8 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 		ParserRuleContext tree = parser.compilationUnit();
 
 		StringWriter out = new StringWriter();
-		BufferedWriter bw = new BufferedWriter(out);
-		JavaToCeylonConverter converter = new JavaToCeylonConverter(bw);
-
-		ParseTreeWalker.DEFAULT.walk(converter, tree);
-		converter.close();
+		JavaToCeylonConverter converter = new JavaToCeylonConverter(out, true, true);
+		tree.accept(converter);
 
 		String ceylonCode = out.toString();
 
@@ -82,7 +81,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 		try {
 			change.perform(new NullProgressMonitor());
 		} catch (CoreException e) {
-			e.printStackTrace();
+			CeylonPlugin.log(IStatus.ERROR, "Could not paste transformed code", e);
 		}
 
 		FormatAction.format(editor.getParseController(), doc, EditorUtil.getSelection(editor), false,
