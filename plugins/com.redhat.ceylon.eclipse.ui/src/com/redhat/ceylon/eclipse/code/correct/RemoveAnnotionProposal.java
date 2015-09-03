@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 
 import java.util.Collection;
 
@@ -14,16 +15,16 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
+import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
-import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class RemoveAnnotionProposal extends CorrectionProposal {
     
@@ -43,7 +44,8 @@ class RemoveAnnotionProposal extends CorrectionProposal {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof RemoveAnnotionProposal) {
-            RemoveAnnotionProposal that = (RemoveAnnotionProposal) obj;
+            RemoveAnnotionProposal that = 
+                    (RemoveAnnotionProposal) obj;
             return that.dec.equals(dec) && 
                     that.annotation.equals(annotation);
         }
@@ -57,9 +59,11 @@ class RemoveAnnotionProposal extends CorrectionProposal {
         return dec.hashCode();
     }
     
-    static void addRemoveAnnotationProposal(Node node, String annotation,
-            Collection<ICompletionProposal> proposals, IProject project) {
-        Referenceable dec = Nodes.getReferencedDeclaration(node);
+    static void addRemoveAnnotationProposal(Node node, 
+            String annotation,
+            Collection<ICompletionProposal> proposals, 
+            IProject project) {
+        Referenceable dec = getReferencedDeclaration(node);
         if (dec instanceof Declaration) {
             addRemoveAnnotationProposal(node, annotation, 
                     "Make Non" + annotation,  
@@ -67,12 +71,16 @@ class RemoveAnnotionProposal extends CorrectionProposal {
         }
     }
 
-    static void addMakeContainerNonfinalProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeContainerNonfinalProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Declaration dec;
         if (node instanceof Tree.Declaration) {
+            Tree.Declaration decNode = 
+                    (Tree.Declaration) node;
             Scope container = 
-                    ((Tree.Declaration) node).getDeclarationModel().getContainer();
+                    decNode.getDeclarationModel()
+                        .getContainer();
             if (container instanceof Declaration) {
                 dec = (Declaration) container;
             }
@@ -88,19 +96,29 @@ class RemoveAnnotionProposal extends CorrectionProposal {
                 dec, proposals, project);
     }
 
-    static void addRemoveAnnotationProposal(Node node, String annotation, String desc,
-            Declaration dec, Collection<ICompletionProposal> proposals, IProject project) {
+    static void addRemoveAnnotationProposal(Node node, 
+            String annotation, String desc, 
+            Declaration dec, 
+            Collection<ICompletionProposal> proposals, 
+            IProject project) {
         if (dec!=null && dec.getName()!=null) {
+            Unit u = dec.getUnit();
+            if (u instanceof EditedSourceFile) {
+                EditedSourceFile esf = (EditedSourceFile) u;
+                u = esf.getOriginalSourceFile();
+            }
             for (PhasedUnit unit: getUnits(project)) {
-                if (dec.getUnit().equals(unit.getUnit())) {
+                if (u!=null && u.equals(unit.getUnit())) {
                     //TODO: "object" declarations?
                     FindDeclarationNodeVisitor fdv = 
                             new FindDeclarationNodeVisitor(dec);
                     getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = 
-                            (Tree.Declaration) fdv.getDeclarationNode();
+                            (Tree.Declaration) 
+                                fdv.getDeclarationNode();
                     if (decNode!=null) {
-                        addRemoveAnnotationProposal(annotation, desc, dec,
+                        addRemoveAnnotationProposal(
+                                annotation, desc, dec,
                                 proposals, unit, decNode);
                     }
                     break;
@@ -109,20 +127,30 @@ class RemoveAnnotionProposal extends CorrectionProposal {
         }
     }
 
-    private static void addRemoveAnnotationProposal(String annotation,
-            String desc, Declaration dec,
+    private static void addRemoveAnnotationProposal(
+            String annotation, String desc, 
+            Declaration dec,
             Collection<ICompletionProposal> proposals, 
             PhasedUnit unit, Tree.Declaration decNode) {
         IFile file = CeylonBuilder.getFile(unit);
-        TextFileChange change = new TextFileChange(desc, file);
+        TextFileChange change = 
+                new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
         Integer offset = decNode.getStartIndex();
-        for (Tree.Annotation a: decNode.getAnnotationList().getAnnotations()) {
-            Identifier id = ((Tree.BaseMemberExpression)a.getPrimary()).getIdentifier();
+        for (Tree.Annotation a: 
+                decNode.getAnnotationList()
+                    .getAnnotations()) {
+            Tree.BaseMemberExpression bme = 
+                    (Tree.BaseMemberExpression)
+                        a.getPrimary();
+            Tree.Identifier id = bme.getIdentifier();
             if (id!=null) {
                 if (id.getText().equals(annotation)) {
-                    boolean args = a.getPositionalArgumentList()!=null && 
-                                a.getPositionalArgumentList().getToken()!=null ||
+                    Tree.PositionalArgumentList pal = 
+                            a.getPositionalArgumentList();
+                    boolean args = 
+                            pal!=null && 
+                                pal.getToken()!=null ||
                             a.getNamedArgumentList()!=null;
                     change.addEdit(new DeleteEdit(a.getStartIndex(), 
                             a.getStopIndex()-a.getStartIndex()+1 + 
@@ -131,17 +159,21 @@ class RemoveAnnotionProposal extends CorrectionProposal {
             }
         }
         RemoveAnnotionProposal p = 
-                new RemoveAnnotionProposal(dec, annotation, offset, change);
+                new RemoveAnnotionProposal(dec,
+                        annotation, offset, change);
         if (!proposals.contains(p)) {
             proposals.add(p);
         }
     }
     
-    static void addRemoveAnnotationDecProposal(Collection<ICompletionProposal> proposals, 
+    static void addRemoveAnnotationDecProposal(
+            Collection<ICompletionProposal> proposals, 
             String annotation, IProject project, Node node) {
         if (node instanceof Tree.Declaration) {
-            addRemoveAnnotationProposal(node, annotation, "Make Non" + annotation,  
-                    ((Tree.Declaration) node).getDeclarationModel(), 
+            Tree.Declaration decNode = (Tree.Declaration) node;
+            addRemoveAnnotationProposal(node, annotation, 
+                    "Make Non" + annotation,  
+                    decNode.getDeclarationModel(), 
                     proposals, project);
         }
     }

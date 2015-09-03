@@ -67,7 +67,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof AddAnnotionProposal) {
-            AddAnnotionProposal that = (AddAnnotionProposal) obj;
+            AddAnnotionProposal that = 
+                    (AddAnnotionProposal) obj;
             return that.dec.equals(dec) && 
                     that.annotation.equals(annotation);
         }
@@ -150,7 +151,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
     }
 
     private static void createExplicitTypeEdit(
-            Tree.StatementOrArgument decNode, TextFileChange change) {
+            Tree.StatementOrArgument decNode, 
+            TextFileChange change) {
         if (decNode instanceof Tree.TypedDeclaration &&
                 !(decNode instanceof Tree.ObjectDefinition)) {
             Tree.TypedDeclaration tdNode = 
@@ -162,16 +164,18 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 Type it = type.getTypeModel();
                 if (it!=null && 
                         !(it.getDeclaration() instanceof UnknownType)) {
-                    String explicitType = 
-                            it.asString();
-                    change.addEdit(new ReplaceEdit(type.getStartIndex(), 
-                            type.getText().length(), explicitType));
+                    String explicitType = it.asString();
+                    change.addEdit(new ReplaceEdit(
+                            type.getStartIndex(), 
+                            type.getText().length(), 
+                            explicitType));
                 }
             }
         }
     }
 
-    private static String description(String annotation, Referenceable dec) {
+    private static String description(String annotation, 
+            Referenceable dec) {
         String description;
         if (dec instanceof Declaration) {
             Declaration d = (Declaration) dec;
@@ -185,7 +189,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
                         container instanceof Constructor) {
                     Scope cont = container.getContainer();
                     if (cont instanceof Declaration) {
-                        name = ((Declaration) cont).getName();
+                        Declaration cd = (Declaration) cont;
+                        name = cd.getName();
                     }
                 }
                 containerDesc = " in '" + name + "'";
@@ -211,8 +216,9 @@ public class AddAnnotionProposal extends CorrectionProposal {
         return description;
     }
 
-	private static ReplaceEdit createReplaceAnnotationEdit(String annotation,
-			Node node, TextFileChange change) {
+	private static ReplaceEdit createReplaceAnnotationEdit(
+	        String annotation, Node node, 
+	        TextFileChange change) {
 		String toRemove;
 		if ("formal".equals(annotation)) {
 			toRemove = "default";
@@ -238,8 +244,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
 		return null;
 	}
 
-    public static InsertEdit createInsertAnnotationEdit(String newAnnotation, 
-            Node node, IDocument doc) {
+    public static InsertEdit createInsertAnnotationEdit(
+            String newAnnotation, Node node, IDocument doc) {
         String newAnnotationName = 
                 getAnnotationWithoutParam(newAnnotation);
 
@@ -294,7 +300,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         if (isAnnotationOnSeparateLine(newAnnotationName) && 
                 !(node instanceof Tree.Parameter)) {
             if (prevAnnotation != null && 
-                    isAnnotationOnSeparateLine(getAnnotationIdentifier(prevAnnotation))) {
+                    isAnnotationOnSeparateLine(
+                            getAnnotationIdentifier(prevAnnotation))) {
                 newAnnotationOffset = prevAnnotation.getStopIndex() + 1;
                 newAnnotationText.append(System.lineSeparator());
                 newAnnotationText.append(getIndent(node, doc));
@@ -339,7 +346,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         return annotationList;
     }
 
-    public static String getAnnotationIdentifier(Tree.Annotation annotation) {
+    public static String getAnnotationIdentifier(
+            Tree.Annotation annotation) {
         String annotationName = null;
         if (annotation != null) {
             Tree.Primary primary = annotation.getPrimary();
@@ -368,7 +376,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         return annotation.trim();
     }
 
-    private static boolean isAnnotationAfter(String annotation1, String annotation2) {
+    private static boolean isAnnotationAfter(
+            String annotation1, String annotation2) {
         int index1 = ANNOTATIONS_ORDER.indexOf(annotation1);
         int index2 = ANNOTATIONS_ORDER.indexOf(annotation2);
         return index1 >= index2;
@@ -378,7 +387,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         return ANNOTATIONS_ON_SEPARATE_LINE.contains(annotation);
     }
     
-    static void addMakeActualDecProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeActualDecProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Declaration dec = annotatedNode(node);
         boolean shared = dec.isShared();
@@ -400,7 +410,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         return dec;
     }
 
-    static void addMakeDefaultProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeDefaultProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         
         Declaration d;
@@ -449,7 +460,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
     }
 
-    static void addMakeDefaultDecProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeDefaultDecProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
     	Declaration dec = annotatedNode(node);
         addAddAnnotationProposal(node, 
@@ -458,7 +470,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 dec, proposals, project);
     }
 
-    static void addMakeFormalDecProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeFormalDecProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
     	Declaration dec = annotatedNode(node);
         addAddAnnotationProposal(node, 
@@ -467,7 +480,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 dec, proposals, project);
     }
 
-    static void addMakeAbstractDecProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeAbstractDecProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Declaration dec = annotatedNode(node);
         if (dec instanceof Class) {
@@ -477,7 +491,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
     }
 
-    static void addMakeContainerAbstractProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeContainerAbstractProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Declaration dec;
         if (node instanceof Tree.Declaration) {
@@ -499,7 +514,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 dec, proposals, project);
     }
 
-    static void addMakeVariableProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeVariableProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Tree.Term term;
         if (node instanceof Tree.AssignmentOp) {
@@ -536,7 +552,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
     }
     
-    static void addMakeVariableDecProposal(Collection<ICompletionProposal> proposals,
+    static void addMakeVariableDecProposal(
+            Collection<ICompletionProposal> proposals,
             IProject project, Tree.Declaration node) {
         final Declaration dec = node.getDeclarationModel();
         if (dec instanceof Value && 
@@ -549,7 +566,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
             }
         }
     }
-    static void addMakeVariableDecProposal(Collection<ICompletionProposal> proposals,
+    static void addMakeVariableDecProposal(
+            Collection<ICompletionProposal> proposals,
             IProject project, Tree.CompilationUnit cu, Node node) {
         final Tree.SpecifierOrInitializerExpression sie = 
                 (Tree.SpecifierOrInitializerExpression) node;
@@ -571,7 +589,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 v.dec, proposals, project);
     }
     
-    static void addMakeSharedProposalForSupertypes(Collection<ICompletionProposal> proposals, 
+    static void addMakeSharedProposalForSupertypes(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         if (node instanceof Tree.ClassOrInterface) {
             Tree.ClassOrInterface cin = 
@@ -606,7 +625,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
     }
     
-    static void addMakeRefinedSharedProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeRefinedSharedProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         if (node instanceof Tree.Declaration) {
             Tree.Declaration tdn = (Tree.Declaration) node;
@@ -624,7 +644,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
     }
     
-    static void addMakeSharedProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeSharedProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         Referenceable dec = null;
         List<Type> typeArgumentList = null;
@@ -759,7 +780,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
     }
     
-    static void addMakeSharedDecProposal(Collection<ICompletionProposal> proposals, 
+    static void addMakeSharedDecProposal(
+            Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         if (node instanceof Tree.Declaration) {
             Tree.Declaration dn = (Tree.Declaration) node;
