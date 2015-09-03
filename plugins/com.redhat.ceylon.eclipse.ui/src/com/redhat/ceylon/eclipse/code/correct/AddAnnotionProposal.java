@@ -27,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -40,6 +41,7 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.UnknownType;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
@@ -84,10 +86,14 @@ public class AddAnnotionProposal extends CorrectionProposal {
             Collection<ICompletionProposal> proposals, 
             IProject project) {
         if (dec!=null &&
-                dec.getUnit() != null && 
                 !(node instanceof Tree.MissingDeclaration)) {
+            Unit u = dec.getUnit();
+            if (u instanceof EditedSourceFile) {
+                EditedSourceFile esf = (EditedSourceFile) u;
+                u = esf.getOriginalSourceFile();
+            }
             for (PhasedUnit unit: getUnits(project)) {
-                if (dec.getUnit().equals(unit.getUnit())) {
+                if (u!=null && u.equals(unit.getUnit())) {
                     FindDeclarationNodeVisitor fdv = 
                             new FindDeclarationNodeVisitor(dec);
                     getRootNode(unit).visit(fdv);
