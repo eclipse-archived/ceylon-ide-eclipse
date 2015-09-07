@@ -62,7 +62,9 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 		
 		JavaToCeylonConverter converter = new JavaToCeylonConverter(out, 
 		        ideConfig.getConverterConfig().getTransformGetters(),
-		        ideConfig.getConverterConfig().getUseVariableInParameters());
+		        ideConfig.getConverterConfig().getUseVariableInParameters(),
+		        ideConfig.getConverterConfig().getUseVariableInLocals(),
+		        ideConfig.getConverterConfig().getUseValues());
 		
 		ideConfig.save();
 		tree.accept(converter);
