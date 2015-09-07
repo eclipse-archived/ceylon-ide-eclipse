@@ -2215,6 +2215,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         .append(module.getSignature())
                         .toString());
                     }
+
+                    @Override
+                    public void retrievingModuleArtifactFailed(Module arg0, ArtifactContext arg1) {
+                    }
+
+                    @Override
+                    public void retrievingModuleArtifactSuccess(Module arg0, ArtifactResult arg1) {
+                    }
                 });
 
                 moduleValidator.verifyModuleDependencyTree();
