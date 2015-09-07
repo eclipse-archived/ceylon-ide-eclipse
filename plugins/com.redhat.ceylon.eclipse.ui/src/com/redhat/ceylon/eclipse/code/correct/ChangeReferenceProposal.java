@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.getProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.levenshteinDistance;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
@@ -27,6 +26,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.complete.completionJ2C;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -110,7 +110,7 @@ class ChangeReferenceProposal extends CorrectionProposal {
                     !brokenName.isEmpty()) {
                 Scope scope = node.getScope();
                 Collection<DeclarationWithProximity> dwps = 
-                        getProposals(node, scope, rootNode)
+                        completionJ2C.getProposals(node, scope, rootNode)
                             .values();
                 for (DeclarationWithProximity dwp: dwps) {
                     processProposal(rootNode, problem,

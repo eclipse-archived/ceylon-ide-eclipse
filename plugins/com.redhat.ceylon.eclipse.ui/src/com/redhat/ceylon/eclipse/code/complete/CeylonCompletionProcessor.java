@@ -455,7 +455,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         monitor);
         if (completions==null) {
             //finally, construct and sort proposals
-            Map<String, DeclarationWithProximity> proposals = 
+            Map<String, DeclarationWithProximity> proposals =
                     eclipseCompletionManager_.get_().getProposals(node, scope, prefix,
                             isMemberOp, rn);
             Map<String, DeclarationWithProximity> functionProposals =
@@ -1196,7 +1196,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             Type requiredType,
             List<ICompletionProposal> result,
             Unit unit) {
-        String text = eclipseCompletionManager_.get_().anonFunctionHeader(requiredType, unit);
+        String text = ""; //eclipseCompletionManager_.get_().anonFunctionHeader(requiredType, unit);
         String funtext = text + " => nothing";
         result.add(new CompletionProposal(offset, "",
                 LARGE_CORRECTION_IMAGE, funtext, funtext) {

@@ -1,1 +1,1 @@
-shared package com.redhat.ceylon.eclipse.code.complete;
+package com.redhat.ceylon.eclipse.code.complete;

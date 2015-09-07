@@ -1386,7 +1386,7 @@ class InvocationCompletionProposal extends CompletionProposal {
 //        private final boolean inLinkedMode;
         private final boolean namedInvocation;
         
-        private ParameterContextInformation(
+        ParameterContextInformation(
                 Declaration declaration,
                 Reference producedReference, Unit unit,
                 ParameterList parameterList, 

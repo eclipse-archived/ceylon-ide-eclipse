@@ -62,7 +62,7 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class PackageCompletions {
 
-    private static final class QueriedModulePackageProposal 
+    static final class QueriedModulePackageProposal 
             extends PackageProposal {
         
         private final ModuleVersionDetails version;
@@ -70,7 +70,7 @@ public class PackageCompletions {
         private final ModuleDetails md;
         private String fullPackageName;
 
-        private QueriedModulePackageProposal(int offset,
+        QueriedModulePackageProposal(int offset,
                 String prefix, String memberPackageSubname,
                 boolean withBody, String fullPackageName,
                 CeylonParseController controller,
@@ -105,7 +105,7 @@ public class PackageCompletions {
         }
     }
 
-    private static final class ImportedModulePackageProposal extends
+    static final class ImportedModulePackageProposal extends
             PackageProposal {
 
         private final class PackageMemberCompletionProposal
@@ -222,7 +222,7 @@ public class PackageCompletions {
 
         private final Package candidate;
 
-        private ImportedModulePackageProposal(int offset, String prefix,
+        ImportedModulePackageProposal(int offset, String prefix,
                 String memberPackageSubname, boolean withBody,
                 String fullPackageName, CeylonParseController controller,
                 Package candidate) {
@@ -364,7 +364,7 @@ public class PackageCompletions {
             boolean found = false;
             Module module = unit.getPackage().getModule();
             final String fullPrefix = fullPath + prefix;
-            for (final Package candidate: module.getAllVisiblePackages()) {
+            for (final Package candidate: module.getAllVisiblePackages()) { 
                 //if (!packages.contains(p)) {
                     //packages.add(p);
                 //if ( p.getModule().equals(module) || p.isShared() ) {

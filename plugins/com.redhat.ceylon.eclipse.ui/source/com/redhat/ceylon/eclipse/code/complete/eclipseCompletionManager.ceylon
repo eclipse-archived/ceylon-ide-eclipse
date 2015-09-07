@@ -1,6 +1,26 @@
+import ceylon.collection {
+    MutableList,
+    ArrayList
+}
+import ceylon.interop.java {
+    javaString,
+    createJavaObjectArray
+}
+
+import com.redhat.ceylon.cmr.api {
+    ModuleVersionDetails,
+    ModuleSearchResult
+}
 import com.redhat.ceylon.compiler.typechecker.tree {
     Node,
-    Tree
+    Tree,
+    Visitor
+}
+import com.redhat.ceylon.eclipse.code.editor {
+    CeylonEditor
+}
+import com.redhat.ceylon.eclipse.code.outline {
+    CeylonLabelProvider
 }
 import com.redhat.ceylon.eclipse.code.parse {
     CeylonParseController
@@ -8,12 +28,19 @@ import com.redhat.ceylon.eclipse.code.parse {
 import com.redhat.ceylon.eclipse.code.preferences {
     CeylonPreferenceInitializer
 }
+import com.redhat.ceylon.eclipse.ui {
+    CeylonResources
+}
 import com.redhat.ceylon.eclipse.util {
     EditorUtil,
-    eclipseIndents
+    eclipseIndents,
+    EclipseProgressMonitor
 }
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager
+}
+import com.redhat.ceylon.ide.common.typechecker {
+    LocalAnalysisResult
 }
 import com.redhat.ceylon.ide.common.util {
     escaping,
@@ -26,60 +53,147 @@ import com.redhat.ceylon.model.typechecker.model {
     Scope,
     Unit,
     ClassOrInterface,
-    FunctionOrValue
+    FunctionOrValue,
+    Functional,
+    Package
 }
 
+import java.lang {
+    ObjectArray,
+    CharArray
+}
 import java.util {
     JList=List
-}
-
-import org.eclipse.jface.text {
-    IDocument
-}
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
-}
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
-}
-import com.redhat.ceylon.eclipse.code.outline {
-    CeylonLabelProvider
-}
-import org.eclipse.swt.graphics {
-    Point
-}
-import org.antlr.runtime {
-    CommonToken
 }
 import java.util.regex {
     Pattern
 }
-import ceylon.collection {
-    MutableList,
-    ArrayList
+
+import org.antlr.runtime {
+    CommonToken
+}
+import org.eclipse.core.runtime {
+    NullProgressMonitor,
+    IProgressMonitor
+}
+import org.eclipse.jdt.internal.corext.refactoring {
+    ParameterInfo
+}
+import org.eclipse.jface.operation {
+    IRunnableWithProgress
+}
+import org.eclipse.jface.text {
+    IDocument,
+    ITextViewer,
+    BadLocationException
+}
+import org.eclipse.jface.text.contentassist {
+    ICompletionProposal,
+    IContentAssistProcessor,
+    IContextInformation,
+    IContextInformationValidator
+}
+import org.eclipse.swt.graphics {
+    Point
+}
+import org.eclipse.ui {
+    PlatformUI
 }
 
-object eclipseCompletionManager extends IdeCompletionManager<CeylonParseController, ICompletionProposal, IDocument>() {
+EclipseCompletionManager dummyInstance = EclipseCompletionManager(CeylonEditor());
 
+shared class EclipseCompletionManager(CeylonEditor editor) extends IdeCompletionManager<CeylonParseController,ICompletionProposal,IDocument>()
+        satisfies IContentAssistProcessor & EclipseCompletionProcessor {
+    
+    variable ParameterContextValidator? validator = null;
+    variable Boolean secondLevel = false;
+    variable Boolean returnedParamInfo = false;
+    variable Integer lastOffsetAcrossSessions = -1;
+    variable Integer lastOffset = -1;
+    
+    value noCompletions = createJavaObjectArray<ICompletionProposal>({});
+    
+    shared actual CharArray completionProposalAutoActivationCharacters =
+            javaString(EditorUtil.preferences.getString(CeylonPreferenceInitializer.\iAUTO_ACTIVATION_CHARS)).toCharArray();
+    
+    shared actual CharArray contextInformationAutoActivationCharacters = javaString(",(;{").toCharArray();
+    
+    shared actual ObjectArray<ICompletionProposal> computeCompletionProposals(ITextViewer viewer, Integer offset) {
+        if (offset != lastOffsetAcrossSessions) {
+            returnedParamInfo = false;
+            secondLevel = false;
+        }
+        try {
+            if (lastOffset >= 0, offset > 0, offset != lastOffset, !isIdentifierCharacter(viewer, offset)) {
+                return noCompletions;
+            }
+        } catch (BadLocationException ble) {
+            ble.printStackTrace();
+            return noCompletions;
+        }
+        if (offset == lastOffset) {
+            secondLevel = !secondLevel;
+        }
+        lastOffset = offset;
+        lastOffsetAcrossSessions = offset;
+        class Runnable() satisfies IRunnableWithProgress {
+            shared variable ICompletionProposal[] _contentProposals = [];
+            
+            shared actual void run(IProgressMonitor monitor) {
+                monitor.beginTask("Preparing completions...", IProgressMonitor.\iUNKNOWN);
+                CeylonParseController controller = editor.parseController;
+                _contentProposals = getEclipseContentProposals(controller, offset, viewer, secondLevel, returnedParamInfo, monitor);
+                if (_contentProposals.size == 1, is ParameterInfo pi = _contentProposals.get(0)) {
+                    returnedParamInfo = true;
+                }
+                monitor.done();
+            }
+        }
+        
+        Runnable runnable = Runnable();
+        try {
+            if (secondLevel) {
+                runnable.run(NullProgressMonitor());
+            } else {
+                PlatformUI.workbench.activeWorkbenchWindow.run(true, true, runnable);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return createJavaObjectArray(runnable._contentProposals);
+    }
+    
+    shared actual ObjectArray<IContextInformation> computeContextInformation(ITextViewer viewer, Integer offset) {
+        CeylonParseController controller = editor.parseController;
+        controller.parse(viewer.document, NullProgressMonitor(), null);
+        return createJavaObjectArray<IContextInformation>(computeParameterContextInformation(offset, controller.rootNode, viewer));
+    }
+    
+    shared actual IContextInformationValidator contextInformationValidator {
+        return validator else (validator = ParameterContextValidator(editor));
+    }
+    
+    shared actual String errorMessage => "No completions available";
+    
     shared actual ICompletionProposal newParametersCompletionProposal(Integer offset,
-            Type type, JList<Type> argTypes,
-            Node node, CeylonParseController cpc) {
-
+        Type type, JList<Type> argTypes,
+        Node node, CeylonParseController cpc) {
+        
         value unit = node.unit;
-
+        
         value cd = unit.callableDeclaration;
         value paramTypes = showParameterTypes;
         value desc = StringBuilder();
         value text = StringBuilder();
-
+        
         desc.append("(");
         text.append("(");
-
-        for (i in 0..argTypes.size()) {
+        
+        for (i in 0 .. argTypes.size()) {
             variable Type argType = argTypes.get(i);
             if (desc.size > 1) { desc.append(", "); }
             if (text.size > 1) { text.append(", "); }
-
+            
             if (argType.classOrInterface, argType.declaration.equals(cd)) {
                 value anon = anonFunctionHeader(argType, unit);
                 text.append(anon).append(" => ");
@@ -88,9 +202,9 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
                 argTypes.set(i, argType);
             } else if (paramTypes) {
                 desc.append(argType.asString(unit))
-                        .append(" ");
+                    .append(" ");
             }
-
+            
             value name = if (argType.classOrInterface || argType.typeParameter)
             then escaping.toInitialLowercase(argType.declaration.getName(unit))
             else "arg";
@@ -99,68 +213,68 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
         }
         text.append(")");
         desc.append(")");
-
+        
         return ParametersCompletionProposal(offset,
-                            desc.string, text.string,
-                            argTypes, node.scope, cpc);
+            desc.string, text.string,
+            argTypes, node.scope, cpc);
     }
-
+    
     shared actual Boolean showParameterTypes => EditorUtil.preferences.getBoolean(CeylonPreferenceInitializer.\iPARAMETER_TYPES_IN_COMPLETIONS);
-
+    
     shared actual Tree.CompilationUnit getCompilationUnit(CeylonParseController cpc) => cpc.rootNode;
-
+    
     shared actual String inexactMatches => EditorUtil.preferences.getString(CeylonPreferenceInitializer.\iINEXACT_MATCHES);
-
+    
     shared actual String getDocumentSubstring(IDocument doc, Integer start, Integer length) => doc.get(start, length);
-
+    
     shared actual ICompletionProposal newPositionalInvocationCompletion(Integer offset, String prefix,
         Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember,
         OccurrenceLocation? ol, String? typeArgs, Boolean includeDefaulted) {
-
+        
         value desc = CodeCompletions.getPositionalInvocationDescriptionFor(dec, ol, pr, cpc.rootNode.unit, includeDefaulted, typeArgs);
         value text = CodeCompletions.getPositionalInvocationTextFor(dec, ol, pr, cpc.rootNode.unit, includeDefaulted, typeArgs);
         return InvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, includeDefaulted, true, false, isMember, null);
     }
-
+    
     shared actual ICompletionProposal newNamedInvocationCompletion(Integer offset, String prefix,
         Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember,
         OccurrenceLocation? ol, String? typeArgs, Boolean includeDefaulted) {
-
+        
         value desc = CodeCompletions.getNamedInvocationDescriptionFor(dec, pr, cpc.rootNode.unit, includeDefaulted, typeArgs);
         value text = CodeCompletions.getNamedInvocationTextFor(dec, pr, cpc.rootNode.unit, includeDefaulted, typeArgs);
         return InvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, includeDefaulted, false, true, isMember, null);
     }
-
+    
     shared actual ICompletionProposal newReferenceCompletion(Integer offset, String prefix,
         Declaration dec, Unit u, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember, Boolean includeTypeArgs) {
-
+        
         value desc = CodeCompletions.getDescriptionFor(dec, cpc.rootNode.unit);
         value text = CodeCompletions.getTextFor(dec, cpc.rootNode.unit);
         return InvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, true, false, false, isMember, null);
     }
-
+    
     shared actual ICompletionProposal newRefinementCompletionProposal(Integer offset, String prefix,
         Declaration dec, Reference? pr, Scope scope, CeylonParseController cmp, Boolean isInterface,
         ClassOrInterface ci, Node node, Unit unit, IDocument doc, Boolean preamble) {
-
+        
         value lineDeliniter = eclipseIndents.getDefaultLineDelimiter(doc);
         value indent = eclipseIndents.getIndent(node, doc);
         value desc = CodeCompletions.getRefinementDescriptionFor(dec, pr, unit);
         value text = CodeCompletions.getRefinementTextFor(dec, pr, unit, isInterface, ci, lineDeliniter + indent, true, preamble);
         return RefinementCompletionProposal(offset, prefix, pr, desc, text, cmp, dec, scope, false, true);
     }
-
+    
     shared actual ICompletionProposal newMemberNameCompletionProposal(Integer offset, String prefix, String name, String unquotedName) {
         return CompletionProposal(offset, prefix, CeylonResources.\iLOCAL_NAME, unquotedName, name);
     }
-
+    
     shared actual ICompletionProposal newKeywordCompletionProposal(Integer offset, String prefix, String keyword) {
         return KeywordCompletionProposal(offset, prefix, keyword);
     }
-
+    
     shared actual ICompletionProposal newAnonFunctionProposal(Integer _offset, Type? requiredType,
-            Unit unit, String _text, String header, Boolean isVoid) {
-
+        Unit unit, String _text, String header, Boolean isVoid) {
+        
         value largeCorrectionImage = CeylonLabelProvider.getDecoratedImage(CeylonResources.\iCEYLON_CORRECTION, 0, false);
         return object extends CompletionProposal(_offset, "", largeCorrectionImage, _text, _text) {
             shared actual Point getSelection(IDocument document) {
@@ -170,38 +284,43 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
             }
         };
     }
-
+    
     shared actual JList<CommonToken> getTokens(CeylonParseController cpc) {
         return cpc.tokens;
     }
-
+    
     shared actual ICompletionProposal newNamedArgumentProposal(Integer offset, String prefix,
         CeylonParseController cpc, Tree.CompilationUnit cu, Declaration dec, Scope scope) {
-
+        
         value desc = CodeCompletions.getDescriptionFor(dec, cu.unit);
         value text = CodeCompletions.getTextFor(dec, cu.unit) + " = nothing;";
         return RefinementCompletionProposal(offset, prefix, dec.reference, desc, text, cpc, dec, scope, true, false);
     }
-
+    
     shared actual ICompletionProposal newInlineFunctionProposal(Integer offset, FunctionOrValue dec,
-            Scope scope, Node node, String prefix, CeylonParseController cpc, IDocument doc) {
-
+        Scope scope, Node node, String prefix, CeylonParseController cpc, IDocument doc) {
+        
         value p = dec.initializerParameter;
         value unit = node.unit;
         value desc = CodeCompletions.getInlineFunctionDescriptionFor(p, null, unit);
         value text = CodeCompletions.getInlineFunctionTextFor(p, null, unit,
             eclipseIndents.getDefaultLineDelimiter(doc) + eclipseIndents.getIndent(node, doc));
-
+        
         return RefinementCompletionProposal(offset, prefix, dec.reference, desc, text, cpc,
             dec, scope, false, false);
     }
-
+    
     shared actual ICompletionProposal newProgramElementReferenceCompletion(Integer offset, String prefix,
-        Declaration dec, Unit? u, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember) => nothing;
+            Declaration dec, Unit? u, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember)
 
+        => InvocationCompletionProposal(offset, prefix, dec.getName(u), escaping.escapeName(dec, u),
+            dec, dec.reference, scope, cpc, true, false, false, isMember, null);
+    
     shared actual ICompletionProposal newBasicCompletionProposal(Integer offset, String prefix,
-        String text, String escapedText, Declaration decl, CeylonParseController cpc) => nothing;
+            String text, String escapedText, Declaration decl, CeylonParseController cpc)
 
+        => BasicCompletionProposal(offset, prefix, text, escapedText, decl, cpc);
+    
     shared actual List<Pattern> proposalFilters {
         value filters = ArrayList<Pattern>();
         value preferences = EditorUtil.preferences;
@@ -210,6 +329,79 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
             parseFilters(filters, preferences.getString(CeylonPreferenceInitializer.\iCOMPLETION_FILTERS));
         }
         return filters;
+    }
+    
+    shared actual void sessionStarted() {
+        secondLevel = false;
+        lastOffset = -1;
+    }
+
+    shared actual ICompletionProposal newImportedModulePackageProposal(Integer offset, String prefix,
+        String memberPackageSubname, Boolean withBody,
+        String fullPackageName, LocalAnalysisResult<IDocument> controller,
+        Package candidate) {
+
+        assert(is CeylonParseController controller);
+        
+        return PackageCompletions.ImportedModulePackageProposal(offset, prefix, memberPackageSubname, withBody,
+            fullPackageName, controller, candidate);
+    }
+    
+    shared actual ICompletionProposal newQueriedModulePackageProposal(Integer offset, String prefix,
+        String memberPackageSubname, Boolean withBody,
+        String fullPackageName, LocalAnalysisResult<IDocument> controller,
+        ModuleVersionDetails version, Unit unit, ModuleSearchResult.ModuleDetails md) {
+    
+        assert(is CeylonParseController controller);
+
+        return PackageCompletions.QueriedModulePackageProposal(offset, prefix,
+            memberPackageSubname, withBody, fullPackageName, controller, version, unit, md);
+    }
+
+    Boolean isIdentifierCharacter(ITextViewer viewer, Integer offset) {
+        IDocument doc = viewer.document;
+        Character ch = doc.get(offset - 1, 1).first else ' ';
+        return ch.letter || ch.digit || ch=='_' || ch=='.';
+    }
+    
+    // see InvocationCompletionProposal.computeParameterContextInformation()
+    List<IContextInformation> computeParameterContextInformation(Integer offset, Tree.CompilationUnit rootNode, ITextViewer viewer) {
+        ArrayList<IContextInformation> infos = ArrayList<IContextInformation>();
+        rootNode.visit(object extends Visitor() {
+                shared actual void visit(Tree.InvocationExpression that) {
+                    if (exists al = that.positionalArgumentList else that.namedArgumentList) {
+                        //TODO: should reuse logic for adjusting tokens
+                        //      from CeylonContentProposer!!
+                        Integer? start = al.startIndex?.intValue();
+                        Integer? stop = al.stopIndex?.intValue();
+                        if (exists start, exists stop, offset > start) {
+                            variable String string = "";
+                            if (offset > stop) {
+                                string = viewer.document.get(stop + 1, offset - stop - 1);
+                            }
+                            if (string.trimmed.empty) {
+                                assert (is Tree.MemberOrTypeExpression mte = that.primary);
+                                if (is Functional declaration = mte.declaration) {
+                                    value pls = declaration.parameterLists;
+                                    if (!pls.empty) {
+                                        //Note: This line suppresses the little menu 
+                                        //      that gives me a choice of context infos.
+                                        //      Delete it to get a choice of all surrounding
+                                        //      argument lists.
+                                        infos.clear();
+                                        infos.add(InvocationCompletionProposal.ParameterContextInformation(
+                                                declaration, mte.target, rootNode.unit,
+                                                pls.get(0), start, true, al is Tree.NamedArgumentList));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    super.visit(that);
+                }
+            }
+        );
+        return infos;
     }
     
     // see CeylonCompletionProcessor.parseFilters()
@@ -223,5 +415,20 @@ object eclipseCompletionManager extends IdeCompletionManager<CeylonParseControll
                 }
             }
         }
+    }
+    
+    ICompletionProposal[] getEclipseContentProposals(CeylonParseController? controller, Integer offset, 
+            ITextViewer? viewer, Boolean secondLevel, Boolean returnedParamInfo, IProgressMonitor monitor) {
+        
+        if (exists controller, exists viewer, exists rn = controller.rootNode, exists t = controller.tokens) {
+            controller.parse(viewer.document, NullProgressMonitor(), null);
+            controller.handler.updateAnnotations();
+
+            value line = CompletionUtil.getLine(offset, viewer);
+
+            return getContentProposals(controller, offset, line, secondLevel, controller, EclipseProgressMonitor(monitor));
+        }
+        
+        return [];
     }
 }

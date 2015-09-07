@@ -42,7 +42,8 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
-import com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor;
+import com.redhat.ceylon.eclipse.code.complete.EclipseCompletionProcessor;
+import com.redhat.ceylon.eclipse.code.complete.completionJ2C;
 import com.redhat.ceylon.eclipse.code.correct.CeylonCorrectionProcessor;
 import com.redhat.ceylon.eclipse.code.hover.AnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
@@ -90,10 +91,10 @@ public class CeylonSourceViewerConfiguration
             implements ICompletionListener {
         
         private CeylonEditor editor;
-        private CeylonCompletionProcessor processor;
+        private EclipseCompletionProcessor processor;
         
         private CompletionListener(CeylonEditor editor,
-                CeylonCompletionProcessor processor) {
+                EclipseCompletionProcessor processor) {
             this.editor = editor;
             this.processor = processor;
             
@@ -134,8 +135,8 @@ public class CeylonSourceViewerConfiguration
         contentAssistant.setRestoreCompletionProposalSize(
                 getOrCreateSection(getSettings(),
                 "completion_proposal_popup"));
-        CeylonCompletionProcessor completionProcessor = 
-                new CeylonCompletionProcessor(editor);
+        EclipseCompletionProcessor completionProcessor = 
+                completionJ2C.newCompletionProcessor(editor);
         CompletionListener listener = 
                 new CompletionListener(editor, 
                         completionProcessor);

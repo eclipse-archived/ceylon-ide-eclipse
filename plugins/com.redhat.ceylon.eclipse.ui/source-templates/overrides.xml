@@ -78,4 +78,7 @@
     <module module="org.eclipse.jface.text">
         <share module="org.eclipse.jface"/>
     </module>
+    <module module="org.eclipse.jface">
+        <add module="org.eclipse.core.runtime" version="current" shared="true"/>
+    </module>
 </overrides>
