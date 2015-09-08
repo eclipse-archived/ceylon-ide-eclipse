@@ -149,13 +149,16 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             List<ICompletionProposal> result) {
         //TODO: type argument substitution using the Reference of the primary node
         if (dec.isParameter()) {
-            Parameter p = ((FunctionOrValue) dec).getInitializerParameter();
+            FunctionOrValue fov = (FunctionOrValue) dec;
+            Parameter p = fov.getInitializerParameter();
             Unit unit = node.getUnit();
-            result.add(new RefinementCompletionProposal(offset, prefix, 
+            result.add(new RefinementCompletionProposal(
+                    offset, prefix, 
                     dec.getReference(), //TODO: this needs to do type arg substitution
                     getInlineFunctionDescriptionFor(p, null, unit),
                     getInlineFunctionTextFor(p, null, unit, 
-                            getDefaultLineDelimiter(doc) + getIndent(node, doc)),
+                            getDefaultLineDelimiter(doc) + 
+                            getIndent(node, doc)),
                     cpc, dec, scope, false, false));
         }
     }
@@ -323,7 +326,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         new LinkedModeModel();
                 List<ICompletionProposal> props = 
                         new ArrayList<ICompletionProposal>();
-                addProposals(loc+pos, props, prefix);
+                addProposals(loc+pos, prefix, props);
                 ProposalPosition linkedPosition = 
                         new ProposalPosition(document, 
                                 loc+pos, 7, 0, 
@@ -361,8 +364,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         	        declaration.getName());
     }
     
-    private void addProposals(final int loc, 
-            List<ICompletionProposal> props, String prefix) {
+    private void addProposals(int loc, String prefix, 
+            List<ICompletionProposal> props) {
         Type type = getType();
         if (type==null) return;
         TypeDeclaration td = type.getDeclaration();
