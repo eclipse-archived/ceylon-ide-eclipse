@@ -15,9 +15,9 @@
 			param1="com.redhat.ceylon.eclipse.ui.perspective" />
 		<description>
 			We need to be in the Ceylon Perspective. Select
-			<b>Window > Open Perspective > Other ... > Ceylon</b> from the menu bar at the
-			top of the workbench, or click below. (If you're already in the
-			Java perspective, you can skip this step.)
+			<b>Window > Open Perspective > Other ... > Ceylon</b> from the 
+			menu bar at the top of the workbench, or click below. (If you're 
+			already in the Ceylon perspective, you can skip this step.)
 		</description>
 	</item>
 
@@ -43,13 +43,13 @@
 			<br/>
 			<br/>
 			Call the unit "hello", or whatever you like, select the option
-			<b>Create toplevel class or method declaration</b>, choose the 
+			<b>Create toplevel class or function declaration</b>, choose the 
 			source folder of the project we just created, and finally click 
 			<b>Finish</b>.
 			<br/>
 			<br/>
 			Note that if you give the compilation unit an initial lowercase
-			name, the wizard will fill in a method declaration. If you give
+			name, the wizard will fill in a function declaration. If you give
 			it an initial uppercase name, the wizard will fill in a class 
 			declaration. For the purposes of this tutorial, it doesn't really 
 			matter which.
@@ -58,18 +58,18 @@
 			serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newUnitWizard)" />
 	</item>
 
-	<item title="Add the code to the method">
+	<item title="Add the code to the runnable function">
 		<description>
 			Next, in the Ceylon editor that opened automatically, add the
-			following code to the body of the "hello" method (or "Hello"
+			following code to the body of the "hello" function (or "Hello"
 			class):
 			<br/>
 			<br/>
 			<b>print("hello world");</b>
 			<br/>
 			<br/>
-			Then, add a <b>shared</b> annotation to the method or class to
-			mark it as runnable.
+			Note that the function or class must be annotated <b>shared</b> 
+			to mark it as runnable.
 			<br/>
 			<br/>
 			Remember to save the file.

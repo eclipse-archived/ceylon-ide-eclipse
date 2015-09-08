@@ -17,9 +17,9 @@
             param1="com.redhat.ceylon.eclipse.ui.perspective" />
         <description>
             We need to be in the Ceylon Perspective. Select
-            <b>Window > Open Perspective > Other ... > Ceylon</b> from the menu bar at the
-            top of the workbench, or click below. (If you're already in the
-            Java perspective, you can skip this step.)
+            <b>Window > Open Perspective > Other ... > Ceylon</b> from the 
+            menu bar at the top of the workbench, or click below. (If you're 
+            already in the Java perspective, you can skip this step.)
         </description>
     </item>
 
@@ -72,7 +72,7 @@
         </description>
     </item>
 
-    <item title="Add code to the run method">
+    <item title="Add code to the run function">
         <description>
             Next, in the Ceylon editor that opened automatically, add the
             following "import" statement, at the top of the file:
@@ -81,7 +81,7 @@
             <b>import ceylon.math.float { random }</b>
             <br/>
             <br/>
-            Now add the following code to the body of the "run" method:
+            Now add the following code to the body of the "run" function:
             <br/>
             <br/>
             <b>print("You rolled ``(random()*6).integer+1`` ``(random()*6).integer+1``");</b>
