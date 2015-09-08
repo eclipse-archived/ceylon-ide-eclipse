@@ -84,8 +84,7 @@ final class CeylonEnrichedInformationControlCreator
             setText("Open Declaration");
             setToolTipText("Open Declaration");
             ImageDescriptor descriptor = 
-                    CeylonPlugin.getInstance()
-                        .getImageRegistry()
+                    CeylonPlugin.imageRegistry()
                         .getDescriptor(CeylonResources.GOTO);
             setImageDescriptor(descriptor);
         }

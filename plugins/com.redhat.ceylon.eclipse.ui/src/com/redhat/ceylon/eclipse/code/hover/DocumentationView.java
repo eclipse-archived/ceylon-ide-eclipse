@@ -54,8 +54,7 @@ import com.redhat.ceylon.model.typechecker.model.Referenceable;
 public class DocumentationView extends ViewPart {
     
     private static final Image GOTO_IMAGE = 
-            CeylonPlugin.getInstance()
-                .getImageRegistry().get(GOTO);
+            CeylonPlugin.imageRegistry().get(GOTO);
     
     private static DocumentationView instance;
     
@@ -358,8 +357,7 @@ public class DocumentationView extends ViewPart {
         public OpenDeclarationAction() {
             setText("Open Declaration");
             ImageDescriptor descriptor = 
-                    CeylonPlugin.getInstance()
-                        .getImageRegistry()
+                    CeylonPlugin.imageRegistry()
                         .getDescriptor(CeylonResources.GOTO);
             this.setImageDescriptor(descriptor);
         }

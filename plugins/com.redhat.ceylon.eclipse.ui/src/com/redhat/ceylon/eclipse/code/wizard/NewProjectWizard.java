@@ -63,12 +63,11 @@ public class NewProjectWizard extends NewElementWizard
     public NewProjectWizard(
             NewCeylonProjectWizardPageOne pageOne, 
             NewCeylonProjectWizardPageTwo pageTwo) {
-        CeylonPlugin plugin = CeylonPlugin.getInstance();
         ImageDescriptor desc = 
-                plugin.getImageRegistry()
+                CeylonPlugin.imageRegistry()
                     .getDescriptor(CEYLON_NEW_PROJECT);
         setDefaultPageImageDescriptor(desc);
-        setDialogSettings(plugin.getDialogSettings());
+        setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
         setWindowTitle("New Ceylon Project");
         firstPage = pageOne;
         secondPage = pageTwo;

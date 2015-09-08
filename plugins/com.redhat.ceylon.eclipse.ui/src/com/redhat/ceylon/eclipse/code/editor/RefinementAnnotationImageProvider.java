@@ -12,10 +12,12 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class RefinementAnnotationImageProvider implements IAnnotationImageProvider {
     
-    private static Image DEFAULT = CeylonPlugin.getInstance()
-            .getImageRegistry().get(CEYLON_DEFAULT_REFINEMENT);
-    private static Image FORMAL = CeylonPlugin.getInstance()
-            .getImageRegistry().get(CEYLON_FORMAL_REFINEMENT);
+    private static Image DEFAULT = 
+            CeylonPlugin.imageRegistry()
+                .get(CEYLON_DEFAULT_REFINEMENT);
+    private static Image FORMAL = 
+            CeylonPlugin.imageRegistry()
+                .get(CEYLON_FORMAL_REFINEMENT);
     
     @Override
     public Image getManagedImage(Annotation annotation) {

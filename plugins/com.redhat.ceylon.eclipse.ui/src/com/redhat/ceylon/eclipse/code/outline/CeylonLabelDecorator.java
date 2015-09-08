@@ -1,11 +1,13 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
-import org.eclipse.jface.resource.ImageRegistry;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.DECORATIONS;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecorationAttributes;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
+
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
-
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
  * This class works, but we don't use it because it decorates the
@@ -17,8 +19,6 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 class CeylonLabelDecorator implements ILightweightLabelDecorator {
     
     private CeylonLabelDecorator() {}
-    
-    private final ImageRegistry imageRegistry = CeylonPlugin.getInstance().getImageRegistry();
     
     @Override
     public void addListener(ILabelProviderListener listener) {}
@@ -36,10 +36,13 @@ class CeylonLabelDecorator implements ILightweightLabelDecorator {
 
     @Override
     public void decorate(Object element, IDecoration decoration) {
-        int adornmentFlags = CeylonLabelProvider.getDecorationAttributes(element);
-        for (DecorationDescriptor d: CeylonLabelProvider.DECORATIONS) {
+        int adornmentFlags = getDecorationAttributes(element);
+        for (DecorationDescriptor d: DECORATIONS) {
             if (d.hasDecoration(adornmentFlags)) {
-                decoration.addOverlay(imageRegistry.getDescriptor(d.getImageKey()), 
+                ImageDescriptor id = 
+                        imageRegistry()
+                            .getDescriptor(d.getImageKey());
+                decoration.addOverlay(id, 
                         d.getQuadrant());
             }
         }

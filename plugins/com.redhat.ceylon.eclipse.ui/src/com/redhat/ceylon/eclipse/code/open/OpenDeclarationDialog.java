@@ -193,8 +193,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         private TogglePackageAction() {
             super("Show Selection Package", AS_CHECK_BOX);
             ImageDescriptor desc = 
-                    CeylonPlugin.getInstance()
-                        .getImageRegistry()
+                    CeylonPlugin.imageRegistry()
                         .getDescriptor(CEYLON_PACKAGE);
             setImageDescriptor(desc);
         }
@@ -209,8 +208,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         private ToggleModuleAction() {
             super("Show Selection Module", IAction.AS_CHECK_BOX);
             ImageDescriptor desc = 
-                    CeylonPlugin.getInstance()
-                        .getImageRegistry()
+                    CeylonPlugin.imageRegistry()
                         .getDescriptor(CEYLON_MODULE);
             setImageDescriptor(desc);
         }
@@ -1189,8 +1187,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
         Action configureAction = 
                 new Action("Configure Filters and Labels...",
-                        CeylonPlugin.getInstance()
-                            .getImageRegistry()
+                        CeylonPlugin.imageRegistry()
                                 .getDescriptor(CONFIG_LABELS)) {
             @Override
             public void run() {

@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_CHANGE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_COMPOSITE_CHANGE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_IMPORT;
@@ -14,25 +15,26 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class RefactorMenuItems extends CompoundContributionItem {
     
-    private static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
-            .getImageRegistry();
-    
-    private static ImageDescriptor RENAME = imageRegistry.getDescriptor(CEYLON_RENAME);
-    private static ImageDescriptor CHANGE = imageRegistry.getDescriptor(CEYLON_CHANGE);
-    private static ImageDescriptor COMP_CHANGE = imageRegistry.getDescriptor(CEYLON_COMPOSITE_CHANGE);
-    private static ImageDescriptor MOVE = imageRegistry.getDescriptor(CEYLON_MOVE);
-    private static ImageDescriptor IMPORT = imageRegistry.getDescriptor(CEYLON_IMPORT);
-    private static ImageDescriptor REORDER = imageRegistry.getDescriptor(CEYLON_REORDER);
+    private static ImageDescriptor RENAME = 
+            imageRegistry().getDescriptor(CEYLON_RENAME);
+    private static ImageDescriptor CHANGE = 
+            imageRegistry().getDescriptor(CEYLON_CHANGE);
+    private static ImageDescriptor COMP_CHANGE = 
+            imageRegistry().getDescriptor(CEYLON_COMPOSITE_CHANGE);
+    private static ImageDescriptor MOVE = 
+            imageRegistry().getDescriptor(CEYLON_MOVE);
+    private static ImageDescriptor IMPORT = 
+            imageRegistry().getDescriptor(CEYLON_IMPORT);
+    private static ImageDescriptor REORDER = 
+            imageRegistry().getDescriptor(CEYLON_REORDER);
 
     public RefactorMenuItems() {}
     

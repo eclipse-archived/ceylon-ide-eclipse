@@ -603,6 +603,10 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         return javaSourceArchiveCacheDirectory;
     }
 
+    public static ImageRegistry imageRegistry() {
+        return getInstance().getImageRegistry();
+    }
+    
     public static void log(int severity, String message) {
         Status status =
                 new Status(severity, PLUGIN_ID, message);

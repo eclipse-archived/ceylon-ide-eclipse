@@ -6,9 +6,11 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUPERTYPES;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.imageRegistry;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.triggersBinding;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 
@@ -20,7 +22,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -61,11 +62,9 @@ public class HierarchyPopup extends TreeViewPopup {
     private static final String EXCLUDE_ORACLE_JDK = "excludeOracleJDK";
     private static final String EXCLUDE_JDK = "excludeJDK";
     
-    private static final ImageRegistry imageRegistry = 
-            CeylonPlugin.getInstance().getImageRegistry();
-    private static final Image SUB_IMAGE = imageRegistry.get(CEYLON_SUB);
-    private static final Image SUP_IMAGE = imageRegistry.get(CEYLON_SUP);
-    private static final Image HIER_IMAGE = imageRegistry.get(CEYLON_HIER);
+    private static final Image SUB_IMAGE = imageRegistry().get(CEYLON_SUB);
+    private static final Image SUP_IMAGE = imageRegistry().get(CEYLON_SUP);
+    private static final Image HIER_IMAGE = imageRegistry().get(CEYLON_HIER);
 
     private final class ChangeViewListener implements KeyListener {
         @Override
@@ -413,8 +412,8 @@ public class HierarchyPopup extends TreeViewPopup {
         viewMenu.add(new Separator());
         Action configureAction = 
                 new Action("Configure Labels...", 
-                        CeylonPlugin.getInstance().getImageRegistry()
-                        .getDescriptor(CeylonResources.CONFIG_LABELS)) {
+                        CeylonPlugin.imageRegistry()
+                            .getDescriptor(CeylonResources.CONFIG_LABELS)) {
             @Override
             public void run() {
                 PreferencesUtil.createPreferenceDialogOn(

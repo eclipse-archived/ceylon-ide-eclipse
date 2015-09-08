@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 
 
 import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LAST_EDIT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.NEXT_ANN;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PREV_ANN;
@@ -29,12 +30,12 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class NavigateMenuItems extends CompoundContributionItem {
     
-    private static final ImageRegistry imageRegistry = 
-            CeylonPlugin.getInstance().getImageRegistry();
-    
-    private static final ImageDescriptor EDIT = imageRegistry.getDescriptor(LAST_EDIT);
-    private static final ImageDescriptor NEXT = imageRegistry.getDescriptor(NEXT_ANN);
-    private static final ImageDescriptor PREV = imageRegistry.getDescriptor(PREV_ANN);
+    private static final ImageDescriptor EDIT = 
+            imageRegistry().getDescriptor(LAST_EDIT);
+    private static final ImageDescriptor NEXT = 
+            imageRegistry().getDescriptor(NEXT_ANN);
+    private static final ImageDescriptor PREV = 
+            imageRegistry().getDescriptor(PREV_ANN);
     
     public NavigateMenuItems() {}
     

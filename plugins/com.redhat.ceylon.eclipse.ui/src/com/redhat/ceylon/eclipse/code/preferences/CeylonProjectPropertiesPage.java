@@ -104,7 +104,7 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
         enableBuilderButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
         enableBuilderButton.setText("Enable Ceylon Builder");
         enableBuilderButton.setEnabled(!builderEnabled && getSelectedProject().isOpen());
-        enableBuilderButton.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CeylonResources.ELE32));
+        enableBuilderButton.setImage(CeylonPlugin.imageRegistry().get(CeylonResources.ELE32));
         //enableBuilder.setSize(40, 40);
 
         Label sep = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);

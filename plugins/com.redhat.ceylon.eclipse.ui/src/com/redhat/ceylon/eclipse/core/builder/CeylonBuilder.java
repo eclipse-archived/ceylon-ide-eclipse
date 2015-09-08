@@ -90,6 +90,7 @@ import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.PackageFragment;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -3137,9 +3138,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 myConsole = (MessageConsole) console;
         }
         if (myConsole == null) {
-            myConsole = new MessageConsole(CEYLON_CONSOLE, 
-                  CeylonPlugin.getInstance().getImageRegistry()
-                      .getDescriptor(CeylonResources.BUILDER));
+            ImageDescriptor image = 
+                    CeylonPlugin.imageRegistry()
+                        .getDescriptor(CeylonResources.BUILDER);
+            myConsole = new MessageConsole(CEYLON_CONSOLE, image);
             consoleManager.addConsoles(new IConsole[] { myConsole });
         }
         consoleManager.showConsoleView(myConsole);

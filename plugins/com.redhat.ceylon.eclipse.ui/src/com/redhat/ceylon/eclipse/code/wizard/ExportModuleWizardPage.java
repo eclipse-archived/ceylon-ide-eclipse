@@ -32,10 +32,10 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.select.ProjectSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.model.typechecker.model.Module;
 
 public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 
@@ -53,8 +53,10 @@ public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
     
     ExportModuleWizardPage(String defaultRepositoryPath, 
             IProject project, IJavaElement selection) {
-        super("Export Ceylon Module", "Export Ceylon Module", CeylonPlugin.getInstance()
-                .getImageRegistry().getDescriptor(CEYLON_EXPORT_CAR));
+        super("Export Ceylon Module", 
+                "Export Ceylon Module", 
+                CeylonPlugin.imageRegistry()
+                    .getDescriptor(CEYLON_EXPORT_CAR));
         setDescription("Export a Ceylon module to a module repository.");
         repositoryPath = defaultRepositoryPath;
         this.project = project;

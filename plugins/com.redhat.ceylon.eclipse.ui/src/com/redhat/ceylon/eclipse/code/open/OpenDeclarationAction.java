@@ -16,8 +16,9 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class OpenDeclarationAction extends Action {
     
-    private static final ImageDescriptor ICON = CeylonPlugin.getInstance().getImageRegistry()
-            .getDescriptor(CeylonResources.CEYLON_OPEN_DECLARATION);
+    private static final ImageDescriptor ICON = 
+            CeylonPlugin.imageRegistry()
+                .getDescriptor(CeylonResources.CEYLON_OPEN_DECLARATION);
     
     private final IEditorPart editor;
     

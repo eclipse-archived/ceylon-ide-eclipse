@@ -68,8 +68,7 @@ class NewUnitWizardPage extends WizardPage {
 
     NewUnitWizardPage(String title, String description, String icon) {
         super(title, title, 
-                CeylonPlugin.getInstance()
-                    .getImageRegistry()
+                CeylonPlugin.imageRegistry()
                     .getDescriptor(icon));
         setDescription(description);
     }

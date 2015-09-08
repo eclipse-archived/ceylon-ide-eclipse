@@ -16,10 +16,12 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIDE_PRIVATE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.imageRegistry;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.triggersBinding;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
@@ -35,7 +37,6 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.bindings.TriggerSequence;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -80,12 +81,12 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class OutlinePopup extends TreeViewPopup {
     
-    private static final ImageRegistry imageRegistry = 
-            CeylonPlugin.getInstance().getImageRegistry();
-    
-    private static final Image OUTLINE = imageRegistry.get(CEYLON_OUTLINE);
-    private static final Image SORT = imageRegistry.get(SORT_ALPHA);
-    private static final Image PUBLIC = imageRegistry.get(HIDE_PRIVATE);
+    private static final Image OUTLINE = 
+            imageRegistry().get(CEYLON_OUTLINE);
+    private static final Image SORT = 
+            imageRegistry().get(SORT_ALPHA);
+    private static final Image PUBLIC = 
+            imageRegistry().get(HIDE_PRIVATE);
     
     private CeylonOutlineContentProvider outlineContentProvider;
     private OutlineSorter outlineSorter;
@@ -545,8 +546,7 @@ public class OutlinePopup extends TreeViewPopup {
         viewMenu.add(new Separator());
         Action configureAction = 
                 new Action("Configure Labels...", 
-                        CeylonPlugin.getInstance()
-                            .getImageRegistry()
+                        CeylonPlugin.imageRegistry()
                             .getDescriptor(CONFIG_LABELS)) {
             @Override
             public void run() {

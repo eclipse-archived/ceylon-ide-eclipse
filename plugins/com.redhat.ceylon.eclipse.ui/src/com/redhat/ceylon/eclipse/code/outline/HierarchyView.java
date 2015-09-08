@@ -11,6 +11,7 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUPERTYPES;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_INHERITED;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
@@ -19,7 +20,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HISTORY;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
@@ -41,7 +41,6 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
@@ -113,14 +112,12 @@ public class HierarchyView extends ViewPart {
     private static final String EXCLUDE_ORACLE_JDK = 
             "excludeOracleJDKInHierarchy";
     
-    private static final ImageRegistry imageRegistry = 
-            CeylonPlugin.getInstance().getImageRegistry();
     private static final Image GOTO_IMAGE = 
-            imageRegistry.get(GOTO);
+            imageRegistry().get(GOTO);
     static final Image INHERITED_IMAGE = 
-            imageRegistry.get(CEYLON_INHERITED);
+            imageRegistry().get(CEYLON_INHERITED);
     private static final Image SORT_IMAGE = 
-            imageRegistry.get(TYPE_MODE);
+            imageRegistry().get(TYPE_MODE);
     
     private CeylonHierarchyLabelProvider labelProvider;
     private CeylonHierarchyContentProvider contentProvider;
@@ -206,7 +203,7 @@ public class HierarchyView extends ViewPart {
             setMenuCreator(this);
             setToolTipText("Previous Type Hierarchies");
             this.setImageDescriptor(
-                    imageRegistry.getDescriptor(
+                    imageRegistry().getDescriptor(
                             CeylonResources.HISTORY));
         }
         
@@ -293,7 +290,7 @@ public class HierarchyView extends ViewPart {
             final Declaration declaration = h.get();
             if (declaration!=null) {
                 ImageDescriptor image =
-                        imageRegistry.getDescriptor(
+                        imageRegistry().getDescriptor(
                                 getImageKeyForDeclaration(
                                         declaration));
                 menu.add(new Action(getName(declaration), image) {
@@ -600,7 +597,8 @@ public class HierarchyView extends ViewPart {
         menuManager.add(new Separator());
         Action configureAction =
         new Action("Configure Labels...", 
-                imageRegistry.getDescriptor(CONFIG_LABELS)) {
+                imageRegistry()
+                    .getDescriptor(CONFIG_LABELS)) {
             @Override
             public void run() {
                 PreferencesUtil.createPreferenceDialogOn(
@@ -623,7 +621,8 @@ public class HierarchyView extends ViewPart {
         protected IContributionItem[] getContributionItems() {
             MenuManager historyMenu = 
                     new MenuManager("History", 
-                            imageRegistry.getDescriptor(HISTORY), 
+                            imageRegistry()
+                                .getDescriptor(HISTORY), 
                             "history");
             populateHistoryMenu(historyMenu);
             return new IContributionItem[] {historyMenu};
@@ -1042,8 +1041,7 @@ public class HierarchyView extends ViewPart {
                 String imageKey, HierarchyMode mode) {
             super(label);
             setToolTipText(tooltip);
-            setImageDescriptor(CeylonPlugin.getInstance()
-                    .getImageRegistry()
+            setImageDescriptor(CeylonPlugin.imageRegistry()
                     .getDescriptor(imageKey));
             this.mode = mode;
         }

@@ -120,7 +120,7 @@ public class JavaElementImageProvider {
                 return getCUResourceImageDescriptor(file, flags); // image for a CU not on the build path
             }
             if (CeylonBuilder.isCeylon(file)) {
-                return CeylonPlugin.getInstance().getImageRegistry()
+                return CeylonPlugin.imageRegistry()
                         .getDescriptor(getImageKeyForFile(file));
             }
             return getWorkbenchImageDescriptor(file, flags);
@@ -349,7 +349,7 @@ public class JavaElementImageProvider {
                     if (ext!=null && ext.equals("ceylon")) {
                         containsJavaElements=true;
                         if (file.getName().equals("module.ceylon")) {
-                            return CeylonPlugin.getInstance().getImageRegistry()
+                            return CeylonPlugin.imageRegistry()
                                     .getDescriptor(CEYLON_MODULE);
                         }
                     }

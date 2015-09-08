@@ -50,7 +50,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
     private ImageDescriptor fBaseImage;
     private int fFlags;
     private Point fSize;
-    private final ImageRegistry imageRegistry = CeylonPlugin.getInstance().getImageRegistry();
+    private final ImageRegistry imageRegistry = CeylonPlugin.imageRegistry();
 
     /**
      * Creates a new SourceEntityImageDescriptor.

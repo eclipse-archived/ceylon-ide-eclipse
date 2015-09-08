@@ -3,11 +3,13 @@ package com.redhat.ceylon.eclipse.code.search;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog.isMatchingGlob;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_IMPORT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.imageRegistry;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static java.util.Collections.emptySet;
 import static org.eclipse.jface.action.IAction.AS_CHECK_BOX;
@@ -29,7 +31,6 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInformationControlExtension3;
@@ -104,12 +105,10 @@ public final class ReferencesPopup extends PopupDialog
                    IInformationControlExtension2,
                    IInformationControlExtension3 {
     
-    private static final ImageRegistry imageRegistry = 
-            CeylonPlugin.getInstance().getImageRegistry();
     private static final Image REFS_IMAGE = 
-            imageRegistry.get(CEYLON_REFS);
+            imageRegistry().get(CEYLON_REFS);
     private static final Image DECS_IMAGE = 
-            imageRegistry.get(CEYLON_DECS);
+            imageRegistry().get(CEYLON_DECS);
 
     public class ChangeLayoutListener implements SelectionListener {
         @Override

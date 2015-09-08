@@ -142,8 +142,8 @@ public interface CeylonResources {
     
     public static final String CEYLON_LITERAL = "literal";
     
-    public static final ImageRegistry imageRegistry = CeylonPlugin.getInstance()
-            .getImageRegistry();
+    public static final ImageRegistry imageRegistry = 
+            CeylonPlugin.imageRegistry();
     
     public static final Image FILE = imageRegistry.get(CEYLON_FILE);
     public static final Image FOLDER = imageRegistry.get(CEYLON_FOLDER);

@@ -35,8 +35,9 @@ public abstract class ImportModulesWizardPage extends WizardPage {
     private Table moduleImportsTable;
     
     ImportModulesWizardPage() {
-        super("Add Module Imports", "Add Module Imports", 
-                CeylonPlugin.getInstance().getImageRegistry()
+        super("Add Module Imports", 
+                "Add Module Imports", 
+                CeylonPlugin.imageRegistry()
                         .getDescriptor(CEYLON_NEW_MODULE));
         setDescription("Add module imports to new module.");
     }

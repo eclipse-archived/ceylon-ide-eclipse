@@ -31,8 +31,9 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 public class CeylonSearchResult extends AbstractTextSearchResult
         implements IEditorMatchAdapter, IFileMatchAdapter {
     
-    private static final ImageDescriptor IMAGE = CeylonPlugin.getInstance()
-            .getImageRegistry().getDescriptor(CEYLON_SEARCH_RESULTS);
+    private static final ImageDescriptor IMAGE = 
+            CeylonPlugin.imageRegistry()
+                .getDescriptor(CEYLON_SEARCH_RESULTS);
     
     ISearchQuery query;
     

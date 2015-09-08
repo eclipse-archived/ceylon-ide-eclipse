@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getInstance;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN_DIS;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
@@ -38,6 +37,7 @@ import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
  * Hover for error and warning annotations.
@@ -58,7 +58,7 @@ public class AnnotationHover
             fInfoControl = infoControl;
             setText("Configure Annotation Appearance");
             ImageRegistry imageRegistry = 
-                    getInstance().getImageRegistry();
+                    CeylonPlugin.imageRegistry();
             setImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN));
             setDisabledImageDescriptor(imageRegistry.getDescriptor(CONFIG_ANN_DIS));
             setToolTipText("Configure Annotation Appearance");

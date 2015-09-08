@@ -189,7 +189,9 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
             super("Expand All");
             setToolTipText("Expand All");
 
-            ImageDescriptor expandAllImage = CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.EXPAND_ALL);
+            ImageDescriptor expandAllImage = 
+                    CeylonPlugin.imageRegistry()
+                        .getDescriptor(CeylonResources.EXPAND_ALL);
             setImageDescriptor(expandAllImage);
             setHoverImageDescriptor(expandAllImage);
         }
@@ -208,7 +210,9 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
             setToolTipText("Fetch Next");
             setEnabled(false);
 
-            ImageDescriptor fetchNextImage = CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.PAGING);
+            ImageDescriptor fetchNextImage = 
+                    CeylonPlugin.imageRegistry()
+                        .getDescriptor(CeylonResources.PAGING);
             setHoverImageDescriptor(fetchNextImage);
             setImageDescriptor(fetchNextImage);
         }
@@ -227,7 +231,10 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
             super("Add Module Import...");
             setToolTipText("Add Module Import...");
             setEnabled(false);
-            setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CEYLON_ADD));
+            ImageDescriptor image = 
+                    CeylonPlugin.imageRegistry()
+                        .getDescriptor(CEYLON_ADD);
+            setImageDescriptor(image);
             moduleTreeViewer.addSelectionChangedListener(this);
         }
 
@@ -314,7 +321,9 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
             super("Show/Hide Documentation", AS_CHECK_BOX);
             setToolTipText("Show/Hide Documentation");
 
-            ImageDescriptor showDocImage = CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.SHOW_DOC);
+            ImageDescriptor showDocImage = 
+                    CeylonPlugin.imageRegistry()
+                        .getDescriptor(CeylonResources.SHOW_DOC);
             setImageDescriptor(showDocImage);
             setHoverImageDescriptor(showDocImage);
             
@@ -340,7 +349,9 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
             super("Show Repositories");
             setToolTipText("Show Repositories");
 
-            ImageDescriptor showRepositoriesImage = CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CeylonResources.REPOSITORIES);
+            ImageDescriptor showRepositoriesImage = 
+                    CeylonPlugin.imageRegistry()
+                        .getDescriptor(CeylonResources.REPOSITORIES);
             setImageDescriptor(showRepositoriesImage);
             setHoverImageDescriptor(showRepositoriesImage);
         }

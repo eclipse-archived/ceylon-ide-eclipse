@@ -1,20 +1,15 @@
 package com.redhat.ceylon.eclipse.code.outline;
 
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static java.util.Arrays.asList;
 
 import org.eclipse.compare.ITypedElement;
 import org.eclipse.compare.structuremergeviewer.DocumentRangeNode;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-
 public class CeylonDocumentRangeNode extends DocumentRangeNode 
         implements ITypedElement {
-    
-    private static ImageRegistry imageRegistry = 
-            CeylonPlugin.getInstance().getImageRegistry();
     
     private final CeylonOutlineNode node;
     
@@ -29,7 +24,7 @@ public class CeylonDocumentRangeNode extends DocumentRangeNode
     
     @Override
     public Image getImage() {
-        return imageRegistry.get(node.getImageKey());
+        return imageRegistry().get(node.getImageKey());
     }
     
     @Override

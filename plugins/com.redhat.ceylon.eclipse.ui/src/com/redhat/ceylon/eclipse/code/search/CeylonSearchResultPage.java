@@ -350,8 +350,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 toolBarManager, 
                 statusLineManager);
         ImageDescriptor desc = 
-                CeylonPlugin.getInstance()
-                    .getImageRegistry()
+                CeylonPlugin.imageRegistry()
                     .getDescriptor(CONFIG_LABELS);
         Action configureAction = 
                 new Action("Configure Labels...", desc) {
@@ -379,8 +378,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             super(label);
             setToolTipText(tooltip);
             ImageDescriptor desc = 
-                    CeylonPlugin.getInstance()
-                        .getImageRegistry()
+                    CeylonPlugin.imageRegistry()
                         .getDescriptor(imageKey);
             setImageDescriptor(desc);
             fGrouping = grouping;
@@ -406,8 +404,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             super(label);
             setToolTipText(tooltip);
             ImageDescriptor desc = 
-                    CeylonPlugin.getInstance()
-                        .getImageRegistry()
+                    CeylonPlugin.imageRegistry()
                         .getDescriptor(imageKey);
             setImageDescriptor(desc);
             this.layout = layout;

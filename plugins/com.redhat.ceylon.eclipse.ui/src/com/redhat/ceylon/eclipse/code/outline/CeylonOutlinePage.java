@@ -14,6 +14,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.DEFAULT_CATEGORY;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIDE_PRIVATE;
@@ -37,7 +38,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DecoratingStyledCellLabelProvider;
@@ -80,16 +80,13 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 public class CeylonOutlinePage extends ContentOutlinePage 
         implements TreeLifecycleListener, CaretListener {
     
-    private static final ImageRegistry imageRegistry = 
-            CeylonPlugin.getInstance().getImageRegistry();
-
     private static final String OUTLINE_POPUP_MENU_ID = 
             PLUGIN_ID + ".outline.popupMenu";
     
     private static final ImageDescriptor PUBLIC = 
-            imageRegistry.getDescriptor(HIDE_PRIVATE);
+            imageRegistry().getDescriptor(HIDE_PRIVATE);
     private static final ImageDescriptor ALPHA = 
-            imageRegistry.getDescriptor(SORT_ALPHA);
+            imageRegistry().getDescriptor(SORT_ALPHA);
     
     private final ITreeContentProvider contentProvider = 
             new OutlineContentProvider();
@@ -252,8 +249,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         menuManager.add(hideAction);
         menuManager.add(new Separator());
         ImageDescriptor desc = 
-                CeylonPlugin.getInstance()
-                    .getImageRegistry()
+                CeylonPlugin.imageRegistry()
                     .getDescriptor(CONFIG_LABELS);
         Action configureAction =
                 new Action("Configure Labels...", desc) {
@@ -344,7 +340,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             setToolTipText("Expand All");
             
             ImageDescriptor desc = 
-                    imageRegistry.getDescriptor(EXPAND_ALL);
+                    imageRegistry().getDescriptor(EXPAND_ALL);
             setHoverImageDescriptor(desc);
             setImageDescriptor(desc);
         }

@@ -1481,8 +1481,7 @@ public abstract class FilteredItemsSelectionDialog extends
         public ToggleDocAreaAction() {
             super("Show &Documentation", IAction.AS_CHECK_BOX);
             ImageDescriptor descriptor = 
-                    CeylonPlugin.getInstance()
-                        .getImageRegistry()
+                    CeylonPlugin.imageRegistry()
                         .getDescriptor(CeylonResources.SHOW_DOC);
             setImageDescriptor(descriptor);
         }

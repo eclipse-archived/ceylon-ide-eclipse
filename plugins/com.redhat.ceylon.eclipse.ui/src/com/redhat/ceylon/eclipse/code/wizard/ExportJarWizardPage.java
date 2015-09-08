@@ -43,8 +43,10 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
     
     ExportJarWizardPage(String defaultRepositoryPath, 
             IJavaProject project, IJavaElement selection) {
-        super("Export Java Archive", "Export Java Archive", CeylonPlugin.getInstance()
-                .getImageRegistry().getDescriptor(CEYLON_EXPORT_CAR));
+        super("Export Java Archive", 
+                "Export Java Archive", 
+                CeylonPlugin.imageRegistry()
+                    .getDescriptor(CEYLON_EXPORT_CAR));
         setDescription("Export a Java archive to a module repository.");
         repositoryPath = defaultRepositoryPath;
         this.project = project;

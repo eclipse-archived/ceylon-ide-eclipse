@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.open;
 
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIERARCHY;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
@@ -12,25 +13,27 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
 import com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public class SelectedDeclarationMenuItems extends CompoundContributionItem {
     
-    private static ImageRegistry imageRegistry = CeylonPlugin.getInstance()
-            .getImageRegistry();
-    
-    private static final ImageDescriptor GOTO_IMAGE = imageRegistry.getDescriptor(GOTO);
-    private static final ImageDescriptor REFINED_IMAGE = imageRegistry.getDescriptor(CEYLON_DEFAULT_REFINEMENT);
-    private static final ImageDescriptor HIERARCHY_IMAGE = imageRegistry.getDescriptor(CeylonResources.HIERARCHY);
-    private static final ImageDescriptor OUTLINE = imageRegistry.getDescriptor(CEYLON_OUTLINE);
-    private static final ImageDescriptor HIERARCHY = imageRegistry.getDescriptor(CEYLON_HIERARCHY);
-    private static final ImageDescriptor CODE = imageRegistry.getDescriptor(CEYLON_SOURCE);
-    private static final ImageDescriptor REFS = imageRegistry.getDescriptor(CEYLON_REFS);
+    private static final ImageDescriptor GOTO_IMAGE = 
+            imageRegistry().getDescriptor(GOTO);
+    private static final ImageDescriptor REFINED_IMAGE = 
+            imageRegistry().getDescriptor(CEYLON_DEFAULT_REFINEMENT);
+    private static final ImageDescriptor HIERARCHY_IMAGE = 
+            imageRegistry().getDescriptor(CeylonResources.HIERARCHY);
+    private static final ImageDescriptor OUTLINE = 
+            imageRegistry().getDescriptor(CEYLON_OUTLINE);
+    private static final ImageDescriptor HIERARCHY = 
+            imageRegistry().getDescriptor(CEYLON_HIERARCHY);
+    private static final ImageDescriptor CODE = 
+            imageRegistry().getDescriptor(CEYLON_SOURCE);
+    private static final ImageDescriptor REFS = 
+            imageRegistry().getDescriptor(CEYLON_REFS);
 
     public SelectedDeclarationMenuItems() {}
     
@@ -40,8 +43,12 @@ public class SelectedDeclarationMenuItems extends CompoundContributionItem {
     
     @Override
     public IContributionItem[] getContributionItems() {
-        boolean selectedEnabled = new OpenSelectedDeclarationHandler().isEnabled();
-        boolean refinedEnabled = new OpenRefinedDeclarationHandler().isEnabled();
+        boolean selectedEnabled = 
+                new OpenSelectedDeclarationHandler()
+                    .isEnabled();
+        boolean refinedEnabled = 
+                new OpenRefinedDeclarationHandler()
+                    .isEnabled();
         return new IContributionItem[] {
                 new DynamicMenuItem(PLUGIN_ID + ".action.openSelectedDeclaration", 
                         "Go to Selected Declaration",

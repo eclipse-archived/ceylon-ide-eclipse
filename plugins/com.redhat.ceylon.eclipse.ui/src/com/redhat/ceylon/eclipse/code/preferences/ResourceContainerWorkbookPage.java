@@ -66,7 +66,8 @@ public class ResourceContainerWorkbookPage extends BuildPathBasePage {
 //    private static final String IGNORE_OPTIONAL_PROBLEMS = "ignore_optional_problems";
     
     private static final ImageDescriptor NEW_FOLDER_ICON = 
-            CeylonPlugin.getInstance().getImageRegistry().getDescriptor(CEYLON_NEW_FOLDER);
+            CeylonPlugin.imageRegistry()
+                .getDescriptor(CEYLON_NEW_FOLDER);
 
     private class OpenBuildPathWizardAction extends AbstractOpenWizardAction 
             implements IPropertyChangeListener {

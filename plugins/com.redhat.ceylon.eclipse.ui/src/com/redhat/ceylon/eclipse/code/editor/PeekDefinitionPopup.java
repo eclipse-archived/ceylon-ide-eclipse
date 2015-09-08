@@ -191,7 +191,7 @@ final class PeekDefinitionPopup extends PopupDialog
             .spacing(6, 6)
             .applyTo(parent);
         Label iconLabel = new Label(parent, SWT.NONE);
-        iconLabel.setImage(CeylonPlugin.getInstance().getImageRegistry().get(CEYLON_SOURCE));
+        iconLabel.setImage(CeylonPlugin.imageRegistry().get(CEYLON_SOURCE));
         getShell().addKeyListener(new GotoListener());
         titleLabel = new StyledText(parent, SWT.NONE);
         titleLabel.addModifyListener(new ModifyListener() {
