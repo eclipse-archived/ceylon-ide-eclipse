@@ -22,9 +22,11 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getRefi
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static java.lang.Character.isJavaIdentifierPart;
 
@@ -54,7 +56,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -67,6 +68,7 @@ import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
@@ -101,15 +103,20 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
     }
 
-    public static Image DEFAULT_REFINEMENT = CeylonPlugin.getInstance()
-            .getImageRegistry().get(CEYLON_DEFAULT_REFINEMENT);
-    public static Image FORMAL_REFINEMENT = CeylonPlugin.getInstance()
-            .getImageRegistry().get(CEYLON_FORMAL_REFINEMENT);
+    public static Image DEFAULT_REFINEMENT = 
+            CeylonPlugin.imageRegistry()
+                .get(CEYLON_DEFAULT_REFINEMENT);
+
+    public static Image FORMAL_REFINEMENT = 
+            CeylonPlugin.imageRegistry()
+                .get(CEYLON_FORMAL_REFINEMENT);
     
-    static void addRefinementProposal(int offset, final Declaration dec, 
-            ClassOrInterface ci, Node node, Scope scope, String prefix, 
+    static void addRefinementProposal(int offset, 
+            Declaration dec, ClassOrInterface ci, 
+            Node node, Scope scope, String prefix, 
             CeylonParseController cpc, IDocument doc, 
-            List<ICompletionProposal> result, boolean preamble) {
+            List<ICompletionProposal> result, 
+            boolean preamble) {
         boolean isInterface = scope instanceof Interface;
         Reference pr = getRefinedProducedReference(scope, dec);
         Unit unit = node.getUnit();
@@ -121,8 +128,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 cpc, dec, scope, false, true));
     }
     
-    static void addNamedArgumentProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
+    static void addNamedArgumentProposal(int offset, 
+            String prefix, 
+            CeylonParseController cpc, 
+            List<ICompletionProposal> result, 
             Declaration dec, Scope scope) {
         //TODO: type argument substitution using the Reference of the primary node
         Unit unit = cpc.getRootNode().getUnit();
@@ -133,9 +142,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 cpc, dec, scope, true, false));
     }
 
-    static void addInlineFunctionProposal(int offset, Declaration dec, 
-            Scope scope, Node node, String prefix, CeylonParseController cpc, 
-            IDocument doc, List<ICompletionProposal> result) {
+    static void addInlineFunctionProposal(int offset, 
+            Declaration dec, Scope scope, Node node, 
+            String prefix, CeylonParseController cpc, 
+            IDocument doc, 
+            List<ICompletionProposal> result) {
         //TODO: type argument substitution using the Reference of the primary node
         if (dec.isParameter()) {
             Parameter p = ((FunctionOrValue) dec).getInitializerParameter();
@@ -149,35 +160,39 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
     }
 
-    public static Reference getRefinedProducedReference(Scope scope, 
-            Declaration d) {
+    public static Reference getRefinedProducedReference(
+            Scope scope, Declaration d) {
         return refinedProducedReference(scope.getDeclaringType(d), d);
     }
 
-    public static Reference getRefinedProducedReference(Type superType, 
-            Declaration d) {
+    public static Reference getRefinedProducedReference(
+            Type superType, Declaration d) {
         if (superType.isIntersection()) {
             for (Type pt: superType.getSatisfiedTypes()) {
-                Reference result = getRefinedProducedReference(pt, d);
+                Reference result = 
+                        getRefinedProducedReference(pt, d);
                 if (result!=null) return result;
             }
             return null; //never happens?
         }
         else {
             Type declaringType = 
-                    superType.getDeclaration().getDeclaringType(d);
+                    superType.getDeclaration()
+                        .getDeclaringType(d);
             if (declaringType==null) return null;
             Type outerType = 
-                    superType.getSupertype(declaringType.getDeclaration());
+                    superType.getSupertype(
+                            declaringType.getDeclaration());
             return refinedProducedReference(outerType, d);
         }
     }
     
-    private static Reference refinedProducedReference(Type outerType, 
-            Declaration d) {
+    private static Reference refinedProducedReference(
+            Type outerType, Declaration d) {
         List<Type> params = new ArrayList<Type>();
         if (d instanceof Generic) {
-            for (TypeParameter tp: ((Generic) d).getTypeParameters()) {
+            Generic g = (Generic) d;
+            for (TypeParameter tp: g.getTypeParameters()) {
                 params.add(tp.getType());
             }
         }
@@ -191,9 +206,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     private final Scope scope;
     private boolean explicitReturnType;
 
-    private RefinementCompletionProposal(int offset, String prefix, 
-            Reference pr, String desc, String text, 
-            CeylonParseController cpc, Declaration dec, Scope scope,
+    private RefinementCompletionProposal(int offset, 
+            String prefix, Reference pr, 
+            String desc, String text, 
+            CeylonParseController cpc, 
+            Declaration dec, Scope scope,
             boolean fullType, boolean explicitReturnType) {
         super(offset, prefix, getRefinementIcon(dec), desc, text);
         this.cpc = cpc;
@@ -261,7 +278,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     @Override
     public void apply(IDocument document) {
         try {
-            createChange(document).perform(new NullProgressMonitor());
+            createChange(document)
+                .perform(new NullProgressMonitor());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -274,9 +292,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     private DocumentChange createChange(IDocument document)
             throws BadLocationException {
         DocumentChange change = 
-                new DocumentChange("Complete Refinement", document);
+                new DocumentChange("Complete Refinement", 
+                        document);
         change.setEdit(new MultiTextEdit());
-        HashSet<Declaration> decs = new HashSet<Declaration>();
+        HashSet<Declaration> decs = 
+                new HashSet<Declaration>();
         Tree.CompilationUnit cu = cpc.getRootNode();
         if (explicitReturnType) {
             importSignatureTypes(declaration, cu, decs);
@@ -284,7 +304,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         else {
             importParameterTypes(declaration, cu, decs);
         }
-        int il=applyImports(change, decs, cu, document);
+        int il = applyImports(change, decs, cu, document);
         change.addEdit(createEdit(document));
         offset+=il;
         return change;
@@ -308,9 +328,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         new ProposalPosition(document, 
                                 loc+pos, 7, 0, 
                                 props.toArray(NO_COMPLETIONS));
-                LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
+                LinkedMode.addLinkedPosition(linkedModeModel, 
+                        linkedPosition);
                 CeylonEditor editor = 
-                		(CeylonEditor) EditorUtil.getCurrentEditor();
+                		(CeylonEditor) 
+                		    getCurrentEditor();
 				LinkedMode.installLinkedMode(editor,
                         document, linkedModeModel, this, 
                         new LinkedMode.NullExitPolicy(), 
@@ -328,13 +350,15 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         return new ReturnValueContextInfo();
     }
     @Override
-    public boolean validate(IDocument document, int offset, DocumentEvent event) {
+    public boolean validate(IDocument document, int offset, 
+            DocumentEvent event) {
         if (offset<this.offset) {
             return false;
         }
         currentPrefix = getCurrentPrefix(document, offset);
         return currentPrefix==null ? false :
-        	isNameMatching(currentPrefix, declaration.getName());
+        	isNameMatching(currentPrefix, 
+        	        declaration.getName());
     }
     
     private void addProposals(final int loc, 
@@ -357,59 +381,68 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     name.equals(split[split.length-1])) {
                 continue;
             }
-            if (d instanceof Value && !d.equals(declaration)) {
+            Package pack = d.getUnit().getPackage();
+            boolean inLanguageModule = 
+                    pack.getNameAsString()
+                        .equals(Module.LANGUAGE_MODULE_NAME);
+            if (d instanceof Value && !d.equals(declaration) &&
+                    !isConstructor(d)) {
                 Value value = (Value) d;
-                if (d.getUnit().getPackage().getNameAsString()
-                        .equals(Module.LANGUAGE_MODULE_NAME)) {
+                if (inLanguageModule) {
                     if (isIgnoredLanguageModuleValue(value)) {
                         continue;
                     }
                 }
                 Type vt = value.getType();
                 if (vt!=null && !vt.isNothing() &&
-                    ((td instanceof TypeParameter) && 
-                        isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
+                    (isTypeParamInBounds(td, vt) || 
                             vt.isSubtypeOf(type))) {
                     props.add(new NestedCompletionProposal(d, loc));
                 }
             }
-            if (d instanceof Function && !d.equals(declaration)) {
-                if (!d.isAnnotation()) {
-                    Function method = (Function) d;
-                    if (d.getUnit().getPackage().getNameAsString()
-                            .equals(Module.LANGUAGE_MODULE_NAME)) {
-                        if (isIgnoredLanguageModuleMethod(method)) {
-                            continue;
-                        }
+            if (d instanceof Function && !d.equals(declaration) && 
+                    !d.isAnnotation() && !isConstructor(d)) {
+                Function method = (Function) d;
+                if (inLanguageModule) {
+                    if (isIgnoredLanguageModuleMethod(method)) {
+                        continue;
                     }
-                    Type mt = method.getType();
-                    if (mt!=null && !mt.isNothing() &&
-                        ((td instanceof TypeParameter) && 
-                            isInBounds(((TypeParameter)td).getSatisfiedTypes(), mt) || 
-                                mt.isSubtypeOf(type))) {
-                        props.add(new NestedCompletionProposal(d, loc));
-                    }
+                }
+                Type mt = method.getType();
+                if (mt!=null && !mt.isNothing() &&
+                    (isTypeParamInBounds(td, mt) || 
+                            mt.isSubtypeOf(type))) {
+                    props.add(new NestedCompletionProposal(d, loc));
                 }
             }
             if (d instanceof Class) {
                 Class clazz = (Class) d;
                 if (!clazz.isAbstract() && !d.isAnnotation()) {
-                    if (d.getUnit().getPackage().getNameAsString()
-                            .equals(Module.LANGUAGE_MODULE_NAME)) {
+                    if (inLanguageModule) {
                         if (isIgnoredLanguageModuleClass(clazz)) {
                             continue;
                         }
                     }
                     Type ct = clazz.getType();
                     if (ct!=null && !ct.isNothing() &&
-                            ((td instanceof TypeParameter) && 
-                                    isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
-                                    ct.getDeclaration().equals(type.getDeclaration()) ||
+                            (isTypeParamInBounds(td, ct) || 
+                                    ct.getDeclaration()
+                                        .equals(type.getDeclaration()) ||
                                     ct.isSubtypeOf(type))) {
                         props.add(new NestedCompletionProposal(d, loc));
                     }
                 }
             }
+        }
+    }
+
+    private boolean isTypeParamInBounds(TypeDeclaration td, Type t) {
+        if (td instanceof TypeParameter) {
+            TypeParameter tp = (TypeParameter) td;
+            return isInBounds(tp.getSatisfiedTypes(), t);
+        }
+        else {
+            return false;
         }
     }
     
