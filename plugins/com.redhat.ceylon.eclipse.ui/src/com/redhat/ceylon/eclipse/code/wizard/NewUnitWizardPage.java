@@ -17,10 +17,12 @@ import java.io.InputStreamReader;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -65,8 +67,10 @@ class NewUnitWizardPage extends WizardPage {
     private Text unitNameText;
 
     NewUnitWizardPage(String title, String description, String icon) {
-        super(title, title, CeylonPlugin.getInstance()
-                .getImageRegistry().getDescriptor(icon));
+        super(title, title, 
+                CeylonPlugin.getInstance()
+                    .getImageRegistry()
+                    .getDescriptor(icon));
         setDescription(description);
     }
 
@@ -134,13 +138,16 @@ class NewUnitWizardPage extends WizardPage {
             public void modifyText(ModifyEvent e) {
                 unitName = name.getText();
                 if (!unitNameIsLegal()) {
-                    setErrorMessage(getIllegalUnitNameMessage());
+                    setErrorMessage(
+                            getIllegalUnitNameMessage());
                 }
                 else if (sourceDir==null) {
-                    setErrorMessage(getSelectSourceFolderMessage());
+                    setErrorMessage(
+                            getSelectSourceFolderMessage());
                 }
                 else if (!packageNameIsLegal()) {
-                    setErrorMessage(getIllegalPackageNameMessage());
+                    setErrorMessage(
+                            getIllegalPackageNameMessage());
                 }
                 else {
                     setErrorMessage(null); 
@@ -156,7 +163,8 @@ class NewUnitWizardPage extends WizardPage {
         
         Button includeHeader = 
                 new Button(composite, SWT.CHECK);
-        includeHeader.setText("Include preamble in 'header.ceylon' in project root");
+        includeHeader.setText(
+                "Include preamble in 'header.ceylon' in project root");
         includeHeader.setSelection(includePreamble);
         GridData igd = 
                 new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -190,10 +198,11 @@ class NewUnitWizardPage extends WizardPage {
                             getSelectSourceFolderMessage());
                 }
                 else {
-                    EditDialog d = new EditDialog(getShell());
-                    d.setText(readHeader());
-                    if (d.open()==Status.OK) {
-                        saveHeader(d.getText());
+                    EditDialog ed = 
+                            new EditDialog(getShell());
+                    ed.setText(readHeader());
+                    if (ed.open()==Status.OK) {
+                        saveHeader(ed.getText());
                     }
                 }
             }
@@ -213,13 +222,14 @@ class NewUnitWizardPage extends WizardPage {
     private void setSourceDir(String folderName) {
         try {
             sourceDir = null;
-            for (IJavaProject jp: 
-                    JavaCore.create(getWorkspace().getRoot())
-                            .getJavaProjects()) {
+            IWorkspaceRoot root = getWorkspace().getRoot();
+            IJavaModel jm = JavaCore.create(root);
+            for (IJavaProject jp: jm.getJavaProjects()) {
                 for (IPackageFragmentRoot pfr: 
                         jp.getPackageFragmentRoots()) {
                     String path = 
-                            pfr.getPath().toPortableString();
+                            pfr.getPath()
+                                .toPortableString();
                     if (path.equals(folderName)) {
                         sourceDir = pfr;
                         return;
@@ -250,25 +260,31 @@ class NewUnitWizardPage extends WizardPage {
         folder.setLayoutData(fgd);
         if (sourceDir!=null) {
             String folderName = 
-                    sourceDir.getPath().toPortableString();
+                    sourceDir.getPath()
+                        .toPortableString();
             folder.setText(folderName);
         }        
         folder.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
                 setSourceDir(folder.getText());
-                if (sourceDir!=null && packageNameIsLegal()) {
+                if (sourceDir!=null && 
+                        packageNameIsLegal()) {
                     packageFragment = 
-                            sourceDir.getPackageFragment(packageName);
+                            sourceDir.getPackageFragment(
+                                    packageName);
                 }
                 if (sourceDir==null) {
-                    setErrorMessage(getSelectSourceFolderMessage());
+                    setErrorMessage(
+                            getSelectSourceFolderMessage());
                 }
                 else if (!packageNameIsLegal()) {
-                    setErrorMessage(getIllegalPackageNameMessage());
+                    setErrorMessage(
+                            getIllegalPackageNameMessage());
                 }
                 else if (!unitNameIsLegal()) {
-                    setErrorMessage(getIllegalUnitNameMessage());
+                    setErrorMessage(
+                            getIllegalUnitNameMessage());
                 }
                 else {
                     setErrorMessage(null);
@@ -298,17 +314,21 @@ class NewUnitWizardPage extends WizardPage {
                                 .toPortableString();
                     folder.setText(folderName);
                     packageFragment = 
-                            sourceDir.getPackageFragment(packageName);
+                            sourceDir.getPackageFragment(
+                                    packageName);
                     setPageComplete(isComplete());
                 }
                 if (sourceDir==null) {
-                    setErrorMessage(getSelectSourceFolderMessage());
+                    setErrorMessage(
+                            getSelectSourceFolderMessage());
                 }
                 else if (!packageNameIsLegal()) {
-                    setErrorMessage(getIllegalPackageNameMessage());
+                    setErrorMessage(
+                            getIllegalPackageNameMessage());
                 }
                 else if (!unitNameIsLegal()) {
-                    setErrorMessage(getIllegalUnitNameMessage());
+                    setErrorMessage(
+                            getIllegalUnitNameMessage());
                 }
                 else {
                     setErrorMessage(null);
@@ -340,17 +360,21 @@ class NewUnitWizardPage extends WizardPage {
                                 .toPortableString();
                     folder.setText(folderName);
                     packageFragment = 
-                            sourceDir.getPackageFragment(packageName);
+                            sourceDir.getPackageFragment(
+                                    packageName);
                     setPageComplete(isComplete());
                 }
                 if (sourceDir==null) {
-                    setErrorMessage(getSelectSourceFolderMessage());
+                    setErrorMessage(
+                            getSelectSourceFolderMessage());
                 }
                 else if (!packageNameIsLegal()) {
-                    setErrorMessage(getIllegalPackageNameMessage());
+                    setErrorMessage(
+                            getIllegalPackageNameMessage());
                 }
                 else if (!unitNameIsLegal()) {
-                    setErrorMessage(getIllegalUnitNameMessage());
+                    setErrorMessage(
+                            getIllegalUnitNameMessage());
                 }
                 else {
                     setErrorMessage(null);
@@ -393,13 +417,16 @@ class NewUnitWizardPage extends WizardPage {
                     setPageComplete(isComplete());
                 }
                 if (!packageNameIsLegal()) {
-                    setErrorMessage(getIllegalPackageNameMessage());
+                    setErrorMessage(
+                            getIllegalPackageNameMessage());
                 }
                 else if (sourceDir==null) {
-                    setErrorMessage(getSelectSourceFolderMessage());
+                    setErrorMessage(
+                            getSelectSourceFolderMessage());
                 }
                 else if (!unitNameIsLegal()) {
-                    setErrorMessage(getIllegalUnitNameMessage());
+                    setErrorMessage(
+                            getIllegalUnitNameMessage());
                 }
                 else {
                     setErrorMessage(null);
@@ -435,18 +462,23 @@ class NewUnitWizardPage extends WizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 packageName = pkg.getText();
-                if (sourceDir!=null && packageNameIsLegal()) {
+                if (sourceDir!=null && 
+                        packageNameIsLegal()) {
                     packageFragment = 
-                            sourceDir.getPackageFragment(packageName);
+                            sourceDir.getPackageFragment(
+                                    packageName);
                 }
                 if (!packageNameIsLegal()) {
-                    setErrorMessage(getIllegalPackageNameMessage());
+                    setErrorMessage(
+                            getIllegalPackageNameMessage());
                 }
                 else if (sourceDir==null) {
-                    setErrorMessage(getSelectSourceFolderMessage());
+                    setErrorMessage(
+                            getSelectSourceFolderMessage());
                 }
                 else if (!unitNameIsLegal()) {
-                    setErrorMessage(getIllegalUnitNameMessage());
+                    setErrorMessage(
+                            getIllegalUnitNameMessage());
                 }
                 else {
                     setErrorMessage(null);
@@ -477,24 +509,29 @@ class NewUnitWizardPage extends WizardPage {
                 }
                 else {
                     IPackageFragment result = 
-                            selectPackage(getShell(), sourceDir);
+                            selectPackage(getShell(), 
+                                    sourceDir);
                     if (result!=null) {
                         packageName = result.getElementName();
                         pkg.setText(packageName);
                         if (sourceDir!=null) {
                             packageFragment = 
-                                    sourceDir.getPackageFragment(packageName);
+                                    sourceDir.getPackageFragment(
+                                            packageName);
                         }
                         setPageComplete(isComplete());
                     }
                     if (!packageNameIsLegal()) {
-                        setErrorMessage(getIllegalPackageNameMessage());
+                        setErrorMessage(
+                                getIllegalPackageNameMessage());
                     }
                     else if (sourceDir==null) {
-                        setErrorMessage(getSelectSourceFolderMessage());
+                        setErrorMessage(
+                                getSelectSourceFolderMessage());
                     }
                     else if (!unitNameIsLegal()) {
-                        setErrorMessage(getIllegalUnitNameMessage());
+                        setErrorMessage(
+                                getIllegalUnitNameMessage());
                     }
                     else {
                         setErrorMessage(null);
@@ -510,7 +547,8 @@ class NewUnitWizardPage extends WizardPage {
 
     private NewPackageWizard openPackageWizard() {
         IWizardDescriptor descriptor = 
-                getWorkbench().getNewWizardRegistry()
+                getWorkbench()
+                    .getNewWizardRegistry()
                     .findWizard(PLUGIN_ID + ".newPackageWizard");
         if (descriptor!=null) {
             try {
@@ -519,7 +557,8 @@ class NewUnitWizardPage extends WizardPage {
                             descriptor.createWizard();
                 wizard.init(workbench, selection);
                 Shell shell = 
-                        Display.getCurrent().getActiveShell();
+                        Display.getCurrent()
+                            .getActiveShell();
                 WizardDialog wd = 
                         new WizardDialog(shell, wizard);
                 wd.setTitle(wizard.getWindowTitle());
@@ -535,7 +574,8 @@ class NewUnitWizardPage extends WizardPage {
     
     private IJavaElement openSourceFolderWizard() {
         IWizardDescriptor descriptor = 
-                getWorkbench().getNewWizardRegistry()
+                getWorkbench()
+                    .getNewWizardRegistry()
                     .findWizard("org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard");
         if (descriptor!=null) {
             try {
@@ -544,7 +584,8 @@ class NewUnitWizardPage extends WizardPage {
                             descriptor.createWizard();
                 wizard.init(workbench, selection);
                 Shell shell = 
-                        Display.getCurrent().getActiveShell();
+                        Display.getCurrent()
+                            .getActiveShell();
                 WizardDialog wd = 
                         new WizardDialog(shell, wizard);
                 wd.setTitle(wizard.getWindowTitle());
@@ -590,8 +631,7 @@ class NewUnitWizardPage extends WizardPage {
     }
 
     public void initFromSelection() {
-        IJavaElement je = 
-                getSelectedJavaElement(selection);
+        IJavaElement je = getSelectedJavaElement(selection);
         if (je instanceof IJavaProject) {
             IJavaProject jp = (IJavaProject) je;
             if (jp.isOpen()) {
@@ -621,8 +661,10 @@ class NewUnitWizardPage extends WizardPage {
             packageFragment = (IPackageFragment) je;
             packageName = 
                     packageFragment.getElementName();
-            sourceDir = (IPackageFragmentRoot) 
-                    packageFragment.getAncestor(PACKAGE_FRAGMENT_ROOT);
+            sourceDir = 
+                    (IPackageFragmentRoot) 
+                        packageFragment.getAncestor(
+                                PACKAGE_FRAGMENT_ROOT);
         }
     }
     
@@ -635,8 +677,9 @@ class NewUnitWizardPage extends WizardPage {
         return packageNameIsLegal() && 
                 unitNameIsLegal() &&
                 sourceDir!=null &&
-                sourceDir.getPackageFragment(packageFragment.getElementName())
-                        .equals(packageFragment);
+                sourceDir.getPackageFragment(
+                        packageFragment.getElementName())
+                            .equals(packageFragment);
     }
     
     IFile getFile() {
@@ -645,9 +688,11 @@ class NewUnitWizardPage extends WizardPage {
                     unitName : 
                     unitName + ".ceylon";
         IPath path = 
-                packageFragment.getPath().append(filename);
+                packageFragment.getPath()
+                    .append(filename);
         IProject project = 
-                sourceDir.getJavaProject().getProject();
+                sourceDir.getJavaProject()
+                    .getProject();
         IPath relativePath = 
                 path.makeRelativeTo(project.getFullPath());
         return project.getFile(relativePath);
@@ -686,7 +731,8 @@ class NewUnitWizardPage extends WizardPage {
             try {
                 stream = file.getContents();
                 BufferedReader reader = 
-                        new BufferedReader(new InputStreamReader(stream));
+                        new BufferedReader(
+                                new InputStreamReader(stream));
                 String line;
                 while ((line = reader.readLine())!=null) {
                     sb.append(line)
@@ -716,7 +762,8 @@ class NewUnitWizardPage extends WizardPage {
             if (file.exists()) {
                 file.delete(true, null);
             }
-            stream = new ByteArrayInputStream(header.getBytes()); //TODO: encoding
+            stream = new ByteArrayInputStream(
+                    header.getBytes()); //TODO: encoding
             file.create(stream, true, null);
         }
         catch (CoreException e) {
@@ -724,7 +771,9 @@ class NewUnitWizardPage extends WizardPage {
         }
         finally {
             try {
-                if (stream!=null) stream.close();
+                if (stream!=null) {
+                    stream.close();
+                }
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -734,7 +783,8 @@ class NewUnitWizardPage extends WizardPage {
 
     private IFile getHeaderFile() {
         IProject project = 
-                sourceDir.getJavaProject().getProject();
+                sourceDir.getJavaProject()
+                    .getProject();
         return project.getFile("header.ceylon");
     }
 
@@ -818,7 +868,8 @@ class NewUnitWizardPage extends WizardPage {
                             .append(filename)
                             .addFileExtension("ceylon");
                 IFile file = 
-                        getWorkspace().getRoot().getFile(path);
+                        getWorkspace().getRoot()
+                            .getFile(path);
                 if (file.exists()) {
                     setMessage("Existing unit will not be overwritten: " + 
                             path.toPortableString(), 
