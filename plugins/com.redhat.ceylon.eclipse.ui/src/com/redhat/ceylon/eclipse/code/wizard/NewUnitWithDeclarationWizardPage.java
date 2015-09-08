@@ -28,7 +28,7 @@ class NewUnitWithDeclarationWizardPage extends NewUnitWizardPage {
     void createDeclarationField(Composite composite) {
         new Label(composite, SWT.NONE);
         Button dec = new Button(composite, SWT.CHECK);
-        dec.setText("Create toplevel class or method declaration");
+        dec.setText("Create toplevel class or function declaration");
         dec.setSelection(declaration);
         dec.setEnabled(true);
         GridData igd = 
