@@ -42,6 +42,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassDefinition;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -242,7 +243,8 @@ class RefineFormalMembersProposal implements ICompletionProposal,
         try {
             if (document.getChar(offset)=='}' && 
                     result.length()>0) {
-                result.append(delim).append(bodyIndent);
+                result.append(delim)
+                    .append(bodyIndent);
             }
         } 
         catch (BadLocationException e) {
@@ -276,19 +278,29 @@ class RefineFormalMembersProposal implements ICompletionProposal,
     
     static void addRefineFormalMembersProposal(
             Collection<ICompletionProposal> proposals, 
-            Node node, Tree.CompilationUnit rootNode, 
+            final Node n, Tree.CompilationUnit rootNode, 
             boolean ambiguousError) {
         for (ICompletionProposal p: proposals) {
             if (p instanceof RefineFormalMembersProposal) {
                 return;
             }
         }
-        if (node instanceof Tree.ClassBody ||
-                node instanceof Tree.InterfaceBody ||
-                node instanceof Tree.ClassDefinition ||
-                node instanceof Tree.InterfaceDefinition ||
-                node instanceof Tree.ObjectDefinition ||
-                node instanceof Tree.ObjectExpression) {
+        Node node;
+        if (n instanceof Tree.ClassBody ||
+                n instanceof Tree.InterfaceBody ||
+                n instanceof Tree.ClassDefinition ||
+                n instanceof Tree.InterfaceDefinition ||
+                n instanceof Tree.ObjectDefinition ||
+                n instanceof Tree.ObjectExpression) {
+            node = n;
+        }
+        else {
+            FindBodyContainerVisitor v = 
+                    new FindBodyContainerVisitor(n);
+            v.visit(rootNode);
+            node = v.getDeclarationNode();
+        }
+        if (node!=null) {
             Scope scope = node.getScope();
             if (scope instanceof ClassOrInterface) {
                 ClassOrInterface ci = 
