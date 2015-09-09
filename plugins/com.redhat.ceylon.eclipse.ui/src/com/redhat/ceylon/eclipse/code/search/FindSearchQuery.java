@@ -2,6 +2,9 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnit;
+import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
@@ -36,13 +39,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.util.DocLinks;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -67,7 +67,7 @@ abstract class FindSearchQuery implements ISearchQuery {
         this.referencedDeclaration = referencedDeclaration;
         this.project = project;
         //this.project = project;
-        this.page = EditorUtil.getActivePage();
+        this.page = getActivePage();
         name = referencedDeclaration.getNameAsString();
         if (referencedDeclaration instanceof Declaration) {
             Declaration dec = 
@@ -157,13 +157,15 @@ abstract class FindSearchQuery implements ISearchQuery {
 
     private Package getPackage() {
         if (referencedDeclaration instanceof Declaration) {
-            return referencedDeclaration.getUnit().getPackage();
+            return referencedDeclaration.getUnit()
+                        .getPackage();
         }
         else if (referencedDeclaration instanceof Package) {
             return (Package) referencedDeclaration;
         }
         else if (referencedDeclaration instanceof Module) {
-            return ((Module) referencedDeclaration).getRootPackage();
+            Module module = (Module) referencedDeclaration;
+            return module.getRootPackage();
         }
         else {
             return null;
@@ -197,7 +199,8 @@ abstract class FindSearchQuery implements ISearchQuery {
                                     module.getSourceArchivePath();
                             if (searchedArchives.add(archivePath) &&
                                 searchedArchives.add(sourceArchivePath) && 
-                                    m.getAllReachablePackages().contains(pack)) {
+                                    m.getAllReachablePackages()
+                                        .contains(pack)) {
                                 work++;
                             }
                         }
@@ -229,13 +232,15 @@ abstract class FindSearchQuery implements ISearchQuery {
                         (IJavaElement) 
                             match.getElement();
                 if (!filters.isFiltered(enclosingElement)) {
-                    IJavaModelAware unit = CeylonBuilder.getUnit(enclosingElement);
+                    IJavaModelAware unit = 
+                            getUnit(enclosingElement);
                     if (unit == null) {
                         return;
                     }
                     if (unit instanceof CeylonBinaryUnit) {
-                        CeylonBinaryUnit binaryUnit = (CeylonBinaryUnit) unit;
-                        if (binaryUnit.getCeylonSourceRelativePath() != null) {
+                        CeylonBinaryUnit binaryUnit = 
+                                (CeylonBinaryUnit) unit;
+                        if (binaryUnit.getCeylonSourceRelativePath()!=null) {
                             // it's a class file built from Ceylon : 
                             //   we should find it from the Ceylon source archives.
                             return;
@@ -255,7 +260,8 @@ abstract class FindSearchQuery implements ISearchQuery {
                             !exploded.contains(resource)) {
                         super.acceptSearchMatch(match);
                         if (enclosingElement!=null && 
-                                match.getAccuracy()!=SearchMatch.A_INACCURATE) {
+                                match.getAccuracy()
+                                    !=SearchMatch.A_INACCURATE) {
                             count++;
                         }
                     }
@@ -266,7 +272,8 @@ abstract class FindSearchQuery implements ISearchQuery {
 
     abstract int limitTo();
     
-    private void findInUnits(Iterable<? extends PhasedUnit> units, 
+    private void findInUnits(
+            Iterable<? extends PhasedUnit> units, 
             IProgressMonitor monitor) {
         for (PhasedUnit pu: units) {
             if (filters.isFiltered(pu.getPackage())) {
@@ -289,17 +296,18 @@ abstract class FindSearchQuery implements ISearchQuery {
                                     rootNode, 
                                     pu.getUnitFile());
                     if (node instanceof Tree.DocLink) {
-                        Tree.DocLink link = (Tree.DocLink) node;
+                        Tree.DocLink link = 
+                                (Tree.DocLink) node;
                         if (link.getBase()
                                 .equals(referencedDeclaration)) {
-                            IRegion r = DocLinks.nameRegion(link, 0);
+                            IRegion r = nameRegion(link, 0);
                             match.setOffset(r.getOffset());
                             match.setLength(r.getLength());
                         }
                         else {
                             for (Declaration d: link.getQualified()) {
                                 if (d.equals(referencedDeclaration)) {
-                                    IRegion r = DocLinks.nameRegion(link, 0);
+                                    IRegion r = nameRegion(link, 0);
                                     match.setOffset(r.getOffset());
                                     match.setLength(r.getLength());
                                 }
