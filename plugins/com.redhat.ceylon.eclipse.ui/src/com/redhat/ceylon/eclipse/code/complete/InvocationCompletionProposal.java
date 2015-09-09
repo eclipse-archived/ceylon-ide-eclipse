@@ -73,6 +73,7 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -340,8 +341,8 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     final class NestedCompletionProposal 
             implements ICompletionProposal, 
-                    ICompletionProposalExtension2, 
-                    ICompletionProposalExtension6 {
+                       ICompletionProposalExtension2, 
+                       ICompletionProposalExtension6 {
         private final String op;
         private final int loc;
         private final int index;
@@ -455,6 +456,14 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (qualifier!=null) {
                 sb.append(qualifier.getName(getUnit()))
                   .append('.');
+            }
+            if (dec instanceof Constructor) {
+                Constructor constructor = (Constructor) dec;
+                TypeDeclaration clazz = 
+                        constructor.getExtendedType()
+                            .getDeclaration();
+                sb.append(clazz.getName(getUnit()))
+                    .append('.');
             }
             sb.append(dec.getName(getUnit()));
             if (dec instanceof Functional && !basic) {
@@ -777,9 +786,11 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (declaration instanceof Functional && 
                     (positionalInvocation || namedInvocation)) {
                 Functional fd = (Functional) declaration;
-                List<ParameterList> pls = fd.getParameterLists();
+                List<ParameterList> pls = 
+                        fd.getParameterLists();
                 if (!pls.isEmpty() && 
-                        !pls.get(0).getParameters().isEmpty()) {
+                        !pls.get(0).getParameters()
+                            .isEmpty()) {
                     paramList = pls.get(0);
                 }
             }
@@ -1077,9 +1088,22 @@ class InvocationCompletionProposal extends CompletionProposal {
                     boolean isVarArg = 
                             p.isSequenced() && 
                             positionalInvocation;
-                    props.add(new NestedCompletionProposal(
-                            d, qdec, loc, index, false, 
-                            isIterArg || isVarArg ? "*" : ""));
+                    if (clazz.getParameterList()!=null) {
+                        props.add(new NestedCompletionProposal(
+                                d, qdec, loc, index, false, 
+                                isIterArg || isVarArg ? "*" : ""));
+                    }
+                    else {
+                        for (Declaration m: clazz.getMembers()) {
+                            if (m instanceof Constructor && 
+                                    m.isShared() &&
+                                    !((Constructor) m).isAbstract()) {
+                                props.add(new NestedCompletionProposal(
+                                        m, qdec, loc, index, false, 
+                                        isIterArg || isVarArg ? "*" : ""));
+                            }
+                        }
+                    }
                 }
             }
         }

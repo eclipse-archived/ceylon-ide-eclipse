@@ -40,6 +40,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
@@ -59,6 +60,7 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
+import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -431,7 +433,18 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                                     ct.getDeclaration()
                                         .equals(type.getDeclaration()) ||
                                     ct.isSubtypeOf(type))) {
-                        props.add(new NestedCompletionProposal(d, loc));
+                        if (clazz.getParameterList()!=null) {
+                            props.add(new NestedCompletionProposal(d, loc));
+                        }
+                        else {
+                            for (Declaration m: clazz.getMembers()) {
+                                if (m instanceof Constructor && 
+                                        m.isShared() &&
+                                        !((Constructor) m).isAbstract()) {
+                                    props.add(new NestedCompletionProposal(m, loc));
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -448,8 +461,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
     }
     
-    final class NestedCompletionProposal implements ICompletionProposal, 
-            ICompletionProposalExtension2 {
+    final class NestedCompletionProposal 
+            implements ICompletionProposal, 
+                       ICompletionProposalExtension2,
+                       ICompletionProposalExtension6 {
         
         private final Declaration dec;
         private final int offset;
@@ -490,6 +505,15 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
 
         @Override
+        public StyledString getStyledDisplayString() {
+            StyledString result = new StyledString();
+            Highlights.styleFragment(result, 
+                    getDisplayString(), false, null, 
+                    CeylonPlugin.getCompletionFont());
+            return result;
+        }
+
+        @Override
         public Image getImage() {
             return getImageForDeclaration(dec);
         }
@@ -500,8 +524,16 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
         
         private String getText(boolean description) {
-            StringBuilder sb = new StringBuilder()
-                    .append(dec.getName());
+            StringBuilder sb = new StringBuilder();
+            if (dec instanceof Constructor) {
+                Constructor constructor = (Constructor) dec;
+                TypeDeclaration clazz = 
+                        constructor.getExtendedType()
+                            .getDeclaration();
+                sb.append(clazz.getName(getUnit()))
+                    .append('.');
+            }
+            sb.append(dec.getName(getUnit()));
             if (dec instanceof Functional) {
                 appendPositionalArgs(dec, getUnit(), 
                         sb, false, description);
@@ -529,9 +561,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             }
             else {
                 try {
-                    String content = document.get(offset, 
-                            currentOffset-offset);
-                    String filter = content.trim().toLowerCase();
+                    String content = 
+                            document.get(offset, 
+                                    currentOffset-offset);
+                    String filter = 
+                            content.trim().toLowerCase();
                     if ((dec.getName().toLowerCase())
                             .startsWith(filter)) {
                         return true;
