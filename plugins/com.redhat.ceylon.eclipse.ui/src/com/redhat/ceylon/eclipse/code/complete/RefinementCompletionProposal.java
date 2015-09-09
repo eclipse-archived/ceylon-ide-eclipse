@@ -439,8 +439,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         for (Declaration m: clazz.getMembers()) {
                             if (m instanceof Constructor && 
                                     m.isShared() &&
-                                    m.getName()!=null &&
-                                    !((Constructor) m).isAbstract()) {
+                                    m.getName()!=null) {
                                 props.add(new NestedCompletionProposal(m, loc));
                             }
                         }

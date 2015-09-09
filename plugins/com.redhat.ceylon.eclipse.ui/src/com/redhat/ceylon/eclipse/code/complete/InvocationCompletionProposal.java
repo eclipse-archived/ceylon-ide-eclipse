@@ -179,20 +179,19 @@ class InvocationCompletionProposal extends CompletionProposal {
             //add constructor proposals 
             Unit unit = controller.getRootNode().getUnit();
             Type type = pr.getType();
-            if (isTypeUnknown(type)) return;
-            Collection<DeclarationWithProximity> members = 
-                    type.getDeclaration()
-                    .getMatchingMemberDeclarations(
-                            unit, scope, "", 0)
-                            .values();
-            for (DeclarationWithProximity ndwp: members) {
-                Declaration m = ndwp.getDeclaration();
-                if (isConstructor(m)) {
-                    addSecondLevelProposal(
-                            offset, prefix, 
-                            controller, result, dec,
-                            scope, requiredType, ol, 
-                            unit, type, m);
+            if (!isTypeUnknown(type)) {
+                List<Declaration> members = 
+                        type.getDeclaration().getMembers();
+                for (Declaration m: members) {
+                    if (m instanceof Constructor && 
+                            m.isShared() && 
+                            m.getName()!=null) {
+                        addSecondLevelProposal(
+                                offset, prefix, 
+                                controller, result, dec,
+                                scope, requiredType, ol, 
+                                unit, type, m);
+                    }
                 }
             }
         }
@@ -1108,8 +1107,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     for (Declaration m: clazz.getMembers()) {
                         if (m instanceof Constructor && 
                                 m.isShared() &&
-                                m.getName()!=null &&
-                                !((Constructor) m).isAbstract()) {
+                                m.getName()!=null) {
                             props.add(new NestedCompletionProposal(
                                     m, qdec, loc, index, false, 
                                     isIterArg || isVarArg ? "*" : ""));
