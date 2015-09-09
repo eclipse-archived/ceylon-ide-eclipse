@@ -20,6 +20,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -51,9 +52,9 @@ abstract class AbstractFindAction extends Action
         if (firstElement instanceof CeylonElement) {
             CeylonElement element = 
                     (CeylonElement) firstElement;
-            if (element.getVirtualFile() != null) {
-                CeylonUnit unit = 
-                        getUnit(element.getVirtualFile());
+            VirtualFile vf = element.getVirtualFile();
+            if (vf!=null) {
+                CeylonUnit unit = getUnit(vf);
                 Tree.CompilationUnit rn = 
                         unit.getCompilationUnit();
                 Node node = 
