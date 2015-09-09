@@ -1093,15 +1093,14 @@ class InvocationCompletionProposal extends CompletionProposal {
                                 d, qdec, loc, index, false, 
                                 isIterArg || isVarArg ? "*" : ""));
                     }
-                    else {
-                        for (Declaration m: clazz.getMembers()) {
-                            if (m instanceof Constructor && 
-                                    m.isShared() &&
-                                    !((Constructor) m).isAbstract()) {
-                                props.add(new NestedCompletionProposal(
-                                        m, qdec, loc, index, false, 
-                                        isIterArg || isVarArg ? "*" : ""));
-                            }
+                    for (Declaration m: clazz.getMembers()) {
+                        if (m instanceof Constructor && 
+                                m.isShared() &&
+                                m.getName()!=null &&
+                                !((Constructor) m).isAbstract()) {
+                            props.add(new NestedCompletionProposal(
+                                    m, qdec, loc, index, false, 
+                                    isIterArg || isVarArg ? "*" : ""));
                         }
                     }
                 }

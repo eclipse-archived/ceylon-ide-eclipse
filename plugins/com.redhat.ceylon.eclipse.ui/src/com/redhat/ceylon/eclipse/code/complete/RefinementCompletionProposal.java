@@ -68,6 +68,7 @@ import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -436,13 +437,12 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         if (clazz.getParameterList()!=null) {
                             props.add(new NestedCompletionProposal(d, loc));
                         }
-                        else {
-                            for (Declaration m: clazz.getMembers()) {
-                                if (m instanceof Constructor && 
-                                        m.isShared() &&
-                                        !((Constructor) m).isAbstract()) {
-                                    props.add(new NestedCompletionProposal(m, loc));
-                                }
+                        for (Declaration m: clazz.getMembers()) {
+                            if (m instanceof Constructor && 
+                                    m.isShared() &&
+                                    m.getName()!=null &&
+                                    !((Constructor) m).isAbstract()) {
+                                props.add(new NestedCompletionProposal(m, loc));
                             }
                         }
                     }
