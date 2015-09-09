@@ -37,7 +37,6 @@ import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ALIAS;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -151,35 +150,32 @@ class InvocationCompletionProposal extends CompletionProposal {
             Declaration dec, Scope scope, 
             boolean isMember, Reference pr,
             Type requiredType, OccurrenceLocation ol) {
-        if (!(dec instanceof Functional) && 
-            !(dec instanceof TypeDeclaration)) {
-            //add qualified member proposals 
-            Unit unit = controller.getRootNode().getUnit();
-            Type type = pr.getType();
-            if (isTypeUnknown(type)) return;
-            Collection<DeclarationWithProximity> members = 
-                    type.getDeclaration()
-                        .getMatchingMemberDeclarations(
-                                unit, scope, "", 0)
-                        .values();
-            for (DeclarationWithProximity ndwp: members) {
-                Declaration m = ndwp.getDeclaration();
-                if ((m instanceof FunctionOrValue ||
-                        m instanceof Class) &&
-                        !isConstructor(m)) {
-                    addSecondLevelProposal(
-                            offset, prefix, 
-                            controller, result, dec,
-                            scope, requiredType, ol, 
-                            unit, type, m);
+        Unit unit = controller.getRootNode().getUnit();
+        Type type = pr.getType();
+        if (type!=null) {
+            if (!(dec instanceof Functional) && 
+                !(dec instanceof TypeDeclaration)) {
+                //add qualified member proposals 
+                Collection<DeclarationWithProximity> members = 
+                        type.getDeclaration()
+                            .getMatchingMemberDeclarations(
+                                    unit, scope, "", 0)
+                            .values();
+                for (DeclarationWithProximity ndwp: members) {
+                    Declaration m = ndwp.getDeclaration();
+                    if ((m instanceof FunctionOrValue ||
+                            m instanceof Class) &&
+                            !isConstructor(m)) {
+                        addSecondLevelProposal(
+                                offset, prefix, 
+                                controller, result, dec,
+                                scope, requiredType, ol, 
+                                unit, type, m);
+                    }
                 }
             }
-        }
-        if (dec instanceof Class) {
-            //add constructor proposals 
-            Unit unit = controller.getRootNode().getUnit();
-            Type type = pr.getType();
-            if (!isTypeUnknown(type)) {
+            if (dec instanceof Class) {
+                //add constructor proposals
                 List<Declaration> members = 
                         type.getDeclaration().getMembers();
                 for (Declaration m: members) {
@@ -207,8 +203,10 @@ class InvocationCompletionProposal extends CompletionProposal {
         Reference ptr = type.getTypedReference(m, NO_TYPES);
         Type mt = ptr.getType();
         if (mt!=null && 
-                (requiredType==null || 
-                mt.isSubtypeOf(requiredType))) {
+                (requiredType==null ||
+                 withinBounds(requiredType.getDeclaration(), mt) ||
+                 dec.equals(requiredType.getDeclaration()) ||
+                 mt.isSubtypeOf(requiredType))) {
             String qualifier = dec.getName() + ".";
             String desc = 
                     qualifier + 
@@ -1017,12 +1015,14 @@ class InvocationCompletionProposal extends CompletionProposal {
         TypeDeclaration td = type.getDeclaration();
         Declaration d = dwp.getDeclaration();
         String pname = 
-                d.getUnit().getPackage().getNameAsString();
+                d.getUnit().getPackage()
+                    .getNameAsString();
         boolean isInLanguageModule = 
                 qualifier==null &&
                 pname.equals(Module.LANGUAGE_MODULE_NAME);
-        Declaration qdec = qualifier==null ? 
-                null : qualifier.getDeclaration();
+        Declaration qdec = 
+                qualifier==null ? null : 
+                    qualifier.getDeclaration();
         if (d instanceof Value) {
             Value value = (Value) d;
             if (isInLanguageModule &&
@@ -1044,11 +1044,13 @@ class InvocationCompletionProposal extends CompletionProposal {
                             isIterArg || isVarArg ? "*" : ""));
                 }
                 if (qualifier==null && 
-                        getPreferences().getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
+                        getPreferences()
+                            .getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
                     Collection<DeclarationWithProximity> members = 
                             value.getTypeDeclaration()
-                            .getMatchingMemberDeclarations(unit, scope, "", 0)
-                            .values();
+                                .getMatchingMemberDeclarations(
+                                        unit, scope, "", 0)
+                                .values();
                     for (DeclarationWithProximity mwp: members) {
                         addValueArgumentProposal(p, loc, props, 
                                 index, last, type, unit, mwp, dwp);
@@ -1088,11 +1090,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                     return;
                 }
                 Type ct = clazz.getType();
-                if (ct!=null && !ct.isNothing() &&
+                if (ct!=null && 
                         (withinBounds(td, ct) || 
-                                ct.getDeclaration().equals(
-                                        type.getDeclaration()) ||
-                                ct.isSubtypeOf(type))) {
+                         clazz.equals(type.getDeclaration()) ||
+                         ct.isSubtypeOf(type))) {
                     boolean isIterArg = 
                             namedInvocation && last && 
                             unit.isIterableParameterType(type);
@@ -1118,7 +1119,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
-    protected boolean withinBounds(TypeDeclaration td, Type vt) {
+    protected static boolean withinBounds(TypeDeclaration td, Type vt) {
         if (td instanceof TypeParameter) { 
             TypeParameter tp = (TypeParameter) td;
             return isInBounds(tp.getSatisfiedTypes(), vt);
