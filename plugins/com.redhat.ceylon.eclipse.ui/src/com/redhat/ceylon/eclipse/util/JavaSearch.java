@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.util;
 import static com.redhat.ceylon.compiler.java.codegen.CodegenUtil.getJavaNameOfDeclaration;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.util.Escaping.toInitialLowercase;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_ATTRIBUTE_ANNOTATION;
@@ -919,8 +920,7 @@ public class JavaSearch {
         if (project == null ||
                 project.getName()
                     .equals("Ceylon Source Archives")) {
-            return CeylonBuilder.getProjects()
-                    .toArray(new IProject[0]);
+            return getProjects().toArray(new IProject[0]);
         }
         else {
             return getProjectAndReferencingProjects(project);
