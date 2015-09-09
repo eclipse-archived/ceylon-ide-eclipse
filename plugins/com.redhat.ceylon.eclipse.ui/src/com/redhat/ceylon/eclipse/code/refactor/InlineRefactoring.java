@@ -89,6 +89,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                         !(fov instanceof Setter) &&
                         !fov.isDefault() &&
                         !fov.isFormal() &&
+                        !fov.isNative() &&
                         (fov.getTypeDeclaration()!=null) &&
                         (!fov.getTypeDeclaration().isAnonymous()) &&
                         (fov.isToplevel() || !fov.isShared() ||
