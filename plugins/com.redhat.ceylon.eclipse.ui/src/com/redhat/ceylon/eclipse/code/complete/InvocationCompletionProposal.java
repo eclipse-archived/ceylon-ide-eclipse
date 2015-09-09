@@ -205,7 +205,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         if (mt!=null && 
                 (requiredType==null ||
                  withinBounds(requiredType.getDeclaration(), mt) ||
-                 dec.equals(requiredType.getDeclaration()) ||
+                 dec instanceof Class && 
+                     dec.equals(requiredType.getDeclaration()) ||
                  mt.isSubtypeOf(requiredType))) {
             String qualifier = dec.getName() + ".";
             String desc = 
