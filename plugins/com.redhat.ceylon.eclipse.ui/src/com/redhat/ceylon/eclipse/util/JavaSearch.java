@@ -142,17 +142,48 @@ public class JavaSearch {
             return searchPattern;
         }
     }
+    
+    public static IProject[] getProjectAndRelatedProjects(
+            IProject project) {
+        try {
+            IProject[] referencingProjects = 
+                    project.getReferencingProjects();
+            IProject[] referencedProjects = 
+                    project.getReferencedProjects();
+            IProject[] projects = 
+                    new IProject[referencedProjects.length+
+                                 referencingProjects.length+
+                                 1];
+            projects[0] = project;
+            System.arraycopy(referencingProjects, 0, 
+                    projects, 1, referencingProjects.length);
+            System.arraycopy(referencedProjects, 0, 
+                    projects, referencingProjects.length+1, 
+                    referencedProjects.length);
+            return projects;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new IProject[] { project };
+        }
+    }
 
     public static IProject[] getProjectAndReferencingProjects(
             IProject project) {
-        IProject[] referencingProjects = 
-                project.getReferencingProjects();
-        IProject[] projects = 
-                new IProject[referencingProjects.length+1];
-        projects[0] = project;
-        System.arraycopy(referencingProjects, 0, 
-                projects, 1, referencingProjects.length);
-        return projects;
+        try {
+            IProject[] referencingProjects = 
+                    project.getReferencingProjects();
+            IProject[] projects = 
+                    new IProject[referencingProjects.length+1];
+            projects[0] = project;
+            System.arraycopy(referencingProjects, 0, 
+                    projects, 1, referencingProjects.length);
+            return projects;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new IProject[] { project };
+        }
     }
 
     public static IProject[] getProjectAndReferencedProjects(
@@ -923,7 +954,7 @@ public class JavaSearch {
             return getProjects().toArray(new IProject[0]);
         }
         else {
-            return getProjectAndReferencingProjects(project);
+            return getProjectAndRelatedProjects(project);
         }
     }
 
