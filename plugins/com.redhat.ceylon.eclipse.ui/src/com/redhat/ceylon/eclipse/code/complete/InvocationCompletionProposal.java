@@ -994,17 +994,18 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
         TypeDeclaration td = type.getDeclaration();
         Declaration d = dwp.getDeclaration();
-        String pname = d.getUnit().getPackage().getNameAsString();
-        boolean isInLanguageModule = qualifier==null &&
+        String pname = 
+                d.getUnit().getPackage().getNameAsString();
+        boolean isInLanguageModule = 
+                qualifier==null &&
                 pname.equals(Module.LANGUAGE_MODULE_NAME);
         Declaration qdec = qualifier==null ? 
                 null : qualifier.getDeclaration();
         if (d instanceof Value) {
             Value value = (Value) d;
-            if (isInLanguageModule) {
-                if (isIgnoredLanguageModuleValue(value)) {
-                    return;
-                }
+            if (isInLanguageModule &&
+                    isIgnoredLanguageModuleValue(value)) {
+                return;
             }
             Type vt = value.getType();
             if (vt!=null && !vt.isNothing()) {
@@ -1036,10 +1037,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         if (d instanceof Function) {
             if (!d.isAnnotation()) {
                 Function method = (Function) d;
-                if (isInLanguageModule) {
-                    if (isIgnoredLanguageModuleMethod(method)) {
-                        return;
-                    }
+                if (isInLanguageModule &&
+                        isIgnoredLanguageModuleMethod(method)) {
+                    return;
                 }
                 Type mt = method.getType();
                 if (mt!=null && !mt.isNothing()) {
@@ -1061,10 +1061,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         if (d instanceof Class) {
             Class clazz = (Class) d;
             if (!clazz.isAbstract() && !d.isAnnotation()) {
-                if (isInLanguageModule) {
-                    if (isIgnoredLanguageModuleClass(clazz)) {
-                        return;
-                    }
+                if (isInLanguageModule &&
+                        isIgnoredLanguageModuleClass(clazz)) {
+                    return;
                 }
                 Type ct = clazz.getType();
                 if (ct!=null && !ct.isNothing() &&

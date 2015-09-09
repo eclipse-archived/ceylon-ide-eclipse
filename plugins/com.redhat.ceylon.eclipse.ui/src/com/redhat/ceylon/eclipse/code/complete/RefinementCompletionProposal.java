@@ -26,7 +26,6 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static java.lang.Character.isJavaIdentifierPart;
 
@@ -388,8 +387,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             boolean inLanguageModule = 
                     pack.getNameAsString()
                         .equals(Module.LANGUAGE_MODULE_NAME);
-            if (d instanceof Value && !d.equals(declaration) &&
-                    !isConstructor(d)) {
+            if (d instanceof Value && 
+                    !d.equals(declaration)) {
                 Value value = (Value) d;
                 if (inLanguageModule) {
                     if (isIgnoredLanguageModuleValue(value)) {
@@ -403,13 +402,13 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     props.add(new NestedCompletionProposal(d, loc));
                 }
             }
-            if (d instanceof Function && !d.equals(declaration) && 
-                    !d.isAnnotation() && !isConstructor(d)) {
+            if (d instanceof Function && 
+                    !d.equals(declaration) && 
+                    !d.isAnnotation()) {
                 Function method = (Function) d;
-                if (inLanguageModule) {
-                    if (isIgnoredLanguageModuleMethod(method)) {
+                if (inLanguageModule &&
+                        isIgnoredLanguageModuleMethod(method)) {
                         continue;
-                    }
                 }
                 Type mt = method.getType();
                 if (mt!=null && !mt.isNothing() &&
@@ -420,11 +419,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             }
             if (d instanceof Class) {
                 Class clazz = (Class) d;
-                if (!clazz.isAbstract() && !d.isAnnotation()) {
-                    if (inLanguageModule) {
-                        if (isIgnoredLanguageModuleClass(clazz)) {
+                if (!clazz.isAbstract() && 
+                        !d.isAnnotation()) {
+                    if (inLanguageModule 
+                            && isIgnoredLanguageModuleClass(clazz)) {
                             continue;
-                        }
                     }
                     Type ct = clazz.getType();
                     if (ct!=null && !ct.isNothing() &&
