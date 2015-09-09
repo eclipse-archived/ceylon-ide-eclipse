@@ -42,6 +42,12 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
+import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
@@ -50,12 +56,6 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Value;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.util.Escaping;
-import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
-import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
 public class RenameRefactoring extends AbstractRefactoring {
     
@@ -238,7 +238,8 @@ public class RenameRefactoring extends AbstractRefactoring {
         final Map<IResource,TextChange> changes = 
                 new HashMap<IResource, TextChange>();
         SearchEngine searchEngine = new SearchEngine();
-        IProject[] projects = getProjectAndReferencingProjects(project);
+        IProject[] projects = 
+                getProjectAndReferencingProjects(project);
         final String pattern;
         try {
             pattern = getJavaNameOfDeclaration(declaration);
