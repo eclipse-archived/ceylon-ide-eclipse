@@ -542,10 +542,22 @@ class InvocationCompletionProposal extends CompletionProposal {
                     if (eq>0) {
                         content = content.substring(eq+1);
                     }
-                    String filter = content.trim().toLowerCase();
+                    String filter = 
+                            content.trim().toLowerCase();
                     String decName = 
                             dec.getName(getUnit())
                                 .toLowerCase();
+                    if (dec instanceof Constructor) {
+                        Constructor constructor = 
+                                (Constructor) dec;
+                        TypeDeclaration clazz = 
+                                constructor.getExtendedType()
+                                    .getDeclaration();
+                        decName = 
+                                clazz.getName(getUnit())
+                                    .toLowerCase() +
+                                '.' + decName;
+                    }
                     if ((op+decName).startsWith(filter) ||
                             decName.startsWith(filter)) {
                         return true;

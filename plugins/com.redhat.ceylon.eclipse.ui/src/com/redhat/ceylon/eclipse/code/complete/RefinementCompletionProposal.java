@@ -68,7 +68,6 @@ import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -566,8 +565,21 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                                     currentOffset-offset);
                     String filter = 
                             content.trim().toLowerCase();
-                    if ((dec.getName().toLowerCase())
-                            .startsWith(filter)) {
+                    String decName = 
+                            dec.getName(getUnit())
+                                .toLowerCase();
+                    if (dec instanceof Constructor) {
+                        Constructor constructor = 
+                                (Constructor) dec;
+                        TypeDeclaration clazz = 
+                                constructor.getExtendedType()
+                                    .getDeclaration();
+                        decName = 
+                                clazz.getName(getUnit())
+                                    .toLowerCase() +
+                                '.' + decName;
+                    }
+                    if (decName.startsWith(filter)) {
                         return true;
                     }
                 }
