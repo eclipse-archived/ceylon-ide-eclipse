@@ -139,7 +139,9 @@ abstract class SelectExpressionPopup extends PopupDialog {
                 List<CommonToken> tokens = 
                         editor.getParseController()
                             .getTokens();
-                String text = Nodes.toString(e, tokens);
+                String text = 
+                        Nodes.toString(e, tokens)
+                            .replaceAll("\\s\\s+|\n|\r|\f", " ");
                 Highlights.styleFragment(result, 
                         text, false, null, 
                         CeylonPlugin.getCompletionFont());

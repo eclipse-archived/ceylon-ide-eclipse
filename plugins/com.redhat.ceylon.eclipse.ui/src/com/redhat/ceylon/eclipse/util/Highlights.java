@@ -221,15 +221,15 @@ public class Highlights  {
         StringTokenizer tokens = 
                 new StringTokenizer(codeFragment, 
                         qualifiedNameIsPath ? 
-                                " |&()<>*+?,:{}[]@\"" : 
-                                " |&()<>*+?,:{}[]@\".", 
+                                " |&()<>*+?,:{}[]@\"'!^/%~-=;" : 
+                                " |&()<>*+?,:{}[]@\"'!^/%~-=;.", 
                         true);
         boolean version = false;
         boolean qualified = false;
         boolean matchHighlighting = prefix!=null; 
         while (tokens.hasMoreTokens()) {
             final String token = tokens.nextToken();
-            if (token.equals("\"")) {
+            if (token.equals("\"") || token.equals("'")) {
                 version = !version;
                 append(result, token, font, STRING_STYLER);
             }
