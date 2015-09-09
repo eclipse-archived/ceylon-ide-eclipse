@@ -20,15 +20,16 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
-abstract class AbstractFindAction extends Action implements IObjectActionDelegate {
+abstract class AbstractFindAction extends Action 
+        implements IObjectActionDelegate {
     
     private Shell shell;
     protected Referenceable declaration;
@@ -39,50 +40,74 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
         super(name);
     }
     
-    AbstractFindAction(String name, CeylonSearchResultPage page, ISelection selection) {
+    AbstractFindAction(String name, 
+            CeylonSearchResultPage page, 
+            ISelection selection) {
         super(name);
         shell = page.getSite().getShell();
-        Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+        IStructuredSelection ss = 
+                (IStructuredSelection) selection;
+        Object firstElement = ss.getFirstElement();
         if (firstElement instanceof CeylonElement) {
-            CeylonElement element = ((CeylonElement) firstElement);
+            CeylonElement element = 
+                    (CeylonElement) firstElement;
             if (element.getVirtualFile() != null) {
-                CeylonUnit unit = getUnit(element.getVirtualFile());
-                Tree.CompilationUnit rn = unit.getCompilationUnit();
-                Node node = findNode(rn, null, element.getStartOffset(), 
-                        element.getEndOffset());
+                CeylonUnit unit = 
+                        getUnit(element.getVirtualFile());
+                Tree.CompilationUnit rn = 
+                        unit.getCompilationUnit();
+                Node node = 
+                        findNode(rn, null, 
+                                element.getStartOffset(), 
+                                element.getEndOffset());
                 if (node instanceof Tree.Declaration) {
-                    declaration = ((Tree.Declaration) node).getDeclarationModel();
+                    Tree.Declaration d = 
+                            (Tree.Declaration) node;
+                    declaration = d.getDeclarationModel();
                 }
             }
         }
     }
     
     @Override
-    public void selectionChanged(IAction action, ISelection selection) {
+    public void selectionChanged(IAction action, 
+            ISelection selection) {
         if (outlineView==null) return;
         try {
-            CeylonOutlineNode on = (CeylonOutlineNode) 
-                    ((ITreeSelection) outlineView.getSelection()).getFirstElement();
+            ITreeSelection ts = 
+                    (ITreeSelection) 
+                        outlineView.getSelection();
+            CeylonOutlineNode on = 
+                    (CeylonOutlineNode) 
+                        ts.getFirstElement();
             if (on!=null) {
-                IEditorPart currentEditor = getCurrentEditor();
-                if (currentEditor instanceof CeylonEditor) {
-                    CeylonEditor ce = (CeylonEditor) currentEditor;
+                IEditorPart editor = getCurrentEditor();
+                if (editor instanceof CeylonEditor) {
+                    CeylonEditor ce = 
+                            (CeylonEditor) editor;
                     Tree.CompilationUnit rootNode = 
-                            ce.getParseController().getRootNode();
+                            ce.getParseController()
+                                .getRootNode();
                     if (rootNode!=null) {
-                        Node node = findNode(rootNode, on.getStartOffset());
+                        Node node = 
+                                findNode(rootNode, 
+                                        on.getStartOffset());
                         if (node instanceof Tree.Declaration) {
-                            declaration = ((Tree.Declaration) node).getDeclarationModel();
-                            project = getProject(currentEditor);
-                            action.setEnabled(isValidSelection());
-                            return; //early exit
+                            Tree.Declaration d = 
+                                    (Tree.Declaration) node;
+                            declaration = 
+                                    d.getDeclarationModel();
                         }
                         else if (node instanceof Tree.ImportPath) {
-                            declaration = ((Tree.ImportPath) node).getModel();
-                            project = getProject(currentEditor);
-                            action.setEnabled(isValidSelection());
+                            Tree.ImportPath ip = 
+                                    (Tree.ImportPath) node;
+                            declaration = ip.getModel();
+                        }
+                        else {
                             return; //early exit
                         }
+                        project = getProject(editor);
+                        action.setEnabled(isValidSelection());
                     }
                 }
             }
@@ -94,7 +119,8 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
     }
 
     @Override
-    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+    public void setActivePart(IAction action, 
+            IWorkbenchPart targetPart) {
         outlineView = (ContentOutline) targetPart;
         shell = targetPart.getSite().getShell();
     }
@@ -106,8 +132,10 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             declaration = 
-                    getReferencedExplicitDeclaration(ce.getSelectedNode(), 
-                            ce.getParseController().getRootNode());
+                    getReferencedExplicitDeclaration(
+                            ce.getSelectedNode(), 
+                            ce.getParseController()
+                                .getRootNode());
             setEnabled(isValidSelection());
         }
         else {
@@ -115,7 +143,8 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
         }
     }
     
-    AbstractFindAction(String text, IEditorPart editor, Declaration dec) {
+    AbstractFindAction(String text, IEditorPart editor, 
+            Declaration dec) {
         super(text);
         shell = editor.getSite().getShell();
         project = editor==null ? null : getProject(editor);
@@ -131,10 +160,12 @@ abstract class AbstractFindAction extends Action implements IObjectActionDelegat
     @Override
     public void run() {
         if (isValidSelection()) {
-            NewSearchUI.runQueryInBackground(createSearchQuery());
+            NewSearchUI.runQueryInBackground(
+                    createSearchQuery());
         }
         else {
-            MessageDialog.openWarning(shell, "Ceylon Find Error", 
+            MessageDialog.openWarning(shell, 
+                    "Ceylon Find Error", 
                     "No appropriate declaration name selected");
         }
     }
