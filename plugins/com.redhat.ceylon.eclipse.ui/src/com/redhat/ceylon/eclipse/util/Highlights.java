@@ -338,12 +338,21 @@ public class Highlights  {
         int i = 0;
 		while (i<token.length() && m.find()) {
 			String bit = m.group();
+			//look for an exact-case match
 			int loc = token.indexOf(bit, i);
 			if (loc<0) {
+			  //look for an inexact-case match
 				loc = token.toLowerCase()
-				        .indexOf(bit.toLowerCase());
+				        .indexOf(bit.toLowerCase(), i);
+			}
+			if (i==0 && loc>0 && !prefix.startsWith("*")) {
+			    //first match must be at start of identifier
+			    break;
 			}
 			if (loc<0) {
+			    //roll back the highlighting already done
+			    result.setStyle(result.length()-i, i, 
+			            fontAndColorStyler);
 			    break;
 			}
 			result.append(token.substring(i, loc), 

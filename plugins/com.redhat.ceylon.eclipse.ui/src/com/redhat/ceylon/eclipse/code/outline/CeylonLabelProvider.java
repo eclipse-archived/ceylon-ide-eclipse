@@ -647,8 +647,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return label;
         }
         else if (node instanceof Tree.AnyClass) {
-            Tree.AnyClass ac = 
-                    (Tree.AnyClass) node;
+            Tree.AnyClass ac = (Tree.AnyClass) node;
             StyledString label = 
                     new StyledString("class ", KW_STYLER);
             String name = name(ac.getIdentifier());
@@ -658,8 +657,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return label;
         }
         else if (node instanceof Tree.AnyInterface) {
-            Tree.AnyInterface ai = 
-                    (Tree.AnyInterface) node;
+            Tree.AnyInterface ai = (Tree.AnyInterface) node;
             StyledString label = 
                     new StyledString("interface ", KW_STYLER);
             String name = name(ai.getIdentifier());
