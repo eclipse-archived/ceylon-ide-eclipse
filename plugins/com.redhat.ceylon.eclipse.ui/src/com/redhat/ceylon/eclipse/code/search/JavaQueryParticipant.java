@@ -4,16 +4,18 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getJavaQualifiedName;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getCeylonSimpleName;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getJavaQualifiedName;
+import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
+import static org.eclipse.jdt.core.IJavaElement.TYPE;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.IMPLEMENTORS;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.READ_ACCESSES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.WRITE_ACCESSES;
+import static org.eclipse.search.ui.NewSearchUI.getSearchResultView;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -45,20 +47,13 @@ import org.eclipse.jdt.ui.search.IQueryParticipant;
 import org.eclipse.jdt.ui.search.ISearchRequestor;
 import org.eclipse.jdt.ui.search.QuerySpecification;
 import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.PartInitException;
 
-import com.redhat.ceylon.model.loader.ModelLoader;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
@@ -66,17 +61,27 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
+import com.redhat.ceylon.model.loader.ModelLoader;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Modules;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
-public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentation {
+public class JavaQueryParticipant 
+        implements IQueryParticipant, IMatchPresentation {
     
     @Override
-    public void showMatch(Match match, int offset, int length,
-            boolean activate) throws PartInitException {
-        CeylonElement element = (CeylonElement) match.getElement();
+    public void showMatch(Match match, 
+            int offset, int length,
+            boolean activate) 
+                    throws PartInitException {
+        CeylonElement element = 
+                (CeylonElement) match.getElement();
         IFile file = element.getFile();
         if (file==null) {
-            Path path = new Path(element.getVirtualFile().getPath());
-            gotoLocation(path, offset, length);
+            String path = element.getVirtualFile().getPath();
+            gotoLocation(new Path(path), offset, length);
         }
         else {
             gotoLocation(file, offset, length);
@@ -85,8 +90,10 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
 
     @Override
     public ILabelProvider createLabelProvider() {
-        AbstractTextSearchViewPage activePage = (AbstractTextSearchViewPage) 
-                NewSearchUI.getSearchResultView().getActivePage();
+        AbstractTextSearchViewPage activePage = 
+                (AbstractTextSearchViewPage) 
+                    getSearchResultView()
+                        .getActivePage();
         return new MatchCountingLabelProvider(activePage);
     }
 
@@ -112,9 +119,13 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             QuerySpecification querySpecification, 
             IProgressMonitor monitor)
             throws CoreException {
-        if (querySpecification instanceof ElementQuerySpecification) {
+        if (querySpecification 
+                instanceof ElementQuerySpecification) {
+            ElementQuerySpecification eqs = 
+                    (ElementQuerySpecification) 
+                        querySpecification;
             final IJavaElement element = 
-                    ((ElementQuerySpecification) querySpecification).getElement();
+                    eqs.getElement();
             if (!(element instanceof IType || 
                   element instanceof IMethod || 
                   element instanceof IField) ||
@@ -129,46 +140,68 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                 limitTo!=WRITE_ACCESSES) {
                 return;
             }
-            IProject elementProject = element.getJavaProject().getProject();
-            IPackageFragment packageFragment = (IPackageFragment) 
-                    element.getAncestor(PACKAGE_FRAGMENT);
+            IProject elementProject = 
+                    element.getJavaProject()
+                        .getProject();
+            IPackageFragment packageFragment = 
+                    (IPackageFragment) 
+                        element.getAncestor(PACKAGE_FRAGMENT);
             
-            IFolder folder = (IFolder) packageFragment.getResource();
-            Package pack = folder==null ? null : getPackage(folder);
+            IFolder folder = 
+                    (IFolder) 
+                        packageFragment.getResource();
+            Package pack = 
+                    folder==null ? null : 
+                        getPackage(folder);
             Declaration declaration;
             if (pack==null) {
                 //this is the case for Ceylon decs, since 
                 //they sit in the .exploded directory
-                declaration = toCeylonDeclaration(elementProject, element);
+                declaration = 
+                        toCeylonDeclaration(elementProject, 
+                                element);
                 if (declaration!=null) {
                     pack = declaration.getUnit().getPackage();
                 }
             }
             else {
                 //this is the case for Java decs
-                IType type = (IType) element.getAncestor(IJavaElement.TYPE);
-                String typeQualifiedName = getJavaQualifiedName(type);
-                String ceylonMemberName = type!=element ? 
-                        getCeylonSimpleName((IMember)element) : null;
+                IType type = 
+                        (IType) 
+                            element.getAncestor(TYPE);
+                String typeQualifiedName = 
+                        getJavaQualifiedName(type);
+                String ceylonMemberName = 
+                        type==element ? null :
+                                getCeylonSimpleName(
+                                        (IMember) element);
                 String typeName = type.getElementName();
-                if (!Character.isUpperCase(typeName.codePointAt(0))
+                int first = typeName.codePointAt(0);
+                if (!Character.isUpperCase(first)
                     && typeName.endsWith("_") 
                     && ceylonMemberName == null) {
                     // Ceylon object value ... 
                     // ... without a method call
                     declaration = 
                             getProjectModelLoader(elementProject)
-                            .convertToDeclaration(pack.getModule(), 
-                                    typeQualifiedName, ModelLoader.DeclarationType.VALUE);
+                                .convertToDeclaration(
+                                        pack.getModule(), 
+                                        typeQualifiedName, 
+                                        ModelLoader.DeclarationType.VALUE);
                 } else {
                     declaration = 
                             getProjectModelLoader(elementProject)
-                            .convertToDeclaration(pack.getModule(), 
-                                    typeQualifiedName, ModelLoader.DeclarationType.TYPE);
+                                .convertToDeclaration(
+                                        pack.getModule(), 
+                                        typeQualifiedName, 
+                                        ModelLoader.DeclarationType.TYPE);
                     if (declaration!=null 
                             && ceylonMemberName != null 
                             && element instanceof IMember) {
-                        declaration = declaration.getMember(ceylonMemberName, null, false);
+                        declaration = 
+                                declaration.getMember(
+                                        ceylonMemberName, 
+                                        null, false);
                     }
                 }
             }
@@ -178,42 +211,66 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
                 throw new OperationCanceledException();
             }
             
-            Set<String> searchedArchives = new HashSet<String>();
-            IWorkspaceRoot root = elementProject.getWorkspace().getRoot();
+            Set<String> searchedArchives = 
+                    new HashSet<String>();
+            IWorkspaceRoot root = 
+                    elementProject.getWorkspace()
+                        .getRoot();
             
-            for (IPath includedProjectOrJar : querySpecification.getScope().enclosingProjectsAndJars()) {
+            for (IPath includedProjectOrJar: 
+                    querySpecification.getScope()
+                        .enclosingProjectsAndJars()) {
                 IProject project = null;
-                if (includedProjectOrJar.segmentCount() == 1) {
-                    project = root.getProject(includedProjectOrJar.segment(0));
-                    if (! project.exists()) {
+                if (includedProjectOrJar.segmentCount()==1) {
+                    String prefix = 
+                            includedProjectOrJar.segment(0);
+                    project = root.getProject(prefix);
+                    if (!project.exists()) {
                         project = null;
                     }
                 }
                 if (project == null) {
                     continue;
                 }
-                for (IProject searchedProject: getProjectsToSearch(project.getProject())) {
+                for (IProject searchedProject: 
+                        getProjectsToSearch(project)) {
                     if (CeylonNature.isEnabled(searchedProject)) {
-                        IJavaProject javaProject = JavaCore.create(searchedProject);
+                        IJavaProject javaProject = 
+                                JavaCore.create(searchedProject);
                         for (IPackageFragmentRoot sourceFolder: 
                                 javaProject.getAllPackageFragmentRoots()) {
-                            if (sourceFolder.getKind()==IPackageFragmentRoot.K_SOURCE &&
-                                    querySpecification.getScope().encloses(sourceFolder)) {
-                                TypeChecker typeChecker = getProjectTypeChecker(searchedProject);
-                                searchInUnits(requestor, limitTo, declaration, 
-                                        typeChecker.getPhasedUnits().getPhasedUnits());
+                            if (sourceFolder.getKind()==
+                                        IPackageFragmentRoot.K_SOURCE &&
+                                    querySpecification.getScope()
+                                        .encloses(sourceFolder)) {
+                                TypeChecker typeChecker = 
+                                        getProjectTypeChecker(
+                                                searchedProject);
+                                searchInUnits(requestor, 
+                                        limitTo, declaration, 
+                                        typeChecker.getPhasedUnits()
+                                            .getPhasedUnits());
                                 if (monitor.isCanceled()) {
                                     throw new OperationCanceledException();
                                 }
-                                Modules modules = typeChecker.getContext().getModules();
-                                for (Module m: modules.getListOfModules()) {
-                                    if (m instanceof JDTModule) {
-                                        JDTModule module = (JDTModule) m;
-                                        if (module.isCeylonArchive() && module.getArtifact()!=null) {
-                                            String archivePath = module.getArtifact().getAbsolutePath();
+                                Modules modules = 
+                                        typeChecker.getContext()
+                                            .getModules();
+                                for (Module mod: 
+                                        modules.getListOfModules()) {
+                                    if (mod instanceof JDTModule) {
+                                        JDTModule module = 
+                                                (JDTModule) mod;
+                                        if (module.isCeylonArchive() && 
+                                                module.getArtifact()!=null) {
+                                            String archivePath = 
+                                                    module.getArtifact()
+                                                        .getAbsolutePath();
                                             if (searchedArchives.add(archivePath) && 
-                                                    m.getAllReachablePackages().contains(pack)) {
-                                                searchInUnits(requestor, limitTo, declaration, 
+                                                    mod.getAllReachablePackages()
+                                                        .contains(pack)) {
+                                                searchInUnits(requestor, 
+                                                        limitTo, declaration, 
                                                         module.getPhasedUnits());
                                                 if (monitor.isCanceled()) {
                                                     throw new OperationCanceledException();
@@ -231,22 +288,28 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
         }
     }
 
-    private void searchInUnits(ISearchRequestor requestor, int limitTo,
-            Declaration declaration, List<? extends PhasedUnit> units) {
+    private void searchInUnits(ISearchRequestor requestor, 
+            int limitTo,
+            Declaration declaration, 
+            List<? extends PhasedUnit> units) {
         for (PhasedUnit pu: units) {
             CompilationUnit cu = pu.getCompilationUnit();
-            for (Node node: findNodes(limitTo, declaration, cu)) {
+            for (Node node: 
+                    findNodes(limitTo, declaration, cu)) {
                 if (node.getToken()==null) {
                     //a synthetic node inserted in the tree
                 }
                 else {
                     CeylonSearchMatch match = 
-                            CeylonSearchMatch.create(node, cu, pu.getUnitFile());
-                    if (searchResultField!=null && participantsField!=null) {
+                            CeylonSearchMatch.create(node, 
+                                    cu, pu.getUnitFile());
+                    if (searchResultField!=null && 
+                        participantsField!=null) {
                         //nasty nasty workaround for stupid 
                         //behavior of reportMatch()
                         try {
-                            reportMatchBypassingRubbishApi(requestor, match);
+                            reportMatchBypassingRubbishApi(
+                                    requestor, match);
                             continue;
                         }
                         catch (Exception e) {
@@ -259,18 +322,23 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
         }
     }
 
-    private void reportMatchBypassingRubbishApi(ISearchRequestor requestor,
-            CeylonSearchMatch match) throws IllegalAccessException {
+    private void reportMatchBypassingRubbishApi(
+            ISearchRequestor requestor,
+            CeylonSearchMatch match) 
+                    throws IllegalAccessException {
         AbstractTextSearchResult searchResult = 
-                (AbstractTextSearchResult) searchResultField.get(requestor);
+                (AbstractTextSearchResult) 
+                    searchResultField.get(requestor);
         searchResult.addMatch(match);
         @SuppressWarnings("unchecked")
         Map<Object, IMatchPresentation> participants = 
-                (Map<Object, IMatchPresentation>) participantsField.get(searchResult);
+                (Map<Object, IMatchPresentation>) 
+                    participantsField.get(searchResult);
         participants.put(match.getElement(), this);
     }
 
-    private Set<? extends Node> findNodes(int limitTo, Declaration declaration,
+    private Set<? extends Node> findNodes(int limitTo, 
+            Declaration declaration,
             CompilationUnit cu) {
         Set<? extends Node> nodes;
         if (limitTo==WRITE_ACCESSES) {
@@ -281,7 +349,9 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
         }
         else if (limitTo==IMPLEMENTORS) {
             FindSubtypesVisitor fsv = 
-                    new FindSubtypesVisitor((TypeDeclaration) declaration);
+                    new FindSubtypesVisitor(
+                            (TypeDeclaration) 
+                                declaration);
             fsv.visit(cu);
             nodes = fsv.getDeclarationNodes();
         }
@@ -300,7 +370,9 @@ public class JavaQueryParticipant implements IQueryParticipant, IMatchPresentati
             nodes = frv.getNodes();
             if (declaration instanceof TypeDeclaration) {
                 FindSubtypesVisitor fsv = 
-                        new FindSubtypesVisitor((TypeDeclaration) declaration);
+                        new FindSubtypesVisitor(
+                                (TypeDeclaration) 
+                                    declaration);
                 fsv.visit(cu);
                 HashSet<Node> result = new HashSet<Node>();
                 result.addAll(nodes);
