@@ -452,7 +452,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             StringBuilder sb = 
                     new StringBuilder().append(op);
             if (qualifier!=null) {
-                sb.append(qualifier.getName(getUnit()))
+                sb.append(escapeName(qualifier, getUnit()))
                   .append('.');
             }
             if (dec instanceof Constructor) {
@@ -460,10 +460,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                 TypeDeclaration clazz = 
                         constructor.getExtendedType()
                             .getDeclaration();
-                sb.append(clazz.getName(getUnit()))
+                sb.append(escapeName(clazz, getUnit()))
                     .append('.');
             }
-            sb.append(dec.getName(getUnit()));
+            sb.append(escapeName(dec, getUnit()));
             if (dec instanceof Functional && !basic) {
                 appendPositionalArgs(dec, getUnit(), sb, 
                         false, description);
