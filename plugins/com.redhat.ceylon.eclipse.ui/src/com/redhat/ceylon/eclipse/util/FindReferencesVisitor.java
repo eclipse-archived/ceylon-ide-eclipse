@@ -75,15 +75,31 @@ public class FindReferencesVisitor extends Visitor {
         return nodes;
     }
     
-    protected boolean isReference(Parameter p) {
-        return p!=null && isReference(p.getModel());
+    protected boolean isReference(Parameter param) {
+        return param!=null && isReference(param.getModel());
     }
     
     protected boolean isReference(Declaration ref) {
-        return ref!=null && 
-                declaration instanceof Declaration && 
-                (((Declaration) declaration).refines(ref) || 
-                        isSetterParameterReference(ref));
+        if (ref!=null) {
+            //include references to things that the  
+            //selected declaration refines, and refs
+            //within setters
+            return isRefinedDeclarationReference(ref) || 
+                    isSetterParameterReference(ref);
+        }
+        else {
+            return false;
+        }
+    }
+    
+    private boolean isRefinedDeclarationReference(Declaration ref) {
+        if (declaration instanceof Declaration) {
+            Declaration dec = (Declaration) declaration;
+            return dec.refines(ref);
+        }
+        else {
+            return false;
+        }
     }
 
     private boolean isSetterParameterReference(Declaration ref) {
