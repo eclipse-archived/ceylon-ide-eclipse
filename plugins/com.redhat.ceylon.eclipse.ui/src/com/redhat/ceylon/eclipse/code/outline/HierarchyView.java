@@ -976,6 +976,7 @@ public class HierarchyView extends ViewPart {
         CeylonParseController cpc = 
                 editor.getParseController();
         Node node = findNode(cpc.getRootNode(), 
+                // TODO shouldn't we search for the entire selection?
                 editor.getSelection().getOffset());
         Referenceable dec = getReferencedDeclaration(node);
         if (dec instanceof Declaration) {

@@ -239,7 +239,7 @@ public class MarkOccurrencesAction
             activeEditor.getParseController().getTokens() :
             null;
         Node selectedNode = 
-            findNode(root, tokens, offset, offset+length-1);
+            findNode(root, tokens, offset, offset+length);
         try {
             List<Node> declarations = 
                     getDeclarationsOf(parseController, 
