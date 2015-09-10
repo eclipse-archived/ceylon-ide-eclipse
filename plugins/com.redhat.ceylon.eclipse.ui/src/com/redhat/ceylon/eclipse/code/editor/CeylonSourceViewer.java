@@ -882,6 +882,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         copied.add(dec);
     			        results.remove(dec);
     			    }
+    			    super.visit(that);
     			}
     		}
     		SelectedImportsVisitor v = 
