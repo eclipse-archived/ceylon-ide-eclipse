@@ -9,17 +9,20 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.UNIT_CATE
 import java.util.Stack;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class CeylonOutlineBuilder extends Visitor {
     
@@ -109,21 +112,20 @@ public class CeylonOutlineBuilder extends Visitor {
     
     public final CeylonOutlineNode buildTree(CeylonParseController cpc) {
         if (cpc==null) return null;
-        IFile file = cpc.getProject()==null || 
-                cpc.getPath()==null ? null :
-                    cpc.getProject()
-                        .getFile(cpc.getPath());
         Tree.CompilationUnit rootNode = cpc.getRootNode();
-        if (rootNode==null || 
-            rootNode.getUnit()==null || 
-            rootNode.getStartIndex()==null) {
-            return null;
-        }
-        if (rootNode.getUnit() instanceof CeylonUnit) {
-            CeylonUnit unit = 
-                    (CeylonUnit) rootNode.getUnit();
-            PhasedUnit phasedUnit = 
-                    unit.getPhasedUnit();
+        if (rootNode==null) return null;
+        TypecheckerUnit u = rootNode.getUnit();
+        if (u==null) return null;
+        if (rootNode.getStartIndex()==null) return null;
+        
+        IProject project = cpc.getProject();
+        IPath path = cpc.getPath();
+        IFile file = 
+                project==null || path==null ? null :
+                    project.getFile(path);
+        if (u instanceof CeylonUnit) {
+            CeylonUnit unit = (CeylonUnit) u;
+            PhasedUnit phasedUnit = unit.getPhasedUnit();
             if (phasedUnit == null || 
                     !phasedUnit.isFullyTyped()) {
                 return null;
@@ -135,7 +137,8 @@ public class CeylonOutlineBuilder extends Visitor {
         try {
             Unit unit = rootNode.getUnit();
             if (unit!=null && 
-                !unit.getFilename().equals("module.ceylon")) { //it looks a bit funny to have two nodes representing the module
+                !unit.getFilename()
+                    .equals("module.ceylon")) { //it looks a bit funny to have two nodes representing the module
                 ModuleNode moduleNode = new ModuleNode();
                 Module module = unit.getPackage().getModule();
                 String mname = module.getNameAsString();
@@ -145,8 +148,10 @@ public class CeylonOutlineBuilder extends Visitor {
                         file==null ? null : file.getParent());
             }
             if (unit!=null && 
-                !unit.getFilename().equals("module.ceylon") &&
-                !unit.getFilename().equals("package.ceylon")) { //it looks a bit funny to have two nodes representing the package
+                !unit.getFilename()
+                    .equals("module.ceylon") &&
+                !unit.getFilename()
+                    .equals("package.ceylon")) { //it looks a bit funny to have two nodes representing the package
                 PackageNode packageNode = new PackageNode();
                 String pname = 
                         unit.getPackage()
