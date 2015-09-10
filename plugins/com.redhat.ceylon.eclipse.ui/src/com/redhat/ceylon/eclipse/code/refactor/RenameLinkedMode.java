@@ -7,6 +7,8 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
 import java.util.List;
 
@@ -121,19 +123,23 @@ public final class RenameLinkedMode
         
         Node selectedNode = refactoring.getNode();
         int offset;
+        int len;
         if (selectedNode instanceof DocLink) {
             DocLink docLink = (DocLink) selectedNode;
             int i = 0;
             if (docLink.getQualified()!=null) {
                 i+=docLink.getQualified().size();
             }
-            offset = nameRegion(docLink, i).getOffset();
+            Region region = nameRegion(docLink, i);
+            offset = region.getOffset();
+            len = region.getLength();
         }
         else {
             Node node = getIdentifyingNode(selectedNode);
-            offset = node.getStartIndex();
+            offset = getNodeStartOffset(node);
+            len = getNodeLength(node);
+
         }
-        int len = getInitialName().length();
         namePosition = 
                 new LinkedPosition(document, offset, len, 0);
         linkedPositionGroup.addPosition(namePosition);
@@ -146,8 +152,8 @@ public final class RenameLinkedMode
             try {
                 linkedPositionGroup.addPosition(
                         new LinkedPosition(document, 
-                            identifyingNode.getStartIndex(), 
-                            identifyingNode.getText().length(), 
+                            getNodeStartOffset(identifyingNode),
+                            getNodeLength(identifyingNode),
                             i++));
             } 
             catch (BadLocationException e) {

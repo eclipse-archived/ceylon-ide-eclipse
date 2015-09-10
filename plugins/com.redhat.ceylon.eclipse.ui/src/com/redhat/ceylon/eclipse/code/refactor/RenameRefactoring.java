@@ -8,6 +8,8 @@ import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencingProjects;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
+import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static java.util.Collections.emptyList;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.CLASS_AND_INTERFACE;
@@ -548,16 +550,15 @@ public class RenameRefactoring extends AbstractRefactoring {
             Tree.Identifier id, Tree.CompilationUnit root) {
         String name = declaration.getName();
         int loc = id.getText().indexOf(name);
+        int start = getNodeStartOffset(id);
         if (loc>0) {
             tfc.addEdit(new ReplaceEdit(
-                    id.getStartIndex() + loc, 
-                    name.length(), 
+                    start + loc, name.length(), 
                     newName));
         }
         else {
             tfc.addEdit(new ReplaceEdit(
-                    id.getStartIndex(), 
-                    id.getText().length(), 
+                    start, getNodeLength(id), 
                     toInitialLowercase(newName)));
         }
     }
@@ -574,8 +575,8 @@ public class RenameRefactoring extends AbstractRefactoring {
             Tree.CompilationUnit root) {
         Node identifyingNode = getIdentifier(node);
         tfc.addEdit(new ReplaceEdit(
-                identifyingNode.getStartIndex(), 
-                identifyingNode.getText().length(), 
+                getNodeStartOffset(identifyingNode), 
+                getNodeLength(identifyingNode), 
                 newName));
     }
 
