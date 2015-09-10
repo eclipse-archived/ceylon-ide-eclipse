@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
+import static com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring.getIdentifier;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
@@ -21,8 +22,17 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPartSite;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -66,7 +76,7 @@ public final class RenameLinkedMode
     public void done() {
         if (isEnabled()) {
             try {
-//                hideEditorActivity();
+                hideEditorActivity();
                 setName(getNewNameFromNamePosition());
                 revertChanges();
                 if (isShowPreview()) {
@@ -87,9 +97,9 @@ public final class RenameLinkedMode
             catch (Exception e) {
                 e.printStackTrace();
             }
-//            finally {
-//                unhideEditorActivity();
-//            }
+            finally {
+                unhideEditorActivity();
+            }
             super.done();
         }
         else {
@@ -133,7 +143,7 @@ public final class RenameLinkedMode
         List<Node> nodesToRename = 
                 refactoring.getNodesToRename(rootNode);
         for (Node node: nodesToRename) {
-            Node identifyingNode = getIdentifyingNode(node);
+            Node identifyingNode = getIdentifier(node);
             try {
                 linkedPositionGroup.addPosition(
                         new LinkedPosition(document, 
@@ -285,46 +295,45 @@ public final class RenameLinkedMode
         });
     }
 
-//  private Image image= null;
-//  private Label label= null;
+    private Image image= null;
+    private Label label= null;
+
+    private void hideEditorActivity() {
+        final SourceViewer sourceViewer = editor.getCeylonSourceViewer();
+        Control viewerControl= sourceViewer.getControl();
+        if (viewerControl instanceof Composite) {
+            Composite composite= (Composite) viewerControl;
+            Display display= composite.getDisplay();
+
+            // Flush pending redraw requests:
+            while (! display.isDisposed() && display.readAndDispatch()) {
+            }
+
+            // Copy editor area:
+            GC gc= new GC(composite);
+            Point size;
+            try {
+                size= composite.getSize();
+                image= new Image(gc.getDevice(), size.x, size.y);
+                gc.copyArea(image, 0, 0);
+            } finally {
+                gc.dispose();
+                gc= null;
+            }
+
+            // Persist editor area while executing refactoring:
+            label= new Label(composite, SWT.NONE);
+            label.setImage(image);
+            label.setBounds(0, 0, size.x, size.y);
+            label.moveAbove(null);
+        }
+    }
     
-//    private void hideEditorActivity() {
-//      if (viewer instanceof SourceViewer) {
-//      final SourceViewer sourceViewer= (SourceViewer) viewer;
-//      Control viewerControl= sourceViewer.getControl();
-//      if (viewerControl instanceof Composite) {
-//          Composite composite= (Composite) viewerControl;
-//          Display display= composite.getDisplay();
-//
-//          // Flush pending redraw requests:
-//          while (! display.isDisposed() && display.readAndDispatch()) {
-//          }
-//
-//          // Copy editor area:
-//          GC gc= new GC(composite);
-//          Point size;
-//          try {
-//              size= composite.getSize();
-//              image= new Image(gc.getDevice(), size.x, size.y);
-//              gc.copyArea(image, 0, 0);
-//          } finally {
-//              gc.dispose();
-//              gc= null;
-//          }
-//
-//          // Persist editor area while executing refactoring:
-//          label= new Label(composite, SWT.NONE);
-//          label.setImage(image);
-//          label.setBounds(0, 0, size.x, size.y);
-//          label.moveAbove(null);
-//      }
-//    }
-    
-//    private void unhideEditorActivity() {
-//        if (label != null)
-//            label.dispose();
-//        if (image != null)
-//            image.dispose();
-//    }
+    private void unhideEditorActivity() {
+        if (label != null)
+            label.dispose();
+        if (image != null)
+            image.dispose();
+    }
     
 }

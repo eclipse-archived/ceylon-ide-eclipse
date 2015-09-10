@@ -67,34 +67,57 @@ public class RenameRefactoring extends AbstractRefactoring {
     
     private static class FindRenamedReferencesVisitor 
             extends FindReferencesVisitor {
+        
         private FindRenamedReferencesVisitor(Declaration declaration) {
             super(declaration);
         }
+        
         @Override
         protected boolean isReference(Declaration ref) {
             return super.isReference(ref) ||
+                    //include refinements of the selected 
+                    //declaration that we're renaming
                     ref!=null && 
                     ref.refines((Declaration) getDeclaration());
         }
+        
         @Override
         protected boolean isReference(Declaration ref, String id) {
             return isReference(ref) && 
                     id!=null &&
+                    //ignore references that use an alias
+                    //since we don't need to rename them
                     getDeclaration().getNameAsString()
-                        .equals(id); //TODO: really lame way to tell if it's an alias!
+                        .equals(id); 
+        }
+        
+        @Override
+        public void visit(Tree.SpecifierStatement that) {
+            if (that.getRefinement()) {
+                //the LHS will be treated as a refinement by
+                //FindRefinementsVisitor so ignore it here
+                super.visit(that.getSpecifierExpression());
+            }
+            else {
+                super.visit(that);
+            }
         }
     }
 
     private static class FindDocLinkReferencesVisitor 
             extends Visitor {
+        
         private Declaration declaration;
         private int count;
+        
         public int getCount() {
             return count;
         }
+        
         FindDocLinkReferencesVisitor(Declaration declaration) {
             this.declaration = declaration;
         }
+        
         @Override
         public void visit(Tree.DocLink that) {
             Declaration base = that.getBase();
@@ -117,16 +140,15 @@ public class RenameRefactoring extends AbstractRefactoring {
 
     private final class FindDocLinkVisitor extends Visitor {
         
-        private List<Region> result = 
-                new ArrayList<Region>();
+        private List<Region> links = new ArrayList<Region>();
         
         List<Region> getLinks() {
-            return result;
+            return links;
         }
 
         private void visitIt(Region region, Declaration dec) {
             if (dec!=null && dec.equals(declaration)) {
-                result.add(region);
+                links.add(region);
             }
         }
 
@@ -550,11 +572,35 @@ public class RenameRefactoring extends AbstractRefactoring {
 
     protected void renameNode(TextChange tfc, Node node, 
             Tree.CompilationUnit root) {
-        Node identifyingNode = getIdentifyingNode(node);
+        Node identifyingNode = getIdentifier(node);
         tfc.addEdit(new ReplaceEdit(
                 identifyingNode.getStartIndex(), 
                 identifyingNode.getText().length(), 
                 newName));
+    }
+
+    static Node getIdentifier(Node node) {
+        if (node instanceof Tree.SpecifierStatement) {
+            Tree.SpecifierStatement st = 
+                    (Tree.SpecifierStatement) node;
+            Tree.Term lhs = st.getBaseMemberExpression();
+            while (lhs instanceof Tree.ParameterizedExpression) {
+                Tree.ParameterizedExpression pe = 
+                        (Tree.ParameterizedExpression) lhs;
+                lhs = pe.getPrimary();
+            }
+            if (lhs instanceof Tree.StaticMemberOrTypeExpression) {
+                Tree.StaticMemberOrTypeExpression mte = 
+                        (Tree.StaticMemberOrTypeExpression) lhs;
+                return mte.getIdentifier();
+            }
+            else {
+                throw new RuntimeException("impossible");
+            }
+        }
+        else {
+            return getIdentifyingNode(node);
+        }
     }
     
     public boolean isRenameValuesAndFunctions() {
