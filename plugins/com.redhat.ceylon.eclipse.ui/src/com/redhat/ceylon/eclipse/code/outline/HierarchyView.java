@@ -973,11 +973,12 @@ public class HierarchyView extends ViewPart {
     public void setFocus() {}
 
     public void focusOnSelection(CeylonEditor editor) {
-        CeylonParseController cpc = 
+        CeylonParseController parseController = 
                 editor.getParseController();
-        Node node = findNode(cpc.getRootNode(), 
-                // TODO shouldn't we search for the entire selection?
-                editor.getSelection().getOffset());
+        Node node = 
+                findNode(parseController.getRootNode(), 
+                        parseController.getTokens(),
+                        editor.getSelection());
         Referenceable dec = getReferencedDeclaration(node);
         if (dec instanceof Declaration) {
             focusOn((Declaration) dec);
