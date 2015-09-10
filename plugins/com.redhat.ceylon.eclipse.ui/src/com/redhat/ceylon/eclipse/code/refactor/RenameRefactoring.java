@@ -2,11 +2,14 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.java.codegen.CodegenUtil.getJavaNameOfDeclaration;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
+import static com.redhat.ceylon.eclipse.util.Escaping.toInitialLowercase;
+import static com.redhat.ceylon.eclipse.util.Escaping.toInitialUppercase;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencingProjects;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
+import static java.util.Collections.emptyList;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.CLASS_AND_INTERFACE;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.REFERENCES;
 import static org.eclipse.jdt.core.search.SearchPattern.R_EXACT_MATCH;
@@ -44,6 +47,8 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
@@ -52,6 +57,7 @@ import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -67,30 +73,112 @@ public class RenameRefactoring extends AbstractRefactoring {
         @Override
         protected boolean isReference(Declaration ref) {
             return super.isReference(ref) ||
-                    ref!=null && ref.refines((Declaration)getDeclaration());
+                    ref!=null && 
+                    ref.refines((Declaration) getDeclaration());
         }
         @Override
         protected boolean isReference(Declaration ref, String id) {
-            return isReference(ref) && id!=null &&
-                    getDeclaration().getNameAsString().equals(id); //TODO: really lame way to tell if it's an alias!
+            return isReference(ref) && 
+                    id!=null &&
+                    getDeclaration().getNameAsString()
+                        .equals(id); //TODO: really lame way to tell if it's an alias!
         }
     }
 
-    private static class FindDocLinkReferencesVisitor extends Visitor {
+    private static class FindDocLinkReferencesVisitor 
+            extends Visitor {
         private Declaration declaration;
-        int count;
+        private int count;
+        public int getCount() {
+            return count;
+        }
         FindDocLinkReferencesVisitor(Declaration declaration) {
             this.declaration = declaration;
         }
         @Override
         public void visit(Tree.DocLink that) {
-            if (that.getBase()!=null) {
-                if (that.getBase().equals(declaration)) {
+            Declaration base = that.getBase();
+            if (base!=null) {
+                if (base.equals(declaration)) {
                     count++;
                 }
-                else if (that.getQualified()!=null) {
-                    if (that.getQualified().contains(declaration)) {
-                        count++;
+                else {
+                    List<Declaration> qualified = 
+                            that.getQualified();
+                    if (qualified!=null) {
+                        if (qualified.contains(declaration)) {
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private final class FindDocLinkVisitor extends Visitor {
+        
+        private List<Region> result = 
+                new ArrayList<Region>();
+        
+        List<Region> getLinks() {
+            return result;
+        }
+
+        private void visitIt(Region region, Declaration dec) {
+            if (dec!=null && dec.equals(declaration)) {
+                result.add(region);
+            }
+        }
+
+        @Override
+        public void visit(Tree.DocLink that) {
+            Declaration base = that.getBase();
+            if (base!=null) {
+                visitIt(nameRegion(that, 0), base);
+                List<Declaration> qualified = 
+                        that.getQualified();
+                if (qualified!=null) {
+                    for (int i=0; 
+                            i<qualified.size(); 
+                            i++) {
+                        visitIt(nameRegion(that, i+1),
+                                qualified.get(i));
+                    }
+                }
+            }
+        }
+    }
+
+    private final class FindSimilarNameVisitor extends Visitor {
+        
+        private ArrayList<Identifier> identifiers
+            = new ArrayList<Identifier>();
+        
+        public ArrayList<Identifier> getIdentifiers() {
+            return identifiers;
+        }
+        
+        @Override
+        public void visit(Tree.TypedDeclaration that) {
+            super.visit(that);
+            Tree.Identifier id = 
+                    that.getIdentifier();
+            if (id!=null) {
+                Type type = 
+                        that.getType()
+                            .getTypeModel();
+                if (type!=null) {
+                    TypeDeclaration td = 
+                            type.getDeclaration();
+                    if ((td instanceof ClassOrInterface ||
+                         td instanceof TypeParameter) && 
+                            td.equals(declaration)) {
+                        String text = id.getText();
+                        String name = declaration.getName();
+                        if (text.equalsIgnoreCase(name) ||
+                                text.endsWith(name)) {
+                            identifiers.add(id);
+                        }
                     }
                 }
             }
@@ -108,16 +196,24 @@ public class RenameRefactoring extends AbstractRefactoring {
 
     public RenameRefactoring(IEditorPart editor) {
         super(editor);
-        if (rootNode!=null && 
-                (getIdentifyingNode(node) instanceof Tree.Identifier ||
-                node instanceof Tree.DocLink)) {
+        boolean identifiesDeclaration = 
+                node instanceof Tree.DocLink || 
+                getIdentifyingNode(node) 
+                     instanceof Tree.Identifier;
+        if (rootNode!=null && identifiesDeclaration) {
             Referenceable refDec = 
-                    getReferencedExplicitDeclaration(node, rootNode);
+                    getReferencedExplicitDeclaration(node, 
+                            rootNode);
             if (refDec instanceof Declaration) {
-                declaration = ((Declaration) refDec).getRefinedDeclaration();
+                Declaration dec = (Declaration) refDec;
+                declaration = dec.getRefinedDeclaration();
                 newName = declaration.getName();
-                String filename = declaration.getUnit().getFilename();
-                renameFile = (declaration.getName()+".ceylon").equals(filename);
+                String filename = 
+                        declaration.getUnit()
+                            .getFilename();
+                renameFile = 
+                        (declaration.getName() + ".ceylon")
+                            .equals(filename);
             }
             else {
                 declaration = null;
@@ -136,15 +232,16 @@ public class RenameRefactoring extends AbstractRefactoring {
     }
 
     public int getCount() {
-        return declaration==null ? 
-                0 : countDeclarationOccurrences();
+        return declaration==null ? 0 : 
+            countDeclarationOccurrences();
     }
     
     @Override
     int countReferences(Tree.CompilationUnit cu) {
         FindRenamedReferencesVisitor frv = 
                 new FindRenamedReferencesVisitor(declaration);
-        Declaration dec = (Declaration) frv.getDeclaration();
+        Declaration dec = 
+                (Declaration) frv.getDeclaration();
         FindRefinementsVisitor fdv = 
                 new FindRefinementsVisitor(dec);
         FindDocLinkReferencesVisitor fdlrv = 
@@ -154,83 +251,109 @@ public class RenameRefactoring extends AbstractRefactoring {
         cu.visit(fdlrv);
         return frv.getNodes().size() + 
                 fdv.getDeclarationNodes().size() + 
-                fdlrv.count;
+                fdlrv.getCount();
     }
 
     public String getName() {
         return "Rename";
     }
 
-    public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
-            throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkInitialConditions(
+            IProgressMonitor pm)
+                    throws CoreException, 
+                           OperationCanceledException {
         // Check parameters retrieved from editor context
         return new RefactoringStatus();
     }
 
-    public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
-            throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkFinalConditions(
+            IProgressMonitor pm)
+                    throws CoreException, 
+                           OperationCanceledException {
         if (!newName.matches("^[a-zA-Z_]\\w*$")) {
-            return createErrorStatus("Not a legal Ceylon identifier");
+            return createErrorStatus(
+                    "Not a legal Ceylon identifier");
         }
         else if (Escaping.KEYWORDS.contains(newName)) {
-            return createErrorStatus("'" + newName + "' is a Ceylon keyword");
+            return createErrorStatus(
+                    "'" + newName + "' is a Ceylon keyword");
         }
         else {
             int ch = newName.codePointAt(0);
             if (declaration instanceof TypedDeclaration) {
                 if (!Character.isLowerCase(ch) && ch!='_') {
-                    return createErrorStatus("Not an initial lowercase identifier");
+                    return createErrorStatus(
+                            "Not an initial lowercase identifier");
                 }
             }
             else if (declaration instanceof TypeDeclaration) {
                 if (!Character.isUpperCase(ch)) {
-                    return createErrorStatus("Not an initial uppercase identifier");
+                    return createErrorStatus(
+                            "Not an initial uppercase identifier");
                 }
             }
         }
-        Declaration existing = declaration.getContainer()
-                        .getMemberOrParameter(declaration.getUnit(), 
-                                newName, null, false);
-        if (null!=existing && !existing.equals(declaration)) {
-            return createWarningStatus("An existing declaration named '" +
-                newName + "' already exists in the same scope");
+        Declaration existing = 
+                declaration.getContainer()
+                    .getMemberOrParameter(
+                            declaration.getUnit(), 
+                            newName, null, false);
+        if (null!=existing && 
+                !existing.equals(declaration)) {
+            return createWarningStatus(
+                    "An existing declaration named '" +
+                    newName + 
+                    "' already exists in the same scope");
         }
         return new RefactoringStatus();
     }
 
     public CompositeChange createChange(IProgressMonitor pm) 
-            throws CoreException, OperationCanceledException {
+            throws CoreException, 
+                   OperationCanceledException {
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
-        CompositeChange cc = new CompositeChange(getName());
+        CompositeChange composite = 
+                new CompositeChange(getName());
         int i=0;
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
                 TextFileChange tfc = newTextFileChange(pu);
-                renameInFile(tfc, cc, pu.getCompilationUnit());
+                renameInFile(tfc, composite, 
+                        pu.getCompilationUnit());
                 pm.worked(i++);
             }
         }
         if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
-            renameInFile(dc, cc, editor.getParseController().getRootNode());
+            CompilationUnit editorRootNode = 
+                    editor.getParseController()
+                        .getRootNode();
+            renameInFile(dc, composite, editorRootNode);
             pm.worked(i++);
         }
         if (project!=null && renameFile) {
-            IPath oldPath = project.getFullPath()
-                    .append(declaration.getUnit().getFullPath());
+            String unitPath = 
+                    declaration.getUnit()
+                        .getFullPath();
+            IPath oldPath = 
+                    project.getFullPath()
+                        .append(unitPath);
             String newFileName = getNewName() + ".ceylon";
-            IPath newPath = oldPath.removeFirstSegments(1).removeLastSegments(1)
-                    .append(newFileName);
+            IPath newPath = 
+                    oldPath.removeFirstSegments(1)
+                        .removeLastSegments(1)
+                        .append(newFileName);
             if (!project.getFile(newPath).exists()) {
-                cc.add(new RenameResourceChange(oldPath, newFileName));
+                composite.add(new RenameResourceChange(
+                        oldPath, newFileName));
             }
         }
         
-        refactorJavaReferences(pm, cc);
+        refactorJavaReferences(pm, composite);
 
         pm.done();
-        return cc;
+        return composite;
     }
 
     private void refactorJavaReferences(IProgressMonitor pm,
@@ -250,68 +373,87 @@ public class RenameRefactoring extends AbstractRefactoring {
         boolean anonymous = pattern.endsWith(".get_");
         if (!anonymous) {
             SearchPattern searchPattern = 
-                    createSearchPattern(declaration, REFERENCES);
+                    createSearchPattern(declaration, 
+                            REFERENCES);
             if (searchPattern==null) return;
-            SearchRequestor requestor = new SearchRequestor() {
+            SearchRequestor requestor = 
+                    new SearchRequestor() {
                 @Override
                 public void acceptSearchMatch(SearchMatch match) {
-                    TextChange change = canonicalChange(cc, changes, match);
+                    TextChange change = 
+                            canonicalChange(cc, changes, match);
                     if (change!=null) {
-                        int loc = pattern.lastIndexOf('.')+1;
-                        String oldName = pattern.substring(loc);
+                        int loc = pattern.lastIndexOf('.') + 1;
+                        String oldName = 
+                                pattern.substring(loc);
                         if (declaration instanceof Value) {
-                            String uppercased = 
-                                    Escaping.toInitialUppercase(newName);
-                            change.addEdit(new ReplaceEdit(match.getOffset()+3, 
-                                    oldName.length()-3, 
-                                    uppercased));
+                            change.addEdit(new ReplaceEdit(
+                                    match.getOffset() + 3, 
+                                    oldName.length() - 3, 
+                                    toInitialUppercase(newName)));
                         }
                         else {
-                            String replacedName = newName;
-                            if (oldName.startsWith("$")) {
-                                replacedName = '$' + replacedName;
-                            }
-                            change.addEdit(new ReplaceEdit(match.getOffset(), 
-                                    oldName.length(), replacedName));
+                            change.addEdit(new ReplaceEdit(
+                                    match.getOffset(), 
+                                    oldName.length(), 
+                                    oldName.startsWith("$") ? 
+                                            '$' + newName : 
+                                            newName));
                         }
                     }
                 }
             };
-            runSearch(pm, searchEngine, searchPattern, projects, requestor);
+            runSearch(pm, searchEngine, searchPattern, 
+                    projects, requestor);
         }
         if (anonymous ||
                 declaration instanceof FunctionOrValue && 
                 declaration.isToplevel()) {
             int loc = pattern.lastIndexOf('.');
-            SearchPattern searchPattern = createPattern(pattern.substring(0, loc), 
-                    CLASS_AND_INTERFACE, REFERENCES, R_EXACT_MATCH);
-            SearchRequestor requestor = new SearchRequestor() {
+            SearchPattern searchPattern = 
+                    createPattern(pattern.substring(0, loc), 
+                            CLASS_AND_INTERFACE, 
+                            REFERENCES, 
+                            R_EXACT_MATCH);
+            SearchRequestor requestor = 
+                    new SearchRequestor() {
                 @Override
                 public void acceptSearchMatch(SearchMatch match) {
-                    TextChange change = canonicalChange(cc, changes, match);
+                    TextChange change = 
+                            canonicalChange(cc, changes, match);
                     if (change!=null) {
-                        int end = pattern.lastIndexOf("_.");
-                        int start = pattern.substring(0, end).lastIndexOf('.')+1;
-                        String oldName = pattern.substring(start, end);                    
-                        change.addEdit(new ReplaceEdit(match.getOffset(), 
-                                oldName.length(), newName));
+                        int end = 
+                                pattern.lastIndexOf("_.");
+                        int start = 
+                                pattern.substring(0, end)
+                                    .lastIndexOf('.') +1 ;
+                        String oldName = 
+                                pattern.substring(start, end);                    
+                        change.addEdit(new ReplaceEdit(
+                                match.getOffset(), 
+                                oldName.length(), 
+                                newName));
                     }
                 }
             };
-            runSearch(pm, searchEngine, searchPattern, projects, requestor);
+            runSearch(pm, searchEngine, searchPattern, 
+                    projects, requestor);
         }
     }
 
-    private TextChange canonicalChange(final CompositeChange cc,
-            final Map<IResource, TextChange> changes, SearchMatch match) {
+    private TextChange canonicalChange(
+            CompositeChange composite,
+            Map<IResource, TextChange> changes, 
+            SearchMatch match) {
         IResource resource = match.getResource();
         if (resource instanceof IFile) {
             TextChange change = changes.get(resource);
             if (change==null) {
-                change = new TextFileChange("Rename", (IFile) resource);
+                IFile file = (IFile) resource;
+                change = new TextFileChange("Rename", file);
                 change.setEdit(new MultiTextEdit());
                 changes.put(resource, change);
-                cc.add(change);
+                composite.add(change);
             }
             return change;
         }
@@ -320,7 +462,8 @@ public class RenameRefactoring extends AbstractRefactoring {
         }
     }
     
-    private void renameInFile(TextChange tfc, CompositeChange cc, 
+    private void renameInFile(
+            TextChange tfc, CompositeChange cc, 
             Tree.CompilationUnit root) {
         tfc.setEdit(new MultiTextEdit());
         if (declaration!=null) {
@@ -331,7 +474,8 @@ public class RenameRefactoring extends AbstractRefactoring {
                 renameRegion(tfc, region, root);
             }
             if (renameValuesAndFunctions) { 
-                for (Tree.Identifier id: getIdentifiersToRename(root)) {
+                for (Tree.Identifier id: 
+                        getIdentifiersToRename(root)) {
                     renameIdentifier(tfc, id, root);
                 }
             }
@@ -341,10 +485,12 @@ public class RenameRefactoring extends AbstractRefactoring {
         }
     }
     
-    public List<Node> getNodesToRename(Tree.CompilationUnit root) {
+    public List<Node> getNodesToRename(
+            Tree.CompilationUnit root) {
         ArrayList<Node> list = new ArrayList<Node>();
         FindRenamedReferencesVisitor frv = 
-                new FindRenamedReferencesVisitor(declaration);
+                new FindRenamedReferencesVisitor(
+                        declaration);
         root.visit(frv);
         list.addAll(frv.getNodes());
         FindRefinementsVisitor fdv = 
@@ -356,89 +502,59 @@ public class RenameRefactoring extends AbstractRefactoring {
         return list;
     }
     
-    public List<Tree.Identifier> getIdentifiersToRename(Tree.CompilationUnit root) {
-        final ArrayList<Tree.Identifier> list = 
-                new ArrayList<Tree.Identifier>();
+    public List<Tree.Identifier> getIdentifiersToRename(
+            Tree.CompilationUnit root) {
         if (declaration instanceof TypeDeclaration) {
-            new Visitor() {
-                String name = declaration.getName();
-                @Override
-                public void visit(Tree.TypedDeclaration that) {
-                    super.visit(that);
-                    Tree.Identifier id = 
-                            that.getIdentifier();
-                    if (id!=null) {
-                        TypeDeclaration d = 
-                                that.getType().getTypeModel()
-                                    .getDeclaration();
-                        if ((d instanceof ClassOrInterface ||
-                             d instanceof TypeParameter) && 
-                                d.equals(declaration)) {
-                            String text = id.getText();
-                            if (text.equalsIgnoreCase(name) ||
-                                    text.endsWith(name)) {
-                                list.add(id);
-                            }
-                        }
-                    }
-                }
-            }.visit(root);
+            FindSimilarNameVisitor fsnv = 
+                    new FindSimilarNameVisitor();
+            fsnv.visit(root);
+            return fsnv.getIdentifiers();
         }
-        return list;
+        else {
+            return emptyList();
+        }
     }
     
-    public List<Region> getStringsToReplace(Tree.CompilationUnit root) {
-        final List<Region> result = new ArrayList<Region>();
-        new Visitor() {
-            private void visitIt(Region region, Declaration dec) {
-                if (dec!=null && dec.equals(declaration)) {
-                    result.add(region);
-                }
-            }
-            @Override
-            public void visit(Tree.DocLink that) {
-                Declaration base = that.getBase();
-                List<Declaration> qualified = that.getQualified();
-                if (base!=null) {
-                    visitIt(nameRegion(that, 0), base);
-                    if (qualified!=null) {
-                        for (int i=0; i<qualified.size(); i++) {
-                            visitIt(nameRegion(that, i+1),
-                                    qualified.get(i));
-                        }
-                    }
-                }
-            }
-        }.visit(root);
-        return result;
+    public List<Region> getStringsToReplace(
+            Tree.CompilationUnit root) {
+        FindDocLinkVisitor fdlv = new FindDocLinkVisitor();
+        fdlv.visit(root);
+        return fdlv.getLinks();
     }
 
-    void renameIdentifier(TextChange tfc, Tree.Identifier id, 
-            Tree.CompilationUnit root) {
+    void renameIdentifier(TextChange tfc, 
+            Tree.Identifier id, Tree.CompilationUnit root) {
         String name = declaration.getName();
         int loc = id.getText().indexOf(name);
         if (loc>0) {
-            tfc.addEdit(new ReplaceEdit(id.getStartIndex() + loc, 
-                    name.length(), newName));
+            tfc.addEdit(new ReplaceEdit(
+                    id.getStartIndex() + loc, 
+                    name.length(), 
+                    newName));
         }
         else {
-            tfc.addEdit(new ReplaceEdit(id.getStartIndex(), 
+            tfc.addEdit(new ReplaceEdit(
+                    id.getStartIndex(), 
                     id.getText().length(), 
-                    Escaping.toInitialLowercase(newName)));
+                    toInitialLowercase(newName)));
         }
     }
 
     void renameRegion(TextChange tfc, Region region, 
             Tree.CompilationUnit root) {
-        tfc.addEdit(new ReplaceEdit(region.getOffset(), 
-                region.getLength(), newName));
+        tfc.addEdit(new ReplaceEdit(
+                region.getOffset(), 
+                region.getLength(), 
+                newName));
     }
 
     protected void renameNode(TextChange tfc, Node node, 
             Tree.CompilationUnit root) {
         Node identifyingNode = getIdentifyingNode(node);
-        tfc.addEdit(new ReplaceEdit(identifyingNode.getStartIndex(), 
-                identifyingNode.getText().length(), newName));
+        tfc.addEdit(new ReplaceEdit(
+                identifyingNode.getStartIndex(), 
+                identifyingNode.getText().length(), 
+                newName));
     }
     
     public boolean isRenameValuesAndFunctions() {
