@@ -842,7 +842,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
                 return;
             }
 
-             ISourceViewer viewer = getSourceViewer();
+            ISourceViewer viewer = getSourceViewer();
             IDocument document = viewer.getDocument();
             try {
                 CharacterIterator iter = 
