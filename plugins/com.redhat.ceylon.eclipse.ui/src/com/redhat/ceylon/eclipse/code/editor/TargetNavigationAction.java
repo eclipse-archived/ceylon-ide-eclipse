@@ -47,7 +47,7 @@ abstract class TargetNavigationAction extends Action {
                 findNode(pc.getRootNode(), 
                         pc.getTokens(), 
                         selection.getOffset(), 
-                        selection.getOffset() + selection.getLength() - 1);
+                        selection.getOffset() + selection.getLength());
         if (curNode == null || selection.getOffset() == 0) {
             curNode= pc.getRootNode();
         }
