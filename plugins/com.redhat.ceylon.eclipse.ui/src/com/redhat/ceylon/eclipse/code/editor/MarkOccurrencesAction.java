@@ -60,6 +60,9 @@ public class MarkOccurrencesAction
                    CaretListener, 
                    ISelectionChangedListener, 
                    TreeLifecycleListener {
+    
+    private static final Annotation[] NO_ANNOTATIONS = new Annotation[0];
+    
     /**
      * The ID for the kind of annotations created for "mark occurrences"
      */
@@ -147,9 +150,11 @@ public class MarkOccurrencesAction
                 !activeEditor.isInLinkedMode()) {
             int offset = 
                     activeEditor.getCeylonSourceViewer()
-                        .widgetOffset2ModelOffset(event.caretOffset);
+                        .widgetOffset2ModelOffset(
+                                event.caretOffset);
             int length = 0;
-            recomputeAnnotationsForSelection(offset, length, document);
+            recomputeAnnotationsForSelection(offset, length, 
+                    document);
         }
     }
     
@@ -161,8 +166,10 @@ public class MarkOccurrencesAction
                 !activeEditor.isBlockSelectionModeEnabled() &&
                 !activeEditor.isInLinkedMode()) {
             ITextSelection selection = (ITextSelection) sel;
-            recomputeAnnotationsForSelection(selection.getOffset(), 
-                    selection.getLength(), document);
+            recomputeAnnotationsForSelection(
+                    selection.getOffset(), 
+                    selection.getLength(), 
+                    document);
         }
     }
 
@@ -235,11 +242,13 @@ public class MarkOccurrencesAction
             // a parse error
             return;
         }
-        List<CommonToken> tokens = activeEditor != null ?
-            activeEditor.getParseController().getTokens() :
-            null;
+        List<CommonToken> tokens = 
+                activeEditor==null ? null :
+                    activeEditor.getParseController()
+                        .getTokens();
         Node selectedNode = 
-            findNode(root, tokens, offset, offset+length);
+                findNode(root, tokens, 
+                        offset, offset+length);
         try {
             List<Node> declarations = 
                     getDeclarationsOf(parseController, 
@@ -289,25 +298,26 @@ public class MarkOccurrencesAction
             IDocument document, 
             List<Node> occurrences)
             throws BadLocationException {
-        for (Iterator<Node> i=occurrences.iterator(); 
-                i.hasNext();) {
-            Node next = i.next();
+        for (Iterator<Node> it=occurrences.iterator(); 
+                it.hasNext();) {
+            Node next = it.next();
             if (next != null) {
                 CommonToken tok = 
-                        (CommonToken) next.getToken();
+                        (CommonToken) 
+                            next.getToken();
                 if (tok != null) {
                     try {
                         int start = tok.getStartIndex();
                         int stop = tok.getStopIndex();
+                        int len = stop-start+1;
                         String docText = 
-                                document.get(start, 
-                                        stop-start+1);
+                                document.get(start, len);
                         if (!docText.equals(tok.getText())) {
-                            i.remove();
+                            it.remove();
                         }
                     }
                     catch (BadLocationException e) {
-                        i.remove();
+                        it.remove();
                     }
                 }
             }
@@ -344,16 +354,19 @@ public class MarkOccurrencesAction
             return;
         }
         synchronized (getLockObject(annotationModel)) {
-            if (annotationModel instanceof IAnnotationModelExtension) {
+            if (annotationModel 
+                    instanceof IAnnotationModelExtension) {
                 IAnnotationModelExtension ext = 
-                        (IAnnotationModelExtension) annotationModel;
+                        (IAnnotationModelExtension) 
+                            annotationModel;
                 ext.replaceAnnotations(occurrenceAnnotations, 
                         annotationMap);
             } 
             else {
                 removeExistingOccurrenceAnnotations();
                 Iterator<Map.Entry<Annotation,Position>> iter = 
-                        annotationMap.entrySet().iterator();
+                        annotationMap.entrySet()
+                            .iterator();
                 while (iter.hasNext()) {
                     Map.Entry<Annotation,Position> mapEntry = 
                             iter.next();
@@ -362,15 +375,17 @@ public class MarkOccurrencesAction
                     annotationModel.addAnnotation(ann, pos);
                 }
             }
-            occurrenceAnnotations = (Annotation[]) 
-                    annotationMap.keySet()
-                        .toArray(new Annotation[annotationMap.keySet().size()]);
+            occurrenceAnnotations = 
+                    (Annotation[]) 
+                        annotationMap.keySet()
+                            .toArray(NO_ANNOTATIONS);
         }
     }
 
     private void retrieveOccurrenceAnnotations() {
         IAnnotationModel annotationModel = 
-                documentProvider.getAnnotationModel(getEditorInput());
+                documentProvider.getAnnotationModel(
+                        getEditorInput());
         // Need to initialize the set of pre-existing annotations in order
         // for them to be removed properly when new occurrences are marked
         if (annotationModel != null) {
@@ -390,7 +405,7 @@ public class MarkOccurrencesAction
                 }
             }
             occurrenceAnnotations = 
-                    annotationList.toArray(new Annotation[annotationList.size()]);
+                    annotationList.toArray(NO_ANNOTATIONS);
         }
     }
 
@@ -405,20 +420,27 @@ public class MarkOccurrencesAction
         if (documentProvider == null)
             return;
         IAnnotationModel annotationModel = 
-                documentProvider.getAnnotationModel(getEditorInput());
-        if (annotationModel==null || occurrenceAnnotations==null)
+                documentProvider.getAnnotationModel(
+                        getEditorInput());
+        if (annotationModel==null || 
+                occurrenceAnnotations==null)
             return;
 
         synchronized (getLockObject(annotationModel)) {
-            if (annotationModel instanceof IAnnotationModelExtension) {
+            if (annotationModel 
+                    instanceof IAnnotationModelExtension) {
                 IAnnotationModelExtension ext = 
-                        (IAnnotationModelExtension) annotationModel;
+                        (IAnnotationModelExtension) 
+                            annotationModel;
                 ext.replaceAnnotations(occurrenceAnnotations, null);
             } 
             else {
-                for (int i=0, length=occurrenceAnnotations.length; 
-                        i<length; i++) {
-                    annotationModel.removeAnnotation(occurrenceAnnotations[i]);
+                for (int i=0, 
+                        length=occurrenceAnnotations.length; 
+                        i<length; 
+                        i++) {
+                    annotationModel.removeAnnotation(
+                            occurrenceAnnotations[i]);
                 }
             }
             occurrenceAnnotations= null;
@@ -430,10 +452,12 @@ public class MarkOccurrencesAction
                 new Position[refs.size()];
         int i= 0;
         for (Iterator<Node> iter=refs.iterator(); 
-                iter.hasNext(); i++) {
+                iter.hasNext(); 
+                i++) {
             Node node = iter.next();
             positions[i] = 
-                    new Position(getIdentifyingStartOffset(node), 
+                    new Position(
+                            getIdentifyingStartOffset(node), 
                             getIdentifyingLength(node));
         }
         return positions;
@@ -492,8 +516,9 @@ public class MarkOccurrencesAction
 
     private Object getLockObject(IAnnotationModel annotationModel) {
         if (annotationModel instanceof ISynchronizable) {
-            return ((ISynchronizable) annotationModel)
-                    .getLockObject();
+            ISynchronizable sync = 
+                    (ISynchronizable) annotationModel;
+            return sync.getLockObject();
         }
         else {
             return annotationModel;
@@ -588,8 +613,7 @@ public class MarkOccurrencesAction
     }
     
     private List<Node> getOccurrencesOf(
-            CeylonParseController controller, 
-            Node node) {
+            CeylonParseController controller, Node node) {
         if (controller.getStage().ordinal() 
                 >= getStage().ordinal()) {
             // Check whether we even have an AST in which to find occurrences
@@ -615,8 +639,7 @@ public class MarkOccurrencesAction
     }
     
     private List<Node> getAssignmentsOf(
-            CeylonParseController controller, 
-            Node node) {
+            CeylonParseController controller, Node node) {
         // Check whether we even have an AST in which to find occurrences
         Tree.CompilationUnit root = 
                 controller.getRootNode();

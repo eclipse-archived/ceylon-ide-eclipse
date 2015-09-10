@@ -16,11 +16,13 @@ abstract class TargetNavigationAction extends Action {
 
     protected abstract Object getNavTarget(Object o, Object astRoot);
 
-    protected TargetNavigationAction(String title, String actionDefID) {
+    protected TargetNavigationAction(String title, 
+            String actionDefID) {
         this(null, title, actionDefID);
     }
 
-    public TargetNavigationAction(CeylonEditor editor, String title, String actionDefID) {
+    public TargetNavigationAction(CeylonEditor editor, String title, 
+            String actionDefID) {
         setEditor(editor);
         setText(title);
         setActionDefinitionId(actionDefID);
@@ -42,18 +44,18 @@ abstract class TargetNavigationAction extends Action {
     @Override
     public void run() {
         IRegion selection = fEditor.getSelection();
-        CeylonParseController pc = fEditor.getParseController();
+        CeylonParseController pc = 
+                fEditor.getParseController();
         Object curNode = 
-                findNode(pc.getRootNode(), 
-                        pc.getTokens(), 
-                        selection.getOffset(), 
-                        selection.getOffset() + selection.getLength());
+                findNode(pc.getRootNode(), pc.getTokens(), 
+                        selection);
         if (curNode == null || selection.getOffset() == 0) {
             curNode= pc.getRootNode();
         }
-        Object prev= getNavTarget(curNode, pc.getRootNode());
+        Object prev = getNavTarget(curNode, pc.getRootNode());
         if (prev instanceof Node) {
-            fEditor.selectAndReveal(getIdentifyingStartOffset((Node)prev), 0);
+            int start = getIdentifyingStartOffset((Node) prev);
+            fEditor.selectAndReveal(start, 0);
         }
     }
 }

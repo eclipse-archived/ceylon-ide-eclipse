@@ -98,11 +98,20 @@ public class Nodes {
 
     public static Node findNode(Tree.CompilationUnit cu, 
             List<CommonToken> tokens, 
-            ITextSelection s) {
+            ITextSelection selection) {
         return findNode(cu, 
                 tokens, 
-                s.getOffset(), 
-                s.getOffset()+s.getLength());
+                selection.getOffset(), 
+                selection.getOffset() + selection.getLength());
+    }
+
+    public static Node findNode(Tree.CompilationUnit cu, 
+            List<CommonToken> tokens, 
+            IRegion selection) {
+        return findNode(cu, 
+                tokens, 
+                selection.getOffset(), 
+                selection.getOffset() + selection.getLength());
     }
 
     public static Node findScope(Tree.CompilationUnit cu, 
