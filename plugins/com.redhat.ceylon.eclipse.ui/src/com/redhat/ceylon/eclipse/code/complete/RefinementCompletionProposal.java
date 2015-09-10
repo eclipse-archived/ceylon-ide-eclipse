@@ -121,10 +121,13 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         boolean isInterface = scope instanceof Interface;
         Reference pr = getRefinedProducedReference(scope, dec);
         Unit unit = node.getUnit();
-        result.add(new RefinementCompletionProposal(offset, prefix, pr,
+        result.add(new RefinementCompletionProposal(offset, 
+                prefix, pr,
                 getRefinementDescriptionFor(dec, pr, unit), 
-                getRefinementTextFor(dec, pr, unit, isInterface, ci, 
-                        getDefaultLineDelimiter(doc) + getIndent(node, doc), 
+                getRefinementTextFor(dec, pr, unit, 
+                        isInterface, ci, 
+                        getDefaultLineDelimiter(doc) 
+                            + getIndent(node, doc), 
                         true, preamble), 
                 cpc, dec, scope, false, true));
     }
@@ -134,9 +137,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             CeylonParseController cpc, 
             List<ICompletionProposal> result, 
             Declaration dec, Scope scope) {
-        //TODO: type argument substitution using the Reference of the primary node
+        //TODO: type argument substitution using the 
+        //     Reference of the primary node
         Unit unit = cpc.getRootNode().getUnit();
-        result.add(new RefinementCompletionProposal(offset, prefix, 
+        result.add(new RefinementCompletionProposal(offset, 
+                prefix, 
                 dec.getReference(), //TODO: this needs to do type arg substitution
                 getDescriptionFor(dec, unit), 
                 getTextFor(dec, unit) + " = nothing;", 
@@ -148,7 +153,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             String prefix, CeylonParseController cpc, 
             IDocument doc, 
             List<ICompletionProposal> result) {
-        //TODO: type argument substitution using the Reference of the primary node
+        //TODO: type argument substitution using the 
+        //      Reference of the primary node
         if (dec.isParameter()) {
             FunctionOrValue fov = (FunctionOrValue) dec;
             Parameter p = fov.getInitializerParameter();
@@ -166,7 +172,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 
     public static Reference getRefinedProducedReference(
             Scope scope, Declaration d) {
-        return refinedProducedReference(scope.getDeclaringType(d), d);
+        return refinedProducedReference(
+                scope.getDeclaringType(d), d);
     }
 
     public static Reference getRefinedProducedReference(
@@ -216,7 +223,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             CeylonParseController cpc, 
             Declaration dec, Scope scope,
             boolean fullType, boolean explicitReturnType) {
-        super(offset, prefix, getRefinementIcon(dec), desc, text);
+        super(offset, prefix, getRefinementIcon(dec), 
+                desc, text);
         this.cpc = cpc;
         this.declaration = dec;
         this.pr = pr;
@@ -477,7 +485,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         public void apply(IDocument document) {
             try {
                 int len = 0;
-                while (isJavaIdentifierPart(document.getChar(offset+len))) {
+                char first = document.getChar(offset+len);
+                while (isJavaIdentifierPart(first)) {
                     len++;
                 }
                 document.replace(offset, len, getText(false));
@@ -552,8 +561,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         public void unselected(ITextViewer viewer) {}
 
         @Override
-        public boolean validate(IDocument document, int currentOffset,
-                DocumentEvent event) {
+        public boolean validate(IDocument document, 
+                int currentOffset, DocumentEvent event) {
             if (event==null) {
                 return true;
             }

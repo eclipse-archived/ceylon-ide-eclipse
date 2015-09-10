@@ -564,8 +564,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                         String qualName = 
                                 qualifier.getName(getUnit())
                                     .toLowerCase();
-                        if ((op+qualName+'.'+decName).startsWith(filter) ||
-                                (qualName+'.'+decName).startsWith(filter)) {
+                        if ((op + qualName + '.' + decName)
+                                .startsWith(filter) ||
+                            (qualName + '.' + decName)
+                                .startsWith(filter)) {
                             return true;
                         }
                     }
@@ -620,9 +622,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                         findCharCount(index+1, document, 
                                 loc+startOfArgs, endOfLine, 
                                 ",;", "", true);
-                int middleOffset = findCharCount(1, document, 
-                        offset, nextOffset, 
-                        "=", "", true)+1;
+                int middleOffset = 
+                        findCharCount(1, document, 
+                            offset, nextOffset, 
+                            "=", "", true) + 1;
                 if (middleOffset>0 &&
                         document.getChar(middleOffset)=='>') {
                     middleOffset++;
@@ -684,8 +687,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         public void unselected(ITextViewer viewer) {}
         
         @Override
-        public boolean validate(IDocument document, int currentOffset,
-                DocumentEvent event) {
+        public boolean validate(IDocument document, 
+                int currentOffset, DocumentEvent event) {
             if (event==null) {
                 return true;
             }
@@ -693,12 +696,13 @@ class InvocationCompletionProposal extends CompletionProposal {
                 try {
                     IRegion li = 
                             document.getLineInformationOfOffset(loc);
-                    int endOfLine = li.getOffset() + li.getLength();
+                    int endOfLine = 
+                            li.getOffset() + li.getLength();
                     int startOfArgs = getFirstPosition();
                     int offset = 
                             findCharCount(index, document, 
                                     loc+startOfArgs, endOfLine, 
-                                    ",;", "", true)+1;
+                                    ",;", "", true) + 1;
                     String content = 
                             document.get(offset, 
                                     currentOffset-offset);
@@ -706,8 +710,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                     if (eq>0) {
                         content = content.substring(eq+1);
                     }
-                    String filter = content.trim().toLowerCase();
-                    if (value.toLowerCase().startsWith(filter)) {
+                    String filter = 
+                            content.trim().toLowerCase();
+                    if (value.toLowerCase()
+                            .startsWith(filter)) {
                         return true;
                     }
                 }
@@ -758,7 +764,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                 new DocumentChange("Complete Invocation", 
                         document);
         change.setEdit(new MultiTextEdit());
-        HashSet<Declaration> decs = new HashSet<Declaration>();
+        HashSet<Declaration> decs = 
+                new HashSet<Declaration>();
         Tree.CompilationUnit cu = cpc.getRootNode();
         if (qualifyingValue!=null) {
             importDeclaration(decs, qualifyingValue, cu);
@@ -767,7 +774,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             importDeclaration(decs, declaration, cu);
         }
         if (positionalInvocation||namedInvocation) {
-            importCallableParameterParamTypes(declaration, decs, cu);
+            importCallableParameterParamTypes(declaration, 
+                    decs, cu);
         }
         int il=applyImports(change, decs, cu, document);
         change.addEdit(createEdit(document));
@@ -838,7 +846,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         int start = offset-prefix.length()+first+middle;
         int len = next-middle;
         try {
-            if (document.get(start, len).trim().equals("{}")) {
+            if (document.get(start, len).trim()
+                    .equals("{}")) {
                 start++;
                 len=0;
             }
@@ -847,7 +856,8 @@ class InvocationCompletionProposal extends CompletionProposal {
     }
     
     protected int getCompletionPosition(int first, int next) {
-        return text.substring(first, first+next-1).lastIndexOf(' ')+1;
+        return text.substring(first, first+next-1)
+                .lastIndexOf(' ') + 1;
     }
 
     protected int getFirstPosition() {
@@ -923,7 +933,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                 boolean voidParam = 
                         !proposeTypeArguments &&
                         params.get(param).isDeclaredVoid();
-                if (proposeTypeArguments || positionalInvocation ||
+                if (proposeTypeArguments || 
+                        positionalInvocation ||
                         //don't create linked positions for
                         //void callable parameters in named
                         //argument lists
@@ -941,7 +952,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                                 loc, first, props, seq, 
                                 param==params.size()-1);
                     }
-                    int middle = getCompletionPosition(first, next);
+                    int middle = 
+                            getCompletionPosition(first, next);
                     int start = loc+first+middle;
                     int len = next-middle;
                     if (voidParam) {
@@ -961,7 +973,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             }
             if (seq>0) {
                 CeylonEditor editor = 
-                        (CeylonEditor) getCurrentEditor();
+                        (CeylonEditor) 
+                            getCurrentEditor();
                 installLinkedMode(editor, 
                         document, linkedModeModel, this, 
                         new LinkedMode.NullExitPolicy(),
@@ -1138,54 +1151,71 @@ class InvocationCompletionProposal extends CompletionProposal {
                     .getDeclaration();
         if (dtd instanceof Class) {
             if (dtd.equals(unit.getIntegerDeclaration())) {
-                props.add(new NestedLiteralCompletionProposal("0", loc, index));
-                props.add(new NestedLiteralCompletionProposal("1", loc, index));
+                props.add(new NestedLiteralCompletionProposal(
+                        "0", loc, index));
+                props.add(new NestedLiteralCompletionProposal(
+                        "1", loc, index));
             }
             if (dtd.equals(unit.getFloatDeclaration())) {
-                props.add(new NestedLiteralCompletionProposal("0.0", loc, index));
-                props.add(new NestedLiteralCompletionProposal("1.0", loc, index));
+                props.add(new NestedLiteralCompletionProposal(
+                        "0.0", loc, index));
+                props.add(new NestedLiteralCompletionProposal(
+                        "1.0", loc, index));
             }
             if (dtd.equals(unit.getStringDeclaration())) {
-                props.add(new NestedLiteralCompletionProposal("\"\"", loc, index));
+                props.add(new NestedLiteralCompletionProposal(
+                        "\"\"", loc, index));
             }
             if (dtd.equals(unit.getCharacterDeclaration())) {
-                props.add(new NestedLiteralCompletionProposal("' '", loc, index));
-                props.add(new NestedLiteralCompletionProposal("'\\n'", loc, index));
-                props.add(new NestedLiteralCompletionProposal("'\\t'", loc, index));
+                props.add(new NestedLiteralCompletionProposal(
+                        "' '", loc, index));
+                props.add(new NestedLiteralCompletionProposal(
+                        "'\\n'", loc, index));
+                props.add(new NestedLiteralCompletionProposal(
+                        "'\\t'", loc, index));
             }
         }
         else if (dtd instanceof Interface) {
            if (dtd.equals(unit.getIterableDeclaration())) {
-               props.add(new NestedLiteralCompletionProposal("{}", loc, index));
+               props.add(new NestedLiteralCompletionProposal(
+                       "{}", loc, index));
            }
            if (dtd.equals(unit.getSequentialDeclaration()) ||
                dtd.equals(unit.getEmptyDeclaration())) {
-               props.add(new NestedLiteralCompletionProposal("[]", loc, index));
+               props.add(new NestedLiteralCompletionProposal(
+                       "[]", loc, index));
            }
         }
     }
 
-    private void addTypeArgumentProposals(TypeParameter tp, 
-            final int loc, int first, List<ICompletionProposal> props, 
+    private void addTypeArgumentProposals(
+            TypeParameter tp, 
+            final int loc, int first, 
+            List<ICompletionProposal> props, 
             final int index) {
         for (DeclarationWithProximity dwp:
                 getSortedProposedValues(scope, getUnit())) {
-            Declaration d = dwp.getDeclaration();
-            if (d instanceof TypeDeclaration && !dwp.isUnimported()) {
-                TypeDeclaration td = (TypeDeclaration) d;
+            Declaration dec = dwp.getDeclaration();
+            if (dec instanceof TypeDeclaration && 
+                    !dwp.isUnimported()) {
+                TypeDeclaration td = (TypeDeclaration) dec;
                 Type t = td.getType();
+                Unit u = td.getUnit();
+                Class ed = u.getExceptionDeclaration();
                 if (!t.isNothing() &&
                         td.getTypeParameters().isEmpty() && 
                         !td.isAnnotation() &&
-                        !td.inherits(td.getUnit().getExceptionDeclaration())) {
-                    if (td.getUnit().getPackage().getNameAsString()
-                            .equals(Module.LANGUAGE_MODULE_NAME)) {
+                        !td.inherits(ed)) {
+                    String pname = 
+                            u.getPackage()
+                                .getNameAsString();
+                    if (pname.equals(Module.LANGUAGE_MODULE_NAME)) {
                         if (isIgnoredLanguageModuleType(td)) {
                             continue;
                         }
                     }
                     if (isInBounds(tp.getSatisfiedTypes(), t)) {
-                        props.add(new NestedCompletionProposal(d, null,
+                        props.add(new NestedCompletionProposal(dec, null,
                                 loc, index, true, ""));
                     }
                 }
@@ -1202,7 +1232,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                         fd.getParameterLists();
                 if (!pls.isEmpty()) {
                     int argListOffset = 
-                            isParameterInfo() ? this.offset : 
+                            isParameterInfo() ? 
+                                this.offset : 
                                 offset-prefix.length() + 
                                 text.indexOf(namedInvocation?'{':'(');
                     return new ParameterContextInformation(
@@ -1266,8 +1297,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                         String string = "";
                         if (offset>stop) {
                             try {
-                                string = viewer.getDocument()
-                                        .get(stop+1, offset-stop-1);
+                                string = 
+                                    viewer.getDocument()
+                                        .get(stop+1, 
+                                             offset-stop-1);
                             } 
                             catch (BadLocationException e) {}
                         }
@@ -1278,7 +1311,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                             Declaration declaration = 
                                     mte.getDeclaration();
                             if (declaration instanceof Functional) {
-                                Functional fd = (Functional) declaration;
+                                Functional fd = 
+                                        (Functional) declaration;
                                 List<ParameterList> pls = 
                                         fd.getParameterLists();
                                 if (!pls.isEmpty()) {
@@ -1397,7 +1431,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                         p==ps.get(ps.size()-1) &&
                         p.getModel() instanceof Value && 
                         p.getType()!=null &&
-                        unit.isIterableParameterType(p.getType());
+                        unit.isIterableParameterType(
+                                p.getType());
                 if (includeDefaulted || !p.isDefaulted() ||
                         isListedValues) {
                     if (producedReference==null) {
