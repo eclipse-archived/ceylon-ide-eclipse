@@ -57,11 +57,18 @@ public class CeylonStructureCreator extends StructureCreator {
             return (CeylonDocumentRangeNode) input;
         }
         
-        final boolean isEditable = input instanceof IEditableContent ?
-                ((IEditableContent) input).isEditable() : false;
+        final boolean isEditable;
+        if (input instanceof IEditableContent) {
+            IEditableContent ec = (IEditableContent) input;
+            isEditable = ec.isEditable();
+        }
+        else {
+            isEditable = false;
+        }
         
-        StructureRootNode structureRootNode = new StructureRootNode(document, 
-                    input, this, sharedDocumentAdapter) {
+        StructureRootNode structureRootNode = 
+                new StructureRootNode(document, 
+                        input, this, sharedDocumentAdapter) {
             @Override
             public boolean isEditable() {
                 return isEditable;
@@ -70,8 +77,10 @@ public class CeylonStructureCreator extends StructureCreator {
         
         CeylonParseController pc = new CeylonParseController();
         if (input instanceof ResourceNode) {
-            IResource file = ((ResourceNode) input).getResource();
-            pc.initialize(file.getProjectRelativePath(), file.getProject(), null);
+            ResourceNode node = (ResourceNode) input;
+            IResource file = node.getResource();
+            pc.initialize(file.getProjectRelativePath(), 
+                    file.getProject(), null);
         }
         else {
             pc.initialize(null, null, null);
@@ -79,16 +88,16 @@ public class CeylonStructureCreator extends StructureCreator {
         
         pc.parse(document, monitor, null);
         
-        CeylonOutlineNode outlineTree = new CeylonOutlineBuilder() {
-            //don't create nodes for shortcut refinement
-            //because we can't distinguish them w/o a
-            //full typecheck
-            public void visit(Tree.SpecifierStatement that) {}
-        }.buildTree(pc);
-
-        if (outlineTree!=null) {
-            // now visit the model, creating TreeCompareNodes for each ModelTreeNode
-            buildCompareTree(outlineTree, structureRootNode, document);
+        // now visit the model, creating TreeCompareNodes for each ModelTreeNode
+        CeylonOutlineNode tree = 
+                new CeylonOutlineBuilder() {
+                    //don't create nodes for shortcut refinement
+                    //because we can't distinguish them w/o a
+                    //full typecheck
+                    public void visit(Tree.SpecifierStatement that) {}
+                }.buildTree(pc);
+        if (tree!=null) {
+            buildCompareTree(tree, structureRootNode, document);
         }
         
         return structureRootNode;
