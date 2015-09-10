@@ -9,4 +9,6 @@ shared class EclipseProgressMonitor(IProgressMonitor wrapped) satisfies Progress
     shared actual variable Integer workRemaining = 0;
     
     shared actual void worked(Integer amount) => wrapped.worked(amount);
+
+    shared actual void subTask(String? desc) => wrapped.subTask(desc);
 }

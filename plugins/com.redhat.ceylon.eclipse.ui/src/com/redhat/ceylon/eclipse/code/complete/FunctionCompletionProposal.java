@@ -32,7 +32,7 @@ final class FunctionCompletionProposal extends
     private final CeylonParseController cpc;
     private final Declaration dec;
 
-    private FunctionCompletionProposal(int offset, String prefix,
+    FunctionCompletionProposal(int offset, String prefix,
             String desc, String text, Declaration dec,
             CeylonParseController cpc) {
         super(offset, prefix, 

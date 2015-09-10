@@ -1248,7 +1248,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     static final class ParameterInfo 
             extends InvocationCompletionProposal {
-        private ParameterInfo(int offset, Declaration dec, 
+        ParameterInfo(int offset, Declaration dec, 
                 Reference producedReference,
                 Scope scope, CeylonParseController cpc, 
                 boolean namedInvocation) {

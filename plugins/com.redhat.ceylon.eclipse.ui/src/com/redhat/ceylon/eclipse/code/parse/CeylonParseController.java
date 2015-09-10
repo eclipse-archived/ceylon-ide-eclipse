@@ -94,7 +94,7 @@ import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
-public class CeylonParseController implements LocalAnalysisResult<IDocument> {
+public class CeylonParseController implements LocalAnalysisResult<IDocument,IProject> {
     
     /**
      * The project containing the source being parsed. May be 
@@ -867,6 +867,11 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
 
     public void resetStage() {
         stage = Stage.NONE;
+    }
+
+    @Override
+    public CeylonProject<IProject> getCeylonProject() {
+        return ceylonModel().getProject(project);
     }
     
 }
