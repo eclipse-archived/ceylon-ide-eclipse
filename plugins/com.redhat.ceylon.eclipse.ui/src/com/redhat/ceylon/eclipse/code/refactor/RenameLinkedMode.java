@@ -22,7 +22,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.swt.SWT;
@@ -295,34 +294,38 @@ public final class RenameLinkedMode
         });
     }
 
-    private Image image= null;
-    private Label label= null;
+    private Image image = null;
+    private Label label = null;
 
     private void hideEditorActivity() {
-        final SourceViewer sourceViewer = editor.getCeylonSourceViewer();
-        Control viewerControl= sourceViewer.getControl();
+        Control viewerControl = 
+                editor.getCeylonSourceViewer()
+                    .getControl();
         if (viewerControl instanceof Composite) {
-            Composite composite= (Composite) viewerControl;
-            Display display= composite.getDisplay();
+            Composite composite = (Composite) viewerControl;
+            Display display = composite.getDisplay();
 
             // Flush pending redraw requests:
-            while (! display.isDisposed() && display.readAndDispatch()) {
-            }
+            while (!display.isDisposed() && 
+                    display.readAndDispatch()) {}
 
             // Copy editor area:
-            GC gc= new GC(composite);
+            GC gc = new GC(composite);
             Point size;
             try {
-                size= composite.getSize();
-                image= new Image(gc.getDevice(), size.x, size.y);
+                size = composite.getSize();
+                image = 
+                        new Image(gc.getDevice(), 
+                                size.x, size.y);
                 gc.copyArea(image, 0, 0);
-            } finally {
+            }
+            finally {
                 gc.dispose();
                 gc= null;
             }
 
             // Persist editor area while executing refactoring:
-            label= new Label(composite, SWT.NONE);
+            label = new Label(composite, SWT.NONE);
             label.setImage(image);
             label.setBounds(0, 0, size.x, size.y);
             label.moveAbove(null);
@@ -330,10 +333,8 @@ public final class RenameLinkedMode
     }
     
     private void unhideEditorActivity() {
-        if (label != null)
-            label.dispose();
-        if (image != null)
-            image.dispose();
+        if (label!=null) label.dispose();
+        if (image!=null) image.dispose();
     }
     
 }
