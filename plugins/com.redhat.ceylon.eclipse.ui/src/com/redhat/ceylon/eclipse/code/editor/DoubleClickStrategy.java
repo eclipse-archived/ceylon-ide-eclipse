@@ -66,7 +66,7 @@ public class DoubleClickStrategy extends DefaultTextDoubleClickStrategy {
         }
 
         private boolean isIdentifierStart(char c) {
-            return Character.isJavaIdentifierStart(c) && c!='$';
+            return Character.isJavaIdentifierStart(c) && c!='$' || c=='\\';
         }
 
         private boolean isIdentifierPart(char c) {
