@@ -348,10 +348,9 @@ public class RenameRefactoring extends AbstractRefactoring {
         root.visit(frv);
         list.addAll(frv.getNodes());
         FindRefinementsVisitor fdv = 
-                new FindRefinementsVisitor((Declaration)frv.getDeclaration()) {
-            @Override
-            public void visit(Tree.SpecifierStatement that) {}
-        };
+                new FindRefinementsVisitor(
+                        (Declaration)
+                            frv.getDeclaration());
         root.visit(fdv);
         list.addAll(fdv.getDeclarationNodes());
         return list;
