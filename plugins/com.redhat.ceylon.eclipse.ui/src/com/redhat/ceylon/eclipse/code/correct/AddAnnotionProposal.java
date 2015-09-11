@@ -235,7 +235,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
 			for (Tree.Annotation ann:
 				annotationList.getAnnotations()) {
 				if (toRemove.equals(getAnnotationIdentifier(ann))) {
-					Integer start = ann.getStartIndex();
+					int start = ann.getStartIndex();
                     int length = ann.getDistance();
                     return new ReplaceEdit(start, length, annotation);
 				}
@@ -272,6 +272,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
                     nextAnnotation.getStartIndex();
         }
         else {
+            CommonToken tok = 
+                    (CommonToken) node.getMainToken();
             if (node instanceof Tree.AnyAttribute || 
                 node instanceof Tree.AnyMethod ) {
                 Tree.TypedDeclaration tdn = 
@@ -280,14 +282,10 @@ public class AddAnnotionProposal extends CorrectionProposal {
                         tdn.getType().getStartIndex();
             }
             else if (node instanceof Tree.ObjectDefinition ) {
-                nextNodeStartIndex = 
-                        ((CommonToken) node.getMainToken())
-                                .getStartIndex();
+                nextNodeStartIndex = tok.getStartIndex();
             }
             else if (node instanceof Tree.ClassOrInterface) {
-                nextNodeStartIndex = 
-                        ((CommonToken) node.getMainToken())
-                                .getStartIndex();
+                nextNodeStartIndex = tok.getStartIndex();
             }
             else {
                 nextNodeStartIndex = node.getStartIndex();
