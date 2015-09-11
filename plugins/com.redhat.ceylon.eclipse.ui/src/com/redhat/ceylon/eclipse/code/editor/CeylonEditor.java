@@ -128,6 +128,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPropertyListener;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextEditor;
@@ -407,15 +408,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         action = new GotoMatchingFenceAction(this);
         action.setActionDefinitionId(GOTO_MATCHING_FENCE);
         setAction(GOTO_MATCHING_FENCE, action);
-
-//        action= new GotoPreviousTargetAction(this);
-//        action.setActionDefinitionId(GOTO_PREVIOUS_TARGET);
-//        setAction(GOTO_PREVIOUS_TARGET, action);
-//
-//        action= new GotoNextTargetAction(this);
-//        action.setActionDefinitionId(GOTO_NEXT_TARGET);
-//        setAction(GOTO_NEXT_TARGET, action);
-
+        
         action = new SelectEnclosingAction(this);
         action.setActionDefinitionId(SELECT_ENCLOSING);
         setAction(SELECT_ENCLOSING, action);

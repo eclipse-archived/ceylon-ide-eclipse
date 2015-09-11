@@ -42,17 +42,7 @@ public interface EditorActionIds {
      * Action definition ID of the edit -> Go to Matching Fence action
      */
     public static final String GOTO_MATCHING_FENCE= PLUGIN_ID + ".editor.gotoMatchingFence";
-
-    /**
-     * Action definition ID of the edit -> Go to Previous Navigation Target action
-     */
-    public static final String GOTO_PREVIOUS_TARGET= PLUGIN_ID + ".editor.gotoPreviousTarget";
-
-    /**
-     * Action definition ID of the edit -> Go to Next Navigation Target action
-     */
-    public static final String GOTO_NEXT_TARGET= PLUGIN_ID + ".editor.gotoNextTarget";
-
+    
     /**
      * Action definition ID of the Edit -> Select Enclosing action
      */
