@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
@@ -13,6 +15,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class ConvertToInterpolationProposal extends CorrectionProposal {
@@ -20,90 +23,104 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
     private ConvertToInterpolationProposal(String name, Change change) {
         super(name, change, null);
     }
+    
+    private static List<Tree.Term> flatten(Tree.SumOp sum) {
+        Tree.Term lt = sum.getLeftTerm();
+        Tree.Term rt = sum.getRightTerm();
+        List<Tree.Term> result;
+        if (lt instanceof Tree.SumOp) {
+            result = flatten((Tree.SumOp) lt);
+            result.add(rt);
+        }
+        else {
+            result = new ArrayList<Tree.Term>();
+            result.add(lt);
+            result.add(rt);
+        }
+        return result;
+    }
 
-    static void addConvertToInterpolationProposal(Collection<ICompletionProposal> proposals,
-            IFile file, Tree.CompilationUnit cu, final Node node, IDocument doc) {
-        class ConcatenationVisitor extends Visitor {
-            Tree.SumOp result;
-            @Override
-            public void visit(Tree.SumOp that) {
-                if (that.getStartIndex()<=node.getStartIndex() &&
-                    that.getEndIndex()>=node.getEndIndex()) {
-                    Tree.Term lt = that.getLeftTerm();
-                    Tree.Term rt = that.getRightTerm();
-                    if ((lt instanceof Tree.StringLiteral ||
-                         lt instanceof Tree.StringTemplate) &&
-                            rt instanceof Tree.SumOp &&
-                            (((Tree.SumOp) rt).getRightTerm() 
-                                    instanceof Tree.StringLiteral ||
-                            ((Tree.SumOp) rt).getRightTerm() 
-                                    instanceof Tree.StringTemplate)) {
-                        result = that;
-                    }
-                    if ((rt instanceof Tree.StringLiteral ||
-                         rt instanceof Tree.StringTemplate) &&
-                            lt instanceof Tree.SumOp &&
-                            (((Tree.SumOp) lt).getLeftTerm() 
-                                    instanceof Tree.StringLiteral ||
-                            ((Tree.SumOp) lt).getLeftTerm() 
-                                    instanceof Tree.StringTemplate)) {
-                        result = that;
-                    }
+    private static boolean isConcatenation(Tree.SumOp sum) {
+        boolean expectingLiteral = true;
+        for (Tree.Term term: flatten(sum)) {
+            if (expectingLiteral) {
+                if (!(term instanceof Tree.StringLiteral ||
+                      term instanceof Tree.StringTemplate)) {
+                    return false;
                 }
-                super.visit(that);
+                expectingLiteral = false;
+            }
+            else {
+                expectingLiteral = true;
             }
         }
-        ConcatenationVisitor tv = new ConcatenationVisitor();
+        return !expectingLiteral;
+    }
+    
+    static class ConcatenationVisitor extends Visitor {
+        Node node;
+        Tree.SumOp result;
+        ConcatenationVisitor(Node node) {
+            this.node = node;
+        }
+        @Override
+        public void visit(Tree.SumOp that) {
+            if (that.getStartIndex()<=node.getStartIndex() &&
+                that.getEndIndex()>=node.getEndIndex()) {
+                if (isConcatenation(that)) {
+                    result = that;
+                    return;
+                }
+            }
+            super.visit(that);
+        }
+    }
+    
+    static void addConvertToInterpolationProposal(
+            Collection<ICompletionProposal> proposals,
+            IFile file, Tree.CompilationUnit cu, Node node, 
+            IDocument doc) {
+        ConcatenationVisitor tv = 
+                new ConcatenationVisitor(node);
         tv.visit(cu);
-        Tree.SumOp op = tv.result;
-        if (op!=null) {
-            TextFileChange change = new TextFileChange("Convert to Interpolation", file);
+        Tree.SumOp sum = tv.result;
+        if (sum!=null) {
+            TextFileChange change = 
+                    new TextFileChange(
+                            "Convert to Interpolation", 
+                            file);
             change.setEdit(new MultiTextEdit());
-            Tree.Term rt = op.getRightTerm();
-            Tree.Term lt = op.getLeftTerm();
-            if (rt instanceof Tree.StringLiteral ||
-                rt instanceof Tree.StringTemplate) {
-                change.addEdit(new ReplaceEdit(lt.getEndIndex(), 
-                        rt.getStartIndex()-lt.getEndIndex()+1, 
-                        "``"));
-            }
-            else {
-                Tree.SumOp rop = (Tree.SumOp) rt;
-                change.addEdit(new ReplaceEdit(rop.getLeftTerm().getEndIndex(), 
-                        rop.getRightTerm().getStartIndex()-rop.getLeftTerm().getEndIndex()+1, 
-                        "``"));
-                if (rop.getLeftTerm() instanceof Tree.QualifiedMemberExpression) {
-                    Tree.QualifiedMemberExpression rlt = 
-                            (Tree.QualifiedMemberExpression) rop.getLeftTerm();
-                    if (rlt.getDeclaration().getName().equals("string")) {
-                        int from = rlt.getMemberOperator().getStartIndex();
-                        int to = rlt.getIdentifier().getStartIndex();
-                        change.addEdit(new DeleteEdit(from, to-from));
+            List<Term> terms = flatten(sum);
+            for (int i=0; i<terms.size(); i++) {
+                Tree.Term term = terms.get(i);
+                if (i>0) {
+                    Tree.Term previous = terms.get(i-1);
+                    int from = previous.getEndIndex();
+                    int to = term.getStartIndex();
+                    change.addEdit(new DeleteEdit(from, to-from));
+                }
+                if (i%2==0) {
+                    if (i>0) {
+                        change.addEdit(new ReplaceEdit(term.getStartIndex(), 1, "``"));
+                    }
+                    if (i<terms.size()-1) {
+                        change.addEdit(new ReplaceEdit(term.getEndIndex()-1, 1, "``"));
+                    }
+                }
+                else {
+                    if (term instanceof Tree.QualifiedMemberExpression) {
+                        Tree.QualifiedMemberExpression lrt = 
+                                (Tree.QualifiedMemberExpression) term;
+                        if (lrt.getDeclaration().getName().equals("string")) {
+                            int from = lrt.getMemberOperator().getStartIndex();
+                            int to = lrt.getIdentifier().getEndIndex();
+                            change.addEdit(new DeleteEdit(from, to-from));
+                        }
                     }
                 }
             }
-            if (lt instanceof Tree.StringLiteral ||
-                lt instanceof Tree.StringTemplate) {
-                change.addEdit(new ReplaceEdit(lt.getEndIndex()-1, 
-                        rt.getStartIndex()-lt.getEndIndex()+1, 
-                        "``"));
-            }
-            else {
-                Tree.SumOp lop = (Tree.SumOp) lt;
-                change.addEdit(new ReplaceEdit(lop.getLeftTerm().getEndIndex()-1, 
-                        lop.getRightTerm().getStartIndex()-lop.getLeftTerm().getEndIndex()+1, 
-                        "``"));
-                if (lop.getRightTerm() instanceof Tree.QualifiedMemberExpression) {
-                    Tree.QualifiedMemberExpression lrt = 
-                            (Tree.QualifiedMemberExpression) lop.getRightTerm();
-                    if (lrt.getDeclaration().getName().equals("string")) {
-                        int from = lrt.getMemberOperator().getStartIndex();
-                        int to = lrt.getIdentifier().getEndIndex();
-                        change.addEdit(new DeleteEdit(from, to-from));
-                    }
-                }
-            }
-            proposals.add(new ConvertToInterpolationProposal("Convert to string interpolation", change));
+            proposals.add(new ConvertToInterpolationProposal(
+                    "Convert to string interpolation", change));
         }
     }
     
