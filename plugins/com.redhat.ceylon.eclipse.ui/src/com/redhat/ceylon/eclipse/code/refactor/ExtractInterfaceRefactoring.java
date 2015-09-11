@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImports;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingEndOffset;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -398,52 +397,52 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
             if (containerAsClassOrInter instanceof Tree.AnyClass) {
                 Tree.AnyClass cl = (Tree.AnyClass) containerAsClassOrInter;
                 if (cl.getSatisfiedTypes() != null) {
-                    offset = getIdentifyingEndOffset(cl.getSatisfiedTypes());
+                    offset = cl.getSatisfiedTypes().getEndIndex();
                     containsSatisfies = true;
                 }
                 else if (cl.getExtendedType() != null) {
-                    offset = getIdentifyingEndOffset(cl.getExtendedType());
+                    offset = cl.getExtendedType().getEndIndex();
                 }
                 else if (cl.getCaseTypes() != null) {
-                    offset = getIdentifyingEndOffset(cl.getCaseTypes());
+                    offset = cl.getCaseTypes().getEndIndex();
                 }
                 else if (cl.getParameterList() != null) {
-                    offset = getIdentifyingEndOffset(cl.getParameterList());
+                    offset = cl.getParameterList().getEndIndex();
                 }
                 else if (cl.getTypeParameterList() != null) {
-                    offset = getIdentifyingEndOffset(cl.getTypeParameterList());
+                    offset = cl.getTypeParameterList().getEndIndex();
                 }
                 else {
-                    offset = getIdentifyingEndOffset(cl.getIdentifier());
+                    offset = cl.getIdentifier().getEndIndex();
                 }
             }
             if (containerAsClassOrInter instanceof Tree.AnyInterface) {
                 Tree.AnyInterface in = (Tree.AnyInterface) containerAsClassOrInter;
                 if (in.getSatisfiedTypes() != null) {
-                    offset = getIdentifyingEndOffset(in.getSatisfiedTypes());
+                    offset = in.getSatisfiedTypes().getEndIndex();
                     containsSatisfies = true;
                 }
                 else if (in.getCaseTypes() != null) {
-                    offset = getIdentifyingEndOffset(in.getCaseTypes());
+                    offset = in.getCaseTypes().getEndIndex();
                 }
                 else if (in.getTypeParameterList() != null) {
-                    offset = getIdentifyingEndOffset(in.getTypeParameterList());
+                    offset = in.getTypeParameterList().getEndIndex();
                 }
                 else {
-                    offset = getIdentifyingEndOffset(in.getIdentifier());
+                    offset = in.getIdentifier().getEndIndex();
                 }
             }
         }
         if (containerAsObjectDef != null) {
             if (containerAsObjectDef.getSatisfiedTypes() != null) {
-                offset = getIdentifyingEndOffset(containerAsObjectDef.getSatisfiedTypes());
+                offset = containerAsObjectDef.getSatisfiedTypes().getEndIndex();
                 containsSatisfies = true;
             }
             else if (containerAsObjectDef.getExtendedType() != null) {
-                offset = getIdentifyingEndOffset(containerAsObjectDef.getExtendedType());
+                offset = containerAsObjectDef.getExtendedType().getEndIndex();
             }
             else {
-                offset = getIdentifyingEndOffset(containerAsObjectDef.getIdentifier());
+                offset = containerAsObjectDef.getIdentifier().getEndIndex();
             }
         }
 

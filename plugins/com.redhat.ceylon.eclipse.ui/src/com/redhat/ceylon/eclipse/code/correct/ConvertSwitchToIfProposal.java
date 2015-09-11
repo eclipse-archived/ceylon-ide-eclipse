@@ -61,7 +61,7 @@ public class ConvertSwitchToIfProposal {
                 tfc.addEdit(new ReplaceEdit(sc.getStartIndex(), 
                         v.getStartIndex()-sc.getStartIndex(), 
                         "value "));
-                tfc.addEdit(new ReplaceEdit(sc.getStopIndex(), 
+                tfc.addEdit(new ReplaceEdit(sc.getEndIndex()-1, 
                         1, ";"));
             }
             else {
@@ -74,7 +74,7 @@ public class ConvertSwitchToIfProposal {
                 if (++i==scl.getCaseClauses().size() &&
                         scl.getElseClause()==null) {
                     tfc.addEdit(new ReplaceEdit(cc.getStartIndex(), 
-                            ci.getStopIndex()+1-cc.getStartIndex(), 
+                            ci.getEndIndex()-cc.getStartIndex(), 
                             "else"));
                 }
                 else {
@@ -82,7 +82,7 @@ public class ConvertSwitchToIfProposal {
                             4, kw));
                     kw = "else if";
                     if (ci instanceof Tree.IsCase) {
-                        tfc.addEdit(new InsertEdit(ci.getStopIndex(), 
+                        tfc.addEdit(new InsertEdit(ci.getEndIndex()-1, 
                                     " " + name));
                     }
                     else if (ci instanceof Tree.MatchCase) {
@@ -102,21 +102,21 @@ public class ConvertSwitchToIfProposal {
                                     if (unit.getNullValueDeclaration()
                                             .equals(d)) {
                                         tfc.addEdit(new ReplaceEdit(ci.getStartIndex(), 
-                                                ci.getStopIndex()-ci.getStartIndex(),
+                                                ci.getDistance()-1,
                                                 "!exists " + name));
                                         continue;
                                     }
                                     else if (unit.getLanguageModuleDeclaration("true")
                                             .equals(d)) {
                                         tfc.addEdit(new ReplaceEdit(ci.getStartIndex(), 
-                                                ci.getStopIndex()-ci.getStartIndex(),
+                                                ci.getDistance()-1,
                                                 name));
                                         continue;
                                     }
                                     else if (unit.getLanguageModuleDeclaration("false")
                                             .equals(d)) {
                                         tfc.addEdit(new ReplaceEdit(ci.getStartIndex(), 
-                                                ci.getStopIndex()-ci.getStartIndex(),
+                                                ci.getDistance()-1,
                                                 "!" + name));
                                         continue;
                                     }
@@ -128,7 +128,7 @@ public class ConvertSwitchToIfProposal {
                         else {
                             tfc.addEdit(new InsertEdit(ci.getStartIndex(), 
                                     name + " in ["));
-                            tfc.addEdit(new InsertEdit(ci.getStopIndex(), 
+                            tfc.addEdit(new InsertEdit(ci.getEndIndex()-1, 
                                     "]"));
                         }
                     }
@@ -172,7 +172,7 @@ public class ConvertSwitchToIfProposal {
                         try {
                             Tree.Variable v = ic.getVariable();
                             int start = v.getStartIndex();
-                            int len = v.getStopIndex()-start+1;
+                            int len = v.getDistance();
                             var = doc.get(start, len);
                         }
                         catch (Exception e) {
@@ -182,7 +182,7 @@ public class ConvertSwitchToIfProposal {
                         try {
                             Tree.Type t = ic.getType();
                             int start = t.getStartIndex();
-                            int len = t.getStopIndex()-start+1;
+                            int len = t.getDistance();
                             type = "is " + doc.get(start, len);
                         }
                         catch (Exception e) {
@@ -197,7 +197,7 @@ public class ConvertSwitchToIfProposal {
                         try {
                             Tree.Statement v = ec.getVariable();
                             int start = v.getStartIndex();
-                            int len = v.getStopIndex()-start+1;
+                            int len = v.getDistance();
                             var = doc.get(start, len);
                         }
                         catch (Exception e) {
@@ -212,7 +212,7 @@ public class ConvertSwitchToIfProposal {
                         try {
                             Tree.Expression e = ec.getExpression();
                             int start = e.getStartIndex();
-                            int len = e.getStopIndex()-start+1;
+                            int len = e.getDistance();
                             var = doc.get(start, len);
                         }
                         catch (Exception e) {
@@ -228,19 +228,19 @@ public class ConvertSwitchToIfProposal {
                             getDefaultLineDelimiter(doc) +
                             getIndent(is, doc);
                     tfc.addEdit(new ReplaceEdit(is.getStartIndex(),
-                            cl.getStopIndex()-is.getStartIndex()+1, 
+                            cl.getDistance(), 
                             "switch (" + var + ")" + newline +
                             "case (" + type +")"));
                     Tree.ElseClause ec = is.getElseClause();
                     if (ec==null) {
-                        tfc.addEdit(new InsertEdit(is.getStopIndex()+1, 
+                        tfc.addEdit(new InsertEdit(is.getEndIndex(), 
                                 newline + "else {}"));
                     }
                     else {
                         Tree.Block b = ec.getBlock();
                         if (b.getMainToken()==null) {
                             int start = b.getStartIndex();
-                            int end = b.getStopIndex()+1;
+                            int end = b.getEndIndex();
                             tfc.addEdit(new InsertEdit(start, 
                                     "{" + newline + 
                                     getDefaultIndent()));

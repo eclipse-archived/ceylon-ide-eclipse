@@ -22,11 +22,11 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ExtractValueRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled {
     
@@ -185,11 +185,10 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         		getIndent(statement, doc);
         Integer start = statement.getStartIndex();
         tfc.addEdit(new InsertEdit(start, text));
-        tfc.addEdit(new ReplaceEdit(Nodes.getNodeStartOffset(node), 
-        		Nodes.getNodeLength(node), newName));
+        tfc.addEdit(new ReplaceEdit(node.getStartIndex(), node.getDistance(), newName));
         typeRegion = new Region(start+il, typeDec.length());
         decRegion = new Region(start+il+typeDec.length()+1, newName.length());
-        refRegion = new Region(Nodes.getNodeStartOffset(node)+il+text.length(), 
+        refRegion = new Region(node.getStartIndex()+il+text.length(), 
         		newName.length());
     }
     

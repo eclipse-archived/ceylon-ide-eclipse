@@ -58,7 +58,7 @@ abstract class AbstractFindAction extends Action
                 Tree.CompilationUnit rn = 
                         unit.getCompilationUnit();
                 Node node = 
-                        findNode(rn, null, 
+                        findNode(rn,
                                 element.getStartOffset(), 
                                 element.getEndOffset());
                 if (node instanceof Tree.Declaration) {
@@ -92,7 +92,8 @@ abstract class AbstractFindAction extends Action
                     if (rootNode!=null) {
                         Node node = 
                                 findNode(rootNode, 
-                                        on.getStartOffset());
+                                        on.getStartOffset(),
+                                        on.getEndOffset());
                         if (node instanceof Tree.Declaration) {
                             Tree.Declaration d = 
                                     (Tree.Declaration) node;

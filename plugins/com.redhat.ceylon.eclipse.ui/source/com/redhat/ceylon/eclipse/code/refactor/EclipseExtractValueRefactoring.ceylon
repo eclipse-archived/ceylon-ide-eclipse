@@ -91,11 +91,10 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
             Integer start = st.startIndex.intValue();
 
             tfc.addEdit(InsertEdit(start, text));
-            tfc.addEdit(ReplaceEdit(Nodes.getNodeStartOffset(node), Nodes.getNodeLength(node), newName));
+            tfc.addEdit(ReplaceEdit(node.startIndex.intValue(), node.distance.intValue(), newName));
             typeRegion = Region(start+il, result.typeDec.size);
             decRegion = Region(start+il+result.typeDec.size+1, newName.size);
-            refRegion = Region(Nodes.getNodeStartOffset(node)+il+text.size,
-                newName.size);
+            refRegion = Region(node.startIndex.intValue()+il+text.size, newName.size);
 
         }
     }

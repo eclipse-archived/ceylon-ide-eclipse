@@ -28,7 +28,7 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
             @Override
             public void visit(Tree.SumOp that) {
                 if (that.getStartIndex()<=node.getStartIndex() &&
-                    that.getStopIndex()>=node.getStopIndex()) {
+                    that.getEndIndex()>=node.getEndIndex()) {
                     Tree.Term lt = that.getLeftTerm();
                     Tree.Term rt = that.getRightTerm();
                     if ((lt instanceof Tree.StringLiteral ||
@@ -63,14 +63,14 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
             Tree.Term lt = op.getLeftTerm();
             if (rt instanceof Tree.StringLiteral ||
                 rt instanceof Tree.StringTemplate) {
-                change.addEdit(new ReplaceEdit(lt.getStopIndex()+1, 
-                        rt.getStartIndex()-lt.getStopIndex(), 
+                change.addEdit(new ReplaceEdit(lt.getEndIndex(), 
+                        rt.getStartIndex()-lt.getEndIndex()+1, 
                         "``"));
             }
             else {
                 Tree.SumOp rop = (Tree.SumOp) rt;
-                change.addEdit(new ReplaceEdit(rop.getLeftTerm().getStopIndex()+1, 
-                        rop.getRightTerm().getStartIndex()-rop.getLeftTerm().getStopIndex(), 
+                change.addEdit(new ReplaceEdit(rop.getLeftTerm().getEndIndex(), 
+                        rop.getRightTerm().getStartIndex()-rop.getLeftTerm().getEndIndex()+1, 
                         "``"));
                 if (rop.getLeftTerm() instanceof Tree.QualifiedMemberExpression) {
                     Tree.QualifiedMemberExpression rlt = 
@@ -84,21 +84,21 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
             }
             if (lt instanceof Tree.StringLiteral ||
                 lt instanceof Tree.StringTemplate) {
-                change.addEdit(new ReplaceEdit(lt.getStopIndex(), 
-                        rt.getStartIndex()-lt.getStopIndex(), 
+                change.addEdit(new ReplaceEdit(lt.getEndIndex()-1, 
+                        rt.getStartIndex()-lt.getEndIndex()+1, 
                         "``"));
             }
             else {
                 Tree.SumOp lop = (Tree.SumOp) lt;
-                change.addEdit(new ReplaceEdit(lop.getLeftTerm().getStopIndex(), 
-                        lop.getRightTerm().getStartIndex()-lop.getLeftTerm().getStopIndex(), 
+                change.addEdit(new ReplaceEdit(lop.getLeftTerm().getEndIndex()-1, 
+                        lop.getRightTerm().getStartIndex()-lop.getLeftTerm().getEndIndex()+1, 
                         "``"));
                 if (lop.getRightTerm() instanceof Tree.QualifiedMemberExpression) {
                     Tree.QualifiedMemberExpression lrt = 
                             (Tree.QualifiedMemberExpression) lop.getRightTerm();
                     if (lrt.getDeclaration().getName().equals("string")) {
                         int from = lrt.getMemberOperator().getStartIndex();
-                        int to = lrt.getIdentifier().getStopIndex()+1;
+                        int to = lrt.getIdentifier().getEndIndex();
                         change.addEdit(new DeleteEdit(from, to-from));
                     }
                 }

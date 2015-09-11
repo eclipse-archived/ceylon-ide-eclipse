@@ -201,7 +201,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                     typeConstraints.getTypeConstraints()) {
                 if (typeConstraint.getDeclarationModel().equals(typeParam)) {
                     changeText = " & " + missingSatisfiedType;
-                    changeIndex = typeConstraint.getStopIndex() + 1;
+                    changeIndex = typeConstraint.getEndIndex();
                     break;
                 }
             }
@@ -237,7 +237,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
     
         if (typeConstraints != null) {
             changeText = " & " + missingSatisfiedType;
-            changeIndex = typeConstraints.getStopIndex() + 1;
+            changeIndex = typeConstraints.getEndIndex();
         }
         else if (changeText == null) {
             changeText = "satisfies " + missingSatisfiedType + " ";

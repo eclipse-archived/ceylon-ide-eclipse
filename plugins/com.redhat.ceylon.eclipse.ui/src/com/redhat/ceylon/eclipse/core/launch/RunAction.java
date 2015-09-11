@@ -62,8 +62,10 @@ public abstract class RunAction extends Action implements IObjectActionDelegate 
                     Tree.CompilationUnit rootNode = 
                             parseController.getRootNode();
                     if (rootNode!=null) {
-                        Node node = Nodes.findNode(rootNode, 
-                                on.getStartOffset());
+                        Node node = 
+                                Nodes.findNode(rootNode, 
+                                        on.getStartOffset(),
+                                        on.getEndOffset());
                         if (node instanceof Tree.Declaration) {
                             declaration = 
                                     ((Tree.Declaration) node).getDeclarationModel();

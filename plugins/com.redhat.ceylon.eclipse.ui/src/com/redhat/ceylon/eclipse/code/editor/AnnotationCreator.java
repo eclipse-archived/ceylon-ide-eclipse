@@ -81,7 +81,7 @@ public class AnnotationCreator extends ErrorVisitor {
     public void handleMessage(int startOffset, int endOffset,
             int startCol, int startLine, Message error) {
         messages.add(new PositionedMessage(error.getMessage(), 
-                new Position(startOffset, endOffset-startOffset+1), 
+                new Position(startOffset, endOffset-startOffset), 
                 getSeverity(error, warnForErrors), 
                 error.getCode(), error instanceof RecognitionError,
                 error.getLine()));

@@ -42,7 +42,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
             isVoid = dm.isDeclaredVoid();
             List<Tree.ParameterList> pls = md.getParameterLists();
             if (pls.isEmpty()) return;
-            offset = pls.get(pls.size()-1).getStopIndex()+1;
+            offset = pls.get(pls.size()-1).getEndIndex();
             len = md.getSpecifierExpression().getExpression().getStartIndex() - offset;
             semi = "";
         }
@@ -51,14 +51,14 @@ class ConvertToBlockProposal extends CorrectionProposal {
             Value dm = ad.getDeclarationModel();
             if (dm==null || dm.isParameter()) return;
             isVoid = false;
-            offset = ad.getIdentifier().getStopIndex()+1;
+            offset = ad.getIdentifier().getEndIndex();
             len = ad.getSpecifierOrInitializerExpression().getExpression().getStartIndex() - offset;
             semi = "";
         }
         else if (decNode instanceof Tree.AttributeSetterDefinition) {
             Tree.AttributeSetterDefinition asd = (Tree.AttributeSetterDefinition) decNode;
             isVoid = true;
-            offset = asd.getIdentifier().getStopIndex()+1;
+            offset = asd.getIdentifier().getEndIndex();
             len = asd.getSpecifierExpression().getExpression().getStartIndex() - offset;
             semi = "";
         }
@@ -72,7 +72,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
             }
             List<Tree.ParameterList> pls = ma.getParameterLists();
             if (pls.isEmpty()) return;
-            offset = pls.get(pls.size()-1).getStopIndex()+1;
+            offset = pls.get(pls.size()-1).getEndIndex();
             len = ma.getSpecifierExpression().getExpression().getStartIndex() - offset;
             semi = "";
         }
@@ -82,7 +82,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
             if (aa.getType().getToken()==null) {
                 addedKeyword = "value ";
             }
-            offset = aa.getIdentifier().getStopIndex()+1;
+            offset = aa.getIdentifier().getEndIndex();
             len = aa.getSpecifierExpression().getExpression().getStartIndex() - offset;
             semi = "";
         }
@@ -93,7 +93,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
             isVoid = dm.isDeclaredVoid();
             List<Tree.ParameterList> pls = fun.getParameterLists();
             if (pls.isEmpty()) return;
-            offset = pls.get(pls.size()-1).getStopIndex()+1;
+            offset = pls.get(pls.size()-1).getEndIndex();
             len = fun.getExpression().getStartIndex() - offset;
             semi = ";";
             desc = "Convert anonymous function => to block";
@@ -105,7 +105,7 @@ class ConvertToBlockProposal extends CorrectionProposal {
             change.addEdit(new InsertEdit(decNode.getStartIndex(), addedKeyword));
         }
         change.addEdit(new ReplaceEdit(offset, len, " {" + (isVoid?"":" return") + " "));
-        change.addEdit(new InsertEdit(decNode.getStopIndex()+1, semi + " }"));
+        change.addEdit(new InsertEdit(decNode.getEndIndex(), semi + " }"));
         proposals.add(new ConvertToBlockProposal(desc, offset + 3, change));
     }
 

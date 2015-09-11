@@ -53,13 +53,13 @@ class ConvertToSpecifierProposal extends CorrectionProposal {
                 String es;
                 try {
                     es = doc.get(start.getStartIndex(), 
-                            end.getStopIndex()-start.getStartIndex()+1);
+                            end.getEndIndex()-start.getStartIndex());
                 } 
                 catch (BadLocationException ex) {
                     ex.printStackTrace();
                     return;
                 }
-                change.addEdit(new ReplaceEdit(offset, block.getStopIndex()-offset+1, 
+                change.addEdit(new ReplaceEdit(offset, block.getEndIndex()-offset, 
                         "=> " + es + (anonymousFunction?"":";")));
                 String desc = anonymousFunction ? 
                         "Convert anonymous function body to =>" : 

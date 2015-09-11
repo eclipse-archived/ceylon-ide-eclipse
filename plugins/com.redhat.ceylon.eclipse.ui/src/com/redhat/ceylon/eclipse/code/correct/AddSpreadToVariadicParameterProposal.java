@@ -44,7 +44,7 @@ public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
         change.setEdit(new InsertEdit(term.getStartIndex(), "*"));
         AddSpreadToVariadicParameterProposal p = 
                 new AddSpreadToVariadicParameterProposal(fiv.parameter, 
-                        term.getStopIndex() + 4, change);
+                        term.getEndIndex() + 3, change);
         if ( !proposals.contains(p)) {
             proposals.add(p);
         }                               

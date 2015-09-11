@@ -3,8 +3,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static java.util.Collections.emptyList;
 
@@ -455,10 +454,11 @@ public class MarkOccurrencesAction
                 iter.hasNext(); 
                 i++) {
             Node node = iter.next();
+            Node identifyingNode = getIdentifyingNode(node);
             positions[i] = 
                     new Position(
-                            getIdentifyingStartOffset(node), 
-                            getIdentifyingLength(node));
+                            identifyingNode.getStartIndex(), 
+                            identifyingNode.getDistance());
         }
         return positions;
     }

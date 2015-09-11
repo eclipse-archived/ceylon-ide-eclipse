@@ -24,10 +24,10 @@ public class TypeArgumentListCompletions {
             final Scope scope, final IDocument document,
             final List<ICompletionProposal> result) {
         final Integer startIndex2 = node.getStartIndex();
-        final Integer stopIndex2 = node.getStopIndex();
+        final Integer stopIndex2 = node.getEndIndex();
         final String typeArgText;
         try {
-            typeArgText = document.get(startIndex2, stopIndex2-startIndex2+1);
+            typeArgText = document.get(startIndex2, stopIndex2-startIndex2);
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -37,8 +37,7 @@ public class TypeArgumentListCompletions {
             @Override
             public void visit(Tree.StaticMemberOrTypeExpression that) {
                 Tree.TypeArguments tal = that.getTypeArguments();
-                Integer startIndex = tal==null ? 
-                        null : that.getTypeArguments().getStartIndex();
+                Integer startIndex = tal==null ? null : tal.getStartIndex();
                 if (startIndex!=null && startIndex2!=null &&
                     startIndex.intValue()==startIndex2.intValue()) {
                     Reference pr = that.getTarget();
@@ -46,7 +45,7 @@ public class TypeArgumentListCompletions {
                     if (d instanceof Functional && pr!=null) {
                         try {
                             String pref = document.get(that.getIdentifier().getStartIndex(), 
-                                    that.getStopIndex()-that.getIdentifier().getStartIndex()+1);
+                                    that.getEndIndex()-that.getIdentifier().getStartIndex());
                             for (Declaration dec: CompletionUtil.overloads(d)) {
                                 addInvocationProposals(offset, pref, cpc, result, dec, 
                                         pr, scope, null, typeArgText, false);
@@ -68,7 +67,7 @@ public class TypeArgumentListCompletions {
                     if (d instanceof Functional) {
                         try {
                             String pref = document.get(that.getStartIndex(), 
-                                    that.getStopIndex()-that.getStartIndex()+1);
+                                    that.getDistance());
                             for (Declaration dec: CompletionUtil.overloads(d)) {
                                 addInvocationProposals(offset, pref, cpc, result, dec, 
                                         that.getTypeModel(), scope, null, typeArgText, 

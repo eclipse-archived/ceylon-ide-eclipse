@@ -100,7 +100,7 @@ class CreateEnumProposal extends CorrectionProposal {
         IDocument doc = EditorUtil.getDocument(change);
         String indent = getIndent(statement, doc);
         String s = indent + def + Indents.getDefaultLineDelimiter(doc);
-        int offset = statement.getStopIndex()+2;
+        int offset = statement.getEndIndex()+1;
         if (offset>doc.getLength()) {
             offset = doc.getLength();
             s = Indents.getDefaultLineDelimiter(doc) + s;

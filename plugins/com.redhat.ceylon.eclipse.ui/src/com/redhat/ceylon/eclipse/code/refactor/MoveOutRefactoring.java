@@ -231,10 +231,10 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         String originalIndent = getIndent(declaration, document);
         String delim = getDefaultLineDelimiter(document);
         StringBuilder sb = renderText(owner, indent, originalIndent, delim);
-        tfc.addEdit(new InsertEdit(owner.getStopIndex()+1, 
+        tfc.addEdit(new InsertEdit(owner.getEndIndex(), 
                 delim+indent+delim+indent+sb));
         tfc.addEdit(new DeleteEdit(declaration.getStartIndex(), 
-                declaration.getStopIndex()-declaration.getStartIndex()+1));
+                declaration.getDistance()));
     }
 
     private void addSharedAnnotations(final TextChange tfc,
@@ -304,7 +304,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                         if (pal!=null) {
                             String arg = pal.getPositionalArguments().isEmpty() ? 
                                     "this" : ", this";
-                            tc.addEdit(new InsertEdit(pal.getStopIndex(), arg));
+                            tc.addEdit(new InsertEdit(pal.getEndIndex()-1, arg));
                         }
                         if (nal!=null) {
                             try {
@@ -314,7 +314,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                                 List<Tree.NamedArgument> args = nal.getNamedArguments();
                                 int offset = args.isEmpty() ? 
                                         nal.getStartIndex()+1 : 
-                                        args.get(args.size()-1).getStopIndex()+1;
+                                        args.get(args.size()-1).getEndIndex();
                                 tc.addEdit(new InsertEdit(offset, arg));
                             }
                             catch (CoreException e) {
@@ -334,7 +334,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                         if (pal!=null) {
                             String arg = pal.getPositionalArguments().isEmpty() ? 
                                     pt : ", " + pt;
-                            tc.addEdit(new InsertEdit(pal.getStopIndex(), arg));
+                            tc.addEdit(new InsertEdit(pal.getEndIndex()-1, arg));
                         }
                         if (nal!=null) {
                             try {
@@ -344,7 +344,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                                 List<Tree.NamedArgument> args = nal.getNamedArguments();
                                 int offset = args.isEmpty() ? 
                                         nal.getStartIndex()+1 : 
-                                        args.get(args.size()-1).getStopIndex()+1;
+                                        args.get(args.size()-1).getEndIndex();
                                 tc.addEdit(new InsertEdit(offset, arg));
                             }
                             catch (CoreException e) {
@@ -415,7 +415,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                     super.visit(that);
                     Tree.Primary p = that.getPrimary();
                     int start = p.getStartIndex()-body.getStartIndex()+offset;
-                    int len = p.getStopIndex()-p.getStartIndex()+1;
+                    int len = p.getDistance();
                     boolean isClass = declaration.getDeclarationModel() instanceof Class;
                     if (p instanceof Tree.This && !isClass) {
                         stb.replace(start, start+len, newName);

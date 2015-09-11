@@ -390,7 +390,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             Tree.Import toDelete = findImportNode(cu, newName);
             if (toDelete!=null) {
                 change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
-                        toDelete.getStopIndex()-toDelete.getStartIndex()+1));
+                        toDelete.getDistance()));
             }
         }
         catch (Exception e) { 

@@ -20,8 +20,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingEndOffset;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static java.lang.System.identityHashCode;
 
 import java.util.ArrayList;
@@ -160,15 +159,16 @@ public class CeylonOutlineNode implements IAdaptable {
         }
         if (category==DEFAULT_CATEGORY) {
             //span of the "identifying" node
-            startOffset = getIdentifyingStartOffset(treeNode);
-            endOffset = getIdentifyingEndOffset(treeNode);
+            Node identifyingNode = getIdentifyingNode(treeNode);
+            startOffset = identifyingNode.getStartIndex();
+            endOffset = identifyingNode.getEndIndex();
         }
         if (treeNode!=null && 
                 !(treeNode instanceof PackageNode) &&
                 !(treeNode instanceof ModuleNode)) {
             //whole span of the complete construct
             realStartOffset = treeNode.getStartIndex();
-            realEndOffset = treeNode.getStopIndex()+1;
+            realEndOffset = treeNode.getEndIndex();
         }
         label = getStyledLabelForNode(treeNode);
         imageKey = getImageKeyForNode(treeNode);
@@ -194,14 +194,19 @@ public class CeylonOutlineNode implements IAdaptable {
     }
 
     private Tree.Identifier getIdentifier(Tree.SpecifierStatement treeNode) {
-        Tree.Term t = ((Tree.SpecifierStatement) treeNode).getBaseMemberExpression();
+        Tree.Term t = treeNode.getBaseMemberExpression();
         if (t instanceof Tree.BaseMemberExpression) { 
-            Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) t;
+            Tree.BaseMemberExpression bme = 
+                    (Tree.BaseMemberExpression) t;
             return bme.getIdentifier();
         }
         else if (t instanceof Tree.ParameterizedExpression) {
-            Tree.ParameterizedExpression pe = (Tree.ParameterizedExpression) t;
-            return ((Tree.BaseMemberExpression) pe.getPrimary()).getIdentifier();
+            Tree.ParameterizedExpression pe = 
+                    (Tree.ParameterizedExpression) t;
+            Tree.BaseMemberExpression bme = 
+                    (Tree.BaseMemberExpression) 
+                        pe.getPrimary();
+            return bme.getIdentifier();
         }
         else {
              throw new RuntimeException("unexpected node type");
@@ -275,7 +280,7 @@ public class CeylonOutlineNode implements IAdaptable {
                     }
                     if (node!=null && 
                             node.getStartIndex()==realStartOffset && 
-                            node.getStopIndex()+1==realEndOffset) {
+                            node.getEndIndex()+1==realEndOffset) {
                         return getStyledLabelForNode(node, prefix, font);
                     }
                 }

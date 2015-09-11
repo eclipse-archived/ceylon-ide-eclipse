@@ -13,12 +13,11 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 
 public class JoinDeclarationProposal {
 
@@ -129,12 +128,12 @@ public class JoinDeclarationProposal {
         change.setEdit(new MultiTextEdit());
         IDocument document = EditorUtil.getDocument(change);
         String text;
-        int declarationStart = Nodes.getNodeStartOffset(ad);
-        int declarationIdStart = Nodes.getNodeStartOffset(ad.getIdentifier());
-        int declarationLength = Nodes.getNodeLength(ad);
+        int declarationStart = ad.getStartIndex();
+        int declarationIdStart = ad.getIdentifier().getStartIndex();
+        int declarationLength = ad.getDistance();
         if (that.getStatements().size()>i+1) {
             Tree.Statement next = that.getStatements().get(i+1);
-            declarationLength=Nodes.getNodeStartOffset(next)-declarationStart;
+            declarationLength=next.getStartIndex()-declarationStart;
         }
         try {
             text = document.get(declarationStart, 
@@ -145,7 +144,7 @@ public class JoinDeclarationProposal {
             return;
         }
         change.addEdit(new DeleteEdit(declarationStart, declarationLength));
-        int specifierStart = Nodes.getNodeStartOffset(statement);
+        int specifierStart = statement.getStartIndex();
         change.addEdit(new InsertEdit(specifierStart, text));
         String desc = "Join declaration of '" + dec.getName() + "' with specification";
         proposals.add(new CorrectionProposal(desc, change, 

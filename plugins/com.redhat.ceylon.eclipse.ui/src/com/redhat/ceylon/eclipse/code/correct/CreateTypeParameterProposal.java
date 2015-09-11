@@ -173,11 +173,11 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         //TODO: add bounds as default type arg?
         if (paramList != null) {
             paramDef = ", " + brokenName;
-            offset = paramList.getStopIndex();
+            offset = paramList.getEndIndex()-1;
         }
         else {
             paramDef = "<" + brokenName + ">";
-            offset = getIdentifyingNode(decl).getStopIndex()+1;
+            offset = getIdentifyingNode(decl).getEndIndex();
         }
         
         class FindTypeParameterConstraintVisitor 

@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
@@ -39,7 +40,8 @@ public abstract class ErrorVisitor extends Visitor {
             int startLine = 0;
 
             if (error instanceof RecognitionError) {
-                RecognitionError recognitionError = (RecognitionError) error;
+                RecognitionError recognitionError = 
+                        (RecognitionError) error;
                 RecognitionException re = recognitionError
                         .getRecognitionException();
                 if (error instanceof LexError) {
@@ -51,7 +53,7 @@ public abstract class ErrorVisitor extends Visitor {
                 CommonToken token = (CommonToken) re.token;
                 if (token!=null) {
                     startOffset = token.getStartIndex();
-                    endOffset = token.getStopIndex();
+                    endOffset = token.getStopIndex()+1;
                     startCol = token.getCharPositionInLine();
                     startLine = token.getLine();
                     if (token.getType()==CeylonParser.EOF) {
@@ -67,15 +69,18 @@ public abstract class ErrorVisitor extends Visitor {
 //                                    .startsWith(Module.LANGUAGE_MODULE_NAME)) {
 //                    continue;
 //                }
-                AnalysisMessage analysisMessage = (AnalysisMessage) error;
-                Node errorNode = Nodes.getIdentifyingNode(analysisMessage.getTreeNode());
+                AnalysisMessage analysisMessage = 
+                        (AnalysisMessage) error;
+                Node treeNode = 
+                        analysisMessage.getTreeNode();
+                Node errorNode = getIdentifyingNode(treeNode);
                 if (errorNode == null) {
-                    errorNode = analysisMessage.getTreeNode();
+                    errorNode = treeNode;
                 }
                 Token token = errorNode.getToken();
                 if (token!=null) {
                     startOffset = errorNode.getStartIndex();
-                    endOffset = errorNode.getStopIndex();
+                    endOffset = errorNode.getEndIndex();
                     startCol = token.getCharPositionInLine();
                     startLine = token.getLine();
                 }
@@ -90,7 +95,8 @@ public abstract class ErrorVisitor extends Visitor {
 
     protected boolean include(Message msg) {
         if (msg instanceof UsageWarning) {
-            return !((UsageWarning) msg).isSuppressed();
+            UsageWarning uw = (UsageWarning) msg;
+            return !uw.isSuppressed();
         }
         else {
             return true;

@@ -7,9 +7,6 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,11 +35,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -53,6 +45,11 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.DocLinks;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
 public class MoveUtil {
 
@@ -287,23 +284,23 @@ public class MoveUtil {
                                 int offset;
                                 int length;
                                 if (j>0) {
-                                    offset = getNodeEndOffset(imts.get(j-1));
-                                    length = getNodeEndOffset(imt)-offset;
+                                    offset = imts.get(j-1).getEndIndex();
+                                    length = imt.getEndIndex()-offset;
                                 }
                                 else if (j<imts.size()-1) {
-                                    offset = getNodeStartOffset(imt);
-                                    length = getNodeStartOffset(imts.get(j+1))-offset;
+                                    offset = imt.getStartIndex();
+                                    length = imts.get(j+1).getStartIndex()-offset;
                                 }
                                 else {
                                     if (packages.contains(originalPackage)) { 
                                         //we're adding to this import statement,
                                         //so don't delete the whole import
-                                        offset = getNodeStartOffset(imt);
-                                        length = getNodeLength(imt);
+                                        offset = imt.getStartIndex();
+                                        length = imt.getDistance();
                                     }
                                     else {
-                                        offset = getNodeStartOffset(imp);
-                                        length = getNodeLength(imp);
+                                        offset = imp.getStartIndex();
+                                        length = imp.getDistance();
                                     }
                                 }
                                 tc.addEdit(new DeleteEdit(offset,length));
@@ -339,15 +336,15 @@ public class MoveUtil {
                         List<Tree.ImportMemberOrType> imts = 
                                 imtl.getImportMemberOrTypes();
                         if (imts.isEmpty()) {
-                            offset = getNodeStartOffset(imtl)+1;
+                            offset = imtl.getStartIndex()+1;
                             addition = delim + indent + name;
-                            int len = getNodeLength(imtl);
+                            int len = imtl.getDistance();
                             if (len==2) {
                                 addition += delim;
                             }
                         }
                         else {
-                            offset = getNodeEndOffset(imts.get(imts.size()-1));
+                            offset = imts.get(imts.size()-1).getEndIndex();
                             addition = "," + delim + indent + name;
                         }
                         //TODO: the alias!

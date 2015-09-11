@@ -33,7 +33,7 @@ class ConvertToConcatenationProposal extends CorrectionProposal {
             @Override
             public void visit(Tree.StringTemplate that) {
                 if (that.getStartIndex()<=node.getStartIndex() &&
-                    that.getStopIndex()>=node.getStopIndex()) {
+                    that.getEndIndex()>=node.getEndIndex()) {
                     result = that;
                 }
                 super.visit(that);
@@ -54,12 +54,12 @@ class ConvertToConcatenationProposal extends CorrectionProposal {
                     change.addEdit(new ReplaceEdit(s.getStartIndex(), 2, " + \""));
                 }
                 if (stt==STRING_START||stt==STRING_MID) {
-                    change.addEdit(new ReplaceEdit(s.getStopIndex()-1, 2, "\" + "));
+                    change.addEdit(new ReplaceEdit(s.getStartIndex()-1, 2, "\" + "));
                 }
                 if (i<expressions.size()) {
                     Tree.Expression e = expressions.get(i);
                     if (!e.getTypeModel().isSubtypeOf(node.getUnit().getStringDeclaration().getType())) {
-                        change.addEdit(new InsertEdit(e.getStopIndex()+1, ".string"));
+                        change.addEdit(new InsertEdit(e.getEndIndex(), ".string"));
                     }
                 }
             }

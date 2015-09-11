@@ -77,7 +77,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 }
                 else {
                     start = il.getStartIndex();
-                    length = il.getStopIndex()-il.getStartIndex()+1;
+                    length = il.getDistance();
                     extra="";
                 }
                 try {

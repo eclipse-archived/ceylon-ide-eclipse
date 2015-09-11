@@ -47,7 +47,7 @@ public class MarkerCreator extends ErrorVisitor {
             };
         Object[] values = new Object[] {
                 startLine, 
-                startOffset, endOffset+1, 
+                startOffset, endOffset, 
                 message.getMessage(), 
                 IMarker.PRIORITY_HIGH, 
                 getSeverity(message, warnForErrors),

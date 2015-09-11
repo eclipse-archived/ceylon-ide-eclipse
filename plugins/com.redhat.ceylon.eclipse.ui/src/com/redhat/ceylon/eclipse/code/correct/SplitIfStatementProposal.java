@@ -55,11 +55,11 @@ class SplitIfStatementProposal {
                                         getIndent(is, doc);
                                 indent = getDefaultIndent();
                             }
-                            int start = c1.getStopIndex() + 1;
+                            int start = c1.getEndIndex();
                             int stop = c2.getStartIndex();
                             change.addEdit(new ReplaceEdit(start, stop-start, 
                                     ") {" + ws + indent + "if ("));
-                            int end = is.getStopIndex()+1;
+                            int end = is.getEndIndex();
                             change.addEdit(new InsertEdit(end, ws + "}"));
                             incrementIndent(doc, is, cl, change, indent);
                             proposals.add(new CorrectionProposal("Split 'if' statement", 

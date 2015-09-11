@@ -131,7 +131,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
             return false;
         }
         return node.getStartIndex()>=pl1.getStartIndex() && 
-                node.getStopIndex()<=pl2.getStopIndex();
+                node.getEndIndex()<=pl2.getEndIndex();
     }
     
     public String getName() {
@@ -324,14 +324,13 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
             }
         }
         
-        Integer start = pl.getStopIndex();
+        int start = pl.getEndIndex() - 1;
         String dectext = (pl.getParameters().isEmpty()?"":", ") + decl;
         tfc.addEdit(new InsertEdit(start, dectext));
-        tfc.addEdit(new ReplaceEdit(Nodes.getNodeStartOffset(node), 
-                Nodes.getNodeLength(node), call));
+        tfc.addEdit(new ReplaceEdit(node.getStartIndex(), node.getDistance(), call));
         int buffer = pl.getParameters().isEmpty()?0:2;
         decRegion = new Region(start+il+typeDec.length()+buffer+1, newName.length());
-        refRegion = new Region(Nodes.getNodeStartOffset(node)+il+dectext.length()+refStart, 
+        refRegion = new Region(node.getStartIndex()+il+dectext.length()+refStart, 
                 newName.length());
         typeRegion = new Region(start+il+buffer, typeDec.length());
     }

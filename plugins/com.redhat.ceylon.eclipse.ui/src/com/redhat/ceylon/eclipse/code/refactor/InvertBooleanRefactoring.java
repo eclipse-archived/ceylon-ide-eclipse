@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getTokenLength;
 
@@ -28,13 +26,13 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Value;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 
 public class InvertBooleanRefactoring extends AbstractRefactoring {
 
@@ -143,13 +141,13 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
                 Value trueDeclaration = term.getUnit().getTrueValueDeclaration();
                 Value falseDeclaration = term.getUnit().getFalseValueDeclaration();
                 if (v.equals(trueDeclaration)) {
-                    change.addEdit(new ReplaceEdit(getNodeStartOffset(bme), getNodeLength(bme), falseDeclaration.getName(term.getUnit())));
+                    change.addEdit(new ReplaceEdit(bme.getStartIndex(), bme.getDistance(), falseDeclaration.getName(term.getUnit())));
                 }
                 else if (v.equals(falseDeclaration)) {
-                    change.addEdit(new ReplaceEdit(getNodeStartOffset(bme), getNodeLength(bme), trueDeclaration.getName(term.getUnit())));
+                    change.addEdit(new ReplaceEdit(bme.getStartIndex(), bme.getDistance(), trueDeclaration.getName(term.getUnit())));
                 }
                 else {
-                    change.addEdit(new InsertEdit(getNodeStartOffset(term), "!"));
+                    change.addEdit(new InsertEdit(term.getStartIndex(), "!"));
                 }
             }
         }
@@ -160,7 +158,7 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
                 term instanceof Tree.MemberOrTypeExpression ||
                 term instanceof Tree.TypeOperatorExpression ||
                 term instanceof Tree.InOp) {
-            change.addEdit(new InsertEdit(getNodeStartOffset(term), "!"));
+            change.addEdit(new InsertEdit(term.getStartIndex(), "!"));
         }
         else if (term instanceof Tree.NotOp) {
             change.addEdit(new DeleteEdit(token.getStartIndex(), getTokenLength(token)));

@@ -50,14 +50,14 @@ class JoinIfStatementsProposal {
                                         new TextFileChange("Join If Statements", 
                                                 file);
                                 change.setEdit(new MultiTextEdit());
-                                change.addEdit(new ReplaceEdit(ocl.getStopIndex(), 
-                                        icl.getStartIndex()+1-ocl.getStopIndex(), 
+                                change.addEdit(new ReplaceEdit(ocl.getEndIndex()-1, 
+                                        icl.getStartIndex()-ocl.getEndIndex()+2, 
                                         ", "));
                                 decrementIndent(doc, inner, icl, change,
                                         getIndent(inner, doc),
                                         getIndent(outer, doc));
-                                change.addEdit(new DeleteEdit(inner.getStopIndex()+1, 
-                                        outer.getStopIndex()-inner.getStopIndex()));
+                                change.addEdit(new DeleteEdit(inner.getEndIndex(), 
+                                        outer.getEndIndex()-inner.getEndIndex()));
                                 proposals.add(new CorrectionProposal("Join 'if' statements", 
                                         change, null));
                             }

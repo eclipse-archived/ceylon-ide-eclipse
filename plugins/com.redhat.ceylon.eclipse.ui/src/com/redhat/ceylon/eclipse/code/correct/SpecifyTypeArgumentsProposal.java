@@ -51,7 +51,7 @@ public class SpecifyTypeArgumentsProposal extends CorrectionProposal {
             }
             builder.append(">");
             TextFileChange change = new TextFileChange("Specify Explicit Type Arguments", file);
-            change.setEdit(new InsertEdit(identifier.getStopIndex()+1, builder.toString())); 
+            change.setEdit(new InsertEdit(identifier.getEndIndex(), builder.toString())); 
             proposals.add(new SpecifyTypeArgumentsProposal(builder.toString(), change));
         }
     }

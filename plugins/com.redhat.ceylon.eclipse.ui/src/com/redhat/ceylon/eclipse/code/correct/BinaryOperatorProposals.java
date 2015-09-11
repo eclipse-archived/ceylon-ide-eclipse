@@ -30,7 +30,7 @@ public class BinaryOperatorProposals {
         change.addEdit(new InsertEdit(
                 boe.getStartIndex(), "("));
         change.addEdit(new InsertEdit(
-                boe.getStopIndex()+1, ")"));
+                boe.getEndIndex(), ")"));
         proposals.add(new CorrectionProposal(
                 "Parenthesize " + 
                 boe.getMainToken().getText() + 
@@ -49,9 +49,9 @@ public class BinaryOperatorProposals {
         Tree.Term rt = boe.getRightTerm();
         if (lt!=null && rt!=null) {
             int lto = lt.getStartIndex();
-            int ltl = lt.getStopIndex()-lto+1;
+            int ltl = lt.getDistance();
             int rto = rt.getStartIndex();
-            int rtl = rt.getStopIndex()-rto+1;
+            int rtl = rt.getDistance();
             IDocument document = getDocument(change);
             try {
                 change.addEdit(new ReplaceEdit(lto, ltl, 
@@ -82,9 +82,9 @@ public class BinaryOperatorProposals {
             Tree.Term rt = boe.getRightTerm();
             if (lt!=null && rt!=null) {
                 int lto = lt.getStartIndex();
-                int ltl = lt.getStopIndex()-lto+1;
+                int ltl = lt.getDistance();
                 int rto = rt.getStartIndex();
-                int rtl = rt.getStopIndex()-rto+1;
+                int rtl = rt.getDistance();
                 CommonToken op = 
                         (CommonToken) boe.getMainToken();
                 String ot = op.getText();
@@ -137,7 +137,7 @@ public class BinaryOperatorProposals {
                 change.addEdit(new InsertEdit(
                         boe.getStartIndex(), "!("));
                 change.addEdit(new InsertEdit(
-                        boe.getStopIndex()+1, ")"));
+                        boe.getEndIndex(), ")"));
                 if (boe instanceof Tree.LogicalOp) {
                     invertTerm(boe.getLeftTerm(), change);
                     invertTerm(boe.getRightTerm(), change);

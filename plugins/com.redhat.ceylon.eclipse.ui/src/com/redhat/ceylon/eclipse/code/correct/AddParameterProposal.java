@@ -61,9 +61,9 @@ class AddParameterProposal extends InitializerProposal {
                 } 
                 else {
                     Integer start = pls.get(0).getStartIndex();
-                    Integer end = pls.get(pls.size()-1).getStopIndex();
+                    Integer len = pls.get(pls.size()-1).getDistance();
                     try {
-                        params = doc.get(start, end-start+1);
+                        params = doc.get(start, len);
                     } 
                     catch (BadLocationException e) {
                         e.printStackTrace();
@@ -114,7 +114,7 @@ class AddParameterProposal extends InitializerProposal {
             	int start;
                 try {
                 	def = doc.get(sie.getStartIndex(), 
-                			sie.getStopIndex()-sie.getStartIndex()+1);
+                			sie.getDistance());
                 	start = sie.getStartIndex();
                     if (start>0 && doc.get(start-1,1).equals(" ")) {
                         start--;
@@ -125,14 +125,14 @@ class AddParameterProposal extends InitializerProposal {
                     e.printStackTrace();
                     return;
                 }
-                change.addEdit(new DeleteEdit(start, sie.getStopIndex()-start+1));
+                change.addEdit(new DeleteEdit(start, sie.getDistance()));
             }
             if (params!=null) {
                 def = " = " + params + def;
             }
             String param = (pl.getParameters().isEmpty() ? "" : ", ") + 
                     dec.getName() + def;
-            Integer offset = pl.getStopIndex();
+            Integer offset = pl.getEndIndex()-1;
             change.addEdit(new InsertEdit(offset, param));
             Tree.Type type = decNode.getType();
             int shift=0;
@@ -157,7 +157,7 @@ class AddParameterProposal extends InitializerProposal {
             else {
                 paramType = type.getTypeModel();
             }
-            int exitPos = node.getStopIndex()+1;
+            int exitPos = node.getEndIndex();
             proposals.add(new AddParameterProposal(dec, container.getDeclarationModel(), 
                     paramType, offset+param.length()+shift-len, len, change, exitPos, editor));
         }

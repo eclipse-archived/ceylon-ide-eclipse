@@ -3,9 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
 import java.util.Collection;
 
@@ -52,8 +49,8 @@ public class ConvertToDefaultConstructorProposal {
                     String pname = model.getName();
                     try {
                         attDef = 
-                                doc.get(getNodeStartOffset(p), 
-                                        getNodeLength(p));
+                                doc.get(p.getStartIndex(), 
+                                        p.getDistance());
                         if (p instanceof Tree.ParameterDeclaration) {
                             Tree.ParameterDeclaration pd = 
                                     (Tree.ParameterDeclaration) p;
@@ -61,9 +58,9 @@ public class ConvertToDefaultConstructorProposal {
                                     pd.getTypedDeclaration();
                             Tree.Type t = td.getType();
                             paramDef = 
-                                    doc.get(getNodeStartOffset(t), 
-                                            getNodeEndOffset(p)
-                                            - getNodeStartOffset(t));
+                                    doc.get(t.getStartIndex(), 
+                                            p.getEndIndex()
+                                            - t.getStartIndex());
                         }
                         else {
                             paramDef = 
@@ -107,8 +104,8 @@ public class ConvertToDefaultConstructorProposal {
                         indent + defIndent + "}" + delim;
                 change.setEdit(new MultiTextEdit());
                 change.addEdit(new DeleteEdit(
-                        getNodeStartOffset(pl),
-                        getNodeLength(pl)));
+                        pl.getStartIndex(),
+                        pl.getDistance()));
                 change.addEdit(new InsertEdit(
                         cd.getClassBody().getStartIndex()+1, 
                         text));

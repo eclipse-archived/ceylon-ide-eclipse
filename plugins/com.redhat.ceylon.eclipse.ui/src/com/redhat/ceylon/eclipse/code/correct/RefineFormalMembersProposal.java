@@ -183,7 +183,7 @@ class RefineFormalMembersProposal implements ICompletionProposal,
                     statements.get(statements.size()-1);
             indent = delim + getIndent(statement, document);
             if (offset<0) {
-                offset = statement.getStopIndex()+1;
+                offset = statement.getEndIndex();
             }
         }
         StringBuilder result = new StringBuilder();

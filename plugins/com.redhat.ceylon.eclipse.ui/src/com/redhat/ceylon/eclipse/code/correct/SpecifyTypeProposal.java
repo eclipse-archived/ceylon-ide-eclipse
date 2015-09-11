@@ -63,7 +63,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
     @Override
     public void apply(IDocument document) {
         int offset = typeNode.getStartIndex();
-        int length = typeNode.getStopIndex()-offset+1;
+        int length = typeNode.getDistance();
         if (editor==null) {
             IEditorPart ed = EditorUtil.getCurrentEditor();
             if (ed instanceof CeylonEditor) {

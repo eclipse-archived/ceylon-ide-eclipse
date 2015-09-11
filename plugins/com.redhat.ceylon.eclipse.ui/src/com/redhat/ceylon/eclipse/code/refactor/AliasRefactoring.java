@@ -3,8 +3,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 
 import java.util.ArrayList;
@@ -346,8 +344,8 @@ public class AliasRefactoring extends AbstractRefactoring {
     protected void renameNode(TextChange tfc, Node node, 
             Tree.CompilationUnit root) {
         tfc.addEdit(new ReplaceEdit(
-                getNodeStartOffset(node), 
-                getNodeLength(node), 
+                node.getStartIndex(), 
+                node.getDistance(), 
                 newName));
     }
     

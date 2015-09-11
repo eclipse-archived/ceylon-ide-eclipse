@@ -158,10 +158,13 @@ class InvertIfElseProposal extends CorrectionProposal {
             TextChange change = 
                     new TextFileChange("Invert If Else", 
                             file);
-            change.setEdit(new ReplaceEdit(ifStmt.getStartIndex(), 
-                    ifStmt.getStopIndex() - ifStmt.getStartIndex() + 1, 
+            change.setEdit(new ReplaceEdit(
+                    ifStmt.getStartIndex(), 
+                    ifStmt.getDistance(), 
                     replace.toString()));
-            proposals.add(new InvertIfElseProposal(ifStmt.getStartIndex(), change));
+            proposals.add(new InvertIfElseProposal(
+                    ifStmt.getStartIndex(), 
+                    change));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -232,7 +235,7 @@ class InvertIfElseProposal extends CorrectionProposal {
                 if (endIndex == s.length() -1 ) {
                     return s.substring(1, s.length() - 1);
                 }
-                if ((startIndex = s.indexOf('(', startIndex + 1)) >  endIndex) {
+                if ((startIndex = s.indexOf('(', startIndex + 1)) > endIndex) {
                     return s;
                 }
             }
@@ -242,7 +245,6 @@ class InvertIfElseProposal extends CorrectionProposal {
     
     private static String getTerm(IDocument doc, Node node) 
             throws BadLocationException {
-        return doc.get(node.getStartIndex(), 
-                node.getStopIndex() - node.getStartIndex() + 1);
+        return doc.get(node.getStartIndex(), node.getDistance());
     }
 }

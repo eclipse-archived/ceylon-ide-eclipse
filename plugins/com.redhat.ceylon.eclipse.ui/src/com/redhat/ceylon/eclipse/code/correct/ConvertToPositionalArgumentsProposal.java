@@ -44,7 +44,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
         catch (BadLocationException e1) {
             e1.printStackTrace();
         }
-        int length = nal.getStopIndex()-start+1;
+        int length = nal.getEndIndex()-start;
         StringBuilder result = new StringBuilder().append("(");
         List<CommonToken> tokens = editor.getParseController().getTokens();
         List<Tree.NamedArgument> args = nal.getNamedArguments();
@@ -139,7 +139,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
         @Override
         public void visit(Tree.NamedArgumentList that) {
             if (offset>=that.getStartIndex() && 
-                    offset<=that.getStopIndex()+1) {
+                    offset<=that.getEndIndex()) {
                 argumentList = that;
             }
             super.visit(that); 

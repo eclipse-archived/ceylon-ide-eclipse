@@ -97,11 +97,11 @@ class CreateProposal extends InitializerProposal {
             if (statement!=null && 
                     statement.getUnit().equals(body.getUnit()) &&
                     statement.getStartIndex()>=body.getStartIndex() &&
-                    statement.getStopIndex()<=body.getStopIndex()) {
+                    statement.getEndIndex()<=body.getEndIndex()) {
                 st = statements.get(0);
                 for (Tree.Statement s: statements) {
                     if (statement.getStartIndex()>=s.getStartIndex() &&
-                        statement.getStopIndex()<=s.getStopIndex()) {
+                        statement.getEndIndex()<=s.getEndIndex()) {
                         st = s;
                     }
                 }
@@ -115,7 +115,7 @@ class CreateProposal extends InitializerProposal {
                 indent = getIndent(st, doc);
                 indentBefore = delim + indent;
                 indentAfter = "";
-                offset = st.getStopIndex()+1;
+                offset = st.getEndIndex();
             }
         }
         String generated = typeDec instanceof Interface ?
@@ -127,7 +127,7 @@ class CreateProposal extends InitializerProposal {
         change.addEdit(new InsertEdit(offset, def));
         String desc = "Create " + memberKind(dg) + 
                 " in '" + typeDec.getName() + "'";
-        int exitPos = dg.getNode().getStopIndex()+1;
+        int exitPos = dg.getNode().getEndIndex();
         proposals.add(new CreateProposal(def, desc, 
                 body.getScope(), body.getUnit(), dg.getReturnType(), 
                 dg.getImage(), offset+il, change, exitPos,
@@ -168,7 +168,7 @@ class CreateProposal extends InitializerProposal {
         final Scope scope = local ? 
                 statement.getScope() : 
                 cu.getUnit().getPackage();
-        int exitPos = dg.getNode().getStopIndex()+1;
+        int exitPos = dg.getNode().getEndIndex();
         proposals.add(new CreateProposal(def, desc, 
                 scope, cu.getUnit(), dg.getReturnType(), 
                 dg.getImage(), offset+il, change, exitPos,

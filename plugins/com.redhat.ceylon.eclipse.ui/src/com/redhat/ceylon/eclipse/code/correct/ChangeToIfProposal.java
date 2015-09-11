@@ -53,7 +53,7 @@ public class ChangeToIfProposal {
                 int begin = statement.getStartIndex();
                 int end = conditionList.getStartIndex();
                 change.addEdit(new ReplaceEdit(begin, end-begin, "if "));
-                change.addEdit(new ReplaceEdit(statement.getStopIndex(), 1, 
+                change.addEdit(new ReplaceEdit(statement.getEndIndex()-1, 1, 
                         isLast ? " {}" : " {"));
                 //TODO: this is wrong, need to look for lines, not statements!
                 for (int i=statements.indexOf(statement)+1; i<statements.size(); i++) {
@@ -61,15 +61,15 @@ public class ChangeToIfProposal {
                             getDefaultIndent()));
                 }
                 if (!isLast) {
-                    change.addEdit(new InsertEdit(last.getStopIndex()+1, 
+                    change.addEdit(new InsertEdit(last.getEndIndex(), 
                             newline + indent + "}"));
                 }
                 String elseBlock = newline + indent +
                         "else {" + newline + indent + getDefaultIndent() + 
                         "assert (false);" + newline + indent + "}" ;
-                change.addEdit(new InsertEdit(last.getStopIndex()+1, elseBlock));
+                change.addEdit(new InsertEdit(last.getEndIndex(), elseBlock));
                 proposals.add(new CorrectionProposal("Change 'assert' to 'if'", change, 
-                        new Region(statement.getStopIndex()-2, 0)));
+                        new Region(statement.getEndIndex()-3, 0)));
             }
         }
     }

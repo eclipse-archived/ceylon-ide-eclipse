@@ -34,8 +34,7 @@ class FixMultilineStringIndentationProposal
             IDocument doc = EditorUtil.getDocument(change);
             Tree.StringLiteral literal = (Tree.StringLiteral) node;
             int offset = literal.getStartIndex();
-            int length = literal.getStopIndex() - 
-                    literal.getStartIndex() + 1; 
+            int length = literal.getDistance(); 
             Token token = literal.getToken();
             int indentation = token.getCharPositionInLine() + 
                     getStartQuoteLength(token.getType());

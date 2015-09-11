@@ -127,7 +127,8 @@ public class OutlinePopup extends TreeViewPopup {
                                 .getRootNode();
                     Node treeNode = 
                             Nodes.findNode(rootNode, 
-                                    node.getStartOffset());
+                                    node.getStartOffset(),
+                                    node.getEndOffset());
                     TypeDeclaration td;
                     if (treeNode instanceof ClassOrInterface) {
                         ClassOrInterface ci = 

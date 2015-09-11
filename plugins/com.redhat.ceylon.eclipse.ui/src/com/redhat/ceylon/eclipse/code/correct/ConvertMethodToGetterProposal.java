@@ -65,18 +65,18 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
                     if (node instanceof Tree.AnyMethod) {
                         ParameterList parameterList = ((Tree.AnyMethod) node).getParameterLists().get(0);
                         startIndex = parameterList.getStartIndex();
-                        stopIndex = parameterList.getStopIndex();
+                        stopIndex = parameterList.getEndIndex();
                     } else {
                         FindInvocationVisitor fiv = new FindInvocationVisitor(node);
                         fiv.visit(root);
                         if (fiv.result != null && fiv.result.getPrimary() == node) {
                             startIndex = fiv.result.getPositionalArgumentList().getStartIndex();
-                            stopIndex = fiv.result.getPositionalArgumentList().getStopIndex();
+                            stopIndex = fiv.result.getPositionalArgumentList().getEndIndex();
                         }
                     }
                     
                     if (startIndex != null && stopIndex != null) {
-                        tfc.addEdit(new DeleteEdit(startIndex, stopIndex - startIndex + 1));
+                        tfc.addEdit(new DeleteEdit(startIndex, stopIndex - startIndex));
                     }
                 }
             };
@@ -95,9 +95,7 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
             
             if (type instanceof Tree.FunctionModifier) {
                 TextFileChange tfc = new TextFileChange("Convert method to getter", file);
-                tfc.setEdit(new ReplaceEdit(type.getStartIndex(), 
-                        type.getStopIndex() - type.getStartIndex() + 1, 
-                        "value"));
+                tfc.setEdit(new ReplaceEdit(type.getStartIndex(), type.getDistance(), "value"));
                 change.add(tfc);
             }
             

@@ -36,10 +36,10 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.ide.common.completion.FindImportNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.Import;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.Import;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -279,16 +279,16 @@ public class ImportProposals {
                 }
                 if (remaining==0) {
                     int start = oldImportNode.getStartIndex();
-                    int stop = oldImportNode.getStopIndex();
-                    result.add(new DeleteEdit(start, stop-start+1));
+                    int len = oldImportNode.getDistance();
+                    result.add(new DeleteEdit(start, len));
                 }
                 else {
                     //TODO: format it better!!!!
 
             		int start = imtl.getStartIndex();
-            		int stop = imtl.getStopIndex();
+            		int len = imtl.getDistance();
             		String formattedImport = formatImportMembers(delim, getDefaultIndent(), set, imtl);
-            		result.add(new ReplaceEdit(start, stop-start+1, formattedImport));
+            		result.add(new ReplaceEdit(start, len, formattedImport));
                 }
             }
         }
@@ -360,11 +360,10 @@ public class ImportProposals {
     
     public static int getBestImportInsertPosition(
             Tree.CompilationUnit cu) {
-        Integer stopIndex = 
+        Integer endIndex = 
                 cu.getImportList()
-                    .getStopIndex();
-        if (stopIndex == null) return 0;
-        return stopIndex+1;
+                    .getEndIndex();
+        return endIndex == null ? 0 : endIndex;
     }
 
     public static Tree.Import findImportNode(
@@ -391,8 +390,7 @@ public class ImportProposals {
                 return imtl.getStartIndex()+1;
             }
             else {
-                return imts.get(imts.size()-1)
-                        .getStopIndex()+1;
+                return imts.get(imts.size()-1).getEndIndex();
             }
         }
     }

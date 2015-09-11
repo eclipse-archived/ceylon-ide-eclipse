@@ -17,16 +17,17 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedDeclaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public abstract class LocalProposal extends AbstractLinkedMode
         implements ICompletionProposal, ICompletionProposalExtension6 {
@@ -99,13 +100,13 @@ public abstract class LocalProposal extends AbstractLinkedMode
                     dec.getAnnotationList().getAnnotations();
             Tree.AnonymousAnnotation aa = 
                     dec.getAnnotationList().getAnonymousAnnotation();
-            if (aa!=null && currentOffset<=aa.getStopIndex()+1) {
+            if (aa!=null && currentOffset<=aa.getEndIndex()) {
                 expression = aa;
                 expanse = expression;
                 resultType = aa.getUnit().getStringDeclaration().getType();
             }
             else if (!annotations.isEmpty() && 
-                    currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
+                    currentOffset<=dec.getAnnotationList().getEndIndex()) {
                 Tree.Annotation a = annotations.get(0);
                 expression = a;
                 expanse = expression;
@@ -139,19 +140,19 @@ public abstract class LocalProposal extends AbstractLinkedMode
             return;
         }
     
-        Integer stopIndex = expanse.getStopIndex();
+        Integer endIndex = expanse.getEndIndex();
         if (currentOffset<expanse.getStartIndex() || 
-                currentOffset>stopIndex+1) {
+                currentOffset>endIndex) {
             return;
         }
         nameProposals = computeNameProposals(expression);
         initialName = nameProposals[0];
         offset = expanse.getStartIndex();
-        type = resultType==null ? 
-                null : node.getUnit().denotableType(resultType);
+        type = resultType==null ? null : 
+            node.getUnit().denotableType(resultType);
     
         DocumentChange change = 
-                createChange(document, expanse, stopIndex);
+                createChange(document, expanse, endIndex);
         try {
             change.perform(new NullProgressMonitor());
         }
@@ -277,14 +278,14 @@ public abstract class LocalProposal extends AbstractLinkedMode
             Tree.AnonymousAnnotation aa = 
                     dec.getAnnotationList().getAnonymousAnnotation();
             Type resultType;
-            if (aa!=null && currentOffset<=aa.getStopIndex()+1) {
+            if (aa!=null && currentOffset<=aa.getEndIndex()) {
                 if (aa.getEndToken().getLine()==line) {
                     return false;
                 }
                 resultType = aa.getUnit().getStringDeclaration().getType();
             }
             else if (!annotations.isEmpty() && 
-                    currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
+                    currentOffset<=dec.getAnnotationList().getEndIndex()) {
                 Tree.Annotation a = annotations.get(0);
                 if (a.getEndToken().getLine()==line) {
                     return false;
@@ -296,8 +297,9 @@ public abstract class LocalProposal extends AbstractLinkedMode
                 //some expressions look like a type declaration
                 //when they appear right in front of an annotation
                 //or function invocations
-                Tree.Type type = ((Tree.TypedDeclaration) st).getType();
-                if (currentOffset<=type.getStopIndex()+1 &&
+                TypedDeclaration td = (Tree.TypedDeclaration) st;
+                Tree.Type type = td.getType();
+                if (currentOffset<=type.getEndIndex() &&
                     currentOffset>=type.getStartIndex() &&
                     type.getEndToken().getLine()!=line) {
                     resultType = type.getTypeModel();

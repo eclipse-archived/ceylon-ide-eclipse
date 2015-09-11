@@ -158,7 +158,7 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
         }
         Token token = errorNode.getToken();
         if (token!=null) {
-            endOffset = errorNode.getStopIndex()+1;
+            endOffset = errorNode.getEndIndex();
         }
         return endOffset;
     }

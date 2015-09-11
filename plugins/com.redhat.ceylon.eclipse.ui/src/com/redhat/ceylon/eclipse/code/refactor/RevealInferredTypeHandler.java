@@ -182,11 +182,11 @@ public class RevealInferredTypeHandler extends AbstractHandler {
 
                 private boolean isInSelection(Node node) {
                     Integer startIndex = node.getStartIndex();
-                    Integer stopIndex = node.getStopIndex();
-                    if (startIndex != null && stopIndex != null) {
+                    Integer endIndex = node.getEndIndex();
+                    if (startIndex != null && endIndex != null) {
                         if (selection.getLength() == 0 /* if selection is empty, process whole file */ ||
                            (startIndex >= selectionStart 
-                               && stopIndex <= selectionStop) ) {
+                               && endIndex <= selectionStop) ) {
                             return true;
                         }
                     }

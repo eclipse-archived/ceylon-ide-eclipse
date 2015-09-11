@@ -50,9 +50,11 @@ class FillInArgumentNameProposal extends CorrectionProposal {
                             //if it is an anon function with a body,
                             //we must remove the trailing ; which is
                             //required by the named arg list syntax
-                            if (fa.getBlock()!=null &&
-                                    doc.getChar(sa.getStopIndex())==';') {
-                                change.addEdit(new DeleteEdit(sa.getStopIndex(), 1));
+                            if (fa.getBlock()!=null) {
+                                int offset = sa.getEndIndex()-1;
+                                if (doc.getChar(offset)==';') {
+                                    change.addEdit(new DeleteEdit(offset, 1));
+                                }
                             }
                         }
                         catch (Exception ex) {}

@@ -409,12 +409,12 @@ public class InlineRefactoring extends AbstractRefactoring {
                                 !importsAddedToDeclarationPackage) {
                             //delete the whole import statement
                             tfc.addEdit(new DeleteEdit(i.getStartIndex(), 
-                                    i.getStopIndex()-i.getStartIndex()+1));
+                                    i.getDistance()));
                         }
                         else {
                             //delete just the item in the import statement...
                             tfc.addEdit(new DeleteEdit(imt.getStartIndex(), 
-                                    imt.getStopIndex()-imt.getStartIndex()+1));
+                                    imt.getDistance()));
                             //...along with a comma before or after
                             int ti = Nodes.getTokenIndexAtCharacter(tokens, 
                             		imt.getStartIndex());
@@ -431,8 +431,8 @@ public class InlineRefactoring extends AbstractRefactoring {
                                         imt.getStartIndex()-prev.getStartIndex()));
                             }
                             else if (next.getType()==CeylonLexer.COMMA) {
-                                tfc.addEdit(new DeleteEdit(imt.getStopIndex()+1, 
-                                        next.getStopIndex()-imt.getStopIndex()));
+                                tfc.addEdit(new DeleteEdit(imt.getEndIndex(), 
+                                        next.getStopIndex()+1-imt.getEndIndex()));
                             }
                         }
                     }
@@ -466,7 +466,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
             }
             tfc.addEdit(new DeleteEdit(from.getStartIndex(), 
-                    declarationNode.getStopIndex()-from.getStartIndex()+1));
+                    declarationNode.getEndIndex()-from.getStartIndex()));
         }
     }
 
@@ -663,7 +663,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             		 text.append(" => ");
             		 text.append(Nodes.toString(term, declarationTokens));
             		 tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
-            				 that.getStopIndex()-that.getStartIndex()+1, 
+            				 that.getDistance(), 
             				 text.toString()));
             	 }
             }
@@ -755,7 +755,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                      text.append(" => ");
                      text.append(Nodes.toString(term, declarationTokens));
                      tfc.addEdit(new ReplaceEdit(that.getStartIndex(), 
-                             that.getStopIndex()-that.getStartIndex()+1, 
+                             that.getDistance(), 
                              text.toString()));
                  }
             }
@@ -990,7 +990,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 void text(Node it) {
                     result.append(template.substring(start,
                     		it.getStartIndex()-templateStart));
-                    start = it.getStopIndex()-templateStart+1;
+                    start = it.getEndIndex()-templateStart;
                 }
                 @Override
                 public void visit(Tree.BaseMemberExpression it) {
@@ -1039,7 +1039,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             }
             Node node = that==null ? reference : that;
             tfc.addEdit(new ReplaceEdit(node.getStartIndex(), 
-                    node.getStopIndex()-node.getStartIndex()+1, 
+                    node.getDistance(), 
                     result.toString()));
         }
     }

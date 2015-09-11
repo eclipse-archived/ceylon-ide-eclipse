@@ -51,7 +51,7 @@ public class CeylonElement {
         //for usages of the container from the search
         //results view
         startOffset = node.getStartIndex();
-        endOffset = node.getStopIndex()+1;
+        endOffset = node.getEndIndex();
         
         //compute and cache everything we need to 
         //display the search result, without holding 

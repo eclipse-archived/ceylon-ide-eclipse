@@ -30,7 +30,7 @@ class ConvertStringProposal extends CorrectionProposal {
                     token.getType()==CeylonLexer.STRING_LITERAL) {
                 String text = "\"\"\"" + literal.getText() + "\"\"\"";
                 int offset = node.getStartIndex();
-                int length = node.getStopIndex() - node.getStartIndex() + 1; 
+                int length = node.getDistance(); 
                 String reindented = getConvertedText(text, token.getCharPositionInLine()+3, doc);
                 TextFileChange change = new TextFileChange("Convert to Verbatim String", file);
                 change.setEdit(new ReplaceEdit(offset, length, reindented));
@@ -53,7 +53,7 @@ class ConvertStringProposal extends CorrectionProposal {
                             .replace("`", "\\`") +
                         "\"";
                 int offset = node.getStartIndex();
-                int length = node.getStopIndex() - node.getStartIndex() + 1; 
+                int length = node.getDistance(); 
                 String reindented = getConvertedText(text, token.getCharPositionInLine()+1, doc);
                 TextFileChange change = new TextFileChange("Convert to Ordinary String", file);
                 change.setEdit(new ReplaceEdit(offset, length, reindented));

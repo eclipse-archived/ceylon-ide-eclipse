@@ -6,8 +6,6 @@ import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.getDefaultArgSpecifier;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 
@@ -462,7 +460,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             (Tree.Identifier) idn;
                     if (!id.getText().equals(newName)) {
                         tfc.addEdit(new ReplaceEdit(id.getStartIndex(), 
-                                id.getStopIndex()-id.getStartIndex()+1, 
+                                id.getDistance(), 
                                 newName));
                     }
                 }
@@ -575,9 +573,9 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                         int start = 
                                 last == null ? 
                                 nal.getStartIndex() + 1 : 
-                                last.getStopIndex() + 1;
+                                last.getEndIndex();
                         tfc.addEdit(new DeleteEdit(start, 
-                                na.getStopIndex() - start + 1));
+                                na.getEndIndex() - start));
                     }
                 }
                 last = na;
@@ -732,8 +730,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             sb.setLength(sb.length() - 2);
         }
         sb.append(")");
-        return new ReplaceEdit(getNodeStartOffset(list), 
-                getNodeLength(list), sb.toString());
+        return new ReplaceEdit(list.getStartIndex(), 
+                list.getDistance(), sb.toString());
     }
 
     public ReplaceEdit reorderParamsEdit(Node list, 
@@ -751,8 +749,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             sb.setLength(sb.length() - 2);
         }
         sb.append(")");
-        return new ReplaceEdit(getNodeStartOffset(list), 
-                getNodeLength(list), sb.toString());
+        return new ReplaceEdit(list.getStartIndex(), 
+                list.getDistance(), sb.toString());
     }
 
     public ReplaceEdit reorderParamsEdit(Node list, 
@@ -802,8 +800,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             sb.setLength(sb.length() - 2);
         }
         sb.append(")");
-        return new ReplaceEdit(getNodeStartOffset(list), 
-                getNodeLength(list), sb.toString());
+        return new ReplaceEdit(list.getStartIndex(), 
+                list.getDistance(), sb.toString());
     }
 
     private String paramString(Tree.Parameter parameter, 
@@ -813,7 +811,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         int loc = parameter.getStartIndex();
         Tree.Identifier id = getIdentifier(parameter);
         int start = id.getStartIndex() - loc;
-        int end = id.getStopIndex()+1 - loc;
+        int end = id.getEndIndex() - loc;
         return paramString.substring(0, start) + 
                 newName + paramString.substring(end);
     }
@@ -833,7 +831,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         }
         Tree.Identifier id = getIdentifier(parameter);
         int start = id.getStartIndex() - loc;
-        int end = id.getStopIndex()+1 - loc;
+        int end = id.getEndIndex() - loc;
         return paramString.substring(0, start) + 
                 newName + paramString.substring(end);
     }

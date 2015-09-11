@@ -57,7 +57,7 @@ class ChangeTypeProposal extends CorrectionProposal {
             IFile file, 
             Tree.CompilationUnit cu) {
         if (node.getStartIndex() == null || 
-                node.getStopIndex() == null) {
+                node.getEndIndex() == null) {
             return;
         }
         if (newType.isNothing()) {
@@ -71,7 +71,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
         int offset = node.getStartIndex();
-        int length = node.getStopIndex()-offset+1;
+        int length = node.getDistance();
         HashSet<Declaration> decs = 
                 new HashSet<Declaration>();
         importType(decs, newType, cu);

@@ -153,8 +153,7 @@ class RemoveAnnotionProposal extends CorrectionProposal {
                                 pal.getToken()!=null ||
                             a.getNamedArgumentList()!=null;
                     change.addEdit(new DeleteEdit(a.getStartIndex(), 
-                            a.getStopIndex()-a.getStartIndex()+1 + 
-                                    (args?0:1))); //get rid of the trailing space
+                            a.getDistance() + (args?0:1))); //get rid of the trailing space
                 }
             }
         }

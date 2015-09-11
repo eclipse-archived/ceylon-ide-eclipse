@@ -31,9 +31,9 @@ class AddEmptyParameterListProposal extends CorrectionProposal {
             Declaration dec = decNode.getDeclarationModel();
             TextFileChange change = 
                     new TextFileChange("Add Empty Parameter List", file);
-            int offset = n.getStopIndex();
-            change.setEdit(new InsertEdit(offset+1, "()"));
-            proposals.add(new AddEmptyParameterListProposal(dec, offset+2, 
+            int offset = n.getEndIndex();
+            change.setEdit(new InsertEdit(offset, "()"));
+            proposals.add(new AddEmptyParameterListProposal(dec, offset+1, 
                     "Add empty parameter list to " + getDescription(dec), 
                     change));
         }

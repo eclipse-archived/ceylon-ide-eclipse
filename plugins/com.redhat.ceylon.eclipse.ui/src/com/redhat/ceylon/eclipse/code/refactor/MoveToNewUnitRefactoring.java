@@ -9,8 +9,6 @@ import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectIm
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -33,11 +31,11 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Package;
 
 public class MoveToNewUnitRefactoring extends Refactoring {
     
@@ -168,8 +166,8 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         String originalPackageName = rootNode.getUnit()
                 .getPackage().getNameAsString();
         String targetPackageName = targetPackage.getElementName();
-        int start = getNodeStartOffset(node);
-        int length = getNodeLength(node);
+        int start = node.getStartIndex();
+        int length = node.getDistance();
         String delim = getDefaultLineDelimiter(document);
 
         CompositeChange change = 

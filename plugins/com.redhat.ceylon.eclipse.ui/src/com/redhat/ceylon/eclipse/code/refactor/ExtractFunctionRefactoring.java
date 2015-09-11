@@ -539,7 +539,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         
         Tree.Term term = (Tree.Term) node;
         Integer start = term.getStartIndex();
-        int length = term.getStopIndex()-start+1;
+        int length = term.getDistance();
         Tree.Term unparened = unparenthesize(term);
         String body;
         TypecheckerUnit unit = node.getUnit();
@@ -721,9 +721,13 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         
         Tree.Body body = (Tree.Body) node;
         
-        Integer start = statements.get(0).getStartIndex();
-        int length = statements.get(statements.size()-1)
-                .getStopIndex()-start+1;
+        int start = 
+                statements.get(0)
+                    .getStartIndex();
+        int length = 
+                statements.get(statements.size()-1)
+                    .getEndIndex() 
+                        - start;
         FindContainerVisitor fsv = 
                 new FindContainerVisitor(body);
         rootNode.visit(fsv);
@@ -946,7 +950,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         List<Tree.Statement> statements = new ArrayList<Tree.Statement>();
         for (Tree.Statement s: body.getStatements()) {
             if (s.getStartIndex()>=selection.getOffset() &&
-                    s.getStopIndex()<=selection.getOffset()+selection.getLength()) {
+                s.getEndIndex()<=selection.getOffset()+selection.getLength()) {
                 statements.add(s);
             }
         }

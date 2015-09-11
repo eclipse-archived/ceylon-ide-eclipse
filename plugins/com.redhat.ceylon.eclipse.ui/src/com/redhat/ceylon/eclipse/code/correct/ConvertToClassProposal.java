@@ -76,9 +76,9 @@ class ConvertToClassProposal extends AbstractLinkedMode implements ICompletionPr
         int dstart = ((CommonToken) od.getMainToken()).getStartIndex();
         change.addEdit(new ReplaceEdit(dstart, 6, "class"));
         int start = od.getIdentifier().getStartIndex();
-        int length = od.getIdentifier().getStopIndex()-start+1;
+        int length = od.getIdentifier().getDistance();
         change.addEdit(new ReplaceEdit(start, length, initialName + "()"));
-        int offset = od.getStopIndex()+1;
+        int offset = od.getEndIndex();
         //TODO: handle actual object declarations
         String mods = declaration.isShared() ? "shared " : "";
         String ws = getDefaultLineDelimiter(doc) + getIndent(od, doc);

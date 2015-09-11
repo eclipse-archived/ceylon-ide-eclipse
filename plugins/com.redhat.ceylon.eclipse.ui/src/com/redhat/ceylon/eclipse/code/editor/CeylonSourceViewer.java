@@ -833,7 +833,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
     			        new HashMap<Declaration,String>();
     			boolean inSelection(Node node) {
     				return node.getStartIndex()>=selection.getOffset() &&
-    						node.getStopIndex()<selection.getOffset()+selection.getLength();
+    						node.getEndIndex()<=selection.getOffset()+selection.getLength();
     			}
     			void addDeclaration(Declaration dec, 
     			        Tree.Identifier id) {

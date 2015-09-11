@@ -85,13 +85,13 @@ final class FunctionCompletionProposal extends
             arg = ((Tree.Expression) arg).getTerm(); 
         }
         final int start = arg.getStartIndex();
-        final int stop = arg.getStopIndex();
+        final int len = arg.getDistance();
         int origin = primary.getStartIndex();
         String argText;
         String prefix;
         try {
             //the argument
-            argText = doc.get(start, stop-start+1);
+            argText = doc.get(start, len);
             //the text to replace
             prefix = doc.get(origin, offset-origin);
         }

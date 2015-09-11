@@ -106,7 +106,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 
 /*******************************************************************************
@@ -763,7 +762,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             NamedArgumentList args = 
                     nal.getNamedArgumentList();
             int start = nal.getStartIndex();
-            int stop = nal.getStopIndex();
+            int stop = nal.getEndIndex()-1;
             int loc = start+1;
             String sep = " ";
             List<Tree.NamedArgument> nas = 
@@ -771,7 +770,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             if (!nas.isEmpty()) {
                 Tree.NamedArgument last = 
                         nas.get(nas.size()-1);
-                loc = last.getStopIndex()+1;
+                loc = last.getEndIndex();
                 try {
                     int firstLine = 
                             doc.getLineOfOffset(start);
@@ -820,7 +819,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.Statement st = 
                     findStatement(rootNode, node);
             if (st instanceof Tree.SwitchStatement) {
-                int offset = getNodeEndOffset(st);
+                int offset = st.getEndIndex();
                 TextFileChange tfc = 
                         new TextFileChange("Add Else", file);
                 IDocument doc = getDocument(tfc);
@@ -918,7 +917,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                                     pt.asString(unit) +
                                     ") {}"; 
                         }
-                        int offset = getNodeEndOffset(ss);
+                        int offset = ss.getEndIndex();
                         tfc.setEdit(new InsertEdit(offset, text));
                         proposals.add(new CorrectionProposal(
                                 "Add missing 'case' clauses", tfc, 
@@ -963,11 +962,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         InsertEdit edit;
         if (tpl==null) {
             Tree.Identifier id = decNode.getIdentifier();
-            edit = new InsertEdit(id.getStopIndex()+1, 
+            edit = new InsertEdit(id.getEndIndex(), 
                     "<" + tp.getName() + ">");
         }
         else {
-            edit = new InsertEdit(tpl.getStopIndex(), 
+            edit = new InsertEdit(tpl.getEndIndex()-1, 
                     ", " + tp.getName());
         }
         tfc.setEdit(edit);
@@ -1156,7 +1155,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.FunctionArgument result;
             public void visit(Tree.FunctionArgument that) {
                 if (currentOffset>=that.getStartIndex() &&
-                    currentOffset<=that.getStopIndex()+1) {
+                    currentOffset<=that.getEndIndex()) {
                     result = that;
                 }
                 super.visit(that);
@@ -1184,9 +1183,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         if (decNode==null) return;
         
         if (decNode.getAnnotationList()!=null) {
-            Integer stopIndex = 
-                    decNode.getAnnotationList().getStopIndex();
-            if (stopIndex!=null && currentOffset<=stopIndex+1) {
+            Integer endIndex = 
+                    decNode.getAnnotationList().getEndIndex();
+            if (endIndex!=null && currentOffset<=endIndex) {
                 return;
             }
         }
@@ -1194,8 +1193,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.TypedDeclaration tdn = 
                     (Tree.TypedDeclaration) decNode;
             if (tdn.getType()!=null) {
-                Integer stopIndex = tdn.getType().getStopIndex();
-                if (stopIndex!=null && currentOffset<=stopIndex+1) {
+                Integer endIndex = tdn.getType().getEndIndex();
+                if (endIndex!=null && currentOffset<=endIndex) {
                     return;
                 }
             }
@@ -1376,7 +1375,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 Tree.AnnotationList al = 
                         ((Tree.Declaration) st).getAnnotationList();
                 if (al!=null && al.getAnonymousAnnotation()!=null) {
-                    start = al.getAnonymousAnnotation().getStopIndex()+1;
+                    start = al.getAnonymousAnnotation().getEndIndex();
                     text = ws + text;
                 }
                 else {

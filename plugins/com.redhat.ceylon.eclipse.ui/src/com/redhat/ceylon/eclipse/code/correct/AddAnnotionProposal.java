@@ -236,7 +236,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
 				annotationList.getAnnotations()) {
 				if (toRemove.equals(getAnnotationIdentifier(ann))) {
 					Integer start = ann.getStartIndex();
-                    int length = ann.getStopIndex()+1-start;
+                    int length = ann.getDistance();
                     return new ReplaceEdit(start, length, annotation);
 				}
 			}
@@ -302,7 +302,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
             if (prevAnnotation != null && 
                     isAnnotationOnSeparateLine(
                             getAnnotationIdentifier(prevAnnotation))) {
-                newAnnotationOffset = prevAnnotation.getStopIndex() + 1;
+                newAnnotationOffset = prevAnnotation.getEndIndex();
                 newAnnotationText.append(System.lineSeparator());
                 newAnnotationText.append(getIndent(node, doc));
                 newAnnotationText.append(newAnnotation);

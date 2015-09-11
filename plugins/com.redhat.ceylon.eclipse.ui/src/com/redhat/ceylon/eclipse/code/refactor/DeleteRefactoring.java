@@ -355,7 +355,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 if (parameter!=null) {
                     deleteArg(tfc, that, parameter.getModel(),
                             that.getStartIndex(), 
-                            that.getStopIndex()+1);
+                            that.getEndIndex());
                     super.visit(that);
                 }
             }
@@ -365,7 +365,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 if (parameter!=null) {
                     deleteArg(tfc, that, parameter.getModel(),
                             that.getStartIndex(), 
-                            that.getStopIndex()+1);
+                            that.getEndIndex());
                     super.visit(that);
                 }
             }
@@ -378,8 +378,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
                     if (parameter!=null) {
                         int start, stop;
                         if (i>0) {
-                            start = args.get(i-1).getStopIndex()+1;
-                            stop = arg.getStopIndex()+1;
+                            start = args.get(i-1).getEndIndex();
+                            stop = arg.getEndIndex();
                         }
                         else if (i<args.size()-1) {
                             start = arg.getStartIndex();
@@ -387,7 +387,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
                         }
                         else {
                             start = arg.getStartIndex();
-                            stop = arg.getStopIndex()+1;
+                            stop = arg.getEndIndex();
                         }
                         deleteArg(tfc, that, parameter.getModel(),
                                 start, stop);
@@ -401,7 +401,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
                         (deleteRefinements &&
                                 d.refines(declarationToDelete))) {
                     tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
-                            that.getStopIndex()-that.getStartIndex()+1));
+                            that.getDistance()));
                 }
 			}
             @Override
@@ -426,8 +426,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 		int start, stop;
                 		if (i>0) {
                 			Tree.Parameter previous = parameters.get(i-1);
-                			start = previous.getStopIndex()+1;
-                			stop = param.getStopIndex()+1;
+                			start = previous.getEndIndex();
+                			stop = param.getEndIndex();
                 		}
                 		else if (i<parameters.size()-1) {
                 			Tree.Parameter next = parameters.get(i+1);
@@ -436,7 +436,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 		}
                 		else {
                 			start = param.getStartIndex();
-                			stop = param.getStopIndex()+1;
+                			stop = param.getEndIndex();
                 		}
                 		tfc.addEdit(new DeleteEdit(start, stop-start));
                 		return;
@@ -452,7 +452,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
                     Declaration d = imp.getDeclarationModel();
                     if (d.equals(declarationToDelete)) {
                         tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
-                                that.getStopIndex()-that.getStartIndex()+1));
+                                that.getDistance()));
                         return;
                     }
                 }
@@ -468,8 +468,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
                         int start, stop;
                         if (i>0) {
                             Tree.ImportMemberOrType previous = imports.get(i-1);
-                            start = previous.getStopIndex()+1;
-                            stop = imp.getStopIndex()+1;
+                            start = previous.getEndIndex();
+                            stop = imp.getEndIndex();
                         }
                         else if (i<imports.size()-1) {
                             Tree.ImportMemberOrType next = imports.get(i+1);
@@ -478,7 +478,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
                         }
                         else {
                             start = imp.getStartIndex();
-                            stop = imp.getStopIndex()+1;
+                            stop = imp.getEndIndex();
                         }
                         tfc.addEdit(new DeleteEdit(start, stop-start));
                         return;

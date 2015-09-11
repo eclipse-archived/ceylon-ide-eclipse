@@ -1292,15 +1292,14 @@ class InvocationCompletionProposal extends CompletionProposal {
                     //TODO: should reuse logic for adjusting tokens
                     //      from CeylonContentProposer!!
                     Integer start = al.getStartIndex();
-                    Integer stop = al.getStopIndex();
+                    Integer stop = al.getEndIndex();
                     if (start!=null && stop!=null && offset>start) { 
                         String string = "";
                         if (offset>stop) {
                             try {
                                 string = 
                                     viewer.getDocument()
-                                        .get(stop+1, 
-                                             offset-stop-1);
+                                        .get(stop, offset-stop);
                             } 
                             catch (BadLocationException e) {}
                         }

@@ -184,9 +184,8 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                         findImportNode(cu, newName);
                 if (toDelete!=null) {
                     int start = toDelete.getStartIndex();
-                    int stop = toDelete.getStopIndex();
-                    change.addEdit(new DeleteEdit(start, 
-                            stop-start+1));
+                    int len = toDelete.getDistance();
+                    change.addEdit(new DeleteEdit(start, len));
                 }
                 if (change.getEdit().hasChildren()) {
                     return change;

@@ -76,8 +76,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public IRegion getHyperlinkRegion() {
-            return new Region(id.getStartIndex(), 
-                    id.getStopIndex()-id.getStartIndex()+1);
+            return new Region(id.getStartIndex(), id.getDistance());
         }
     }
 

@@ -48,7 +48,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
         Tree.Identifier id = decNode.getIdentifier();
         if (id==null || id.getToken()==null) return;
         int idStartOffset = id.getStartIndex();
-        int idEndOffset = id.getStopIndex()+1;
+        int idEndOffset = id.getEndIndex();
         int startOffset = decNode.getStartIndex();
         int paramsEndOffset = idEndOffset;
         String paramsString = "";
@@ -57,7 +57,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
         if (type==null || type.getToken()==null) return;
         try {
             int typeStartOffset = type.getStartIndex();
-            int typeEndOffset = type.getStopIndex()+1;
+            int typeEndOffset = type.getEndIndex();
             typeString = 
                     doc.get(typeStartOffset, 
                             typeEndOffset-typeStartOffset);
@@ -71,10 +71,11 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 } 
                 else {
                     int paramsOffset = 
-                            pls.get(0).getStartIndex();
+                            pls.get(0)
+                                .getStartIndex();
                     paramsEndOffset = 
                             pls.get(pls.size()-1)
-                                .getStopIndex()+1;
+                                .getEndIndex();
                     paramsString = 
                             doc.get(paramsOffset, 
                                     paramsEndOffset-paramsOffset);
@@ -135,15 +136,14 @@ class SplitDeclarationProposal extends CorrectionProposal {
             }
             else {
                 try {
-                    int alstop = al.getStopIndex();
                     int alstart = al.getStartIndex();
-                    int len = alstop-alstart+1;
-                    if (len==0) {
+                    int allen = al.getDistance();
+                    if (allen==0) {
                         annotations = "";
                     }
                     else {
                         annotations = 
-                                doc.get(alstart, len) + " ";
+                                doc.get(alstart, allen) + " ";
                     }
                 }
                 catch (BadLocationException e) {
@@ -156,11 +156,11 @@ class SplitDeclarationProposal extends CorrectionProposal {
                     dec.getName() + 
                     paramsString + ";";
             int bstart = body.getStartIndex();
-            int bstop = body.getStopIndex();
-            if (bstop==bstart+1) {
+            int bstop = body.getEndIndex();
+            if (bstop-1==bstart+1) {
                 text += delim + indent;
             }
-            change.addEdit(new InsertEdit(bstart+1, 
+            change.addEdit(new InsertEdit(bstart, 
                     text));
         }
         else {
@@ -187,7 +187,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 il=applyImports(change, decs, rootNode, doc);
             }
             int typeOffset = type.getStartIndex();
-            int typeLen = type.getStopIndex()-typeOffset+1;
+            int typeLen = type.getDistance();
             change.addEdit(new ReplaceEdit(typeOffset, 
                     typeLen, explicitType));
         }
@@ -256,11 +256,11 @@ class SplitDeclarationProposal extends CorrectionProposal {
                             file);
             tfc.setEdit(new MultiTextEdit());
             int vstart = varNode.getStartIndex();
-            int vstop = varNode.getStopIndex();
+            int vlen = varNode.getDistance();
             String text;
             try {
                 text = "value " +
-                        doc.get(vstart, vstop-vstart+1) + 
+                        doc.get(vstart, vlen) + 
                         ";" + getDefaultLineDelimiter(doc) + 
                         getIndent(statement, doc);
             }
@@ -270,9 +270,9 @@ class SplitDeclarationProposal extends CorrectionProposal {
             }
             int start = statement.getStartIndex();
             tfc.addEdit(new InsertEdit(start, text));
-            int estart = id.getStopIndex()+1;
-            int estop = sie.getStopIndex();
-            tfc.addEdit(new DeleteEdit(estart, estop-estart+1));
+            int estart = id.getEndIndex();
+            int estop = sie.getEndIndex();
+            tfc.addEdit(new DeleteEdit(estart, estop-estart));
             proposals.add(new SplitDeclarationProposal(
                     varNode.getDeclarationModel(),
                     start+6, tfc));

@@ -33,10 +33,10 @@ public class ExpandTypeProposal extends CorrectionProposal {
         public void visit(Tree.Type that) {
             super.visit(that);
             Integer start = that.getStartIndex();
-            Integer stop = that.getStopIndex();
+            Integer stop = that.getEndIndex();
             if (start!=null && stop!=null &&
                     region.getOffset()<=start &&
-                    region.getOffset()+region.getLength()>=stop+1) {
+                    region.getOffset()+region.getLength()>=stop) {
                 result = that;
             }
         }
@@ -56,7 +56,7 @@ public class ExpandTypeProposal extends CorrectionProposal {
         if (result!=null) {
             Type type = result.getTypeModel();
             int start = result.getStartIndex();
-            int len = result.getStopIndex()-start+1;
+            int len = result.getDistance();
             String text;
             try {
                 text = doc.get(start, len);

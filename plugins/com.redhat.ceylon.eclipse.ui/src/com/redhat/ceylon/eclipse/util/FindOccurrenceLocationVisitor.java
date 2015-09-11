@@ -97,7 +97,7 @@ class FindOccurrenceLocationVisitor extends Visitor {
             inBounds = inBounds(that.getVariable().getIdentifier());
         }
         else if (that.getType()!=null) {
-            inBounds = inBounds(that) && offset>that.getType().getStopIndex()+1;
+            inBounds = inBounds(that) && offset>that.getType().getEndIndex();
         }
         else {
             inBounds = false;
@@ -329,10 +329,10 @@ class FindOccurrenceLocationVisitor extends Visitor {
         if (left==null) return false;
         if (right==null) right=left;
         Integer startIndex = left.getStartIndex();
-        Integer stopIndex = right.getStopIndex();
-        return startIndex!=null && stopIndex!=null &&
+        Integer endIndex = right.getEndIndex();
+        return startIndex!=null && endIndex!=null &&
                 startIndex <= node.getStartIndex() && 
-                stopIndex >= node.getStopIndex();
+                endIndex >= node.getEndIndex();
     }
     
 }

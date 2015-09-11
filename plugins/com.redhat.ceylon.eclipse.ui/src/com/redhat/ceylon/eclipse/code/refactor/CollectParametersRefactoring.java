@@ -23,16 +23,15 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
-import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
 
 public class CollectParametersRefactoring extends AbstractRefactoring {
     
@@ -52,13 +51,12 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             IRegion selection = editor.getSelection();
             int start = selection.getOffset();
             int end = selection.getOffset() + selection.getLength();
-            if (start>pl.getStartIndex() &&
-                start<=pl.getStopIndex()) {
+            if (start>pl.getStartIndex() && start<pl.getEndIndex()) {
                 parameterListIndex = i;
                 declaration = that.getDeclarationModel();
                 for (int j=0; j<pl.getParameters().size(); j++) {
                     Tree.Parameter p = pl.getParameters().get(j);
-                    if (p.getStartIndex()>=start && p.getStopIndex()<end) {
+                    if (p.getStartIndex()>=start && p.getEndIndex()<=end) {
                         parameters.add(p);
                         models.add(p.getParameterModel().getModel());
                         if (firstParam==-1) firstParam=j;
@@ -258,8 +256,8 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                 tfc.addEdit(new InsertEdit(startIndex, newName + "("));
                 Integer stopIndex = pas.size()>lastParam && 
                             !pas.get(lastParam).getParameter().isSequenced() ?
-                        pas.get(lastParam).getStopIndex()+1:
-                        pas.get(pas.size()-1).getStopIndex()+1;
+                        pas.get(lastParam).getEndIndex():
+                        pas.get(pas.size()-1).getEndIndex();
                 tfc.addEdit(new InsertEdit(stopIndex, ")"));
             }
         }
@@ -274,9 +272,9 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             for (Tree.NamedArgument na: nas) {
                 if (models.contains(na.getParameter().getModel())) {
                     int fromOffset = results.isEmpty() ? 
-                            Nodes.getNodeStartOffset(na) : 
-                            Nodes.getNodeEndOffset(prev);
-                    int toOffset = Nodes.getNodeEndOffset(na);
+                            na.getStartIndex() : 
+                            prev.getEndIndex();
+                    int toOffset = na.getEndIndex();
                     tfc.addEdit(new DeleteEdit(fromOffset, 
                             toOffset-fromOffset));
                     results.add(na);
@@ -286,8 +284,8 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             Tree.SequencedArgument sa = nal.getSequencedArgument();
             if (sa!=null) {
                 if (models.contains(sa.getParameter().getModel())) {
-                    int fromOffset = Nodes.getNodeStartOffset(sa);
-                    int toOffset = Nodes.getNodeEndOffset(sa);
+                    int fromOffset = sa.getStartIndex();
+                    int toOffset = sa.getEndIndex();
                     tfc.addEdit(new DeleteEdit(fromOffset, 
                             toOffset-fromOffset));
                     results.add(sa);
@@ -300,7 +298,8 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                     builder.append(toString(na)).append(" ");
                 }
                 builder.append("};");
-                tfc.addEdit(new InsertEdit(Nodes.getNodeStartOffset(results.get(0)), 
+                tfc.addEdit(new InsertEdit(
+                        results.get(0).getStartIndex(), 
                         builder.toString()));
             }
         }
@@ -321,8 +320,10 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             for (Tree.Parameter p: parameters) {
                 boolean addShared = true;
                 if (p instanceof Tree.ParameterDeclaration) {
+                    Tree.ParameterDeclaration pd = 
+                            (Tree.ParameterDeclaration) p;
                     Tree.TypedDeclaration ptd = 
-                            ((Tree.ParameterDeclaration) p).getTypedDeclaration();
+                            pd.getTypedDeclaration();
                     if (TreeUtil.hasAnnotation(ptd.getAnnotationList(), 
                             "shared", ptd.getUnit())) {
                         addShared = false;
@@ -396,8 +397,8 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                 allDefaulted = false;
             }
         }
-        int startOffset = Nodes.getNodeStartOffset(ps.get(firstParam));
-        int endOffset = Nodes.getNodeEndOffset(ps.get(lastParam));
+        int startOffset = ps.get(firstParam).getStartIndex();
+        int endOffset = ps.get(lastParam).getEndIndex();
         String text = newName + " " + paramName;
         if (allDefaulted) {
             text += " = " + newName + "()";

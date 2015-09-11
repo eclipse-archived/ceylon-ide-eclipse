@@ -193,7 +193,7 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
         TextChange change = new TextFileChange(desc, file);
 //      TextChange change = new DocumentChange("Convert to then-else", doc);
         change.setEdit(new ReplaceEdit(replaceFrom, 
-                statement.getStopIndex() - replaceFrom + 1, 
+                statement.getEndIndex() - replaceFrom, 
                 replace.toString()));
         return change;
     }
@@ -257,8 +257,7 @@ class ConvertIfElseToThenElse extends CorrectionProposal {
     
     private static String getTerm(IDocument doc, Node node) {
         try {
-            return doc.get(node.getStartIndex(), 
-                    node.getStopIndex() - node.getStartIndex() + 1);
+            return doc.get(node.getStartIndex(), node.getDistance());
         } catch (BadLocationException e) {
             throw new RuntimeException(e);
         }

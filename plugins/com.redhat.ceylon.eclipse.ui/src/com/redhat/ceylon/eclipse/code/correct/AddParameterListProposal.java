@@ -54,9 +54,9 @@ class AddParameterListProposal extends CorrectionProposal {
                     params.append(")");
                     TextFileChange change = 
                             new TextFileChange("Add Parameter List", file);
-                    int offset = n.getStopIndex();
-                    change.setEdit(new InsertEdit(offset+1, params.toString()));
-                    proposals.add(new AddParameterListProposal(dec, offset+2, 
+                    int offset = n.getEndIndex();
+                    change.setEdit(new InsertEdit(offset, params.toString()));
+                    proposals.add(new AddParameterListProposal(dec, offset+1, 
                             "Add initializer parameters '" + params + 
                                     "' to " + getDescription(dec), 
                             change));

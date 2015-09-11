@@ -85,6 +85,11 @@ public class Nodes {
         return findNode(cu, null, offset, offset+1);
     }
 
+    public static Node findNode(Tree.CompilationUnit cu, 
+            int startOffset, int endOffset) {
+        return findNode(cu, null, startOffset, endOffset);
+    }
+
     public static Node findNode(Node node, 
             List<CommonToken> tokens, 
             int startOffset, int endOffset) {
@@ -121,22 +126,6 @@ public class Nodes {
                 s.getOffset()+s.getLength());
     }
     
-    public static int getIdentifyingStartOffset(Node node) {
-        return (int) delegate.getIdentifyingStartOffset(node);
-    }
-
-    public static int getIdentifyingEndOffset(Node node) {
-        return (int) delegate.getIdentifyingEndOffset(node);
-    }
-
-    public static int getIdentifyingLength(Node node) {
-        return (int) delegate.getIdentifyingLength(node);
-    }
-
-    public static int getNodeLength(Node node) {
-        return (int) delegate.getNodeLength(node);
-    }
-
     public static Node getIdentifyingNode(Node node) {
         return delegate.getIdentifyingNode(node);
     }
@@ -192,14 +181,6 @@ public class Nodes {
         }
         
         return -(low - 1);
-    }
-
-    public static int getNodeStartOffset(Node node) {
-        return (int) delegate.getNodeStartOffset(node);
-    }
-
-    public static int getNodeEndOffset(Node node) {
-        return (int) delegate.getNodeEndOffset(node);
     }
     
     /** 
@@ -333,8 +314,8 @@ public class Nodes {
     }
     
     public static String toString(Node term, List<CommonToken> tokens) {
-        Integer start = term.getStartIndex();
-        int length = term.getStopIndex()-start+1;
+        int start = term.getStartIndex();
+        int length = term.getDistance();
         Region region = new Region(start, length);
         StringBuilder exp = new StringBuilder();
         for (Iterator<CommonToken> ti = 

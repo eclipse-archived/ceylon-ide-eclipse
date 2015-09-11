@@ -60,7 +60,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                 int offset=0;
                 public void visit(Tree.Declaration that) {
                     if (that.getDeclarationModel().equals(parameter)) {
-                        int len = node.getStopIndex()-node.getStartIndex()+1;
+                        int len = node.getDistance();
                         int start = node.getStartIndex()-fun.getStartIndex()+offset;
                         def.replace(start, start+len, "");
                         offset-=len;
@@ -96,7 +96,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                 }
                 public void visit(Tree.BaseMemberOrTypeExpression that) {
                     if (that.getDeclaration().equals(parameter)) {
-                        int len = that.getStopIndex()-that.getStartIndex()+1;
+                        int len = that.getDistance();
                         int start = that.getStartIndex()-fun.getStartIndex()+offset;
                         String outerRef = fun.getDeclarationModel() instanceof Class ? 
                                 "outer" : "this";
@@ -124,7 +124,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                 String def = getDefinition()
                         .replaceAll(originalIndent, newIndent);
                 text = newIndent + def + outerIndent;
-                loc = body.getStopIndex();
+                loc = body.getEndIndex()-1;
             }
             else {
                 Tree.Statement st = sts.get(sts.size()-1);
@@ -132,7 +132,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                 String def = getDefinition()
                         .replaceAll(originalIndent, newIndent);
                 text = newIndent + def;
-                loc = st.getStopIndex()+1;
+                loc = st.getEndIndex();
             }
             tfc.addEdit(new InsertEdit(loc, text));
         }
@@ -184,8 +184,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                         MakeReceiverRefactoring.this.toString(arg) + "."));
                                 int start, stop;
                                 if (i>0) {
-                                    start = pas.get(i-1).getStopIndex()+1;
-                                    stop = arg.getStopIndex()+1;
+                                    start = pas.get(i-1).getEndIndex();
+                                    stop = arg.getEndIndex();
                                 }
                                 else if (i<pas.size()-1) {
                                     start = arg.getStartIndex();
@@ -193,7 +193,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                 }
                                 else {
                                     start = arg.getStartIndex();
-                                    stop = arg.getStopIndex()+1;
+                                    stop = arg.getEndIndex();
                                 }
                                 tfc.addEdit(new DeleteEdit(start, stop-start));
                                 return; //NOTE: early exit!!!
@@ -225,8 +225,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                 }
                                 int start, stop;
                                 if (i>0) {
-                                    start = nas.get(i-1).getStopIndex()+1;
-                                    stop = arg.getStopIndex()+1;
+                                    start = nas.get(i-1).getEndIndex();
+                                    stop = arg.getEndIndex();
                                 }
                                 else if (i<nas.size()-1) {
                                     start = arg.getStartIndex();
@@ -234,7 +234,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                 }
                                 else {
                                     start = arg.getStartIndex();
-                                    stop = arg.getStopIndex()+1;
+                                    stop = arg.getEndIndex();
                                 }
                                 tfc.addEdit(new DeleteEdit(start, stop-start));
                                 return; //NOTE: early exit!!
@@ -333,7 +333,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
 
     private void deleteOld(final TextChange tfc, final Tree.Declaration fun) {
         tfc.addEdit(new DeleteEdit(fun.getStartIndex(), 
-                fun.getStopIndex()-fun.getStartIndex()+1));
+                fun.getDistance()));
     }
     
 }

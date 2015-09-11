@@ -4,8 +4,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
@@ -139,16 +137,16 @@ public final class AliasLinkedMode
         
         linkedPositionGroup.addPosition(
                 new LinkedPosition(document, 
-                    getNodeStartOffset(selectedNode)+offset, 
-                    getNodeLength(selectedNode), 
+                    selectedNode.getStartIndex()+offset, 
+                    selectedNode.getDistance(), 
                     1));
         int i=2;
         for (Node type: refactoring.getNodesToRename(rootNode)) {
             try {
                 linkedPositionGroup.addPosition(
                         new LinkedPosition(document, 
-                            getNodeStartOffset(type)+offset, 
-                            getNodeLength(type), 
+                            type.getStartIndex()+offset, 
+                            type.getDistance(), 
                             i++));
             } 
             catch (BadLocationException e) {

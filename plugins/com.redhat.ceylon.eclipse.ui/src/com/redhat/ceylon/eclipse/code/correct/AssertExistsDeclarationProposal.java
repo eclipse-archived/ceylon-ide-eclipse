@@ -59,15 +59,15 @@ class AssertExistsDeclarationProposal extends CorrectionProposal {
             return;
         }
 //        int idStartOffset = id.getStartIndex();
-        int idEndOffset = id.getStopIndex()+1;
-        int semiOffset = decNode.getStopIndex();
+        int idEndOffset = id.getEndIndex();
+        int semiOffset = decNode.getEndIndex()-1;
         
         TextChange change = new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());
 
         Tree.Type type = decNode.getType();
         Integer typeOffset = type.getStartIndex();
-        Integer typeLen = type.getStopIndex()-typeOffset+1;
+        Integer typeLen = type.getDistance();
         change.addEdit(new ReplaceEdit(typeOffset, typeLen, 
                 "assert (" + existsOrNonempty));
         change.addEdit(new InsertEdit(semiOffset, ")"));

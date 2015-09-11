@@ -34,17 +34,17 @@ class AddInitializerProposal extends InitializerProposal {
         if (dec==null) return;
         if (dec.getInitializerParameter()==null && !dec.isFormal()) {
             TextChange change = new TextFileChange("Add Initializer", file);
-            int offset = decNode.getStopIndex();
+            int offset = decNode.getEndIndex();
         	String defaultValue = defaultValue(cu.getUnit(), dec.getType());
             String def;
             int selectionOffset;
             if (decNode instanceof Tree.MethodDeclaration) {
 				def = " => " + defaultValue;
-				selectionOffset = offset + 4;
+				selectionOffset = offset + 3;
             }
             else {
                 def = " = " + defaultValue;
-                selectionOffset = offset + 3;
+                selectionOffset = offset + 2;
             }
             
             change.setEdit(new InsertEdit(offset, def));

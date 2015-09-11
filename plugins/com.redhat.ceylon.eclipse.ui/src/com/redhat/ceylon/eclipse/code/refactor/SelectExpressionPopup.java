@@ -101,9 +101,9 @@ abstract class SelectExpressionPopup extends PopupDialog {
             public void visit(Tree.Term that) {
                 super.visit(that);
                 if (!(that instanceof Tree.Expression)) {
-                    if (Nodes.getNodeStartOffset(that) 
+                    if (that.getStartIndex() 
                             <= selection.getOffset() &&
-                        Nodes.getNodeEndOffset(that)+1
+                        that.getEndIndex()+1
                             >= selection.getOffset()+
                                selection.getLength()) {
                         expressions.add(that);
@@ -212,8 +212,8 @@ abstract class SelectExpressionPopup extends PopupDialog {
         if (e!=null) {
             editor.getSelectionProvider()
                 .setSelection(new TextSelection(
-                        Nodes.getNodeStartOffset(e), 
-                        Nodes.getNodeLength(e)));
+                        e.getStartIndex(), 
+                        e.getDistance()));
         }
         close();
         linkedMode().start();

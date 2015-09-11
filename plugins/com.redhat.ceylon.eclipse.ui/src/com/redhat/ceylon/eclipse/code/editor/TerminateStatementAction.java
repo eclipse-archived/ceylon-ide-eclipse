@@ -165,7 +165,7 @@ final class TerminateStatementAction extends Action {
                     if (st!=null && st.getType()==CeylonLexer.LPAREN &&
                         (et==null || et.getType()!=CeylonLexer.RPAREN)) {
                         if (!change.getEdit().hasChildren()) {
-                            change.addEdit(new InsertEdit(that.getStopIndex()+1, 
+                            change.addEdit(new InsertEdit(that.getEndIndex(), 
                                     ")"));
                         }
                     }
@@ -250,7 +250,7 @@ final class TerminateStatementAction extends Action {
                     if (!change.getEdit().hasChildren()) {
                         if (that.getImportPath()!=null &&
                                 that.getImportPath().getStopIndex()<=endOfCodeInLine) {
-                            change.addEdit(new InsertEdit(that.getImportPath().getStopIndex()+1, 
+                            change.addEdit(new InsertEdit(that.getImportPath().getEndIndex(), 
                                     " { ... }"));
                         }
                     }
@@ -268,7 +268,7 @@ final class TerminateStatementAction extends Action {
                     if (!change.getEdit().hasChildren()) {
                         if (that.getImportPath()!=null &&
                                 that.getImportPath().getStopIndex()<=endOfCodeInLine) {
-                            change.addEdit(new InsertEdit(that.getImportPath().getStopIndex()+1, 
+                            change.addEdit(new InsertEdit(that.getImportPath().getEndIndex(), 
                                     " \"1.0.0\""));
                         }
                     }
@@ -344,7 +344,7 @@ final class TerminateStatementAction extends Action {
                 if (inLine(that) && 
                         that.getParameterList()==null) {
                     if (!change.getEdit().hasChildren()) {
-                        change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
+                        change.addEdit(new InsertEdit(that.getIdentifier().getEndIndex(), "()"));
                     }
                 }
             }
@@ -360,7 +360,7 @@ final class TerminateStatementAction extends Action {
                         }
                     }*/
                     if (!change.getEdit().hasChildren()) {
-                        change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
+                        change.addEdit(new InsertEdit(that.getIdentifier().getEndIndex(), "()"));
                     }
                 }
             }
@@ -383,7 +383,7 @@ final class TerminateStatementAction extends Action {
                 if (inLine(that) && 
                         that.getParameterLists().isEmpty()) {
                     if (!change.getEdit().hasChildren()) {
-                        change.addEdit(new InsertEdit(that.getIdentifier().getStopIndex()+1, "()"));
+                        change.addEdit(new InsertEdit(that.getIdentifier().getEndIndex(), "()"));
                     }
                 }
             }

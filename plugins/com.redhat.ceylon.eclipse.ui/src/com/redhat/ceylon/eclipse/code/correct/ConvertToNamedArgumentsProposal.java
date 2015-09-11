@@ -40,7 +40,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
             final TextChange tc = 
                     new TextFileChange("Convert to Named Arguments", file);
             Integer start = pal.getStartIndex();
-            int length = pal.getStopIndex()-start+1;
+            int length = pal.getDistance();
             StringBuilder result = new StringBuilder();
             try {
                 if (!isWhitespace(getDocument(tc).getChar(start-1))) {
@@ -188,9 +188,9 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
         @Override
         public void visit(Tree.PositionalArgumentList that) {
             Integer start = that.getStartIndex();
-            Integer stop = that.getStopIndex();
+            Integer stop = that.getEndIndex();
             if (start!=null && offset>=start && 
-                stop!=null && offset<=stop+1) {
+                stop!=null && offset<=stop) {
                 argumentList = that;
             }
             super.visit(that); 

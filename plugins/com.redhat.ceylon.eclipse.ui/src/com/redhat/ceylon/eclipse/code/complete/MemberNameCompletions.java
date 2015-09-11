@@ -60,7 +60,7 @@ public class MemberNameCompletions {
             Tree.Identifier id = td.getIdentifier();
             if (id==null || 
                     offset>=id.getStartIndex() && 
-                    offset<=id.getStopIndex()+1) {
+                    offset<=id.getEndIndex()) {
                 node = type;
             }
             else {

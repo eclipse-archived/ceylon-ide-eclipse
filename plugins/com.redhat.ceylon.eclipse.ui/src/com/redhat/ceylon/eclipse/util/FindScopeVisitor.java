@@ -115,10 +115,10 @@ class FindScopeVisitor extends Visitor {
         if (left==null) return false;
         if (right==null) left=right;
         Integer tokenStartIndex = left.getStartIndex();
-        Integer tokenStopIndex = right.getStopIndex();
-        return tokenStartIndex!=null && tokenStopIndex!=null &&
+        Integer tokenEndIndex = right.getEndIndex();
+        return tokenStartIndex!=null && tokenEndIndex!=null &&
                 tokenStartIndex <= fStartOffset && 
-                tokenStopIndex+1 >= fEndOffset;
+                tokenEndIndex >= fEndOffset;
     }
     
 }

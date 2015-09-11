@@ -63,7 +63,7 @@ public class ChangeRefiningTypeProposal {
                 TextFileChange change = 
                         new TextFileChange("Change Type", file);
                 int offset = node.getStartIndex();
-                int length = node.getStopIndex()-offset+1;
+                int length = node.getDistance();
                 change.setEdit(new MultiTextEdit());
                 applyImports(change, declarations, cu, getDocument(change));
                 change.addEdit(new ReplaceEdit(offset, length, type));
@@ -139,8 +139,8 @@ public class ChangeRefiningTypeProposal {
                 if (rdpl.size()<=i) {
                     int start = i==0 ? 
                             list.getStartIndex()+1 : 
-                            params.get(i-1).getStopIndex()+1;
-                    int stop = params.get(params.size()-1).getStopIndex()+1;
+                            params.get(i-1).getEndIndex();
+                    int stop = params.get(params.size()-1).getEndIndex();
                     change.addEdit(new DeleteEdit(start, stop-start));
                     break;
                 }
@@ -152,8 +152,8 @@ public class ChangeRefiningTypeProposal {
                             dpl.get(i).getModel()
                                 .getTypedReference().getFullType();
                     if (!dt.isExactly(pt)) {
-                        change.addEdit(new ReplaceEdit(p.getStartIndex(), 
-                                p.getStopIndex()-p.getStartIndex()+1, 
+                        change.addEdit(new ReplaceEdit(
+                                p.getStartIndex(), p.getDistance(), 
                                 //TODO: better handling for callable parameters
                                 pt.asSourceCodeString(unit) + " " + rdp.getName()));
                         importType(declarations, pt, cu);
@@ -174,7 +174,7 @@ public class ChangeRefiningTypeProposal {
                 }
                 Integer offset = params.isEmpty() ? 
                         list.getStartIndex()+1 : 
-                        params.get(params.size()-1).getStopIndex()+1;
+                        params.get(params.size()-1).getEndIndex();
                 change.addEdit(new InsertEdit(offset, buf.toString()));
             }
             applyImports(change, declarations, cu, getDocument(change));

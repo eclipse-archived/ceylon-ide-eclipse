@@ -696,11 +696,11 @@ public class CeylonOutlinePage extends ContentOutlinePage
         }
         private boolean inBounds(Node that) {
             Integer tokenStartIndex = that.getStartIndex();
-            Integer tokenStopIndex = that.getStopIndex();
+            Integer tokenEndIndex = that.getEndIndex();
             return tokenStartIndex!=null && 
-                   tokenStopIndex!=null &&
+                   tokenEndIndex!=null &&
                     tokenStartIndex<=offset && 
-                    tokenStopIndex+1>=offset;
+                    tokenEndIndex>=offset;
         }
     }
 

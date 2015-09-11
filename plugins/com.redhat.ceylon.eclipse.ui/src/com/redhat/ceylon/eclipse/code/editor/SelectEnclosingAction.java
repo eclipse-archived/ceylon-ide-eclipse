@@ -57,10 +57,10 @@ class SelectEnclosingAction extends Action {
         }
         private boolean expandsSelection(Node that) {
             Integer nodeStart = that.getStartIndex();
-            Integer nodeStop = that.getStopIndex();
+            Integer nodeStop = that.getEndIndex();
             if (nodeStart!=null && nodeStop!=null) {
-                return nodeStart<startOffset && nodeStop+1>=endOffset ||
-                        nodeStart<=startOffset && nodeStop+1>endOffset;
+                return nodeStart<startOffset && nodeStop>=endOffset ||
+                        nodeStart<=startOffset && nodeStop>endOffset;
             }
             else {
                 return false;
@@ -185,7 +185,7 @@ class SelectEnclosingAction extends Action {
             Node result = ev.result;
             if (result!=null) {
                 editor.selectAndReveal(result.getStartIndex(), 
-                        result.getStopIndex()-result.getStartIndex()+1);
+                        result.getDistance());
             }
         }
     }

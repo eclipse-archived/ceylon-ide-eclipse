@@ -66,14 +66,16 @@ class RequiredTypeVisitor extends Visitor {
                 for (int i=0; i<pas.size(); i++) {
                     Tree.PositionalArgument pa = pas.get(i);
                     if (token!=null) {
-                        if (pa.getStopIndex()>=((CommonToken) token).getStopIndex()) {
+                        CommonToken tok = (CommonToken) token;
+                        int tokenEnd = tok.getStopIndex()+1;
+                        if (pa.getEndIndex()>=tokenEnd) {
                             pos = i;
                             break;
                         }
                     }
                     else {
                         if (node.getStartIndex()>=pa.getStartIndex() && 
-                                node.getStopIndex()<=pa.getStopIndex()) {
+                            node.getEndIndex()<=pa.getEndIndex()) {
                             pos = i;
                             break;
                         }

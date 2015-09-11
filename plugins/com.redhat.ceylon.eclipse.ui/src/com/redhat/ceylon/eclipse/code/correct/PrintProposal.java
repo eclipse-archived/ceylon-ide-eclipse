@@ -27,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedDeclaration;
 
 class PrintProposal implements ICompletionProposal, ICompletionProposalExtension6 {
     
@@ -81,12 +82,12 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
                     dec.getAnnotationList().getAnnotations();
             Tree.AnonymousAnnotation aa = 
             		dec.getAnnotationList().getAnonymousAnnotation();
-            if (aa!=null && currentOffset<=aa.getStopIndex()+1) {
+            if (aa!=null && currentOffset<=aa.getEndIndex()) {
             	expression = aa;
             	expanse = expression;
             }
             else if (!annotations.isEmpty() && 
-            		currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
+            		currentOffset<=dec.getAnnotationList().getEndIndex()) {
                 Tree.Annotation a = annotations.get(0);
                 expression = a;
                 expanse = expression;
@@ -113,7 +114,7 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
             return;
         }
 //        
-        Integer stopIndex = expanse.getStopIndex();
+        Integer stopIndex = expanse.getEndIndex()-1;
 //        if (currentOffset<expanse.getStartIndex() || 
 //            currentOffset>stopIndex+1) {
 //            return;
@@ -210,11 +211,11 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
             Tree.AnonymousAnnotation aa = 
             		al.getAnonymousAnnotation();
             if (aa!=null &&
-            		currentOffset<=aa.getStopIndex()+1) {
+            		currentOffset<=aa.getEndIndex()) {
                 return aa.getEndToken().getLine()!=line;
             }
             else if (!annotations.isEmpty() &&
-                    currentOffset<=dec.getAnnotationList().getStopIndex()+1) {
+                    currentOffset<=dec.getAnnotationList().getEndIndex()) {
                 return al.getEndToken().getLine()!=line;
             }
             else if (st instanceof Tree.TypedDeclaration &&
@@ -222,11 +223,12 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
                 //some expressions look like a type declaration
                 //when they appear right in front of an annotation
                 //or function invocations
-                Tree.Type type = ((Tree.TypedDeclaration) st).getType();
-                if (currentOffset<=type.getStopIndex()+1) {
+                TypedDeclaration td = (Tree.TypedDeclaration) st;
+                Tree.Type type = td.getType();
+                if (currentOffset<=type.getEndIndex()) {
                 	return (type instanceof Tree.SimpleType || 
                 	        type instanceof Tree.FunctionType) && 
-                            currentOffset<=type.getStopIndex()+1 &&
+                            currentOffset<=type.getEndIndex() &&
                             currentOffset>=type.getStartIndex() &&
                 	        type.getEndToken().getLine()!=line;
                 }

@@ -68,9 +68,7 @@ public class ConvertGetterToMethodProposal extends CorrectionProposal {
             
             if (type instanceof Tree.ValueModifier) {
                 TextFileChange tfc = new TextFileChange("Convert Getter to Function", file);
-                tfc.setEdit(new ReplaceEdit(type.getStartIndex(), 
-                        type.getStopIndex() - type.getStartIndex() + 1, 
-                        "function"));
+                tfc.setEdit(new ReplaceEdit(type.getStartIndex(), type.getDistance(), "function"));
                 change.add(tfc);
             }
             

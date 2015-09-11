@@ -65,11 +65,11 @@ class CreateParameterProposal extends InitializerProposal {
                 new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = EditorUtil.getDocument(change);
-        int offset = paramList.getStopIndex();
+        int offset = paramList.getEndIndex()-1;
         int il = applyImports(change, imports, 
                 unit.getCompilationUnit(), doc);
         change.addEdit(new InsertEdit(offset, def));
-        int exitPos = node.getStopIndex()+1;
+        int exitPos = node.getEndIndex();
         proposals.add(new CreateParameterProposal(def, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
                 dec, returnType, image, offset+il, change, exitPos));
@@ -86,7 +86,7 @@ class CreateParameterProposal extends InitializerProposal {
         TextFileChange change = 
                 new TextFileChange("Add Attribute", file);
         change.setEdit(new MultiTextEdit());
-        int offset = paramList.getStopIndex();
+        int offset = paramList.getEndIndex()-1;
         IDocument doc = EditorUtil.getDocument(change);
         String indent;
         String indentAfter;
@@ -103,7 +103,7 @@ class CreateParameterProposal extends InitializerProposal {
                     statements.get(statements.size()-1);
             indent = getDefaultLineDelimiter(doc) + 
                     getIndent(statement, doc);
-            offset2 = statement.getStopIndex()+1;
+            offset2 = statement.getEndIndex();
             indentAfter = "";
         }
         HashSet<Declaration> decs = new HashSet<Declaration>();
@@ -112,7 +112,7 @@ class CreateParameterProposal extends InitializerProposal {
         int il = applyImports(change, decs, cu, doc);
         change.addEdit(new InsertEdit(offset, pdef));
         change.addEdit(new InsertEdit(offset2, indent+adef+indentAfter));
-        int exitPos = node.getStopIndex()+1;
+        int exitPos = node.getEndIndex();
         proposals.add(new CreateParameterProposal(pdef, 
                 "Add " + desc + " to '" + dec.getName() + "'", 
                 dec, returnType, image, offset+il, change, exitPos));

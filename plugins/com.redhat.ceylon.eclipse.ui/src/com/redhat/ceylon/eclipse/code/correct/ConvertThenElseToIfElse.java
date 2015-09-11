@@ -170,7 +170,7 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
 
             TextChange change = new TextFileChange("Convert to If Else", file);
             change.setEdit(new ReplaceEdit(statement.getStartIndex(), 
-                    statement.getStopIndex() - statement.getStartIndex() + 1, 
+                    statement.getDistance(), 
                     replace.toString()));
             proposals.add(new ConvertThenElseToIfElse(statement.getStartIndex(), change));
         } catch (BadLocationException e) {
@@ -186,6 +186,6 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
     }
     
     private static String getTerm(IDocument doc, Node node) throws BadLocationException {
-        return doc.get(node.getStartIndex(), node.getStopIndex() - node.getStartIndex() + 1);
+        return doc.get(node.getStartIndex(), node.getDistance());
     }
 }

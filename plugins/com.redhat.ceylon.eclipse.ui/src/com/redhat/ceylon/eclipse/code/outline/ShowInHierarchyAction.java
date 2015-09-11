@@ -44,8 +44,10 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
                     Tree.CompilationUnit rootNode = 
                             parseController.getRootNode();
                     if (rootNode!=null) {
-                        Node node = Nodes.findNode(rootNode, 
-                                on.getStartOffset());
+                        Node node = 
+                                Nodes.findNode(rootNode, 
+                                        on.getStartOffset(),
+                                        on.getEndOffset());
                         if (node instanceof Tree.Declaration) {
                             declaration = 
                                     ((Tree.Declaration) node).getDeclarationModel();

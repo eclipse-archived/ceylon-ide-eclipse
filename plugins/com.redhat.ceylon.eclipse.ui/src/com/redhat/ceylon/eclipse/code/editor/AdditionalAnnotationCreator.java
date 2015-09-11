@@ -5,8 +5,7 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.addTaskAnnota
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.Nodes.findScope;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getSignature;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
@@ -208,9 +207,10 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             RefinementAnnotation ra = 
                     new RefinementAnnotation(description,  
                             refined, line.getToken().getLine());
+            Node identifyingNode = getIdentifyingNode(that);
             model.addAnnotation(ra, 
-                    new Position(getIdentifyingStartOffset(that), 
-                            getIdentifyingLength(that)));
+                    new Position(identifyingNode.getStartIndex(), 
+                            identifyingNode.getDistance()));
         }
     }
     
@@ -229,7 +229,7 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                     (ITextSelection) event.getSelection());
             if (node!=null) {
                 editor.setHighlightRange(node.getStartIndex(), 
-                        node.getStopIndex()-node.getStartIndex()+1, false);
+                        node.getDistance(), false);
             }
             else {
                 editor.resetHighlightRange();
@@ -281,10 +281,10 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                     getLastExecutableStatement(body);
             if (les != null) {
                 int startIndex = body.getStartIndex() + 2;
-                int stopIndex = les.getStopIndex();
+                int stopIndex = les.getEndIndex();
                 Position initializerPosition = 
                         new Position(startIndex, 
-                                stopIndex - startIndex + 1);
+                                stopIndex - startIndex);
                 initializerAnnotation = 
                         new CeylonInitializerAnnotation(name, 
                                 initializerPosition, 1);

@@ -10,8 +10,6 @@ import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.removeImport;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -34,11 +32,11 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Package;
 
 public class MoveToUnitRefactoring extends Refactoring {
     
@@ -154,8 +152,8 @@ public class MoveToUnitRefactoring extends Refactoring {
                 .getPackage().getNameAsString();
         
         Declaration dec = node.getDeclarationModel();
-        int start = getNodeStartOffset(node);
-        int length = getNodeLength(node);
+        int start = node.getStartIndex();
+        int length = node.getDistance();
         
         CompositeChange change = 
                 new CompositeChange("Move to Source File");

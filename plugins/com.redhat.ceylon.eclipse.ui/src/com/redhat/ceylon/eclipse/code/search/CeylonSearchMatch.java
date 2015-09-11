@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingStartOffset;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 
 import org.eclipse.search.ui.text.Match;
 
@@ -53,8 +52,8 @@ public class CeylonSearchMatch extends Match {
         super(new CeylonElement(node, file, 
                 match.getToken().getLine()),
                 //the exact location of the match:
-                getIdentifyingStartOffset(match), 
-                getIdentifyingLength(match));
+                getIdentifyingNode(match).getStartIndex(), 
+                getIdentifyingNode(match).getDistance());
         inImport = 
                 node instanceof Tree.Import || 
                 node instanceof Tree.ImportModule;

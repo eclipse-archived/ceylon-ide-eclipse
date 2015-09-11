@@ -43,7 +43,8 @@ class ShadowReferenceProposal extends CorrectionProposal {
                         node.getStartIndex()-offset,
                         "value " + name + " = "));
                 IDocument doc = EditorUtil.getDocument(change);
-                change.addEdit(new InsertEdit(node.getStopIndex()+1, ";" + 
+                change.addEdit(new InsertEdit(node.getEndIndex(), 
+                        ";" + 
                         Indents.getDefaultLineDelimiter(doc) + 
                         getIndent(statement, doc) +
                         "switch (" + name));

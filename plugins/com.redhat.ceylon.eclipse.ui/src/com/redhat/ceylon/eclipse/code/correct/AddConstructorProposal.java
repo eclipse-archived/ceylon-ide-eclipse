@@ -97,12 +97,12 @@ public class AddConstructorProposal extends CorrectionProposal {
                 int start;
                 if (les==null) {
                     start = body.getStartIndex()+1;
-                    if (body.getStopIndex()==start) {
+                    if (body.getEndIndex()-1==start) {
                         text += delim + getIndent(cd, doc);
                     }
                 }
                 else {
-                    start = les.getStopIndex()+1;
+                    start = les.getEndIndex();
                 }
                 
                 InsertEdit edit = new InsertEdit(start, text);

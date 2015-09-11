@@ -5,9 +5,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeEndOffset;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeLength;
-import static com.redhat.ceylon.eclipse.util.Nodes.getNodeStartOffset;
 import static java.util.Collections.singletonMap;
 
 import java.util.List;
@@ -120,7 +117,7 @@ public class ModuleImportUtil {
         for (Tree.Annotation a: al.getAnnotations()) {
             if (((Tree.BaseMemberExpression) a.getPrimary()).getDeclaration()
                     .getName().equals("shared")) {
-                int stop = a.getStopIndex()+1;
+                int stop = a.getEndIndex();
                 int start = a.getStartIndex();
                 try {
                     while (Character.isWhitespace(doc.getChar(stop))) {
@@ -206,7 +203,7 @@ public class ModuleImportUtil {
         else {
             offset = iml.getImportModules()
                     .get(iml.getImportModules().size() - 1)
-                    .getStopIndex() + 1;
+                    .getEndIndex();
         }
         String newline = Indents.getDefaultLineDelimiter(doc);
         StringBuilder importModule = new StringBuilder();
@@ -244,11 +241,11 @@ public class ModuleImportUtil {
             String ip = getImportedName(im);
             if (ip!=null && 
                     ip.equals(moduleName)) {
-                int startOffset = getNodeStartOffset(im);
-                int length = getNodeLength(im);
+                int startOffset = im.getStartIndex();
+                int length = im.getDistance();
                 //TODO: handle whitespace for first import in list
                 if (prev!=null) {
-                    int endOffset = getNodeEndOffset(prev);
+                    int endOffset = prev.getEndIndex();
                     length += startOffset-endOffset;
                     startOffset = endOffset;
                 }
@@ -267,7 +264,7 @@ public class ModuleImportUtil {
             String ip = getImportedName(im);
             if (ip!=null && 
                     ip.equals(moduleName)) {
-                int startOffset = getNodeStartOffset(im);
+                int startOffset = im.getStartIndex();
                 return new InsertEdit(startOffset, "shared ");
             }
         }

@@ -39,7 +39,7 @@ final class FormatBlockAction extends Action {
             Node result;
             private void handle(Node that) {
                 if (ts.getOffset()>=that.getStartIndex() &&
-                        ts.getOffset()+ts.getLength()<=that.getStopIndex()+1) {
+                        ts.getOffset()+ts.getLength()<=that.getEndIndex()) {
                     result = that;
                 }
             }
@@ -145,7 +145,7 @@ final class FormatBlockAction extends Action {
         }
         String text = builder.toString();
         int start = bodyNode.getStartIndex()+1;
-        int len = bodyNode.getStopIndex()-bodyNode.getStartIndex()-1;
+        int len = bodyNode.getDistance();
         try {
             if (!document.get(start, len).equals(text)) {
                 DocumentChange change = 
