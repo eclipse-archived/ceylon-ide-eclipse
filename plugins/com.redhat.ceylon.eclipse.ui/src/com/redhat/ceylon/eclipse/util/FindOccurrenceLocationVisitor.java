@@ -272,6 +272,36 @@ class FindOccurrenceLocationVisitor extends Visitor {
         super.visit(that);
     }
     
+    @Override
+    public void visit(Tree.ObjectExpression that) {
+        if (inBounds(that)) {
+            if (occurrence!=PARAMETER_LIST) {
+                occurrence=null;
+            }
+        }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.FunctionArgument that) {
+        if (inBounds(that)) {
+            if (occurrence!=PARAMETER_LIST) {
+                occurrence=null;
+            }
+        }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.TypedArgument that) {
+        if (inBounds(that)) {
+            if (occurrence!=PARAMETER_LIST) {
+                occurrence=null;
+            }
+        }
+        super.visit(that);
+    }
+    
     public void visit(Tree.MetaLiteral that) {
         super.visit(that);
         if (inBounds(that)) {
