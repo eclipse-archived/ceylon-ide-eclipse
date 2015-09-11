@@ -19,6 +19,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.model.typechecker.model.Type;
 
 class ConvertToConcatenationProposal extends CorrectionProposal {
 
@@ -45,6 +46,7 @@ class ConvertToConcatenationProposal extends CorrectionProposal {
         if (template!=null) {
             TextFileChange change = new TextFileChange("Convert to Concatenation", file);
             change.setEdit(new MultiTextEdit());
+            Type st = node.getUnit().getStringType();
             List<Tree.StringLiteral> literals = template.getStringLiterals();
             List<Tree.Expression> expressions = template.getExpressions();
             for (int i=0; i<literals.size(); i++) {
@@ -54,11 +56,16 @@ class ConvertToConcatenationProposal extends CorrectionProposal {
                     change.addEdit(new ReplaceEdit(s.getStartIndex(), 2, " + \""));
                 }
                 if (stt==STRING_START||stt==STRING_MID) {
-                    change.addEdit(new ReplaceEdit(s.getStartIndex()-1, 2, "\" + "));
+                    change.addEdit(new ReplaceEdit(s.getEndIndex()-2, 2, "\" + "));
                 }
                 if (i<expressions.size()) {
                     Tree.Expression e = expressions.get(i);
-                    if (!e.getTypeModel().isSubtypeOf(node.getUnit().getStringDeclaration().getType())) {
+                    if (e.getTerm() 
+                            instanceof Tree.OperatorExpression) {
+                        change.addEdit(new InsertEdit(e.getStartIndex(), "("));
+                        change.addEdit(new InsertEdit(e.getEndIndex(), ")"));
+                    }
+                    if (!e.getTypeModel().isSubtypeOf(st)) {
                         change.addEdit(new InsertEdit(e.getEndIndex(), ".string"));
                     }
                 }
