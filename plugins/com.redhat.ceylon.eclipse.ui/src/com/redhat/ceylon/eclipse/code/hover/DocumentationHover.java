@@ -347,12 +347,14 @@ public class DocumentationHover extends SourceInfoHover {
                 parseController.getRootNode();
         if (rootNode!=null) {
             int hoffset = hoverRegion.getOffset();
+            int hlength = hoverRegion.getLength();
             ITextSelection selection = 
                     editor.getSelectionFromThread();
             if (selection!=null) {
                 int offset = selection.getOffset();
                 int length = selection.getLength();
-                if (offset<=hoffset && offset+length>=hoffset) {
+                if (offset<=hoffset && 
+                    offset+length>=hoffset+hlength) {
                     Node node = 
                             findNode(rootNode, 
                                 parseController.getTokens(), 
