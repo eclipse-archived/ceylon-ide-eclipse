@@ -103,7 +103,7 @@ abstract class SelectExpressionPopup extends PopupDialog {
                 if (!(that instanceof Tree.Expression)) {
                     if (that.getStartIndex() 
                             <= selection.getOffset() &&
-                        that.getEndIndex()+1
+                        that.getEndIndex()
                             >= selection.getOffset()+
                                selection.getLength()) {
                         expressions.add(that);
