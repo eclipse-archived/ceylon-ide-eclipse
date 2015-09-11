@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REORDER;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 
 import java.util.Collection;
 
@@ -16,6 +17,7 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.ChangeParametersRefactoring;
@@ -46,10 +48,11 @@ class ChangeParametersProposal implements ICompletionProposal,
     @Override
     public String getDisplayString() {
         String name = dec.getName();
-        if (name == null && dec instanceof Constructor) {
+        if (name == null && isConstructor(dec)) {
             Scope container = dec.getContainer();
             if (container instanceof Declaration) {
-                name = ((Declaration) container).getName();
+                Declaration cd = (Declaration) container;
+                name = cd.getName();
             }
         }
         return "Change parameters of '" + name + "'";

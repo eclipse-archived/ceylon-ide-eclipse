@@ -249,6 +249,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     @Override
     public boolean getEnabled() {
         return declaration instanceof Declaration &&
+                declaration.getName()!=null &&
                 project != null &&
                 inSameProject(declaration);
     }

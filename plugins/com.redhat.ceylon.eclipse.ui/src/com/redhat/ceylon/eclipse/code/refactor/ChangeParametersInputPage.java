@@ -4,6 +4,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static org.eclipse.jface.viewers.ArrayContentProvider.getInstance;
 import static org.eclipse.swt.layout.GridData.FILL_BOTH;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
@@ -62,7 +63,6 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
-import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -99,10 +99,11 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         Label title = new Label(result, SWT.LEFT);  
         Declaration dec = refactoring.getDeclaration();
         String name = dec.getName();
-        if (name == null && dec instanceof Constructor) {
+        if (name == null && isConstructor(dec)) {
             Scope container = dec.getContainer();
             if (container instanceof Declaration) {
-                name = ((Declaration) container).getName();
+                Declaration cd = (Declaration) container;
+                name = cd.getName();
             }
         }
         title.setText("Change parameters in " + 
