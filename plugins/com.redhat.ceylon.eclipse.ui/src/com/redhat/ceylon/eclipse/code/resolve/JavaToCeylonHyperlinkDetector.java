@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static java.lang.Character.isJavaIdentifierPart;
 
@@ -20,7 +22,6 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 
@@ -58,10 +59,12 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
             int offset = region.getOffset();
             int length = region.getLength();
             try {
-                while (isJavaIdentifierPart(doc.getChar(offset-1))) {
+                while (isJavaIdentifierPart(
+                        doc.getChar(offset-1))) {
                     offset--;
                 }
-                while (isJavaIdentifierPart(doc.getChar(offset+length))) {
+                while (isJavaIdentifierPart(
+                        doc.getChar(offset+length))) {
                     length++;
                 }
             } 
@@ -78,28 +81,37 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
         try {
             final IDocument doc = textViewer.getDocument();
             IEditorInput editorInput = 
-                    EditorUtil.getCurrentEditor().getEditorInput();
+                    getCurrentEditor().getEditorInput();
             ICodeAssist ca = null;
             
             if (editorInput instanceof FileEditorInput) {
-                ca = (ICodeAssist) JavaCore.create(EditorUtil.getFile(editorInput));
-            } else if (editorInput instanceof IClassFileEditorInput) {
-                ca = ((IClassFileEditorInput)editorInput).getClassFile();
+                ca = (ICodeAssist) 
+                        JavaCore.create(getFile(editorInput));
+            }
+            else if (editorInput instanceof IClassFileEditorInput) {
+                IClassFileEditorInput cfei = 
+                        (IClassFileEditorInput) editorInput;
+                ca = cfei.getClassFile();
             }
             
                     
             if (ca==null) return null;
             IJavaElement[] selection = 
-                    ca.codeSelect(region.getOffset(), region.getLength());
+                    ca.codeSelect(region.getOffset(), 
+                            region.getLength());
             for (final IJavaElement javaElement: selection) {
-                final IProject project = javaElement.getJavaProject().getProject();
-
-                if (JavaSearch.isCeylonDeclaration(javaElement) && !(javaElement instanceof IPackageFragment)) {
+                if (JavaSearch.isCeylonDeclaration(javaElement) && 
+                        !(javaElement instanceof IPackageFragment)) {
+                    final IProject project = 
+                            javaElement.getJavaProject()
+                                .getProject();
                     Declaration declaration = 
-                            toCeylonDeclaration(project, javaElement);
+                            toCeylonDeclaration(project, 
+                                    javaElement);
                     if (declaration != null) {
                         return new IHyperlink[] {
-                                new JavaToCeylonLink(region, doc, declaration)
+                                new JavaToCeylonLink(region, 
+                                        doc, declaration)
                             };
                     }
                 }
