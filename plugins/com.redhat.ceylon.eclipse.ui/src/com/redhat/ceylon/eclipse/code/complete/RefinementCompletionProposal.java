@@ -486,8 +486,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         public void apply(IDocument document) {
             try {
                 int len = 0;
-                char first = document.getChar(offset+len);
-                while (isJavaIdentifierPart(first)) {
+                while (isJavaIdentifierPart(
+                        document.getChar(offset+len))) {
                     len++;
                 }
                 document.replace(offset, len, getText(false));
