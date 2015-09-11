@@ -31,6 +31,7 @@ import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -835,7 +836,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         usedNames.clear();
         monitor.beginTask("Filtering", estimateWork(monitor));
         Set<String> searchedArchives = new HashSet<String>();
-        for (IProject project: getProjects()) {
+        
+        Collection<IProject> projectsToSearch = getProjects();
+        
+        for (IProject project: projectsToSearch) {
             TypeChecker typeChecker = 
                     getProjectTypeChecker(project);
             fill(contentProvider, itemsFilter, 
@@ -849,6 +853,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 if (m instanceof JDTModule &&
                         !filters.isFiltered(m)) {
                     JDTModule module = (JDTModule) m;
+
+                    IProject originalProject = module.getOriginalProject();
+                    if (originalProject != null 
+                            && projectsToSearch.contains(originalProject)) {
+                        continue;
+                    }
+                    
                     String moduleName = 
                             module.getNameAsString();
                     if (module.isAvailable() &&

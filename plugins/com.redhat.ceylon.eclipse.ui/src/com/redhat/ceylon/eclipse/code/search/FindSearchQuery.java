@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -108,8 +109,9 @@ abstract class FindSearchQuery implements ISearchQuery {
         Set<String> searchedArchives = new HashSet<String>();
         Package pack = getPackage();
         if (pack==null) return;
+        List<IProject> projectsToSearch = Arrays.asList(getProjectsToSearch(this.project));
         for (IProject project: 
-                getProjectsToSearch(this.project)) {
+                projectsToSearch) {
             if (CeylonNature.isEnabled(project)) {
                 TypeChecker typeChecker = 
                         getProjectTypeChecker(project);
@@ -131,6 +133,12 @@ abstract class FindSearchQuery implements ISearchQuery {
                         if (module.isCeylonArchive() && 
                                 !module.isProjectModule() && 
                                 module.getArtifact()!=null) {
+                            IProject originalProject = module.getOriginalProject();
+                            if (originalProject != null 
+                                    && projectsToSearch.contains(originalProject)) {
+                                continue;
+                            }
+                           
                             String archivePath = 
                                     module.getArtifact()
                                         .getAbsolutePath();

@@ -177,7 +177,8 @@ class CeylonSearchQuery implements ISearchQuery {
         result.removeAll();
         count = 0;
         Set<String> searchedArchives = new HashSet<String>();
-        for (IProject project: getProjectsToSearch()) {
+        Collection<IProject> projectsToSearch = getProjectsToSearch();
+        for (IProject project: projectsToSearch) {
             if (CeylonNature.isEnabled(project)) {
                 TypeChecker typeChecker = 
                         getProjectTypeChecker(project);
@@ -202,6 +203,13 @@ class CeylonSearchQuery implements ISearchQuery {
                             if (module.isCeylonArchive() && 
                                     !module.isProjectModule() && 
                                     module.getArtifact()!=null) { 
+
+                                IProject originalProject = module.getOriginalProject();
+                                if (originalProject != null 
+                                        && projectsToSearch.contains(originalProject)) {
+                                    continue;
+                                }
+                                
                                 String archivePath = 
                                         module.getArtifact()
                                             .getAbsolutePath();
