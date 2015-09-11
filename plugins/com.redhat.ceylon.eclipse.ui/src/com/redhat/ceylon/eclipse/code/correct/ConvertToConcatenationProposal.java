@@ -12,6 +12,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -51,12 +52,22 @@ class ConvertToConcatenationProposal extends CorrectionProposal {
             List<Tree.Expression> expressions = template.getExpressions();
             for (int i=0; i<literals.size(); i++) {
                 Tree.StringLiteral s = literals.get(i);
-                int stt = s.getToken().getType();
-                if (stt==STRING_END||stt==STRING_MID) {
-                    change.addEdit(new ReplaceEdit(s.getStartIndex(), 2, " + \""));
+                if (s.getText().isEmpty()) {
+                    if (i>0 && i<literals.size()-1) {
+                        change.addEdit(new ReplaceEdit(s.getStartIndex(), s.getDistance(), " + "));
+                    }
+                    else {
+                        change.addEdit(new DeleteEdit(s.getStartIndex(), s.getDistance()));
+                    }
                 }
-                if (stt==STRING_START||stt==STRING_MID) {
-                    change.addEdit(new ReplaceEdit(s.getEndIndex()-2, 2, "\" + "));
+                else {
+                    int stt = s.getToken().getType();
+                    if (stt==STRING_END||stt==STRING_MID) {
+                        change.addEdit(new ReplaceEdit(s.getStartIndex(), 2, " + \""));
+                    }
+                    if (stt==STRING_START||stt==STRING_MID) {
+                        change.addEdit(new ReplaceEdit(s.getEndIndex()-2, 2, "\" + "));
+                    }
                 }
                 if (i<expressions.size()) {
                     Tree.Expression e = expressions.get(i);
