@@ -10,12 +10,12 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
+import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class ConvertToInterpolationProposal extends CorrectionProposal {
@@ -41,8 +41,12 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
     }
 
     private static boolean isConcatenation(Tree.SumOp sum) {
-        boolean expectingLiteral = true;
-        for (Tree.Term term: flatten(sum)) {
+        List<Tree.Term> terms = flatten(sum);
+        Tree.Term lt = terms.get(0);
+        boolean expectingLiteral =
+                lt instanceof Tree.StringLiteral ||
+                lt instanceof Tree.StringTemplate;
+        for (Tree.Term term: terms) {
             if (expectingLiteral) {
                 if (!(term instanceof Tree.StringLiteral ||
                       term instanceof Tree.StringTemplate)) {
@@ -54,7 +58,7 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
                 expectingLiteral = true;
             }
         }
-        return !expectingLiteral;
+        return true;
     }
     
     static class ConcatenationVisitor extends Visitor {
@@ -90,7 +94,15 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
                             "Convert to Interpolation", 
                             file);
             change.setEdit(new MultiTextEdit());
-            List<Term> terms = flatten(sum);
+            List<Tree.Term> terms = flatten(sum);
+            Tree.Term lt = terms.get(0);
+            Tree.Term rt = terms.get(terms.size()-1);
+            boolean expectingLiteral =
+                    lt instanceof Tree.StringLiteral ||
+                    lt instanceof Tree.StringTemplate;
+            if (!expectingLiteral) {
+                change.addEdit(new InsertEdit(lt.getStartIndex(), "\"``"));
+            }
             for (int i=0; i<terms.size(); i++) {
                 Tree.Term term = terms.get(i);
                 if (i>0) {
@@ -99,13 +111,14 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
                     int to = term.getStartIndex();
                     change.addEdit(new DeleteEdit(from, to-from));
                 }
-                if (i%2==0) {
+                if (expectingLiteral) {
                     if (i>0) {
                         change.addEdit(new ReplaceEdit(term.getStartIndex(), 1, "``"));
                     }
                     if (i<terms.size()-1) {
                         change.addEdit(new ReplaceEdit(term.getEndIndex()-1, 1, "``"));
                     }
+                    expectingLiteral = false;
                 }
                 else {
                     if (term instanceof Tree.QualifiedMemberExpression) {
@@ -117,7 +130,11 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
                             change.addEdit(new DeleteEdit(from, to-from));
                         }
                     }
+                    expectingLiteral = true;
                 }
+            }
+            if (expectingLiteral) {
+                change.addEdit(new InsertEdit(rt.getEndIndex(), "``\""));
             }
             proposals.add(new ConvertToInterpolationProposal(
                     "Convert to string interpolation", change));
