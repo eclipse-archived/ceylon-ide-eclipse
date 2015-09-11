@@ -99,6 +99,7 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
+import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -321,9 +322,18 @@ public class HierarchyView extends ViewPart {
     private final class MemberSorter extends ViewerSorter {
         private boolean sortByType;
         private int compare(Declaration x, Declaration y) {
-            int result =
-                    x.getNameAsString()
-                        .compareTo(y.getNameAsString());
+            String xname = x.getNameAsString();
+            String yname = y.getNameAsString();
+            if (xname==null && yname==null) {
+                return 0;
+            }
+            if (xname==null) {
+                return -1;
+            }
+            if (yname==null) {
+                return 1;
+            }
+            int result = xname.compareTo(yname);
             if (result!=0) {
                 return result;
             }
@@ -388,16 +398,18 @@ public class HierarchyView extends ViewPart {
                                     declaration, "", 0)
                                     .values();
                     for (DeclarationWithProximity dwp: children) {
-                        for (Declaration dec: 
-                            overloads(dwp.getDeclaration())) {
-                            list.add(new ModelProxy(dec));
+                        Declaration d = dwp.getDeclaration();
+                        if (!(d instanceof Constructor)) {
+                            for (Declaration dec: overloads(d)) {
+                                list.add(new ModelProxy(dec));
+                            }
                         }
                     }
                 }
                 else {
-                    for (Declaration dec: 
-                            declaration.getMembers()) {
-                        if (!isAbstraction(dec)) {
+                    for (Declaration dec: declaration.getMembers()) {
+                        if (!(dec instanceof Constructor) &&
+                                !isAbstraction(dec)) {
                             list.add(new ModelProxy(dec));
                         }
                     }

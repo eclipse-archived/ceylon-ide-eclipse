@@ -74,17 +74,21 @@ public class Filters {
     }
     
     public boolean isFiltered(Declaration declaration) {
-        if (declaration.getName().contains("__") &&
+        String name = declaration.getName();
+        if (name==null) {
+            return false;
+        }
+        if (name.contains("__") &&
                 declaration.isAnnotation()) {
             //actually what we should really do is filter
             //out all constructors for Java annotations
             return true;
         }
         if (!filters.isEmpty()) {
-            String name = 
+            String qname = 
                     declaration.getQualifiedNameString();
             for (Pattern filter: filters) {
-                if (filter.matcher(name).matches()) {
+                if (filter.matcher(qname).matches()) {
                     return true;
                 }
             }
