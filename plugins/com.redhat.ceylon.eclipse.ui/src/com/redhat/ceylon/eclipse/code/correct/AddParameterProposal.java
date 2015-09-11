@@ -22,48 +22,60 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.Type;
 
 class AddParameterProposal extends InitializerProposal {
     
 	private AddParameterProposal(Declaration d, Declaration dec, 
 	        Type type, int offset, int len, TextChange change, 
 	        int exitPos, CeylonEditor editor) {
-        super("Add '" + d.getName() + "' to parameter list of '" + dec.getName() + "'", 
-                change, dec, type, new Region(offset, len), ADD_CORR, exitPos, editor);
+        super("Add '" + d.getName() + 
+              "' to parameter list of '" + dec.getName() + "'", 
+                change, dec, type, 
+                new Region(offset, len), 
+                ADD_CORR, exitPos, editor);
     }
 	
-    private static void addParameterProposal(Tree.CompilationUnit cu,
-            Collection<ICompletionProposal> proposals, IFile file,
-            Tree.TypedDeclaration decNode, 
-            Tree.SpecifierOrInitializerExpression sie, Node node,
-            CeylonEditor editor) {
-        FunctionOrValue dec = (FunctionOrValue) decNode.getDeclarationModel();
+    private static void addParameterProposal(
+            Tree.CompilationUnit rootNode,
+            Collection<ICompletionProposal> proposals, 
+            IFile file, Tree.TypedDeclaration decNode, 
+            Tree.SpecifierOrInitializerExpression sie, 
+            Node node, CeylonEditor editor) {
+        FunctionOrValue dec = 
+                (FunctionOrValue) 
+                    decNode.getDeclarationModel();
         if (dec==null) return;
-        if (dec.getInitializerParameter()==null && !dec.isFormal()) {
-            TextChange change = new TextFileChange("Add Parameter", file);
+        if (dec.getInitializerParameter()==null && 
+                !dec.isFormal() &&
+                dec.getContainer() instanceof Functional) {
+            TextChange change = 
+                    new TextFileChange("Add Parameter", file);
             change.setEdit(new MultiTextEdit());
             IDocument doc = EditorUtil.getDocument(change);
             //TODO: copy/pasted from SplitDeclarationProposal 
             String params = null;
             if (decNode instanceof Tree.MethodDeclaration) {
+                Tree.MethodDeclaration md = 
+                        (Tree.MethodDeclaration) decNode;
                 List<ParameterList> pls = 
-                        ((Tree.MethodDeclaration) decNode).getParameterLists();
+                        md.getParameterLists();
                 if (pls.isEmpty()) {
                     return;
                 } 
                 else {
                     Integer start = pls.get(0).getStartIndex();
-                    Integer len = pls.get(pls.size()-1).getDistance();
+                    Integer end = pls.get(pls.size()-1).getEndIndex();
                     try {
-                        params = doc.get(start, len);
+                        params = doc.get(start, end - start);
                     } 
                     catch (BadLocationException e) {
                         e.printStackTrace();
@@ -71,24 +83,31 @@ class AddParameterProposal extends InitializerProposal {
                     }
                 }
             }
-            Tree.Declaration container = findDeclarationWithBody(cu, decNode);
+            Tree.Declaration container = 
+                    findDeclarationWithBody(rootNode, decNode);
             Tree.ParameterList pl;
             if (container instanceof Tree.ClassDefinition) {
-                pl = ((Tree.ClassDefinition) container).getParameterList();
+                Tree.ClassDefinition cd = 
+                        (Tree.ClassDefinition) container;
+                pl = cd.getParameterList();
                 if (pl==null) {
                     return;
                 }
             }
             else if (container instanceof Tree.MethodDefinition) {
+                Tree.MethodDefinition md = 
+                        (Tree.MethodDefinition) container;
                 List<Tree.ParameterList> pls = 
-                        ((Tree.MethodDefinition) container).getParameterLists();
+                        md.getParameterLists();
                 if (pls.isEmpty()) {
                     return;
                 }
                 pl = pls.get(0);
             }
             else if (container instanceof Tree.Constructor) {
-                pl = ((Tree.Constructor) container).getParameterList();
+                Tree.Constructor cd = 
+                        (Tree.Constructor) container;
+                pl = cd.getParameterList();
                 if (pl==null) {
                     return;
                 }
@@ -100,7 +119,8 @@ class AddParameterProposal extends InitializerProposal {
             int len;
             if (sie==null) {
             	String defaultValue = 
-            			defaultValue(cu.getUnit(), dec.getType());
+            			defaultValue(rootNode.getUnit(), 
+            			        dec.getType());
             	len = defaultValue.length();
             	if (decNode instanceof Tree.MethodDeclaration) {
             		def = " => " + defaultValue;
@@ -125,12 +145,14 @@ class AddParameterProposal extends InitializerProposal {
                     e.printStackTrace();
                     return;
                 }
-                change.addEdit(new DeleteEdit(start, sie.getDistance()));
+                change.addEdit(new DeleteEdit(start, 
+                        sie.getEndIndex()-start));
             }
             if (params!=null) {
                 def = " = " + params + def;
             }
-            String param = (pl.getParameters().isEmpty() ? "" : ", ") + 
+            String param = 
+                    (pl.getParameters().isEmpty() ? "" : ", ") + 
                     dec.getName() + def;
             Integer offset = pl.getEndIndex()-1;
             change.addEdit(new InsertEdit(offset, param));
@@ -143,40 +165,52 @@ class AddParameterProposal extends InitializerProposal {
                 String explicitType;
                 if (paramType==null) {
                     explicitType = "Object";
-                    paramType = type.getUnit().getObjectDeclaration().getType();
+                    paramType = type.getUnit().getObjectType();
                 }
                 else {
                     explicitType = paramType.asString();
-                    HashSet<Declaration> decs = new HashSet<Declaration>();
-                    importType(decs, paramType, cu);
-                    shift = applyImports(change, decs, cu, doc);
+                    HashSet<Declaration> decs = 
+                            new HashSet<Declaration>();
+                    importType(decs, paramType, rootNode);
+                    shift = applyImports(change, decs, rootNode, doc);
                 }
-                change.addEdit(new ReplaceEdit(typeOffset, type.getText().length(), 
+                change.addEdit(new ReplaceEdit(typeOffset, 
+                        type.getText().length(), 
                         explicitType));
             }
             else {
                 paramType = type.getTypeModel();
             }
             int exitPos = node.getEndIndex();
-            proposals.add(new AddParameterProposal(dec, container.getDeclarationModel(), 
-                    paramType, offset+param.length()+shift-len, len, change, exitPos, editor));
+            proposals.add(new AddParameterProposal(dec, 
+                    container.getDeclarationModel(), 
+                    paramType, 
+                    offset+param.length()+shift-len, len, 
+                    change, exitPos, editor));
         }
     }
 
-	static void addParameterProposals(Collection<ICompletionProposal> proposals,
-			IFile file, Tree.CompilationUnit cu, Node node, CeylonEditor editor) {
+	static void addParameterProposals(
+	        Collection<ICompletionProposal> proposals,
+			IFile file, Tree.CompilationUnit cu, Node node, 
+			CeylonEditor editor) {
 		if (node instanceof Tree.AttributeDeclaration) {
-	        Tree.AttributeDeclaration attDecNode = (Tree.AttributeDeclaration) node;
+	        Tree.AttributeDeclaration attDecNode = 
+	                (Tree.AttributeDeclaration) node;
 	        Tree.SpecifierOrInitializerExpression sie = 
 	                attDecNode.getSpecifierOrInitializerExpression();
 	        if (!(sie instanceof Tree.LazySpecifierExpression)) {
-	            addParameterProposal(cu, proposals, file, attDecNode, sie, node, editor);
+	            addParameterProposal(cu, proposals, file, 
+	                    attDecNode, sie, node, editor);
 	        }
 	    }
 	    if (node instanceof Tree.MethodDeclaration) {
-	        Tree.MethodDeclaration methDecNode = (Tree.MethodDeclaration) node;
-	        Tree.SpecifierExpression sie = methDecNode.getSpecifierExpression();
-	        addParameterProposal(cu, proposals, file, methDecNode, sie, node, editor);
+	        Tree.MethodDeclaration methDecNode = 
+	                (Tree.MethodDeclaration) node;
+	        Tree.SpecifierExpression sie = 
+	                methDecNode.getSpecifierExpression();
+	        addParameterProposal(cu, proposals, file, 
+	                methDecNode, sie, node, editor);
 	    }
 	}
     
