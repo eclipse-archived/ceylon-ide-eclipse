@@ -20,6 +20,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static java.lang.System.identityHashCode;
 
@@ -272,15 +273,18 @@ public class CeylonOutlineNode implements IAdaptable {
                 CeylonEditor ce = 
                         (CeylonEditor) currentEditor;
                 Tree.CompilationUnit rootNode = 
-                        ce.getParseController().getRootNode();
+                        ce.getParseController()
+                            .getRootNode();
                 if (rootNode!=null) {
-                    Node node = findNode(rootNode, startOffset);
+                    Node node = 
+                            findNode(rootNode, 
+                                    startOffset, endOffset);
                     if (!(node instanceof Tree.Declaration)) {
-                        node = Nodes.findStatement(rootNode, node);
+                        node = findStatement(rootNode, node);
                     }
                     if (node!=null && 
                             node.getStartIndex()==realStartOffset && 
-                            node.getEndIndex()+1==realEndOffset) {
+                            node.getEndIndex()==realEndOffset) {
                         return getStyledLabelForNode(node, prefix, font);
                     }
                 }
@@ -296,11 +300,14 @@ public class CeylonOutlineNode implements IAdaptable {
                 CeylonEditor ce = 
                         (CeylonEditor) currentEditor;
                 Tree.CompilationUnit rootNode = 
-                        ce.getParseController().getRootNode();
+                        ce.getParseController()
+                            .getRootNode();
                 if (rootNode!=null) {
-                    Node node = findNode(rootNode, startOffset);
+                    Node node = 
+                            findNode(rootNode, 
+                                    startOffset, endOffset);
                     if (!(node instanceof Tree.Declaration)) {
-                        node = Nodes.findStatement(rootNode, node);
+                        node = findStatement(rootNode, node);
                     }
                     if (node!=null) {
                         return getNodeDecorationAttributes(node);
