@@ -3,16 +3,12 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
-import static org.eclipse.ui.PlatformUI.getWorkbench;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -20,7 +16,6 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Display;
 
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
@@ -125,7 +120,25 @@ class AddModuleImportProposal
             }
         }
         
-        class Runnable implements IRunnableWithProgress {
+        ModuleQuery query = 
+                getModuleQuery("", project);
+        query.setMemberName(pkg);
+        query.setMemberSearchPackageOnly(true);
+        query.setMemberSearchExact(true);
+        query.setCount(10l);
+        query.setBinaryMajor(
+                Versions.JVM_BINARY_MAJOR_VERSION);
+        ModuleSearchResult msr = 
+                typeChecker
+                    .getContext()
+                    .getRepositoryManager()
+                    .searchModules(query);
+        for (ModuleDetails md: msr.getResults()) {
+            proposals.add(new AddModuleImportProposal(
+                    project, unit, md));
+        }
+        
+        /*class Runnable implements IRunnableWithProgress {
             @Override
             public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, 
@@ -175,7 +188,7 @@ class AddModuleImportProposal
         }
         catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
 }

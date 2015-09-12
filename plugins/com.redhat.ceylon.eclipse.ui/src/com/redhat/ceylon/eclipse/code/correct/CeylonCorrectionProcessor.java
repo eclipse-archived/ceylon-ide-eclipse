@@ -121,7 +121,9 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static java.util.Collections.singletonList;
+import static org.eclipse.ui.PlatformUI.getWorkbench;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -132,10 +134,12 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -154,6 +158,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMarkerResolution;
@@ -165,9 +170,12 @@ import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.MethodDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -189,6 +197,9 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 public class CeylonCorrectionProcessor extends QuickAssistAssistant 
         implements IQuickAssistProcessor {
     
+    private static final ProblemLocation[] NO_PROBLEM_LOCATIONS = new ProblemLocation[0];
+    private static final ICompletionProposal[] NO_PROPOSALS = new ICompletionProposal[0];
+
     private static final class CollectWarningsToSuppressVisitor 
             extends Visitor {
         private final StringBuilder sb;
@@ -243,11 +254,18 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             TypeChecker tc = getProjectTypeChecker(project);
             if (tc!=null) {
                 try {
-                    for (IPackageFragmentRoot pfr: javaProject.getPackageFragmentRoots()) {
-                        if (pfr.getPath().isPrefixOf(file.getFullPath())) {
-                            IPath relPath = file.getFullPath().makeRelativeTo(pfr.getPath());
-                            model = tc.getPhasedUnitFromRelativePath(relPath.toString())
-                                    .getCompilationUnit();    
+                    for (IPackageFragmentRoot pfr: 
+                            javaProject.getPackageFragmentRoots()) {
+                        if (pfr.getPath()
+                                .isPrefixOf(file.getFullPath())) {
+                            IPath relPath = 
+                                    file.getFullPath()
+                                        .makeRelativeTo(
+                                                pfr.getPath());
+                            PhasedUnit pu = 
+                                    tc.getPhasedUnitFromRelativePath(
+                                            relPath.toString());
+                            model = pu.getCompilationUnit();    
                         }
                     }
                 } 
@@ -260,11 +278,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     }
     
     private IFile getFile() {
-        if (editor!=null && 
-                editor.getEditorInput() instanceof FileEditorInput) {
-            FileEditorInput input = (FileEditorInput) editor.getEditorInput();
-            if (input!=null) {
-                return input.getFile();
+        if (editor!=null) {
+            IEditorInput ei = editor.getEditorInput();
+            if (ei instanceof FileEditorInput) {
+                FileEditorInput input = 
+                        (FileEditorInput) ei;
+                if (input!=null) {
+                    return input.getFile();
+                }
             }
         }
         return file;
@@ -287,8 +308,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         return null;
     }
     
-    private void collectProposals(IQuickAssistInvocationContext context,
-            IAnnotationModel model, Collection<Annotation> annotations,
+    private void collectProposals(
+            IQuickAssistInvocationContext context,
+            IAnnotationModel model, 
+            Collection<Annotation> annotations,
             boolean addQuickFixes, boolean addQuickAssists,
             Collection<ICompletionProposal> proposals) {
         ArrayList<ProblemLocation> problems = 
@@ -315,7 +338,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
 
         ProblemLocation[] problemLocations =
-                problems.toArray(new ProblemLocation[problems.size()]);
+                problems.toArray(NO_PROBLEM_LOCATIONS);
         Arrays.sort(problemLocations);
         if (addQuickFixes) {
             collectCorrections(context, problemLocations, proposals);
@@ -329,7 +352,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     }
 
     public void addSuppressWarningsProposal(
-            IQuickAssistInvocationContext context, IAnnotationModel model,
+            IQuickAssistInvocationContext context, 
+            IAnnotationModel model,
             Collection<Annotation> annotations,
             Collection<ICompletionProposal> proposals) {
         for (Annotation curr: annotations) {
@@ -348,51 +372,95 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    private static ProblemLocation getProblemLocation(CeylonAnnotation annotation, 
+    private static ProblemLocation getProblemLocation(
+            CeylonAnnotation annotation, 
             IAnnotationModel model) {
         int problemId = annotation.getId();
         if (problemId != -1) {
-            Position pos = model.getPosition((Annotation) annotation);
+            Annotation ann = (Annotation) annotation;
+            Position pos = model.getPosition(ann);
             if (pos != null) {
-                return new ProblemLocation(pos.getOffset(), pos.getLength(),
+                return new ProblemLocation(
+                        pos.getOffset(), pos.getLength(),
                         annotation); // java problems all handled by the quick assist processors
             }
         }
         return null;
     }
 
-    private void collectAssists(IQuickAssistInvocationContext context,
-            ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
+    private void collectAssists(
+            IQuickAssistInvocationContext context,
+            ProblemLocation[] locations, 
+            Collection<ICompletionProposal> proposals) {
         if (proposals.isEmpty()) {
             addProposals(context, editor, proposals);
         }
     }
 
-    private static void collectMarkerProposals(SimpleMarkerAnnotation annotation, 
+    private static void collectMarkerProposals(
+            SimpleMarkerAnnotation annotation, 
             Collection<ICompletionProposal> proposals) {
         IMarker marker = annotation.getMarker();
-        IMarkerResolution[] res = IDE.getMarkerHelpRegistry().getResolutions(marker);
+        IMarkerResolution[] res = 
+                IDE.getMarkerHelpRegistry()
+                    .getResolutions(marker);
         if (res.length > 0) {
-            for (int i = 0; i < res.length; i++) {
-                proposals.add(new CeylonMarkerResolutionProposal(res[i], marker));
+            for (int i=0; i<res.length; i++) {
+                CeylonMarkerResolutionProposal mrp = 
+                        new CeylonMarkerResolutionProposal(
+                                res[i], marker);
+                proposals.add(mrp);
             }
         }
     }
 
     @Override
-    public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext context) {
-        ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
+    public ICompletionProposal[] computeQuickAssistProposals(
+            IQuickAssistInvocationContext context) {
+        ArrayList<ICompletionProposal> proposals = 
+                new ArrayList<ICompletionProposal>();
         ISourceViewer viewer = context.getSourceViewer();
         List<Annotation> annotations = 
-                getAnnotationsForLine(viewer, getLine(context, viewer));
+                getAnnotationsForLine(viewer, 
+                        getLine(context, viewer));
         collectProposals(context, viewer.getAnnotationModel(),
                 annotations, true, true, proposals);
-        return proposals.toArray(new ICompletionProposal[proposals.size()]);
+        return proposals.toArray(NO_PROPOSALS);
+    }
+    
+    private void addProposalsWithProgress(
+            final IQuickAssistInvocationContext context, 
+            final ProblemLocation location, final IFile file, 
+            final Tree.CompilationUnit rootNode, 
+            final Collection<ICompletionProposal> proposals) {
+        class Runnable implements IRunnableWithProgress {
+            @Override
+            public void run(IProgressMonitor monitor) 
+                    throws InvocationTargetException, 
+                           InterruptedException {
+                monitor.beginTask("Preparing proposals...", 
+                        IProgressMonitor.UNKNOWN);
+                addProposals(context, location, file, rootNode, proposals);
+                monitor.done();
+            }
+        }
+        Runnable runnable = new Runnable();
+        try {
+            getWorkbench()
+                .getActiveWorkbenchWindow()
+                .run(true, true, runnable);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private int getLine(IQuickAssistInvocationContext context, ISourceViewer viewer) {
+    private int getLine(
+            IQuickAssistInvocationContext context, 
+            ISourceViewer viewer) {
         try {
-            return viewer.getDocument().getLineOfOffset(context.getOffset());
+            return viewer.getDocument()
+                    .getLineOfOffset(context.getOffset());
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -400,8 +468,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
     
-    public void collectCorrections(IQuickAssistInvocationContext context,
-            ProblemLocation location, Collection<ICompletionProposal> proposals) {
+    public void collectCorrections(
+            IQuickAssistInvocationContext context,
+            ProblemLocation location, 
+            Collection<ICompletionProposal> proposals) {
         Tree.CompilationUnit rootNode = getRootNode();
         if (rootNode!=null) {
             addProposals(context, location, getFile(), 
@@ -409,8 +479,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
     
-    private void collectCorrections(IQuickAssistInvocationContext context,
-            ProblemLocation[] locations, Collection<ICompletionProposal> proposals) {
+    private void collectCorrections(
+            IQuickAssistInvocationContext context,
+            ProblemLocation[] locations, 
+            Collection<ICompletionProposal> proposals) {
         ISourceViewer viewer = context.getSourceViewer();
         Tree.CompilationUnit rootNode = getRootNode();
         for (int i=locations.length-1; i>=0; i--) {
@@ -421,7 +493,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     if (location.getOffset()!=loc.getOffset()) {
                         break;
                     }
-                    addProposals(context, location, getFile(), 
+                    addProposalsWithProgress(context, 
+                            location, getFile(), 
                             rootNode, proposals);
                 }
                 if (!proposals.isEmpty()) {
@@ -436,7 +509,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             for (int j=i; j<locations.length; j++) {
                 ProblemLocation location = locations[j];
                 if (location.getOffset()!=loc.getOffset()) break;
-                addProposals(context, location, getFile(), 
+                addProposalsWithProgress(context, 
+                        location, getFile(), 
                         rootNode, proposals);
             }
             if (!proposals.isEmpty()) {
@@ -464,12 +538,15 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     @Override
     public boolean canFix(Annotation annotation) {
         if (annotation instanceof CeylonAnnotation) {
-            CeylonAnnotation ca = (CeylonAnnotation) annotation;
+            CeylonAnnotation ca = 
+                    (CeylonAnnotation) annotation;
             return ca.getId()>0 || 
                     ca.getSeverity() == IMarker.SEVERITY_WARNING;
         }
         else if (annotation instanceof MarkerAnnotation) {
-            return canFix(((MarkerAnnotation) annotation).getMarker());
+            MarkerAnnotation ma = 
+                    (MarkerAnnotation) annotation;
+            return canFix(ma.getMarker());
         }
         else {
             return false;
@@ -498,7 +575,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         return null;
     }
     
-    private void addProposals(IQuickAssistInvocationContext context, 
+    private void addProposals(
+            IQuickAssistInvocationContext context, 
             ProblemLocation problem, IFile file, 
             Tree.CompilationUnit rootNode,
             Collection<ICompletionProposal> proposals) {
@@ -970,14 +1048,17 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     ", " + tp.getName());
         }
         tfc.setEdit(edit);
-        proposals.add(new CorrectionProposal("Add '" + tp.getName() + 
+        proposals.add(new CorrectionProposal(
+                "Add '" + tp.getName() + 
                 "' to type parameter list of '" + 
                 decNode.getDeclarationModel().getName() + "'", 
                 tfc, null));
     }
 
-    private void addProposals(IQuickAssistInvocationContext context, 
-            CeylonEditor editor, Collection<ICompletionProposal> proposals) {
+    private void addProposals(
+            IQuickAssistInvocationContext context, 
+            CeylonEditor editor, 
+            Collection<ICompletionProposal> proposals) {
         if (editor==null) return;
         
         IDocument doc = context.getSourceViewer().getDocument();
@@ -1099,8 +1180,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    private void addAnnotationProposals(Collection<ICompletionProposal> proposals, 
-            IProject project, Tree.Declaration decNode, IDocument doc, int offset) {
+    private void addAnnotationProposals(
+            Collection<ICompletionProposal> proposals, 
+            IProject project, Tree.Declaration decNode, 
+            IDocument doc, int offset) {
         if (decNode!=null) {
             try {
                 Node in = Nodes.getIdentifyingNode(decNode);
@@ -1137,12 +1220,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                         addMakeFormalDecProposal(proposals, project, decNode);
                     }
                     else if (decNode instanceof Tree.AttributeDeclaration) {
-                        if (((Tree.AttributeDeclaration) decNode).getSpecifierOrInitializerExpression()==null) {
+                        AttributeDeclaration ad = (Tree.AttributeDeclaration) decNode;
+                        if (ad.getSpecifierOrInitializerExpression()==null) {
                             addMakeFormalDecProposal(proposals, project, decNode);
                         }
                     }
                     else if (decNode instanceof Tree.MethodDeclaration) {
-                        if (((Tree.MethodDeclaration) decNode).getSpecifierExpression()==null) {
+                        MethodDeclaration md = (Tree.MethodDeclaration) decNode;
+                        if (md.getSpecifierExpression()==null) {
                             addMakeFormalDecProposal(proposals, project, decNode);
                         }
                     }
@@ -1151,9 +1236,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
     
-    private static void addAnonymousFunctionProposals(CeylonEditor editor,
-            Collection<ICompletionProposal> proposals, IDocument doc,
-            IFile file, Tree.CompilationUnit cu,
+    private static void addAnonymousFunctionProposals(
+            CeylonEditor editor,
+            Collection<ICompletionProposal> proposals, 
+            IDocument doc, IFile file, 
+            Tree.CompilationUnit rootNode,
             final int currentOffset) {
         class FindAnonFunctionVisitor extends Visitor {
             Tree.FunctionArgument result;
@@ -1166,7 +1253,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             }
         }
         FindAnonFunctionVisitor v = new FindAnonFunctionVisitor();
-        v.visit(cu);
+        v.visit(rootNode);
         Tree.FunctionArgument fun = v.result;
         if (fun!=null) {
             if (fun.getExpression()!=null) {
@@ -1179,10 +1266,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    private static void addDeclarationProposals(CeylonEditor editor,
-            Collection<ICompletionProposal> proposals, IDocument doc,
-            IFile file, Tree.CompilationUnit cu,
-            Tree.Declaration decNode, int currentOffset) {
+    private static void addDeclarationProposals(
+            CeylonEditor editor,
+            Collection<ICompletionProposal> proposals, 
+            IDocument doc, IFile file, 
+            Tree.CompilationUnit rootNode,
+            Tree.Declaration decNode, 
+            int currentOffset) {
         
         if (decNode==null) return;
         
@@ -1257,10 +1347,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         
     }
 
-	private void addArgumentProposals(Collection<ICompletionProposal> proposals, 
-            IDocument doc, IFile file, Tree.StatementOrArgument node) {
+	private void addArgumentProposals(
+	        Collection<ICompletionProposal> proposals, 
+            IDocument doc, IFile file, 
+            Tree.StatementOrArgument node) {
         if (node instanceof Tree.MethodArgument) {
-            Tree.MethodArgument ma = (Tree.MethodArgument) node;
+            Tree.MethodArgument ma = 
+                    (Tree.MethodArgument) node;
             Tree.SpecifierOrInitializerExpression se = 
                     ma.getSpecifierExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
@@ -1272,7 +1365,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             }
         }
         if (node instanceof Tree.AttributeArgument) {
-            Tree.AttributeArgument aa = (Tree.AttributeArgument) node;
+            Tree.AttributeArgument aa = 
+                    (Tree.AttributeArgument) node;
             Tree.SpecifierOrInitializerExpression se = 
                     aa.getSpecifierExpression(); 
             if (se instanceof Tree.LazySpecifierExpression) {
@@ -1284,7 +1378,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             }
         }
         if (node instanceof Tree.SpecifiedArgument) {
-            Tree.SpecifiedArgument sa = (Tree.SpecifiedArgument) node;
+            Tree.SpecifiedArgument sa = 
+                    (Tree.SpecifiedArgument) node;
             addFillInArgumentNameProposal(proposals, doc, file, sa);
         }
     }
@@ -1355,15 +1450,21 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Collection<ICompletionProposal> proposals) {
         if (annotation.getSeverity()==IMarker.SEVERITY_WARNING) {
             Tree.CompilationUnit rootNode = getRootNode();
-            Tree.Statement st = Nodes.findStatement(rootNode,
-                    Nodes.findNode(rootNode, null, location.getOffset(), 
-                            location.getOffset()+location.getLength()));
+            Tree.Statement st = 
+                    Nodes.findStatement(rootNode,
+                        Nodes.findNode(rootNode, null, 
+                                location.getOffset(), 
+                                location.getOffset() +
+                                location.getLength()));
             if (st==null) return;
             if (!(st instanceof Tree.Declaration)) {
                 st = Nodes.findDeclaration(rootNode, st);
             }
-            IFile file = EditorUtil.getFile(editor.getEditorInput());
-            IDocument doc = context.getSourceViewer().getDocument();
+            IFile file = 
+                    EditorUtil.getFile(editor.getEditorInput());
+            IDocument doc = 
+                    context.getSourceViewer()
+                        .getDocument();
             TextFileChange change = 
                     new TextFileChange("Suppress Warnings", file);
             final StringBuilder sb = new StringBuilder();
@@ -1426,8 +1527,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 
                 @Override
                 public void apply(IDocument document) {
-                    PreferencesUtil.createPropertyDialogOn(editor.getSite().getShell(), 
-                            editor.getParseController().getProject(), //TODO: is this correct? 
+                    PreferencesUtil.createPropertyDialogOn(
+                            editor.getSite().getShell(), 
+                            editor.getParseController()
+                                .getProject(), //TODO: is this correct? 
                             CeylonWarningsPropertiesPage.ID, 
                             new String[] { CeylonWarningsPropertiesPage.ID }, 
                             null).open();
