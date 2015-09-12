@@ -303,7 +303,7 @@ class AnnotationInformationControl
         layout2.verticalSpacing = 2;
         quickFixProgressGroup.setLayout(layout2);
         Label progressLabel = new Label(quickFixProgressGroup, SWT.NONE);
-        progressLabel.setText("Searching for fixes");
+        progressLabel.setText("Preparing quick fixes...");
         new ProgressBar(quickFixProgressGroup, SWT.INDETERMINATE | SWT.FILL);
         setColorAndFont(fParent, 
                 fParent.getForeground(), 

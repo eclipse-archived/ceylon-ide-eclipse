@@ -143,6 +143,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -172,6 +173,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.MethodDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
@@ -328,11 +330,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             collectAssists(context, problemLocations, proposals);
         }
         if (addQuickFixes) {
-            addSuppressWarningsProposal(context, model, annotations, proposals);
+            addSuppressWarningsProposals(context, model, annotations, proposals);
         }
     }
 
-    public void addSuppressWarningsProposal(
+    public void addSuppressWarningsProposals(
             IQuickAssistInvocationContext context, 
             IAnnotationModel model,
             Collection<Annotation> annotations,
@@ -374,7 +376,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             ProblemLocation[] locations, 
             Collection<ICompletionProposal> proposals) {
         if (proposals.isEmpty()) {
-            addProposals(context, editor, proposals);
+            addProposalsWithProgress(context, editor, proposals);
         }
     }
     
@@ -402,7 +404,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             public void run(IProgressMonitor monitor) 
                     throws InvocationTargetException, 
                            InterruptedException {
-                monitor.beginTask("Preparing proposals...", 
+                monitor.beginTask("Preparing fix proposals...", 
                         IProgressMonitor.UNKNOWN);
                 addProposals(context, location, file, rootNode, proposals);
                 monitor.done();
@@ -413,6 +415,33 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             getWorkbench()
                 .getActiveWorkbenchWindow()
                 .run(true, true, runnable);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addProposalsWithProgress(
+            final IQuickAssistInvocationContext context, 
+            final CeylonEditor editor, 
+            final Collection<ICompletionProposal> proposals) {
+        class Runnable implements IRunnableWithProgress {
+            @Override
+            public void run(IProgressMonitor monitor) 
+                    throws InvocationTargetException, 
+                           InterruptedException {
+                monitor.beginTask("Preparing assist proposals...", 
+                        IProgressMonitor.UNKNOWN);
+                addProposals(context, editor, proposals);
+                monitor.done();
+            }
+        }
+        Runnable runnable = new Runnable();
+        try {
+            getWorkbench()
+                .getActiveWorkbenchWindow()
+                //we have to run this in the UI thread
+                .run(false, true, runnable);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -1016,25 +1045,28 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 
     private void addProposals(
             IQuickAssistInvocationContext context, 
-            CeylonEditor editor, 
+            CeylonEditor editor,
             Collection<ICompletionProposal> proposals) {
         if (editor==null) return;
         
         IDocument doc = context.getSourceViewer().getDocument();
-        IProject project = EditorUtil.getProject(editor.getEditorInput());
-        IFile file = EditorUtil.getFile(editor.getEditorInput());
-        
+        IEditorInput input = editor.getEditorInput();
+        IProject project = EditorUtil.getProject(input);
+        IFile file = EditorUtil.getFile(input);
+        IRegion selection = editor.getSelection();
+        CeylonParseController parseController = 
+                editor.getParseController();
         Tree.CompilationUnit rootNode = 
-                editor.getParseController().getRootNode();
+                parseController.getRootNode();
         if (rootNode!=null) {
             int start = context.getOffset();
             int len = context.getLength();
             int end = start + (len>0?len:0); //len==-1 means missing info
             Node node = 
                     findNode(rootNode, 
-                            editor.getParseController().getTokens(), 
+                            parseController.getTokens(), 
                             start, end);
-            int currentOffset = editor.getSelection().getOffset();
+            int currentOffset = selection.getOffset();
             
             RenameProposal.add(proposals, editor);
             InlineDeclarationProposal.add(proposals, editor);
