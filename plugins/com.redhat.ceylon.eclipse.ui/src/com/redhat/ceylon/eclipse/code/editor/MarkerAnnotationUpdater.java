@@ -3,8 +3,8 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.TODO_ANNOTATION_TYPE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.isParseAnnotation;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.TASK_MARKER_ID;
 
 import java.util.Iterator;
@@ -33,39 +33,67 @@ class MarkerAnnotationUpdater implements TreeLifecycleListener {
     }
     
     /**
-     * Remove any Marker annotations that don't correspond to existing problems
-     * according to the most recent tree / typecheck
+     * Remove any Marker annotations that don't correspond 
+     * to existing problems according to the most recent 
+     * tree / typecheck
      */
-    public void update(CeylonParseController parseController, IProgressMonitor monitor) {
-        if (parseController.getStage().ordinal() >= getStage().ordinal()) {
-            IAnnotationModel model = editor.getDocumentProvider()
-                    .getAnnotationModel(editor.getEditorInput());
+    public void update(CeylonParseController parseController, 
+            IProgressMonitor monitor) {
+        if (parseController.getStage().ordinal() 
+                >= getStage().ordinal()) {
+            IAnnotationModel model = 
+                    editor.getDocumentProvider()
+                        .getAnnotationModel(
+                                editor.getEditorInput());
             for (@SuppressWarnings("unchecked")
-            Iterator<Annotation> iter = model.getAnnotationIterator(); 
+                Iterator<Annotation> iter = 
+                        model.getAnnotationIterator(); 
                     iter.hasNext();) {
                 Annotation ann = iter.next();
                 if (ann instanceof MarkerAnnotation) {
-                    IMarker marker = ((MarkerAnnotation) ann).getMarker();
+                    MarkerAnnotation ma = (MarkerAnnotation) ann;
+                    IMarker marker = ma.getMarker();
                     try {
-                        Integer markerStart = null;
-                        Integer markerEnd = null;
-                        boolean isProblemMarker = marker.getType().equals(PROBLEM_MARKER_ID);
-                        boolean isModuleDependencyMarker = marker.getType().equals(MODULE_DEPENDENCY_PROBLEM_MARKER_ID);
-                        boolean isTaskMarker = marker.getType().equals(TASK_MARKER_ID);
-                        markerStart = (Integer) marker.getAttribute(IMarker.CHAR_START);
-                        markerEnd = (Integer) marker.getAttribute(IMarker.CHAR_END);
-                        if (markerStart==null||markerEnd==null) continue;
-                        if ((isProblemMarker && !isModuleDependencyMarker) || isTaskMarker) {
+                        String type = marker.getType();
+                        boolean isProblemMarker = 
+                                type.equals(PROBLEM_MARKER_ID);
+                        boolean isModuleDependencyMarker = 
+                                type.equals(MODULE_DEPENDENCY_PROBLEM_MARKER_ID);
+                        boolean isTaskMarker = 
+                                type.equals(TASK_MARKER_ID);
+                        
+                        Integer markerStart = 
+                                (Integer) 
+                                    marker.getAttribute(IMarker.CHAR_START);
+                        Integer markerEnd = 
+                                (Integer) 
+                                    marker.getAttribute(IMarker.CHAR_END);
+                        if (markerStart==null || markerEnd==null) {
+                            continue;
+                        }
+                        
+                        if ((isProblemMarker && !isModuleDependencyMarker) 
+                                || isTaskMarker) {
                             boolean found = false;
                             for (@SuppressWarnings("unchecked")
-                            Iterator<Annotation> iter2 = model.getAnnotationIterator(); 
+                                Iterator<Annotation> iter2 = 
+                                        model.getAnnotationIterator(); 
                                     iter2.hasNext();) {
                                 Annotation ann2 = iter2.next();
-                                if (isProblemMarker && isParseAnnotation(ann2) ||
-                                    isTaskMarker && ann2.getType().equals(TODO_ANNOTATION_TYPE)) {
-                                    Position position = model.getPosition(ann2);
-                                    if (markerStart.intValue()==position.offset &&
-                                        markerEnd.intValue()==position.offset+position.length) {
+                                boolean problem = 
+                                        isProblemMarker && 
+                                        isParseAnnotation(ann2);
+                                boolean task = 
+                                        isTaskMarker && 
+                                        ann2.getType()
+                                            .equals(TODO_ANNOTATION_TYPE);
+                                if (problem || task) {
+                                    Position position = 
+                                            model.getPosition(ann2);
+                                    if (markerStart.intValue()
+                                            == position.offset &&
+                                        markerEnd.intValue()
+                                            == position.offset+position.length) {
                                         found=true;
                                         break;
                                     }
