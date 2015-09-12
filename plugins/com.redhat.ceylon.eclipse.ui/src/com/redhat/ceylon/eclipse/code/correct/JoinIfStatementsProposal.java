@@ -58,13 +58,45 @@ class JoinIfStatementsProposal {
                                         getIndent(outer, doc));
                                 change.addEdit(new DeleteEdit(inner.getEndIndex(), 
                                         outer.getEndIndex()-inner.getEndIndex()));
-                                proposals.add(new CorrectionProposal("Join 'if' statements", 
+                                proposals.add(new CorrectionProposal("Join 'if' statements at condition list", 
                                         change, null));
                             }
                         }
                     }
                 }
             }
+            else {
+                Tree.Block block = 
+                        outer.getElseClause().getBlock();
+                if (block!=null) {
+                    List<Tree.Statement> statements = 
+                            block.getStatements();
+                    if (statements.size()==1) {
+                        Tree.Statement st = statements.get(0);
+                        if (st instanceof Tree.IfStatement) {
+                            Tree.IfStatement inner = 
+                                    (Tree.IfStatement) st;
+                            Tree.ConditionList icl = 
+                                    inner.getIfClause()
+                                        .getConditionList();
+                            TextChange change = 
+                                    new TextFileChange("Join If Statements", 
+                                            file);
+                            change.setEdit(new MultiTextEdit());
+                            int from = block.getStartIndex();
+                            int to = inner.getStartIndex();
+                            change.addEdit(new DeleteEdit(from, to-from));
+                            decrementIndent(doc, inner, icl, change,
+                                    getIndent(inner, doc),
+                                    getIndent(outer, doc));
+                            change.addEdit(new DeleteEdit(inner.getEndIndex(), 
+                                    outer.getEndIndex()-inner.getEndIndex()));
+                            proposals.add(new CorrectionProposal("Join 'if' statements at 'else'", 
+                                    change, null));
+                        }
+                    }
+                }
+            }            
         }
     }
 
@@ -77,22 +109,40 @@ class JoinIfStatementsProposal {
                     line < doc.getLineOfOffset(is.getStopIndex()); 
                     line++) {
                 IRegion lineInformation = doc.getLineInformation(line);
-                String lineText = doc.get(lineInformation.getOffset(), 
-                        lineInformation.getLength());
-                if (lineText.startsWith(indent+defaultIndent)) {
+                String lineText = 
+                        doc.get(lineInformation.getOffset(), 
+                                lineInformation.getLength());
+                if (lineText.startsWith(indent) && 
+                        indent.startsWith(outerIndent)) {
                     change.addEdit(new DeleteEdit(
-                            lineInformation.getOffset() + indent.length(), 
+                            lineInformation.getOffset() + outerIndent.length(), 
+                            indent.length()-outerIndent.length()));
+                }
+                else if (lineText.startsWith(outerIndent+defaultIndent)) {
+                    change.addEdit(new DeleteEdit(
+                            lineInformation.getOffset() + 
+                            outerIndent.length(), 
                             defaultIndent.length()));
                 }
             }
             int line = doc.getLineOfOffset(is.getStopIndex());
             IRegion lineInformation = doc.getLineInformation(line);
-            String lineText = doc.get(lineInformation.getOffset(), 
-                    lineInformation.getLength());
-            if (lineText.startsWith(indent)) {
+            String lineText = 
+                    doc.get(lineInformation.getOffset(), 
+                            lineInformation.getLength());
+            if (lineText.startsWith(indent) && 
+                    indent.startsWith(outerIndent)) {
                 change.addEdit(new ReplaceEdit(
-                        lineInformation.getOffset(), indent.length(), 
-                        defaultIndent));
+                        lineInformation.getOffset(),
+                        indent.length(), 
+                        outerIndent));
+            }
+            else if (lineText.startsWith(outerIndent+defaultIndent)) {
+                change.addEdit(new ReplaceEdit(
+                        lineInformation.getOffset(), 
+                        outerIndent.length() +
+                        defaultIndent.length(), 
+                        outerIndent));
             }
         }
         catch (Exception e) {
