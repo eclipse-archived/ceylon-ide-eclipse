@@ -228,7 +228,7 @@ public class ConvertSwitchToIfProposal {
                             getDefaultLineDelimiter(doc) +
                             getIndent(is, doc);
                     tfc.addEdit(new ReplaceEdit(is.getStartIndex(),
-                            cl.getDistance(), 
+                            cl.getEndIndex()-is.getStartIndex(), 
                             "switch (" + var + ")" + newline +
                             "case (" + type +")"));
                     Tree.ElseClause ec = is.getElseClause();
