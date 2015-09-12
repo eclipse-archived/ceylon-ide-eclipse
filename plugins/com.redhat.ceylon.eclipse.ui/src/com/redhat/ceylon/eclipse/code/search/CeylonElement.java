@@ -32,6 +32,7 @@ public class CeylonElement {
     private VirtualFile file; //TODO: is this really the best thing to use nowadays?
     private String qualifiedName;
     private int line;
+    private int decline;
     private String imageKey;
     private String packageLabel;
     private StyledString label;
@@ -86,6 +87,7 @@ public class CeylonElement {
             Tree.Declaration decl = (Tree.Declaration) node;
             Declaration dec = decl.getDeclarationModel();
             qualifiedName = dec.getQualifiedNameString();
+            decline = decl.getToken().getLine();
         }
         else if (node instanceof Tree.PackageDescriptor) {
             qualifiedName = 
@@ -115,8 +117,7 @@ public class CeylonElement {
         }
         else if (node instanceof Tree.ImportModule) {
             Tree.ImportModule imp = (Tree.ImportModule) node;
-            String name = 
-                    getImportedName(imp);
+            String name = getImportedName(imp);
             qualifiedName = 
                     unit.getPackage()
                         .getNameAsString() 
@@ -207,7 +208,9 @@ public class CeylonElement {
                 return false;
             }
             if (qualifiedName!=null && that.qualifiedName!=null) {
-                return qualifiedName.equals(that.qualifiedName);
+                return qualifiedName.equals(that.qualifiedName) &&
+                        //handle overloaded methods
+                        decline == that.decline;
             }
             else if (qualifiedName==null && that.qualifiedName==null) {
                 return line==that.line;
