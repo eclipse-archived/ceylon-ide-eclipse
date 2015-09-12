@@ -58,6 +58,39 @@ public abstract class DefinitionGenerator {
         }
     }
 
+    private static String parameterName(
+            Tree.Expression e, Type et) {
+        Tree.Term term = e.getTerm();
+        if (term instanceof Tree.StaticMemberOrTypeExpression) {
+            Tree.StaticMemberOrTypeExpression smte = 
+                    (Tree.StaticMemberOrTypeExpression) 
+                        term;
+            String id = 
+                    smte.getIdentifier()
+                        .getText();
+            return toInitialLowercase(id);
+        }
+        else {
+            if (et.isClassOrInterface() || 
+                et.isTypeParameter()) {
+                String tn = et.getDeclaration().getName();
+                return toInitialLowercase(tn);
+            }
+            else {
+                return "arg";
+            }
+        }
+    }
+
+    private static Type parameterType(
+            Node arg, Tree.Expression e) {
+        Unit unit = arg.getUnit();
+        Type et = e==null ? null : 
+                e.getTypeModel();
+        return et == null ? 
+                unit.getAnythingType() : 
+                unit.denotableType(et);
+    }
     static LinkedHashMap<String,Type> 
     getParametersFromPositionalArgs(
             Tree.PositionalArgumentList pal) {
@@ -70,46 +103,17 @@ public abstract class DefinitionGenerator {
                 Tree.ListedArgument la = 
                         (Tree.ListedArgument) pa;
                 Tree.Expression e = la.getExpression();
-                Type et = e.getTypeModel();
-                String name;
-                Type t;
-                Unit unit = pa.getUnit();
-                if (et == null) {
-                    t = unit.getAnythingType();
-                    name = "arg";
-                }
-                else {
-                    t = unit.denotableType(et);
-                    Tree.Term term = e.getTerm();
-                    if (term instanceof Tree.StaticMemberOrTypeExpression) {
-                        Tree.StaticMemberOrTypeExpression smte = 
-                                (Tree.StaticMemberOrTypeExpression) 
-                                    term;
-                        String id = 
-                                smte.getIdentifier()
-                                    .getText();
-                        name = toInitialLowercase(id);
-                    }
-                    else {
-                        if (et.isClassOrInterface() || 
-                            et.isTypeParameter()) {
-                            String tn = et.getDeclaration().getName();
-                            name = toInitialLowercase(tn);
-                        }
-                        else {
-                            name = "arg";
-                        }
-                    }
-                }
+                Type type = parameterType(pa, e);
+                String name = parameterName(e, type);
                 if (types.containsKey(name)) {
                     name = name + ++i;
                 }
-                types.put(name, t);
+                types.put(name, type);
             }
         }
         return types;
     }
-
+    
     static LinkedHashMap<String,Type> 
     getParametersFromNamedArgs(Tree.NamedArgumentList nal) {
         LinkedHashMap<String,Type> types = 
@@ -122,11 +126,11 @@ public abstract class DefinitionGenerator {
                 Tree.Expression e = 
                         na.getSpecifierExpression()
                             .getExpression();
-                String name = na.getIdentifier().getText();
-                Unit unit = a.getUnit();
-                Type type = e==null ? 
-                        unit.getAnythingType() : 
-                        unit.denotableType(e.getTypeModel());
+                Tree.Identifier id = na.getIdentifier();
+                Type type = parameterType(a, e);
+                String name = id==null ? 
+                        parameterName(e, type) : 
+                        id.getText();
                 if (types.containsKey(name)) {
                     name = name + ++i;
                 }
