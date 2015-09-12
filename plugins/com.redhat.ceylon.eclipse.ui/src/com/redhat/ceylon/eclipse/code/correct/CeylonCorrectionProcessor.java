@@ -1044,7 +1044,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addChangeToIfProposal(proposals, doc, file, rootNode, statement);
             
-            addConvertToDefaultConstructorProposal(proposals, doc, file, statement);
+            addConvertToDefaultConstructorProposal(proposals, doc, file, rootNode, statement);
             
             addConvertToClassProposal(proposals, declaration, editor);
             addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);

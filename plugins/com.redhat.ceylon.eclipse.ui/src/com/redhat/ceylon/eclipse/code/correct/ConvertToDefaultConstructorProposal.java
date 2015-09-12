@@ -17,7 +17,9 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 
 public class ConvertToDefaultConstructorProposal {
@@ -25,6 +27,7 @@ public class ConvertToDefaultConstructorProposal {
     static void addConvertToDefaultConstructorProposal(
             Collection<ICompletionProposal> proposals, 
             IDocument doc, IFile file, 
+            Tree.CompilationUnit rootNode, 
             Tree.Statement statement) {
         if (statement instanceof Tree.ClassDefinition) {
             Tree.ClassDefinition cd = 
@@ -39,10 +42,22 @@ public class ConvertToDefaultConstructorProposal {
                 String indent = getIndent(statement, doc);
                 String delim = getDefaultLineDelimiter(doc);
                 String defIndent = getDefaultIndent();
+                int insertLoc = cd.getClassBody().getStartIndex()+1;
                 StringBuilder declarations = new StringBuilder();
                 StringBuilder assignments = new StringBuilder();
                 StringBuilder params = new StringBuilder();
                 for (Tree.Parameter p: pl.getParameters()) {
+                    if (p instanceof Tree.InitializerParameter) {
+                        Node pdn = 
+                                Nodes.findDeclaration(rootNode, 
+                                        p.getParameterModel().getModel());
+                        if (pdn!=null) {
+                            //the constructor has to come 
+                            //after the declarations of the
+                            //parameters
+                            insertLoc = pdn.getEndIndex();
+                        }
+                    }
                     Parameter model = p.getParameterModel();
                     String attDef = "";
                     String paramDef = "";
@@ -65,7 +80,7 @@ public class ConvertToDefaultConstructorProposal {
                         else {
                             paramDef = 
                                     model.getType()
-                                    .asString(cd.getUnit()) 
+                                        .asString(cd.getUnit()) 
                                     + " " + pname;
                         }
                     }
@@ -106,9 +121,7 @@ public class ConvertToDefaultConstructorProposal {
                 change.addEdit(new DeleteEdit(
                         pl.getStartIndex(),
                         pl.getDistance()));
-                change.addEdit(new InsertEdit(
-                        cd.getClassBody().getStartIndex()+1, 
-                        text));
+                change.addEdit(new InsertEdit(insertLoc, text));
                 String name = 
                         cd.getDeclarationModel().getName();
                 proposals.add(new CorrectionProposal(

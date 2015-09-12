@@ -306,11 +306,16 @@ public class Nodes {
                     }
                 }
             }
-            FindReferencedNodeVisitor visitor = 
-                    new FindReferencedNodeVisitor(model);
-            rootNode.visit(visitor);
-            return visitor.getDeclarationNode();
+            return findDeclaration(rootNode, model);
         }
+    }
+
+    public static Node findDeclaration(
+            Tree.CompilationUnit rootNode, Referenceable model) {
+        FindReferencedNodeVisitor visitor = 
+                new FindReferencedNodeVisitor(model);
+        rootNode.visit(visitor);
+        return visitor.getDeclarationNode();
     }
     
     public static String toString(Node term, List<CommonToken> tokens) {
