@@ -23,12 +23,12 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolution2;
 
-public class CeylonMarkerResolutionProposal implements ICompletionProposal {
+public class MarkerResolutionProposal implements ICompletionProposal {
 
     private IMarkerResolution fResolution;
     private IMarker fMarker;
 
-    public CeylonMarkerResolutionProposal(IMarkerResolution resolution, IMarker marker) {
+    public MarkerResolutionProposal(IMarkerResolution resolution, IMarker marker) {
         fResolution = resolution;
         fMarker = marker;
     }

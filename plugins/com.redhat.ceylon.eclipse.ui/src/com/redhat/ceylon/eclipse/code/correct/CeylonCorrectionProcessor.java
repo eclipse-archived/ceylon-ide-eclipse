@@ -406,8 +406,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     .getResolutions(marker);
         if (res.length > 0) {
             for (int i=0; i<res.length; i++) {
-                CeylonMarkerResolutionProposal mrp = 
-                        new CeylonMarkerResolutionProposal(
+                MarkerResolutionProposal mrp = 
+                        new MarkerResolutionProposal(
                                 res[i], marker);
                 proposals.add(mrp);
             }

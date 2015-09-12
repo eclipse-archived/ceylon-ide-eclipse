@@ -68,6 +68,8 @@ class AnnotationInfo {
                         (CeylonAnnotation) annotation;
                 collectAnnotationFixes(ca, position, list);
             }
+            //TODO: I'm pretty sure we don't even need/use
+            //      this, but I might be wrong...
             if (annotation instanceof MarkerAnnotation) {
                 MarkerAnnotation ma = 
                         (MarkerAnnotation) annotation;
