@@ -37,6 +37,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -58,8 +59,9 @@ public class Navigation {
             Unit unit = model.getUnit();
             if (unit instanceof CeylonUnit) {
                 CeylonUnit ceylonUnit = (CeylonUnit) unit;
-                Node node = getReferencedNodeInUnit(model, 
-                        ceylonUnit.getCompilationUnit());
+                Node node = 
+                        getReferencedNodeInUnit(model, 
+                                ceylonUnit.getCompilationUnit());
                 if (node != null) {
                     gotoNode(node, null);
                 }
@@ -141,7 +143,8 @@ public class Navigation {
     }
 
 
-    public static void gotoLocation(Unit unit, int startOffset, int length) {
+    public static void gotoLocation(Unit unit, 
+            int startOffset, int length) {
         if (unit instanceof IResourceAware) {
             IResourceAware ra = (IResourceAware) unit;
             IFile file = ra.getFileResource();
@@ -169,10 +172,13 @@ public class Navigation {
             return;
         }
         try {
-            IEditorPart editor = getActivePage()
-                    .openEditor(editorInput, EDITOR_ID);
+            IEditorPart editor = 
+                    getActivePage()
+                        .openEditor(editorInput, 
+                                EDITOR_ID);
             if (editor instanceof CeylonEditor) {
-                ((CeylonEditor) editor).selectAndReveal(offset, length);
+                CeylonEditor ce = (CeylonEditor) editor;
+                ce.selectAndReveal(offset, length);
             }
         }
         catch (PartInitException pie) {
@@ -192,7 +198,8 @@ public class Navigation {
             else {
                 try {
                     editor = (ITextEditor) 
-                            page.openEditor(input, EDITOR_ID);
+                            page.openEditor(input, 
+                                    EDITOR_ID);
                 } 
                 catch (PartInitException e) {
                     e.printStackTrace();
@@ -212,8 +219,8 @@ public class Navigation {
 
     public static IPath getUnitPath(Unit unit) {
         if (unit instanceof IResourceAware) {
-            IFile fileResource = 
-                    ((IResourceAware) unit).getFileResource();
+            IResourceAware ra = (IResourceAware) unit;
+            IFile fileResource = ra.getFileResource();
             if (fileResource!=null) {
                 return fileResource.getLocation();
             }
@@ -222,22 +229,29 @@ public class Navigation {
             }
         }
         
-        if ((unit instanceof ExternalSourceFile ) ||
-                (unit instanceof CeylonBinaryUnit )) {
+        if ((unit instanceof ExternalSourceFile) ||
+                (unit instanceof CeylonBinaryUnit)) {
+            CeylonUnit ceylonUnit = (CeylonUnit) unit;
             IdePhasedUnit externalPhasedUnit = 
-                    ((CeylonUnit) unit).getPhasedUnit();
-            return new Path(externalPhasedUnit.getUnitFile().getPath());
+                    ceylonUnit.getPhasedUnit();
+            VirtualFile file = externalPhasedUnit.getUnitFile();
+            return new Path(file.getPath());
         }
         
         return null;
     }
     
-    private static IEditorPart openInEditor(IFile file, boolean activate) 
-            throws PartInitException {
+    private static IEditorPart openInEditor(IFile file, 
+            boolean activate) 
+                    throws PartInitException {
         if (file!=null) {
-            IWorkbenchPage p = getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            if (p!=null) {
-                IEditorPart editorPart = IDE.openEditor(p, file, activate);
+            IWorkbenchPage page = 
+                    getWorkbench()
+                        .getActiveWorkbenchWindow()
+                        .getActivePage();
+            if (page!=null) {
+                IEditorPart editorPart = 
+                        IDE.openEditor(page, file, activate);
                 Navigation.initializeHighlightRange(editorPart);
                 return editorPart;
             }
@@ -245,12 +259,17 @@ public class Navigation {
         return null;
     }
 
-    private static IEditorPart openInEditor(IEditorInput input, String editorID, boolean activate) 
-            throws PartInitException {
+    private static IEditorPart openInEditor(IEditorInput input, 
+            String editorID, boolean activate) 
+                    throws PartInitException {
         if (input!=null) {
-            IWorkbenchPage p = getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            if (p!=null) {
-                IEditorPart editorPart = p.openEditor(input, editorID, activate);
+            IWorkbenchPage page = 
+                    getWorkbench()
+                        .getActiveWorkbenchWindow()
+                        .getActivePage();
+            if (page!=null) {
+                IEditorPart editorPart = 
+                        page.openEditor(input, editorID, activate);
                 Navigation.initializeHighlightRange(editorPart);
                 return editorPart;
             }
@@ -263,12 +282,18 @@ public class Navigation {
      * 
      * @return the IEditorPart or null if wrong element type or opening failed
      */
-    public static IEditorPart openInEditor(Object inputElement, boolean activate) throws PartInitException {
-        if (inputElement instanceof IFile)
-            return openInEditor((IFile) inputElement, activate);
-        IEditorInput input= EditorUtil.getEditorInput(inputElement);
-        if (input!=null)
-            return openInEditor(input, EditorUtil.getEditorID(input, inputElement), activate);
+    public static IEditorPart openInEditor(Object inputElement, 
+            boolean activate) 
+                    throws PartInitException {
+        if (inputElement instanceof IFile) {
+            IFile file = (IFile) inputElement;
+            return openInEditor(file, activate);
+        }
+        IEditorInput input = EditorUtil.getEditorInput(inputElement);
+        if (input!=null) {
+            String id = EditorUtil.getEditorID(input, inputElement);
+            return openInEditor(input, id, activate);
+        }
         return null;
     }
 
@@ -278,7 +303,8 @@ public class Navigation {
      * 
      * @return the IEditorPart or null if wrong element type or opening failed
      */
-    public static IEditorPart openInEditor(Object inputElement) throws PartInitException {
+    public static IEditorPart openInEditor(Object inputElement) 
+            throws PartInitException {
         return openInEditor(inputElement, true);
     }
 
@@ -286,7 +312,8 @@ public class Navigation {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(IMarker.CHAR_START, offset);
         map.put(IMarker.CHAR_END, offset+length);
-        if (file instanceof IFile && CeylonBuilder.isCeylon((IFile) file)) {
+        if (file instanceof IFile && 
+                CeylonBuilder.isCeylon((IFile) file)) {
             map.put(IDE.EDITOR_ID_ATTR, CeylonPlugin.EDITOR_ID);
         }
         try {
@@ -315,8 +342,10 @@ public class Navigation {
     private static void initializeHighlightRange(IEditorPart editorPart) {
         if (editorPart instanceof ITextEditor) {
             IAction toggleAction = 
-                    editorPart.getEditorSite().getActionBars()
-                        .getGlobalActionHandler(TOGGLE_SHOW_SELECTED_ELEMENT_ONLY);
+                    editorPart.getEditorSite()
+                        .getActionBars()
+                        .getGlobalActionHandler(
+                                TOGGLE_SHOW_SELECTED_ELEMENT_ONLY);
             boolean enable = toggleAction!=null;
             if (enable && editorPart instanceof CeylonEditor) {
                 // TODO Maybe support show segments?
@@ -329,10 +358,13 @@ public class Navigation {
             }
             if (enable) {
                 if (toggleAction instanceof TextEditorAction) {
+                    TextEditorAction textEditorAction = 
+                            (TextEditorAction) toggleAction;
+                    ITextEditor editor = (ITextEditor) editorPart;
                     // Reset the action
-                    ((TextEditorAction) toggleAction).setEditor(null);
+                    textEditorAction.setEditor(null);
                     // Restore the action
-                    ((TextEditorAction) toggleAction).setEditor((ITextEditor) editorPart);
+                    textEditorAction.setEditor(editor);
                 } 
                 else {
                     // Un-check
@@ -362,11 +394,13 @@ public class Navigation {
     public static IJavaElement getJavaElement(Declaration declaration)
             throws JavaModelException {
         if (declaration instanceof Function && declaration.isAnnotation()) {
-            declaration = ((Function) declaration).getTypeDeclaration();
+            Function fun = (Function) declaration;
+            declaration = fun.getTypeDeclaration();
         }
         if (declaration.getUnit() instanceof IJavaModelAware) {
             final IJavaModelAware javaModelAware = 
-                    (IJavaModelAware) declaration.getUnit();
+                    (IJavaModelAware) 
+                        declaration.getUnit();
             return javaModelAware.toJavaElement(declaration);
         }
         return null;
