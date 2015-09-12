@@ -95,8 +95,8 @@ public abstract class ErrorVisitor extends Visitor {
 
     protected boolean include(Message msg) {
         if (msg instanceof UsageWarning) {
-            UsageWarning uw = (UsageWarning) msg;
-            return !uw.isSuppressed();
+            UsageWarning warning = (UsageWarning) msg;
+            return !warning.isSuppressed();
         }
         else {
             return true;

@@ -55,8 +55,10 @@ public class MarkerCreator extends ErrorVisitor {
                 CeylonBuilder.SOURCE
             };
         try {
-            file.createMarker(message instanceof ModuleSourceMapper.ModuleDependencyAnalysisError ?
-                    MODULE_DEPENDENCY_PROBLEM_MARKER_ID:PROBLEM_MARKER_ID)
+            file.createMarker(
+                    message instanceof ModuleSourceMapper.ModuleDependencyAnalysisError ?
+                            MODULE_DEPENDENCY_PROBLEM_MARKER_ID :
+                            PROBLEM_MARKER_ID)
                 .setAttributes(attributeNames, values);
         } 
         catch (Exception e) {

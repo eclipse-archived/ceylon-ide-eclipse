@@ -2379,7 +2379,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             IFile file = getFile(phasedUnit);
             CompilationUnit compilationUnit = phasedUnit.getCompilationUnit();
             compilationUnit.visit(new WarningSuppressionVisitor<Warning>(Warning.class,
-                    CeylonBuilder.getSuppressedWarnings(project)));
+                    getSuppressedWarnings(project)));
             compilationUnit.visit(new MarkerCreator(file));
             addTaskMarkers(file, phasedUnit.getTokens());
         }

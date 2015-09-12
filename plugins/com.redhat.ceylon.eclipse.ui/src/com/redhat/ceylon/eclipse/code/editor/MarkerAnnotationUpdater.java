@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.TODO_ANNOTATION_TYPE;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.isParseAnnotation;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.TASK_MARKER_ID;
 
@@ -51,28 +50,31 @@ class MarkerAnnotationUpdater implements TreeLifecycleListener {
                     iter.hasNext();) {
                 Annotation ann = iter.next();
                 if (ann instanceof MarkerAnnotation) {
-                    MarkerAnnotation ma = (MarkerAnnotation) ann;
+                    MarkerAnnotation ma = 
+                            (MarkerAnnotation) ann;
                     IMarker marker = ma.getMarker();
                     try {
                         String type = marker.getType();
                         boolean isProblemMarker = 
                                 type.equals(PROBLEM_MARKER_ID);
-                        boolean isModuleDependencyMarker = 
-                                type.equals(MODULE_DEPENDENCY_PROBLEM_MARKER_ID);
+//                        boolean isModuleDependencyMarker = 
+//                                type.equals(MODULE_DEPENDENCY_PROBLEM_MARKER_ID);
                         boolean isTaskMarker = 
                                 type.equals(TASK_MARKER_ID);
                         
                         Integer markerStart = 
                                 (Integer) 
-                                    marker.getAttribute(IMarker.CHAR_START);
+                                    marker.getAttribute(
+                                        IMarker.CHAR_START);
                         Integer markerEnd = 
                                 (Integer) 
-                                    marker.getAttribute(IMarker.CHAR_END);
+                                    marker.getAttribute(
+                                        IMarker.CHAR_END);
                         if (markerStart==null || markerEnd==null) {
                             continue;
                         }
                         
-                        if ((isProblemMarker && !isModuleDependencyMarker) 
+                        if (isProblemMarker //&& !isModuleDependencyMarker 
                                 || isTaskMarker) {
                             boolean found = false;
                             for (@SuppressWarnings("unchecked")
@@ -85,8 +87,7 @@ class MarkerAnnotationUpdater implements TreeLifecycleListener {
                                         isParseAnnotation(ann2);
                                 boolean task = 
                                         isTaskMarker && 
-                                        ann2.getType()
-                                            .equals(TODO_ANNOTATION_TYPE);
+                                        isTodoAnnotation(ann2);
                                 if (problem || task) {
                                     Position position = 
                                             model.getPosition(ann2);
@@ -110,5 +111,9 @@ class MarkerAnnotationUpdater implements TreeLifecycleListener {
                 }
             }
         }
+    }
+
+    private static boolean isTodoAnnotation(Annotation ann) {
+        return ann.getType().equals(TODO_ANNOTATION_TYPE);
     }
 }
