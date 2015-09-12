@@ -16,6 +16,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class SplitIfStatementProposal {
@@ -27,7 +28,8 @@ class SplitIfStatementProposal {
         if (statement instanceof Tree.IfStatement) {
             Tree.IfStatement is = 
                     (Tree.IfStatement) statement;
-            if (is.getElseClause()==null) {
+            Tree.ElseClause elseClause = is.getElseClause();
+            if (elseClause==null) {
                 Tree.ConditionList cl = 
                         is.getIfClause().getConditionList();
                 if (cl!=null) {
@@ -39,7 +41,8 @@ class SplitIfStatementProposal {
                         Tree.Condition c2 = conditions.get(size-1);
                         if (c1!=null && c2!=null) {
                             TextChange change = 
-                                    new TextFileChange("Split If Statement", 
+                                    new TextFileChange(
+                                            "Split If Statement", 
                                             file);
                             change.setEdit(new MultiTextEdit());
                             String ws;
@@ -62,7 +65,45 @@ class SplitIfStatementProposal {
                             int end = is.getEndIndex();
                             change.addEdit(new InsertEdit(end, ws + "}"));
                             incrementIndent(doc, is, cl, change, indent);
-                            proposals.add(new CorrectionProposal("Split 'if' statement", 
+                            proposals.add(new CorrectionProposal(
+                                    "Split 'if' statement at condition", 
+                                    change, null));
+                        }
+                    }
+                }
+            }
+            else {
+                Tree.Block block = elseClause.getBlock();
+                if (block!=null &&
+                        block.getToken().getType()
+                            == CeylonLexer.IF_CLAUSE) {
+                    List<Tree.Statement> statements = 
+                            block.getStatements();
+                    if (statements.size()==1) {
+                        Tree.Statement st = statements.get(0);
+                        if (st instanceof Tree.IfStatement) {
+                            Tree.IfStatement inner = 
+                                    (Tree.IfStatement) st;
+                            Tree.ConditionList icl = 
+                                    inner.getIfClause()
+                                        .getConditionList();
+                            TextChange change = 
+                                    new TextFileChange(
+                                            "Split If Statement", 
+                                            file);
+                            change.setEdit(new MultiTextEdit());
+                            String ws = 
+                                    getDefaultLineDelimiter(doc) + 
+                                    getIndent(is, doc);
+                            String indent = getDefaultIndent();
+                            int start = block.getStartIndex();
+                            change.addEdit(new InsertEdit(start,  
+                                    "{" + ws + indent));
+                            int end = is.getEndIndex();
+                            change.addEdit(new InsertEdit(end, ws + "}"));
+                            incrementIndent(doc, is, icl, change, indent);
+                            proposals.add(new CorrectionProposal(
+                                    "Split 'if' statement at 'else'", 
                                     change, null));
                         }
                     }

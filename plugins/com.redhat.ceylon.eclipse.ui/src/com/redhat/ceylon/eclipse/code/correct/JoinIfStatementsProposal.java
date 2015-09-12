@@ -16,6 +16,7 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class JoinIfStatementsProposal {
@@ -28,7 +29,8 @@ class JoinIfStatementsProposal {
         if (statement instanceof Tree.IfStatement) {
             Tree.IfStatement outer = 
                     (Tree.IfStatement) statement;
-            if (outer.getElseClause()==null) {
+            Tree.ElseClause elseClause = outer.getElseClause();
+            if (elseClause==null) {
                 Tree.Block block = 
                         outer.getIfClause().getBlock();
                 if (block!=null) {
@@ -47,7 +49,8 @@ class JoinIfStatementsProposal {
                                         .getConditionList();
                             if (ocl!=null && icl!=null) {
                                 TextChange change = 
-                                        new TextFileChange("Join If Statements", 
+                                        new TextFileChange(
+                                                "Join If Statements", 
                                                 file);
                                 change.setEdit(new MultiTextEdit());
                                 change.addEdit(new ReplaceEdit(ocl.getEndIndex()-1, 
@@ -58,7 +61,8 @@ class JoinIfStatementsProposal {
                                         getIndent(outer, doc));
                                 change.addEdit(new DeleteEdit(inner.getEndIndex(), 
                                         outer.getEndIndex()-inner.getEndIndex()));
-                                proposals.add(new CorrectionProposal("Join 'if' statements at condition list", 
+                                proposals.add(new CorrectionProposal(
+                                        "Join 'if' statements at condition list", 
                                         change, null));
                             }
                         }
@@ -66,9 +70,10 @@ class JoinIfStatementsProposal {
                 }
             }
             else {
-                Tree.Block block = 
-                        outer.getElseClause().getBlock();
-                if (block!=null) {
+                Tree.Block block = elseClause.getBlock();
+                if (block!=null &&
+                        block.getToken().getType()
+                            != CeylonLexer.IF_CLAUSE) {
                     List<Tree.Statement> statements = 
                             block.getStatements();
                     if (statements.size()==1) {
@@ -80,7 +85,8 @@ class JoinIfStatementsProposal {
                                     inner.getIfClause()
                                         .getConditionList();
                             TextChange change = 
-                                    new TextFileChange("Join If Statements", 
+                                    new TextFileChange(
+                                            "Join If Statements", 
                                             file);
                             change.setEdit(new MultiTextEdit());
                             int from = block.getStartIndex();
@@ -91,7 +97,8 @@ class JoinIfStatementsProposal {
                                     getIndent(outer, doc));
                             change.addEdit(new DeleteEdit(inner.getEndIndex(), 
                                     outer.getEndIndex()-inner.getEndIndex()));
-                            proposals.add(new CorrectionProposal("Join 'if' statements at 'else'", 
+                            proposals.add(new CorrectionProposal(
+                                    "Join 'if' statements at 'else'", 
                                     change, null));
                         }
                     }
