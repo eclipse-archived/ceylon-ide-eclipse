@@ -140,14 +140,15 @@ public abstract class LocalProposal extends AbstractLinkedMode
             return;
         }
     
-        Integer endIndex = expanse.getEndIndex();
-        if (currentOffset<expanse.getStartIndex() || 
+        int startIndex = expanse.getStartIndex();
+        int endIndex = expanse.getEndIndex();
+        if (currentOffset<startIndex || 
                 currentOffset>endIndex) {
             return;
         }
         nameProposals = computeNameProposals(expression);
         initialName = nameProposals[0];
-        offset = expanse.getStartIndex();
+        offset = startIndex;
         type = resultType==null ? null : 
             node.getUnit().denotableType(resultType);
     
@@ -166,7 +167,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
     }
     
     protected abstract DocumentChange createChange(IDocument document, 
-            Node expanse, Integer stopIndex);
+            Node expanse, int endIndex);
 
     protected final Node node;
     protected final Tree.CompilationUnit rootNode;

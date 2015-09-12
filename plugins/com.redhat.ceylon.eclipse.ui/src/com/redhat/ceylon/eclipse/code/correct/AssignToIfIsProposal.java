@@ -24,7 +24,7 @@ import com.redhat.ceylon.eclipse.util.LinkedMode;
 class AssignToIfIsProposal extends LocalProposal {
 
     protected DocumentChange createChange(IDocument document, Node expanse,
-            Integer stopIndex) {
+            int endIndex) {
         DocumentChange change = 
                 new DocumentChange("Assign to If Is", document);
         change.setEdit(new MultiTextEdit());
@@ -32,12 +32,12 @@ class AssignToIfIsProposal extends LocalProposal {
 
         String terminal = expanse.getEndToken().getText();
         if (!terminal.equals(";")) {
-            change.addEdit(new InsertEdit(stopIndex+1, ") {}"));
-            exitPos = stopIndex+13;
+            change.addEdit(new InsertEdit(endIndex, ") {}"));
+            exitPos = endIndex+12;
         }
         else {
-            change.addEdit(new ReplaceEdit(stopIndex, 1, ") {}"));
-            exitPos = stopIndex+12;
+            change.addEdit(new ReplaceEdit(endIndex-1, 1, ") {}"));
+            exitPos = endIndex+11;
         }
         return change;
     }

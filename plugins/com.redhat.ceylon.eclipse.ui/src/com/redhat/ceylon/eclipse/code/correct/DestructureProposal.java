@@ -21,15 +21,15 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class DestructureProposal extends LocalProposal {
     
@@ -41,7 +41,7 @@ class DestructureProposal extends LocalProposal {
     }
     
     protected DocumentChange createChange(IDocument document, Node expanse,
-            Integer stopIndex) {
+            int endIndex) {
         DocumentChange change = 
                 new DocumentChange("Destructure", document);
         change.setEdit(new MultiTextEdit());
@@ -76,11 +76,11 @@ class DestructureProposal extends LocalProposal {
 
         String terminal = expanse.getEndToken().getText();
         if (!terminal.equals(";")) {
-            change.addEdit(new InsertEdit(stopIndex+1, ";"));
-            exitPos = stopIndex+2+text.length();
+            change.addEdit(new InsertEdit(endIndex, ";"));
+            exitPos = endIndex+1+text.length();
         }
         else {
-            exitPos = stopIndex+1+text.length();
+            exitPos = endIndex+text.length();
         }
         return change;
     }

@@ -23,7 +23,7 @@ import com.redhat.ceylon.eclipse.util.LinkedMode;
 class AssignToTryProposal extends LocalProposal {
 
     protected DocumentChange createChange(IDocument document, Node expanse,
-            Integer stopIndex) {
+            int endIndex) {
         DocumentChange change = 
                 new DocumentChange("Assign to Try", document);
         change.setEdit(new MultiTextEdit());
@@ -31,12 +31,12 @@ class AssignToTryProposal extends LocalProposal {
 
         String terminal = expanse.getEndToken().getText();
         if (!terminal.equals(";")) {
-            change.addEdit(new InsertEdit(stopIndex+1, ") {}"));
-            exitPos = stopIndex+3;
+            change.addEdit(new InsertEdit(endIndex, ") {}"));
+            exitPos = endIndex+2;
         }
         else {
-            change.addEdit(new ReplaceEdit(stopIndex, 1, ") {}"));
-            exitPos = stopIndex+2;
+            change.addEdit(new ReplaceEdit(endIndex-1, 1, ") {}"));
+            exitPos = endIndex+1;
         }
         return change;
     }

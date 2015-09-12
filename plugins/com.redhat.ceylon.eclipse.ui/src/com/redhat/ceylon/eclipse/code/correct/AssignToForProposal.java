@@ -27,7 +27,7 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 class AssignToForProposal extends LocalProposal {
 
     protected DocumentChange createChange(IDocument document, Node expanse,
-            Integer stopIndex) {
+            int endIndex) {
         DocumentChange change = 
                 new DocumentChange("Assign to For", document);
         change.setEdit(new MultiTextEdit());
@@ -45,12 +45,12 @@ class AssignToForProposal extends LocalProposal {
 
         String terminal = expanse.getEndToken().getText();
         if (!terminal.equals(";")) {
-            change.addEdit(new InsertEdit(stopIndex+1, ") {}"));
-            exitPos = stopIndex+4+adjust;
+            change.addEdit(new InsertEdit(endIndex, ") {}"));
+            exitPos = endIndex+3+adjust;
         }
         else {
-            change.addEdit(new ReplaceEdit(stopIndex, 1, ") {}"));
-            exitPos = stopIndex+3+adjust;
+            change.addEdit(new ReplaceEdit(endIndex-1, 1, ") {}"));
+            exitPos = endIndex+2+adjust;
         }
         return change;
     }

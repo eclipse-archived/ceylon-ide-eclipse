@@ -23,7 +23,7 @@ import com.redhat.ceylon.eclipse.util.LinkedMode;
 class AssignToIfExistsProposal extends LocalProposal {
 
     protected DocumentChange createChange(IDocument document, Node expanse,
-            Integer stopIndex) {
+            int endIndex) {
         DocumentChange change = 
                 new DocumentChange("Assign to If Exists", document);
         change.setEdit(new MultiTextEdit());
@@ -31,12 +31,12 @@ class AssignToIfExistsProposal extends LocalProposal {
 
         String terminal = expanse.getEndToken().getText();
         if (!terminal.equals(";")) {
-            change.addEdit(new InsertEdit(stopIndex+1, ") {}"));
-            exitPos = stopIndex+9;
+            change.addEdit(new InsertEdit(endIndex, ") {}"));
+            exitPos = endIndex+8;
         }
         else {
-            change.addEdit(new ReplaceEdit(stopIndex, 1, ") {}"));
-            exitPos = stopIndex+8;
+            change.addEdit(new ReplaceEdit(endIndex-1, 1, ") {}"));
+            exitPos = endIndex+7;
         }
         return change;
     }

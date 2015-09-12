@@ -23,7 +23,7 @@ import com.redhat.ceylon.eclipse.util.LinkedMode;
 class AssignToIfNonemptyProposal extends LocalProposal {
 
     protected DocumentChange createChange(IDocument document, Node expanse,
-            Integer stopIndex) {
+            int endIndex) {
         DocumentChange change = 
                 new DocumentChange("Assign to If Nonempty", document);
         change.setEdit(new MultiTextEdit());
@@ -31,12 +31,12 @@ class AssignToIfNonemptyProposal extends LocalProposal {
 
         String terminal = expanse.getEndToken().getText();
         if (!terminal.equals(";")) {
-            change.addEdit(new InsertEdit(stopIndex+1, ") {}"));
-            exitPos = stopIndex+11;
+            change.addEdit(new InsertEdit(endIndex, ") {}"));
+            exitPos = endIndex+10;
         }
         else {
-            change.addEdit(new ReplaceEdit(stopIndex, 1, ") {}"));
-            exitPos = stopIndex+10;
+            change.addEdit(new ReplaceEdit(endIndex-1, 1, ") {}"));
+            exitPos = endIndex+9;
         }
         return change;
     }

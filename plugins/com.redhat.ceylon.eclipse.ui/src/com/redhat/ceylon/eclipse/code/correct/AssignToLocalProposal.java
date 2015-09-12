@@ -25,7 +25,7 @@ import com.redhat.ceylon.eclipse.util.LinkedMode;
 class AssignToLocalProposal extends LocalProposal {
 
     protected DocumentChange createChange(IDocument document, Node expanse,
-            Integer stopIndex) {
+            int endIndex) {
         DocumentChange change = 
                 new DocumentChange("Assign to Local", document);
         change.setEdit(new MultiTextEdit());
@@ -33,11 +33,11 @@ class AssignToLocalProposal extends LocalProposal {
 
         String terminal = expanse.getEndToken().getText();
         if (!terminal.equals(";")) {
-            change.addEdit(new InsertEdit(stopIndex+1, ";"));
-            exitPos = stopIndex+2;
+            change.addEdit(new InsertEdit(endIndex, ";"));
+            exitPos = endIndex+1;
         }
         else {
-            exitPos = stopIndex+1;
+            exitPos = endIndex;
         }
         return change;
     }
