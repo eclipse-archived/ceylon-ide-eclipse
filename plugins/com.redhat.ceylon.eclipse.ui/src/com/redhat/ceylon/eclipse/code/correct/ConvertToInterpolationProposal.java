@@ -39,27 +39,6 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
         }
         return result;
     }
-
-    private static boolean isConcatenation(Tree.SumOp sum) {
-        List<Tree.Term> terms = flatten(sum);
-        Tree.Term lt = terms.get(0);
-        boolean expectingLiteral =
-                lt instanceof Tree.StringLiteral ||
-                lt instanceof Tree.StringTemplate;
-        for (Tree.Term term: terms) {
-            if (expectingLiteral) {
-                if (!(term instanceof Tree.StringLiteral ||
-                      term instanceof Tree.StringTemplate)) {
-                    return false;
-                }
-                expectingLiteral = false;
-            }
-            else {
-                expectingLiteral = true;
-            }
-        }
-        return true;
-    }
     
     static class ConcatenationVisitor extends Visitor {
         Node node;
@@ -70,11 +49,11 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
         @Override
         public void visit(Tree.SumOp that) {
             if (that.getStartIndex()<=node.getStartIndex() &&
-                that.getEndIndex()>=node.getEndIndex()) {
-                if (isConcatenation(that)) {
-                    result = that;
-                    return;
-                }
+                that.getEndIndex()>=node.getEndIndex() &&
+                that.getTypeModel()!=null &&
+                that.getTypeModel().isString()) {
+                result = that;
+                return;
             }
             super.visit(that);
         }
@@ -110,6 +89,12 @@ class ConvertToInterpolationProposal extends CorrectionProposal {
                     int from = previous.getEndIndex();
                     int to = term.getStartIndex();
                     change.addEdit(new DeleteEdit(from, to-from));
+                }
+                if (expectingLiteral && 
+                        !(term instanceof Tree.StringLiteral ||
+                          term instanceof Tree.StringTemplate)) {
+                    change.addEdit(new InsertEdit(term.getStartIndex(), "````"));
+                    expectingLiteral = false;
                 }
                 if (expectingLiteral) {
                     if (i>0) {
