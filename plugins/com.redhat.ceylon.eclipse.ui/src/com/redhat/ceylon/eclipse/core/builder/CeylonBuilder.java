@@ -2059,7 +2059,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                 modelStates.put(project, ModelState.Parsing);
                 typeCheckers.remove(project);
-                projectRepositoryManagers.remove(project);
+                synchronized (projectRepositoryManagers) {
+                    projectRepositoryManagers.remove(project);
+                }
                 projectFiles.remove(project);
                 if (projectModuleDependencies.containsKey(project)) {
                     projectModuleDependencies.get(project).reset();
@@ -3535,7 +3537,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         projectFiles.remove(project);
         modelStates.remove(project);
         containersInitialized.remove(project);
-        projectRepositoryManagers.remove(project);
+        synchronized (projectRepositoryManagers) {
+            projectRepositoryManagers.remove(project);
+        }
         JavaProjectStateMirror.cleanup(project);
         projectModuleDependencies.remove(project);
     }
