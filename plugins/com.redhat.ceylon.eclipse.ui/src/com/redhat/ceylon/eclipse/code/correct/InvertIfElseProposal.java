@@ -110,15 +110,15 @@ class InvertIfElseProposal extends CorrectionProposal {
                         (BooleanCondition) ifCondition;
                 Term bt = boolCond.getExpression().getTerm();
                 if (bt instanceof NotOp) {
-                    String t = getTerm(doc, 
-                            ((NotOp) bt).getTerm());
+                    NotOp no = (NotOp) bt;
+                    String t = getTerm(doc, no.getTerm());
                     test = removeEnclosingParenthesis(t);
                 } else if (bt instanceof EqualityOp) {
-                    test = getInvertedEqualityTest(doc, 
-                            (EqualityOp)bt);
+                    EqualityOp eo = (EqualityOp) bt;
+                    test = getInvertedEqualityTest(doc, eo);
                 } else if (bt instanceof ComparisonOp) {
-                    test = getInvertedComparisonTest(doc, 
-                            (ComparisonOp)bt);
+                    ComparisonOp co = (ComparisonOp)bt;
+                    test = getInvertedComparisonTest(doc, co);
                 } else if (! (bt instanceof Tree.OperatorExpression) 
                         || bt instanceof Tree.UnaryOperatorExpression) {
                     term = removeEnclosingParenthesis(term);
