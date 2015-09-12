@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -16,9 +18,9 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.ParameterList;
 
 class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
     
@@ -26,18 +28,22 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
         super("Convert to positional arguments", change, new Region(offset, 0));
     }
 
-    public static void addConvertToPositionalArgumentsProposal(Collection<ICompletionProposal> proposals, 
-            IFile file, Tree.CompilationUnit cu, CeylonEditor editor, int currentOffset) {
+    public static void addConvertToPositionalArgumentsProposal(
+            Collection<ICompletionProposal> proposals, 
+            IFile file, Tree.CompilationUnit cu, 
+            CeylonEditor editor, int currentOffset) {
         Tree.NamedArgumentList nal = 
                 findNamedArgumentList(currentOffset, cu);
         if (nal==null) {
             return;
         }
         final TextChange tc = 
-                new TextFileChange("Convert to Positional Arguments", file);
+                new TextFileChange(
+                        "Convert to Positional Arguments", 
+                        file);
         Integer start = nal.getStartIndex();
         try {
-            if (EditorUtil.getDocument(tc).getChar(start-1)==' ') {
+            if (getDocument(tc).getChar(start-1)==' ') {
                 start--;
             }
         }
@@ -45,12 +51,20 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
             e1.printStackTrace();
         }
         int length = nal.getEndIndex()-start;
-        StringBuilder result = new StringBuilder().append("(");
-        List<CommonToken> tokens = editor.getParseController().getTokens();
+        StringBuilder result = 
+                new StringBuilder().append("(");
+        List<CommonToken> tokens = 
+                editor.getParseController()
+                    .getTokens();
         List<Tree.NamedArgument> args = nal.getNamedArguments();
         Tree.SequencedArgument sa = nal.getSequencedArgument();
-        for (Parameter p: nal.getNamedArgumentList().getParameterList()
-                .getParameters()) {
+        ParameterList parameterList = 
+                nal.getNamedArgumentList()
+                    .getParameterList();
+        if (parameterList==null) {
+            return;
+        }
+        for (Parameter p: parameterList.getParameters()) {
             boolean found = false;
             if (sa!=null) {
                 Parameter param = sa.getParameter();
@@ -72,28 +86,35 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                 if (param.getModel().equals(p.getModel())) {
                     found = true;
                     if (na instanceof Tree.SpecifiedArgument) {
-                        Tree.SpecifiedArgument sna = (Tree.SpecifiedArgument) na;
-                        Tree.SpecifierExpression se = sna.getSpecifierExpression();
+                        Tree.SpecifiedArgument sna = 
+                                (Tree.SpecifiedArgument) na;
+                        Tree.SpecifierExpression se = 
+                                sna.getSpecifierExpression();
                         if (se!=null && se.getExpression()!=null) {
                             result.append(Nodes.toString(se.getExpression(), tokens));
                         }
                         break;
                     }
                     else if (na instanceof Tree.MethodArgument) {
-                        Tree.MethodArgument ma = (Tree.MethodArgument) na;
+                        Tree.MethodArgument ma = 
+                                (Tree.MethodArgument) na;
                         if (ma.getDeclarationModel().isDeclaredVoid()) {
                             result.append("void ");
                         }
-                        for (Tree.ParameterList pl: ma.getParameterLists()) {
+                        for (Tree.ParameterList pl: 
+                                ma.getParameterLists()) {
                             result.append(Nodes.toString(pl, tokens));
                         }
-                        if (ma.getBlock()!=null) {
+                        Tree.Block block = ma.getBlock();
+                        if (block!=null) {
                             result.append(" ")
-                            .append(Nodes.toString(ma.getBlock(), tokens));
+                                .append(Nodes.toString(block, tokens));
                         }
-                        if (ma.getSpecifierExpression()!=null) {
+                        Tree.SpecifierExpression se = 
+                                ma.getSpecifierExpression();
+                        if (se!=null) {
                             result.append(" ")
-                            .append(Nodes.toString(ma.getSpecifierExpression(), tokens));
+                                .append(Nodes.toString(se, tokens));
                         }
                     }
                     else {
