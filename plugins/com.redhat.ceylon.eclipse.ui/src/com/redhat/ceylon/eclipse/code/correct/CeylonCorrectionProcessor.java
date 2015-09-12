@@ -988,8 +988,12 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                 editor.getParseController().getRootNode();
         if (rootNode!=null) {
             int start = context.getOffset();
-            int end = start + context.getLength();
-            Node node = findNode(rootNode, editor.getParseController().getTokens(), start, end);
+            int len = context.getLength();
+            int end = start + (len>0?len:0); //len==-1 means missing info
+            Node node = 
+                    findNode(rootNode, 
+                            editor.getParseController().getTokens(), 
+                            start, end);
             int currentOffset = editor.getSelection().getOffset();
             
             RenameProposal.add(proposals, editor);
