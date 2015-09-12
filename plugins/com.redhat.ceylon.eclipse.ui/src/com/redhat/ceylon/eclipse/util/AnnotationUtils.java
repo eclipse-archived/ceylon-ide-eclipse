@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.ASSIGN
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.DECLARATION_ANNOTATION;
 import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.OCCURRENCE_ANNOTATION;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static com.redhat.ceylon.eclipse.core.builder.MarkerCreator.ERROR_CODE_KEY;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +27,6 @@ import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
-import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 
 public class AnnotationUtils {
     
@@ -70,11 +70,16 @@ public class AnnotationUtils {
         // Check to see if an error code is present on the marker / annotation
         Integer errorCode = -1;
         if (annotation instanceof CeylonAnnotation) {
-            errorCode = ((CeylonAnnotation) annotation).getId();
+            CeylonAnnotation ceylonAnnotation = 
+                    (CeylonAnnotation) annotation;
+            errorCode = ceylonAnnotation.getId();
         } 
         else if (annotation instanceof MarkerAnnotation) {
-            errorCode = ((MarkerAnnotation) annotation).getMarker()
-                    .getAttribute(MarkerCreator.ERROR_CODE_KEY, -1);
+            MarkerAnnotation markerAnnotation = 
+                    (MarkerAnnotation) annotation;
+            errorCode = 
+                    markerAnnotation.getMarker()
+                        .getAttribute(ERROR_CODE_KEY, -1);
         }
         
         // Fall back to comparing the text associated with this annotation

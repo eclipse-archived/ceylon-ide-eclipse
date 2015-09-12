@@ -433,9 +433,12 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
         
         if (d.isClassOrInterfaceMember()) {
+            ClassOrInterface container = 
+                    (ClassOrInterface) 
+                        d.getContainer();
+            String name = d.getName();
             List<Declaration> rds = 
-                    ((ClassOrInterface) d.getContainer())
-                            .getInheritedMembers(d.getName());
+                    container.getInheritedMembers(name);
             Declaration rd=null;
             if (rds.isEmpty()) {
                 rd=d; //TODO: is this really correct? What case does it handle?

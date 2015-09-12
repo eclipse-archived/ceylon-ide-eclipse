@@ -12,8 +12,10 @@ public final class AnnotationComparator implements
     public int compare(Annotation x, Annotation y) {
         if (x instanceof CeylonAnnotation) {
             if (y instanceof CeylonAnnotation) {
-                return -Integer.compare(((CeylonAnnotation) x).getSeverity(),
-                        ((CeylonAnnotation) y).getSeverity());
+                CeylonAnnotation cax = (CeylonAnnotation) x;
+                CeylonAnnotation cay = (CeylonAnnotation) y;
+                return -Integer.compare(cax.getSeverity(),
+                                        cay.getSeverity());
             }
             else {
                 return -1;

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.jface.text.quickassist.IQuickFixableAnnotation;
@@ -57,6 +58,11 @@ public class CeylonAnnotation extends Annotation
         this.severity = severity;
         count = counter++;
     }
+    
+    public boolean isFixable() {
+        return getSeverity() == SEVERITY_WARNING 
+                || getId() > 0;
+    }
 
     public int getId() {
         return code;
@@ -67,7 +73,8 @@ public class CeylonAnnotation extends Annotation
     }
 
     @Override
-    public boolean isQuickFixable() throws AssertionFailedException {
+    public boolean isQuickFixable() 
+            throws AssertionFailedException {
         return fixable;
     }
     
