@@ -20,35 +20,39 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
 
-import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.model.cmr.JDKUtils;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
-class AddModuleImportProposal implements ICompletionProposal, 
-        ICompletionProposalExtension6 {
+class AddModuleImportProposal 
+        implements ICompletionProposal, 
+                   ICompletionProposalExtension6 {
     
     private final IProject project;
     private final Unit unit; 
     private final String name; 
     private final String version;
     
-    AddModuleImportProposal(IProject project, Unit unit, ModuleDetails details) {
+    AddModuleImportProposal(IProject project, Unit unit, 
+            ModuleDetails details) {
         this.project = project;
         this.unit = unit;
         this.name = details.getName();
         this.version = details.getLastVersion().getVersion();
     }
     
-    AddModuleImportProposal(IProject project, Unit unit, String name, String version) {
+    AddModuleImportProposal(IProject project, Unit unit, 
+            String name, String version) {
         this.project = project;
         this.unit = unit;
         this.name = name;
@@ -92,21 +96,29 @@ class AddModuleImportProposal implements ICompletionProposal,
         return Highlights.styleProposal(getDisplayString(), true);
     }
     
-    static void addModuleImportProposals(final Collection<ICompletionProposal> proposals, 
-            final IProject project, final TypeChecker typeChecker, Node node) {
+    static void addModuleImportProposals(
+            final Collection<ICompletionProposal> proposals, 
+            final IProject project, 
+            final TypeChecker typeChecker, Node node) {
         final Unit unit = node.getUnit();
         if (unit.getPackage().getModule().isDefault()) {
             return;
         }
         if (node instanceof Tree.Import) {
-            node = ((Tree.Import) node).getImportPath();
+            Tree.Import i = (Tree.Import) node;
+            node = i.getImportPath();
         }
-        List<Tree.Identifier> ids = ((Tree.ImportPath) node).getIdentifiers();
+        Tree.ImportPath ip = (Tree.ImportPath) node;
+        List<Tree.Identifier> ids = ip.getIdentifiers();
         final String pkg = formatPath(ids);
         if (JDKUtils.isJDKAnyPackage(pkg)) {
-            for (String mod: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
+            TreeSet<String> moduleNames = 
+                    new TreeSet<String>
+                        (JDKUtils.getJDKModuleNames());
+            for (String mod: moduleNames) {
                 if (JDKUtils.isJDKPackage(mod, pkg)) {
-                    proposals.add(new AddModuleImportProposal(project, unit, mod, 
+                    proposals.add(new AddModuleImportProposal(
+                            project, unit, mod, 
                             JDKUtils.jdk.version));
                     return;
                 }
@@ -116,30 +128,50 @@ class AddModuleImportProposal implements ICompletionProposal,
         class Runnable implements IRunnableWithProgress {
             @Override
             public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException {
-                monitor.beginTask("Querying module repositories...", 
+                    throws InvocationTargetException, 
+                           InterruptedException {
+                monitor.beginTask(
+                        "Querying module repositories...", 
                         IProgressMonitor.UNKNOWN);
-                ModuleQuery query = getModuleQuery("", project);
+                ModuleQuery query = 
+                        getModuleQuery("", project);
                 query.setMemberName(pkg);
                 query.setMemberSearchPackageOnly(true);
                 query.setMemberSearchExact(true);
                 query.setCount(10l);
-                query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                query.setBinaryMajor(
+                        Versions.JVM_BINARY_MAJOR_VERSION);
                 ModuleSearchResult msr = 
                         typeChecker
                             .getContext()
                             .getRepositoryManager()
                             .searchModules(query);
                 for (ModuleDetails md: msr.getResults()) {
-                    proposals.add(new AddModuleImportProposal(project, unit, md));
+                    proposals.add(new AddModuleImportProposal(
+                            project, unit, md));
                 }
                 monitor.done();
             }
         }
         try {
-            getWorkbench()
-                    .getActiveWorkbenchWindow()
-                    .run(true, true, new Runnable());
+            Display.getDefault()
+                .syncExec(new java.lang.Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        getWorkbench()
+                            .getActiveWorkbenchWindow()
+                            .run(true, true, new Runnable());
+                    }
+                    catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    
+                }
+            });
         }
         catch (Exception e) {
             e.printStackTrace();
