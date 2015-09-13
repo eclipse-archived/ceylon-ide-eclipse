@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
@@ -85,6 +84,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
     private static void addAddAnnotationProposal(Node node, 
             String annotation, String desc, Referenceable dec, 
             Collection<ICompletionProposal> proposals, 
+            Tree.CompilationUnit rootNode,
             IProject project) {
         if (dec!=null &&
                 !(node instanceof Tree.MissingDeclaration)) {
@@ -97,7 +97,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 if (u!=null && u.equals(unit.getUnit())) {
                     FindDeclarationNodeVisitor fdv = 
                             new FindDeclarationNodeVisitor(dec);
-                    getRootNode(unit).visit(fdv);
+                    rootNode.visit(fdv);
                     Tree.StatementOrArgument decNode = 
                             (Tree.StatementOrArgument) 
                                 fdv.getDeclarationNode();
@@ -132,7 +132,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
         createExplicitTypeEdit(decNode, change);
         Region selection;
         if (node!=null && 
-                node.getUnit().equals(decNode.getUnit())) {
+                node.getUnit()
+                    .equals(decNode.getUnit())) {
             selection = 
                     new Region(edit.getOffset(), 
                             annotation.length());
@@ -387,13 +388,14 @@ public class AddAnnotionProposal extends CorrectionProposal {
     
     static void addMakeActualDecProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
         Declaration dec = annotatedNode(node);
         boolean shared = dec.isShared();
         addAddAnnotationProposal(node, 
         		shared ? "actual" : "shared actual", 
                 shared ? "Make Actual" : "Make Shared Actual",
-                dec, proposals, project);
+                dec, proposals, rootNode, project);
     }
 
     private static Declaration annotatedNode(Node node) {
@@ -410,7 +412,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
 
     static void addMakeDefaultProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
         
         Declaration d;
         if (node instanceof Tree.Declaration) {
@@ -456,45 +459,49 @@ public class AddAnnotionProposal extends CorrectionProposal {
             if (rd!=null) {
                 addAddAnnotationProposal(node, 
                 		"default", "Make Default", 
-                        rd, proposals, project);
+                        rd, proposals, rootNode, project);
             }
         }
     }
 
     static void addMakeDefaultDecProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
     	Declaration dec = annotatedNode(node);
         addAddAnnotationProposal(node, 
                 dec.isShared() ? "default" : "shared default", 
                 dec.isShared() ? "Make Default" : "Make Shared Default", 
-                dec, proposals, project);
+                dec, proposals, rootNode, project);
     }
 
     static void addMakeFormalDecProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
     	Declaration dec = annotatedNode(node);
         addAddAnnotationProposal(node, 
                 dec.isShared() ? "formal" : "shared formal",
                 dec.isShared() ? "Make Formal" : "Make Shared Formal",
-                dec, proposals, project);
+                dec, proposals, rootNode, project);
     }
 
     static void addMakeAbstractDecProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
         Declaration dec = annotatedNode(node);
         if (dec instanceof Class) {
             addAddAnnotationProposal(node, 
             		"abstract", "Make Abstract", 
-                    dec, proposals, project);
+                    dec, proposals, rootNode, project);
         }
     }
 
     static void addMakeContainerAbstractProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
         Declaration dec;
         if (node instanceof Tree.Declaration) {
             Tree.Declaration dn = (Tree.Declaration) node;
@@ -512,12 +519,13 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
         addAddAnnotationProposal(node, 
         		"abstract", "Make Abstract", 
-                dec, proposals, project);
+                dec, proposals, rootNode, project);
     }
 
     static void addMakeVariableProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
         Tree.Term term;
         if (node instanceof Tree.AssignmentOp) {
             Tree.AssignOp ao = (Tree.AssignOp) node;
@@ -547,7 +555,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 if (((Value) dec).getOriginalDeclaration()==null) {
                     addAddAnnotationProposal(node, 
                     		"variable", "Make Variable", 
-                            dec, proposals, project);
+                            dec, proposals, rootNode, project);
                 }
             }
         }
@@ -555,7 +563,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
     
     static void addMakeVariableDecProposal(
             Collection<ICompletionProposal> proposals,
-            IProject project, Tree.Declaration node) {
+            IProject project, Tree.Declaration node,
+            Tree.CompilationUnit rootNode) {
         final Declaration dec = node.getDeclarationModel();
         if (dec instanceof Value && 
                 node instanceof Tree.AttributeDeclaration) {
@@ -563,13 +572,13 @@ public class AddAnnotionProposal extends CorrectionProposal {
             if (!v.isVariable() && !v.isTransient()) {
                 addAddAnnotationProposal(node, 
                 		"variable", "Make Variable",
-                        dec, proposals, project);
+                        dec, proposals, rootNode, project);
             }
         }
     }
     static void addMakeVariableDecProposal(
             Collection<ICompletionProposal> proposals,
-            IProject project, Tree.CompilationUnit cu, Node node) {
+            IProject project, Node node, Tree.CompilationUnit rootNode) {
         final Tree.SpecifierOrInitializerExpression sie = 
                 (Tree.SpecifierOrInitializerExpression) node;
         class GetInitializedVisitor extends Visitor {
@@ -584,15 +593,16 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
         GetInitializedVisitor v = 
                 new GetInitializedVisitor();
-        v.visit(cu);
+        v.visit(rootNode);
         addAddAnnotationProposal(node, 
         		"variable", "Make Variable",
-                v.dec, proposals, project);
+                v.dec, proposals, rootNode, project);
     }
     
     static void addMakeSharedProposalForSupertypes(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
         if (node instanceof Tree.ClassOrInterface) {
             Tree.ClassOrInterface cin = 
                     (Tree.ClassOrInterface) node;
@@ -602,11 +612,13 @@ public class AddAnnotionProposal extends CorrectionProposal {
                     ci.getExtendedType();
             if (extendedType!=null) {
                 addMakeSharedProposal(proposals, project, 
-                        extendedType.getDeclaration());
+                        extendedType.getDeclaration(), 
+                        rootNode);
                 for (Type typeArgument:
                         extendedType.getTypeArgumentList()) {
                     addMakeSharedProposal(proposals, project, 
-                            typeArgument.getDeclaration());
+                            typeArgument.getDeclaration(), 
+                            rootNode);
                 }
             }
             
@@ -615,11 +627,13 @@ public class AddAnnotionProposal extends CorrectionProposal {
             if (satisfiedTypes!=null) {
                 for (Type satisfiedType: satisfiedTypes) {
                     addMakeSharedProposal(proposals, project, 
-                            satisfiedType.getDeclaration());
+                            satisfiedType.getDeclaration(), 
+                            rootNode);
                     for (Type typeArgument: 
                             satisfiedType.getTypeArgumentList()) {
                         addMakeSharedProposal(proposals, project, 
-                                typeArgument.getDeclaration());
+                                typeArgument.getDeclaration(), 
+                                rootNode);
                     }
                 }
             }
@@ -628,26 +642,29 @@ public class AddAnnotionProposal extends CorrectionProposal {
     
     static void addMakeRefinedSharedProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
         if (node instanceof Tree.Declaration) {
             Tree.Declaration tdn = (Tree.Declaration) node;
             Declaration refined = 
                     tdn.getDeclarationModel()
                         .getRefinedDeclaration();
             if (refined.isDefault() || refined.isFormal()) {
-                addMakeSharedProposal(proposals, project, refined);
+                addMakeSharedProposal(proposals, project, 
+                        refined, rootNode);
             }
             else {
                 addAddAnnotationProposal(node, 
                 		"shared default", "Make Shared Default", 
-                        refined, proposals, project);
+                        refined, proposals, rootNode, project);
             }
         }
     }
     
     static void addMakeSharedProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
         Referenceable dec = null;
         List<Type> typeArgumentList = null;
         if (node instanceof Tree.StaticMemberOrTypeExpression) {
@@ -715,28 +732,32 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 typeArgumentList = pt.getTypeArgumentList();
             }
         }
-        addMakeSharedProposal(proposals, project, dec);
+        addMakeSharedProposal(proposals, project, dec, 
+                rootNode);
         if (typeArgumentList != null) {
             for (Type typeArgument: typeArgumentList) {
                 addMakeSharedProposal(proposals, project, 
-                        typeArgument.getDeclaration());
+                        typeArgument.getDeclaration(), 
+                        rootNode);
             }
         }
     }
     
     static void addMakeSharedProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Type type) {
+            IProject project, Type type,
+            Tree.CompilationUnit rootNode) {
         if (type!=null) {
             if (type.isUnion()) {
                 for (Type caseType: 
                         type.getCaseTypes()) {
                     addMakeSharedProposal(proposals, 
-                            project, caseType);
+                            project, caseType, rootNode);
                     for (Type typeArgument: 
                         caseType.getTypeArgumentList()) {
                         addMakeSharedProposal(proposals, 
-                                project, typeArgument);
+                                project, typeArgument, 
+                                rootNode);
                     }
                 }
             }
@@ -744,23 +765,26 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 for (Type satisfiedType: 
                         type.getSatisfiedTypes()) {
                     addMakeSharedProposal(proposals, 
-                            project, satisfiedType);
+                            project, satisfiedType, 
+                            rootNode);
                     for (Type typeArgument: 
                             satisfiedType.getTypeArgumentList()) {
                         addMakeSharedProposal(proposals, 
-                                project, typeArgument);
+                                project, typeArgument, 
+                                rootNode);
                     }
                 }
             }
             else {
                 addMakeSharedProposal(proposals, project, 
-                        type.getDeclaration());
+                        type.getDeclaration(), rootNode);
             }
         }
     }
     static void addMakeSharedProposal(
             Collection<ICompletionProposal> proposals, 
-                IProject project, Referenceable ref) {
+                IProject project, Referenceable ref,
+                Tree.CompilationUnit rootNode) {
         if (ref!=null) {
             if (ref instanceof TypedDeclaration || 
                 ref instanceof ClassOrInterface || 
@@ -768,14 +792,16 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 if (!((Declaration) ref).isShared()) {
                     addAddAnnotationProposal(null, 
                     		"shared", "Make Shared", 
-                            ref, proposals, project);
+                            ref, proposals, rootNode, 
+                            project);
                 }
             }
             else if (ref instanceof Package) {
                 if (!((Package) ref).isShared()) {
                     addAddAnnotationProposal(null, 
                             "shared", "Make Shared", 
-                            ref, proposals, project);
+                            ref, proposals, rootNode,
+                            project);
                 }
             }
         }
@@ -783,13 +809,14 @@ public class AddAnnotionProposal extends CorrectionProposal {
     
     static void addMakeSharedDecProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node) {
+            IProject project, Node node,
+            Tree.CompilationUnit rootNode) {
         if (node instanceof Tree.Declaration) {
             Tree.Declaration dn = (Tree.Declaration) node;
             addAddAnnotationProposal(node, 
             		"shared", "Make Shared",  
                     dn.getDeclarationModel(), 
-                    proposals, project);
+                    proposals, rootNode, project);
         }
     }
     
