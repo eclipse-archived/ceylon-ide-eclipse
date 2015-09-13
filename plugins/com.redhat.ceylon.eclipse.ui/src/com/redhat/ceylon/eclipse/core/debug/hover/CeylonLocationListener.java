@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package com.redhat.ceylon.eclipse.core.debug.hover;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationHoverText;
@@ -12,19 +12,21 @@ import org.eclipse.swt.browser.LocationListener;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.debug.hover.ExpressionInformationControlCreator.ExpressionInformationControl;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 final class CeylonLocationListener implements LocationListener {
     
-    private final BrowserInformationControl control;
+    //TODO: this class is a big copy/paste of the other CeylonLocationListener
+    
     private final CeylonEditor editor;
+    private final ExpressionInformationControl control;
     
     CeylonLocationListener(CeylonEditor editor, 
-            BrowserInformationControl control) {
+            ExpressionInformationControl control) {
         this.editor = editor;
         this.control = control;
     }
@@ -75,51 +77,55 @@ final class CeylonLocationListener implements LocationListener {
         }*/
     }
     
+    private void close(ExpressionInformationControl control) {
+        control.dispose();
+    }
+    
     private void handleLink(String location) {
         if (location.startsWith("dec:")) {
             Referenceable target = 
-                    getLinkedModel(location,editor);
+                    getLinkedModel(location, editor);
             if (target!=null) {
-                DocumentationHover.close(control); //FIXME: should have protocol to hide, rather than dispose
+                close(control); //FIXME: should have protocol to hide, rather than dispose
                 gotoDeclaration(target);
             }
         }
         else if (location.startsWith("doc:")) {
             Referenceable target = 
-                    getLinkedModel(location,editor);
+                    getLinkedModel(location, editor);
             if (target!=null) {
                 String text = 
                         getDocumentationHoverText(target, 
                                 editor, null);
-                CeylonBrowserInput input = 
-                        new CeylonBrowserInput(
-                                control.getInput(), 
-                                target, text);
+                DebugHoverInput input = 
+                        new DebugHoverInput(
+                                control.getVariable(), 
+                                text);
                 control.setInput(input);
             }
         }
         /*else if (location.startsWith("ref:")) {
             Declaration target = (Declaration)
-                    getLinkedModel(location,editor);
-            DocumentationHover.close(control);
+                    getLinkedModel(location, editor);
+            close(control);
             new FindReferencesAction(editor,target).run();
         }
         else if (location.startsWith("sub:")) {
             Declaration target = (Declaration)
-                    getLinkedModel(location,editor);
-            DocumentationHover.close(control);
+                    getLinkedModel(location, editor);
+            close(control);
             new FindSubtypesAction(editor,target).run();
         }
         else if (location.startsWith("act:")) {
             Declaration target = (Declaration)
-                    getLinkedModel(location,editor);
-            DocumentationHover.close(control);
+                    getLinkedModel(location, editor);
+            close(control);
             new FindRefinementsAction(editor,target).run();
         }
         else if (location.startsWith("ass:")) {
             Declaration target = (Declaration)
-                    getLinkedModel(location,editor);
-            DocumentationHover.close(control);
+                    getLinkedModel(location, editor);
+            close(control);
             new FindAssignmentsAction(editor,target).run();
         }*/
         else {
@@ -128,22 +134,23 @@ final class CeylonLocationListener implements LocationListener {
             IDocument document = 
                     controller.getDocument();
             if (location.startsWith("stp:")) {
-                DocumentationHover.close(control);
-                Tree.CompilationUnit rootNode = 
+                close(control);
+                Tree.CompilationUnit rn = 
                         controller.getRootNode();
-                int offset = parseInt(location.substring(4));
-                Node node = findNode(rootNode, offset);
+                int offset = 
+                        parseInt(location.substring(4));
+                Node node = findNode(rn, offset);
                 SpecifyTypeProposal
-                    .createProposal(rootNode, node, editor)
+                    .createProposal(rn, node, editor)
                     .apply(document);
             }
             /*else if (location.startsWith("exv:")) {
-                DocumentationHover.close(control);
+                close(control);
                 new ExtractValueProposal(editor)
                     .apply(document);
             }
             else if (location.startsWith("exf:")) {
-                DocumentationHover.close(control);
+                close(control);
                 new ExtractFunctionProposal(editor)
                     .apply(document);
             }*/

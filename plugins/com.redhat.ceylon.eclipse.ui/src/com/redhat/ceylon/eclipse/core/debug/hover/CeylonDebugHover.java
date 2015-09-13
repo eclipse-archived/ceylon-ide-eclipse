@@ -1,13 +1,9 @@
 package com.redhat.ceylon.eclipse.core.debug.hover;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationHoverText;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonContentProviderFilter.unBoxIfVariableBoxed;
 import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
-import static java.lang.Integer.parseInt;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,8 +41,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.compiler.java.codegen.Naming;
@@ -54,18 +48,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SafeMemberOp;
-import com.redhat.ceylon.eclipse.code.correct.ExtractFunctionProposal;
-import com.redhat.ceylon.eclipse.code.correct.ExtractValueProposal;
-import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.hover.SourceInfoHover;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
-import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
-import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
-import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
-import com.redhat.ceylon.eclipse.core.debug.hover.ExpressionInformationControlCreator.ExpressionInformationControl;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationListener;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationRunner;
@@ -77,9 +62,9 @@ import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Value;
@@ -344,13 +329,13 @@ public class CeylonDebugHover extends SourceInfoHover {
                             public ExpressionInformationControl createInformationControl(Shell shell) {
                                 ExpressionInformationControl enrichedControl = 
                                         new ExpressionInformationControl(shell, true);
-                                enrichedControl.addLocationListener(new CeylonLocationListener(enrichedControl));
+                                enrichedControl.addLocationListener(new CeylonLocationListener(editor, enrichedControl));
                                 return enrichedControl;
                             }
                         };
                     }
                 };
-                control.addLocationListener(new CeylonLocationListener(control));
+                control.addLocationListener(new CeylonLocationListener(editor, control));
                 return control;
             }
         };
@@ -826,140 +811,5 @@ public class CeylonDebugHover extends SourceInfoHover {
             }
         }
         return null;
-    }
-
-    final class CeylonLocationListener implements LocationListener {
-        private final ExpressionInformationControl control;
-        
-        CeylonLocationListener(ExpressionInformationControl control) {
-            this.control = control;
-        }
-        
-        @Override
-        public void changing(LocationEvent event) {
-            String location = event.location;
-            
-            //necessary for windows environment (fix for blank page)
-            //somehow related to this: https://bugs.eclipse.org/bugs/show_bug.cgi?id=129236
-            if (!"about:blank".equals(location) && !location.startsWith("http:")) {
-                event.doit = false;
-                handleLink(location);
-            }
-            
-            /*else if (location.startsWith("javadoc:")) {
-                final DocBrowserInformationControlInput input = (DocBrowserInformationControlInput) control.getInput();
-                int beginIndex = input.getHtml().indexOf("javadoc:")+8;
-                final String handle = input.getHtml().substring(beginIndex, input.getHtml().indexOf("\"",beginIndex));
-                new Job("Fetching Javadoc") {
-                    @Override
-                    protected IStatus run(IProgressMonitor monitor) {
-                        final IJavaElement elem = JavaCore.create(handle);
-                        try {
-                            final String javadoc = JavadocContentAccess2.getHTMLContent((IMember) elem, true);
-                            if (javadoc!=null) {
-                                PlatformUI.getWorkbench().getProgressService()
-                                        .runInUI(editor.getSite().getWorkbenchWindow(), new IRunnableWithProgress() {
-                                    @Override
-                                    public void run(IProgressMonitor monitor) 
-                                            throws InvocationTargetException, InterruptedException {
-                                        StringBuilder sb = new StringBuilder();
-                                        HTMLPrinter.insertPageProlog(sb, 0, getStyleSheet());
-                                        appendJavadoc(elem, javadoc, sb);
-                                        HTMLPrinter.addPageEpilog(sb);
-                                        control.setInput(new DocBrowserInformationControlInput(input, null, sb.toString(), 0));
-                                    }
-                                }, null);
-                            }
-                        } 
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return Status.OK_STATUS;
-                    }
-                }.schedule();
-            }*/
-        }
-        
-        private void close(ExpressionInformationControl control) {
-            control.dispose();
-        }
-        
-        private void handleLink(String location) {
-            if (location.startsWith("dec:")) {
-                Referenceable target = 
-                        getLinkedModel(location, editor);
-                if (target!=null) {
-                    close(control); //FIXME: should have protocol to hide, rather than dispose
-                    gotoDeclaration(target);
-                }
-            }
-            else if (location.startsWith("doc:")) {
-                Referenceable target = 
-                        getLinkedModel(location, editor);
-                if (target!=null) {
-                    String text = 
-                            getDocumentationHoverText(target, 
-                                    editor, null);
-                    DebugHoverInput input = 
-                            new DebugHoverInput(control.getVariable(), 
-                                    text);
-                    control.setInput(input);
-                }
-            }
-            else if (location.startsWith("ref:")) {
-                Declaration target = (Declaration)
-                        getLinkedModel(location, editor);
-                close(control);
-                new FindReferencesAction(editor,target).run();
-            }
-            else if (location.startsWith("sub:")) {
-                Declaration target = (Declaration)
-                        getLinkedModel(location, editor);
-                close(control);
-                new FindSubtypesAction(editor,target).run();
-            }
-            else if (location.startsWith("act:")) {
-                Declaration target = (Declaration)
-                        getLinkedModel(location, editor);
-                close(control);
-                new FindRefinementsAction(editor,target).run();
-            }
-            else if (location.startsWith("ass:")) {
-                Declaration target = (Declaration)
-                        getLinkedModel(location, editor);
-                close(control);
-                new FindAssignmentsAction(editor,target).run();
-            }
-            else {
-                CeylonParseController controller = 
-                        editor.getParseController();
-                IDocument document = 
-                        controller.getDocument();
-                if (location.startsWith("stp:")) {
-                    close(control);
-                    Tree.CompilationUnit rn = 
-                            controller.getRootNode();
-                    int offset = 
-                            parseInt(location.substring(4));
-                    Node node = findNode(rn, offset);
-                    SpecifyTypeProposal
-                        .createProposal(rn, node, editor)
-                        .apply(document);
-                }
-                else if (location.startsWith("exv:")) {
-                    close(control);
-                    new ExtractValueProposal(editor)
-                        .apply(document);
-                }
-                else if (location.startsWith("exf:")) {
-                    close(control);
-                    new ExtractFunctionProposal(editor)
-                        .apply(document);
-                }
-            }
-        }
-        
-        @Override
-        public void changed(LocationEvent event) {}
     }
 }

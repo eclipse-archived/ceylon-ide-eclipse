@@ -7,6 +7,8 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedM
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
+import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static java.lang.Integer.parseInt;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
@@ -35,20 +37,19 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.part.ViewPart;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
+import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
-import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
-import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
-import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
-import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 public class DocumentationView extends ViewPart {
@@ -180,7 +181,7 @@ public class DocumentationView extends ViewPart {
                 forward.update();
             }
         }
-        else if (location.startsWith("ref:")) {
+        /*else if (location.startsWith("ref:")) {
             Referenceable target = 
                     getLinkedModel(location, editor);
             new FindReferencesAction(editor, 
@@ -203,16 +204,19 @@ public class DocumentationView extends ViewPart {
                     getLinkedModel(location, editor);
             new FindAssignmentsAction(editor, 
                     (Declaration) target).run();
+        }*/
+        else if (location.startsWith("stp:")) {
+            CeylonParseController parseController = 
+                    editor.getParseController();
+            Tree.CompilationUnit rootNode = 
+                    parseController.getRootNode();
+            int offset = parseInt(location.substring(4));
+            Node node = findNode(rootNode, offset);
+            SpecifyTypeProposal
+                .createProposal(rootNode, node, editor)
+                .apply(parseController.getDocument());
         }
-        /*else if (location.startsWith("stp:")) {
-            CompilationUnit rn = editor.getParseController().getRootNode();
-            Node node = Nodes.findNode(rn, Integer.parseInt(location.substring(4)));
-            for (SpecifyTypeProposal stp: SpecifyTypeProposal.createProposals(rn, node, editor)) {
-                stp.apply(editor.getParseController().getDocument());
-                break;
-            }
-        }
-        else if (location.startsWith("exv:")) {
+        /*else if (location.startsWith("exv:")) {
             new ExtractValueProposal(editor).apply(editor.getParseController().getDocument());
         }
         else if (location.startsWith("exf:")) {

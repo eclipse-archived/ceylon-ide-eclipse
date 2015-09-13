@@ -71,10 +71,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
-import com.redhat.ceylon.eclipse.code.search.FindAssignmentsAction;
-import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
-import com.redhat.ceylon.eclipse.code.search.FindRefinementsAction;
-import com.redhat.ceylon.eclipse.code.search.FindSubtypesAction;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
@@ -1294,7 +1290,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         if (currentEditor instanceof CeylonEditor) {
             editor = (CeylonEditor) currentEditor;
             target = getLinkedModel(location, editor);
-            if (location.startsWith("ref:")) {
+            /*if (location.startsWith("ref:")) {
                 new FindReferencesAction(editor, 
                         (Declaration) target).run();
                 close();
@@ -1317,7 +1313,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                         (Declaration) target).run();
                 close();
                 return;
-            }
+            }*/
         }
         if (location.startsWith("doc:")) {
             if (target==null) {
