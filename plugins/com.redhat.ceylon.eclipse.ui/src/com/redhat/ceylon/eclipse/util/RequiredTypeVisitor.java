@@ -53,11 +53,13 @@ class RequiredTypeVisitor extends Visitor {
         }
         Type ort = requiredType;
         Reference onat = namedArgTarget;
-        Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
+        Tree.PositionalArgumentList pal = 
+                that.getPositionalArgumentList();
         Unit unit = that.getUnit();
         if (pal!=null) {
             int pos;
-            List<Tree.PositionalArgument> pas = pal.getPositionalArguments();
+            List<Tree.PositionalArgument> pas = 
+                    pal.getPositionalArguments();
             if (pas.isEmpty()) {
                 pos = 0;
             }
@@ -88,22 +90,46 @@ class RequiredTypeVisitor extends Visitor {
                 if (params!=null) { 
                     if (params.size()>pos) {
                         Parameter param = params.get(pos);
-                        if (pr.getDeclaration().getQualifiedNameString().equals("ceylon.language::print")) {
-                            requiredType = unit.getStringDeclaration().getType();
+                        String name = 
+                                pr.getDeclaration()
+                                    .getQualifiedNameString();
+                        if (name.equals("ceylon.language::print")) {
+                            requiredType = 
+                                    unit.getStringDeclaration()
+                                        .getType();
                         }
                         else {
-                            requiredType = pr.getTypedParameter(param).getFullType();
+                            requiredType = 
+                                    pr.getTypedParameter(param)
+                                        .getFullType();
                             if (param.isSequenced()) {
-                                requiredType = unit.getIteratedType(requiredType);
+                                requiredType = 
+                                        unit.getIteratedType(
+                                                requiredType);
                             }
                         }
                     }
                     else if (!params.isEmpty()) {
-                        Parameter param = params.get(params.size()-1);
+                        Parameter param = 
+                                params.get(params.size()-1);
                         if (param.isSequenced()) {
-                            requiredType = pr.getTypedParameter(param).getFullType();
-                            requiredType = unit.getIteratedType(requiredType);
+                            requiredType = 
+                                    pr.getTypedParameter(param)
+                                        .getFullType();
+                            requiredType = 
+                                    unit.getIteratedType(
+                                            requiredType);
                         }
+                    }
+                }
+            }
+            else {
+                //indirect invocations
+                Type ct = that.getPrimary().getTypeModel();
+                if (ct!=null && unit.isCallableType(ct)) {
+                    List<Type> pts = unit.getCallableArgumentTypes(ct);
+                    if (pts.size()>pos) {
+                        requiredType = pts.get(pos);
                     }
                 }
             }
@@ -112,12 +138,18 @@ class RequiredTypeVisitor extends Visitor {
         if (nal!=null) {
             namedArgTarget = getTarget(that);
             if (namedArgTarget!=null) {
-                List<Parameter> params = getParameters(namedArgTarget);
+                List<Parameter> params = 
+                        getParameters(namedArgTarget);
                 if (params!=null && !params.isEmpty()) {
                     Parameter param = params.get(params.size()-1);
                     if (unit.isIterableType(param.getType())) {
-                        requiredType = namedArgTarget.getTypedParameter(param).getFullType();
-                        requiredType = unit.getIteratedType(requiredType);
+                        requiredType = 
+                                namedArgTarget
+                                    .getTypedParameter(param)
+                                    .getFullType();
+                        requiredType = 
+                                unit.getIteratedType(
+                                        requiredType);
                     }
                 }
             }
@@ -139,7 +171,9 @@ class RequiredTypeVisitor extends Visitor {
     private static Reference getTarget(Tree.InvocationExpression that) {
         Tree.Primary p = that.getPrimary();
         if (p instanceof Tree.MemberOrTypeExpression) {
-            return ((Tree.MemberOrTypeExpression) p).getTarget();
+            Tree.MemberOrTypeExpression mte = 
+                    (Tree.MemberOrTypeExpression) p;
+            return mte.getTarget();
         }
         else {
             return null;
@@ -149,8 +183,10 @@ class RequiredTypeVisitor extends Visitor {
     private static List<Parameter> getParameters(Reference pr) {
         Declaration declaration = pr.getDeclaration();
         if (declaration instanceof Functional) {
-            List<ParameterList> pls = ((Functional) declaration).getParameterLists();
-            return pls.isEmpty() ? null : pls.get(0).getParameters();
+            Functional fun = (Functional) declaration;
+            List<ParameterList> pls = fun.getParameterLists();
+            return pls.isEmpty() ? null : 
+                pls.get(0).getParameters();
         }
         else {
             return null;
@@ -163,7 +199,9 @@ class RequiredTypeVisitor extends Visitor {
         Parameter p = that.getParameter();
         if (p!=null) {
             if (namedArgTarget!=null) {
-                requiredType = namedArgTarget.getTypedParameter(p).getType();
+                requiredType = 
+                        namedArgTarget.getTypedParameter(p)
+                            .getType();
             }
             else {
                 requiredType = p.getType();            
@@ -186,7 +224,9 @@ class RequiredTypeVisitor extends Visitor {
     @Override
     public void visit(Tree.SpecifierStatement that) {
         Type ort = requiredType;
-        requiredType = that.getBaseMemberExpression().getTypeModel();
+        requiredType = 
+                that.getBaseMemberExpression()
+                    .getTypeModel();
         super.visit(that);
         requiredType = ort;
     }
@@ -194,14 +234,17 @@ class RequiredTypeVisitor extends Visitor {
     @Override
     public void visit(Tree.SwitchStatement that) {
         Type ort = requiredType;
-        Tree.SwitchClause switchClause = that.getSwitchClause();
-        Type srt = that.getUnit().getAnythingDeclaration().getType();
+        Tree.SwitchClause switchClause = 
+                that.getSwitchClause();
+        Type srt = that.getUnit().getAnythingType();
         if (switchClause!=null) {
             switchClause.visit(this);
             Tree.Expression e = 
-                    switchClause.getSwitched().getExpression();
+                    switchClause.getSwitched()
+                        .getExpression();
             Tree.Variable v = 
-                    switchClause.getSwitched().getVariable();
+                    switchClause.getSwitched()
+                        .getVariable();
             if (e!=null) {
                 srt = e.getTypeModel();
             }
@@ -212,9 +255,11 @@ class RequiredTypeVisitor extends Visitor {
                 srt = null;
             }
         }
-        SwitchCaseList switchCaseList = that.getSwitchCaseList();
+        SwitchCaseList switchCaseList = 
+                that.getSwitchCaseList();
         if (switchCaseList!=null) {
-            for (Tree.CaseClause cc: switchCaseList.getCaseClauses()) {
+            for (Tree.CaseClause cc: 
+                    switchCaseList.getCaseClauses()) {
                 if (cc==node || cc.getCaseItem()==node) {
                     finalResult = srt;
                 }
@@ -274,7 +319,8 @@ class RequiredTypeVisitor extends Visitor {
     @Override
     public void visit(Tree.Return that) {
         Type ort = requiredType;
-        requiredType = getResultType(that.getDeclaration());
+        requiredType = 
+                getResultType(that.getDeclaration());
         super.visit(that);
         requiredType = ort;
     }
@@ -282,7 +328,7 @@ class RequiredTypeVisitor extends Visitor {
     @Override
     public void visit(Tree.Throw that) {
         Type ort = requiredType;
-        requiredType = that.getUnit().getExceptionDeclaration().getType();
+        requiredType = that.getUnit().getExceptionType();
         super.visit(that);
         requiredType = ort;
     }
@@ -290,7 +336,7 @@ class RequiredTypeVisitor extends Visitor {
     @Override
     public void visit(Tree.ConditionList that) {
         Type ort = requiredType;
-        requiredType = that.getUnit().getBooleanDeclaration().getType();
+        requiredType = that.getUnit().getBooleanType();
         super.visit(that);
         requiredType = ort;
     }
@@ -299,8 +345,9 @@ class RequiredTypeVisitor extends Visitor {
     public void visit(Tree.ResourceList that) {
         Type ort = requiredType;
         Unit unit = that.getUnit();
-        requiredType = unionType(unit.getDestroyableDeclaration().getType(), 
-                unit.getObtainableDeclaration().getType(), unit);
+        requiredType = 
+                unionType(unit.getDestroyableType(), 
+                        unit.getObtainableType(), unit);
         super.visit(that);
         requiredType = ort;
     }
@@ -315,9 +362,12 @@ class RequiredTypeVisitor extends Visitor {
     @Override
     public void visit(Tree.DocLink that) {
         Type ort = requiredType;
-        requiredType = getResultType(that.getBase());
-        if (requiredType == null && that.getBase()!=null) {
-            requiredType = that.getBase().getReference().getFullType();
+        Declaration base = that.getBase();
+        requiredType = getResultType(base);
+        if (requiredType == null && base!=null) {
+            requiredType = 
+                    base.getReference()
+                        .getFullType();
         }
         super.visit(that);
         requiredType = ort;
