@@ -28,10 +28,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAss
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.addAssignToIfNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
-import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addInvertOperatorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addParenthesizeOperatorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addReverseOperatorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addSwapBinaryOperandsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeArgumentReferenceProposals;
@@ -75,6 +71,10 @@ import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addRev
 import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.addJoinDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
+import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addInvertOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addParenthesesProposals;
+import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addReverseOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addSwapBinaryOperandsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
@@ -1098,10 +1098,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.Declaration declaration = findDeclaration(rootNode, node);
             Tree.NamedArgument argument = findArgument(rootNode, node);
             Tree.ImportMemberOrType imp = findImport(rootNode, node);
-            Tree.OperatorExpression boe = findOperator(rootNode, node);
+            Tree.OperatorExpression oe = findOperator(rootNode, node);
             
-            addOperatorProposals(proposals, file, boe);
-            
+            addOperatorProposals(proposals, file, oe);
+            addParenthesesProposals(proposals, file, node, rootNode, oe);
+
             addVerboseRefinementProposal(proposals, file, statement, rootNode);
             
             addAnnotationProposals(proposals, project, declaration,
@@ -1162,11 +1163,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     }
 
     private static void addOperatorProposals(
-            Collection<ICompletionProposal> proposals, IFile file,
+            Collection<ICompletionProposal> proposals, 
+            IFile file,
             Tree.OperatorExpression oe) {
-        if (oe!=null) {
-            addParenthesizeOperatorProposal(proposals, file, oe);
-        }
         if (oe instanceof Tree.BinaryOperatorExpression) {
             Tree.BinaryOperatorExpression boe = 
                     (Tree.BinaryOperatorExpression) oe;

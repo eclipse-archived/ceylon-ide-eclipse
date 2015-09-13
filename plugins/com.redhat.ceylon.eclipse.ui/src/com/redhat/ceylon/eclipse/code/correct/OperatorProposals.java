@@ -6,36 +6,23 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import java.util.Collection;
 
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class OperatorProposals {
-    
-    static void addParenthesizeOperatorProposal(
-            Collection<ICompletionProposal> proposals, 
-            IFile file,
-            Tree.OperatorExpression boe) {
-        TextChange change = 
-                new TextFileChange("Parenthesize Expression", 
-                        file);
-        change.setEdit(new MultiTextEdit());
-        change.addEdit(new InsertEdit(
-                boe.getStartIndex(), "("));
-        change.addEdit(new InsertEdit(
-                boe.getEndIndex(), ")"));
-        proposals.add(new CorrectionProposal(
-                "Parenthesize " + 
-                boe.getMainToken().getText() + 
-                " expression", change, null));
-    }
     
     static void addSwapBinaryOperandsProposal(
             Collection<ICompletionProposal> proposals, 
@@ -168,6 +155,106 @@ public class OperatorProposals {
         case "<": return ">";
         case "<=": return ">=";
         default: return ot;
+        }
+    }
+
+    static void addParenthesesProposals(
+            Collection<ICompletionProposal> proposals, 
+            IFile file, Node node, 
+            Tree.CompilationUnit rootNode,
+            Tree.OperatorExpression oe) {
+        if (node instanceof Tree.ArgumentList) {
+            final Tree.ArgumentList argList = 
+                    (Tree.ArgumentList) node;
+            class FindInvocationVisitor extends Visitor {
+                Tree.InvocationExpression current;
+                Tree.InvocationExpression result;
+                @Override
+                public void visit(Tree.InvocationExpression that) {
+                    Tree.InvocationExpression old = current;
+                    current = that;
+                    super.visit(that);
+                    current = old;
+                }
+                @Override
+                public void visit(Tree.ArgumentList that) {
+                    if (argList==that) {
+                        result = current;
+                    }
+                    else {
+                        super.visit(that);
+                    }
+                }
+            }
+            FindInvocationVisitor fiv = new FindInvocationVisitor();
+            fiv.visit(rootNode);
+            node = fiv.result;
+        }
+        if (node instanceof Tree.Expression) {
+            addRemoveParenthesesProposal(proposals, file, node);
+        }
+        else if (node instanceof Tree.Term) {
+            addAddParenthesesProposal(proposals, file, node);
+            if (oe!=null && oe!=node) {
+                addAddParenthesesProposal(proposals, file, oe);
+            }
+        }
+    }
+
+    private static void addAddParenthesesProposal(
+            Collection<ICompletionProposal> proposals, 
+            IFile file, Node node) {
+        String desc;
+        if (node instanceof Tree.OperatorExpression) {
+            desc = node.getMainToken().getText() + 
+                    " expression";
+        }
+        else if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+            desc = "member reference";
+        }
+        else if (node instanceof Tree.BaseMemberOrTypeExpression) {
+            desc = "base reference";
+        }
+        else if (node instanceof Tree.Literal) {
+            desc = "literal";
+        }
+        else if (node instanceof Tree.InvocationExpression) {
+            desc = "invocation";
+        }
+        else {
+            desc = "expression";
+        }
+        TextChange change = 
+                new TextFileChange("Add Parentheses", 
+                        file);
+        change.setEdit(new MultiTextEdit());
+        change.addEdit(new InsertEdit(
+                node.getStartIndex(), "("));
+        change.addEdit(new InsertEdit(
+                node.getEndIndex(), ")"));
+        proposals.add(new CorrectionProposal(
+                "Parenthesize " + desc, change, null));
+    }
+    
+    private static void addRemoveParenthesesProposal(
+            Collection<ICompletionProposal> proposals, 
+            IFile file, Node node) {
+        Token token = node.getToken();
+        Token endToken = node.getEndToken();
+        if (token!=null && endToken!=null &&
+                token.getType()==CeylonLexer.LPAREN &&
+                endToken.getType()==CeylonLexer.RPAREN) {
+            TextChange change = 
+                    new TextFileChange("Remove Parentheses", 
+                            file);
+            change.setEdit(new MultiTextEdit());
+            change.addEdit(new DeleteEdit(
+                    node.getStartIndex(), 1));
+            change.addEdit(new DeleteEdit(
+                    node.getEndIndex()-1, 1));
+            proposals.add(new CorrectionProposal(
+                    "Remove parentheses", change, null));
+            
         }
     }
 
