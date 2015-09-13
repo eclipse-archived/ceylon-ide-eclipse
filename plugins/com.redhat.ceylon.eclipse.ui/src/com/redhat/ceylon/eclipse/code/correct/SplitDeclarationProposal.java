@@ -160,7 +160,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
             if (bstop-1==bstart+1) {
                 text += delim + indent;
             }
-            change.addEdit(new InsertEdit(bstart, 
+            change.addEdit(new InsertEdit(bstart+1, 
                     text));
         }
         else {
@@ -271,8 +271,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
             int start = statement.getStartIndex();
             tfc.addEdit(new InsertEdit(start, text));
             int estart = id.getEndIndex();
-            int estop = sie.getEndIndex();
-            tfc.addEdit(new DeleteEdit(estart, estop-estart));
+            int eend = sie.getEndIndex();
+            tfc.addEdit(new DeleteEdit(estart, eend-estart));
             proposals.add(new SplitDeclarationProposal(
                     varNode.getDeclarationModel(),
                     start+6, tfc));
