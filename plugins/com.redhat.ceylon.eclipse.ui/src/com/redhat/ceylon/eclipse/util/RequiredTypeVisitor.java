@@ -127,7 +127,8 @@ class RequiredTypeVisitor extends Visitor {
                 //indirect invocations
                 Type ct = that.getPrimary().getTypeModel();
                 if (ct!=null && unit.isCallableType(ct)) {
-                    List<Type> pts = unit.getCallableArgumentTypes(ct);
+                    List<Type> pts = 
+                            unit.getCallableArgumentTypes(ct);
                     if (pts.size()>pos) {
                         requiredType = pts.get(pos);
                     }
@@ -141,7 +142,8 @@ class RequiredTypeVisitor extends Visitor {
                 List<Parameter> params = 
                         getParameters(namedArgTarget);
                 if (params!=null && !params.isEmpty()) {
-                    Parameter param = params.get(params.size()-1);
+                    Parameter param = 
+                            params.get(params.size()-1);
                     if (unit.isIterableType(param.getType())) {
                         requiredType = 
                                 namedArgTarget
@@ -200,7 +202,8 @@ class RequiredTypeVisitor extends Visitor {
         if (p!=null) {
             if (namedArgTarget!=null) {
                 requiredType = 
-                        namedArgTarget.getTypedParameter(p)
+                        namedArgTarget
+                            .getTypedParameter(p)
                             .getType();
             }
             else {
@@ -214,9 +217,10 @@ class RequiredTypeVisitor extends Visitor {
     @Override
     public void visit(Tree.ForIterator that) {
         Type ort = requiredType;
-        requiredType = that.getUnit()
-                .getIterableType(that.getUnit()
-                        .getAnythingDeclaration().getType());
+        Unit unit = that.getUnit();
+        requiredType = 
+                unit.getIterableType(
+                        unit.getAnythingType());
         super.visit(that);
         requiredType = ort;
     }
