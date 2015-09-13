@@ -2398,19 +2398,6 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
     
-    static Module resolveModule(Scope scope) {
-        if (scope == null) {
-            return null;
-        }
-        else if (scope instanceof Package) {
-            Package pack = (Package) scope;
-            return pack.getModule();
-        }
-        else {
-            return resolveModule(scope.getContainer());
-        }
-    }
-
     public IInformationControlCreator getInformationPresenterControlCreator() {
         return new CeylonEnrichedInformationControlCreator(editor);
     }

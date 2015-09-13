@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import com.github.rjeschke.txtmark.SpanEmitter;
+import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -8,7 +9,6 @@ import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.eclipse.code.html.HTML;
 
 final class CeylonSpanEmitter implements SpanEmitter {
     private final Scope linkScope;
@@ -63,13 +63,26 @@ final class CeylonSpanEmitter implements SpanEmitter {
         }
     }
 
+    static Module resolveModule(Scope scope) {
+        if (scope == null) {
+            return null;
+        }
+        else if (scope instanceof Package) {
+            Package pack = (Package) scope;
+            return pack.getModule();
+        }
+        else {
+            return resolveModule(scope.getContainer());
+        }
+    }
+
     static Referenceable resolveLink(String linkTarget, Scope linkScope, Unit unit) {
         if (linkTarget.startsWith("package ")) {
-            Module module = DocumentationHover.resolveModule(linkScope);
+            Module module = resolveModule(linkScope);
             return module.getPackage(linkTarget.substring(8).trim());
         }
         if (linkTarget.startsWith("module ")) {
-            Module module = DocumentationHover.resolveModule(linkScope);
+            Module module = resolveModule(linkScope);
             Package p = module.getPackage(linkTarget.substring(7).trim());
             return p==null ? null : p.getModule();
         }
@@ -83,7 +96,7 @@ final class CeylonSpanEmitter implements SpanEmitter {
         else {
             String pkgName = linkTarget.substring(0, pkgSeparatorIndex);
             declName = linkTarget.substring(pkgSeparatorIndex+2, linkTarget.length());
-            Module module = DocumentationHover.resolveModule(linkScope);
+            Module module = resolveModule(linkScope);
             if (module != null) {
                 scope = module.getPackage(pkgName);
             }
