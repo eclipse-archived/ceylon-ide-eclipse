@@ -27,16 +27,23 @@ public class ChangeInitialCaseOfIdentifierInDeclaration
         Tree.Identifier identifier = null;
         
         if (node instanceof Tree.TypeDeclaration) {
-            identifier = ((Tree.TypeDeclaration) node).getIdentifier();
+            Tree.TypeDeclaration td = 
+                    (Tree.TypeDeclaration) node;
+            identifier = td.getIdentifier();
         }
         else if (node instanceof Tree.TypeParameterDeclaration) {
-            identifier = ((Tree.TypeParameterDeclaration) node).getIdentifier();
+            Tree.TypeParameterDeclaration tpd = 
+                    (Tree.TypeParameterDeclaration) node;
+            identifier = tpd.getIdentifier();
         }
         else if (node instanceof Tree.TypedDeclaration) {
-            identifier = ((Tree.TypedDeclaration) node).getIdentifier();
+            Tree.TypedDeclaration td = 
+                    (Tree.TypedDeclaration) node;
+            identifier = td.getIdentifier();
         }
         else if (node instanceof Tree.ImportPath) {
-            List<Identifier> importIdentifiers = ((Tree.ImportPath) node).getIdentifiers();
+            Tree.ImportPath ip = (Tree.ImportPath) node;
+            List<Identifier> importIdentifiers = ip.getIdentifiers();
             for (Identifier importIdentifier : importIdentifiers) {
                 if (importIdentifier.getText() != null && 
                         !importIdentifier.getText().isEmpty() && 
