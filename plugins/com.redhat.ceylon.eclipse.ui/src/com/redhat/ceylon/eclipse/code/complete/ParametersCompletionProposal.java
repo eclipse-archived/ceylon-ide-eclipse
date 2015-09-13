@@ -757,7 +757,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                             name = Escaping.toInitialLowercase(n);
                         }
                         else {
-                            name = "arg";
+                            name = "it";
                         }
                         text.append(name);
                         desc.append(name);

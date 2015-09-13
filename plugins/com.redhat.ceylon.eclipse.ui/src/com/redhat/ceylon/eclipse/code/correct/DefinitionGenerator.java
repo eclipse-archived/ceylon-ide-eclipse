@@ -77,7 +77,7 @@ public abstract class DefinitionGenerator {
                 return toInitialLowercase(tn);
             }
             else {
-                return "arg";
+                return "it";
             }
         }
     }
