@@ -28,11 +28,6 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -40,6 +35,13 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.ParameterList;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
 public class MoveOutRefactoring extends AbstractRefactoring {
     
@@ -60,19 +62,41 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     private void init(ITextSelection selection) {
         if (node instanceof Tree.Declaration) {
             declaration = (Tree.Declaration) node;
-            if (declaration.getDeclarationModel()!=null) {
-                newName = defaultName(getContainer(rootNode, declaration.getDeclarationModel()));
+            Declaration dec = declaration.getDeclarationModel();
+            if (dec instanceof Functional) {
+                newName = 
+                        defaultName((Functional) dec, 
+                                getContainer(rootNode, dec));
             }
         }
     }
 
     @Override
     public boolean getEnabled() {
-        return (node instanceof Tree.AnyMethod || 
-                node instanceof Tree.ClassDefinition) &&
-                    ((Tree.Declaration) node).getDeclarationModel()!=null &&
-                    ((Tree.Declaration) node).getDeclarationModel()
-                            .isClassOrInterfaceMember();
+        if (node instanceof Tree.AnyMethod || 
+            node instanceof Tree.ClassDefinition) {
+            Tree.Declaration decNode = (Tree.Declaration) node;
+            Declaration dec = decNode.getDeclarationModel();
+            if (dec==null || !dec.isClassOrInterfaceMember()) {
+                return false;
+            }
+            if (decNode instanceof Tree.ClassDefinition) {
+                Tree.ClassDefinition cd = (Tree.ClassDefinition) decNode;
+                if (cd.getParameterList()==null) {
+                    return false;
+                }
+            }
+            else if (decNode instanceof Tree.AnyMethod) {
+                Tree.AnyMethod am = (Tree.AnyMethod) decNode;
+                if (am.getParameterLists().isEmpty()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else {
+            return false;
+        }
     }
     
     public String getName() {
@@ -268,7 +292,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         }.visit(owner);
     }
 
-    private static String defaultName(Tree.Declaration owner) {
+    private static String defaultName(Functional dec, Tree.Declaration owner) {
         if (owner==null || owner.getIdentifier()==null) {
             return "it";
         }
@@ -276,6 +300,18 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         String paramName = Escaping.toInitialLowercase(name);
         if (Escaping.KEYWORDS.contains(paramName)) {
             return "it";
+        }
+        ParameterList firstParameterList = 
+                dec.getFirstParameterList();
+        if (firstParameterList!=null) {
+            for (Parameter p: 
+                    firstParameterList.getParameters()) {
+                if (p!=null) {
+                    if (paramName.equals(p.getName())) {
+                        return "it";
+                    }
+                }
+            }
         }
         return paramName;
     }
