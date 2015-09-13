@@ -225,6 +225,7 @@ class InitializerProposal extends CorrectionProposal {
     
     private void addValueArgumentProposals(int loc,
             List<ICompletionProposal> props) {
+        if (type==null) return;
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
                 getSortedProposedValues(scope, unit)) {
