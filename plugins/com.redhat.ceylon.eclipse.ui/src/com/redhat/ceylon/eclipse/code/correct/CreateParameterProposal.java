@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.computeSelection;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
@@ -33,6 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -40,6 +40,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class CreateParameterProposal extends InitializerProposal {
     
@@ -231,7 +232,8 @@ class CreateParameterProposal extends InitializerProposal {
                     String desc = "parameter '" + 
                             parameterName +"'";
                     addCreateParameterProposals(proposals, 
-                            project, def, desc, d, t, node);
+                            project, def, desc, d, t, node,
+                            cu);
                     String pdef = parameterName + 
                             " = " + defaultValue;
                     String adef = parameterType + " " + 
@@ -240,7 +242,7 @@ class CreateParameterProposal extends InitializerProposal {
                             parameterName +"'";
                     addCreateParameterAndAttributeProposals(
                             proposals, project, pdef, adef, 
-                            padesc, d, t, node);
+                            padesc, d, t, node, cu);
                 }
             }
         }
@@ -269,13 +271,18 @@ class CreateParameterProposal extends InitializerProposal {
             Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, 
             Declaration typeDec, Type t,
-            Node node) {
+            Node node, Tree.CompilationUnit rootNode) {
         if (typeDec!=null && typeDec instanceof Functional) {
+            Unit u = typeDec.getUnit();
+            if (u instanceof EditedSourceFile) {
+                EditedSourceFile esf = (EditedSourceFile) u;
+                u = esf.getOriginalSourceFile();
+            }
             for (PhasedUnit unit: getUnits(project)) {
-                if (typeDec.getUnit().equals(unit.getUnit())) {
+                if (u!=null && u.equals(unit.getUnit())) {
                     FindDeclarationNodeVisitor fdv = 
                             new FindDeclarationNodeVisitor(typeDec);
-                    getRootNode(unit).visit(fdv);
+                    rootNode.visit(fdv);
                     Tree.Declaration decNode = 
                             (Tree.Declaration) 
                                 fdv.getDeclarationNode();
@@ -304,13 +311,18 @@ class CreateParameterProposal extends InitializerProposal {
             Collection<ICompletionProposal> proposals,
             IProject project, String pdef, String adef, 
             String desc, Declaration typeDec, Type t,
-            Node node) {
+            Node node, Tree.CompilationUnit rootNode) {
         if (typeDec instanceof ClassOrInterface) {
+            Unit u = typeDec.getUnit();
+            if (u instanceof EditedSourceFile) {
+                EditedSourceFile esf = (EditedSourceFile) u;
+                u = esf.getOriginalSourceFile();
+            }
             for (PhasedUnit unit: getUnits(project)) {
-                if (typeDec.getUnit().equals(unit.getUnit())) {
+                if (u!=null && u.equals(unit.getUnit())) {
                     FindDeclarationNodeVisitor fdv = 
                             new FindDeclarationNodeVisitor(typeDec);
-                    getRootNode(unit).visit(fdv);
+                    rootNode.visit(fdv);
                     Tree.Declaration decNode = 
                             (Tree.Declaration) 
                                 fdv.getDeclarationNode();
