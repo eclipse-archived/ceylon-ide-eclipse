@@ -28,10 +28,10 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAss
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.addAssignToIfNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
-import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addInvertOperatorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addParenthesizeBinaryOperatorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addReverseOperatorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.BinaryOperatorProposals.addSwapBinaryOperandsProposal;
+import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addInvertOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addParenthesizeOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addReverseOperatorProposal;
+import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addSwapBinaryOperandsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeArgumentReferenceProposals;
@@ -101,10 +101,10 @@ import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
-import static com.redhat.ceylon.eclipse.util.Nodes.findBinaryOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.findOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
@@ -1098,9 +1098,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.Declaration declaration = findDeclaration(rootNode, node);
             Tree.NamedArgument argument = findArgument(rootNode, node);
             Tree.ImportMemberOrType imp = findImport(rootNode, node);
-            Tree.BinaryOperatorExpression boe = findBinaryOperator(rootNode, node);
+            Tree.OperatorExpression boe = findOperator(rootNode, node);
             
-            addBinaryOperatorProposals(proposals, file, boe);
+            addOperatorProposals(proposals, file, boe);
             
             addVerboseRefinementProposal(proposals, file, statement, rootNode);
             
@@ -1145,9 +1145,6 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addThrowsAnnotationProposal(proposals, statement, rootNode, file, doc);            
             
-            MoveToNewUnitProposal.add(proposals, editor);
-            MoveToUnitProposal.add(proposals, editor);
-            
             addRefineFormalMembersProposal(proposals, node, rootNode, false);
             
             addConvertToVerbatimProposal(proposals, file, rootNode, node, doc);
@@ -1156,15 +1153,23 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addConvertToInterpolationProposal(proposals, file, rootNode, node, doc);
             
             addExpandTypeProposal(editor, statement, file, doc, proposals);
+
+            MoveToNewUnitProposal.add(proposals, editor);
+            MoveToUnitProposal.add(proposals, editor);
+            
         }
         
     }
 
-    private static void addBinaryOperatorProposals(
+    private static void addOperatorProposals(
             Collection<ICompletionProposal> proposals, IFile file,
-            Tree.BinaryOperatorExpression boe) {
-        if (boe!=null) {
-            addParenthesizeBinaryOperatorProposal(proposals, file, boe);
+            Tree.OperatorExpression oe) {
+        if (oe!=null) {
+            addParenthesizeOperatorProposal(proposals, file, oe);
+        }
+        if (oe instanceof Tree.BinaryOperatorExpression) {
+            Tree.BinaryOperatorExpression boe = 
+                    (Tree.BinaryOperatorExpression) oe;
             addReverseOperatorProposal(proposals, file, boe);
             addInvertOperatorProposal(proposals, file, boe);
             addSwapBinaryOperandsProposal(proposals, file, boe);

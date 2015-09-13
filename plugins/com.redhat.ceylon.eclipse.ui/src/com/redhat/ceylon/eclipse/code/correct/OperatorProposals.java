@@ -17,12 +17,12 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
-public class BinaryOperatorProposals {
+public class OperatorProposals {
     
-    static void addParenthesizeBinaryOperatorProposal(
+    static void addParenthesizeOperatorProposal(
             Collection<ICompletionProposal> proposals, 
             IFile file,
-            Tree.BinaryOperatorExpression boe) {
+            Tree.OperatorExpression boe) {
         TextChange change = 
                 new TextFileChange("Parenthesize Expression", 
                         file);

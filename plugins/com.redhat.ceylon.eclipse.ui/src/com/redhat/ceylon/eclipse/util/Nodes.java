@@ -55,9 +55,9 @@ public class Nodes {
         return delegate.findArgument(cu, node);
     }
 
-    public static Tree.BinaryOperatorExpression findBinaryOperator(Tree.CompilationUnit cu, 
+    public static Tree.OperatorExpression findOperator(Tree.CompilationUnit cu, 
             final Node node) {
-        return delegate.findBinaryOperator(cu, node);
+        return delegate.findOperator(cu, node);
     }
 
     public static Statement findStatement(Tree.CompilationUnit cu, Node node) {
