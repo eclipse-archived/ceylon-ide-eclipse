@@ -48,12 +48,6 @@ import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
-/**
- * Action class that implements the "Mark Occurrences" mode. This action contains a number of
- * nested listener classes that monitor which editor is active, document changes, and selection
- * changes, and computes a set of "occurrence" annotations in the editor, using the language-specific
- * "mark occurrences" service.
- */
 public class MarkOccurrencesAction 
         implements IWorkbenchWindowActionDelegate, 
                    CaretListener, 
@@ -258,9 +252,9 @@ public class MarkOccurrencesAction
             List<Node> assignments = 
                     getAssignmentsOf(parseController, 
                             selectedNode);
-            removeEditedOccurrences(document, declarations);
-            removeEditedOccurrences(document, occurrences);
-            removeEditedOccurrences(document, assignments);
+//            removeEditedOccurrences(document, declarations);
+//            removeEditedOccurrences(document, occurrences);
+//            removeEditedOccurrences(document, assignments);
             int capacity = 
                     declarations.size() + 
                     occurrences.size() + 
@@ -293,7 +287,7 @@ public class MarkOccurrencesAction
         }
     }
 
-    private static void removeEditedOccurrences(
+    /*private static void removeEditedOccurrences(
             IDocument document, 
             List<Node> occurrences)
             throws BadLocationException {
@@ -311,6 +305,9 @@ public class MarkOccurrencesAction
                         int len = stop-start+1;
                         String docText = 
                                 document.get(start, len);
+                        if (docText.startsWith("\\")) {
+                            docText = docText.substring(2);
+                        }
                         if (!docText.equals(tok.getText())) {
                             it.remove();
                         }
@@ -321,7 +318,7 @@ public class MarkOccurrencesAction
                 }
             }
         }
-    }
+    }*/
 
     private void addPositionsToAnnotationMap(
             Position[] positions, String type, 
