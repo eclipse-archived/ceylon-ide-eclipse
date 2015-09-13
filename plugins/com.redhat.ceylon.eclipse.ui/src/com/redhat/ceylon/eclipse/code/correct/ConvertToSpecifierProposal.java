@@ -17,37 +17,47 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class ConvertToSpecifierProposal extends CorrectionProposal {
     
-    ConvertToSpecifierProposal(String desc, int offset, TextChange change) {
+    ConvertToSpecifierProposal(String desc, int offset, 
+            TextChange change) {
         super(desc, change, new Region(offset, 0));
     }
     
     static void addConvertToSpecifierProposal(IDocument doc,
-            Collection<ICompletionProposal> proposals, IFile file,
-            Tree.Block block) {
-        addConvertToSpecifierProposal(doc, proposals, file, block, false);
+            Collection<ICompletionProposal> proposals, 
+            IFile file, Tree.Block block) {
+        addConvertToSpecifierProposal(doc, proposals, file, 
+                block, false);
     }
     static void addConvertToSpecifierProposal(IDocument doc,
-            Collection<ICompletionProposal> proposals, IFile file,
-            Tree.Block block, boolean anonymousFunction) {
+            Collection<ICompletionProposal> proposals, 
+            IFile file, Tree.Block block, 
+            boolean anonymousFunction) {
         if (block.getStatements().size()==1) {
             Tree.Statement s = block.getStatements().get(0);
             Node end = null;
             Node start = null;
             if (s instanceof Tree.Return) {
-                start = ((Tree.Return) s).getExpression();
+                Tree.Return ret = (Tree.Return) s;
+                start = ret.getExpression();
                 end = start;
             }
             else if (s instanceof Tree.ExpressionStatement) {
-                start = ((Tree.ExpressionStatement) s).getExpression();
+                Tree.ExpressionStatement es = 
+                        (Tree.ExpressionStatement) s;
+                start = es.getExpression();
                 end = start;
             }
             else if (s instanceof Tree.SpecifierStatement) {
-                start = ((Tree.SpecifierStatement) s).getBaseMemberExpression();
-                end = ((Tree.SpecifierStatement) s).getSpecifierExpression();
+                Tree.SpecifierStatement ss = 
+                        (Tree.SpecifierStatement) s;
+                start = ss.getBaseMemberExpression();
+                end = ss.getSpecifierExpression();
             }
             if (end!=null) {
                 TextChange change = 
-                        new TextFileChange("Convert to Specifier", file);
+                        new TextFileChange(
+                                "Convert to Specifier", 
+                                file);
                 change.setEdit(new MultiTextEdit());
                 Integer offset = block.getStartIndex();
                 String es;
@@ -59,12 +69,15 @@ class ConvertToSpecifierProposal extends CorrectionProposal {
                     ex.printStackTrace();
                     return;
                 }
-                change.addEdit(new ReplaceEdit(offset, block.getEndIndex()-offset, 
+                change.addEdit(new ReplaceEdit(offset, 
+                        block.getEndIndex()-offset, 
                         "=> " + es + (anonymousFunction?"":";")));
-                String desc = anonymousFunction ? 
-                        "Convert anonymous function body to =>" : 
-                        "Convert block to =>";
-                proposals.add(new ConvertToSpecifierProposal(desc, offset+2 , change));
+                String desc = 
+                        anonymousFunction ? 
+                            "Convert anonymous function body to =>" : 
+                            "Convert block to =>";
+                proposals.add(new ConvertToSpecifierProposal(
+                        desc, offset+2 , change));
             }
         }
     }
