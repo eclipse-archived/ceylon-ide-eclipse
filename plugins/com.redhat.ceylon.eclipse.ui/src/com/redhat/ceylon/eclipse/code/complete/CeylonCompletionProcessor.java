@@ -871,6 +871,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         if (!returnedParamInfo && 
                 atStartOfPositionalArgument(node, token)) {
             addFakeShowParametersCompletion(node, cpc, result);
+            if (result.isEmpty()) {
+                return null;
+            }
         }
         else if (node instanceof Tree.PackageLiteral) {
             addPackageCompletions(cpc, offset, prefix, 
