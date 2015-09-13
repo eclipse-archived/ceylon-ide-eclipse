@@ -1,13 +1,13 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
 class FindInvocationVisitor extends Visitor {
     Node node;
@@ -67,7 +67,9 @@ class FindInvocationVisitor extends Visitor {
             //result=current;
             Term lt = that.getLeftTerm();
             if (lt instanceof Tree.BaseMemberExpression) {
-                Declaration d = ((Tree.BaseMemberExpression) lt).getDeclaration();
+                Tree.BaseMemberExpression bme = 
+                        (Tree.BaseMemberExpression) lt;
+                Declaration d = bme.getDeclaration();
                 if (d instanceof TypedDeclaration) {
                     parameter = (TypedDeclaration) d;
                 }
@@ -80,10 +82,12 @@ class FindInvocationVisitor extends Visitor {
         Expression e = that.getSpecifierExpression().getExpression();
         if (e!=null && node==e.getTerm()) {
             //result=current;
-            Term bme = that.getBaseMemberExpression();
-            if (bme instanceof Tree.BaseMemberExpression) {
+            Term term = that.getBaseMemberExpression();
+            if (term instanceof Tree.BaseMemberExpression) {
+                Tree.BaseMemberExpression bme = 
+                        (Tree.BaseMemberExpression) term;
                 Declaration d = 
-                        ((Tree.BaseMemberExpression) bme).getDeclaration();
+                        bme.getDeclaration();
                 if (d instanceof TypedDeclaration) {
                     parameter = (TypedDeclaration) d;
                 }
