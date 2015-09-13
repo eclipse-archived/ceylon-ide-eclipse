@@ -6,16 +6,6 @@ import java.util.Set;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AssignmentOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.AttributeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.InitializerParameter;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.MethodDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PostfixOperatorExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PrefixOperatorExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierStatement;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Variable;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Generic;
@@ -34,7 +24,8 @@ public class FindAssignmentsVisitor extends Visitor {
             Declaration od = declaration;
             while (od!=null) {
                 declaration = od;
-                od = ((TypedDeclaration) od).getOriginalDeclaration();
+                TypedDeclaration td = (TypedDeclaration) od;
+                od = td.getOriginalDeclaration();
             }
         }
         this.declaration = declaration;
@@ -55,10 +46,16 @@ public class FindAssignmentsVisitor extends Visitor {
     protected boolean isReference(Declaration ref) {
         return ref!=null && declaration.refines(ref);
     }
-    
-    private boolean isReference(Term lhs) {
-        return lhs instanceof MemberOrTypeExpression && 
-                isReference(((MemberOrTypeExpression)lhs).getDeclaration());
+
+    private boolean isReference(Tree.Term lhs) {
+        if (lhs instanceof Tree.MemberOrTypeExpression) {
+            Tree.MemberOrTypeExpression mte = 
+                    (Tree.MemberOrTypeExpression)lhs;
+            return isReference(mte.getDeclaration());
+        }
+        else {
+            return false;
+        }
     }
     
     @Override
@@ -102,9 +99,9 @@ public class FindAssignmentsVisitor extends Visitor {
     }
     
     @Override
-    public void visit(SpecifierStatement that) {
+    public void visit(Tree.SpecifierStatement that) {
         super.visit(that);
-        Term lhs = that.getBaseMemberExpression();
+        Tree.Term lhs = that.getBaseMemberExpression();
         while (lhs instanceof Tree.ParameterizedExpression) {
         	lhs = ((Tree.ParameterizedExpression)lhs).getPrimary();
         }
@@ -113,7 +110,7 @@ public class FindAssignmentsVisitor extends Visitor {
         }
     }
 
-    public void visit(InitializerParameter that) {
+    public void visit(Tree.InitializerParameter that) {
         super.visit(that);
         if (that.getSpecifierExpression()!=null) {
             if (isReference(that.getParameterModel())) {
@@ -123,56 +120,62 @@ public class FindAssignmentsVisitor extends Visitor {
     }
 
     @Override
-    public void visit(AssignmentOp that) {
+    public void visit(Tree.AssignmentOp that) {
         super.visit(that);
-        Term lhs = that.getLeftTerm();
+        Tree.Term lhs = that.getLeftTerm();
         if (isReference(lhs)) {
             nodes.add(that.getRightTerm());
         }
     }
         
     @Override
-    public void visit(PostfixOperatorExpression that) {
+    public void visit(Tree.PostfixOperatorExpression that) {
         super.visit(that);
-        Term lhs = that.getTerm();
+        Tree.Term lhs = that.getTerm();
         if (isReference(lhs)) {
             nodes.add(that.getTerm());
         }
     }
         
     @Override
-    public void visit(PrefixOperatorExpression that) {
+    public void visit(Tree.PrefixOperatorExpression that) {
         super.visit(that);
-        Term lhs = that.getTerm();
+        Tree.Term lhs = that.getTerm();
         if (isReference(lhs)) {
             nodes.add(that.getTerm());
         }
     }
         
     @Override
-    public void visit(AttributeDeclaration that) {
+    public void visit(Tree.AttributeDeclaration that) {
         super.visit(that);
-        if (that.getSpecifierOrInitializerExpression()!=null && 
+        Tree.SpecifierOrInitializerExpression sie = 
+                that.getSpecifierOrInitializerExpression();
+        if (sie!=null && 
                 isReference(that.getDeclarationModel())) {
-            nodes.add(that.getSpecifierOrInitializerExpression());
+            nodes.add(sie);
         }
     }
         
     @Override
-    public void visit(MethodDeclaration that) {
+    public void visit(Tree.MethodDeclaration that) {
         super.visit(that);
-        if (that.getSpecifierExpression()!=null && 
+        Tree.SpecifierExpression se = 
+                that.getSpecifierExpression();
+        if (se!=null && 
                 isReference(that.getDeclarationModel())) {
-            nodes.add(that.getSpecifierExpression());
+            nodes.add(se);
         }
     }
         
     @Override
-    public void visit(Variable that) {
+    public void visit(Tree.Variable that) {
         super.visit(that);
-        if (that.getSpecifierExpression()!=null && 
+        Tree.SpecifierExpression se = 
+                that.getSpecifierExpression();
+        if (se!=null && 
                 isReference(that.getDeclarationModel())) {
-            nodes.add(that.getSpecifierExpression());
+            nodes.add(se);
         }
     }
     
@@ -180,7 +183,9 @@ public class FindAssignmentsVisitor extends Visitor {
     public void visit(Tree.NamedArgument that) {
         if (isReference(that.getParameter())) {
             if (that instanceof Tree.SpecifiedArgument) {
-                nodes.add(((Tree.SpecifiedArgument) that).getSpecifierExpression());
+                Tree.SpecifiedArgument sa = 
+                        (Tree.SpecifiedArgument) that;
+                nodes.add(sa.getSpecifierExpression());
             }
             else {
                 nodes.add(that);
@@ -207,15 +212,23 @@ public class FindAssignmentsVisitor extends Visitor {
     
     @Override
     public void visit(Tree.StaticMemberOrTypeExpression that) {
-    	Tree.TypeArguments typeArguments = that.getTypeArguments();
+    	Tree.TypeArguments typeArguments = 
+    	        that.getTypeArguments();
     	if (typeArguments instanceof Tree.TypeArgumentList) {
     		Declaration dec = that.getDeclaration();
     		if (dec instanceof Generic) {
-    			List<TypeParameter> typeParameters = 
-    					((Generic) dec).getTypeParameters();
-    			List<Tree.Type> types = 
-    					((Tree.TypeArgumentList) typeArguments).getTypes();
-    			for (int i=0; i<types.size() && i<typeParameters.size(); i++) {
+    			Generic g = (Generic) dec;
+                List<TypeParameter> typeParameters = 
+    					g.getTypeParameters();
+    			Tree.TypeArgumentList tal = 
+    			        (Tree.TypeArgumentList) 
+    			            typeArguments;
+                List<Tree.Type> types = 
+    					tal.getTypes();
+    			for (int i=0; 
+    			        i<types.size() && 
+    			        i<typeParameters.size(); 
+    			        i++) {
     				if (isReference(typeParameters.get(i))) {
     					nodes.add(types.get(i));
     				}
@@ -227,15 +240,20 @@ public class FindAssignmentsVisitor extends Visitor {
     
     @Override
     public void visit(Tree.SimpleType that) {
-    	Tree.TypeArgumentList typeArguments = that.getTypeArgumentList();
+    	Tree.TypeArgumentList typeArguments = 
+    	        that.getTypeArgumentList();
     	if (typeArguments!=null) {
     		Declaration dec = that.getDeclarationModel();
     		if (dec instanceof Generic) {
-    			List<TypeParameter> typeParameters = 
-    					((Generic) dec).getTypeParameters();
+    			Generic g = (Generic) dec;
+                List<TypeParameter> typeParameters = 
+    					g.getTypeParameters();
     			List<Tree.Type> types = 
-    					((Tree.TypeArgumentList) typeArguments).getTypes();
-    			for (int i=0; i<types.size() && i<typeParameters.size(); i++) {
+    			        typeArguments.getTypes();
+    			for (int i=0; 
+    			        i<types.size() && 
+    			        i<typeParameters.size(); 
+    			        i++) {
     				if (isReference(typeParameters.get(i))) {
     					nodes.add(types.get(i));
     				}
