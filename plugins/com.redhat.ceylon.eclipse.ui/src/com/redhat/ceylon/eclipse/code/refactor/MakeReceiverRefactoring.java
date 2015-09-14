@@ -30,6 +30,7 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Indents;
 
 public class MakeReceiverRefactoring extends AbstractRefactoring {
@@ -305,7 +306,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
-                TextFileChange pufc = newTextFileChange(pu);
+                TextFileChange pufc = newTextFileChange((ProjectPhasedUnit)pu);
                 IDocument doc = pufc.getCurrentDocument(null);
                 pufc.setEdit(new MultiTextEdit());
                 if (fun.getUnit().equals(pu.getUnit())) {

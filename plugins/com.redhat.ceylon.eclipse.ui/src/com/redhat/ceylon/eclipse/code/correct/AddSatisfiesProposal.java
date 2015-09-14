@@ -26,6 +26,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -101,8 +103,11 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 if (declaration==null) {
                     continue;
                 }
-                createProposals(proposals, typeDec, isTypeParam, 
-                        changeText, unit, declaration);
+                IFile file = ((ModifiablePhasedUnit)unit).getResourceFile();
+                if (file != null) {
+                    createProposals(proposals, typeDec, isTypeParam, 
+                            changeText, file, declaration);
+                }
                 break;
             }
         }        
@@ -110,13 +115,13 @@ public class AddSatisfiesProposal extends CorrectionProposal {
 
     private static void createProposals(Collection<ICompletionProposal> proposals, 
             TypeDeclaration typeDec, boolean isTypeParam, String changeText, 
-            PhasedUnit unit, Node declaration) {
+            IFile file, Node declaration) {
         if (isTypeParam) {
             if (declaration instanceof Tree.ClassDefinition) {
                 Tree.ClassDefinition classDefinition = 
                         (Tree.ClassDefinition) declaration;
                 addConstraintSatisfiesProposals(typeDec, changeText, 
-                        unit, proposals, 
+                        file, proposals, 
                         classDefinition.getTypeConstraintList(), 
                         classDefinition.getClassBody().getStartIndex());
             }
@@ -124,7 +129,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 Tree.InterfaceDefinition interfaceDefinition = 
                         (Tree.InterfaceDefinition) declaration;
                 addConstraintSatisfiesProposals(typeDec, changeText, 
-                        unit, proposals, 
+                        file, proposals, 
                         interfaceDefinition.getTypeConstraintList(), 
                         interfaceDefinition.getInterfaceBody().getStartIndex());
             }
@@ -132,7 +137,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 Tree.MethodDefinition methodDefinition = 
                         (Tree.MethodDefinition)declaration;
                 addConstraintSatisfiesProposals(typeDec, changeText, 
-                        unit, proposals, 
+                        file, proposals, 
                         methodDefinition.getTypeConstraintList(), 
                         methodDefinition.getBlock().getStartIndex());
             }
@@ -140,7 +145,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 Tree.ClassDeclaration classDefinition = 
                         (Tree.ClassDeclaration) declaration;
                 addConstraintSatisfiesProposals(typeDec, changeText, 
-                        unit, proposals, 
+                        file, proposals, 
                         classDefinition.getTypeConstraintList(), 
                         classDefinition.getClassSpecifier().getStartIndex());
             }
@@ -148,7 +153,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 Tree.InterfaceDeclaration interfaceDefinition = 
                         (Tree.InterfaceDeclaration) declaration;
                 addConstraintSatisfiesProposals(typeDec, changeText, 
-                        unit, proposals, 
+                        file, proposals, 
                         interfaceDefinition.getTypeConstraintList(), 
                         interfaceDefinition.getTypeSpecifier().getStartIndex());
             }
@@ -156,7 +161,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 Tree.MethodDeclaration methodDefinition = 
                         (Tree.MethodDeclaration)declaration;
                 addConstraintSatisfiesProposals(typeDec, changeText,
-                        unit, proposals, 
+                        file, proposals, 
                         methodDefinition.getTypeConstraintList(), 
                         methodDefinition.getSpecifierExpression().getStartIndex());
             }
@@ -165,7 +170,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             if (declaration instanceof Tree.ClassDefinition) {
                 Tree.ClassDefinition classDefinition = 
                         (Tree.ClassDefinition) declaration;
-                addSatisfiesProposals(typeDec, changeText, unit, proposals, 
+                addSatisfiesProposals(typeDec, changeText, file, proposals, 
                         classDefinition.getSatisfiedTypes(), 
                         classDefinition.getTypeConstraintList()==null ?
                                 classDefinition.getClassBody().getStartIndex() :
@@ -174,14 +179,14 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             else if (declaration instanceof Tree.ObjectDefinition) {
                 Tree.ObjectDefinition objectDefinition = 
                         (Tree.ObjectDefinition) declaration;
-                addSatisfiesProposals(typeDec, changeText, unit, proposals, 
+                addSatisfiesProposals(typeDec, changeText, file, proposals, 
                         objectDefinition.getSatisfiedTypes(), 
                         objectDefinition.getClassBody().getStartIndex());
             }
             else if (declaration instanceof Tree.InterfaceDefinition) {
                 Tree.InterfaceDefinition interfaceDefinition = 
                         (Tree.InterfaceDefinition) declaration;
-                addSatisfiesProposals(typeDec, changeText, unit, proposals, 
+                addSatisfiesProposals(typeDec, changeText, file, proposals, 
                         interfaceDefinition.getSatisfiedTypes(), 
                         interfaceDefinition.getTypeConstraintList()==null ?
                                 interfaceDefinition.getInterfaceBody().getStartIndex() :
@@ -191,7 +196,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
     }
 
     private static void addConstraintSatisfiesProposals(TypeDeclaration typeParam, 
-            String missingSatisfiedType, PhasedUnit unit, 
+            String missingSatisfiedType, IFile file, 
             Collection<ICompletionProposal> proposals, 
             TypeConstraintList typeConstraints, 
             Integer typeContainerBodyStartIndex) {
@@ -214,7 +219,6 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             changeIndex = typeContainerBodyStartIndex;
         }
         if (changeText != null) {
-            IFile file = CeylonBuilder.getFile(unit);
             TextFileChange change = 
                     new TextFileChange("Add generic type constraint", file);
             change.setEdit(new InsertEdit(changeIndex, changeText));
@@ -230,7 +234,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
     }
 
     private static void addSatisfiesProposals(TypeDeclaration typeParam, 
-            String missingSatisfiedType, PhasedUnit unit, 
+            String missingSatisfiedType, IFile file, 
             Collection<ICompletionProposal> proposals, 
             Tree.SatisfiedTypes typeConstraints, 
             Integer typeContainerBodyStartIndex) {
@@ -246,7 +250,6 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             changeIndex = typeContainerBodyStartIndex;
         }
         if (changeText != null) {
-            IFile file = CeylonBuilder.getFile(unit);
             TextFileChange change = 
                     new TextFileChange("Add satisfies type", file);
             change.setEdit(new InsertEdit(changeIndex, changeText));

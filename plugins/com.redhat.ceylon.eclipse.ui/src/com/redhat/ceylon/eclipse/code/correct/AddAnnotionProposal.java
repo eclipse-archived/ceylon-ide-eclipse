@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
@@ -21,11 +20,9 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
@@ -90,18 +87,17 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 !(node instanceof Tree.MissingDeclaration)) {
             Unit u = dec.getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiableSourceFile sourceFile = (ModifiableSourceFile) u;
-                ModifiablePhasedUnit phasedUnit = sourceFile.getPhasedUnit();
-                IFile resource = sourceFile.getResourceFile();
+                ModifiablePhasedUnit phasedUnit = 
+                        ((ModifiableSourceFile) u).getPhasedUnit();
                 FindDeclarationNodeVisitor fdv = 
                         new FindDeclarationNodeVisitor(dec);
                 phasedUnit.getCompilationUnit().visit(fdv);
                 Tree.StatementOrArgument decNode = 
                         (Tree.StatementOrArgument) 
                             fdv.getDeclarationNode();
-                if (decNode!=null && resource != null) {
+                if (decNode!=null) {
                     addAddAnnotationProposal(annotation, 
-                            desc, dec, proposals, resource, 
+                            desc, dec, proposals, phasedUnit, 
                             node, decNode);
                 }
             }
@@ -111,8 +107,12 @@ public class AddAnnotionProposal extends CorrectionProposal {
     private static void addAddAnnotationProposal(
             String annotation, String desc, Referenceable dec, 
             Collection<ICompletionProposal> proposals, 
-            IFile file, Node node, 
+            ModifiablePhasedUnit unit, Node node, 
             Tree.StatementOrArgument decNode) {
+        IFile file = unit.getResourceFile();
+        if (file == null) {
+            return;
+        }
         TextFileChange change = 
                 new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());

@@ -27,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -196,7 +197,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         int i=0;
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange(pu);
+                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit)pu);
                 refactorInFile(tfc, cc, pu.getCompilationUnit());
                 pm.worked(i++);
             }

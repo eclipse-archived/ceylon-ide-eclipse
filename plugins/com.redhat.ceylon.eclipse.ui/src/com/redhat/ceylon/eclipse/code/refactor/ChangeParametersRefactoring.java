@@ -39,6 +39,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -345,7 +346,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         for (PhasedUnit pu : units) {
             if (searchInFile(pu)) {
                 TextFileChange tfc = 
-                        newTextFileChange(pu);
+                        newTextFileChange((ProjectPhasedUnit)pu);
                 refactorInFile(tfc, cc, 
                         pu.getCompilationUnit(),
                         pu.getTokens());

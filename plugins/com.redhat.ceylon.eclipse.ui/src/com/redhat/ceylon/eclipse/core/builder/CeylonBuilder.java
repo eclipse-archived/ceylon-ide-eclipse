@@ -2379,7 +2379,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private static void addProblemAndTaskMarkers(final List<PhasedUnit> units, 
             final IProject project) {
         for (PhasedUnit phasedUnit: units) {
-            IFile file = getFile(phasedUnit);
+            IFile file = ((ProjectPhasedUnit)phasedUnit).getResourceFile();
             CompilationUnit compilationUnit = phasedUnit.getCompilationUnit();
             compilationUnit.visit(new WarningSuppressionVisitor<Warning>(Warning.class,
                     getSuppressedWarnings(project)));
@@ -3228,19 +3228,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
     
-    public static IFile getFile(PhasedUnit phasedUnit) {
-        TypecheckerUnit unit = phasedUnit.getUnit();
-        if (unit instanceof EditedSourceFile) {
-            EditedSourceFile editedSourceFile = 
-                    (EditedSourceFile) unit;
-            phasedUnit = 
-                    editedSourceFile.getOriginalSourceFile()
-                        .getPhasedUnit();
-        }
-        VirtualFile file = phasedUnit.getUnitFile();
-        return getIFileVirtualFile(file).getNativeResource();
-    }
-
     // TODO think: doRefresh(file.getParent()); // N.B.: Assumes all
     // generated files go into parent folder
 

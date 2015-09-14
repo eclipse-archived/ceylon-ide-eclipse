@@ -33,6 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -141,7 +142,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
 
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
-                TextFileChange pufc = newTextFileChange(pu);
+                TextFileChange pufc = newTextFileChange((ProjectPhasedUnit)pu);
                 pufc.setEdit(new MultiTextEdit());
                 if (declaration.getUnit().equals(pu.getUnit())) {
                     move(owner, pufc);

@@ -34,6 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -277,7 +278,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             for (PhasedUnit pu: getAllUnits()) {
                 if (searchInFile(pu) && 
                         affectsUnit(pu.getUnit())) {
-                    TextFileChange tfc = newTextFileChange(pu);
+                    TextFileChange tfc = newTextFileChange((ProjectPhasedUnit)pu);
                     Tree.CompilationUnit cu = 
                             pu.getCompilationUnit();
                     inlineInFile(tfc, cc, declarationNode, 

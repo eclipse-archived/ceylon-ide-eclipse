@@ -24,6 +24,7 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 
 public class ChangeVersionRefactoring extends AbstractRefactoring {
     
@@ -132,7 +133,7 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
                 TextFileChange tfc = 
-                        newTextFileChange(pu);
+                        newTextFileChange((ProjectPhasedUnit)pu);
                 renameInFile(tfc, cc, 
                         pu.getCompilationUnit());
                 pm.worked(i++);

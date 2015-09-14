@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.asIntersectionTypeString;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
@@ -22,12 +21,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -47,10 +46,13 @@ class CreateTypeParameterProposal extends CorrectionProposal {
     private static void addProposal(
             Collection<ICompletionProposal> proposals, 
             boolean wasNotGeneric, String def, String name, 
-            Image image, Declaration dec, PhasedUnit unit, 
+            Image image, Declaration dec, ModifiablePhasedUnit unit, 
             Tree.Declaration decNode, int offset, 
             String constraints) {
-        IFile file = getFile(unit);
+        IFile file = unit.getResourceFile();
+        if (file == null) {
+            return;
+        }
         TextFileChange change = 
                 new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
@@ -249,8 +251,8 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         }
 
         TypecheckerUnit u = rootNode.getUnit();
-        if (u instanceof CeylonUnit) {
-            CeylonUnit cu = (CeylonUnit) u;
+        if (u instanceof ModifiableSourceFile) {
+            ModifiableSourceFile cu = (ModifiableSourceFile) u;
             addProposal(proposals, paramList==null,
                     paramDef, brokenName, ADD_CORR, 
                     d, cu.getPhasedUnit(), decl, offset, constraints);

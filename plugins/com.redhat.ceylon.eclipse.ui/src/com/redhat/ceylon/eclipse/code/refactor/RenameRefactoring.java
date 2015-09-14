@@ -50,6 +50,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
@@ -341,7 +342,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         int i=0;
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange(pu);
+                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit) pu);
                 renameInFile(tfc, composite, 
                         pu.getCompilationUnit());
                 pm.worked(i++);

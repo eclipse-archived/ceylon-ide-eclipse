@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.Escaping.toInitialLowercase;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
@@ -32,6 +31,8 @@ import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -55,12 +56,15 @@ class CreateParameterProposal extends InitializerProposal {
     private static void addCreateParameterProposal(
             Collection<ICompletionProposal> proposals, 
             String def, String desc, Image image, 
-            Declaration dec, PhasedUnit unit,
+            Declaration dec, ModifiablePhasedUnit unit,
             Tree.Declaration decNode, 
             Tree.ParameterList paramList, 
             Type returnType, 
             Set<Declaration> imports, Node node) {
-        IFile file = getFile(unit);
+        IFile file = unit.getResourceFile();
+        if (file == null) {
+            return;
+        }
         TextFileChange change = 
                 new TextFileChange("Add Parameter", file);
         change.setEdit(new MultiTextEdit());
@@ -78,11 +82,14 @@ class CreateParameterProposal extends InitializerProposal {
     private static void addCreateParameterAndAttributeProposal(
             Collection<ICompletionProposal> proposals, 
             String pdef, String adef, String desc, 
-            Image image, Declaration dec, PhasedUnit unit,
+            Image image, Declaration dec, ModifiablePhasedUnit unit,
             Tree.Declaration decNode, 
             Tree.ParameterList paramList, Tree.Body body, 
             Type returnType, Node node) {
-        IFile file = getFile(unit);
+        IFile file = unit.getResourceFile();
+        if (file == null) {
+            return;
+        }
         TextFileChange change = 
                 new TextFileChange("Add Attribute", file);
         change.setEdit(new MultiTextEdit());
@@ -143,8 +150,8 @@ class CreateParameterProposal extends InitializerProposal {
                         "parameter '" + dg.getBrokenName() + "'";
                 TypecheckerUnit u = 
                         dg.getRootNode().getUnit();
-                if (u instanceof CeylonUnit) {
-                    CeylonUnit cu = (CeylonUnit) u;
+                if (u instanceof ModifiableSourceFile) {
+                    ModifiableSourceFile cu = (ModifiableSourceFile) u;
                     addCreateParameterProposal(
                             proposals, paramDef, paramDesc, 
                             ADD_CORR, 
@@ -270,9 +277,9 @@ class CreateParameterProposal extends InitializerProposal {
             Node node) {
         if (typeDec!=null && typeDec instanceof Functional) {
             Unit u = typeDec.getUnit();
-            if (u instanceof CeylonUnit) {
-                CeylonUnit cu = (CeylonUnit) u;
-                PhasedUnit unit = cu.getPhasedUnit();
+            if (u instanceof ModifiableSourceFile) {
+                ModifiableSourceFile cu = (ModifiableSourceFile) u;
+                ModifiablePhasedUnit unit = cu.getPhasedUnit();
                 FindDeclarationNodeVisitor fdv = 
                         new FindDeclarationNodeVisitor(typeDec);
                 unit.getCompilationUnit().visit(fdv);
@@ -305,12 +312,11 @@ class CreateParameterProposal extends InitializerProposal {
             Node node) {
         if (typeDec instanceof ClassOrInterface) {
             Unit u = typeDec.getUnit();
-            if (u instanceof CeylonUnit) {
-                CeylonUnit cu = (CeylonUnit) u;
-                PhasedUnit unit = cu.getPhasedUnit();
+            if (u instanceof ModifiableSourceFile) {
+                ModifiablePhasedUnit phasedUnit = ((ModifiableSourceFile) u).getPhasedUnit();
                 FindDeclarationNodeVisitor fdv = 
                         new FindDeclarationNodeVisitor(typeDec);
-                unit.getCompilationUnit().visit(fdv);
+                phasedUnit.getCompilationUnit().visit(fdv);
                 Tree.Declaration decNode = 
                         (Tree.Declaration) 
                             fdv.getDeclarationNode();
@@ -318,13 +324,14 @@ class CreateParameterProposal extends InitializerProposal {
                         getParameters(decNode);
                 Tree.Body body = 
                         getClassOrInterfaceBody(decNode);
-                if (body!=null && paramList!=null) {
+                if (body!=null 
+                        && paramList!=null) {
                     if (!paramList.getParameters().isEmpty()) {
                         pdef = ", " + pdef;
                     }
                     addCreateParameterAndAttributeProposal(
                             proposals, pdef, adef, desc, 
-                            ADD_CORR, typeDec, unit, decNode, 
+                            ADD_CORR, typeDec, phasedUnit, decNode, 
                             paramList, body, t, node);
                 }
             }

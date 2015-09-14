@@ -28,6 +28,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -82,7 +83,7 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
         List<PhasedUnit> units = getAllUnits();
         for (PhasedUnit unit : units) {
             if (searchInFile(unit)) {
-                TextFileChange tfc = newTextFileChange(unit);
+                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit)unit);
                 invertBoolean(unit.getCompilationUnit(), tfc, cc);
 
             }

@@ -11,7 +11,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
@@ -38,7 +37,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
@@ -309,9 +308,9 @@ class InitializerProposal extends CorrectionProposal {
     @Override
     public void apply(IDocument document) {
         CeylonEditor editor = null;
-        if (unit instanceof CeylonUnit) {
-            CeylonUnit cu = (CeylonUnit) unit;
-            IFile file = getFile(cu.getPhasedUnit());
+        if (unit instanceof ModifiableSourceFile) {
+            ModifiableSourceFile cu = (ModifiableSourceFile) unit;
+            IFile file = cu.getResourceFile();
             editor = (CeylonEditor) gotoFile(file, 0, 0);
             //NOTE: the document we're given is the one
             //for the editor from which the quick fix was

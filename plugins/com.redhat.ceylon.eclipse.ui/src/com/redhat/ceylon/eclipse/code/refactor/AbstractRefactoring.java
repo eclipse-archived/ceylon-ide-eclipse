@@ -26,12 +26,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -130,9 +130,9 @@ abstract class AbstractRefactoring extends Refactoring {
         return dc;
     }
     
-    TextFileChange newTextFileChange(PhasedUnit pu) {
+    TextFileChange newTextFileChange(ProjectPhasedUnit pu) {
         TextFileChange tfc = new TextFileChange(getName(), 
-                CeylonBuilder.getFile(pu));
+                pu.getResourceFile());
         tfc.setTextType("ceylon");
         return tfc;
     }

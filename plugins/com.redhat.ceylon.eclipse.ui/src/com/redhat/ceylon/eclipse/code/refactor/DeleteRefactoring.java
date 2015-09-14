@@ -27,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 
@@ -331,7 +332,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
         }
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
-                deleteInFile(change, newTextFileChange(pu), 
+                deleteInFile(change, newTextFileChange((ProjectPhasedUnit)pu), 
                         pu.getCompilationUnit());
             }
         }

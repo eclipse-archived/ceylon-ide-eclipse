@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrIn
 import static com.redhat.ceylon.eclipse.code.correct.CreateInNewUnitProposal.addCreateInNewUnitProposal;
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
@@ -33,6 +32,8 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -59,9 +60,12 @@ class CreateProposal extends InitializerProposal {
     static void addCreateMemberProposal(
             Collection<ICompletionProposal> proposals, 
             DefinitionGenerator dg, Declaration typeDec, 
-            PhasedUnit unit, Tree.Declaration decNode, 
+            ModifiablePhasedUnit unit, Tree.Declaration decNode, 
             Tree.Body body, Tree.Statement statement) {
-        IFile file = getFile(unit);
+        IFile file = unit.getResourceFile();
+        if (file == null) {
+            return;
+        }
         TextFileChange change = 
                 new TextFileChange("Create Member", file);
         change.setEdit(new MultiTextEdit());
@@ -157,8 +161,11 @@ class CreateProposal extends InitializerProposal {
     private static void addCreateProposal(
             Collection<ICompletionProposal> proposals, 
             boolean local, DefinitionGenerator dg, 
-            PhasedUnit unit, Tree.Statement statement) {
-        IFile file = getFile(unit);
+            ModifiablePhasedUnit unit, Tree.Statement statement) {
+        IFile file = unit.getResourceFile();
+        if (file == null) {
+            return;
+        }
         TextFileChange change = new TextFileChange(local ? 
                 "Create Local" : "Create Toplevel", file);
         change.setEdit(new MultiTextEdit());
@@ -213,21 +220,23 @@ class CreateProposal extends InitializerProposal {
                 || (typeDec instanceof Interface 
                         && dg.isFormalSupported()))) {
             Unit u = typeDec.getUnit();
-            if (u instanceof CeylonUnit) {
-                CeylonUnit cu = (CeylonUnit) u;
-                PhasedUnit unit = cu.getPhasedUnit();
+            if (u instanceof ModifiableSourceFile) {
+                ModifiablePhasedUnit phasedUnit = 
+                        ((ModifiableSourceFile) u).getPhasedUnit();
                 //TODO: "object" declarations?
                 FindDeclarationNodeVisitor fdv = 
                         new FindDeclarationNodeVisitor(typeDec);
-                unit.getCompilationUnit().visit(fdv);
+                phasedUnit.getCompilationUnit().visit(fdv);
                 Tree.Declaration decNode = 
                         (Tree.Declaration) 
                             fdv.getDeclarationNode();
                 Tree.Body body = 
                         getClassOrInterfaceBody(decNode);
-                if (body!=null) {
+                IFile file = phasedUnit.getResourceFile();
+                if (body!=null
+                        && file != null) {
                     addCreateMemberProposal(proposals, dg, 
-                            typeDec, unit, decNode, body,
+                            typeDec, phasedUnit, decNode, body,
                             statement);
                 }
             }
@@ -242,8 +251,8 @@ class CreateProposal extends InitializerProposal {
                         dg.getNode());
         if (statement!=null) {
             Unit u = dg.getRootNode().getUnit();
-            if (u instanceof CeylonUnit) {
-                CeylonUnit cu = (CeylonUnit) u;
+            if (u instanceof ModifiableSourceFile) {
+                ModifiableSourceFile cu = (ModifiableSourceFile) u;
                 addCreateProposal(proposals, true, dg, 
                         cu.getPhasedUnit(), statement);
             }
@@ -258,8 +267,8 @@ class CreateProposal extends InitializerProposal {
                         dg.getNode());
         if (statement!=null) {
             Unit u = dg.getRootNode().getUnit();
-            if (u instanceof CeylonUnit) {
-                CeylonUnit cu = (CeylonUnit) u;
+            if (u instanceof ModifiableSourceFile) {
+                ModifiableSourceFile cu = (ModifiableSourceFile) u;
                 addCreateProposal(proposals, false, dg, 
                         cu.getPhasedUnit(), statement);
             }

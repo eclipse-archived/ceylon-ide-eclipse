@@ -20,6 +20,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
+import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -104,9 +106,9 @@ class RemoveAnnotionProposal extends CorrectionProposal {
             IProject project) {
         if (dec!=null && dec.getName()!=null) {
             Unit u = dec.getUnit();
-            if (u instanceof CeylonUnit) {
-                CeylonUnit cu = (CeylonUnit) u;
-                PhasedUnit unit = cu.getPhasedUnit();
+            if (u instanceof ModifiableSourceFile) {
+                ModifiableSourceFile cu = (ModifiableSourceFile) u;
+                ModifiablePhasedUnit unit = cu.getPhasedUnit();
                 //TODO: "object" declarations?
                 FindDeclarationNodeVisitor fdv = 
                         new FindDeclarationNodeVisitor(dec);
@@ -127,8 +129,11 @@ class RemoveAnnotionProposal extends CorrectionProposal {
             String annotation, String desc, 
             Declaration dec,
             Collection<ICompletionProposal> proposals, 
-            PhasedUnit unit, Tree.Declaration decNode) {
-        IFile file = CeylonBuilder.getFile(unit);
+            ModifiablePhasedUnit unit, Tree.Declaration decNode) {
+        IFile file = unit.getResourceFile();
+        if (file == null) {
+            return;
+        }
         TextFileChange change = 
                 new TextFileChange(desc, file);
         change.setEdit(new MultiTextEdit());

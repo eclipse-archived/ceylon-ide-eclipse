@@ -26,6 +26,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -188,7 +189,7 @@ public class AliasRefactoring extends AbstractRefactoring {
                     pu.getPackage()
                         .equals(editorPackage);
             if (inSamePackage && searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange(pu);
+                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit)pu);
                 renameInFile(tfc, cc, 
                         pu.getCompilationUnit());
                 pm.worked(i++);

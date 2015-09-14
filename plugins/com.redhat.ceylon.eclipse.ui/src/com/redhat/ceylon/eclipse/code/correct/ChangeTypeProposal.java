@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.intersectionType;
@@ -26,6 +25,8 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -230,9 +231,9 @@ class ChangeTypeProposal extends CorrectionProposal {
             Declaration dec, boolean intersect) {
         if (dec!=null) {
             Unit u = dec.getUnit();
-            if (u instanceof CeylonUnit) {
-                CeylonUnit cu = (CeylonUnit) u;
-                PhasedUnit unit = cu.getPhasedUnit();
+            if (u instanceof ModifiableSourceFile) {
+                ModifiablePhasedUnit phasedUnit = 
+                        ((ModifiableSourceFile)u).getPhasedUnit();
                 Type t = null;
                 Node typeNode = null;
                 
@@ -249,7 +250,7 @@ class ChangeTypeProposal extends CorrectionProposal {
                     FindDeclarationNodeVisitor fdv = 
                             new FindDeclarationNodeVisitor(
                                     typedDec);
-                    unit.getCompilationUnit().visit(fdv);
+                    phasedUnit.getCompilationUnit().visit(fdv);
                     Tree.StatementOrArgument dn = 
                             fdv.getDeclarationNode();
                     if (dn instanceof Tree.TypedDeclaration) {
@@ -276,11 +277,12 @@ class ChangeTypeProposal extends CorrectionProposal {
                     type = nu.getCallableReturnType(type);
                 }
                 
-                if (typeNode != null && 
-                        !isTypeUnknown(type)) {
-                    IFile file = getFile(unit);
+                IFile file = phasedUnit.getResourceFile();
+                if (typeNode != null
+                        && file != null
+                            && !isTypeUnknown(type)) {
                     Tree.CompilationUnit rootNode = 
-                            unit.getCompilationUnit();
+                            phasedUnit.getCompilationUnit();
                     addChangeTypeProposal(typeNode, 
                             problem, proposals, dec, 
                             type, file, rootNode);

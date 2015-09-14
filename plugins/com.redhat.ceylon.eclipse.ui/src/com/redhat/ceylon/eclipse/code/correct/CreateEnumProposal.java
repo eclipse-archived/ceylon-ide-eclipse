@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.INTERFACE;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
@@ -17,11 +16,11 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
@@ -94,9 +93,12 @@ class CreateEnumProposal extends CorrectionProposal {
         }
         
     private static void addCreateEnumProposal(Collection<ICompletionProposal> proposals, 
-            String def, String desc, Image image, PhasedUnit unit, 
+            String def, String desc, Image image, ModifiablePhasedUnit unit, 
             Tree.Statement statement) {
-        IFile file = getFile(unit);
+        IFile file = unit.getResourceFile();
+        if (file == null) {
+            return;
+        }
         TextFileChange change = new TextFileChange("Create Enumerated", file);
         IDocument doc = EditorUtil.getDocument(change);
         String indent = getIndent(statement, doc);
@@ -117,10 +119,10 @@ class CreateEnumProposal extends CorrectionProposal {
                 IProject project, String def, String desc, Image image, 
                 Tree.CompilationUnit rootNode, Tree.TypeDeclaration cd) {
                 TypecheckerUnit u = rootNode.getUnit();
-            if (u instanceof CeylonUnit) {
-                CeylonUnit cu = (CeylonUnit) u;
-                addCreateEnumProposal(proposals, def, desc, image, 
-                        cu.getPhasedUnit(), cd);
+            if (u instanceof ModifiableSourceFile) {
+                ModifiableSourceFile cu = (ModifiableSourceFile) u;
+                    addCreateEnumProposal(proposals, def, desc, image, 
+                            cu.getPhasedUnit(), cd);
             }
         }
 

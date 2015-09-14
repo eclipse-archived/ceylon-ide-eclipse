@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.makeModuleImportShared;
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.removeSharedAnnotation;
 import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
@@ -60,7 +59,8 @@ import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
@@ -371,14 +371,14 @@ public class CeylonModulePropertiesPage extends PropertyPage
                 getModule()
                     .getPackage(item.getText());
         Unit unit = pkg.getUnit();
-        PhasedUnit phasedUnit;
-        if (unit instanceof CeylonUnit) {
-            CeylonUnit ceylonUnit = (CeylonUnit) unit;
+        ProjectPhasedUnit phasedUnit;
+        if (unit instanceof ProjectSourceFile) {
+            ProjectSourceFile ceylonUnit = (ProjectSourceFile) unit;
             phasedUnit = ceylonUnit.getPhasedUnit();
             TextFileChange textFileChange = 
                     new TextFileChange(
                             "Make Package Shared", 
-                            getFile(phasedUnit));
+                            phasedUnit.getResourceFile());
             textFileChange.setEdit(new MultiTextEdit());
             IDocument doc = getDocument(textFileChange);
             Tree.PackageDescriptor pd = 

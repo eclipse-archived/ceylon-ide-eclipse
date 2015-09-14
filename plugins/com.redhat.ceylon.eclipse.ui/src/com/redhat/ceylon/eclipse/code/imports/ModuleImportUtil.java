@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 import static java.util.Collections.singletonMap;
@@ -24,7 +23,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
+import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -34,9 +34,9 @@ public class ModuleImportUtil {
 
     public static void exportModuleImports(IProject project, 
             Module target, String moduleName) {
-        PhasedUnit unit = 
+        ProjectPhasedUnit unit = 
                 getDescriptorPhasedUnit(project, target);
-        exportModuleImports(getFile(unit), 
+        exportModuleImports(unit.getResourceFile(), 
                 unit.getCompilationUnit(), 
                 moduleName);
     }
@@ -44,9 +44,9 @@ public class ModuleImportUtil {
     public static void removeModuleImports(IProject project, 
             Module target, List<String> moduleNames) {
         if (moduleNames.isEmpty()) return;
-        PhasedUnit unit = 
+        ProjectPhasedUnit unit = 
                 getDescriptorPhasedUnit(project, target);
-        removeModuleImports(getFile(unit), 
+        removeModuleImports(unit.getResourceFile(), 
                 unit.getCompilationUnit(), 
                 moduleNames);
     }
@@ -89,11 +89,11 @@ public class ModuleImportUtil {
     
     public static void makeModuleImportShared(IProject project, Module target, 
             String[] moduleNames) {
-        PhasedUnit unit = 
+        ProjectPhasedUnit unit = 
                 getDescriptorPhasedUnit(project, target);
         TextFileChange textFileChange = 
                 new TextFileChange("Make Module Import Shared", 
-                        getFile(unit));
+                        unit.getResourceFile());
         textFileChange.setEdit(new MultiTextEdit());
         Tree.CompilationUnit compilationUnit = unit.getCompilationUnit();
         IDocument doc = EditorUtil.getDocument(textFileChange);
@@ -138,10 +138,10 @@ public class ModuleImportUtil {
     public static int addModuleImports(IProject project, Module target, 
             Map<String,String> moduleNamesAndVersions) {
         if (moduleNamesAndVersions.isEmpty()) return 0;
-        PhasedUnit unit = 
+        ProjectPhasedUnit unit = 
                 getDescriptorPhasedUnit(project, target);
-        return addModuleImports(getFile(unit), 
-                unit.getCompilationUnit(), 
+        return addModuleImports(unit.getResourceFile(),
+                unit.getCompilationUnit(),
                 moduleNamesAndVersions);
     }
 
@@ -163,16 +163,14 @@ public class ModuleImportUtil {
         return textFileChange.getEdit().getOffset();
     }
 
-    private static PhasedUnit getDescriptorPhasedUnit(
+    private static ProjectPhasedUnit getDescriptorPhasedUnit(
             IProject project, Module module) {
         Unit unit = module.getUnit();
-        if (unit instanceof CeylonUnit) {
-            CeylonUnit ceylonUnit = (CeylonUnit) unit;
+        if (unit instanceof ProjectSourceFile) {
+            ProjectSourceFile ceylonUnit = (ProjectSourceFile) unit;
             return ceylonUnit.getPhasedUnit();
         }
-        else {
-            return null;
-        }
+        return null;
     }
     
     private static InsertEdit createAddEdit(CompilationUnit unit, 

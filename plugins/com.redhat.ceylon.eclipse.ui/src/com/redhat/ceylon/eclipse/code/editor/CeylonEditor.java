@@ -2060,7 +2060,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
                                     if (unit instanceof ProjectPhasedUnit) {
                                         if (instanceOfIFileVirtualFile(unit.getUnitFile())) {
                                             IFile newFile = 
-                                                    CeylonBuilder.getFile(unit);
+                                                    ((ProjectPhasedUnit)unit).getResourceFile();
                                             if (newFile.exists() &&
                                                     getRootFolderType(newFile) 
                                                             == RootFolderType.SOURCE) {

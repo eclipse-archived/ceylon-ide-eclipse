@@ -18,6 +18,9 @@ import com.redhat.ceylon.eclipse.core.model {
     EditedSourceFile,
     ProjectSourceFile
 }
+import com.redhat.ceylon.eclipse.core.typechecker {
+    ProjectPhasedUnit
+}
 import com.redhat.ceylon.eclipse.util {
     EditorUtil,
     Nodes
@@ -121,7 +124,8 @@ abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends Refact
     }
 
     shared TextFileChange newTextFileChange(PhasedUnit pu) {
-        TextFileChange tfc = TextFileChange(name, CeylonBuilder.getFile(pu));
+        assert(is ProjectPhasedUnit pu);
+        TextFileChange tfc = TextFileChange(name, pu.resourceFile);
         tfc.textType = "ceylon";
         return tfc;
     }
