@@ -49,7 +49,7 @@ class CreateParameterProposal extends InitializerProposal {
             int exitPos) {
         super(desc, change, dec, type, 
                 computeSelection(offset,def), 
-                image, exitPos, null);
+                image, exitPos);
     }
     
     private static void addCreateParameterProposal(

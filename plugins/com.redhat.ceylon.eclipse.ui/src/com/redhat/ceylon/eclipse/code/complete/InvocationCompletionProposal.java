@@ -582,7 +582,8 @@ class InvocationCompletionProposal extends CompletionProposal {
 
     final class NestedLiteralCompletionProposal 
             implements ICompletionProposal, 
-                       ICompletionProposalExtension2 {
+                       ICompletionProposalExtension2,
+                       ICompletionProposalExtension6 {
         
         private final int loc;
         private final int index;
@@ -662,6 +663,16 @@ class InvocationCompletionProposal extends CompletionProposal {
         @Override
         public String getDisplayString() {
             return value;
+        }
+        
+
+        @Override
+        public StyledString getStyledDisplayString() {
+            StyledString result = new StyledString();
+            Highlights.styleFragment(result, 
+                    getDisplayString(), false, null, 
+                    CeylonPlugin.getCompletionFont());
+            return result;
         }
         
         @Override

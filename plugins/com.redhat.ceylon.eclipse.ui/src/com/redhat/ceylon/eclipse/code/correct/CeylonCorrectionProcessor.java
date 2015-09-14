@@ -713,7 +713,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 1450:
         	addMakeFormalDecProposal(proposals, project, node);
-        	addParameterProposals(proposals, file, rootNode, node, null);
+        	addParameterProposals(proposals, file, rootNode, node);
         	addInitializerProposals(proposals, file, rootNode, node);
             addParameterListProposal(file, proposals, node, rootNode);
         	addConstructorProposal(file, proposals, node, rootNode);
@@ -1123,7 +1123,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
             addSplitDeclarationProposals(proposals, doc, file, rootNode, declaration, statement);
             addJoinDeclarationProposal(proposals, rootNode, statement, file);
-            addParameterProposals(proposals, file, rootNode, declaration, editor);
+            addParameterProposals(proposals, file, rootNode, declaration);
             
             addArgumentProposals(proposals, doc, file, argument);
             addUseAliasProposal(imp, proposals, editor);

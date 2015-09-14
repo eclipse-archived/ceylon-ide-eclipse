@@ -25,7 +25,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
@@ -36,12 +35,12 @@ class AddParameterProposal extends InitializerProposal {
     
 	private AddParameterProposal(Declaration d, Declaration dec, 
 	        Type type, int offset, int len, TextChange change, 
-	        int exitPos, CeylonEditor editor) {
+	        int exitPos) {
         super("Add '" + d.getName() + 
               "' to parameter list of '" + dec.getName() + "'", 
                 change, dec, type, 
                 new Region(offset, len), 
-                ADD_CORR, exitPos, editor);
+                ADD_CORR, exitPos);
     }
 	
     private static void addParameterProposal(
@@ -49,7 +48,7 @@ class AddParameterProposal extends InitializerProposal {
             Collection<ICompletionProposal> proposals, 
             IFile file, Tree.TypedDeclaration decNode, 
             Tree.SpecifierOrInitializerExpression sie, 
-            Node node, CeylonEditor editor) {
+            Node node) {
         FunctionOrValue dec = 
                 (FunctionOrValue) 
                     decNode.getDeclarationModel();
@@ -186,14 +185,13 @@ class AddParameterProposal extends InitializerProposal {
                     container.getDeclarationModel(), 
                     paramType, 
                     offset+param.length()+shift-len, len, 
-                    change, exitPos, editor));
+                    change, exitPos));
         }
     }
 
 	static void addParameterProposals(
 	        Collection<ICompletionProposal> proposals,
-			IFile file, Tree.CompilationUnit cu, Node node, 
-			CeylonEditor editor) {
+			IFile file, Tree.CompilationUnit cu, Node node) {
 		if (node instanceof Tree.AttributeDeclaration) {
 	        Tree.AttributeDeclaration attDecNode = 
 	                (Tree.AttributeDeclaration) node;
@@ -201,7 +199,7 @@ class AddParameterProposal extends InitializerProposal {
 	                attDecNode.getSpecifierOrInitializerExpression();
 	        if (!(sie instanceof Tree.LazySpecifierExpression)) {
 	            addParameterProposal(cu, proposals, file, 
-	                    attDecNode, sie, node, editor);
+	                    attDecNode, sie, node);
 	        }
 	    }
 	    if (node instanceof Tree.MethodDeclaration) {
@@ -210,7 +208,7 @@ class AddParameterProposal extends InitializerProposal {
 	        Tree.SpecifierExpression sie = 
 	                methDecNode.getSpecifierExpression();
 	        addParameterProposal(cu, proposals, file, 
-	                methDecNode, sie, node, editor);
+	                methDecNode, sie, node);
 	    }
 	}
     

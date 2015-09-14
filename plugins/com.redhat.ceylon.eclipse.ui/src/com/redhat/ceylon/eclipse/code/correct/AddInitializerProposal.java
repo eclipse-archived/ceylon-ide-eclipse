@@ -24,7 +24,7 @@ class AddInitializerProposal extends InitializerProposal {
         super("Add initializer to '" + dec.getName() + "'", 
         		change, dec, dec.getType(), 
         		new Region(offset, length),
-        		MINOR_CHANGE, -1, null);
+        		MINOR_CHANGE, -1);
     }
     
     private static void addInitializerProposal(Tree.CompilationUnit cu,

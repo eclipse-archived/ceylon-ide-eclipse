@@ -54,7 +54,7 @@ class CreateProposal extends InitializerProposal {
                 isObjectOrClass ? 
                         new Region(offset, 0): 
                         computeSelection(offset, def), 
-                image, exitPos, null);
+                image, exitPos);
     }
     
     static void addCreateMemberProposal(Collection<ICompletionProposal> proposals, 

@@ -477,7 +477,6 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         private final int offset;
         
         public NestedCompletionProposal(Declaration dec, int offset) {
-            super();
             this.dec = dec;
             this.offset = offset;
         }

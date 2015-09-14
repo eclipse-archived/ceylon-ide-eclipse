@@ -6,13 +6,18 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLa
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -22,20 +27,26 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -46,18 +57,21 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 
 class InitializerProposal extends CorrectionProposal {
 
-    private final class InitializerValueProposal 
+    private final class NestedCompletionProposal 
             implements ICompletionProposal, 
-                       ICompletionProposalExtension2 {
+                       ICompletionProposalExtension2,
+                       ICompletionProposalExtension6 {
         
-        private final String text;
-        private final Image image;
+        private Unit getUnit() {
+            return unit;
+        }
+
+        private final Declaration dec;
         private final int offset;
 
-        private InitializerValueProposal(int offset, String text, Image image) {
+        private NestedCompletionProposal(Declaration dec, int offset) {
             this.offset = offset;
-            this.text = text;
-            this.image = image;
+            this.dec = dec;
         }
 
         protected IRegion getCurrentRegion(IDocument document) 
@@ -78,20 +92,15 @@ class InitializerProposal extends CorrectionProposal {
         }
         
         @Override
-        public Image getImage() {
-            return image;
-        }
-        
-        @Override
         public Point getSelection(IDocument document) {
-            return new Point(offset + text.length(), 0);
+            return null;
         }
         
         public void apply(IDocument document) {
             try {
                 IRegion region = getCurrentRegion(document);
                 document.replace(region.getOffset(), 
-                        region.getLength(), text);
+                        region.getLength(), getText(false));
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -99,7 +108,165 @@ class InitializerProposal extends CorrectionProposal {
         }
         
         public String getDisplayString() {
-            return text;
+            return getText(true);
+        }
+        
+        @Override
+        public StyledString getStyledDisplayString() {
+            StyledString result = new StyledString();
+            Highlights.styleFragment(result, 
+                    getDisplayString(), false, null, 
+                    CeylonPlugin.getCompletionFont());
+            return result;
+        }
+
+        @Override
+        public Image getImage() {
+            return getImageForDeclaration(dec);
+        }
+
+        public String getAdditionalProposalInfo() {
+            return null;
+        }
+        
+        @Override
+        public IContextInformation getContextInformation() {
+            return null;
+        }
+        
+        private String getText(boolean description) {
+            StringBuilder sb = new StringBuilder();
+            if (dec instanceof Constructor) {
+                Constructor constructor = (Constructor) dec;
+                TypeDeclaration clazz = 
+                        constructor.getExtendedType()
+                            .getDeclaration();
+                sb.append(escapeName(clazz, getUnit()))
+                    .append('.');
+            }
+            sb.append(escapeName(dec, getUnit()));
+            if (dec instanceof Functional) {
+                appendPositionalArgs(dec, getUnit(), 
+                        sb, false, description);
+            }
+            return sb.toString();
+        }
+
+        @Override
+        public void apply(ITextViewer viewer, char trigger, 
+                int stateMask, int offset) {
+            apply(viewer.getDocument());
+        }
+        
+        @Override
+        public void selected(ITextViewer viewer, boolean smartToggle) {}
+        
+        @Override
+        public void unselected(ITextViewer viewer) {}
+        
+        @Override
+        public boolean validate(IDocument document, 
+                int currentOffset, DocumentEvent event) {
+            if (event==null) {
+                return true;
+            }
+            else {
+                try {
+                    IRegion region = getCurrentRegion(document);
+                    String content = 
+                            document.get(region.getOffset(), 
+                                    currentOffset-region.getOffset());
+                    String filter = 
+                            content.trim().toLowerCase();
+                    String decName = 
+                            dec.getName(getUnit())
+                                .toLowerCase();
+                    if (dec instanceof Constructor) {
+                        Constructor constructor = 
+                                (Constructor) dec;
+                        TypeDeclaration clazz = 
+                                constructor.getExtendedType()
+                                    .getDeclaration();
+                        decName = 
+                                clazz.getName(getUnit())
+                                    .toLowerCase() +
+                                '.' + decName;
+                    }
+                    if (decName.startsWith(filter)) {
+                        return true;
+                    }
+                }
+                catch (BadLocationException e) {
+                    // ignore concurrently modified document
+                }
+                return false;
+            }
+        }
+        
+    }
+
+    private final class NestedLiteralCompletionProposal 
+            implements ICompletionProposal, 
+                       ICompletionProposalExtension2,
+                       ICompletionProposalExtension6 {
+        
+        private final String value;
+        private final int offset;
+        
+        private NestedLiteralCompletionProposal(String value, int offset) {
+            this.offset = offset;
+            this.value = value;
+        }
+        
+        protected IRegion getCurrentRegion(IDocument document) 
+                throws BadLocationException {
+            int start = offset;
+            int length = 0;
+            for (int i=offset;
+                    i<document.getLength(); 
+                    i++) {
+                char ch = document.getChar(i);
+                if (Character.isWhitespace(ch) ||
+                        ch==';'||ch==','||ch==')') {
+                    break;
+                }
+                length++;
+            }
+            return new Region(start, length);
+        }
+        
+        @Override
+        public Point getSelection(IDocument document) {
+            return null;
+        }
+        
+        public void apply(IDocument document) {
+            try {
+                IRegion region = getCurrentRegion(document);
+                document.replace(region.getOffset(), 
+                        region.getLength(), value);
+            } 
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        public String getDisplayString() {
+            return value;
+        }
+        
+        @Override
+        public StyledString getStyledDisplayString() {
+            StyledString result = new StyledString();
+            Highlights.styleFragment(result, 
+                    getDisplayString(), false, null, 
+                    CeylonPlugin.getCompletionFont());
+            return result;
+        }
+        
+        @Override
+        public Image getImage() {
+            return getDecoratedImage(CEYLON_LITERAL, 0, false);
         }
         
         public String getAdditionalProposalInfo() {
@@ -124,66 +291,95 @@ class InitializerProposal extends CorrectionProposal {
         public void unselected(ITextViewer viewer) {}
         
         @Override
-        public boolean validate(IDocument document, int offset, 
-                DocumentEvent event) {
-            try {
-                IRegion region = getCurrentRegion(document);
-                String prefix = 
-                        document.get(region.getOffset(), 
-                                offset-region.getOffset());
-                return text.startsWith(prefix);
+        public boolean validate(IDocument document, 
+                int currentOffset, DocumentEvent event) {
+            if (event==null) {
+                return true;
             }
-            catch (BadLocationException e) {
+            else {
+                try {
+                    IRegion region = getCurrentRegion(document);
+                    String content = 
+                            document.get(region.getOffset(), 
+                                    currentOffset-region.getOffset());
+                    String filter = 
+                            content.trim().toLowerCase();
+                    if (value.startsWith(filter)) {
+                        return true;
+                    }
+                }
+                catch (BadLocationException e) {
+                    // ignore concurrently modified document
+                }
                 return false;
             }
         }
         
-    }
-
-    private CeylonEditor editor;
-    
+        }
+        
     private final Type type;
     private final Scope scope;
     private final Unit unit;
-    private final int exitPos;
+    private int exitPos;
     
     InitializerProposal(String name, Change change,
             Declaration declaration, Type type, 
-            Region selection, Image image, int exitPos, 
-            CeylonEditor editor) {
-        super(name, change, selection, image);
-        this.exitPos = exitPos;
-        this.editor = editor;
-        this.scope = declaration.getScope();
-        this.unit = declaration.getUnit();
-        this.type = type;
+            Region selection, Image image, int exitPos) {
+        this(name, change, 
+                declaration.getScope(),
+                declaration.getUnit(), 
+                type, selection, image, exitPos);
     }
 
     InitializerProposal(String name, Change change,
             Scope scope, Unit unit, Type type, 
-            Region selection, Image image, int exitPos, 
-            CeylonEditor editor) {
+            Region selection, Image image, int exitPos) {
         super(name, change, selection, image);
         this.exitPos = exitPos;
-        this.editor = editor;
         this.scope = scope;
         this.unit = unit;
         this.type = type;
     }
+    
+    @Override
+    public Point getSelection(IDocument document) {
+        //we don't apply a selection because:
+        //1. we're using linked mode anyway, and
+        //2. the change might have been applied to
+        //   a different editor to the one from
+        //   which the quick fix was invoked.
+        return null;
+    }
 
     @Override
     public void apply(IDocument document) {
+        CeylonEditor editor = null;
+        if (unit instanceof CeylonUnit) {
+            CeylonUnit cu = (CeylonUnit) unit;
+            IFile file = getFile(cu.getPhasedUnit());
+            editor = (CeylonEditor) gotoFile(file, 0, 0);
+            //NOTE: the document we're given is the one
+            //for the editor from which the quick fix was
+            //invoked, not the one to which the fix applies
+            IDocument ed = 
+                    editor.getParseController()
+                        .getDocument();
+            if (ed!=document) {
+                document = ed;
+                exitPos = -1;
+            }
+        }
+        else {
+            //IMPOSSIBLE:
+            editor=null;
+        }
         int lenBefore = document.getLength();
         super.apply(document);
         int lenAfter = document.getLength();
-        if (editor==null) {
-            IEditorPart ed = getCurrentEditor();
-            if (ed instanceof CeylonEditor) {
-                editor = (CeylonEditor) ed;
-            }
-        }
-        if (editor!=null) {
-            Point point = getSelection(document);
+        
+        //TODO: preference to disable linked mode?
+        if (lenAfter>lenBefore) {
+            Point point = super.getSelection(document);
             if (point.y>0) {
                 LinkedModeModel linkedModeModel = 
                         new LinkedModeModel();
@@ -214,14 +410,16 @@ class InitializerProposal extends CorrectionProposal {
             }
         }
     }
-
+    
     private ICompletionProposal[] getProposals(
             IDocument document, Point point) {
         List<ICompletionProposal> proposals = 
                 new ArrayList<ICompletionProposal>();
         try {
-            proposals.add(new InitializerValueProposal(point.x, 
-                    document.get(point.x, point.y), null));
+            //this is totally lame
+            //TODO: see InvocationCompletionProcessor
+            proposals.add(new NestedLiteralCompletionProposal(
+                    document.get(point.x, point.y), point.x));
         }
         catch (BadLocationException e1) {
             e1.printStackTrace();
@@ -258,11 +456,9 @@ class InitializerProposal extends CorrectionProposal {
                 }
                 Type vt = value.getType();
                 if (vt!=null && !vt.isNothing() &&
-                    ((td instanceof TypeParameter) && 
-                        isInBounds(((TypeParameter)td).getSatisfiedTypes(), vt) || 
+                    (isTypeParamInBounds(td, vt) || 
                             vt.isSubtypeOf(type))) {
-                    props.add(new InitializerValueProposal(loc, d.getName(),
-                            getImageForDeclaration(d)));
+                    props.add(new NestedCompletionProposal(d, loc));
                 }
             }
             if (d instanceof Function) {
@@ -275,14 +471,9 @@ class InitializerProposal extends CorrectionProposal {
                     }
                     Type mt = method.getType();
                     if (mt!=null && !mt.isNothing() &&
-                            ((td instanceof TypeParameter) && 
-                                    isInBounds(((TypeParameter)td).getSatisfiedTypes(), mt) || 
+                            (isTypeParamInBounds(td, mt) || 
                                     mt.isSubtypeOf(type))) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(d.getName());
-                        appendPositionalArgs(d, unit, sb, false, false);
-                        props.add(new InitializerValueProposal(loc, sb.toString(),
-                                getImageForDeclaration(d)));
+                        props.add(new NestedCompletionProposal(d, loc));
                     }
                 }
             }
@@ -296,18 +487,28 @@ class InitializerProposal extends CorrectionProposal {
                     }
                     Type ct = clazz.getType();
                     if (ct!=null && !ct.isNothing() &&
-                            ((td instanceof TypeParameter) && 
-                                    isInBounds(((TypeParameter)td).getSatisfiedTypes(), ct) || 
-                                    ct.getDeclaration().equals(type.getDeclaration()) ||
+                            (isTypeParamInBounds(td, ct) || 
+                                    ct.getDeclaration()
+                                        .equals(type.getDeclaration()) ||
                                     ct.isSubtypeOf(type))) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(d.getName());
-                        appendPositionalArgs(d, unit, sb, false, false);
-                        props.add(new InitializerValueProposal(loc, sb.toString(),
-                                getImageForDeclaration(d)));
+                        if (clazz.getParameterList()!=null) {
+                            props.add(new NestedCompletionProposal(d, loc));
+                        }
+                        for (Declaration m: clazz.getMembers()) {
+                            if (m instanceof Constructor && 
+                                    m.isShared() &&
+                                    m.getName()!=null) {
+                                props.add(new NestedCompletionProposal(m, loc));
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+
+    private boolean isTypeParamInBounds(TypeDeclaration td, Type t) {
+        return (td instanceof TypeParameter) && 
+                isInBounds(((TypeParameter)td).getSatisfiedTypes(), t);
     }
 }
