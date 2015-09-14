@@ -423,7 +423,7 @@ public class EditorUtil {
         }
         if (unit instanceof IResourceAware) {
             IResourceAware ra = (IResourceAware) unit;
-            IFile file = ra.getFileResource();
+            IFile file = ra.getResourceFile();
             if (file != null) {
                 return getEditorInput(file);
             }

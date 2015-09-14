@@ -224,7 +224,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 if (dec!=null && !declarations.contains(dec)) {
                     Unit unit = dec.getUnit();
                     if (unit instanceof ProjectSourceFile && 
-                            movingFiles.contains(((ProjectSourceFile) unit).getFileResource())) {
+                            movingFiles.contains(((ProjectSourceFile) unit).getResourceFile())) {
                         //also moving
                     }
                     else if (unit.getPackage().equals(movedPhasedUnit.getPackage())) {
@@ -249,7 +249,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 tc.getPhasedUnits().getPhasedUnits()) {
             if (phasedUnit==movedPhasedUnit ||
                     phasedUnit.getUnit() instanceof ProjectSourceFile &&
-                    movingFiles.contains(((ProjectSourceFile) phasedUnit.getUnit()).getFileResource())) {
+                    movingFiles.contains(((ProjectSourceFile) phasedUnit.getUnit()).getResourceFile())) {
                 continue;
             }
             final Map<Declaration,String> imports = 

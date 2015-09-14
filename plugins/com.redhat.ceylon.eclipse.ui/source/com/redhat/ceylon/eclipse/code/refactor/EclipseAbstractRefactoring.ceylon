@@ -96,7 +96,7 @@ abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends Refact
             return false;
         }
         if (is IResourceAware unit) {
-            if (exists p = unit.projectResource,
+            if (exists p = unit.resourceProject,
                 exists editorProject=editorData?.project) {
                 return p.equals(editorProject);
             }

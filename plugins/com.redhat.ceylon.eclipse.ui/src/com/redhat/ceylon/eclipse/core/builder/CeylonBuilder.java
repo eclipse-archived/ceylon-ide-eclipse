@@ -1348,7 +1348,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         Unit duplicateUnit = duplicateDeclaration.getUnit();
                         if ((duplicateUnit instanceof SourceFile) && 
                             (duplicateUnit instanceof IResourceAware)) {
-                            IFile duplicateDeclFile = ((IResourceAware) duplicateUnit).getFileResource();
+                            IFile duplicateDeclFile = ((IResourceAware) duplicateUnit).getResourceFile();
                             if (duplicateDeclFile != null && duplicateDeclFile.exists()) {
                                 filesToAddInTypecheck.add(duplicateDeclFile);
                                 filesToAddInCompile.add(duplicateDeclFile);

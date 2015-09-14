@@ -24,7 +24,7 @@ public class CeylonModelAdapterFactory implements IAdapterFactory {
         IUnit unit = (IUnit) element;
 
         if (IFile.class.equals(key) && unit instanceof IResourceAware) {
-            return ((IResourceAware) unit).getFileResource();
+            return ((IResourceAware) unit).getResourceFile();
         }
         if (IJavaElement.class.equals(key)  && unit instanceof IJavaModelAware) {
             return ((IJavaModelAware) unit).getTypeRoot();

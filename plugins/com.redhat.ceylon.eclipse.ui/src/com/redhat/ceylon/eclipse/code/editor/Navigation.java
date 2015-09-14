@@ -143,7 +143,7 @@ public class Navigation {
         else {
             if (unit instanceof IResourceAware) {
                 IResourceAware ra = (IResourceAware) unit;
-                IFile file = ra.getFileResource();
+                IFile file = ra.getResourceFile();
                 if (file != null) {
                     return gotoFile(file, startOffset, length);
                 }
@@ -158,7 +158,7 @@ public class Navigation {
             int startOffset, int length) {
         if (unit instanceof IResourceAware) {
             IResourceAware ra = (IResourceAware) unit;
-            IFile file = ra.getFileResource();
+            IFile file = ra.getResourceFile();
             if (file != null) {
                 return gotoFile(file, startOffset, length);
             }
@@ -231,7 +231,7 @@ public class Navigation {
     public static IPath getUnitPath(Unit unit) {
         if (unit instanceof IResourceAware) {
             IResourceAware ra = (IResourceAware) unit;
-            IFile fileResource = ra.getFileResource();
+            IFile fileResource = ra.getResourceFile();
             if (fileResource!=null) {
                 return fileResource.getLocation();
             }

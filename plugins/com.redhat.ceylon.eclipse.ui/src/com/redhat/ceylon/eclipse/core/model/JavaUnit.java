@@ -19,7 +19,7 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
     }
     
     @Override
-    public IFile getFileResource() {
+    public IFile getResourceFile() {
         if (getTypeRoot() != null) {
             try {
                 return (IFile) getTypeRoot().getCorrespondingResource();
@@ -31,8 +31,8 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
     }
 
     @Override
-    public IProject getProjectResource() {
-        if (getFileResource() != null) {
+    public IProject getResourceProject() {
+        if (getResourceFile() != null) {
             return (IProject) getTypeRoot().getJavaProject().getProject();
         }
         return null;
@@ -40,12 +40,12 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
 
     @Override
     public IProject getProject() {
-        return getProjectResource();
+        return getResourceProject();
     }
 
     @Override
-    public IFolder getRootFolderResource() {
-        if (getFileResource() != null) {
+    public IFolder getResourceRootFolder() {
+        if (getResourceFile() != null) {
             try {
                 IPackageFragmentRoot root = (IPackageFragmentRoot) getTypeRoot().getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
                 if (root != null) {

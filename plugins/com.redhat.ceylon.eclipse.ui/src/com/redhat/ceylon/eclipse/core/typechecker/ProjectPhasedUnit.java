@@ -47,18 +47,18 @@ public class ProjectPhasedUnit extends ModifiablePhasedUnit {
     }
 
     @Override
-    public IFile getFileResource() {
+    public IFile getResourceFile() {
         return (IFile) vfsJ2C.getIFileVirtualFile(getUnitFile()).getNativeResource();
     }
     
 
     @Override
-    public IFolder getRootFolderResource() {
+    public IFolder getResourceRootFolder() {
         return sourceFolderResource;
     }
     
     @Override
-    public IProject getProjectResource() {
+    public IProject getResourceProject() {
         return sourceFolderResource.getProject();
     }
 

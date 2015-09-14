@@ -5,7 +5,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 
 public interface IResourceAware {
-    IFolder getRootFolderResource();
-    IFile getFileResource();
-    IProject getProjectResource();
+    IFolder getResourceRootFolder();
+    IFile getResourceFile();
+    IProject getResourceProject();
 }

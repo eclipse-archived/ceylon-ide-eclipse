@@ -52,23 +52,23 @@ public class EditedPhasedUnit extends ModifiablePhasedUnit {
     }
     
     @Override
-    public IFile getFileResource() {
+    public IFile getResourceFile() {
         return getOriginalPhasedUnit() == null ? null
-                : getOriginalPhasedUnit().getFileResource();
+                : getOriginalPhasedUnit().getResourceFile();
     }
     
 
     @Override
-    public IFolder getRootFolderResource() {
+    public IFolder getResourceRootFolder() {
         return getOriginalPhasedUnit() == null ? null
-                : getOriginalPhasedUnit().getRootFolderResource();
+                : getOriginalPhasedUnit().getResourceRootFolder();
     }
     
 
     @Override
-    public IProject getProjectResource() {
+    public IProject getResourceProject() {
         return getOriginalPhasedUnit() == null ? null
-                : getOriginalPhasedUnit().getProjectResource();
+                : getOriginalPhasedUnit().getResourceProject();
     }
     
     @Override

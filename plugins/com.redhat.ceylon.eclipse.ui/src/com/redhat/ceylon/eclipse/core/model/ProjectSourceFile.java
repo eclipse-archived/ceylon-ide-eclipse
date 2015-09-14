@@ -38,27 +38,27 @@ public class ProjectSourceFile extends ModifiableSourceFile {
     }
 
     @Override
-    public IProject getProjectResource() {
-        return getPhasedUnit().getProjectResource();
+    public IProject getResourceProject() {
+        return getPhasedUnit().getResourceProject();
     }
 
     
     @Override
-    public IFile getFileResource() {
-        return getPhasedUnit().getFileResource();
+    public IFile getResourceFile() {
+        return getPhasedUnit().getResourceFile();
     }
 
     @Override
-    public IFolder getRootFolderResource() {
-        return getPhasedUnit().getRootFolderResource();
+    public IFolder getResourceRootFolder() {
+        return getPhasedUnit().getResourceRootFolder();
     }
     
     public CompilationUnitDelta buildDeltaAgainstModel() {
         try {
             final ProjectPhasedUnit modelPhaseUnit = getPhasedUnit();
             if (modelPhaseUnit != null) {
-                final FileVirtualFile<IResource, IFolder, IFile> virtualSrcFile = vfsJ2C.createVirtualFile(modelPhaseUnit.getFileResource());
-                final FolderVirtualFile<IResource, IFolder, IFile> virtualSrcDir = vfsJ2C.createVirtualFolder(modelPhaseUnit.getRootFolderResource());
+                final FileVirtualFile<IResource, IFolder, IFile> virtualSrcFile = vfsJ2C.createVirtualFile(modelPhaseUnit.getResourceFile());
+                final FolderVirtualFile<IResource, IFolder, IFile> virtualSrcDir = vfsJ2C.createVirtualFolder(modelPhaseUnit.getResourceRootFolder());
                 final TypeChecker currentTypechecker = modelPhaseUnit.getTypeChecker();
                 final ModuleManager currentModuleManager = currentTypechecker.getPhasedUnits().getModuleManager();
                 final ModuleSourceMapper currentModuleSourceMapper = currentTypechecker.getPhasedUnits().getModuleSourceMapper();
@@ -68,7 +68,7 @@ public class ProjectSourceFile extends ModifiableSourceFile {
                     @Override
                     protected String getCharset() {
                         try {
-                            return modelPhaseUnit.getProjectResource().getDefaultCharset();
+                            return modelPhaseUnit.getResourceProject().getDefaultCharset();
                         }
                         catch (Exception e) {
                             throw new RuntimeException(e);

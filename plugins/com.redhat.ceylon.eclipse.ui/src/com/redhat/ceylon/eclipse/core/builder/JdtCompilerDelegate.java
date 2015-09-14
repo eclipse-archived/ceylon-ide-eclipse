@@ -90,7 +90,7 @@ final class JdtCompilerDelegate implements CompilerDelegate {
             for (PhasedUnit phasedUnit : needingAdditionalCompilerPhases) {
                 assert(phasedUnit  instanceof ProjectPhasedUnit);
                 ProjectPhasedUnit projectPhasedUnit = (ProjectPhasedUnit) phasedUnit;
-                IFile resource = projectPhasedUnit.getFileResource();
+                IFile resource = projectPhasedUnit.getResourceFile();
                 File file = resource.getRawLocation().toFile();
                 JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class);
                 Iterator<? extends JavaFileObject> files = fileManager.getJavaFileObjects(file).iterator();
@@ -154,7 +154,7 @@ final class JdtCompilerDelegate implements CompilerDelegate {
                 }
             }
             if (! hasErrors) {
-                IFile moduleResource = compiledModule.getFileResource();
+                IFile moduleResource = compiledModule.getResourceFile();
                 File moduleFile = moduleResource.getRawLocation().toFile();
                 JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class);
                 Iterator<? extends JavaFileObject> files = fileManager.getJavaFileObjects(moduleFile).iterator();

@@ -63,7 +63,7 @@ public class ModelProxy {
         this.moduleVersion = pack.getModule().getVersion();
         this.declaration = new SoftReference<Declaration>(declaration);
         if (unit instanceof IResourceAware) {
-            project = ((IResourceAware) unit).getProjectResource(); 
+            project = ((IResourceAware) unit).getResourceProject(); 
             // TODO In case of a cross project dependency (ICrossProjectReference-derived classes),
             // it will return the original project containing the source declaration.
             // Is is intentional ? In this case I wonder whether we should'nt also add a reference to 

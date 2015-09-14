@@ -24,21 +24,21 @@ public class EditedSourceFile extends ModifiableSourceFile {
     }
     
     @Override
-    public IProject getProjectResource() {
+    public IProject getResourceProject() {
         EditedPhasedUnit pu = getPhasedUnit();
-        return pu==null ? null : pu.getProjectResource();
+        return pu==null ? null : pu.getResourceProject();
     }
 
     
     @Override
-    public IFile getFileResource() {
+    public IFile getResourceFile() {
         EditedPhasedUnit pu = getPhasedUnit();
-        return pu==null ? null : pu.getFileResource();
+        return pu==null ? null : pu.getResourceFile();
     }
 
     @Override
-    public IFolder getRootFolderResource() {
+    public IFolder getResourceRootFolder() {
         EditedPhasedUnit pu = getPhasedUnit();
-        return pu==null ? null : pu.getRootFolderResource();
+        return pu==null ? null : pu.getResourceRootFolder();
     }
 }

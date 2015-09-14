@@ -93,7 +93,7 @@ abstract class AbstractRefactoring extends Refactoring {
         }
         if (unit instanceof IResourceAware) {
             IProject project = 
-                    ((IResourceAware) unit).getProjectResource();
+                    ((IResourceAware) unit).getResourceProject();
             if (project==null) {
                 return false;
             }
