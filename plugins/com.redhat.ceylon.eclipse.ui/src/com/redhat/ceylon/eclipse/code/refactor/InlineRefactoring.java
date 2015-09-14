@@ -33,7 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -137,25 +137,16 @@ public class InlineRefactoring extends AbstractRefactoring {
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
         final RefactoringStatus result = new RefactoringStatus();
-        Tree.Declaration declarationNode=null;
-        Tree.CompilationUnit declarationUnit=null;
-        if (searchInEditor()) {
-            Tree.CompilationUnit cu = 
-            		editor.getParseController()
-            		    .getRootNode();
-            if (cu.getUnit().equals(declaration.getUnit())) {
-                declarationUnit = cu;
-            }
+        Tree.CompilationUnit declarationUnit = null;
+        Unit unit = declaration.getUnit();
+        if (unit instanceof CeylonUnit) {
+            CeylonUnit cu = (CeylonUnit) unit;
+            declarationUnit = 
+                    cu.getPhasedUnit()
+                    .getCompilationUnit();
         }
-        if (declarationUnit==null) {
-            for (PhasedUnit pu: CeylonBuilder.getUnits(project)) {
-                if (pu.getUnit().equals(declaration.getUnit())) {
-                    declarationUnit = pu.getCompilationUnit();
-                    break;
-                }
-            }
-        }
-        declarationNode = getDeclararionNode(declarationUnit);
+        Tree.Declaration declarationNode = 
+                getDeclararionNode(declarationUnit);
         if (declarationNode instanceof Tree.AttributeDeclaration &&
                 ((Tree.AttributeDeclaration) declarationNode)
                     .getSpecifierOrInitializerExpression()==null ||
