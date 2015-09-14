@@ -33,10 +33,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -50,12 +46,19 @@ import com.redhat.ceylon.eclipse.core.model.JavaUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 
 public class Navigation {
     
-    public static void gotoDeclaration(Referenceable model) {
-        if (model!=null) {
+    public static ITextEditor gotoDeclaration(Referenceable model) {
+        if (model==null) {
+            return null;
+        }
+        else {
             Unit unit = model.getUnit();
             if (unit instanceof CeylonUnit) {
                 CeylonUnit ceylonUnit = (CeylonUnit) unit;
@@ -63,27 +66,35 @@ public class Navigation {
                         getReferencedNodeInUnit(model, 
                                 ceylonUnit.getCompilationUnit());
                 if (node != null) {
-                    gotoNode(node, null);
+                    return gotoNode(node, null);
                 }
                 else if (ceylonUnit instanceof CeylonBinaryUnit) {
                     //special case for Java source in ceylon.language!
                     CeylonBinaryUnit binaryUnit = 
                             (CeylonBinaryUnit) ceylonUnit;
                     String path = binaryUnit.getSourceRelativePath();
-                    if (JavaCore.isJavaLikeFileName(path)) {
-                        if (model instanceof Declaration) {
-                            gotoJavaNode((Declaration) model);
-                        }
+                    if (JavaCore.isJavaLikeFileName(path) && 
+                            model instanceof Declaration) {
+                        return gotoJavaNode((Declaration) model);
                     }
+                    else {
+                        return null;
+                    }
+                }
+                else {
+                    return null;
                 }
             }
             else if (unit instanceof JavaUnit) {
-                gotoJavaNode((Declaration) model);
+                return gotoJavaNode((Declaration) model);
+            }
+            else {
+                return null;
             }
         }
     }
     
-    public static void gotoCeylonDeclarationFromJava(IProject project, 
+    public static ITextEditor gotoCeylonDeclarationFromJava(IProject project, 
             IJavaElement javaElement) {
         Declaration declaration = 
                 toCeylonDeclaration(project, javaElement);
@@ -96,7 +107,7 @@ public class Navigation {
 //                    return;
 //                }
 //            }
-            gotoDeclaration(declaration);
+            return gotoDeclaration(declaration);
 //        }
     }
     
@@ -116,7 +127,7 @@ public class Navigation {
 //        }
 //    }
     
-    public static void gotoNode(Node node, CeylonEditor editor) {
+    public static ITextEditor gotoNode(Node node, CeylonEditor editor) {
         Unit unit = node.getUnit();
         Node identifyingNode = getIdentifyingNode(node);
         int length = identifyingNode.getDistance();
@@ -127,90 +138,90 @@ public class Navigation {
                         .getRootNode();
         if (rootNode!=null && unit.equals(rootNode.getUnit())) {
             editor.selectAndReveal(startOffset, length);
+            return editor;
         }
         else {
             if (unit instanceof IResourceAware) {
                 IResourceAware ra = (IResourceAware) unit;
                 IFile file = ra.getFileResource();
                 if (file != null) {
-                    gotoFile(file, startOffset, length);
-                    return;
+                    return gotoFile(file, startOffset, length);
                 }
             }
 
-            gotoLocation(getNodePath(node), startOffset, length);
+            return gotoLocation(getNodePath(node), startOffset, length);
         }
     }
 
 
-    public static void gotoLocation(Unit unit, 
+    public static ITextEditor gotoLocation(Unit unit, 
             int startOffset, int length) {
         if (unit instanceof IResourceAware) {
             IResourceAware ra = (IResourceAware) unit;
             IFile file = ra.getFileResource();
             if (file != null) {
-                gotoFile(file, startOffset, length);
-                return;
+                return gotoFile(file, startOffset, length);
             }
         }
-        gotoLocation(getUnitPath(unit), startOffset, length);
+        return gotoLocation(getUnitPath(unit), startOffset, length);
     }
     
 
-    public static void gotoLocation(IPath path, int offset) {
-        gotoLocation(path, offset, 0);
+    public static ITextEditor gotoLocation(IPath path, int offset) {
+        return gotoLocation(path, offset, 0);
     }
     
-    public static void gotoLocation(IPath path, int offset, int length) {
-        if (path==null || path.isEmpty()) return;
+    public static ITextEditor gotoLocation(IPath path, int offset, int length) {
+        if (path==null || path.isEmpty()) {
+            return null;
+        }
         IEditorInput editorInput;
         try {
             editorInput = getEditorInput(path);
         }
         catch (IllegalArgumentException iae) {
             //this happens for source files that are not in a Ceylon source folder
-            return;
+            return null;
         }
         try {
-            IEditorPart editor = 
-                    getActivePage()
-                        .openEditor(editorInput, 
-                                EDITOR_ID);
-            if (editor instanceof CeylonEditor) {
-                CeylonEditor ce = (CeylonEditor) editor;
-                ce.selectAndReveal(offset, length);
-            }
+            ITextEditor editor = 
+                    (ITextEditor) 
+                        getActivePage()
+                            .openEditor(editorInput, 
+                                    EDITOR_ID);
+            editor.selectAndReveal(offset, length);
+            return editor;
         }
         catch (PartInitException pie) {
             pie.printStackTrace();
+            return null;
         }
     }
     
-    public static void gotoFile(IFile file, int offset, int length) {
+    public static ITextEditor gotoFile(IFile file, int offset, int length) {
         IWorkbenchPage page = getActivePage();
         IEditorInput input = new FileEditorInput(file);
-        if (input!=null) {
-            IEditorPart part = page.findEditor(input);
-            ITextEditor editor = null;
-            if (part instanceof ITextEditor) {
-                editor = (ITextEditor) part;
-            }
-            else {
-                try {
-                    editor = (ITextEditor) 
-                            page.openEditor(input, 
-                                    EDITOR_ID);
-                } 
-                catch (PartInitException e) {
-                    e.printStackTrace();
-                    return;
-                }
-            }
-            if (offset>=0) {
-                editor.selectAndReveal(offset, length);
-            }
-            page.activate(editor);
+        IEditorPart part = page.findEditor(input);
+        ITextEditor editor = null;
+        if (part instanceof ITextEditor) {
+            editor = (ITextEditor) part;
         }
+        else {
+            try {
+                editor = (ITextEditor) 
+                        page.openEditor(input, 
+                                EDITOR_ID);
+            } 
+            catch (PartInitException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        if (offset>=0) {
+            editor.selectAndReveal(offset, length);
+        }
+        page.activate(editor);
+        return editor;
     }
     
     public static IPath getNodePath(Node node) {
@@ -376,18 +387,23 @@ public class Navigation {
         }
     }
 
-    public static void gotoJavaNode(Declaration declaration) {
+    public static ITextEditor gotoJavaNode(Declaration declaration) {
         try {
             IJavaElement element = getJavaElement(declaration);
-            if (element!=null) {
+            if (element==null) {
+                return null;
+            }
+            else {
                 IEditorPart part = openInEditor(element, true);
                 if (part!=null) {
                     revealInEditor(part, element);
                 }
+                return (ITextEditor) part;
             }
         }
         catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
     }
 
