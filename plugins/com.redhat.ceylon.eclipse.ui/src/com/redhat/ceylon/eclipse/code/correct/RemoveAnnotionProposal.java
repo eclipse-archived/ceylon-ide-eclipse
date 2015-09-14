@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 
@@ -61,21 +62,18 @@ class RemoveAnnotionProposal extends CorrectionProposal {
     static void addRemoveAnnotationProposal(Node node, 
             String annotation,
             Collection<ICompletionProposal> proposals, 
-            IProject project,
-            Tree.CompilationUnit rootNode) {
+            IProject project) {
         Referenceable dec = getReferencedDeclaration(node);
         if (dec instanceof Declaration) {
             addRemoveAnnotationProposal(node, annotation, 
                     "Make Non" + annotation,  
-                    (Declaration) dec, proposals, 
-                    rootNode, project);
+                    (Declaration) dec, proposals, project);
         }
     }
 
     static void addMakeContainerNonfinalProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Node node,
-            Tree.CompilationUnit rootNode) {
+            IProject project, Node node) {
         Declaration dec;
         if (node instanceof Tree.Declaration) {
             Tree.Declaration decNode = 
@@ -95,14 +93,13 @@ class RemoveAnnotionProposal extends CorrectionProposal {
         }
         addRemoveAnnotationProposal(node, 
                 "final", "Make Nonfinal", 
-                dec, proposals, rootNode, project);
+                dec, proposals, project);
     }
 
     static void addRemoveAnnotationProposal(Node node, 
             String annotation, String desc, 
             Declaration dec, 
             Collection<ICompletionProposal> proposals, 
-            Tree.CompilationUnit rootNode,
             IProject project) {
         if (dec!=null && dec.getName()!=null) {
             Unit u = dec.getUnit();
@@ -115,7 +112,7 @@ class RemoveAnnotionProposal extends CorrectionProposal {
                     //TODO: "object" declarations?
                     FindDeclarationNodeVisitor fdv = 
                             new FindDeclarationNodeVisitor(dec);
-                    rootNode.visit(fdv);
+                    getRootNode(unit).visit(fdv);
                     Tree.Declaration decNode = 
                             (Tree.Declaration) 
                                 fdv.getDeclarationNode();
@@ -170,14 +167,13 @@ class RemoveAnnotionProposal extends CorrectionProposal {
     
     static void addRemoveAnnotationDecProposal(
             Collection<ICompletionProposal> proposals, 
-            String annotation, IProject project, Node node,
-            Tree.CompilationUnit rootNode) {
+            String annotation, IProject project, Node node) {
         if (node instanceof Tree.Declaration) {
             Tree.Declaration decNode = (Tree.Declaration) node;
             addRemoveAnnotationProposal(node, annotation, 
                     "Make Non" + annotation,  
                     decNode.getDeclarationModel(), 
-                    proposals, rootNode, project);
+                    proposals, project);
         }
     }
     

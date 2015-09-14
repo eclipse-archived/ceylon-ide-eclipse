@@ -599,78 +599,78 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 300:
             addRefineFormalMembersProposal(proposals, node, rootNode, false);
-            addMakeAbstractDecProposal(proposals, project, node, rootNode);
+            addMakeAbstractDecProposal(proposals, project, node);
             break;
         case 350:
             addRefineFormalMembersProposal(proposals, node, rootNode, true);
-            addMakeAbstractDecProposal(proposals, project, node, rootNode);
+            addMakeAbstractDecProposal(proposals, project, node);
             break;
         case 310:
-            addMakeAbstractDecProposal(proposals, project, node, rootNode);
+            addMakeAbstractDecProposal(proposals, project, node);
             break;
         case 320:
-            addRemoveAnnotationProposal(node, "formal", proposals, project, rootNode);
+            addRemoveAnnotationProposal(node, "formal", proposals, project);
             break;
         case 400:
         case 402:
-            addMakeSharedProposal(proposals, project, node, rootNode);
+            addMakeSharedProposal(proposals, project, node);
             break;
         case 705:
-            addMakeSharedDecProposal(proposals, project, node, rootNode);
+            addMakeSharedDecProposal(proposals, project, node);
             break;
         case 500:
         case 510:
-            addMakeDefaultProposal(proposals, project, node, rootNode);
+            addMakeDefaultProposal(proposals, project, node);
             break;
         case 600:
-            addMakeActualDecProposal(proposals, project, node, rootNode);
+            addMakeActualDecProposal(proposals, project, node);
             break;
         case 701:
-            addMakeSharedDecProposal(proposals, project, node, rootNode);
-            addRemoveAnnotationDecProposal(proposals, "actual", project, node, rootNode);
+            addMakeSharedDecProposal(proposals, project, node);
+            addRemoveAnnotationDecProposal(proposals, "actual", project, node);
             break;
         case 702:
-            addMakeSharedDecProposal(proposals, project, node, rootNode);
-            addRemoveAnnotationDecProposal(proposals, "formal", project, node, rootNode);
+            addMakeSharedDecProposal(proposals, project, node);
+            addRemoveAnnotationDecProposal(proposals, "formal", project, node);
             break;
         case 703:
-            addMakeSharedDecProposal(proposals, project, node, rootNode);
-            addRemoveAnnotationDecProposal(proposals, "default", project, node, rootNode);
+            addMakeSharedDecProposal(proposals, project, node);
+            addRemoveAnnotationDecProposal(proposals, "default", project, node);
             break;
         case 710:
         case 711:
-            addMakeSharedProposal(proposals, project, node, rootNode);
+            addMakeSharedProposal(proposals, project, node);
             break;
         case 712:
             addExportModuleImportProposal(proposals, project, node);
             break;
         case 713:
-            addMakeSharedProposalForSupertypes(proposals, project, node, rootNode);
+            addMakeSharedProposalForSupertypes(proposals, project, node);
             break;
         case 714:
             addExportModuleImportProposalForSupertypes(proposals, project, node, rootNode);
             break;
         case 800:
         case 804:
-            addMakeVariableProposal(proposals, project, node, rootNode);
+            addMakeVariableProposal(proposals, project, node);
             break;
         case 803:
-            addMakeVariableProposal(proposals, project, node, rootNode);
+            addMakeVariableProposal(proposals, project, node);
             break;
         case 801:
-            addMakeVariableDecProposal(proposals, project, node, rootNode);
+            addMakeVariableDecProposal(proposals, project, rootNode, node);
             break;
         case 802:
             break;
         case 905:
-            addMakeContainerAbstractProposal(proposals, project, node, rootNode);
+            addMakeContainerAbstractProposal(proposals, project, node);
             break;
         case 1100:
-            addMakeContainerAbstractProposal(proposals, project, node, rootNode);
-            addRemoveAnnotationDecProposal(proposals, "formal", project, node, rootNode);
+            addMakeContainerAbstractProposal(proposals, project, node);
+            addRemoveAnnotationDecProposal(proposals, "formal", project, node);
             break;
         case 1101:
-            addRemoveAnnotationDecProposal(proposals, "formal", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "formal", project, node);
             //TODO: replace body with ;
             break;
         case 1000:
@@ -685,64 +685,64 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 1200:
         case 1201:
-            addRemoveAnnotationDecProposal(proposals, "shared", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "shared", project, node);
             break;
         case 1300:
         case 1301:
-            addMakeRefinedSharedProposal(proposals, project, node, rootNode);
-            addRemoveAnnotationDecProposal(proposals, "actual", project, node, rootNode);
+            addMakeRefinedSharedProposal(proposals, project, node);
+            addRemoveAnnotationDecProposal(proposals, "actual", project, node);
             break;
         case 1302:
         case 1312:
         case 1307:
-            addRemoveAnnotationDecProposal(proposals, "formal", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "formal", project, node);
             break;
         case 1303:
         case 1313:
         case 1320:
-            addRemoveAnnotationDecProposal(proposals, "formal", project, node, rootNode);
-            addRemoveAnnotationDecProposal(proposals, "default", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "formal", project, node);
+            addRemoveAnnotationDecProposal(proposals, "default", project, node);
             break;
         case 1350:
-            addRemoveAnnotationDecProposal(proposals, "default", project, node, rootNode);
-            addMakeContainerNonfinalProposal(proposals, project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "default", project, node);
+            addMakeContainerNonfinalProposal(proposals, project, node);
             break;
         case 1400:
         case 1401:
-            addMakeFormalDecProposal(proposals, project, node, rootNode);
+            addMakeFormalDecProposal(proposals, project, node);
             break;
         case 1450:
-        	addMakeFormalDecProposal(proposals, project, node, rootNode);
+        	addMakeFormalDecProposal(proposals, project, node);
         	addParameterProposals(proposals, file, rootNode, node, null);
         	addInitializerProposals(proposals, file, rootNode, node);
             addParameterListProposal(file, proposals, node, rootNode);
         	addConstructorProposal(file, proposals, node, rootNode);
         	break;
         case 1610:
-            addRemoveAnnotationDecProposal(proposals, "shared", project, node, rootNode);
-            addRemoveAnnotationDecProposal(proposals, "abstract", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "shared", project, node);
+            addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
             break;
         case 1500:
         case 1501:
-            addRemoveAnnotationDecProposal(proposals, "variable", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "variable", project, node);
             break;
         case 1600:
         case 1601:
-            addRemoveAnnotationDecProposal(proposals, "abstract", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "abstract", project, node);
             break;
         case 1700:
-            addRemoveAnnotationDecProposal(proposals, "final", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "final", project, node);
             break;
         case 1800:
         case 1801:
-            addRemoveAnnotationDecProposal(proposals, "sealed", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "sealed", project, node);
             break;
         case 1900:
-            addRemoveAnnotationDecProposal(proposals, "late", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "late", project, node);
             break;
         case 1950:
         case 1951:
-            addRemoveAnnotationDecProposal(proposals, "annotation", project, node, rootNode);
+            addRemoveAnnotationDecProposal(proposals, "annotation", project, node);
             break;
         case 2000:
             addCreateParameterProposals(rootNode, node, problem, proposals, project);
@@ -1106,7 +1106,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addVerboseRefinementProposal(proposals, file, statement, rootNode);
             
             addAnnotationProposals(proposals, project, declaration,
-                    doc, currentOffset, rootNode);
+                    doc, currentOffset);
             addTypingProposals(proposals, file, rootNode, node, declaration, editor);
             
             addAnonymousFunctionProposals(editor, proposals, doc, file, rootNode, 
@@ -1178,8 +1178,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     private void addAnnotationProposals(
             Collection<ICompletionProposal> proposals, 
             IProject project, Tree.Declaration decNode, 
-            IDocument doc, int offset, 
-            Tree.CompilationUnit rootNode) {
+            IDocument doc, int offset) {
         if (decNode!=null) {
             try {
                 Node in = getIdentifyingNode(decNode);
@@ -1195,36 +1194,36 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Declaration d = decNode.getDeclarationModel();
             if (d!=null) {
                 if (decNode instanceof Tree.AttributeDeclaration) {
-                    addMakeVariableDecProposal(proposals, project, decNode, rootNode);
+                    addMakeVariableDecProposal(proposals, project, decNode);
                 }
                 if ((d.isClassOrInterfaceMember()||d.isToplevel()) && 
                         !d.isShared()) {
-                    addMakeSharedDecProposal(proposals, project, decNode, rootNode);
+                    addMakeSharedDecProposal(proposals, project, decNode);
                 }
                 if (d.isClassOrInterfaceMember() &&
                         !d.isDefault() && !d.isFormal()) {
                     if (decNode instanceof Tree.AnyClass) {
-                        addMakeDefaultDecProposal(proposals, project, decNode, rootNode);
+                        addMakeDefaultDecProposal(proposals, project, decNode);
                     }
                     else if (decNode instanceof Tree.AnyAttribute) {
-                        addMakeDefaultDecProposal(proposals, project, decNode, rootNode);
+                        addMakeDefaultDecProposal(proposals, project, decNode);
                     }
                     else if (decNode instanceof Tree.AnyMethod) {
-                        addMakeDefaultDecProposal(proposals, project, decNode, rootNode);
+                        addMakeDefaultDecProposal(proposals, project, decNode);
                     }
                     if (decNode instanceof Tree.ClassDefinition) {
-                        addMakeFormalDecProposal(proposals, project, decNode, rootNode);
+                        addMakeFormalDecProposal(proposals, project, decNode);
                     }
                     else if (decNode instanceof Tree.AttributeDeclaration) {
                         AttributeDeclaration ad = (Tree.AttributeDeclaration) decNode;
                         if (ad.getSpecifierOrInitializerExpression()==null) {
-                            addMakeFormalDecProposal(proposals, project, decNode, rootNode);
+                            addMakeFormalDecProposal(proposals, project, decNode);
                         }
                     }
                     else if (decNode instanceof Tree.MethodDeclaration) {
                         MethodDeclaration md = (Tree.MethodDeclaration) decNode;
                         if (md.getSpecifierExpression()==null) {
-                            addMakeFormalDecProposal(proposals, project, decNode, rootNode);
+                            addMakeFormalDecProposal(proposals, project, decNode);
                         }
                     }
                 }
