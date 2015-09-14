@@ -33,6 +33,7 @@ import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
 /**
@@ -91,9 +92,10 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         String changeText = 
                 asIntersectionTypeString(missingSatisfiedTypes);
 
-        for (PhasedUnit unit: getUnits(project)) {
+        for (PhasedUnit unit: getUnits(project)) { //TODO: fix this!
+            Unit u = typeDec.getUnit();
             if (!isTypeParam || 
-                    typeDec.getUnit().equals(unit.getUnit())) {
+                    u.equals(unit.getUnit())) {
                 Node declaration = 
                         determineContainer(unit.getCompilationUnit(), typeDec);
                 if (declaration==null) {

@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.asIntersectionTypeString;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
@@ -24,13 +23,15 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -116,7 +117,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
     
     static void addCreateTypeParameterProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Tree.CompilationUnit cu, 
+            IProject project, Tree.CompilationUnit rootNode, 
             final Tree.BaseType node, String brokenName) {
         
         class FilterExtendsSatisfiesVisitor 
@@ -151,13 +152,13 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         
         FilterExtendsSatisfiesVisitor v = 
                 new FilterExtendsSatisfiesVisitor();
-        v.visit(cu);
+        v.visit(rootNode);
         if (v.filter) {
             return;
         }
         
         Tree.Declaration decl = 
-                findDeclarationWithBody(cu, node);
+                findDeclarationWithBody(rootNode, node);
         Declaration d = decl==null ? null : 
             decl.getDeclarationModel();
         if (d == null || d.isActual() ||
@@ -230,7 +231,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         }
         FindTypeParameterConstraintVisitor ftpcv = 
                 new FindTypeParameterConstraintVisitor();
-        ftpcv.visit(cu);
+        ftpcv.visit(rootNode);
         String constraints;
         if (ftpcv.result==null) {
             constraints = null;
@@ -246,14 +247,13 @@ class CreateTypeParameterProposal extends CorrectionProposal {
                         " satisfies " + bounds + " ";
             }
         }
-        
-        for (PhasedUnit unit : getUnits(project)) {
-            if (unit.getUnit().equals(cu.getUnit())) {
-                addProposal(proposals, paramList==null,
-                        paramDef, brokenName, ADD_CORR, 
-                        d, unit, decl, offset, constraints);
-                break;
-            }
+
+        TypecheckerUnit u = rootNode.getUnit();
+        if (u instanceof CeylonUnit) {
+            CeylonUnit cu = (CeylonUnit) u;
+            addProposal(proposals, paramList==null,
+                    paramDef, brokenName, ADD_CORR, 
+                    d, cu.getPhasedUnit(), decl, offset, constraints);
         }
 
     }

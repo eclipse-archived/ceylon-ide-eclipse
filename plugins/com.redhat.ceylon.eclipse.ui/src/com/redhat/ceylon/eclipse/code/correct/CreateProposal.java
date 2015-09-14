@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.computeSelection;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.CreateInNewUnitProposal.addCreateInNewUnitProposal;
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
@@ -32,6 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
@@ -190,21 +190,21 @@ class CreateProposal extends InitializerProposal {
             Tree.Statement statement) {
         if (typeDec!=null && (typeDec instanceof Class
                 || (typeDec instanceof Interface && dg.isFormalSupported()))) {
-            for (PhasedUnit unit: getUnits(project)) {
-                if (typeDec.getUnit().equals(unit.getUnit())) {
-                    //TODO: "object" declarations?
-                    FindDeclarationNodeVisitor fdv = 
-                            new FindDeclarationNodeVisitor(typeDec);
-                    getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = 
-                            (Tree.Declaration) fdv.getDeclarationNode();
-                    Tree.Body body = getClassOrInterfaceBody(decNode);
-                    if (body!=null) {
-                        addCreateMemberProposal(proposals, dg, 
-                                typeDec, unit, decNode, body,
-                                statement);
-                        break;
-                    }
+            Unit u = typeDec.getUnit();
+            if (u instanceof CeylonUnit) {
+                CeylonUnit cu = (CeylonUnit) u;
+                PhasedUnit unit = cu.getPhasedUnit();
+                //TODO: "object" declarations?
+                FindDeclarationNodeVisitor fdv = 
+                        new FindDeclarationNodeVisitor(typeDec);
+                unit.getCompilationUnit().visit(fdv);
+                Tree.Declaration decNode = 
+                        (Tree.Declaration) fdv.getDeclarationNode();
+                Tree.Body body = getClassOrInterfaceBody(decNode);
+                if (body!=null) {
+                    addCreateMemberProposal(proposals, dg, 
+                            typeDec, unit, decNode, body,
+                            statement);
                 }
             }
         }

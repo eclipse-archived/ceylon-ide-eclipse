@@ -151,6 +151,7 @@ import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
+import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
@@ -3226,7 +3227,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static IFile getFile(PhasedUnit phasedUnit) {
-        return getIFileVirtualFile(phasedUnit.getUnitFile()).getNativeResource();
+        TypecheckerUnit unit = phasedUnit.getUnit();
+        if (unit instanceof EditedSourceFile) {
+            EditedSourceFile editedSourceFile = 
+                    (EditedSourceFile) unit;
+            phasedUnit = 
+                    editedSourceFile.getOriginalSourceFile()
+                        .getPhasedUnit();
+        }
+        VirtualFile file = phasedUnit.getUnitFile();
+        return getIFileVirtualFile(file).getNativeResource();
     }
 
     // TODO think: doRefresh(file.getParent()); // N.B.: Assumes all

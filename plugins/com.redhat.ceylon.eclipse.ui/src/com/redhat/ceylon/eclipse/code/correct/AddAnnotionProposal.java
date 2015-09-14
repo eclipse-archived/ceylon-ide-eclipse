@@ -1,8 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
@@ -27,7 +25,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -89,24 +87,19 @@ public class AddAnnotionProposal extends CorrectionProposal {
         if (dec!=null &&
                 !(node instanceof Tree.MissingDeclaration)) {
             Unit u = dec.getUnit();
-            if (u instanceof EditedSourceFile) {
-                EditedSourceFile esf = (EditedSourceFile) u;
-                u = esf.getOriginalSourceFile();
-            }
-            for (PhasedUnit unit: getUnits(project)) {
-                if (u!=null && u.equals(unit.getUnit())) {
-                    FindDeclarationNodeVisitor fdv = 
-                            new FindDeclarationNodeVisitor(dec);
-                    getRootNode(unit).visit(fdv);
-                    Tree.StatementOrArgument decNode = 
-                            (Tree.StatementOrArgument) 
-                                fdv.getDeclarationNode();
-                    if (decNode!=null) {
-                        addAddAnnotationProposal(annotation, 
-                                desc, dec, proposals, unit, 
-                                node, decNode);
-                    }
-                    break;
+            if (u instanceof CeylonUnit) {
+                CeylonUnit cu = (CeylonUnit) u;
+                PhasedUnit unit = cu.getPhasedUnit();
+                FindDeclarationNodeVisitor fdv = 
+                        new FindDeclarationNodeVisitor(dec);
+                unit.getCompilationUnit().visit(fdv);
+                Tree.StatementOrArgument decNode = 
+                        (Tree.StatementOrArgument) 
+                            fdv.getDeclarationNode();
+                if (decNode!=null) {
+                    addAddAnnotationProposal(annotation, 
+                            desc, dec, proposals, unit, 
+                            node, decNode);
                 }
             }
         }

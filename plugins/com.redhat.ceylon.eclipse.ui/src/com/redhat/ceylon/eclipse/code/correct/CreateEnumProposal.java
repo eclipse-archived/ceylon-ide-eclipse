@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.INTERFACE;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
@@ -19,8 +18,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
@@ -111,14 +112,15 @@ class CreateEnumProposal extends CorrectionProposal {
                 image, offset + def.indexOf("{}")+1, change));
     }
 
-        private static void addCreateEnumProposal(Collection<ICompletionProposal> proposals,
+        private static void addCreateEnumProposal(
+                Collection<ICompletionProposal> proposals,
                 IProject project, String def, String desc, Image image, 
-                Tree.CompilationUnit cu, Tree.TypeDeclaration cd) {
-            for (PhasedUnit unit: getUnits(project)) {
-                if (unit.getUnit().equals(cu.getUnit())) {
-                    addCreateEnumProposal(proposals, def, desc, image, unit, cd);
-                    break;
-                }
+                Tree.CompilationUnit rootNode, Tree.TypeDeclaration cd) {
+                TypecheckerUnit u = rootNode.getUnit();
+            if (u instanceof CeylonUnit) {
+                CeylonUnit cu = (CeylonUnit) u;
+                addCreateEnumProposal(proposals, def, desc, image, 
+                        cu.getPhasedUnit(), cd);
             }
         }
 

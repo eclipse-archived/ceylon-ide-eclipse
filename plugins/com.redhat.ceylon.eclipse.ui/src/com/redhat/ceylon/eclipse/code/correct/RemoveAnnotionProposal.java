@@ -18,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -103,25 +104,20 @@ class RemoveAnnotionProposal extends CorrectionProposal {
             IProject project) {
         if (dec!=null && dec.getName()!=null) {
             Unit u = dec.getUnit();
-            if (u instanceof EditedSourceFile) {
-                EditedSourceFile esf = (EditedSourceFile) u;
-                u = esf.getOriginalSourceFile();
-            }
-            for (PhasedUnit unit: getUnits(project)) {
-                if (u!=null && u.equals(unit.getUnit())) {
-                    //TODO: "object" declarations?
-                    FindDeclarationNodeVisitor fdv = 
-                            new FindDeclarationNodeVisitor(dec);
-                    getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = 
-                            (Tree.Declaration) 
-                                fdv.getDeclarationNode();
-                    if (decNode!=null) {
-                        addRemoveAnnotationProposal(
-                                annotation, desc, dec,
-                                proposals, unit, decNode);
-                    }
-                    break;
+            if (u instanceof CeylonUnit) {
+                CeylonUnit cu = (CeylonUnit) u;
+                PhasedUnit unit = cu.getPhasedUnit();
+                //TODO: "object" declarations?
+                FindDeclarationNodeVisitor fdv = 
+                        new FindDeclarationNodeVisitor(dec);
+                unit.getCompilationUnit().visit(fdv);
+                Tree.Declaration decNode = 
+                        (Tree.Declaration) 
+                        fdv.getDeclarationNode();
+                if (decNode!=null) {
+                    addRemoveAnnotationProposal(
+                            annotation, desc, dec,
+                            proposals, unit, decNode);
                 }
             }
         }

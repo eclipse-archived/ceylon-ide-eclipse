@@ -1,10 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.intersectionType;
@@ -27,6 +25,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -230,71 +229,71 @@ class ChangeTypeProposal extends CorrectionProposal {
             Node node, Type type, 
             Declaration dec, boolean intersect) {
         if (dec!=null) {
-            for (PhasedUnit unit: getUnits(project)) {
-                Unit u = unit.getUnit();
-                if (dec.getUnit().equals(u)) {
-                    Type t = null;
-                    Node typeNode = null;
-                    
-                    if (dec instanceof TypeParameter) {
-                        TypeParameter tp = 
-                                (TypeParameter) dec;
-                        t = tp.getType();
-                        typeNode = node;
-                    }
-                    
-                    if (dec instanceof TypedDeclaration) {
-                        TypedDeclaration typedDec = 
-                                (TypedDeclaration) dec;
-                        FindDeclarationNodeVisitor fdv = 
-                                new FindDeclarationNodeVisitor(
-                                        typedDec);
-                        getRootNode(unit).visit(fdv);
-                        Tree.StatementOrArgument dn = 
-                                fdv.getDeclarationNode();
-                        if (dn instanceof Tree.TypedDeclaration) {
-                            Tree.TypedDeclaration decNode = 
-                                    (Tree.TypedDeclaration) dn;
-                            if (decNode!=null) {
-                                typeNode = decNode.getType();
-                                if (typeNode!=null) {
-                                    Tree.Type tn = 
-                                            (Tree.Type) 
-                                                typeNode;
-                                    t = tn.getTypeModel();
-                                }
+            Unit u = dec.getUnit();
+            if (u instanceof CeylonUnit) {
+                CeylonUnit cu = (CeylonUnit) u;
+                PhasedUnit unit = cu.getPhasedUnit();
+                Type t = null;
+                Node typeNode = null;
+                
+                if (dec instanceof TypeParameter) {
+                    TypeParameter tp = 
+                            (TypeParameter) dec;
+                    t = tp.getType();
+                    typeNode = node;
+                }
+                
+                if (dec instanceof TypedDeclaration) {
+                    TypedDeclaration typedDec = 
+                            (TypedDeclaration) dec;
+                    FindDeclarationNodeVisitor fdv = 
+                            new FindDeclarationNodeVisitor(
+                                    typedDec);
+                    unit.getCompilationUnit().visit(fdv);
+                    Tree.StatementOrArgument dn = 
+                            fdv.getDeclarationNode();
+                    if (dn instanceof Tree.TypedDeclaration) {
+                        Tree.TypedDeclaration decNode = 
+                                (Tree.TypedDeclaration) dn;
+                        if (decNode!=null) {
+                            typeNode = decNode.getType();
+                            if (typeNode!=null) {
+                                Tree.Type tn = 
+                                        (Tree.Type) 
+                                            typeNode;
+                                t = tn.getTypeModel();
                             }
                         }
                     }
-                    
-                    //TODO: fix this condition to properly 
-                    //      distinguish between a method 
-                    //      reference and an invocation
-                    Unit nu = node.getUnit();
-                    if (dec instanceof Function && 
-                            nu.isCallableType(type)) {
-                        type = nu.getCallableReturnType(type);
-                    }
-                    
-                    if (typeNode != null && 
-                            !isTypeUnknown(type)) {
-                        IFile file = getFile(unit);
-                        Tree.CompilationUnit rootNode = 
-                                unit.getCompilationUnit();
-                        addChangeTypeProposal(typeNode, 
-                                problem, proposals, dec, 
-                                type, file, rootNode);
-                        if (t != null) {
-                            Type newType = intersect ? 
-                                    intersectionType(t, type, u) : 
-                                    unionType(t, type, u);
-                            if (!newType.isExactly(t) && 
-                                    !newType.isExactly(type)) {
-                                addChangeTypeProposal(typeNode, 
-                                        problem, proposals, 
-                                        dec, newType, file, 
-                                        rootNode);
-                            }
+                }
+                
+                //TODO: fix this condition to properly 
+                //      distinguish between a method 
+                //      reference and an invocation
+                Unit nu = node.getUnit();
+                if (dec instanceof Function && 
+                        nu.isCallableType(type)) {
+                    type = nu.getCallableReturnType(type);
+                }
+                
+                if (typeNode != null && 
+                        !isTypeUnknown(type)) {
+                    IFile file = getFile(unit);
+                    Tree.CompilationUnit rootNode = 
+                            unit.getCompilationUnit();
+                    addChangeTypeProposal(typeNode, 
+                            problem, proposals, dec, 
+                            type, file, rootNode);
+                    if (t != null) {
+                        Type newType = intersect ? 
+                                intersectionType(t, type, u) : 
+                                unionType(t, type, u);
+                        if (!newType.isExactly(t) && 
+                                !newType.isExactly(type)) {
+                            addChangeTypeProposal(typeNode, 
+                                    problem, proposals, 
+                                    dec, newType, file, 
+                                    rootNode);
                         }
                     }
                 }

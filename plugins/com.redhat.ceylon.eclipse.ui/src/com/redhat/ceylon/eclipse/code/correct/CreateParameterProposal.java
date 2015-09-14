@@ -3,11 +3,9 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.computeSelection;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getRootNode;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.Escaping.toInitialLowercase;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
@@ -33,6 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -40,6 +39,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class CreateParameterProposal extends InitializerProposal {
     
@@ -143,18 +143,16 @@ class CreateParameterProposal extends InitializerProposal {
                         "parameter '" + dg.getBrokenName() + "'";
                 TypecheckerUnit u = 
                         dg.getRootNode().getUnit();
-                for (PhasedUnit unit: getUnits(project)) {
-                    if (unit.getUnit().equals(u)) {
-                        addCreateParameterProposal(
-                                proposals, paramDef, paramDesc, 
-                                ADD_CORR, 
-                                decl.getDeclarationModel(), 
-                                unit, decl, paramList, 
-                                dg.getReturnType(),
-                                dg.getImports(), 
-                                dg.getNode());
-                        break;
-                    }
+                if (u instanceof CeylonUnit) {
+                    CeylonUnit cu = (CeylonUnit) u;
+                    addCreateParameterProposal(
+                            proposals, paramDef, paramDesc, 
+                            ADD_CORR, 
+                            decl.getDeclarationModel(), 
+                            cu.getPhasedUnit(), decl, paramList, 
+                            dg.getReturnType(),
+                            dg.getImports(), 
+                            dg.getNode());
                 }
             }
         }
@@ -271,30 +269,30 @@ class CreateParameterProposal extends InitializerProposal {
             Declaration typeDec, Type t,
             Node node) {
         if (typeDec!=null && typeDec instanceof Functional) {
-            for (PhasedUnit unit: getUnits(project)) {
-                if (typeDec.getUnit().equals(unit.getUnit())) {
-                    FindDeclarationNodeVisitor fdv = 
-                            new FindDeclarationNodeVisitor(typeDec);
-                    getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = 
-                            (Tree.Declaration) 
-                                fdv.getDeclarationNode();
-                    Tree.ParameterList paramList = 
-                            getParameters(decNode);
-                    if (paramList!=null) {
-                        if (!paramList.getParameters().isEmpty()) {
-                            def = ", " + def;
-                        }
-                        Set<Declaration> imports = 
-                                new HashSet<Declaration>();
-                        importType(imports, t, 
-                                unit.getCompilationUnit());
-                        addCreateParameterProposal(
-                                proposals, def, desc, 
-                                ADD_CORR, typeDec, unit, decNode, 
-                                paramList, t, imports, node);
-                        break;
+            Unit u = typeDec.getUnit();
+            if (u instanceof CeylonUnit) {
+                CeylonUnit cu = (CeylonUnit) u;
+                PhasedUnit unit = cu.getPhasedUnit();
+                FindDeclarationNodeVisitor fdv = 
+                        new FindDeclarationNodeVisitor(typeDec);
+                unit.getCompilationUnit().visit(fdv);
+                Tree.Declaration decNode = 
+                        (Tree.Declaration) 
+                            fdv.getDeclarationNode();
+                Tree.ParameterList paramList = 
+                        getParameters(decNode);
+                if (paramList!=null) {
+                    if (!paramList.getParameters().isEmpty()) {
+                        def = ", " + def;
                     }
+                    Set<Declaration> imports = 
+                            new HashSet<Declaration>();
+                    importType(imports, t, 
+                            unit.getCompilationUnit());
+                    addCreateParameterProposal(
+                            proposals, def, desc, 
+                            ADD_CORR, typeDec, unit, decNode, 
+                            paramList, t, imports, node);
                 }
             }
         }
@@ -306,27 +304,28 @@ class CreateParameterProposal extends InitializerProposal {
             String desc, Declaration typeDec, Type t,
             Node node) {
         if (typeDec instanceof ClassOrInterface) {
-            for (PhasedUnit unit: getUnits(project)) {
-                if (typeDec.getUnit().equals(unit.getUnit())) {
-                    FindDeclarationNodeVisitor fdv = 
-                            new FindDeclarationNodeVisitor(typeDec);
-                    getRootNode(unit).visit(fdv);
-                    Tree.Declaration decNode = 
-                            (Tree.Declaration) 
-                                fdv.getDeclarationNode();
-                    Tree.ParameterList paramList = 
-                            getParameters(decNode);
-                    Tree.Body body = 
-                            getClassOrInterfaceBody(decNode);
-                    if (body!=null && paramList!=null) {
-                        if (!paramList.getParameters().isEmpty()) {
-                            pdef = ", " + pdef;
-                        }
-                        addCreateParameterAndAttributeProposal(
-                                proposals, pdef, adef, desc, 
-                                ADD_CORR, typeDec, unit, decNode, 
-                                paramList, body, t, node);
+            Unit u = typeDec.getUnit();
+            if (u instanceof CeylonUnit) {
+                CeylonUnit cu = (CeylonUnit) u;
+                PhasedUnit unit = cu.getPhasedUnit();
+                FindDeclarationNodeVisitor fdv = 
+                        new FindDeclarationNodeVisitor(typeDec);
+                unit.getCompilationUnit().visit(fdv);
+                Tree.Declaration decNode = 
+                        (Tree.Declaration) 
+                            fdv.getDeclarationNode();
+                Tree.ParameterList paramList = 
+                        getParameters(decNode);
+                Tree.Body body = 
+                        getClassOrInterfaceBody(decNode);
+                if (body!=null && paramList!=null) {
+                    if (!paramList.getParameters().isEmpty()) {
+                        pdef = ", " + pdef;
                     }
+                    addCreateParameterAndAttributeProposal(
+                            proposals, pdef, adef, desc, 
+                            ADD_CORR, typeDec, unit, decNode, 
+                            paramList, body, t, node);
                 }
             }
         }
