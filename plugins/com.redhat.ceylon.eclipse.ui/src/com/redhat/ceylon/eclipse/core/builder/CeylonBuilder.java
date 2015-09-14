@@ -43,10 +43,6 @@ import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.FileHeader;
-
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.internal.events.NotificationManager;
@@ -151,7 +147,6 @@ import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
@@ -200,6 +195,10 @@ import com.sun.tools.javac.file.RelativePath.RelativeFile;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.FileHeader;
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has

@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedIn
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositionalInvocationDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositionalInvocationTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getAssignableLiterals;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getCurrentArgumentRegion;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getParameters;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getProposedName;
@@ -939,7 +940,11 @@ class InvocationCompletionProposal extends CompletionProposal {
                         type, unit, dwp, null);
             }
         }
-        addLiteralProposals(loc, props, index, type, unit);
+        for (String value: 
+                getAssignableLiterals(type, unit)) {
+            props.add(new NestedLiteralCompletionProposal(
+                        value, loc, index));
+        }
         for (DeclarationWithProximity dwp: proposals) {
             if (dwp.getProximity()>1) {
                 addValueArgumentProposal(p, loc, props, index, last,
@@ -1072,51 +1077,6 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
         else {
             return false;
-        }
-    }
-
-    private void addLiteralProposals(int loc,
-            List<ICompletionProposal> props, int index, 
-            Type type, Unit unit) {
-        TypeDeclaration dtd = 
-                unit.getDefiniteType(type)
-                    .getDeclaration();
-        if (dtd instanceof Class) {
-            if (dtd.equals(unit.getIntegerDeclaration())) {
-                props.add(new NestedLiteralCompletionProposal(
-                        "0", loc, index));
-                props.add(new NestedLiteralCompletionProposal(
-                        "1", loc, index));
-            }
-            if (dtd.equals(unit.getFloatDeclaration())) {
-                props.add(new NestedLiteralCompletionProposal(
-                        "0.0", loc, index));
-                props.add(new NestedLiteralCompletionProposal(
-                        "1.0", loc, index));
-            }
-            if (dtd.equals(unit.getStringDeclaration())) {
-                props.add(new NestedLiteralCompletionProposal(
-                        "\"\"", loc, index));
-            }
-            if (dtd.equals(unit.getCharacterDeclaration())) {
-                props.add(new NestedLiteralCompletionProposal(
-                        "' '", loc, index));
-                props.add(new NestedLiteralCompletionProposal(
-                        "'\\n'", loc, index));
-                props.add(new NestedLiteralCompletionProposal(
-                        "'\\t'", loc, index));
-            }
-        }
-        else if (dtd instanceof Interface) {
-           if (dtd.equals(unit.getIterableDeclaration())) {
-               props.add(new NestedLiteralCompletionProposal(
-                       "{}", loc, index));
-           }
-           if (dtd.equals(unit.getSequentialDeclaration()) ||
-               dtd.equals(unit.getEmptyDeclaration())) {
-               props.add(new NestedLiteralCompletionProposal(
-                       "[]", loc, index));
-           }
         }
     }
 

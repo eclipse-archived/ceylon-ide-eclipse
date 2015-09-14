@@ -28,6 +28,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Scope;
@@ -396,6 +397,47 @@ public class CompletionUtil {
             nextOffset = offset;
         }
         return new Region(offset, nextOffset-offset);
+    }
+    
+    public static String[] getAssignableLiterals(Type type, Unit unit) {
+        TypeDeclaration dtd = 
+                unit.getDefiniteType(type)
+                    .getDeclaration();
+        if (dtd instanceof Class) {
+            if (dtd.equals(unit.getIntegerDeclaration())) {
+                return new String[] { "0", "1", "2" };
+            }
+            if (dtd.equals(unit.getByteDeclaration())) {
+                return new String[] { "0.byte", "1.byte" };
+            }
+            else if (dtd.equals(unit.getFloatDeclaration())) {
+                return new String[] { "0.0", "1.0", "2.0" };
+            }
+            else if (dtd.equals(unit.getStringDeclaration())) {
+                return new String[] { "\"\"" };
+            }
+            else if (dtd.equals(unit.getCharacterDeclaration())) {
+                return new String[] { "' '", "'\\n'", "\\t" };
+            }
+            else {
+                return new String[0];
+            }
+        }
+        else if (dtd instanceof Interface) {
+            if (dtd.equals(unit.getIterableDeclaration())) {
+                return new String[] { "{}" };
+            }
+            else if (dtd.equals(unit.getSequentialDeclaration()) ||
+                dtd.equals(unit.getEmptyDeclaration())) {
+                return new String[] { "[]" };
+            }
+            else {
+                return new String[0]; 
+            }
+         }
+        else {
+            return new String[0];
+        }
     }
 
 }

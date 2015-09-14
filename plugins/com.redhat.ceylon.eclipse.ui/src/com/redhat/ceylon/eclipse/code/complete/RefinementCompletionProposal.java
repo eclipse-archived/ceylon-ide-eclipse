@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineF
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getAssignableLiterals;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getCurrentSpecifierRegion;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getProposedName;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
@@ -19,11 +20,13 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importParameterTypes;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getRefinementIcon;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
@@ -379,9 +382,15 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             List<ICompletionProposal> props) {
         Type type = getType();
         if (type==null) return;
+        Unit unit = getUnit();
+        for (String value: 
+                getAssignableLiterals(type, unit)) {
+            props.add(new NestedLiteralCompletionProposal(
+                        value, loc));
+        }
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
-                getSortedProposedValues(scope, getUnit())) {
+                getSortedProposedValues(scope, unit)) {
             if (dwp.isUnimported()) {
                 //don't propose unimported stuff b/c adding
                 //imports drops us out of linked mode and
@@ -586,4 +595,101 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 
     }
     
+    private final class NestedLiteralCompletionProposal 
+            implements ICompletionProposal, 
+                       ICompletionProposalExtension2,
+                       ICompletionProposalExtension6 {
+
+        private final String value;
+        private final int offset;
+        
+        private NestedLiteralCompletionProposal(String value, int offset) {
+            this.offset = offset;
+            this.value = value;
+        }
+        
+        @Override
+        public Point getSelection(IDocument document) {
+            return null;
+        }
+        
+        public void apply(IDocument document) {
+            try {
+                IRegion region = 
+                        getCurrentSpecifierRegion(document, 
+                                offset);
+                document.replace(region.getOffset(), 
+                        region.getLength(), value);
+            } 
+            catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        public String getDisplayString() {
+            return value;
+        }
+        
+        @Override
+        public StyledString getStyledDisplayString() {
+            StyledString result = new StyledString();
+            Highlights.styleFragment(result, 
+                    getDisplayString(), false, null, 
+                    CeylonPlugin.getCompletionFont());
+            return result;
+        }
+        
+        @Override
+        public Image getImage() {
+            return getDecoratedImage(CEYLON_LITERAL, 0, false);
+        }
+        
+        public String getAdditionalProposalInfo() {
+            return null;
+        }
+        
+        @Override
+        public IContextInformation getContextInformation() {
+            return null;
+        }
+        
+        @Override
+        public void apply(ITextViewer viewer, char trigger, 
+                int stateMask, int offset) {
+            apply(viewer.getDocument());
+        }
+        
+        @Override
+        public void selected(ITextViewer viewer, boolean smartToggle) {}
+        
+        @Override
+        public void unselected(ITextViewer viewer) {}
+        
+        @Override
+        public boolean validate(IDocument document, 
+                int currentOffset, DocumentEvent event) {
+            if (event==null) {
+                return true;
+            }
+            else {
+                try {
+                    IRegion region = 
+                            getCurrentSpecifierRegion(document, 
+                                    offset);
+                    String content = 
+                            document.get(region.getOffset(), 
+                                    currentOffset-region.getOffset());
+                    String filter = content.trim();
+                    if (value.startsWith(filter)) {
+                        return true;
+                    }
+                }
+                catch (BadLocationException e) {
+                    // ignore concurrently modified document
+                }
+                return false;
+            }
+        }
+        
+        }
 }

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getAssignableLiterals;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getCurrentSpecifierRegion;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getProposedName;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
@@ -269,7 +270,7 @@ class InitializerProposal extends CorrectionProposal {
             }
         }
         
-        }
+    }
         
     private final Type type;
     private final Scope scope;
@@ -369,15 +370,15 @@ class InitializerProposal extends CorrectionProposal {
             IDocument document, Point point) {
         List<ICompletionProposal> proposals = 
                 new ArrayList<ICompletionProposal>();
-        try {
-            //this is totally lame
-            //TODO: see InvocationCompletionProcessor
-            proposals.add(new NestedLiteralCompletionProposal(
-                    document.get(point.x, point.y), point.x));
-        }
-        catch (BadLocationException e1) {
-            e1.printStackTrace();
-        }
+//        try {
+//            //this is totally lame
+//            //TODO: see InvocationCompletionProcessor
+//            proposals.add(new NestedLiteralCompletionProposal(
+//                    document.get(point.x, point.y), point.x));
+//        }
+//        catch (BadLocationException e1) {
+//            e1.printStackTrace();
+//        }
         addValueArgumentProposals(point.x, proposals);
         return proposals.toArray(new ICompletionProposal[0]);
     }
@@ -385,6 +386,11 @@ class InitializerProposal extends CorrectionProposal {
     private void addValueArgumentProposals(int loc,
             List<ICompletionProposal> props) {
         if (type==null) return;
+        for (String value: 
+                getAssignableLiterals(type, unit)) {
+            props.add(new NestedLiteralCompletionProposal(
+                        value, loc));
+        }
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
                 getSortedProposedValues(scope, unit)) {
