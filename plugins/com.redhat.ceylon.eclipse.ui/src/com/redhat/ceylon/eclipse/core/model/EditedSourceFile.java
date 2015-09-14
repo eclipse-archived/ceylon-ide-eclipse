@@ -7,7 +7,7 @@ import org.eclipse.core.resources.IProject;
 import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 
-public class EditedSourceFile extends SourceFile implements IResourceAware {
+public class EditedSourceFile extends ModifiableSourceFile {
     public EditedSourceFile(EditedPhasedUnit phasedUnit) {
         super(phasedUnit);
     }

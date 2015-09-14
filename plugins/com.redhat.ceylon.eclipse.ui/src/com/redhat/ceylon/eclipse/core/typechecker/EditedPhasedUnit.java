@@ -15,12 +15,11 @@ import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
-public class EditedPhasedUnit extends IdePhasedUnit implements IResourceAware {
+public class EditedPhasedUnit extends ModifiablePhasedUnit {
     WeakReference<ProjectPhasedUnit> savedPhasedUnitRef;
     
     public EditedPhasedUnit(VirtualFile unitFile, VirtualFile srcDir,

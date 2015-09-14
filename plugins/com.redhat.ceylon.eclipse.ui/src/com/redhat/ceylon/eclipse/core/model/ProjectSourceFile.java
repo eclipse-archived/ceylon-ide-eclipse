@@ -25,7 +25,7 @@ import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 
-public class ProjectSourceFile extends SourceFile implements IResourceAware {
+public class ProjectSourceFile extends ModifiableSourceFile {
     static private DeltaBuilderFactory deltaBuilderFactory = new DeltaBuilderFactory();
     
     public ProjectSourceFile(ProjectPhasedUnit phasedUnit) {
