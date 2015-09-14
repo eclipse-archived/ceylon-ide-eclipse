@@ -6,12 +6,13 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateInNewUnitProposal.add
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,10 +33,8 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -57,19 +56,22 @@ class CreateProposal extends InitializerProposal {
                 image, exitPos);
     }
     
-    static void addCreateMemberProposal(Collection<ICompletionProposal> proposals, 
-            DefinitionGenerator dg, Declaration typeDec, PhasedUnit unit,
-            Tree.Declaration decNode, Tree.Body body, Tree.Statement statement) {
+    static void addCreateMemberProposal(
+            Collection<ICompletionProposal> proposals, 
+            DefinitionGenerator dg, Declaration typeDec, 
+            PhasedUnit unit, Tree.Declaration decNode, 
+            Tree.Body body, Tree.Statement statement) {
         IFile file = getFile(unit);
         TextFileChange change = 
                 new TextFileChange("Create Member", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = EditorUtil.getDocument(change);
+        IDocument doc = getDocument(change);
         String indentBefore;
         String indentAfter;
         String indent;
         int offset;
-        List<Tree.Statement> statements = body.getStatements();
+        List<Tree.Statement> statements = 
+                body.getStatements();
         String delim = getDefaultLineDelimiter(doc);
         if (statements.isEmpty()) {
             String bodyIndent = getIndent(decNode, doc);
@@ -118,19 +120,23 @@ class CreateProposal extends InitializerProposal {
                 offset = st.getEndIndex();
             }
         }
-        String generated = typeDec instanceof Interface ?
-            dg.generateSharedFormal(indent, delim) :
-            dg.generateShared(indent, delim);
+        String generated = 
+                typeDec instanceof Interface ?
+                    dg.generateSharedFormal(indent, delim) :
+                    dg.generateShared(indent, delim);
         String def = indentBefore + generated + indentAfter;
-        int il = applyImports(change, dg.getImports(), 
-                unit.getCompilationUnit(), doc);
+        int il = 
+                applyImports(change, dg.getImports(), 
+                        unit.getCompilationUnit(), doc);
         change.addEdit(new InsertEdit(offset, def));
-        String desc = "Create " + memberKind(dg) + 
+        String desc = 
+                "Create " + memberKind(dg) + 
                 " in '" + typeDec.getName() + "'";
         int exitPos = dg.getNode().getEndIndex();
         proposals.add(new CreateProposal(def, desc, 
-                body.getScope(), body.getUnit(), dg.getReturnType(), 
-                dg.getImage(), offset+il, change, exitPos,
+                body.getScope(), body.getUnit(), 
+                dg.getReturnType(), dg.getImage(), 
+                offset+il, change, exitPos,
                 dg instanceof ObjectClassDefinitionGenerator));
     }
 
@@ -148,48 +154,64 @@ class CreateProposal extends InitializerProposal {
         return desc;
     }
 
-    private static void addCreateProposal(Collection<ICompletionProposal> proposals, 
-            boolean local, DefinitionGenerator dg, PhasedUnit unit, 
-            Tree.Statement statement) {
+    private static void addCreateProposal(
+            Collection<ICompletionProposal> proposals, 
+            boolean local, DefinitionGenerator dg, 
+            PhasedUnit unit, Tree.Statement statement) {
         IFile file = getFile(unit);
         TextFileChange change = new TextFileChange(local ? 
                 "Create Local" : "Create Toplevel", file);
         change.setEdit(new MultiTextEdit());
-        IDocument doc = EditorUtil.getDocument(change);
+        IDocument doc = getDocument(change);
         String indent = getIndent(statement, doc);
         int offset = statement.getStartIndex();
         String delim = getDefaultLineDelimiter(doc);
-        Tree.CompilationUnit cu = unit.getCompilationUnit();
-        int il = applyImports(change, dg.getImports(), cu, doc);
-        String def = dg.generate(indent, delim) + delim + indent;
+        Tree.CompilationUnit rootNode = 
+                unit.getCompilationUnit();
+        int il = 
+                applyImports(change, dg.getImports(), 
+                        rootNode, doc);
+        String def = 
+                dg.generate(indent, delim) + delim + indent;
         if (!local) def += delim;
         change.addEdit(new InsertEdit(offset, def));
-        String desc = (local ? "Create local " : "Create toplevel ") + dg.getDescription();
-        final Scope scope = local ? 
-                statement.getScope() : 
-                cu.getUnit().getPackage();
+        String desc = 
+                (local ? "Create local " : "Create toplevel ") 
+                    + dg.getDescription();
+        final Scope scope = 
+                local ? 
+                    statement.getScope() : 
+                    rootNode.getUnit().getPackage();
         int exitPos = dg.getNode().getEndIndex();
         proposals.add(new CreateProposal(def, desc, 
-                scope, cu.getUnit(), dg.getReturnType(), 
-                dg.getImage(), offset+il, change, exitPos,
+                scope, rootNode.getUnit(), 
+                dg.getReturnType(), dg.getImage(), 
+                offset+il, change, exitPos,
                 dg instanceof ObjectClassDefinitionGenerator));
     }
     
-    static void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
+    static void addCreateMemberProposals(
+            Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg,
-            Tree.QualifiedMemberOrTypeExpression qmte, Tree.Statement statement) {
-        Tree.Primary p = ((Tree.QualifiedMemberOrTypeExpression) qmte).getPrimary();
+            Tree.QualifiedMemberOrTypeExpression qmte, 
+            Tree.Statement statement) {
+        Tree.Primary p = qmte.getPrimary();
         if (p.getTypeModel()!=null) {
-            Declaration typeDec = p.getTypeModel().getDeclaration();
-            addCreateMemberProposals(proposals, project, dg, typeDec, statement);
+            Declaration typeDec = 
+                    p.getTypeModel()
+                        .getDeclaration();
+            addCreateMemberProposals(proposals, project, dg, 
+                    typeDec, statement);
         }
     }
 
-    static void addCreateMemberProposals(Collection<ICompletionProposal> proposals,
-            IProject project, DefinitionGenerator dg, Declaration typeDec, 
-            Tree.Statement statement) {
+    static void addCreateMemberProposals(
+            Collection<ICompletionProposal> proposals,
+            IProject project, DefinitionGenerator dg, 
+            Declaration typeDec, Tree.Statement statement) {
         if (typeDec!=null && (typeDec instanceof Class
-                || (typeDec instanceof Interface && dg.isFormalSupported()))) {
+                || (typeDec instanceof Interface 
+                        && dg.isFormalSupported()))) {
             Unit u = typeDec.getUnit();
             if (u instanceof CeylonUnit) {
                 CeylonUnit cu = (CeylonUnit) u;
@@ -199,8 +221,10 @@ class CreateProposal extends InitializerProposal {
                         new FindDeclarationNodeVisitor(typeDec);
                 unit.getCompilationUnit().visit(fdv);
                 Tree.Declaration decNode = 
-                        (Tree.Declaration) fdv.getDeclarationNode();
-                Tree.Body body = getClassOrInterfaceBody(decNode);
+                        (Tree.Declaration) 
+                            fdv.getDeclarationNode();
+                Tree.Body body = 
+                        getClassOrInterfaceBody(decNode);
                 if (body!=null) {
                     addCreateMemberProposal(proposals, dg, 
                             typeDec, unit, decNode, body,
@@ -210,92 +234,110 @@ class CreateProposal extends InitializerProposal {
         }
     }
 
-    static void addCreateLocalProposals(Collection<ICompletionProposal> proposals,
+    static void addCreateLocalProposals(
+            Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg) {
-        //if (!fsv.isToplevel()) {
         Tree.Statement statement = 
-                findStatement(dg.getRootNode(), dg.getNode());
+                findStatement(dg.getRootNode(), 
+                        dg.getNode());
         if (statement!=null) {
-            for (PhasedUnit unit: getUnits(project)) {
-                if (unit.getUnit().equals(dg.getRootNode().getUnit())) {
-                    addCreateProposal(proposals, true, dg, 
-                            unit, statement);
-                    break;
-                }
+            Unit u = dg.getRootNode().getUnit();
+            if (u instanceof CeylonUnit) {
+                CeylonUnit cu = (CeylonUnit) u;
+                addCreateProposal(proposals, true, dg, 
+                        cu.getPhasedUnit(), statement);
             }
         }
-        //}
     }
 
-    static void addCreateToplevelProposals(Collection<ICompletionProposal> proposals,
+    static void addCreateToplevelProposals(
+            Collection<ICompletionProposal> proposals,
             IProject project, DefinitionGenerator dg) {
         Tree.Statement statement = 
-                findToplevelStatement(dg.getRootNode(), dg.getNode());
+                findToplevelStatement(dg.getRootNode(), 
+                        dg.getNode());
         if (statement!=null) {
-            for (PhasedUnit unit: getUnits(project)) {
-                if (unit.getUnit().equals(dg.getRootNode().getUnit())) {
-                    addCreateProposal(proposals, 
-                            false, dg, unit, statement);
-                    break;
-                }
+            Unit u = dg.getRootNode().getUnit();
+            if (u instanceof CeylonUnit) {
+                CeylonUnit cu = (CeylonUnit) u;
+                addCreateProposal(proposals, false, dg, 
+                        cu.getPhasedUnit(), statement);
             }
         }
     }
         
-    static void addCreateProposals(Tree.CompilationUnit cu, Node node,
-            Collection<ICompletionProposal> proposals, IProject project,
-            IFile file) {
+    static void addCreateProposals(
+            Tree.CompilationUnit rootNode, Node node,
+            Collection<ICompletionProposal> proposals, 
+            IProject project, IFile file) {
         Tree.MemberOrTypeExpression smte = 
                 (Tree.MemberOrTypeExpression) node;
-        String brokenName = Nodes.getIdentifyingNode(node).getText();
+        String brokenName = 
+                getIdentifyingNode(node)
+                    .getText();
         if (!brokenName.isEmpty()) {
             ValueFunctionDefinitionGenerator vfdg = 
-                    ValueFunctionDefinitionGenerator.create(brokenName, smte, cu);
+                    ValueFunctionDefinitionGenerator.create(
+                            brokenName, smte, rootNode);
             if (vfdg!=null) {
                 if (smte instanceof Tree.BaseMemberExpression) {
                     Tree.BaseMemberExpression bme = 
                             (Tree.BaseMemberExpression) smte;
                     Tree.Identifier id = bme.getIdentifier();
-                    if (id.getToken().getType()!=CeylonLexer.AIDENTIFIER) {
-                        addCreateParameterProposal(proposals, project, vfdg);
+                    int tt = id.getToken().getType();
+                    if (tt!=CeylonLexer.AIDENTIFIER) {
+                        addCreateParameterProposal(proposals, 
+                                project, vfdg);
                     }
                 }
-                addCreateProposals(cu, proposals, project, file, smte, vfdg);
+                addCreateProposals(rootNode, proposals, 
+                        project, file, smte, vfdg);
             }
             ObjectClassDefinitionGenerator ocdg = 
-                    ObjectClassDefinitionGenerator.create(brokenName, smte, cu);
+                    ObjectClassDefinitionGenerator.create(
+                            brokenName, smte, rootNode);
             if (ocdg!=null) {
-                addCreateProposals(cu, proposals, project, file, smte, ocdg);
+                addCreateProposals(rootNode, proposals, 
+                        project, file, smte, ocdg);
             }
         }
     }
 
-    private static void addCreateProposals(Tree.CompilationUnit rootNode,
-            Collection<ICompletionProposal> proposals, IProject project,
-            IFile file, Tree.MemberOrTypeExpression smte, DefinitionGenerator dg) {
+    private static void addCreateProposals(
+            Tree.CompilationUnit rootNode,
+            Collection<ICompletionProposal> proposals, 
+            IProject project, IFile file, 
+            Tree.MemberOrTypeExpression smte, 
+            DefinitionGenerator dg) {
         if (smte instanceof Tree.QualifiedMemberOrTypeExpression) {
+            Tree.QualifiedMemberOrTypeExpression qmte = 
+                    (Tree.QualifiedMemberOrTypeExpression) smte;
             addCreateMemberProposals(proposals, project, dg, 
-                    (Tree.QualifiedMemberOrTypeExpression) smte,
-                    Nodes.findStatement(rootNode, smte));
+                    qmte, findStatement(rootNode, smte));
         }
         else {
-            if (!(dg.getNode() instanceof Tree.ExtendedTypeExpression)) {
+            Node node = dg.getNode();
+            if (!(node instanceof Tree.ExtendedTypeExpression)) {
                 addCreateLocalProposals(proposals, project, dg);
                 ClassOrInterface container = 
                         findClassContainer(rootNode, smte);
                 if (container!=null && 
                         container!=smte.getScope()) { //if the statement appears directly in an initializer, propose a local, not a member 
                     do {
-                        addCreateMemberProposals(proposals, project, 
-                                dg, container,
+                        addCreateMemberProposals(proposals, 
+                                project, dg, container,
                                 //TODO: this is a little lame because
                                 //      it doesn't handle some cases
                                 //      of nesting
-                                Nodes.findStatement(rootNode, smte));
-                        if (container.getContainer() instanceof Declaration) {
+                                findStatement(rootNode, smte));
+                        Scope cc = container.getContainer();
+                        if (cc instanceof Declaration) {
                             Declaration outerContainer = 
-                                    (Declaration) container.getContainer();
-                            container = findClassContainer(outerContainer);
+                                    (Declaration) 
+                                        cc;
+                            container = 
+                                    findClassContainer(
+                                            outerContainer);
                         }
                         else { 
                             break;
@@ -310,19 +352,28 @@ class CreateProposal extends InitializerProposal {
     }
 
 
-    private static ClassOrInterface findClassContainer(Tree.CompilationUnit cu, Node node){
-        FindContainerVisitor fcv = new FindContainerVisitor(node);
-        fcv.visit(cu);
+    private static ClassOrInterface findClassContainer(
+            Tree.CompilationUnit rootNode, Node node){
+        FindContainerVisitor fcv = 
+                new FindContainerVisitor(node);
+        fcv.visit(rootNode);
         Tree.Declaration declaration = fcv.getDeclaration();
-        if(declaration == null || declaration == node)
+        if (declaration == null || declaration == node) {
             return null;
-        if(declaration instanceof Tree.ClassOrInterface)
-            return (ClassOrInterface) declaration.getDeclarationModel();
-        if(declaration instanceof Tree.MethodDefinition)
-            return findClassContainer(declaration.getDeclarationModel());
-        if(declaration instanceof Tree.ObjectDefinition)
-            return findClassContainer(declaration.getDeclarationModel());
-        return null;
+        }
+        Declaration model = declaration.getDeclarationModel();
+        if (declaration instanceof Tree.ClassOrInterface) {
+            return (ClassOrInterface) model;
+        }
+        else if (declaration instanceof Tree.MethodDefinition) {
+            return findClassContainer(model);
+        }
+        else if (declaration instanceof Tree.ObjectDefinition) {
+            return findClassContainer(model);
+        }
+        else {
+            return null;
+        }
     }
     
     private static ClassOrInterface findClassContainer(
