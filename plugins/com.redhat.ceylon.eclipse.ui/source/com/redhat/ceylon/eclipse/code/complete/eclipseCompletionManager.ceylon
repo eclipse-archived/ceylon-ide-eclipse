@@ -33,8 +33,8 @@ import com.redhat.ceylon.eclipse.ui {
 }
 import com.redhat.ceylon.eclipse.util {
     EditorUtil,
-    eclipseIndents,
-    EclipseProgressMonitor
+    EclipseProgressMonitor,
+    EclipseIndents=Indents
 }
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager,
@@ -42,7 +42,7 @@ import com.redhat.ceylon.ide.common.completion {
 }
 import com.redhat.ceylon.ide.common.util {
     escaping,
-    OccurrenceLocation
+    Indents
 }
 import com.redhat.ceylon.model.typechecker.model {
     Type,
@@ -50,8 +50,6 @@ import com.redhat.ceylon.model.typechecker.model {
     Reference,
     Scope,
     Unit,
-    ClassOrInterface,
-    FunctionOrValue,
     Functional,
     Package
 }
@@ -174,6 +172,11 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     
     shared actual String errorMessage => "No completions available";
     
+    shared actual Indents<IDocument> indents => EclipseIndents.indents();
+    
+    shared actual Boolean addParameterTypesInCompletions
+            => EditorUtil.preferences.getBoolean(CeylonPreferenceInitializer.\iPARAMETER_TYPES_IN_COMPLETIONS);
+    
     shared actual ICompletionProposal newParametersCompletionProposal(Integer offset,
         Type type, JList<Type> argTypes,
         Node node, CeylonParseController cpc) {
@@ -226,43 +229,30 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     shared actual String getDocumentSubstring(IDocument doc, Integer start, Integer length) => doc.get(start, length);
     
     shared actual ICompletionProposal newPositionalInvocationCompletion(Integer offset, String prefix,
-        Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember,
-        OccurrenceLocation? ol, String? typeArgs, Boolean includeDefaulted, Declaration? qualifyingDec) {
+        String desc, String text, Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc,
+        Boolean isMember, String? typeArgs, Boolean includeDefaulted, Declaration? qualifyingDec) {
         
-        value desc = CodeCompletions.getPositionalInvocationDescriptionFor(dec, ol, pr, cpc.rootNode.unit,
-            includeDefaulted, typeArgs);
-        value text = CodeCompletions.getPositionalInvocationTextFor(dec, ol, pr, cpc.rootNode.unit,
-            includeDefaulted, typeArgs);
         return InvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, includeDefaulted,
             true, false, isMember, qualifyingDec);
     }
     
     shared actual ICompletionProposal newNamedInvocationCompletion(Integer offset, String prefix,
-        Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember,
-        OccurrenceLocation? ol, String? typeArgs, Boolean includeDefaulted) {
+        String desc, String text, Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc,
+        Boolean isMember, String? typeArgs, Boolean includeDefaulted) {
         
-        value desc = CodeCompletions.getNamedInvocationDescriptionFor(dec, pr, cpc.rootNode.unit, includeDefaulted, typeArgs);
-        value text = CodeCompletions.getNamedInvocationTextFor(dec, pr, cpc.rootNode.unit, includeDefaulted, typeArgs);
         return InvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, includeDefaulted,
             false, true, isMember, null);
     }
     
-    shared actual ICompletionProposal newReferenceCompletion(Integer offset, String prefix,
+    shared actual ICompletionProposal newReferenceCompletion(Integer offset, String prefix, String desc, String text,
         Declaration dec, Unit u, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember, Boolean includeTypeArgs) {
         
-        value desc = CodeCompletions.getDescriptionFor(dec, cpc.rootNode.unit);
-        value text = CodeCompletions.getTextFor(dec, cpc.rootNode.unit);
         return InvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, true, false, false, isMember, null);
     }
     
-    shared actual ICompletionProposal newRefinementCompletionProposal(Integer offset, String prefix,
-        Declaration dec, Reference? pr, Scope scope, CeylonParseController cmp, Boolean isInterface,
-        ClassOrInterface ci, Node node, Unit unit, IDocument doc, Boolean preamble) {
+    shared actual ICompletionProposal newRefinementCompletionProposal(Integer offset, String prefix, Reference? pr,
+        String desc, String text, CeylonParseController cmp, Declaration dec, Scope scope) {
         
-        value lineDeliniter = eclipseIndents.getDefaultLineDelimiter(doc);
-        value indent = eclipseIndents.getIndent(node, doc);
-        value desc = CodeCompletions.getRefinementDescriptionFor(dec, pr, unit);
-        value text = CodeCompletions.getRefinementTextFor(dec, pr, unit, isInterface, ci, lineDeliniter + indent, true, preamble);
         return RefinementCompletionProposal(offset, prefix, pr, desc, text, cmp, dec, scope, false, true);
     }
     
@@ -287,24 +277,16 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         };
     }
     
-    shared actual ICompletionProposal newNamedArgumentProposal(Integer offset, String prefix,
-        CeylonParseController cpc, Tree.CompilationUnit cu, Declaration dec, Scope scope) {
+    shared actual ICompletionProposal newNamedArgumentProposal(Integer offset, String prefix, Reference? pr,
+        String desc, String text, CeylonParseController cpc, Declaration dec, Scope scope) {
         
-        value desc = CodeCompletions.getDescriptionFor(dec, cu.unit);
-        value text = CodeCompletions.getTextFor(dec, cu.unit) + " = nothing;";
-        return RefinementCompletionProposal(offset, prefix, dec.reference, desc, text, cpc, dec, scope, true, false);
+        return RefinementCompletionProposal(offset, prefix, pr, desc, text, cpc, dec, scope, true, false);
     }
     
-    shared actual ICompletionProposal newInlineFunctionProposal(Integer offset, FunctionOrValue dec,
-        Scope scope, Node node, String prefix, CeylonParseController cpc, IDocument doc) {
+    shared actual ICompletionProposal newInlineFunctionProposal(Integer offset, String prefix, Reference? pr,
+        String desc, String text, CeylonParseController cpc, Declaration dec, Scope scope) {
         
-        value p = dec.initializerParameter;
-        value unit = node.unit;
-        value desc = CodeCompletions.getInlineFunctionDescriptionFor(p, null, unit);
-        value text = CodeCompletions.getInlineFunctionTextFor(p, null, unit,
-            eclipseIndents.getDefaultLineDelimiter(doc) + eclipseIndents.getIndent(node, doc));
-        
-        return RefinementCompletionProposal(offset, prefix, dec.reference, desc, text, cpc,
+        return RefinementCompletionProposal(offset, prefix, pr, desc, text, cpc,
             dec, scope, false, false);
     }
     
@@ -382,12 +364,14 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             => InvocationCompletionProposal.ParameterInfo(offset, dec, producedReference, scope, cpc, namedInvocation);
 
     shared actual ICompletionProposal newFunctionCompletionProposal(Integer offset, String prefix,
-        String text, Declaration dec, Unit unit, CeylonParseController controller) {
+           String desc, String text, Declaration dec, Unit unit, CeylonParseController controller) {
         
-        String description = CodeCompletions.getDescriptionFor(dec, unit) + "(...)";
-        
-        return FunctionCompletionProposal(offset, prefix, description, text, dec, controller);
+        return FunctionCompletionProposal(offset, prefix, desc, text, dec, controller);
     }
+
+    shared actual ICompletionProposal newControlStructureCompletionProposal(Integer offset, String prefix,
+        String desc, String text, Declaration dec, CeylonParseController cpc)
+             => ControlStructureCompletionProposal(offset, prefix, desc, text, dec, cpc);
 
     Boolean isIdentifierCharacter(ITextViewer viewer, Integer offset) {
         IDocument doc = viewer.document;
@@ -462,5 +446,5 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         }
         
         return [];
-    }
+    }    
 }

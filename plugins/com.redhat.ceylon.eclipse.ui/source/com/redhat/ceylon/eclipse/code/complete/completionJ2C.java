@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import java.util.Collection;
 import java.util.Map;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;

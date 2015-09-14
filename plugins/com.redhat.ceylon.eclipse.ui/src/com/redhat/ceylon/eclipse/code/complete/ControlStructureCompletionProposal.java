@@ -194,7 +194,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
     private final CeylonParseController cpc;
     private final Declaration declaration;
     
-    private ControlStructureCompletionProposal(int offset, String prefix, 
+    ControlStructureCompletionProposal(int offset, String prefix, 
             String desc, String text, Declaration dec, 
             CeylonParseController cpc) {
         super(offset, prefix, CeylonResources.MINOR_CHANGE, 
