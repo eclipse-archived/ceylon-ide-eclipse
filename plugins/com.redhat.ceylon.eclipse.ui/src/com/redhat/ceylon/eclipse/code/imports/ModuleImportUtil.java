@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 import static java.util.Collections.singletonMap;
@@ -25,17 +24,18 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class ModuleImportUtil {
 
     public static void exportModuleImports(IProject project, 
             Module target, String moduleName) {
-        PhasedUnit unit = findPhasedUnit(project, target);
+        PhasedUnit unit = 
+                getDescriptorPhasedUnit(project, target);
         exportModuleImports(getFile(unit), 
                 unit.getCompilationUnit(), 
                 moduleName);
@@ -44,7 +44,8 @@ public class ModuleImportUtil {
     public static void removeModuleImports(IProject project, 
             Module target, List<String> moduleNames) {
         if (moduleNames.isEmpty()) return;
-        PhasedUnit unit = findPhasedUnit(project, target);
+        PhasedUnit unit = 
+                getDescriptorPhasedUnit(project, target);
         removeModuleImports(getFile(unit), 
                 unit.getCompilationUnit(), 
                 moduleNames);
@@ -80,7 +81,7 @@ public class ModuleImportUtil {
             String moduleName, String moduleVersion) {
         int offset = addModuleImports(project, target, 
                 singletonMap(moduleName, moduleVersion));
-        gotoLocation(findPhasedUnit(project, target).getUnit(), 
+        gotoLocation(getDescriptorPhasedUnit(project, target).getUnit(), 
                 offset + moduleName.length() + 
                         getDefaultIndent().length() + 10, 
                 moduleVersion.length());
@@ -88,7 +89,8 @@ public class ModuleImportUtil {
     
     public static void makeModuleImportShared(IProject project, Module target, 
             String[] moduleNames) {
-        PhasedUnit unit = findPhasedUnit(project, target);
+        PhasedUnit unit = 
+                getDescriptorPhasedUnit(project, target);
         TextFileChange textFileChange = 
                 new TextFileChange("Make Module Import Shared", 
                         getFile(unit));
@@ -136,7 +138,8 @@ public class ModuleImportUtil {
     public static int addModuleImports(IProject project, Module target, 
             Map<String,String> moduleNamesAndVersions) {
         if (moduleNamesAndVersions.isEmpty()) return 0;
-        PhasedUnit unit = findPhasedUnit(project, target);
+        PhasedUnit unit = 
+                getDescriptorPhasedUnit(project, target);
         return addModuleImports(getFile(unit), 
                 unit.getCompilationUnit(), 
                 moduleNamesAndVersions);
@@ -160,38 +163,18 @@ public class ModuleImportUtil {
         return textFileChange.getEdit().getOffset();
     }
 
-    private static PhasedUnit findPhasedUnit(IProject project, 
-            Module module) {
+    private static PhasedUnit getDescriptorPhasedUnit(
+            IProject project, Module module) {
         Unit unit = module.getUnit();
-        if (unit != null) {
-            String moduleFullPath = unit.getFullPath();
-            List<PhasedUnit> phasedUnits = getUnits(project);
-            for (PhasedUnit phasedUnit: phasedUnits) {
-                if (phasedUnit.getUnit().getFullPath()
-                        .equals(moduleFullPath)) {
-                    return phasedUnit;
-                }
-            }
+        if (unit instanceof CeylonUnit) {
+            CeylonUnit ceylonUnit = (CeylonUnit) unit;
+            return ceylonUnit.getPhasedUnit();
         }
-        return null;
-    }
-
-    public static PhasedUnit findPhasedUnit(IProject project, 
-            Package pkg) {
-        Unit unit = pkg.getUnit();
-        if (unit != null) {
-            String moduleFullPath = unit.getFullPath();
-            List<PhasedUnit> phasedUnits = getUnits(project);
-            for (PhasedUnit phasedUnit: phasedUnits) {
-                if (phasedUnit.getUnit().getFullPath()
-                        .equals(moduleFullPath)) {
-                    return phasedUnit;
-                }
-            }
+        else {
+            return null;
         }
-        return null;
     }
-
+    
     private static InsertEdit createAddEdit(CompilationUnit unit, 
             String moduleName, String moduleVersion, IDocument doc) {
         ImportModuleList iml = getImportList(unit);    

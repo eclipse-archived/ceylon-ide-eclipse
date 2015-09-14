@@ -7,6 +7,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
@@ -53,17 +55,18 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
-import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
+import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.ModuleImport;
+import com.redhat.ceylon.model.typechecker.model.Modules;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class CeylonModulePropertiesPage extends PropertyPage 
         implements IWorkbenchPropertyPage {
@@ -364,27 +367,37 @@ public class CeylonModulePropertiesPage extends PropertyPage
     }
 
     private void makeShared(TableItem item) {
-        Package pkg = getModule().getPackage(item.getText());
-        PhasedUnit phasedUnit = ModuleImportUtil.findPhasedUnit(project, pkg);
-        if (phasedUnit==null) {
-            item.setChecked(!item.getChecked());
-        }
-        else {
+        Package pkg = 
+                getModule()
+                    .getPackage(item.getText());
+        Unit unit = pkg.getUnit();
+        PhasedUnit phasedUnit;
+        if (unit instanceof CeylonUnit) {
+            CeylonUnit ceylonUnit = (CeylonUnit) unit;
+            phasedUnit = ceylonUnit.getPhasedUnit();
             TextFileChange textFileChange = 
-                    new TextFileChange("Make Package Import Shared", 
+                    new TextFileChange(
+                            "Make Package Shared", 
                             getFile(phasedUnit));
             textFileChange.setEdit(new MultiTextEdit());
-            IDocument doc = EditorUtil.getDocument(textFileChange);
-            Tree.PackageDescriptor pd = phasedUnit.getCompilationUnit()
-                    .getPackageDescriptors().get(0);
+            IDocument doc = getDocument(textFileChange);
+            Tree.PackageDescriptor pd = 
+                    phasedUnit.getCompilationUnit()
+                        .getPackageDescriptors()
+                        .get(0);
             if (pkg.isShared()) {
-                removeSharedAnnotation(textFileChange, doc, pd.getAnnotationList());
+                removeSharedAnnotation(textFileChange, doc, 
+                        pd.getAnnotationList());
             }
             else {
-                textFileChange.addEdit(new InsertEdit(pd.getStartIndex(), "shared "));
+                textFileChange.addEdit(new InsertEdit(
+                        pd.getStartIndex(), "shared "));
             }
-            EditorUtil.performChange(textFileChange);
+            performChange(textFileChange);
             item.setText(1, !pkg.isShared() ? "shared" : "");
+        }
+        else {
+            item.setChecked(!item.getChecked());
         }
     }
     
