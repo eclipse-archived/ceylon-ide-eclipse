@@ -4,6 +4,8 @@ import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.anonFunctionHeader;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getCurrentArgumentRegion;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getProposedName;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleClass;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
@@ -67,8 +69,13 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 
 class ParametersCompletionProposal extends CompletionProposal {
     
-    final class NestedCompletionProposal implements ICompletionProposal, 
-            ICompletionProposalExtension2, ICompletionProposalExtension6 {
+    //TODO: this is a big copy/paste from 
+    //      InvocationCompletionProposal.NestedCompletionProposal
+    final class NestedCompletionProposal 
+            implements ICompletionProposal, 
+                       ICompletionProposalExtension2, 
+                       ICompletionProposalExtension6 {
+        
         private final String op;
         private final int loc;
         private final int index;
@@ -76,8 +83,10 @@ class ParametersCompletionProposal extends CompletionProposal {
         private final Declaration dec;
         private Declaration qualifier;
         
-        NestedCompletionProposal(Declaration dec, Declaration qualifier, 
-                int loc, int index, boolean basic, String op) {
+        NestedCompletionProposal(
+                Declaration dec, Declaration qualifier, 
+                int loc, int index, boolean basic, 
+                String op) {
             this.qualifier = qualifier;
             this.op = op;
             this.loc = loc;
@@ -97,42 +106,18 @@ class ParametersCompletionProposal extends CompletionProposal {
             //text may have changed, since the proposal was
             //instantiated).
             try {
-                IRegion li = 
-                        document.getLineInformationOfOffset(loc);
-                int endOfLine = li.getOffset() + li.getLength();
-                int startOfArgs = getFirstPosition();
-                int offset = findCharCount(index, document, 
-                        loc+startOfArgs, endOfLine, 
-                        ",;", "", true)+1;
-                if (offset>0 && document.getChar(offset)==' ') {
-                    offset++;
-                }
-                int nextOffset = findCharCount(index+1, document, 
-                        loc+startOfArgs, endOfLine, 
-                        ",;", "", true);
-                int middleOffset = findCharCount(1, document, 
-                        offset, nextOffset, 
-                        "=", "", true)+1;
-                if (middleOffset>0 &&
-                        document.getChar(middleOffset)=='>') {
-                    middleOffset++;
-                }
-                while (middleOffset>0 &&
-                        document.getChar(middleOffset)==' ') {
-                    middleOffset++;
-                }
-                if (middleOffset>offset &&
-                        middleOffset<nextOffset) {
-                    offset = middleOffset;
-                }
+                IRegion region = 
+                        getCurrentArgumentRegion(document, 
+                                loc, index, 
+                                getFirstPosition());
                 String str = getText(false);
-                if (nextOffset==-1) {
-                    nextOffset = offset;
-                }
-                if (document.getChar(nextOffset)=='}') {
+                int start = region.getOffset();
+                int len = region.getLength();
+                int end = start + len;
+                if (document.getChar(end)=='}') {
                     str += " ";
                 }
-                document.replace(offset, nextOffset-offset, str);
+                document.replace(start, len, str);
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -175,11 +160,9 @@ class ParametersCompletionProposal extends CompletionProposal {
         }
 
         private String getText(boolean description) {
-            StringBuilder sb = new StringBuilder().append(op);
-            if (qualifier!=null) {
-                sb.append(qualifier.getName(getUnit())).append('.');
-            }
-            sb.append(dec.getName(getUnit()));
+            StringBuilder sb = new StringBuilder(op);
+            Unit unit = getUnit();
+            sb.append(getProposedName(qualifier, dec, unit));
             if (dec instanceof Functional && !basic) {
                 appendPositionalArgs(dec, getUnit(), sb, 
                         false, description);
@@ -236,50 +219,45 @@ class ParametersCompletionProposal extends CompletionProposal {
             }
             else {
                 try {
-                    IRegion li = 
-                            document.getLineInformationOfOffset(loc);
-                    int endOfLine = li.getOffset() + li.getLength();
-                    int startOfArgs = getFirstPosition();
-                    int offset = 
-                            findCharCount(index, document, 
-                                    loc+startOfArgs, endOfLine, 
-                                    ",;", "", true)+1;
+                    IRegion region = 
+                            getCurrentArgumentRegion(document, 
+                                    loc, index, 
+                                    getFirstPosition());
                     String content = 
-                            document.get(offset, 
-                                    currentOffset-offset);
-                    int fat = content.indexOf("=>");
-                    if (fat>0) {
-                        content = content.substring(fat+2);
-                    }
-                    int eq = content.indexOf("=");
-                    if (eq>0) {
-                        content = content.substring(eq+1);
-                    }
-                    String filter = content.trim().toLowerCase();
-                    String decName = dec.getName(getUnit()).toLowerCase();
-                    if ((op+decName).startsWith(filter) ||
-                            decName.startsWith(filter)) {
-                        return true;
-                    }
-                    if (qualifier!=null) {
-                        String qualName = qualifier.getName(getUnit()).toLowerCase();
-                        if ((op+qualName+'.'+decName).startsWith(filter) ||
-                                (qualName+'.'+decName).startsWith(filter)) {
-                            return true;
-                        }
-                    }
-                }
+                            document.get(region.getOffset(), 
+                                    currentOffset-region.getOffset());
+                    return isContentValid(content);
+               }
                 catch (BadLocationException e) {
                     // ignore concurrently modified document
                 }
                 return false;
             }
         }
+        
+        private boolean isContentValid(String content) {
+            int fat = content.indexOf("=>");
+            if (fat>0) {
+                content = content.substring(fat+2);
+            }
+            int eq = content.indexOf("=");
+            if (eq>0) {
+                content = content.substring(eq+1);
+            }
+            String filter = content.trim();
+            String decName = 
+                    getProposedName(qualifier, dec, 
+                            getUnit());
+            return (op+decName).startsWith(filter) ||
+                    decName.startsWith(filter);
+        }
+
     }
 
     final class NestedLiteralCompletionProposal 
             implements ICompletionProposal, 
-                       ICompletionProposalExtension2 {
+                       ICompletionProposalExtension2,
+                       ICompletionProposalExtension6 {
         
         private final int loc;
         private final int index;
@@ -303,46 +281,18 @@ class ParametersCompletionProposal extends CompletionProposal {
             //text may have changed, since the proposal was
             //instantiated).
             try {
-                IRegion li = 
-                        document.getLineInformationOfOffset(loc);
-                int endOfLine = li.getOffset() + li.getLength();
-                int startOfArgs = getFirstPosition();
-                int offset = 
-                        findCharCount(index, document, 
-                                loc+startOfArgs, endOfLine, 
-                                ",;", "", true)+1;
-                if (offset>0 && 
-                        document.getChar(offset)==' ') {
-                    offset++;
-                }
-                int nextOffset = 
-                        findCharCount(index+1, document, 
-                                loc+startOfArgs, endOfLine, 
-                                ",;", "", true);
-                int middleOffset = findCharCount(1, document, 
-                        offset, nextOffset, 
-                        "=", "", true)+1;
-                if (middleOffset>0 &&
-                        document.getChar(middleOffset)=='>') {
-                    middleOffset++;
-                }
-                while (middleOffset>0 &&
-                        document.getChar(middleOffset)==' ') {
-                    middleOffset++;
-                }
-                if (middleOffset>offset &&
-                        middleOffset<nextOffset) {
-                    offset = middleOffset;
-                }
+                IRegion region =
+                        getCurrentArgumentRegion(document, 
+                                loc, index,
+                                getFirstPosition());
                 String str = value;
-                if (nextOffset==-1) {
-                    nextOffset = offset;
-                }
-                if (document.getChar(nextOffset)=='}') {
+                int start = region.getOffset();
+                int len = region.getLength();
+                int end = start + len;
+                if (document.getChar(end)=='}') {
                     str += " ";
                 }
-                document.replace(offset, 
-                        nextOffset-offset, str);
+                document.replace(start, len, str);
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -358,6 +308,15 @@ class ParametersCompletionProposal extends CompletionProposal {
         @Override
         public String getDisplayString() {
             return value;
+        }
+        
+        @Override
+        public StyledString getStyledDisplayString() {
+            StyledString result = new StyledString();
+            Highlights.styleFragment(result, 
+                    getDisplayString(), false, null, 
+                    CeylonPlugin.getCompletionFont());
+            return result;
         }
         
         @Override
@@ -390,23 +349,19 @@ class ParametersCompletionProposal extends CompletionProposal {
             }
             else {
                 try {
-                    IRegion li = 
-                            document.getLineInformationOfOffset(loc);
-                    int endOfLine = li.getOffset() + li.getLength();
-                    int startOfArgs = getFirstPosition();
-                    int offset = 
-                            findCharCount(index, document, 
-                                    loc+startOfArgs, endOfLine, 
-                                    ",;", "", true)+1;
+                    IRegion region = 
+                            getCurrentArgumentRegion(document, 
+                                    loc, index,
+                                    getFirstPosition());
                     String content = 
-                            document.get(offset, 
-                                    currentOffset-offset);
+                            document.get(region.getOffset(), 
+                                    currentOffset-region.getOffset());
                     int eq = content.indexOf("=");
                     if (eq>0) {
                         content = content.substring(eq+1);
                     }
-                    String filter = content.trim().toLowerCase();
-                    if (value.toLowerCase().startsWith(filter)) {
+                    String filter = content.trim();
+                    if (value.startsWith(filter)) {
                         return true;
                     }
                 }

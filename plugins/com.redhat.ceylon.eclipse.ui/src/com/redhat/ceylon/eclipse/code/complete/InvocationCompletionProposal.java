@@ -9,7 +9,9 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getNamedIn
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositionalInvocationDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getPositionalInvocationTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getCurrentArgumentRegion;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getParameters;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getProposedName;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleClass;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
@@ -96,8 +98,10 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     private static final List<Type> NO_TYPES = Collections.<Type>emptyList();
 
-    static void addProgramElementReferenceProposal(int offset, String prefix, 
-            CeylonParseController cpc, List<ICompletionProposal> result, 
+    static void addProgramElementReferenceProposal(
+            int offset, String prefix, 
+            CeylonParseController cpc, 
+            List<ICompletionProposal> result, 
             Declaration dec, Scope scope, boolean isMember) {
         Unit unit = cpc.getRootNode().getUnit();
         result.add(new InvocationCompletionProposal(offset, prefix,
@@ -106,7 +110,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                 true, false, false, isMember, null));
     }
     
-    static void addReferenceProposal(int offset, String prefix, 
+    static void addReferenceProposal(
+            int offset, String prefix, 
             final CeylonParseController cpc, 
             List<ICompletionProposal> result, 
             Declaration dec, Scope scope, boolean isMember, 
@@ -120,7 +125,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                     getTextFor(dec, unit), 
                     dec, pr, scope, cpc, true, false, false, 
                     isMember, null));
-            if (((Generic) dec).getTypeParameters().isEmpty()) {
+            Generic g = (Generic) dec;
+            if (g.getTypeParameters().isEmpty()) {
                 //don't add another proposal below!
                 return;
             }
@@ -371,42 +377,18 @@ class InvocationCompletionProposal extends CompletionProposal {
             //text may have changed, since the proposal was
             //instantiated).
             try {
-                IRegion li = 
-                        document.getLineInformationOfOffset(loc);
-                int endOfLine = li.getOffset() + li.getLength();
-                int startOfArgs = getFirstPosition();
-                int offset = findCharCount(index, document, 
-                        loc+startOfArgs, endOfLine, 
-                        ",;", "", true)+1;
-                if (offset>0 && document.getChar(offset)==' ') {
-                    offset++;
-                }
-                int nextOffset = findCharCount(index+1, document, 
-                        loc+startOfArgs, endOfLine, 
-                        ",;", "", true);
-                int middleOffset = findCharCount(1, document, 
-                        offset, nextOffset, 
-                        "=", "", true)+1;
-                if (middleOffset>0 &&
-                        document.getChar(middleOffset)=='>') {
-                    middleOffset++;
-                }
-                while (middleOffset>0 &&
-                        document.getChar(middleOffset)==' ') {
-                    middleOffset++;
-                }
-                if (middleOffset>offset &&
-                        middleOffset<nextOffset) {
-                    offset = middleOffset;
-                }
+                IRegion region = 
+                        getCurrentArgumentRegion(document, 
+                                loc, index, 
+                                getFirstPosition());
                 String str = getText(false);
-                if (nextOffset==-1) {
-                    nextOffset = offset;
-                }
-                if (document.getChar(nextOffset)=='}') {
+                int start = region.getOffset();
+                int len = region.getLength();
+                int end = start + len;
+                if (document.getChar(end)=='}') {
                     str += " ";
                 }
-                document.replace(offset, nextOffset-offset, str);
+                document.replace(start, len, str);
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -449,24 +431,12 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
 
         private String getText(boolean description) {
-            StringBuilder sb = 
-                    new StringBuilder().append(op);
-            if (qualifier!=null) {
-                sb.append(escapeName(qualifier, getUnit()))
-                  .append('.');
-            }
-            if (dec instanceof Constructor) {
-                Constructor constructor = (Constructor) dec;
-                TypeDeclaration clazz = 
-                        constructor.getExtendedType()
-                            .getDeclaration();
-                sb.append(escapeName(clazz, getUnit()))
-                    .append('.');
-            }
-            sb.append(escapeName(dec, getUnit()));
+            StringBuilder sb = new StringBuilder(op);
+            Unit unit = getUnit();
+            sb.append(getProposedName(qualifier, dec, unit));
             if (dec instanceof Functional && !basic) {
-                appendPositionalArgs(dec, getUnit(), sb, 
-                        false, description);
+                appendPositionalArgs(dec, unit, sb, false, 
+                        description);
             }
             return sb.toString();
         }
@@ -513,70 +483,44 @@ class InvocationCompletionProposal extends CompletionProposal {
         public void unselected(ITextViewer viewer) {}
 
         @Override
-        public boolean validate(IDocument document, int currentOffset,
-                DocumentEvent event) {
+        public boolean validate(IDocument document, 
+                int currentOffset, DocumentEvent event) {
             if (event==null) {
                 return true;
             }
             else {
                 try {
-                    IRegion li = 
-                            document.getLineInformationOfOffset(loc);
-                    int endOfLine = 
-                            li.getOffset() + li.getLength();
-                    int startOfArgs = getFirstPosition();
-                    int offset = 
-                            findCharCount(index, document, 
-                                    loc+startOfArgs, endOfLine, 
-                                    ",;", "", true)+1;
+                    IRegion region = 
+                            getCurrentArgumentRegion(document, 
+                                    loc, index, 
+                                    getFirstPosition());
                     String content = 
-                            document.get(offset, 
-                                    currentOffset-offset);
-                    int fat = content.indexOf("=>");
-                    if (fat>0) {
-                        content = content.substring(fat+2);
-                    }
-                    int eq = content.indexOf("=");
-                    if (eq>0) {
-                        content = content.substring(eq+1);
-                    }
-                    String filter = 
-                            content.trim().toLowerCase();
-                    String decName = 
-                            dec.getName(getUnit())
-                                .toLowerCase();
-                    if (dec instanceof Constructor) {
-                        Constructor constructor = 
-                                (Constructor) dec;
-                        TypeDeclaration clazz = 
-                                constructor.getExtendedType()
-                                    .getDeclaration();
-                        decName = 
-                                clazz.getName(getUnit())
-                                    .toLowerCase() +
-                                '.' + decName;
-                    }
-                    if ((op+decName).startsWith(filter) ||
-                            decName.startsWith(filter)) {
-                        return true;
-                    }
-                    if (qualifier!=null) {
-                        String qualName = 
-                                qualifier.getName(getUnit())
-                                    .toLowerCase();
-                        if ((op + qualName + '.' + decName)
-                                .startsWith(filter) ||
-                            (qualName + '.' + decName)
-                                .startsWith(filter)) {
-                            return true;
-                        }
-                    }
+                            document.get(region.getOffset(), 
+                                    currentOffset-region.getOffset());
+                    return isContentValid(content);
                 }
                 catch (BadLocationException e) {
                     // ignore concurrently modified document
+                    return false;
                 }
-                return false;
             }
+        }
+
+        private boolean isContentValid(String content) {
+            int fat = content.indexOf("=>");
+            if (fat>0) {
+                content = content.substring(fat+2);
+            }
+            int eq = content.indexOf("=");
+            if (eq>0) {
+                content = content.substring(eq+1);
+            }
+            String filter = content.trim();
+            String decName = 
+                    getProposedName(qualifier, dec, 
+                            getUnit());
+            return (op+decName).startsWith(filter) ||
+                    decName.startsWith(filter);
         }
     }
 
@@ -607,47 +551,18 @@ class InvocationCompletionProposal extends CompletionProposal {
             //text may have changed, since the proposal was
             //instantiated).
             try {
-                IRegion li = 
-                        document.getLineInformationOfOffset(loc);
-                int endOfLine = li.getOffset() + li.getLength();
-                int startOfArgs = getFirstPosition();
-                int offset = 
-                        findCharCount(index, document, 
-                                loc+startOfArgs, endOfLine, 
-                                ",;", "", true)+1;
-                if (offset>0 && 
-                        document.getChar(offset)==' ') {
-                    offset++;
-                }
-                int nextOffset = 
-                        findCharCount(index+1, document, 
-                                loc+startOfArgs, endOfLine, 
-                                ",;", "", true);
-                int middleOffset = 
-                        findCharCount(1, document, 
-                            offset, nextOffset, 
-                            "=", "", true) + 1;
-                if (middleOffset>0 &&
-                        document.getChar(middleOffset)=='>') {
-                    middleOffset++;
-                }
-                while (middleOffset>0 &&
-                        document.getChar(middleOffset)==' ') {
-                    middleOffset++;
-                }
-                if (middleOffset>offset &&
-                        middleOffset<nextOffset) {
-                    offset = middleOffset;
-                }
+                IRegion region =
+                        getCurrentArgumentRegion(document, 
+                                loc, index,
+                                getFirstPosition());
                 String str = value;
-                if (nextOffset==-1) {
-                    nextOffset = offset;
-                }
-                if (document.getChar(nextOffset)=='}') {
+                int start = region.getOffset();
+                int len = region.getLength();
+                int end = start + len;
+                if (document.getChar(end)=='}') {
                     str += " ";
                 }
-                document.replace(offset, 
-                        nextOffset-offset, str);
+                document.replace(start, len, str);
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -705,26 +620,19 @@ class InvocationCompletionProposal extends CompletionProposal {
             }
             else {
                 try {
-                    IRegion li = 
-                            document.getLineInformationOfOffset(loc);
-                    int endOfLine = 
-                            li.getOffset() + li.getLength();
-                    int startOfArgs = getFirstPosition();
-                    int offset = 
-                            findCharCount(index, document, 
-                                    loc+startOfArgs, endOfLine, 
-                                    ",;", "", true) + 1;
+                    IRegion region = 
+                            getCurrentArgumentRegion(document, 
+                                    loc, index,
+                                    getFirstPosition());
                     String content = 
-                            document.get(offset, 
-                                    currentOffset-offset);
+                            document.get(region.getOffset(), 
+                                    currentOffset-region.getOffset());
                     int eq = content.indexOf("=");
                     if (eq>0) {
                         content = content.substring(eq+1);
                     }
-                    String filter = 
-                            content.trim().toLowerCase();
-                    if (value.toLowerCase()
-                            .startsWith(filter)) {
+                    String filter = content.trim();
+                    if (value.startsWith(filter)) {
                         return true;
                     }
                 }

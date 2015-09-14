@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getCurrentSpecifierRegion;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getProposedName;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleClass;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
@@ -11,7 +13,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDeco
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.util.ArrayList;
@@ -74,23 +75,6 @@ class InitializerProposal extends CorrectionProposal {
             this.dec = dec;
         }
 
-        protected IRegion getCurrentRegion(IDocument document) 
-                throws BadLocationException {
-            int start = offset;
-            int length = 0;
-            for (int i=offset;
-                    i<document.getLength(); 
-                    i++) {
-                char ch = document.getChar(i);
-                if (Character.isWhitespace(ch) ||
-                        ch==';'||ch==','||ch==')') {
-                    break;
-                }
-                length++;
-            }
-            return new Region(start, length);
-        }
-        
         @Override
         public Point getSelection(IDocument document) {
             return null;
@@ -98,7 +82,9 @@ class InitializerProposal extends CorrectionProposal {
         
         public void apply(IDocument document) {
             try {
-                IRegion region = getCurrentRegion(document);
+                IRegion region = 
+                        getCurrentSpecifierRegion(document, 
+                                offset);
                 document.replace(region.getOffset(), 
                         region.getLength(), getText(false));
             } 
@@ -136,18 +122,11 @@ class InitializerProposal extends CorrectionProposal {
         
         private String getText(boolean description) {
             StringBuilder sb = new StringBuilder();
-            if (dec instanceof Constructor) {
-                Constructor constructor = (Constructor) dec;
-                TypeDeclaration clazz = 
-                        constructor.getExtendedType()
-                            .getDeclaration();
-                sb.append(escapeName(clazz, getUnit()))
-                    .append('.');
-            }
-            sb.append(escapeName(dec, getUnit()));
+            Unit unit = getUnit();
+            sb.append(getProposedName(null, dec, unit));
             if (dec instanceof Functional) {
-                appendPositionalArgs(dec, getUnit(), 
-                        sb, false, description);
+                appendPositionalArgs(dec, unit, sb, false, 
+                        description);
             }
             return sb.toString();
         }
@@ -172,26 +151,16 @@ class InitializerProposal extends CorrectionProposal {
             }
             else {
                 try {
-                    IRegion region = getCurrentRegion(document);
+                    IRegion region = 
+                            getCurrentSpecifierRegion(document, 
+                                    offset);
                     String content = 
                             document.get(region.getOffset(), 
                                     currentOffset-region.getOffset());
-                    String filter = 
-                            content.trim().toLowerCase();
+                    String filter = content.trim();
+                    Unit unit = getUnit();
                     String decName = 
-                            dec.getName(getUnit())
-                                .toLowerCase();
-                    if (dec instanceof Constructor) {
-                        Constructor constructor = 
-                                (Constructor) dec;
-                        TypeDeclaration clazz = 
-                                constructor.getExtendedType()
-                                    .getDeclaration();
-                        decName = 
-                                clazz.getName(getUnit())
-                                    .toLowerCase() +
-                                '.' + decName;
-                    }
+                            getProposedName(null, dec, unit);
                     if (decName.startsWith(filter)) {
                         return true;
                     }
@@ -218,23 +187,6 @@ class InitializerProposal extends CorrectionProposal {
             this.value = value;
         }
         
-        protected IRegion getCurrentRegion(IDocument document) 
-                throws BadLocationException {
-            int start = offset;
-            int length = 0;
-            for (int i=offset;
-                    i<document.getLength(); 
-                    i++) {
-                char ch = document.getChar(i);
-                if (Character.isWhitespace(ch) ||
-                        ch==';'||ch==','||ch==')') {
-                    break;
-                }
-                length++;
-            }
-            return new Region(start, length);
-        }
-        
         @Override
         public Point getSelection(IDocument document) {
             return null;
@@ -242,7 +194,9 @@ class InitializerProposal extends CorrectionProposal {
         
         public void apply(IDocument document) {
             try {
-                IRegion region = getCurrentRegion(document);
+                IRegion region = 
+                        getCurrentSpecifierRegion(document, 
+                                offset);
                 document.replace(region.getOffset(), 
                         region.getLength(), value);
             } 
@@ -298,12 +252,13 @@ class InitializerProposal extends CorrectionProposal {
             }
             else {
                 try {
-                    IRegion region = getCurrentRegion(document);
+                    IRegion region = 
+                            getCurrentSpecifierRegion(document, 
+                                    offset);
                     String content = 
                             document.get(region.getOffset(), 
                                     currentOffset-region.getOffset());
-                    String filter = 
-                            content.trim().toLowerCase();
+                    String filter = content.trim();
                     if (value.startsWith(filter)) {
                         return true;
                     }

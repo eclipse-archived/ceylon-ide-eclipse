@@ -8,6 +8,8 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineF
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getCurrentSpecifierRegion;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getProposedName;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedProposedValues;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleClass;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
@@ -24,11 +26,9 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINE
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
-import static java.lang.Character.isJavaIdentifierPart;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,6 +38,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
@@ -468,6 +469,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
     }
     
+    //TODO: this class is a big copy/paste of 
+    //     InitializerProposal.NestedCompletionProposal
     final class NestedCompletionProposal 
             implements ICompletionProposal, 
                        ICompletionProposalExtension2,
@@ -484,12 +487,11 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         @Override
         public void apply(IDocument document) {
             try {
-                int len = 0;
-                while (isJavaIdentifierPart(
-                        document.getChar(offset+len))) {
-                    len++;
-                }
-                document.replace(offset, len, getText(false));
+                IRegion region = 
+                        getCurrentSpecifierRegion(document, 
+                                offset);
+                document.replace(region.getOffset(), 
+                        region.getLength(), getText(false));
             }
             catch (BadLocationException e) {
                 e.printStackTrace();
@@ -532,17 +534,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         
         private String getText(boolean description) {
             StringBuilder sb = new StringBuilder();
-            if (dec instanceof Constructor) {
-                Constructor constructor = (Constructor) dec;
-                TypeDeclaration clazz = 
-                        constructor.getExtendedType()
-                            .getDeclaration();
-                sb.append(escapeName(clazz, getUnit()))
-                    .append('.');
-            }
-            sb.append(escapeName(dec, getUnit()));
+            Unit unit = getUnit();
+            sb.append(getProposedName(null, dec, unit));
             if (dec instanceof Functional) {
-                appendPositionalArgs(dec, getUnit(), 
+                appendPositionalArgs(dec, unit, 
                         sb, false, description);
             }
             return sb.toString();
@@ -568,25 +563,16 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             }
             else {
                 try {
+                    IRegion region = 
+                            getCurrentSpecifierRegion(document, 
+                                    offset);
                     String content = 
-                            document.get(offset, 
-                                    currentOffset-offset);
-                    String filter = 
-                            content.trim().toLowerCase();
+                            document.get(region.getOffset(), 
+                                    currentOffset-region.getOffset());
+                    String filter = content.trim();
+                    Unit unit = getUnit();
                     String decName = 
-                            dec.getName(getUnit())
-                                .toLowerCase();
-                    if (dec instanceof Constructor) {
-                        Constructor constructor = 
-                                (Constructor) dec;
-                        TypeDeclaration clazz = 
-                                constructor.getExtendedType()
-                                    .getDeclaration();
-                        decName = 
-                                clazz.getName(getUnit())
-                                    .toLowerCase() +
-                                '.' + decName;
-                    }
+                            getProposedName(null, dec, unit);
                     if (decName.startsWith(filter)) {
                         return true;
                     }

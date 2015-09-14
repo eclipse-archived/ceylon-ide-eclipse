@@ -227,8 +227,9 @@ public class LinkedModeCompletionProposal
             DocumentEvent event) {
         try {
             IRegion region = getCurrentRegion(document);
-            String prefix = document.get(region.getOffset(), 
-                    offset-region.getOffset());
+            String prefix = 
+                    document.get(region.getOffset(), 
+                            offset-region.getOffset());
             return text.startsWith(prefix);
         }
         catch (BadLocationException e) {

@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
+import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
+import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +12,10 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -18,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -311,6 +317,85 @@ public class CompletionUtil {
         }
         text.append(")");
         return text.toString();
+    }
+
+    public static IRegion getCurrentSpecifierRegion(
+            IDocument document, int offset) 
+                    throws BadLocationException {
+        int start = offset;
+        int length = 0;
+        for (int i=offset;
+                i<document.getLength(); 
+                i++) {
+            char ch = document.getChar(i);
+            if (Character.isWhitespace(ch) ||
+                    ch==';'||ch==','||ch==')') {
+                break;
+            }
+            length++;
+        }
+        return new Region(start, length);
+    }
+    
+    public static String getProposedName(
+            Declaration qualifier, Declaration dec, 
+            Unit unit) {
+        StringBuilder buf = new StringBuilder();
+        if (qualifier!=null) {
+            buf.append(escapeName(qualifier, unit))
+              .append('.');
+        }
+        if (dec instanceof Constructor) {
+            Constructor constructor = 
+                    (Constructor) dec;
+            TypeDeclaration clazz = 
+                    constructor.getExtendedType()
+                        .getDeclaration();
+            buf.append(escapeName(clazz, unit))
+                    .append('.');
+        }
+        buf.append(escapeName(dec, unit));
+        return buf.toString();
+    }
+
+    static IRegion getCurrentArgumentRegion(
+            IDocument document, int loc, int index,
+            int startOfArgs) 
+                    throws BadLocationException {
+        IRegion li = 
+                document.getLineInformationOfOffset(loc);
+        int endOfLine = li.getOffset() + li.getLength();
+        int offset = 
+                findCharCount(index, document, 
+                    loc+startOfArgs, endOfLine, 
+                    ",;", "", true) + 1;
+        if (offset>0 && document.getChar(offset)==' ') {
+            offset++;
+        }
+        int nextOffset = 
+                findCharCount(index+1, document, 
+                    loc+startOfArgs, endOfLine, 
+                    ",;", "", true);
+        int middleOffset = 
+                findCharCount(1, document, 
+                    offset, nextOffset, 
+                    "=", "", true)+1;
+        if (middleOffset>0 &&
+                document.getChar(middleOffset)=='>') {
+            middleOffset++;
+        }
+        while (middleOffset>0 &&
+                document.getChar(middleOffset)==' ') {
+            middleOffset++;
+        }
+        if (middleOffset>offset &&
+                middleOffset<nextOffset) {
+            offset = middleOffset;
+        }
+        if (nextOffset==-1) {
+            nextOffset = offset;
+        }
+        return new Region(offset, nextOffset-offset);
     }
 
 }

@@ -116,8 +116,9 @@ class TypeProposal
     public boolean validate(IDocument document, int offset,
             DocumentEvent event) {
         try {
-            String prefix = document.get(this.offset, 
-                    offset-this.offset);
+            String prefix = 
+                    document.get(this.offset, 
+                            offset-this.offset);
             return text.startsWith(prefix);
         }
         catch (BadLocationException e) {
