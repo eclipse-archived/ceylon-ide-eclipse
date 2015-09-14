@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLa
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.util.ArrayList;
@@ -29,25 +30,25 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.LinkedMode;
 
 class InitializerProposal extends CorrectionProposal {
 
     private final class InitializerValueProposal 
-            implements ICompletionProposal, ICompletionProposalExtension2 {
+            implements ICompletionProposal, 
+                       ICompletionProposalExtension2 {
         
         private final String text;
         private final Image image;
@@ -127,8 +128,9 @@ class InitializerProposal extends CorrectionProposal {
                 DocumentEvent event) {
             try {
                 IRegion region = getCurrentRegion(document);
-                String prefix = document.get(region.getOffset(), 
-                        offset-region.getOffset());
+                String prefix = 
+                        document.get(region.getOffset(), 
+                                offset-region.getOffset());
                 return text.startsWith(prefix);
             }
             catch (BadLocationException e) {
@@ -175,7 +177,7 @@ class InitializerProposal extends CorrectionProposal {
         super.apply(document);
         int lenAfter = document.getLength();
         if (editor==null) {
-            IEditorPart ed = EditorUtil.getCurrentEditor();
+            IEditorPart ed = getCurrentEditor();
             if (ed instanceof CeylonEditor) {
                 editor = (CeylonEditor) ed;
             }
@@ -183,21 +185,26 @@ class InitializerProposal extends CorrectionProposal {
         if (editor!=null) {
             Point point = getSelection(document);
             if (point.y>0) {
-                LinkedModeModel linkedModeModel = new LinkedModeModel();
-                ICompletionProposal[] proposals = getProposals(document, point);
+                LinkedModeModel linkedModeModel = 
+                        new LinkedModeModel();
+                ICompletionProposal[] proposals = 
+                        getProposals(document, point);
                 if (proposals.length>1) {
                     ProposalPosition linkedPosition = 
-                            new ProposalPosition(document, point.x, point.y, 0, 
+                            new ProposalPosition(document, 
+                                    point.x, point.y, 0, 
                                     proposals);
                     try {
-                        LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
+                        LinkedMode.addLinkedPosition(
+                                linkedModeModel, linkedPosition);
                         int adjustedExitPos = exitPos;
                         if (exitPos>=0 && exitPos>point.x) {
                             adjustedExitPos += lenAfter-lenBefore;
                         }
                         int exitSeq = exitPos>=0 ? 1 : NO_STOP;
-                        LinkedMode.installLinkedMode(editor, document, linkedModeModel, 
-                                this, new DeleteBlockingExitPolicy(document), 
+                        LinkedMode.installLinkedMode(editor, 
+                                document, linkedModeModel, this, 
+                                new DeleteBlockingExitPolicy(document), 
                                 exitSeq, adjustedExitPos);
                     } 
                     catch (BadLocationException e) {
@@ -208,8 +215,8 @@ class InitializerProposal extends CorrectionProposal {
         }
     }
 
-    private ICompletionProposal[] getProposals(IDocument document,
-            Point point) {
+    private ICompletionProposal[] getProposals(
+            IDocument document, Point point) {
         List<ICompletionProposal> proposals = 
                 new ArrayList<ICompletionProposal>();
         try {
@@ -236,10 +243,15 @@ class InitializerProposal extends CorrectionProposal {
                 continue;
             }
             Declaration d = dwp.getDeclaration();
+            String pname = 
+                    d.getUnit()
+                        .getPackage()
+                        .getNameAsString();
+            boolean inLangModule = 
+                    pname.equals(Module.LANGUAGE_MODULE_NAME);
             if (d instanceof Value) {
                 Value value = (Value) d;
-                if (d.getUnit().getPackage().getNameAsString()
-                        .equals(Module.LANGUAGE_MODULE_NAME)) {
+                if (inLangModule) {
                     if (isIgnoredLanguageModuleValue(value)) {
                         continue;
                     }
@@ -256,8 +268,7 @@ class InitializerProposal extends CorrectionProposal {
             if (d instanceof Function) {
                 if (!d.isAnnotation()) {
                     Function method = (Function) d;
-                    if (d.getUnit().getPackage().getNameAsString()
-                            .equals(Module.LANGUAGE_MODULE_NAME)) {
+                    if (inLangModule) {
                         if (isIgnoredLanguageModuleMethod(method)) {
                             continue;
                         }
@@ -278,8 +289,7 @@ class InitializerProposal extends CorrectionProposal {
             if (d instanceof Class) {
                 Class clazz = (Class) d;
                 if (!clazz.isAbstract() && !d.isAnnotation()) {
-                    if (d.getUnit().getPackage().getNameAsString()
-                            .equals(Module.LANGUAGE_MODULE_NAME)) {
+                    if (inLangModule) {
                         if (isIgnoredLanguageModuleClass(clazz)) {
                             continue;
                         }
