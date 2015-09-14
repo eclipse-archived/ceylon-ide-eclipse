@@ -404,12 +404,14 @@ class ParametersCompletionProposal extends CompletionProposal {
     @Override
     public void apply(IDocument document) {
         try {
-            createChange(document).perform(new NullProgressMonitor());
+            createChange(document)
+                .perform(new NullProgressMonitor());
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        if (getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
+        if (getPreferences()
+                .getBoolean(LINKED_MODE_ARGUMENTS)) {
             enterLinkedMode(document);
         }
     }
@@ -456,8 +458,11 @@ class ParametersCompletionProposal extends CompletionProposal {
             if (text.endsWith(";")) {
                 end--;
             }
-            comma = findCharCount(1, document, start, end, 
-                    ",;", "", true) - start;
+            comma = 
+                    findCharCount(1, document, 
+                            start, end, 
+                            ",;", "", true) 
+                        - start;
         } 
         catch (BadLocationException e) {
             e.printStackTrace();

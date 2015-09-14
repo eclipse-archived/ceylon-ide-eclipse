@@ -711,7 +711,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         catch (Exception e) {
             e.printStackTrace();
         }
-        if (getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
+        if (getPreferences()
+                .getBoolean(LINKED_MODE_ARGUMENTS)) {
             activeLinkedMode(document);
         }
     }
@@ -803,8 +804,11 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (text.endsWith(";")) {
                 end--;
             }
-            comma = findCharCount(1, document, start, end, 
-                    ",;", "", true) - start;
+            comma = 
+                    findCharCount(1, document, 
+                            start, end, 
+                            ",;", "", true) 
+                        - start;
         } 
         catch (BadLocationException e) {
             e.printStackTrace();
