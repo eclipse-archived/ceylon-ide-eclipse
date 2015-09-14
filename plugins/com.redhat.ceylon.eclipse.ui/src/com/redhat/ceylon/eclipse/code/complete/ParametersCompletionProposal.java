@@ -48,7 +48,6 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -56,12 +55,12 @@ import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -373,23 +372,24 @@ class ParametersCompletionProposal extends CompletionProposal {
         }
     }
     
-    private final CeylonParseController cpc;
+    private final Unit unit;
     private final List<Type> argTypes;
     private final Scope scope;
     
     ParametersCompletionProposal(int offset, 
             String desc, String text, 
             List<Type> argTypes, 
-            Scope scope, CeylonParseController cpc) {
+            Scope scope, 
+            Unit unit) {
         super(offset, "", LARGE_CORRECTION_IMAGE, 
                 desc, text);
-        this.cpc = cpc;
+        this.unit = unit;
         this.scope = scope;
         this.argTypes = argTypes;
     }
 
     private Unit getUnit() {
-        return cpc.getRootNode().getUnit();
+        return unit;
     }
 
     private DocumentChange createChange(IDocument document)
@@ -487,18 +487,22 @@ class ParametersCompletionProposal extends CompletionProposal {
             if (first<=0) return; //no arg list
             int next = getNextPosition(document, first);
             if (next<=0) return; //empty arg list
-            LinkedModeModel linkedModeModel = new LinkedModeModel();
+            LinkedModeModel linkedModeModel = 
+                    new LinkedModeModel();
             int seq=0, param=0;
             while (next>0 && param<paramCount) {
                     List<ICompletionProposal> props = 
                             new ArrayList<ICompletionProposal>();
-                    addValueArgumentProposals(argTypes.get(seq), 
+                    addValueArgumentProposals(
+                            argTypes.get(seq), 
                             loc, first, props, seq);
-                    int middle = getCompletionPosition(first, next);
+                    int middle = 
+                            getCompletionPosition(first, next);
                     int start = loc+first+middle;
                     int len = next-middle;
                     ProposalPosition linkedPosition = 
-                            new ProposalPosition(document, start, len, seq, 
+                            new ProposalPosition(
+                                    document, start, len, seq, 
                                     props.toArray(NO_COMPLETIONS));
                     addLinkedPosition(linkedModeModel, linkedPosition);
                     first = first+next+1;
@@ -507,7 +511,10 @@ class ParametersCompletionProposal extends CompletionProposal {
                 }
                 param++;
             if (seq>0) {
-                installLinkedMode((CeylonEditor) getCurrentEditor(), 
+                CeylonEditor editor = 
+                        (CeylonEditor) 
+                            getCurrentEditor();
+                installLinkedMode(editor, 
                         document, linkedModeModel, this, 
                         new LinkedMode.NullExitPolicy(),
                         seq, loc+text.length());
@@ -519,8 +526,10 @@ class ParametersCompletionProposal extends CompletionProposal {
         }
     }
 
-    private void addValueArgumentProposals(Type type, final int loc,
-            int first, List<ICompletionProposal> props, int index) {
+    private void addValueArgumentProposals(
+            Type type, final int loc, int first, 
+            List<ICompletionProposal> props, 
+            int index) {
         if (type==null) return;
         Unit unit = getUnit();
         List<DeclarationWithProximity> proposals = 
@@ -541,19 +550,25 @@ class ParametersCompletionProposal extends CompletionProposal {
     }
 
     private void addValueArgumentProposal(final int loc,
-            List<ICompletionProposal> props, int index,
-            Type type, Unit unit, DeclarationWithProximity dwp,
+            List<ICompletionProposal> props, 
+            int index, Type type, Unit unit, 
+            DeclarationWithProximity dwp,
             DeclarationWithProximity qualifier) {
         if (qualifier==null && dwp.isUnimported()) {
             return;
         }
         TypeDeclaration td = type.getDeclaration();
         Declaration d = dwp.getDeclaration();
-        String pname = d.getUnit().getPackage().getNameAsString();
-        boolean isInLanguageModule = qualifier==null &&
-                pname.equals(Module.LANGUAGE_MODULE_NAME);
-        Declaration qdec = qualifier==null ? 
-                null : qualifier.getDeclaration();
+        String pname = 
+                d.getUnit()
+                    .getPackage()
+                    .getNameAsString();
+        boolean isInLanguageModule = 
+                qualifier==null &&
+                    pname.equals(Module.LANGUAGE_MODULE_NAME);
+        Declaration qdec = 
+                qualifier==null ? null : 
+                    qualifier.getDeclaration();
         if (d instanceof Value) {
             Value value = (Value) d;
             if (isInLanguageModule) {
@@ -564,21 +579,26 @@ class ParametersCompletionProposal extends CompletionProposal {
             Type vt = value.getType();
             if (vt!=null && !vt.isNothing()) {
                 if (vt.isSubtypeOf(type) ||
-                        (td instanceof TypeParameter) && 
-                        isInBounds(((TypeParameter) td).getSatisfiedTypes(), vt)) {
+                        withinBounds(td, vt)) {
 //                    boolean isIterArg = namedInvocation && last && 
 //                            unit.isIterableParameterType(type);
 //                    boolean isVarArg = p.isSequenced() && positionalInvocation;
-                    props.add(new NestedCompletionProposal(d, qdec,
-                            loc, index, false, /*isIterArg || isVarArg ? "*" :*/ ""));
+                    props.add(new NestedCompletionProposal(
+                            d, qdec, loc, index, false, 
+                            /*isIterArg || isVarArg ? "*" :*/ 
+                            ""));
                 }
                 if (qualifier==null && 
-                        getPreferences().getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
+                        getPreferences()
+                            .getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
                     Collection<DeclarationWithProximity> members = 
-                            ((Value) d).getTypeDeclaration()
-                            .getMatchingMemberDeclarations(unit, scope, "", 0).values();
+                            value.getTypeDeclaration()
+                                .getMatchingMemberDeclarations(
+                                        unit, scope, "", 0)
+                                .values();
                     for (DeclarationWithProximity mwp: members) {
-                        addValueArgumentProposal(loc, props, index, type, unit, mwp, dwp);
+                        addValueArgumentProposal(loc, props, 
+                                index, type, unit, mwp, dwp);
                     }
                 }
             }
@@ -593,14 +613,15 @@ class ParametersCompletionProposal extends CompletionProposal {
                 }
                 Type mt = method.getType();
                 if (mt!=null && !mt.isNothing() &&
-                        ((td instanceof TypeParameter) && 
-                                isInBounds(((TypeParameter) td).getSatisfiedTypes(), mt) || 
+                        (withinBounds(td, mt) || 
                                 mt.isSubtypeOf(type))) {
 //                    boolean isIterArg = namedInvocation && last && 
 //                            unit.isIterableParameterType(type);
 //                    boolean isVarArg = p.isSequenced() && positionalInvocation;
-                    props.add(new NestedCompletionProposal(d, qdec,
-                            loc, index, false, /*isIterArg || isVarArg ? "*" :*/ ""));
+                    props.add(new NestedCompletionProposal(
+                            d, qdec, loc, index, false, 
+                            /*isIterArg || isVarArg ? "*" :*/ 
+                            ""));
                 }
             }
         }
@@ -614,17 +635,29 @@ class ParametersCompletionProposal extends CompletionProposal {
                 }
                 Type ct = clazz.getType();
                 if (ct!=null && !ct.isNothing() &&
-                        ((td instanceof TypeParameter) && 
-                                isInBounds(((TypeParameter) td).getSatisfiedTypes(), ct) || 
-                                ct.getDeclaration().equals(type.getDeclaration()) ||
+                        (withinBounds(td, ct) || 
+                                ct.getDeclaration()
+                                    .equals(type.getDeclaration()) ||
                                 ct.isSubtypeOf(type))) {
 //                    boolean isIterArg = namedInvocation && last && 
 //                            unit.isIterableParameterType(type);
 //                    boolean isVarArg = p.isSequenced() && positionalInvocation;
-                    props.add(new NestedCompletionProposal(d, qdec, 
-                            loc, index, false, /*isIterArg || isVarArg ? "*" :*/ ""));
+                    props.add(new NestedCompletionProposal(
+                            d, qdec, loc, index, false, 
+                            /*isIterArg || isVarArg ? "*" :*/ 
+                            ""));
                 }
             }
+        }
+    }
+
+    public boolean withinBounds(TypeDeclaration td, Type t) {
+        if (td instanceof TypeParameter) {
+            TypeParameter tp = (TypeParameter) td;
+            return isInBounds(tp.getSatisfiedTypes(), t);
+        }
+        else {
+            return false;
         }
     }
 
@@ -670,8 +703,9 @@ class ParametersCompletionProposal extends CompletionProposal {
         return false;
     }
 
-    static void addParametersProposal(final int offset, Node node,
-            final List<ICompletionProposal> result, CeylonParseController cpc) {
+    static void addParametersProposal(
+            final int offset, Node node,
+            final List<ICompletionProposal> result) {
         if (!(node instanceof Tree.StaticMemberOrTypeExpression) || 
                 !(((Tree.StaticMemberOrTypeExpression) node).getDeclaration() instanceof Functional)) {
             Type type = ((Tree.Term) node).getTypeModel();
@@ -684,7 +718,8 @@ class ParametersCompletionProposal extends CompletionProposal {
                     final List<Type> argTypes = 
                             unit.getCallableArgumentTypes(type);
                     boolean paramTypes = 
-                            getPreferences().getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
+                            getPreferences()
+                                .getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                     final StringBuilder desc = new StringBuilder();
                     final StringBuilder text = new StringBuilder();
                     desc.append('(');
@@ -726,7 +761,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                     desc.append(')');
                     result.add(new ParametersCompletionProposal(offset, 
                             desc.toString(), text.toString(), 
-                            argTypes, node.getScope(), cpc));
+                            argTypes, node.getScope(), unit));
                 }
             }
         }

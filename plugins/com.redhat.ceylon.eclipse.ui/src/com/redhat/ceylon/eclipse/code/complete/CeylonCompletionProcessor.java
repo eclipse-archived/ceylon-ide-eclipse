@@ -999,7 +999,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         Unit unit = node.getUnit();
         
         if (node instanceof Tree.Term) {
-            addParametersProposal(offset, node, result, cpc);
+            addParametersProposal(offset, node, result);
         }
         else if (node instanceof Tree.ArgumentList) {
             class FindInvocationVisitor extends Visitor {
@@ -1017,7 +1017,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             fiv.visit(cpc.getRootNode());
             Tree.InvocationExpression ie = fiv.result;
             if (ie!=null) {
-                addParametersProposal(offset, ie, result, cpc);
+                addParametersProposal(offset, ie, result);
             }
         }
         

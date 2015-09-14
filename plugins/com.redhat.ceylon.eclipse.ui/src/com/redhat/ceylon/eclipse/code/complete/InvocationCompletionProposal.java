@@ -100,30 +100,32 @@ class InvocationCompletionProposal extends CompletionProposal {
 
     static void addProgramElementReferenceProposal(
             int offset, String prefix, 
-            CeylonParseController cpc, 
+            CeylonParseController controller, 
             List<ICompletionProposal> result, 
             Declaration dec, Scope scope, boolean isMember) {
-        Unit unit = cpc.getRootNode().getUnit();
-        result.add(new InvocationCompletionProposal(offset, prefix,
+        Unit unit = controller.getRootNode().getUnit();
+        result.add(new InvocationCompletionProposal(
+                offset, prefix,
                 dec.getName(unit), escapeName(dec, unit),
-                dec, dec.getReference(), scope, cpc, 
+                dec, dec.getReference(), scope, controller, 
                 true, false, false, isMember, null));
     }
     
     static void addReferenceProposal(
             int offset, String prefix, 
-            final CeylonParseController cpc, 
+            final CeylonParseController controller, 
             List<ICompletionProposal> result, 
             Declaration dec, Scope scope, boolean isMember, 
             Reference pr, OccurrenceLocation ol) {
-        Unit unit = cpc.getRootNode().getUnit();
+        Unit unit = controller.getRootNode().getUnit();
         //proposal with type args
         if (dec instanceof Generic) {
             result.add(new InvocationCompletionProposal(
                     offset, prefix,
                     getDescriptionFor(dec, unit), 
                     getTextFor(dec, unit), 
-                    dec, pr, scope, cpc, true, false, false, 
+                    dec, pr, scope, controller, 
+                    true, false, false, 
                     isMember, null));
             Generic g = (Generic) dec;
             if (g.getTypeParameters().isEmpty()) {
@@ -143,7 +145,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     offset, prefix,
                     dec.getName(unit), 
                     escapeName(dec, unit), 
-                    dec, pr, scope, cpc, 
+                    dec, pr, scope, controller, 
                     true, false, false, 
                     isMember, null));
         }
@@ -183,7 +185,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (dec instanceof Class) {
                 //add constructor proposals
                 List<Declaration> members = 
-                        type.getDeclaration().getMembers();
+                        type.getDeclaration()
+                            .getMembers();
                 for (Declaration m: members) {
                     if (m instanceof Constructor && 
                             m.isShared() && 
@@ -203,9 +206,9 @@ class InvocationCompletionProposal extends CompletionProposal {
             int offset, String prefix,
             CeylonParseController controller, 
             List<ICompletionProposal> result,
-            Declaration dec, Scope scope, Type requiredType,
-            OccurrenceLocation ol, Unit unit, 
-            Type type, Declaration m) {
+            Declaration dec, Scope scope, 
+            Type requiredType, OccurrenceLocation ol,
+            Unit unit, Type type, Declaration m) {
         Reference ptr = type.getTypedReference(m, NO_TYPES);
         Type mt = ptr.getType();
         if (mt!=null && 
@@ -231,13 +234,13 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     static void addInvocationProposals(
             int offset, String prefix, 
-            CeylonParseController cpc, 
+            CeylonParseController controller, 
             List<ICompletionProposal> result, 
-            Declaration dec, Reference pr, Scope scope,
-            OccurrenceLocation ol, String typeArgs, 
-            boolean isMember) {
+            Declaration dec, Reference pr, 
+            Scope scope, OccurrenceLocation ol, 
+            String typeArgs, boolean isMember) {
         if (dec instanceof Functional) {
-            Unit unit = cpc.getRootNode().getUnit();
+            Unit unit = controller.getRootNode().getUnit();
             boolean isAbstract = 
                     dec instanceof TypeDeclaration && 
                     ((TypeDeclaration) dec).isAbstract();
@@ -278,7 +281,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                         typeArgs);
                         result.add(new InvocationCompletionProposal(
                                 offset, prefix, desc, text, dec, pr, scope, 
-                                cpc, false, true, false, isMember, null));
+                                controller, false, true, false, isMember, null));
                     }
                     String desc = 
                             getPositionalInvocationDescriptionFor(
@@ -290,7 +293,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                     typeArgs);
                     result.add(new InvocationCompletionProposal(
                             offset, prefix, desc, text, dec, pr, scope, 
-                            cpc, true, true, false, isMember, null));
+                            controller, true, true, false, isMember, null));
                 }
                 if (named && 
                         parameterList.isNamedParametersSupported() &&
@@ -312,7 +315,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                         typeArgs);
                         result.add(new InvocationCompletionProposal(
                                 offset, prefix, desc, text, dec, pr, scope, 
-                                cpc, false, false, true, isMember, null));
+                                controller, false, false, true, isMember, null));
                     }
                     if (!ps.isEmpty()) {
                         String desc = 
@@ -325,7 +328,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                         typeArgs);
                         result.add(new InvocationCompletionProposal(
                                 offset, prefix, desc, text, dec, pr, scope, 
-                                cpc, true, false, true, isMember, null));
+                                controller, true, false, true, isMember, null));
                     }
                 }
             }
@@ -654,15 +657,21 @@ class InvocationCompletionProposal extends CompletionProposal {
     private final boolean qualified;
     private Declaration qualifyingValue;
     
-    private InvocationCompletionProposal(int offset, String prefix, 
-            String desc, String text, Declaration dec,
-            Reference producedReference, Scope scope, 
-            CeylonParseController cpc, boolean includeDefaulted,
-            boolean positionalInvocation, boolean namedInvocation, 
-            boolean qualified, Declaration qualifyingValue) {
+    private InvocationCompletionProposal(
+            int offset, String prefix, 
+            String desc, String text, 
+            Declaration dec, 
+            Reference producedReference, 
+            Scope scope, 
+            CeylonParseController controller, 
+            boolean includeDefaulted,
+            boolean positionalInvocation, 
+            boolean namedInvocation, 
+            boolean qualified, 
+            Declaration qualifyingValue) {
         super(offset, prefix, getImageForDeclaration(dec), 
                 desc, text);
-        this.cpc = cpc;
+        this.cpc = controller;
         this.declaration = dec;
         this.producedReference = producedReference;
         this.scope = scope;
@@ -1056,10 +1065,10 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
-    protected static boolean withinBounds(TypeDeclaration td, Type vt) {
+    protected static boolean withinBounds(TypeDeclaration td, Type t) {
         if (td instanceof TypeParameter) { 
             TypeParameter tp = (TypeParameter) td;
-            return isInBounds(tp.getSatisfiedTypes(), vt);
+            return isInBounds(tp.getSatisfiedTypes(), t);
         }
         else {
             return false;
