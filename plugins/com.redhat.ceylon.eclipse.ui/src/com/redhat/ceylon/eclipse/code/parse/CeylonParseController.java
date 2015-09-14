@@ -781,7 +781,21 @@ public class CeylonParseController {
         return typeChecker;
     }
     
+    /*
+     * returns the last parsed *and typechecked* AST.
+     */
     public Tree.CompilationUnit getRootNode() {
+        return phasedUnit != null ? phasedUnit.getCompilationUnit() : null;
+    }
+    
+    /*
+     * returns the last parsed AST.
+     * Be careful it can be return *before* the typechecking or 
+     * *during* the typechecking.
+     * So *never* use this from places that need a fully decorated AST
+     * (with model elements such as declarations or units).
+     */
+    public Tree.CompilationUnit getRawRootNode() {
         return rootNode;
     }
     
