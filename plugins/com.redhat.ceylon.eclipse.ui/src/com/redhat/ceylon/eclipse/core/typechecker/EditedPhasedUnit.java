@@ -15,11 +15,12 @@ import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
-public class EditedPhasedUnit extends IdePhasedUnit {
+public class EditedPhasedUnit extends IdePhasedUnit implements IResourceAware {
     WeakReference<ProjectPhasedUnit> savedPhasedUnitRef;
     
     public EditedPhasedUnit(VirtualFile unitFile, VirtualFile srcDir,
@@ -51,18 +52,21 @@ public class EditedPhasedUnit extends IdePhasedUnit {
         return savedPhasedUnitRef.get();
     }
     
-    public IFile getSourceFileResource() {
+    @Override
+    public IFile getFileResource() {
         return getOriginalPhasedUnit() == null ? null
-                : getOriginalPhasedUnit().getSourceFileResource();
+                : getOriginalPhasedUnit().getFileResource();
     }
     
 
-    public IFolder getSourceFolderResource() {
+    @Override
+    public IFolder getRootFolderResource() {
         return getOriginalPhasedUnit() == null ? null
-                : getOriginalPhasedUnit().getSourceFolderResource();
+                : getOriginalPhasedUnit().getRootFolderResource();
     }
     
 
+    @Override
     public IProject getProjectResource() {
         return getOriginalPhasedUnit() == null ? null
                 : getOriginalPhasedUnit().getProjectResource();

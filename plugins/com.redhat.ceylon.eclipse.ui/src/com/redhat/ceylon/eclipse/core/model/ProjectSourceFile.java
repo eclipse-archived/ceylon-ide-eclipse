@@ -45,20 +45,20 @@ public class ProjectSourceFile extends SourceFile implements IResourceAware {
     
     @Override
     public IFile getFileResource() {
-        return getPhasedUnit().getSourceFileResource();
+        return getPhasedUnit().getFileResource();
     }
 
     @Override
     public IFolder getRootFolderResource() {
-        return getPhasedUnit().getSourceFolderResource();
+        return getPhasedUnit().getRootFolderResource();
     }
     
     public CompilationUnitDelta buildDeltaAgainstModel() {
         try {
             final ProjectPhasedUnit modelPhaseUnit = getPhasedUnit();
             if (modelPhaseUnit != null) {
-                final FileVirtualFile<IResource, IFolder, IFile> virtualSrcFile = vfsJ2C.createVirtualFile(modelPhaseUnit.getSourceFileResource());
-                final FolderVirtualFile<IResource, IFolder, IFile> virtualSrcDir = vfsJ2C.createVirtualFolder(modelPhaseUnit.getSourceFolderResource());
+                final FileVirtualFile<IResource, IFolder, IFile> virtualSrcFile = vfsJ2C.createVirtualFile(modelPhaseUnit.getFileResource());
+                final FolderVirtualFile<IResource, IFolder, IFile> virtualSrcDir = vfsJ2C.createVirtualFolder(modelPhaseUnit.getRootFolderResource());
                 final TypeChecker currentTypechecker = modelPhaseUnit.getTypeChecker();
                 final ModuleManager currentModuleManager = currentTypechecker.getPhasedUnits().getModuleManager();
                 final ModuleSourceMapper currentModuleSourceMapper = currentTypechecker.getPhasedUnits().getModuleSourceMapper();

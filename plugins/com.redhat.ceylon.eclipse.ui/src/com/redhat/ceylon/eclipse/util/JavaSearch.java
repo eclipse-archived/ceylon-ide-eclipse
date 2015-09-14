@@ -67,6 +67,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
+import com.redhat.ceylon.eclipse.core.model.IUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnResolvedGeneratedType;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
@@ -1194,7 +1195,7 @@ public class JavaSearch {
                                         javaType);
                         if (javaUnit != null) {
                             JDTModule module = 
-                                    javaUnit.getModule();
+                                    ((IUnit)javaUnit).getModule();
                             if (module != null) {
                                 return modelLoader.convertToDeclaration(
                                         module, 

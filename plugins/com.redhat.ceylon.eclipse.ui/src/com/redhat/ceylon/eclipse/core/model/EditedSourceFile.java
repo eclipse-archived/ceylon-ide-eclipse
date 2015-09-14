@@ -33,12 +33,12 @@ public class EditedSourceFile extends SourceFile implements IResourceAware {
     @Override
     public IFile getFileResource() {
         EditedPhasedUnit pu = getPhasedUnit();
-        return pu==null ? null : pu.getSourceFileResource();
+        return pu==null ? null : pu.getFileResource();
     }
 
     @Override
     public IFolder getRootFolderResource() {
         EditedPhasedUnit pu = getPhasedUnit();
-        return pu==null ? null : pu.getSourceFolderResource();
+        return pu==null ? null : pu.getRootFolderResource();
     }
 }

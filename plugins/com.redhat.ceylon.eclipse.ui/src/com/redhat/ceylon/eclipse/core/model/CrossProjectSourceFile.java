@@ -21,13 +21,13 @@ public class CrossProjectSourceFile extends ExternalSourceFile implements ICross
     @Override
     public IFolder getRootFolderResource() {
         ProjectPhasedUnit ppu = getPhasedUnit().getOriginalProjectPhasedUnit();
-        return ppu != null ? ppu.getSourceFolderResource() : null;
+        return ppu != null ? ppu.getRootFolderResource() : null;
     }
 
     @Override
     public IFile getFileResource() {
         ProjectPhasedUnit ppu = getPhasedUnit().getOriginalProjectPhasedUnit();
-        return ppu != null ? ppu.getSourceFileResource() : null;
+        return ppu != null ? ppu.getFileResource() : null;
     }
 
     @Override

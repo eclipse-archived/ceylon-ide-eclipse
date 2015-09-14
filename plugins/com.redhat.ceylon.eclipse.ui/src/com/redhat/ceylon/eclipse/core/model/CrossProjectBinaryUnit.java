@@ -31,13 +31,13 @@ public class CrossProjectBinaryUnit extends CeylonBinaryUnit implements ICrossPr
     public IFolder getRootFolderResource() {
         CrossProjectPhasedUnit pu = getPhasedUnit();
         ProjectPhasedUnit ppu = pu!=null ? pu.getOriginalProjectPhasedUnit() : null;
-        return ppu != null ? ppu.getSourceFolderResource() : null;
+        return ppu != null ? ppu.getRootFolderResource() : null;
     }
 
     @Override
     public IFile getFileResource() {
         ProjectPhasedUnit ppu = getPhasedUnit().getOriginalProjectPhasedUnit();
-        return ppu != null ? ppu.getSourceFileResource() : null;
+        return ppu != null ? ppu.getFileResource() : null;
     }
 
     @Override

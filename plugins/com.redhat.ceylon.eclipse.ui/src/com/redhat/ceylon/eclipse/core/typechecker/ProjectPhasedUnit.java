@@ -21,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
@@ -28,7 +29,7 @@ import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
-public class ProjectPhasedUnit extends IdePhasedUnit {
+public class ProjectPhasedUnit extends IdePhasedUnit implements IResourceAware {
     private IFolder sourceFolderResource;
     private WeakHashMap<EditedPhasedUnit, String> workingCopies = new WeakHashMap<EditedPhasedUnit, String>();
     
@@ -46,12 +47,12 @@ public class ProjectPhasedUnit extends IdePhasedUnit {
         super(other);
     }
 
-    public IFile getSourceFileResource() {
+    public IFile getFileResource() {
         return (IFile) vfsJ2C.getIFileVirtualFile(getUnitFile()).getNativeResource();
     }
     
 
-    public IFolder getSourceFolderResource() {
+    public IFolder getRootFolderResource() {
         return sourceFolderResource;
     }
     
