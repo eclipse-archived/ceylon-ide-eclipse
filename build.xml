@@ -13,8 +13,15 @@
         </echo>
     </target>
 
+    <target name="build"
+            description="Cleans the distribution package">
+        <echo>To be implemented!</echo>
+        <!-- Would be nive if this did "mvn install -DskipTests" -->
+    </target>
+
     <target name="clean"
             description="Cleans the distribution package">
         <echo>To be implemented!</echo>
+        <!-- Would be nive if this did "mvn clean" -->
     </target>
 </project>
