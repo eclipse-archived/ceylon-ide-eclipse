@@ -20,28 +20,37 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class OpenSelectedDeclarationHandler extends AbstractHandler {
     
-    private Node getSelectedNode(ITextSelection textSel) {
-        CeylonEditor editor = (CeylonEditor) getCurrentEditor();
-        CeylonParseController pc = editor.getParseController();
-        if (pc==null) {
+    private Node getSelectedNode(
+            ITextSelection textSel, CeylonEditor editor) {
+        CeylonParseController controller = 
+                editor.getParseController();
+        if (controller==null) {
             return null;
         }
         else {
-            Tree.CompilationUnit ast = pc.getRootNode();
-            if (ast == null) {
+            Tree.CompilationUnit rootNode = 
+                    controller.getRootNode();
+            if (rootNode == null) {
                 return null;
             }
             else {
-                return findNode(ast, textSel.getOffset());
+                return findNode(rootNode,
+                        controller.getTokens(),
+                        textSel.getOffset(),
+                        textSel.getOffset() + 
+                        textSel.getLength());
             }
         }
     }
     
     public boolean isEnabled() {
         IEditorPart editor = getCurrentEditor();
-        if (super.isEnabled() && editor instanceof CeylonEditor) {
+        if (super.isEnabled() 
+                && editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-            return getReferencedModel(getSelectedNode(getSelection(ce)))!=null;
+            Node selectedNode = 
+                    getSelectedNode(getSelection(ce), ce);
+            return getReferencedModel(selectedNode)!=null;
         }
         else {
             return false;
@@ -55,8 +64,10 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
-            Node selectedNode = getSelectedNode(getSelection(ce));
-            Referenceable ref = getReferencedModel(selectedNode);
+            Node selectedNode = 
+                    getSelectedNode(getSelection(ce), ce);
+            Referenceable ref = 
+                    getReferencedModel(selectedNode);
             if (ref!=null) {
                 gotoDeclaration(ref);
             }
