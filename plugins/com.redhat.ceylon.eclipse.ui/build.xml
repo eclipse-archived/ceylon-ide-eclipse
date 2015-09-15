@@ -145,6 +145,10 @@
                             message='    &lt;set module="${Bundle-SymbolicName}" version="${Bundle-Version}"/&gt;'/>
                         <echo append="true" file="${generatedOverridesFile}"><![CDATA[
 ]]></echo>
+                        <echo append="true" file="${generatedVersionsFile}" 
+                            message='${Bundle-SymbolicName}.version.override=${Bundle-Version}'/>
+                        <echo append="true" file="${generatedVersionsFile}"><![CDATA[
+]]></echo>
                     </else>
                 </if>
             </then>
@@ -378,15 +382,18 @@
         <mkdir dir="${moduleFileFolder}"/>
 		<tempfile destdir="${moduleFileFolder}" prefix="module.ceylon" property="generatedImportsFile" createfile="true"/>
         <tempfile destdir="${basedir}/generated-source/" prefix="overrides.xml" property="generatedOverridesFile" createfile="true"/>
+        <tempfile destdir="${basedir}/generated-source/" prefix="versions.properties" property="generatedVersionsFile" createfile="true"/>
         <foreach target="addModuleImport" param="currentFile">
             <path>
                 <fileset dir="${eclipseBinariesRepo}/plugins" includes="**/*.jar"/>
             </path>
             <param name="generatedImportsFile" value="${generatedImportsFile}"/>
             <param name="generatedOverridesFile" value="${generatedOverridesFile}"/>
+            <param name="generatedVersionsFile" value="${generatedVersionsFile}"/>
         </foreach>
 	    <loadfile property="generatedImports" srcfile="${generatedImportsFile}"/>
         <loadfile property="generatedOverrides" srcfile="${generatedOverridesFile}"/>
+        <loadproperties srcFile="${generatedVersionsFile}"/>
         <loadfile property="generatedModuleContent" srcfile="${basedir}/source-templates/module.ceylon">
             <filterchain>
             	<replacestring byline="false" from="/* ADD GENERATED IMPORTS HERE */" to="${generatedImports}"/>
@@ -395,6 +402,7 @@
         <loadfile property="generatedOverridesContent" srcfile="${basedir}/source-templates/overrides.xml">
             <filterchain>
                 <replacestring byline="false" from="&lt;!-- ADD GENERATED SET VERSION LINES HERE  --&gt;" to="${generatedOverrides}"/>
+                <expandproperties />
             </filterchain>
         </loadfile>
 
@@ -404,6 +412,7 @@
               message="${generatedOverridesContent}" />
 		<delete file="${generatedImportsFile}" failonerror="false"/>
         <delete file="${generatedOverridesFile}" failonerror="false"/>
+        <delete file="${generatedVersionsFile}" failonerror="false"/>
 	</target>
 
 	<uptodate property="dontMirror" targetfile="${moduleFileFolder}/module.ceylon" >

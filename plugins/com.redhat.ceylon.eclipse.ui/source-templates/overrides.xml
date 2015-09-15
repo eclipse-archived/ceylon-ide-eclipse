@@ -38,24 +38,24 @@
     <remove module="org.eclipse.ui.forms"/>
 
     <module module="org.eclipse.ui">
-        <add module="org.eclipse.ui.ide" version="current" shared="true"/>
-        <add module="org.eclipse.ui.workbench" version="current" shared="true"/>
-        <add module="org.eclipse.ui.editors" version="current" shared="true"/>
+        <add module="org.eclipse.ui.ide" version="${org.eclipse.ui.ide.version.override}" shared="true"/>
+        <add module="org.eclipse.ui.workbench" version="${org.eclipse.ui.workbench.version.override}" shared="true"/>
+        <add module="org.eclipse.ui.editors" version="${org.eclipse.ui.editors.version.override}" shared="true"/>
     </module>
     <module module="org.eclipse.ui.workbench">
-        <add module="org.eclipse.osgi" version="current"/>
-        <add module="org.eclipse.ui.ide" version="current"/>
-        <add module="org.eclipse.core.commands" version="current"/>
-        <add module="org.eclipse.jface" version="current" shared="true"/>
+        <add module="org.eclipse.osgi" version="${org.eclipse.osgi.version.override}"/>
+        <add module="org.eclipse.ui.ide" version="${org.eclipse.ui.ide.version.override}"/>
+        <add module="org.eclipse.core.commands" version="${org.eclipse.core.commands.version.override}"/>
+        <add module="org.eclipse.jface" version="${org.eclipse.jface.version.override}" shared="true"/>
     </module>
     <module module="org.eclipse.ui.ide">
         <share module="org.eclipse.ui.workbench"/>
     </module>
     <module module="org.eclipse.ui.editors">
-        <add module="org.eclipse.ui.workbench.texteditor" version="current" shared="true"/>
+        <add module="org.eclipse.ui.workbench.texteditor" version="${org.eclipse.ui.workbench.texteditor.version.override}" shared="true"/>
     </module>
     <module module="org.eclipse.text">
-        <add module="org.eclipse.jface.text" version="current" shared="true"/>
+        <add module="org.eclipse.jface.text" version="${org.eclipse.jface.text.version.override}" shared="true"/>
     </module>
 
     <module module="org.eclipse.ltk.core.refactoring">
@@ -66,6 +66,6 @@
     </module>
 
     <module module="org.eclipse.swt">
-        <add module="org.eclipse.swt.gtk.linux.x86_64" version="current" shared="true"/>
+        <add module="org.eclipse.swt.gtk.linux.x86_64" version="${org.eclipse.swt.gtk.linux.x86_64.version.override}" shared="true"/>
     </module>
 </overrides>
