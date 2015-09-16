@@ -3,13 +3,16 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.getItemProposals;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.getKeyProposals;
 import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getNameProposals;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 
 import java.util.Collection;
 
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.link.ProposalPosition;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -99,6 +102,15 @@ class AssignToForProposal extends LocalProposal {
         return "Assign expression to 'for' loop";
     }
     
+    @Override
+    public StyledString getStyledDisplayString() {
+        TriggerSequence binding = 
+                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.assignToFor");
+        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        return new StyledString(getDisplayString())
+                .append(hint, StyledString.QUALIFIER_STYLER);
+    }
+
     @Override
     boolean isEnabled(Type resultType) {
         return resultType!=null &&

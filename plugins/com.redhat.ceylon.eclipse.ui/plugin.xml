@@ -896,6 +896,11 @@
             name="Quick Assist - Assign To Local"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Assign expression to new local"
+            id="com.redhat.ceylon.eclipse.ui.action.assignToFor"
+            name="Quick Assist - Iterate In For Loop"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Destructure expression"
             id="com.redhat.ceylon.eclipse.ui.action.destructure"
             name="Quick Assist - Destructure Expression"/>
@@ -1040,6 +1045,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.correct.AssignToLocalHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.assignToLocal"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.correct.AssignToForHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.assignToFor"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.correct.DestructureHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.destructure"/>
@@ -1229,6 +1237,11 @@
             sequence="M1+2 L"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.action.assignToLocal"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 E"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.action.assignToFor"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
             sequence="M1+2 D"
