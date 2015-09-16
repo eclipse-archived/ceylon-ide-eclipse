@@ -310,30 +310,29 @@ class InitializerProposal extends CorrectionProposal {
     public void apply(IDocument document) {
         CeylonEditor editor = null;
         if (unit instanceof ModifiableSourceFile) {
-            ModifiableSourceFile cu = (ModifiableSourceFile) unit;
+            ModifiableSourceFile cu = 
+                    (ModifiableSourceFile) unit;
             IFile file = cu.getResourceFile();
-            editor = (CeylonEditor) gotoFile(file, 0, 0);
-            //NOTE: the document we're given is the one
-            //for the editor from which the quick fix was
-            //invoked, not the one to which the fix applies
-            IDocument ed = 
-                    editor.getParseController()
-                        .getDocument();
-            if (ed!=document) {
-                document = ed;
-                exitPos = -1;
+            if (file!=null) {
+                editor = (CeylonEditor) gotoFile(file, 0, 0);
+                //NOTE: the document we're given is the one
+                //for the editor from which the quick fix was
+                //invoked, not the one to which the fix applies
+                IDocument ed = 
+                        editor.getParseController()
+                            .getDocument();
+                if (ed!=document) {
+                    document = ed;
+                    exitPos = -1;
+                }
             }
-        }
-        else {
-            //IMPOSSIBLE:
-            editor=null;
         }
         int lenBefore = document.getLength();
         super.apply(document);
         int lenAfter = document.getLength();
         
         //TODO: preference to disable linked mode?
-        if (lenAfter>lenBefore) {
+        if (lenAfter>lenBefore && editor!=null) {
             Point point = super.getSelection(document);
             if (point.y>0) {
                 LinkedModeModel linkedModeModel = 

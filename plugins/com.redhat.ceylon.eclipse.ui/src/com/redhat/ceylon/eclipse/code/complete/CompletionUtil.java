@@ -417,7 +417,7 @@ public class CompletionUtil {
                 return new String[] { "\"\"" };
             }
             else if (dtd.equals(unit.getCharacterDeclaration())) {
-                return new String[] { "' '", "'\\n'", "\\t" };
+                return new String[] { "' '", "'\\n'", "'\\t'" };
             }
             else {
                 return new String[0];
