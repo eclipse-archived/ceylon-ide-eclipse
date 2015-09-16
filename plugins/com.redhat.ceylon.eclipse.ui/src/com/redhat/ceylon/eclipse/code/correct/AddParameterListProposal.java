@@ -31,7 +31,8 @@ class AddParameterListProposal extends CorrectionProposal {
 
     static void addParameterListProposal(IFile file,
             Collection<ICompletionProposal> proposals, 
-            Node node, Tree.CompilationUnit rootNode) {
+            Node node, Tree.CompilationUnit rootNode,
+            boolean evenIfEmpty) {
         if (node instanceof Tree.TypedDeclaration) {
             node = findDeclarationWithBody(rootNode, node);
         }
@@ -43,7 +44,7 @@ class AddParameterListProposal extends CorrectionProposal {
                 Declaration dec = decNode.getDeclarationModel();
                 List<TypedDeclaration> uninitialized = 
                         collectUninitializedMembers(decNode.getClassBody());
-                if (!uninitialized.isEmpty()) {
+                if (evenIfEmpty || !uninitialized.isEmpty()) {
                     StringBuilder params = new StringBuilder().append("(");
                     for (TypedDeclaration ud: uninitialized) {
                         if (params.length()>1) {

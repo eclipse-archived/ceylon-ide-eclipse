@@ -41,7 +41,7 @@ public class AddParameterListHandler extends AbstractHandler {
                         findNode(rootNode, ce.getParseController().getTokens(), start, end));
                 List<ICompletionProposal> list = 
                         new ArrayList<ICompletionProposal>();
-                addParameterListProposal(getFile(editor), list, node, rootNode);
+                addParameterListProposal(getFile(editor), list, node, rootNode, true);
                 if (!list.isEmpty()) {
                     IDocument doc = ce.getCeylonSourceViewer().getDocument();
                     ICompletionProposal proposal = list.get(0);
