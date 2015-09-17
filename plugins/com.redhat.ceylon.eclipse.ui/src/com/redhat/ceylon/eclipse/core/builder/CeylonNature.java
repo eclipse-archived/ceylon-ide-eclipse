@@ -20,7 +20,8 @@ public class CeylonNature extends ProjectNatureBase {
     
     public static boolean isEnabled(IProject project) {
         try {
-            return project.hasNature(NATURE_ID);
+            return project != null && 
+                    project.hasNature(NATURE_ID);
         } catch (CoreException e) {
             e.printStackTrace();
             return false;
