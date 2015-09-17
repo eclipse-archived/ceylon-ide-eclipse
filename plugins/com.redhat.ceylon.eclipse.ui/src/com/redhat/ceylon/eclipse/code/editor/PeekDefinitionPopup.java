@@ -369,23 +369,19 @@ final class PeekDefinitionPopup extends PopupDialog
             e.printStackTrace();
         }
         parseController.initialize(path, project, null);
-        parseController.parse(doc, new NullProgressMonitor(), null);
-        /*try {
-            int lines = doc.getLineOfOffset(refDec.getStopIndex())-
-                        doc.getLineOfOffset(refDec.getStartIndex())+1;
-            setSize(getShell().getBounds().width, 
-                    viewer.getTextWidget().getLineHeight()*lines);
-        } 
-        catch (BadLocationException e) {
-            e.printStackTrace();
-        }*/
-        if (referencedNode instanceof Tree.Declaration) {
-            Tree.Declaration declaration = 
-                    (Tree.Declaration) referencedNode;
-            Declaration model = 
-                    declaration.getDeclarationModel();
-            setTitleText("Peek Definition - " + 
-                    getLabelDescriptionFor(model));
+        if (parseController.parseAndTypecheck(
+                                doc, 
+                                10, 
+                                new NullProgressMonitor(), 
+                                null)) {
+            if (referencedNode instanceof Tree.Declaration) {
+                Tree.Declaration declaration = 
+                        (Tree.Declaration) referencedNode;
+                Declaration model = 
+                        declaration.getDeclarationModel();
+                setTitleText("Peek Definition - " + 
+                        getLabelDescriptionFor(model));
+            }
         }
     }
 

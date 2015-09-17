@@ -24,6 +24,7 @@ import static org.eclipse.core.runtime.jobs.Job.getJobManager;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
@@ -37,6 +38,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
@@ -208,215 +210,6 @@ public class CeylonParseController {
         return null;
     }
     
-    @SuppressWarnings("unchecked")
-    public void parse(String contents, 
-            IProgressMonitor monitor, Stager stager) {
-          
-        IPath path = this.filePath;
-        IProject project = this.project;
-        IPath resolvedPath = path;
-        IdePhasedUnit builtPhasedUnit = null;
-        
-        stage = Stage.NONE;
-        
-        if (path!=null) {
-            String ext = path.getFileExtension();
-            if (ext==null || !ext.equals("ceylon")) {
-                return;
-            }
-            if (!path.isAbsolute() && project!=null) {
-                resolvedPath = project.getFullPath().append(filePath);
-                //TODO: do we need to add in the source folder???
-                if (!project.getWorkspace().getRoot().exists(resolvedPath)) {
-                    // file has been deleted for example
-                    path = null;
-                    project = null;
-                }
-            }
-            
-            if (path.isAbsolute()) {
-                for (IProject p: new ArrayList<IProject>(getProjects())) {
-                    if (project != null && project != p) continue;
-                    
-                    JDTModuleManager moduleManager = (JDTModuleManager) 
-                            getProjectTypeChecker(p).getPhasedUnits().getModuleManager();
-                    JDTModule module = moduleManager.getArchiveModuleFromSourcePath(path);
-                    if (module != null) {
-                        builtPhasedUnit = module.getPhasedUnit(path);
-                        if (builtPhasedUnit != null) {
-                            if (project == p) {
-                                break;
-                            }
-                            if (module.isCeylonBinaryArchive()) {
-                                project = p;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (builtPhasedUnit != null) {
-                    phasedUnit = builtPhasedUnit;
-                    typeChecker = builtPhasedUnit.getTypeChecker();
-                    rootNode = builtPhasedUnit.getCompilationUnit();
-                    tokens = builtPhasedUnit.getTokens();
-                    stage = SYNTACTIC_ANALYSIS;
-                    if (stager!=null) {
-                        stager.afterStage(LEXICAL_ANALYSIS, monitor);
-                        stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
-                    }
-                    final IProject finalProject = project;
-                    useTypechecker(phasedUnit, new Runnable() {
-                        @Override
-                        public void run() {
-                            phasedUnit.analyseTypes();
-                            if (showWarnings(finalProject)) {
-                                phasedUnit.analyseUsage();
-                            }
-                        }
-                    });
-                    
-                    stage = TYPE_ANALYSIS;
-                    if (stager!=null) {
-                        stager.afterStage(FOR_OUTLINE, monitor);
-                        stager.afterStage(TYPE_ANALYSIS, monitor);
-                    }
-                    return;
-                }
-            }
-        }
-        
-        if (isCanceling(monitor)) {
-            return;
-        }
-        
-        NewlineFixingStringStream stream = 
-                new NewlineFixingStringStream(contents);
-        CeylonLexer lexer = new CeylonLexer(stream);
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        tokenStream.fill();
-        tokens = tokenStream.getTokens();
-        
-        stage = LEXICAL_ANALYSIS;
-        if (stager!=null) {
-            stager.afterStage(LEXICAL_ANALYSIS, monitor);
-        }
-        
-        if (isCanceling(monitor)) {
-            return;
-        }
-        
-        CeylonParser parser = new CeylonParser(tokenStream);
-        Tree.CompilationUnit cu;
-        try {
-            cu = parser.compilationUnit();
-        }
-        catch (RecognitionException e) {
-            throw new RuntimeException(e);
-        }
-        
-        //TODO: make the AST available now, so that
-        //      services like FoldingUpdater can
-        //      make use of it in the callback
-        rootNode = cu;
-        
-        collectLexAndParseErrors(lexer, parser, cu);
-        
-        stage = SYNTACTIC_ANALYSIS;
-        if (stager!=null) {
-            stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
-        }
-        
-        if (isCanceling(monitor)) {
-            return;
-        }
-        
-        VirtualFile srcDir = null;
-        if (project!=null) {
-            srcDir = getSourceFolder(project, resolvedPath);
-        }
-        else if (path!=null) { //path==null in structured compare editor
-            srcDir = inferSrcDir(path);
-            project = findProject(path);
-        }
-        
-        if (!allClasspathContainersInitialized()) {
-            // Ceylon projects have not been setup, so don't try to typecheck 
-            stage = FOR_OUTLINE;
-            if (stager!=null) {
-                stager.afterStage(FOR_OUTLINE, monitor);
-            }
-            return; 
-        }
-        
-        if (project!=null) {
-            if (CeylonNature.isEnabled(project)) {
-                if (!isModelTypeChecked(project)) {
-                    // TypeChecking has not been performed
-                    // on the main model, so don't do it 
-                    // on the editor's tree
-                    stage = FOR_OUTLINE;
-                    if (stager!=null) {
-                        stager.afterStage(FOR_OUTLINE, monitor);
-                    }
-                    return;
-                }
-                typeChecker = getProjectTypeChecker(project);
-            }
-        }
-
-        boolean showWarnings = showWarnings(project);
-        
-        if (isCanceling(monitor)) {
-            return;
-        }
-
-        if (typeChecker==null) {
-            try {
-                typeChecker = createTypeChecker(project, showWarnings);
-            } 
-            catch (CoreException e) {
-                return; 
-            }
-        }
-        
-        if (isCanceling(monitor)) {
-            return;
-        }
-
-        VirtualFile file = createSourceCodeVirtualFile(contents, path);
-        builtPhasedUnit = (IdePhasedUnit) typeChecker.getPhasedUnit(file); // TODO : refactor !
-        phasedUnit = typecheck(path, file, cu, srcDir, 
-                showWarnings, builtPhasedUnit);
-        rootNode = phasedUnit.getCompilationUnit();
-        if (project != null && !CeylonNature.isEnabled(project)) {
-            rootNode.visit(new Visitor() {
-                @Override
-                public void visitAny(Node node) {
-                    super.visitAny(node);
-                    List<Message> errorsToRemove = new ArrayList<>();
-                    List<Message> nodeErrors = node.getErrors();
-                    for (Message error: nodeErrors) {
-                        
-                        if (! (error instanceof RecognitionError)) {
-                            errorsToRemove.add(error);
-                        }
-                    }
-                    for (Message error: errorsToRemove) {
-                        nodeErrors.remove(error);
-                    }
-                }
-            });
-        }
-        collectErrors(rootNode);
-        
-        stage = TYPE_ANALYSIS;
-        if (stager!=null) {
-            stager.afterStage(FOR_OUTLINE, monitor);
-            stager.afterStage(TYPE_ANALYSIS, monitor);
-        }
-        
-    }
-
     private VirtualFile createSourceCodeVirtualFile(String contents, 
             IPath path) {
         if (path == null) {
@@ -782,7 +575,9 @@ public class CeylonParseController {
     }
     
     /*
-     * returns the last parsed *and typechecked* AST.
+     * returns the last fully-typechecked AST. 
+     * It might be different from the most recently parsed AST,
+     * and thus inconsistent with the source code.
      */
     public Tree.CompilationUnit getRootNode() {
         return phasedUnit != null ? phasedUnit.getCompilationUnit() : null;
@@ -790,19 +585,270 @@ public class CeylonParseController {
     
     /*
      * returns the last parsed AST.
+     * 
+     * Be careful it can be returned *before* the typechecking or 
+     * *during* the typechecking (in case of cancellation)
+     * So *never* use this from places that need a fully typechecked AST
+     * (with model elements such as declarations or units).
+     */
+    public Tree.CompilationUnit getParsedRootNode() {
+        return rootNode;
+    }
+    
+    /*
+     * returns the last parsed AST only if it is fully typechecked.
+     * 
+     * The returned AST is 
      * Be careful it can be return *before* the typechecking or 
      * *during* the typechecking.
      * So *never* use this from places that need a fully decorated AST
      * (with model elements such as declarations or units).
      */
-    public Tree.CompilationUnit getRawRootNode() {
+    public Tree.CompilationUnit getTypecheckedRootNode() {
         return rootNode;
     }
-    
-    public void parse(IDocument doc, IProgressMonitor monitor, 
-            Stager stager) {
-        document = doc;
-        parse(document.get(), monitor, stager);
+
+    /*
+     * returns true is the the last AST was parsed *and* typechecked
+     * until the end (=> stage == TYPE_ANALYSIS)
+     */
+    public boolean parseAndTypecheck(
+                    IDocument doc, 
+                    long waitForModelInSeconds, 
+                    final IProgressMonitor monitor, 
+                    final Stager stager) {
+      document = doc;
+      final String contents = doc.get();
+      IPath path = this.filePath;
+      IProject project = this.project;
+      IPath resolvedPath = path;
+      
+      stage = Stage.NONE;
+      
+      if (path!=null) {
+          String ext = path.getFileExtension();
+          if (ext==null || !ext.equals("ceylon")) {
+              return false;
+          }
+          if (!path.isAbsolute() && project!=null) {
+              resolvedPath = project.getFullPath().append(filePath);
+              //TODO: do we need to add in the source folder???
+              if (!project.getWorkspace().getRoot().exists(resolvedPath)) {
+                  // file has been deleted for example
+                  path = null;
+                  project = null;
+              }
+          }
+          
+          if (path.isAbsolute()) {
+              IdePhasedUnit builtPhasedUnit = null;
+              for (IProject p: new ArrayList<IProject>(getProjects())) {
+                  if (project != null && project != p) continue;
+                  
+                  JDTModuleManager moduleManager = (JDTModuleManager) 
+                          getProjectTypeChecker(p).getPhasedUnits().getModuleManager();
+                  JDTModule module = moduleManager.getArchiveModuleFromSourcePath(path);
+                  if (module != null) {
+                      builtPhasedUnit = module.getPhasedUnit(path);
+                      if (builtPhasedUnit != null) {
+                          if (project == p) {
+                              break;
+                          }
+                          if (module.isCeylonBinaryArchive()) {
+                              project = p;
+                              break;
+                          }
+                      }
+                  }
+              }
+              if (builtPhasedUnit != null) {
+                  phasedUnit = builtPhasedUnit;
+                  typeChecker = builtPhasedUnit.getTypeChecker();
+                  rootNode = builtPhasedUnit.getCompilationUnit();
+                  tokens = builtPhasedUnit.getTokens();
+                  stage = SYNTACTIC_ANALYSIS;
+                  if (stager!=null) {
+                      stager.afterStage(LEXICAL_ANALYSIS, monitor);
+                      stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
+                  }
+                  final IProject finalProject = project;
+                  useTypechecker(phasedUnit, new Runnable() {
+                      @Override
+                      public void run() {
+                          phasedUnit.analyseTypes();
+                          if (showWarnings(finalProject)) {
+                              phasedUnit.analyseUsage();
+                          }
+                      }
+                  });
+                  
+                  stage = TYPE_ANALYSIS;
+                  if (stager!=null) {
+                      stager.afterStage(FOR_OUTLINE, monitor);
+                      stager.afterStage(TYPE_ANALYSIS, monitor);
+                  }
+                  return true;
+              }
+          }
+      }
+      
+      if (isCanceling(monitor)) {
+          return false;
+      }
+      
+      NewlineFixingStringStream stream = 
+              new NewlineFixingStringStream(contents);
+      CeylonLexer lexer = new CeylonLexer(stream);
+      CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+      tokenStream.fill();
+      tokens = tokenStream.getTokens();
+      
+      stage = LEXICAL_ANALYSIS;
+      if (stager!=null) {
+          stager.afterStage(LEXICAL_ANALYSIS, monitor);
+      }
+      
+      if (isCanceling(monitor)) {
+          return false;
+      }
+      
+      CeylonParser parser = new CeylonParser(tokenStream);
+      Tree.CompilationUnit cu;
+      try {
+          cu = parser.compilationUnit();
+      }
+      catch (RecognitionException e) {
+          throw new RuntimeException(e);
+      }
+      
+      //TODO: make the AST available now, so that
+      //      services like FoldingUpdater can
+      //      make use of it in the callback
+      rootNode = cu;
+      
+      collectLexAndParseErrors(lexer, parser, cu);
+      
+      stage = SYNTACTIC_ANALYSIS;
+      if (stager!=null) {
+          stager.afterStage(SYNTACTIC_ANALYSIS, monitor);
+      }
+      
+      if (isCanceling(monitor)) {
+          return false;
+      }
+      
+      VirtualFile srcDir = null;
+      if (project!=null) {
+          srcDir = getSourceFolder(project, resolvedPath);
+      }
+      else if (path!=null) { //path==null in structured compare editor
+          srcDir = inferSrcDir(path);
+          project = findProject(path);
+      }
+      
+      if (!allClasspathContainersInitialized() ||
+              CeylonNature.isEnabled(project) 
+              && !isModelTypeChecked(project)) {
+          // Ceylon projects have not been setup, so don't try to typecheck 
+          //
+          // or  
+          //
+          // TypeChecking has not been performed
+          // on the main model, so don't do it 
+          // on the editor's tree
+          stage = FOR_OUTLINE;
+          if (stager!=null) {
+              stager.afterStage(FOR_OUTLINE, monitor);
+          }
+          return false; 
+      }
+      
+      final IProject finalProject = project;
+      final IPath finalPath = path;
+      final VirtualFile finalSrcDir = srcDir;
+      try {
+          return CeylonBuilder.doWithSourceModel(
+                  project, 
+                  true, 
+                  waitForModelInSeconds, 
+                  new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        if (CeylonNature.isEnabled(finalProject)) {
+                            typeChecker = getProjectTypeChecker(finalProject);
+                        }
+
+                        boolean showWarnings = showWarnings(finalProject);
+                        
+                        if (isCanceling(monitor)) {
+                            return false;
+                        }
+
+                        if (typeChecker==null) {
+                            try {
+                                typeChecker = createTypeChecker(finalProject, showWarnings);
+                            } 
+                            catch (CoreException e) {
+                                return false; 
+                            }
+                        }
+                        
+                        if (isCanceling(monitor)) {
+                            return false;
+                        }
+
+                        VirtualFile file = createSourceCodeVirtualFile(contents, finalPath);
+                        IdePhasedUnit builtPhasedUnit = (IdePhasedUnit) typeChecker.getPhasedUnit(file); // TODO : refactor !
+                        phasedUnit = typecheck(finalPath, file, rootNode, finalSrcDir, 
+                                showWarnings, builtPhasedUnit);
+                        rootNode = phasedUnit.getCompilationUnit();
+                        if (finalProject != null && !CeylonNature.isEnabled(finalProject)) {
+                            rootNode.visit(new Visitor() {
+                                @Override
+                                public void visitAny(Node node) {
+                                    super.visitAny(node);
+                                    List<Message> errorsToRemove = new ArrayList<>();
+                                    List<Message> nodeErrors = node.getErrors();
+                                    for (Message error: nodeErrors) {
+                                        
+                                        if (! (error instanceof RecognitionError)) {
+                                            errorsToRemove.add(error);
+                                        }
+                                    }
+                                    for (Message error: errorsToRemove) {
+                                        nodeErrors.remove(error);
+                                    }
+                                }
+                            });
+                        }
+                        collectErrors(rootNode);
+                        
+                        stage = TYPE_ANALYSIS;
+                        if (stager!=null) {
+                            stager.afterStage(FOR_OUTLINE, monitor);
+                            stager.afterStage(TYPE_ANALYSIS, monitor);
+                        }
+                        
+                        return true;
+                    }
+                      
+                  });
+          } catch(OperationCanceledException e) {
+              e.printStackTrace();
+              if (monitor!= null) {
+                  // Sets the current monitor to canceled,
+                  // so that the scheduler will reschedule it later
+                  monitor.setCanceled(true);
+              }
+              
+              // Consider that the previous steps of the anaysis 
+              // are OK, and still notify the related model listeners
+              stage = FOR_OUTLINE;
+              if (stager!=null) {
+                  stager.afterStage(FOR_OUTLINE, monitor);
+              }
+              return false; 
+          }
     }
 
     public IProject getProject() {

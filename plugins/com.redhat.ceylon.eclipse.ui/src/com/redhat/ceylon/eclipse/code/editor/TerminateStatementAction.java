@@ -642,7 +642,8 @@ final class TerminateStatementAction extends Action {
         CeylonParseController cpc = new CeylonParseController();
         cpc.initialize(editor.getParseController().getPath(), 
                 editor.getParseController().getProject(), null);
-        cpc.parse(editor.getCeylonSourceViewer().getDocument(), 
+        cpc.parseAndTypecheck(editor.getCeylonSourceViewer().getDocument(), 
+                0, // don't wait for the source model since we don't even need it.
                 new NullProgressMonitor(), null);
         return cpc;
     }

@@ -440,12 +440,17 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             final ITextViewer viewer, final int offset) {
         CeylonParseController controller = 
                 editor.getParseController();
-        controller.parse(viewer.getDocument(), 
+        if (controller.parseAndTypecheck(
+                viewer.getDocument(), 
+                10,
                 new NullProgressMonitor(), 
-                null);
-        return computeParameterContextInformation(offset, 
-                controller.getRootNode(), viewer)
-                .toArray(NO_CONTEXTS);
+                null)) {
+            return computeParameterContextInformation(offset, 
+                    controller.getRootNode(), viewer)
+                    .toArray(NO_CONTEXTS);
+        } else {
+            return NO_CONTEXTS;
+        }
     }
 
     public char[] getCompletionProposalAutoActivationCharacters() {
@@ -481,11 +486,14 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             return null;
         }
         
-        controller.parse(viewer.getDocument(), 
-                new NullProgressMonitor(), null);
+        controller.parseAndTypecheck(viewer.getDocument(), 
+                10,
+                monitor, null);
+        
         controller.getHandler().updateAnnotations();
         List<CommonToken> tokens = controller.getTokens(); 
-        Tree.CompilationUnit rn = controller.getRootNode();
+        Tree.CompilationUnit rawRootNode = controller.getParsedRootNode();
+        Tree.CompilationUnit typecheckedRootNode = controller.getRootNode();
         
         //adjust the token to account for unclosed blocks
         //we search for the first non-whitespace/non-comment
@@ -513,7 +521,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         Node node = getTokenNode(
                 adjustedToken.getStartIndex(), 
                 adjustedToken.getStopIndex()+1, 
-                tt, rn, offset);
+                tt, rawRootNode, offset);
         
         //it's useful to know the type of the preceding 
         //token, if any
@@ -535,7 +543,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         //      doesn't know how to search up the tree for
         //      the containing InvocationExpression
         Type requiredType = 
-                getRequiredType(rn, node, adjustedToken);
+                getRequiredType(typecheckedRootNode, node, adjustedToken);
         
         String prefix = "";
         String fullPrefix = "";
@@ -594,7 +602,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         
         FindScopeVisitor fsv = new FindScopeVisitor(node);
-        fsv.visit(rn);
+        fsv.visit(typecheckedRootNode);
         Scope scope = fsv.getScope();
         
         //construct completions when outside ordinary code
@@ -608,7 +616,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             //finally, construct and sort proposals
             Map<String, DeclarationWithProximity> proposals = 
                     DUMMY_INSTANCE.getProposals(node, scope, prefix, 
-                            isMemberOp, rn);
+                            isMemberOp, typecheckedRootNode);
             Map<String, DeclarationWithProximity> functionProposals =
                     DUMMY_INSTANCE.getFunctionProposals(node, scope, prefix, 
                             isMemberOp);

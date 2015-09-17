@@ -118,7 +118,7 @@ public class CeylonParserScheduler extends Job {
                 // don't bother to retrieve the AST; we don't 
                 // need it; just make sure the document gets 
                 // parsed
-                parseController.parse(document, wrappedMonitor, new Stager());
+                parseController.parseAndTypecheck(document, 0, wrappedMonitor, new Stager());
                 if (wrappedMonitor.isCanceled() || 
                         editor.isBackgroundParsingPaused()) {
                     annotationCreator.clearMessages();

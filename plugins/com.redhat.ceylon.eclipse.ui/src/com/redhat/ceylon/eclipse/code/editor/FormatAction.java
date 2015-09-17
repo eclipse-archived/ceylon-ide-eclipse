@@ -63,7 +63,7 @@ final class FormatAction extends Action {
     public static boolean isEnabled(CeylonParseController cpc) {
         return cpc!=null && 
                 cpc.getStage().ordinal()>=Stage.SYNTACTIC_ANALYSIS.ordinal() &&
-                cpc.getRawRootNode()!=null;
+                cpc.getParsedRootNode()!=null;
     }
     
     private static class FormattingUnit {
@@ -95,7 +95,7 @@ final class FormatAction extends Action {
         boolean formatAll = !selected || document.getLength()==ts.getLength();
         if (!formatAll) {
             // a node was selected, format only that
-            Node selectedRootNode = Nodes.findNode(pc.getRawRootNode(), pc.getTokens(), ts);
+            Node selectedRootNode = Nodes.findNode(pc.getParsedRootNode(), pc.getTokens(), ts);
             if (selectedRootNode == null)
                 return;
             if (selectedRootNode instanceof Body || selectedRootNode instanceof CompilationUnit) {
@@ -151,7 +151,7 @@ final class FormatAction extends Action {
         } else {
             // format everything
             formattingUnits = Collections.singletonList(new FormattingUnit(
-                    pc.getRawRootNode(),
+                    pc.getParsedRootNode(),
                     tokenList.get(0),
                     tokenList.get(tokenList.size() - 1)));
         }

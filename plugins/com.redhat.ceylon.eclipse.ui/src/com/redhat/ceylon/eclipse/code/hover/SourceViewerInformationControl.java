@@ -596,7 +596,7 @@ public class SourceViewerInformationControl
             e.printStackTrace();
         }
         parseController.initialize(path, project, null);
-        parseController.parse(doc, new NullProgressMonitor(), null);
+        parseController.parseAndTypecheck(doc, 10, new NullProgressMonitor(), null);
     }
 
 

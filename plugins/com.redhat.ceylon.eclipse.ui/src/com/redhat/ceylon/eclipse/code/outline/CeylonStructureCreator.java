@@ -36,6 +36,7 @@ import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 
 /**
  * @author rfuhrer
@@ -86,18 +87,18 @@ public class CeylonStructureCreator extends StructureCreator {
             pc.initialize(null, null, null);
         }
         
-        pc.parse(document, monitor, null);
-        
-        // now visit the model, creating TreeCompareNodes for each ModelTreeNode
-        CeylonOutlineNode tree = 
-                new CeylonOutlineBuilder() {
-                    //don't create nodes for shortcut refinement
-                    //because we can't distinguish them w/o a
-                    //full typecheck
-                    public void visit(Tree.SpecifierStatement that) {}
-                }.buildTree(pc);
-        if (tree!=null) {
-            buildCompareTree(tree, structureRootNode, document);
+        if (pc.parseAndTypecheck(document, 10, monitor, null)) {
+            // now visit the model, creating TreeCompareNodes for each ModelTreeNode
+            CeylonOutlineNode tree = 
+                    new CeylonOutlineBuilder() {
+                        //don't create nodes for shortcut refinement
+                        //because we can't distinguish them w/o a
+                        //full typecheck
+                        public void visit(Tree.SpecifierStatement that) {}
+                    }.buildTree(pc);
+            if (tree!=null) {
+                buildCompareTree(tree, structureRootNode, document);
+            }
         }
         
         return structureRootNode;
