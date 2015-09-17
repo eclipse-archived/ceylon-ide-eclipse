@@ -323,19 +323,21 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
 
     public ExtractFunctionRefactoring(IEditorPart editor) {
         super(editor);
-        if (editor instanceof CeylonEditor) {
-            CeylonEditor ce = (CeylonEditor) editor;
-            if (ce.getSelectionProvider()!=null) {
-                init(getSelection(ce));
+        if (rootNode!=null) {
+            if (editor instanceof CeylonEditor) {
+                CeylonEditor ce = (CeylonEditor) editor;
+                if (ce.getSelectionProvider()!=null) {
+                    init(getSelection(ce));
+                }
             }
-        }
-        if (resultDeclaration!=null) {
-            newName = resultDeclaration.getName();
-        }
-        else {
-            newName = Nodes.nameProposals(node)[0];
-            if ("it".equals(newName)) {
-                newName = "do";
+            if (resultDeclaration!=null) {
+                newName = resultDeclaration.getName();
+            }
+            else {
+                newName = Nodes.nameProposals(node)[0];
+                if ("it".equals(newName)) {
+                    newName = "do";
+                }
             }
         }
     }

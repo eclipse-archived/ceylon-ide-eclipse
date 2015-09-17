@@ -89,10 +89,12 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
         
     public ExtractParameterRefactoring(IEditorPart editor) {
         super(editor);
-        newName = Nodes.nameProposals(node)[0];
-        FindFunctionVisitor ffv = new FindFunctionVisitor(node);
-        ffv.visit(rootNode);
-        methodOrClass = ffv.getDefinitionNode();
+        if (rootNode!=null) {
+            newName = Nodes.nameProposals(node)[0];
+            FindFunctionVisitor ffv = new FindFunctionVisitor(node);
+            ffv.visit(rootNode);
+            methodOrClass = ffv.getDefinitionNode();
+        }
     }
     
     

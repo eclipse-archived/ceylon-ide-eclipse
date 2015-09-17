@@ -146,9 +146,11 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     
     public CollectParametersRefactoring(IEditorPart editor) {
         super(editor);
-        new FindParametersVisitor().visit(rootNode);
-        if (declaration!=null) {
-            newName = Escaping.toInitialUppercase(declaration.getName());
+        if (rootNode!=null) {
+            new FindParametersVisitor().visit(rootNode);
+            if (declaration!=null) {
+                newName = Escaping.toInitialUppercase(declaration.getName());
+            }
         }
     }
     
