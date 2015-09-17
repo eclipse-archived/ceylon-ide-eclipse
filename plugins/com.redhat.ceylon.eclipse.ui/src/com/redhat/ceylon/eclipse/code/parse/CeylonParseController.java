@@ -834,7 +834,6 @@ public class CeylonParseController {
                       
                   });
           } catch(OperationCanceledException e) {
-              e.printStackTrace();
               if (monitor!= null) {
                   // Sets the current monitor to canceled,
                   // so that the scheduler will reschedule it later
