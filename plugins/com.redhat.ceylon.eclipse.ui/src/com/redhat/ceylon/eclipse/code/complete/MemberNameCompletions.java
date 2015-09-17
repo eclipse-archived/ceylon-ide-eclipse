@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_NAME;
+import static com.redhat.ceylon.eclipse.util.Escaping.toInitialUppercase;
 import static com.redhat.ceylon.eclipse.util.Nodes.addNameProposals;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
@@ -20,9 +21,11 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 public class MemberNameCompletions {
     
     static void addMemberNameProposals(final int offset,
-            final CeylonParseController cpc, final Node node,
+            final CeylonParseController controller, 
+            final Node node,
             final List<ICompletionProposal> result) {
         final Integer startIndex2 = node.getStartIndex();
+        final Tree.CompilationUnit rootNode = controller.getRootNode();
         new Visitor() {
             @Override
             public void visit(Tree.StaticMemberOrTypeExpression that) {
@@ -30,7 +33,7 @@ public class MemberNameCompletions {
                 Integer startIndex = tal==null ? null : tal.getStartIndex();
                 if (startIndex!=null && startIndex2!=null &&
                     startIndex.intValue()==startIndex2.intValue()) {
-                    addMemberNameProposal(offset, "", that, result);
+                    addMemberNameProposal(offset, "", that, result, rootNode);
                 }
                 super.visit(that);
             }
@@ -39,15 +42,30 @@ public class MemberNameCompletions {
                 Integer startIndex = tal==null ? null : tal.getStartIndex();
                 if (startIndex!=null && startIndex2!=null &&
                     startIndex.intValue()==startIndex2.intValue()) {
-                    addMemberNameProposal(offset, "", that, result);
+                    addMemberNameProposal(offset, "", that, result, rootNode);
                 }
                 super.visit(that);
             }
-        }.visit(cpc.getRootNode());
+        }.visit(rootNode);
     }
     
     static void addMemberNameProposal(int offset, String prefix,
-            Node node, List<ICompletionProposal> result) {
+            final Node previousNode, 
+            List<ICompletionProposal> result,
+            Tree.CompilationUnit rootNode) {
+        class FindCompoundTypeVisitor extends Visitor {
+            Node result = previousNode;
+            @Override
+            public void visit(Tree.Type that) {
+                if (that.getStartIndex()<=previousNode.getStartIndex() &&
+                        that.getEndIndex()>=previousNode.getEndIndex()) {
+                    result = that;
+                }
+            }
+        }
+        FindCompoundTypeVisitor fcv = new FindCompoundTypeVisitor();
+        fcv.visit(rootNode);
+        Node node = fcv.result;
         Set<String> proposals = new LinkedHashSet<String>();
         if (node instanceof Tree.TypeDeclaration) {
             //TODO: dictionary completions?
@@ -68,6 +86,33 @@ public class MemberNameCompletions {
             }
         }
         
+        addProposalsForType(node, proposals);
+        /*if (suggestedName!=null) {
+            suggestedName = lower(suggestedName);
+            String unquoted = prefix.startsWith("\\i")||prefix.startsWith("\\I") ?
+                    prefix.substring(2) : prefix;
+            if (!suggestedName.startsWith(unquoted)) {
+                suggestedName = prefix + upper(suggestedName);
+            }
+            result.add(new CompletionProposal(offset, prefix, LOCAL_NAME,
+                    suggestedName, escape(suggestedName)));
+        }*/
+        /*if (proposals.isEmpty()) {
+            proposals.add("it");
+        }*/
+        for (String name: proposals) {
+            String unquotedPrefix = prefix.startsWith("\\i") ? 
+                    prefix.substring(2) : prefix;
+            if (name.startsWith(unquotedPrefix)) {
+                String unquotedName = name.startsWith("\\i") ? 
+                        name.substring(2) : name;
+                result.add(new CompletionProposal(offset, prefix, 
+                        LOCAL_NAME, unquotedName, name));
+            }
+        }
+    }
+
+    public static void addProposalsForType(Node node, Set<String> proposals) {
         if (node instanceof Tree.SimpleType) {
             Tree.SimpleType simpleType = 
                     (Tree.SimpleType) node;
@@ -91,12 +136,12 @@ public class MemberNameCompletions {
         }
         else if (node instanceof Tree.OptionalType) {
             Tree.OptionalType ot = (Tree.OptionalType) node;
-            Tree.StaticType et = ot.getDefiniteType();
-            if (et instanceof Tree.SimpleType) {
-                Tree.SimpleType set = (Tree.SimpleType) et;
-                addProposals(proposals, 
-                        set.getIdentifier(), 
-                        ot.getTypeModel());
+            addProposalsForType(ot.getDefiniteType(), proposals);
+            for (String text: proposals) {
+                if (text.startsWith("\\i")) {
+                    text = text.substring(2);
+                }
+                proposals.add("maybe" + toInitialUppercase(text));
             }
         }
         else if (node instanceof Tree.SequenceType) {
@@ -124,61 +169,89 @@ public class MemberNameCompletions {
                         set.getIdentifier(), 
                         it.getTypeModel());
             }
+            proposals.add("stream");
             proposals.add("iterable");
         }
         else if (node instanceof Tree.TupleType) {
             Tree.TupleType tt = (Tree.TupleType) node;
             List<Tree.Type> ets = tt.getElementTypes();
-            if (ets.size()==1) {
+            if (ets.isEmpty()) {
+                proposals.add("none");
+                proposals.add("empty");
+            }
+            else if (ets.size()==1) {
                 Tree.Type et = ets.get(0);
                 if (et instanceof Tree.SequencedType) {
                     Tree.SequencedType st = 
                             (Tree.SequencedType) et;
                     et = st.getType();
+                    if (et instanceof Tree.SimpleType) {
+                        Tree.SimpleType set = 
+                                (Tree.SimpleType) et;
+                        addPluralProposals(proposals, 
+                                set.getIdentifier(), 
+                                tt.getTypeModel());
+                    }
+                    proposals.add("sequence");
                 }
-                if (et instanceof Tree.SimpleType) {
-                    Tree.SimpleType set = 
-                            (Tree.SimpleType) et;
-                    addPluralProposals(proposals, 
-                            set.getIdentifier(), 
-                            tt.getTypeModel());
+                else {
+                    addProposalsForType(et, proposals);
+                    proposals.add("singleton");
                 }
-                proposals.add("sequence");
+            }
+            else {
+                addCompoundTypeProposal(ets, proposals, "With");
+                if (ets.size()==2) {
+                    proposals.add("pair");
+                }
+                else if (ets.size()==3) {
+                    proposals.add("triple");
+                }
+                proposals.add("tuple");
             }
         }
         else if (node instanceof Tree.FunctionType) {
             Tree.FunctionType ft = (Tree.FunctionType) node;
-            Tree.Type rt = ft.getReturnType();
-            if (rt instanceof Tree.SimpleType) {
-                Tree.SimpleType srt = (Tree.SimpleType) rt;
-                addProposals(proposals, 
-                        srt.getIdentifier(), 
-                        rt.getTypeModel());
-            }
+            addProposalsForType(ft.getReturnType(), proposals);
             proposals.add("callable");
         }
-        /*if (suggestedName!=null) {
-            suggestedName = lower(suggestedName);
-            String unquoted = prefix.startsWith("\\i")||prefix.startsWith("\\I") ?
-                    prefix.substring(2) : prefix;
-            if (!suggestedName.startsWith(unquoted)) {
-                suggestedName = prefix + upper(suggestedName);
+        else if (node instanceof Tree.UnionType) {
+            Tree.UnionType ut = (Tree.UnionType) node;
+            addCompoundTypeProposal(ut.getStaticTypes(), proposals, "Or");
+        }
+        else if (node instanceof Tree.IntersectionType) {
+            Tree.IntersectionType it = (Tree.IntersectionType) node;
+            addCompoundTypeProposal(it.getStaticTypes(), proposals, "And");
+        }
+    }
+
+    public static void addCompoundTypeProposal(
+            List<? extends Tree.Type> ets, 
+            Set<String> proposals, String join) {
+        StringBuilder sb = new StringBuilder();
+        for (Tree.Type t: ets) {
+            Set<String> set = new LinkedHashSet<String>();
+            addProposalsForType(t, set);
+            String text = set.iterator().next();
+            if (text!=null) {
+                if (text.startsWith("\\i")) {
+                    text = text.substring(2);
+                }
+                if (sb.length()>0) {
+                    sb.append(join)
+                      .append(toInitialUppercase(text));
+                }
+                else {
+                    sb.append(text);
+                }
             }
-            result.add(new CompletionProposal(offset, prefix, LOCAL_NAME,
-                    suggestedName, escape(suggestedName)));
-        }*/
-        /*if (proposals.isEmpty()) {
-            proposals.add("it");
-        }*/
-        for (String name: proposals) {
-            String unquotedPrefix = prefix.startsWith("\\i") ? 
-                    prefix.substring(2) : prefix;
-            if (name.startsWith(unquotedPrefix)) {
-                String unquotedName = name.startsWith("\\i") ? 
-                        name.substring(2) : name;
-                result.add(new CompletionProposal(offset, prefix, 
-                        LOCAL_NAME, unquotedName, name));
+            else {
+                sb = null;
+                break;
             }
+        }
+        if (sb!=null) {
+            proposals.add(sb.toString());
         }
     }
 
