@@ -146,6 +146,17 @@ public class MemberNameCompletions {
                 proposals.add("sequence");
             }
         }
+        else if (node instanceof Tree.FunctionType) {
+            Tree.FunctionType ft = (Tree.FunctionType) node;
+            Tree.Type rt = ft.getReturnType();
+            if (rt instanceof Tree.SimpleType) {
+                Tree.SimpleType srt = (Tree.SimpleType) rt;
+                addProposals(proposals, 
+                        srt.getIdentifier(), 
+                        rt.getTypeModel());
+            }
+            proposals.add("callable");
+        }
         /*if (suggestedName!=null) {
             suggestedName = lower(suggestedName);
             String unquoted = prefix.startsWith("\\i")||prefix.startsWith("\\I") ?
