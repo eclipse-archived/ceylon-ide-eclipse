@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 
 import java.util.List;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -23,6 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedDeclaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -154,12 +154,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
     
         DocumentChange change = 
                 createChange(document, expanse, endIndex);
-        try {
-            change.perform(new NullProgressMonitor());
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        EditorUtil.performChange(change);
     }
 
     String[] computeNameProposals(Node expression) {

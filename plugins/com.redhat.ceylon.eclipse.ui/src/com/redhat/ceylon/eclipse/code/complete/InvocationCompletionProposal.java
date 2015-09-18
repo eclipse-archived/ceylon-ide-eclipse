@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -71,6 +70,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
@@ -427,7 +427,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     
                 }
                 applyImports(tc, decs, cu, document);
-                tc.perform(new NullProgressMonitor());
+                EditorUtil.performChange(tc);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -715,10 +715,9 @@ class InvocationCompletionProposal extends CompletionProposal {
     @Override
     public void apply(IDocument document) {
         try {
-            createChange(document)
-                .perform(new NullProgressMonitor());
+            EditorUtil.performChange(createChange(document));
         }
-        catch (Exception e) {
+        catch (BadLocationException e) {
             e.printStackTrace();
         }
         if (getPreferences()

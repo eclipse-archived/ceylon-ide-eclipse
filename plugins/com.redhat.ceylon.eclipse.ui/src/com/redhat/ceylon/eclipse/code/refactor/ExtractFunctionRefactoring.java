@@ -41,16 +41,17 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.UnionType;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
 public class ExtractFunctionRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled {
@@ -524,8 +525,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         return tfc;
     }
 
-    public void extractInFile(TextChange tfc) 
-            throws CoreException {
+    public void extractInFile(TextChange tfc) {
         if (node instanceof Tree.Term) {
             extractExpressionInFile(tfc);
         }
@@ -534,10 +534,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         }
     }
 
-    private void extractExpressionInFile(TextChange tfc) 
-            throws CoreException {
+    private void extractExpressionInFile(TextChange tfc) {
         tfc.setEdit(new MultiTextEdit());
-        IDocument doc = tfc.getCurrentDocument(null);
+        IDocument doc = EditorUtil.getDocument(tfc);
         
         Tree.Term term = (Tree.Term) node;
         Integer start = term.getStartIndex();
@@ -715,10 +714,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         return decNode.getDeclarationModel().getContainer();
     }
 
-    private void extractStatementsInFile(TextChange tfc) 
-            throws CoreException {
+    private void extractStatementsInFile(TextChange tfc) {
         tfc.setEdit(new MultiTextEdit());
-        IDocument doc = tfc.getCurrentDocument(null);
+        IDocument doc = EditorUtil.getDocument(tfc);
         final Unit unit = node.getUnit();
         
         Tree.Body body = (Tree.Body) node;

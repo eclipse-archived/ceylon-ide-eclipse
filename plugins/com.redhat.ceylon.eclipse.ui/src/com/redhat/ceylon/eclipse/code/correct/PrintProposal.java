@@ -7,8 +7,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -21,13 +19,14 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedDeclaration;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 class PrintProposal implements ICompletionProposal, ICompletionProposalExtension6 {
     
@@ -134,12 +133,7 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
         }
         change.addEdit(new InsertEdit(stopIndex, close));
         
-        try {
-	        change.perform(new NullProgressMonitor());
-        }
-        catch (CoreException e) {
-	        e.printStackTrace();
-        }
+        EditorUtil.performChange(change);
         
     }
     

@@ -26,6 +26,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -204,10 +205,9 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
         return d.isParameter() &&
                 d.getContainer().equals(methodOrClass.getDeclarationModel());
     }
-    public void extractInFile(TextChange tfc) 
-            throws CoreException {
+    public void extractInFile(TextChange tfc) {
         tfc.setEdit(new MultiTextEdit());
-        IDocument doc = tfc.getCurrentDocument(null);
+        IDocument doc = EditorUtil.getDocument(tfc);
         
         Tree.ParameterList pl;
         if (methodOrClass instanceof Tree.MethodDefinition) {

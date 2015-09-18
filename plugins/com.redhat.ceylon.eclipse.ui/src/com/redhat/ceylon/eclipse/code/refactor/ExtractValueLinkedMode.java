@@ -1,19 +1,19 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.refactor.refactorJ2C.newExtractValueRefactoring;
 import static com.redhat.ceylon.eclipse.code.refactor.refactorJ2C.toExtractLinkedModeEnabled;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
+import com.redhat.ceylon.model.typechecker.model.Type;
 
 public final class ExtractValueLinkedMode 
         extends ExtractLinkedMode {
@@ -27,16 +27,12 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected int performInitialChange(IDocument document) {
-        try {
-            DocumentChange change = 
-                    new DocumentChange("Extract Value", 
-                            document);
-            toExtractLinkedModeEnabled(refactoring).extractInFile(change);
-            change.perform(new NullProgressMonitor());
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        DocumentChange change = 
+                new DocumentChange("Extract Value", 
+                        document);
+        toExtractLinkedModeEnabled(refactoring)
+            .extractInFile(change);
+        EditorUtil.performChange(change);
         return 0;
     }
     

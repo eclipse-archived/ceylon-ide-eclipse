@@ -23,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class TerminateStatementAction extends Action {
@@ -36,14 +37,6 @@ final class TerminateStatementAction extends Action {
         this.editor = editor;
     }
     
-//    int count(String s, char c) {
-//        int count=0;
-//        for (int i=0; i<s.length(); i++) {
-//            if (s.charAt(i)==c) count++;
-//        }
-//        return count;
-//    }
-
     @Override
     public void run() {
         ITextSelection ts = getSelection(editor);
@@ -72,7 +65,7 @@ final class TerminateStatementAction extends Action {
 //            change.setEdit(new MultiTextEdit());
 //            editor.getParseController().parse(doc, new NullProgressMonitor(), null);
 //            terminateWithParen(doc, change);            
-//            change.perform(new NullProgressMonitor());
+//            EditorUtil.performChange(change);
             
             editor.scheduleParsing();
             
@@ -103,6 +96,13 @@ final class TerminateStatementAction extends Action {
         return startOfCodeInLine;
     }
 
+//    int count(String s, char c) {
+//        int count=0;
+//        for (int i=0; i<s.length(); i++) {
+//            if (s.charAt(i)==c) count++;
+//        }
+//        return count;
+//    }
 //    private void terminateWithParen(final IDocument doc, final TextChange change) 
 //            throws Exception {
 //        CompilationUnit rootNode = parse();
@@ -389,7 +389,7 @@ final class TerminateStatementAction extends Action {
             }
         }.visit(rootNode);
         if (change.getEdit().hasChildren()) {
-            change.perform(new NullProgressMonitor());
+            EditorUtil.performChange(change);
             return true;
         }
         return false;
@@ -617,7 +617,7 @@ final class TerminateStatementAction extends Action {
                 }
             }.visit(rootNode);
             if (change.getEdit().hasChildren()) {
-                change.perform(new NullProgressMonitor());
+                EditorUtil.performChange(change);
                 return true;
             }
         }

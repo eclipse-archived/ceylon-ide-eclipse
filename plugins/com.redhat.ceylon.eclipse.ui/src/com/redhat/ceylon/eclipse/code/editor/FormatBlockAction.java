@@ -6,8 +6,8 @@ import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -17,6 +17,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 final class FormatBlockAction extends Action {
@@ -152,10 +153,10 @@ final class FormatBlockAction extends Action {
                 DocumentChange change = 
                         new DocumentChange("Format Block", document);
                 change.setEdit(new ReplaceEdit(start, len, text));
-                change.perform(new NullProgressMonitor());
+                EditorUtil.performChange(change);
             }
         }
-        catch (Exception e) {
+        catch (BadLocationException e) {
             e.printStackTrace();
         }
     }

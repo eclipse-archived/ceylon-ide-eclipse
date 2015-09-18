@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ltk.core.refactoring.TextChange;
 
@@ -14,7 +13,7 @@ public interface ExtractLinkedModeEnabled {
     IRegion getRefRegion();
     void setRefRegion(IRegion region);
     
-    void extractInFile(TextChange tfc) throws CoreException;
+    void extractInFile(TextChange tfc);
     
     String[] getNameProposals();
 }

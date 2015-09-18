@@ -1,11 +1,11 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.TypeProposal.getTypeProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REVEAL;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import java.util.ArrayList;
@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -31,14 +30,14 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Type;
 
 public class SpecifyTypeProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -75,21 +74,16 @@ public class SpecifyTypeProposal implements ICompletionProposal,
                 DocumentChange change = 
                         new DocumentChange("Specify Type", document);
                 change.setEdit(new MultiTextEdit());
-                try {
-                    HashSet<Declaration> decs = new HashSet<Declaration>();
-                    importType(decs, infType, rootNode);
-                    int il = applyImports(change, decs, rootNode, document);
-                    String typeName = 
-                            infType.asSourceCodeString(rootNode.getUnit());
-                    change.addEdit(new ReplaceEdit(offset, length, typeName));
-                    change.perform(new NullProgressMonitor());
-                    offset += il;
-                    length = typeName.length();
-                    selection = new Point(offset, length);
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
+                HashSet<Declaration> decs = new HashSet<Declaration>();
+                importType(decs, infType, rootNode);
+                int il = applyImports(change, decs, rootNode, document);
+                String typeName = 
+                        infType.asSourceCodeString(rootNode.getUnit());
+                change.addEdit(new ReplaceEdit(offset, length, typeName));
+                EditorUtil.performChange(change);
+                offset += il;
+                length = typeName.length();
+                selection = new Point(offset, length);
             }
         }
         else {

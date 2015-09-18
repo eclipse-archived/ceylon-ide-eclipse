@@ -22,7 +22,8 @@ import com.redhat.ceylon.eclipse.code.correct {
 }
 import com.redhat.ceylon.eclipse.util {
     Indents,
-    Nodes
+    Nodes,
+    EditorUtil
 }
 import org.eclipse.ui {
     IEditorPart
@@ -71,12 +72,12 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
         assert(exists editorData);
         assert (is Tree.Term node=editorData.node,
             exists rootNode=editorData.rootNode);
-
+        
         tfc.edit = MultiTextEdit();
-        value doc = tfc.getCurrentDocument(null);
-
+        value doc = EditorUtil.getDocument(tfc);
+        
         value result = extractValue();
-
+        
         Integer il;
         if (!result.declarationsToImport.empty) {
             il = ImportProposals.applyImports(tfc, result.declarationsToImport, rootNode, doc);
@@ -84,8 +85,9 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
             il=0;
         }
 
-        value text = result.declaration + Indents.getDefaultLineDelimiter(doc)
-                + Indents.getIndent(result.statement, doc);
+        value text = result.declaration + 
+                Indents.getDefaultLineDelimiter(doc) + 
+                Indents.getIndent(result.statement, doc);
 
         if (exists st = result.statement) {
             Integer start = st.startIndex.intValue();

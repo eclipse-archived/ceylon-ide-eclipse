@@ -17,8 +17,6 @@ import java.util.TreeMap;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.window.Window;
@@ -29,10 +27,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -40,6 +34,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 public class CleanImportsHandler extends AbstractHandler {
     
@@ -55,10 +54,11 @@ public class CleanImportsHandler extends AbstractHandler {
         return null;
     }
 
-    public static void cleanImports(CeylonParseController cpc, 
-            IDocument doc) {
-        if (!isEnabled(cpc)) return;
-        Tree.CompilationUnit rootNode = cpc.getLastCompilationUnit();
+    public static void cleanImports(
+            CeylonParseController controller, IDocument doc) {
+        if (!isEnabled(controller)) return;
+        Tree.CompilationUnit rootNode = 
+                controller.getLastCompilationUnit();
         if (rootNode!=null) {
             String imports = imports(rootNode, doc);
             Tree.ImportList importList = 
@@ -84,16 +84,12 @@ public class CleanImportsHandler extends AbstractHandler {
                     if (!doc.get(start, length)
                             .equals(imports+extra)) {
                         DocumentChange change = 
-                                new DocumentChange("Organize Imports", 
+                                new DocumentChange(
+                                        "Organize Imports", 
                                         doc);
                         change.setEdit(new ReplaceEdit(start, 
                                 length, imports+extra));
-                        try {
-                            change.perform(new NullProgressMonitor());
-                        }
-                        catch (CoreException e) {
-                            e.printStackTrace();
-                        }
+                        EditorUtil.performChange(change);
                     }
                 }
                 catch (BadLocationException e) {

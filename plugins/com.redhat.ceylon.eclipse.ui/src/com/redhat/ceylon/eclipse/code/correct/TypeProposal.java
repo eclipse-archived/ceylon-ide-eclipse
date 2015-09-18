@@ -12,7 +12,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -31,6 +30,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -61,33 +61,34 @@ class TypeProposal
 
     @Override
     public void apply(IDocument document) {
-        try {
-            final DocumentChange change = 
-                    new DocumentChange("Specify Type", document);
-            change.setEdit(new MultiTextEdit());
-            HashSet<Declaration> decs = 
-                    new HashSet<Declaration>();
-            if (type!=null) {
-                importType(decs, type, rootNode);
-            }
-            int il = applyImports(change, decs, rootNode, document);
-            change.addEdit(new ReplaceEdit(offset,
-                    getCurrentLength(document), text));
-            change.perform(new NullProgressMonitor());
-            selection = new Point(offset+il, text.length());
+        final DocumentChange change = 
+                new DocumentChange("Specify Type", document);
+        change.setEdit(new MultiTextEdit());
+        HashSet<Declaration> decs = 
+                new HashSet<Declaration>();
+        if (type!=null) {
+            importType(decs, type, rootNode);
         }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        int il = applyImports(change, decs, rootNode, document);
+        change.addEdit(new ReplaceEdit(offset,
+                getCurrentLength(document), text));
+        EditorUtil.performChange(change);
+        selection = new Point(offset+il, text.length());
     }
 
-    private int getCurrentLength(IDocument document) 
-            throws BadLocationException {
+    private int getCurrentLength(IDocument document) {
         int length = 0;
         for (int i=offset;
                 i<document.getLength(); 
                 i++) {
-            if (Character.isWhitespace(document.getChar(i))) {
+            char ch;
+            try {
+                ch = document.getChar(i);
+            }
+            catch (BadLocationException e) {
+                break;
+            }
+            if (Character.isWhitespace(ch)) {
                 break;
             }
             length++;

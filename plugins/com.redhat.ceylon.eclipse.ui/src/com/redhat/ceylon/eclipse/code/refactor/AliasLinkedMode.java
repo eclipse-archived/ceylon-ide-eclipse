@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.text.BadLocationException;
@@ -42,19 +41,14 @@ public final class AliasLinkedMode
     
     @Override
     protected int performInitialChange(IDocument document) {
-        try {
-            DocumentChange change = 
-                    new DocumentChange(
-                            "Introduce Type Alias", 
-                            document);
-            refactoring.renameInFile(change, null,
-                    editor.getParseController()
-                        .getLastCompilationUnit());
-            change.perform(new NullProgressMonitor());
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        DocumentChange change = 
+                new DocumentChange(
+                        "Introduce Type Alias", 
+                        document);
+        refactoring.renameInFile(change, null,
+                editor.getParseController()
+                .getLastCompilationUnit());
+        EditorUtil.performChange(change);
         return 0;
     }
     

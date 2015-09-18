@@ -142,7 +142,7 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         return tfc;
     }
     
-    int renameInFile(final TextChange change) throws CoreException {
+    int renameInFile(final TextChange change) {
         change.setEdit(new MultiTextEdit());
         Tree.Alias alias = element.getAlias();
         final Declaration dec = element.getDeclarationModel();

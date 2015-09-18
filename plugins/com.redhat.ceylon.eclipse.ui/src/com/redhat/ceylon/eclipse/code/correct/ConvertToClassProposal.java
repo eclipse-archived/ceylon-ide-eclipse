@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import java.util.Collection;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -20,13 +19,14 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ObjectDefinition;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.model.typechecker.model.Value;
 
 class ConvertToClassProposal extends AbstractLinkedMode implements ICompletionProposal {
 
@@ -86,7 +86,7 @@ class ConvertToClassProposal extends AbstractLinkedMode implements ICompletionPr
         String dec = ws + mods + initialName + " " + name;
         change.addEdit(new InsertEdit(offset, dec + impl));
         try {
-            change.perform(new NullProgressMonitor());
+            EditorUtil.performChange(change);
             
             LinkedPositionGroup group = new LinkedPositionGroup();
             group.addPosition(new LinkedPosition(doc, start-1, length, 0));

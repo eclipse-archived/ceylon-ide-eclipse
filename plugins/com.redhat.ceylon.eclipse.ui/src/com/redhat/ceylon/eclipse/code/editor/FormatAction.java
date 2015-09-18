@@ -11,7 +11,6 @@ import org.antlr.runtime.BufferedTokenStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenSource;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
@@ -21,13 +20,6 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import ceylon.formatter.format_;
-import ceylon.formatter.options.SparseFormattingOptions;
-import ceylon.formatter.options.combinedOptions_;
-import ceylon.formatter.options.loadProfile_;
-import ceylon.language.AssertionError;
-import ceylon.language.Singleton;
-
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -35,10 +27,18 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.code.style.CeylonStyle;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
+import ceylon.formatter.format_;
+import ceylon.formatter.options.SparseFormattingOptions;
+import ceylon.formatter.options.combinedOptions_;
+import ceylon.formatter.options.loadProfile_;
+import ceylon.language.AssertionError;
+import ceylon.language.Singleton;
 
 final class FormatAction extends Action {
     private final CeylonEditor editor;
@@ -231,7 +231,7 @@ final class FormatAction extends Action {
             if (!document.get(from, length).equals(text)) {
                 DocumentChange change = new DocumentChange("Format", document);
                 change.setEdit(new ReplaceEdit(from, length, text));
-                change.perform(new NullProgressMonitor());
+                EditorUtil.performChange(change);
                 if (selected) {
                     selectionProvider.setSelection(new TextSelection(startIndex, text.length()));
                 }

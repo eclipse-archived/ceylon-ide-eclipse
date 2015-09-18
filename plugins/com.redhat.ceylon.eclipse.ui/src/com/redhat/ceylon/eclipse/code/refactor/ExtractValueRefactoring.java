@@ -23,6 +23,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -109,9 +110,9 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
     }
 
 
-    public void extractInFile(TextChange tfc) throws CoreException {
+    public void extractInFile(TextChange tfc) {
         tfc.setEdit(new MultiTextEdit());
-        IDocument doc = tfc.getCurrentDocument(null);
+        IDocument doc = EditorUtil.getDocument(tfc);
         Unit unit = node.getUnit();
         Tree.Term term = (Tree.Term) node;
         Tree.Statement statement = findStatement(rootNode, node);

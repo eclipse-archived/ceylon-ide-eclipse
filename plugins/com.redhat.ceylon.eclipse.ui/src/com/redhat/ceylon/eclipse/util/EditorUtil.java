@@ -48,7 +48,6 @@ import org.eclipse.ltk.core.refactoring.IUndoManager;
 import org.eclipse.ltk.core.refactoring.RefactoringCore;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
@@ -74,7 +73,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.themes.ITheme;
 
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.editor.SourceArchiveEditorInput;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -84,6 +82,7 @@ import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class EditorUtil {
     
@@ -606,12 +605,14 @@ public class EditorUtil {
         }
     }
 
-    public static void performChange(TextFileChange textFileChange) {
+    public static boolean performChange(TextChange textFileChange) {
         try {
             textFileChange.perform(new NullProgressMonitor());
+            return true;
         }
         catch (CoreException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return false;
         }
     }
 
