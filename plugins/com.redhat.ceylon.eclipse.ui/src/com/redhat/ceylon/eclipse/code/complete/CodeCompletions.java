@@ -180,7 +180,7 @@ public class CodeCompletions {
         Declaration dec = dwp.getDeclaration();
         if(dwp.isAlias()){
             result.append(dwp.getName());
-            result.append(" -> ");
+            result.append(" \u2192 ");
         }
         result.append(dec.getName(unit));
         if(addTypeParameters)
@@ -197,7 +197,7 @@ public class CodeCompletions {
                 new StringBuilder();
         if(dwp != null && dwp.isAlias()){
             result.append(dwp.getName());
-            result.append(" -> ");
+            result.append(" \u2192 ");
         }
         result.append(dec.getName(unit));
         if (typeArgs!=null) {
