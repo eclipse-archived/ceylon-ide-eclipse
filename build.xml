@@ -21,6 +21,7 @@
     <target name="build"
             description="Builds the IDE plugin">
         <mvn:mvn pom="${basedir}/pom.xml" mavenVersion="3.2.2" fork="true" dir="${basedir}">
+            <arg value="clean" />
             <arg value="install" />
             <arg value="-DskipTests" />
         </mvn:mvn>
@@ -28,8 +29,8 @@
 
     <target name="clean"
             description="Cleans the build environment">
-        <mvn:mvn pom="${basedir}/pom.xml" mavenVersion="3.2.2" fork="true" dir="${basedir}">
+        <!--mvn:mvn pom="${basedir}/pom.xml" mavenVersion="3.2.2" fork="true" dir="${basedir}">
             <arg value="clean" />
-        </mvn:mvn>
+        </mvn:mvn-->
     </target>
 </project>
