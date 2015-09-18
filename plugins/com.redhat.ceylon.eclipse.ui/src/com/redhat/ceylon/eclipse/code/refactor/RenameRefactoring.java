@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchPattern;
@@ -404,25 +405,32 @@ public class RenameRefactoring extends AbstractRefactoring {
                     new SearchRequestor() {
                 @Override
                 public void acceptSearchMatch(SearchMatch match) {
-                    TextChange change = 
-                            canonicalChange(cc, changes, match);
-                    if (change!=null) {
-                        int loc = pattern.lastIndexOf('.') + 1;
-                        String oldName = 
-                                pattern.substring(loc);
-                        if (declaration instanceof Value) {
-                            change.addEdit(new ReplaceEdit(
-                                    match.getOffset() + 3, 
-                                    oldName.length() - 3, 
-                                    toInitialUppercase(newName)));
-                        }
-                        else {
-                            change.addEdit(new ReplaceEdit(
-                                    match.getOffset(), 
-                                    oldName.length(), 
-                                    oldName.startsWith("$") ? 
-                                            '$' + newName : 
-                                            newName));
+                    String filename = 
+                            match.getResource().getName();
+                    boolean isJavaFile = 
+                            JavaCore.isJavaLikeFileName(
+                                    filename);
+                    if (isJavaFile) {
+                        TextChange change = 
+                                canonicalChange(cc, changes, match);
+                        if (change!=null) {
+                            int loc = pattern.lastIndexOf('.') + 1;
+                            String oldName = 
+                                    pattern.substring(loc);
+                            if (declaration instanceof Value) {
+                                change.addEdit(new ReplaceEdit(
+                                        match.getOffset() + 3, 
+                                        oldName.length() - 3, 
+                                        toInitialUppercase(newName)));
+                            }
+                            else {
+                                change.addEdit(new ReplaceEdit(
+                                        match.getOffset(), 
+                                        oldName.length(), 
+                                        oldName.startsWith("$") ? 
+                                                '$' + newName : 
+                                                newName));
+                            }
                         }
                     }
                 }
