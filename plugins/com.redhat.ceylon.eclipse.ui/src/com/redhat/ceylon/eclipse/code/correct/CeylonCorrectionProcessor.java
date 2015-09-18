@@ -22,6 +22,9 @@ import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSat
 import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssertExistsDeclarationProposal.addAssertExistsDeclarationProposals;
+import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertExistsProposal.addAssignToAssertExistsProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertIsProposal.addAssignToAssertIsProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertNonemptyProposal.addAssignToAssertNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToForProposal.addAssignToForProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfExistsProposal.addAssignToIfExistsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAssignToIfIsProposal;
@@ -1090,9 +1093,12 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addDestructureProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addAssignToForProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addAssignToIfExistsProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToAssertExistsProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addAssignToIfNonemptyProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToAssertNonemptyProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addAssignToTryProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addAssignToIfIsProposal(currentEditor, rootNode, proposals, node, currentOffset);
+            addAssignToAssertIsProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addPrintProposal(rootNode, proposals, node, currentOffset);
             
             addConvertToNamedArgumentsProposal(proposals, file, rootNode, 
