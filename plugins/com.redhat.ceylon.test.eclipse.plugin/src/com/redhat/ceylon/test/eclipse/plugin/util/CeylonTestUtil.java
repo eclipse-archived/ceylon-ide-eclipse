@@ -192,7 +192,8 @@ public class CeylonTestUtil {
                 Function m = (Function) d;
                 boolean contains = false;
                 for (MethodWithContainer member : members) {
-                    if (member.getMethod().getName().equals(m.getName())) {
+                    String name = member.getMethod().getName();
+                    if (name!=null && name.equals(m.getName())) {
                         contains = true;
                         break;
                     }
