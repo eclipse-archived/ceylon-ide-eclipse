@@ -70,6 +70,25 @@ class ControlStructureCompletionProposal extends CompletionProposal {
         }
     }
 
+    static void addAssertExistsProposal(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration d) {
+        if (!dwp.isUnimported()) {
+            if (d instanceof Value) {
+                TypedDeclaration v = (TypedDeclaration) d;
+                if (v.getType()!=null &&
+                        d.getUnit().isOptionalType(v.getType()) && 
+                        !v.isVariable()) {
+                    Unit unit = cpc.getLastCompilationUnit().getUnit();
+                    result.add(new ControlStructureCompletionProposal(offset, prefix, 
+                            "assert (exists " + getDescriptionFor(d, unit) + ")", 
+                            "assert (exists " + getTextFor(d, unit) + ");", 
+                            d, cpc));
+                }
+            }
+        }
+    }
+
     static void addIfNonemptyProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d) {
@@ -83,6 +102,25 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                     result.add(new ControlStructureCompletionProposal(offset, prefix, 
                             "if (nonempty " + getDescriptionFor(d, unit) + ")", 
                             "if (nonempty " + getTextFor(d, unit) + ") {}", 
+                            d, cpc));
+                }
+            }
+        }
+    }
+    
+    static void addAssertNonemptyProposal(int offset, String prefix, 
+            CeylonParseController cpc, List<ICompletionProposal> result, 
+            DeclarationWithProximity dwp, Declaration d) {
+        if (!dwp.isUnimported()) {
+            if (d instanceof Value) {
+                TypedDeclaration v = (TypedDeclaration) d;
+                if (v.getType()!=null &&
+                        d.getUnit().isPossiblyEmptyType(v.getType()) && 
+                        !v.isVariable()) {
+                    Unit unit = cpc.getLastCompilationUnit().getUnit();
+                    result.add(new ControlStructureCompletionProposal(offset, prefix, 
+                            "assert (nonempty " + getDescriptionFor(d, unit) + ")", 
+                            "assert (nonempty " + getTextFor(d, unit) + ");", 
                             d, cpc));
                 }
             }

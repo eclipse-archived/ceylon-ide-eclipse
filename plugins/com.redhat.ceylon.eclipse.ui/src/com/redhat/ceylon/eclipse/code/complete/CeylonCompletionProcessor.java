@@ -39,6 +39,8 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDes
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isPackageDescriptor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.nextTokenType;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
+import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletionProposal.addAssertExistsProposal;
+import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletionProposal.addAssertNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletionProposal.addForProposal;
 import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletionProposal.addIfExistsProposal;
 import static com.redhat.ceylon.eclipse.code.complete.ControlStructureCompletionProposal.addIfNonemptyProposal;
@@ -1230,7 +1232,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                             controller, result, dwp, dec);
                     addIfExistsProposal(offset, prefix, 
                             controller, result, dwp, dec);
+                    addAssertExistsProposal(offset, prefix, 
+                            controller, result, dwp, dec);
                     addIfNonemptyProposal(offset, prefix, 
+                            controller, result, dwp, dec);
+                    addAssertNonemptyProposal(offset, prefix, 
                             controller, result, dwp, dec);
                     addTryProposal(offset, prefix, 
                             controller, result, dwp, dec);
