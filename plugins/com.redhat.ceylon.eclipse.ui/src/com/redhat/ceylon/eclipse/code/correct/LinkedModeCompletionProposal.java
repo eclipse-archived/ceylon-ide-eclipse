@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -230,7 +231,9 @@ public class LinkedModeCompletionProposal
             String prefix = 
                     document.get(region.getOffset(), 
                             offset-region.getOffset());
-            return text.startsWith(prefix);
+            String filter = prefix.trim().toLowerCase();
+            return ModelUtil.isNameMatching(prefix, text) ||
+                    text.toLowerCase().startsWith(filter);
         }
         catch (BadLocationException e) {
             return false;

@@ -33,6 +33,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -120,7 +121,9 @@ class TypeProposal
             String prefix = 
                     document.get(this.offset, 
                             offset-this.offset);
-            return text.startsWith(prefix);
+            String filter = prefix.trim().toLowerCase();
+            return ModelUtil.isNameMatching(prefix, text) ||
+                    text.toLowerCase().startsWith(filter);
         }
         catch (BadLocationException e) {
             return false;

@@ -48,6 +48,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -157,19 +158,21 @@ class InitializerProposal extends CorrectionProposal {
                     String content = 
                             document.get(region.getOffset(), 
                                     currentOffset-region.getOffset());
-                    String filter = content.trim();
-                    Unit unit = getUnit();
-                    String decName = 
-                            getProposedName(null, dec, unit);
-                    if (decName.startsWith(filter)) {
-                        return true;
-                    }
+                    return isContentValid(content);
                 }
                 catch (BadLocationException e) {
                     // ignore concurrently modified document
                 }
                 return false;
             }
+        }
+
+        private boolean isContentValid(String content) {
+            String filter = content.trim().toLowerCase();
+            return ModelUtil.isNameMatching(content, dec) ||
+                    getProposedName(null, dec, getUnit())
+                        .toLowerCase()
+                        .startsWith(filter);
         }
         
     }
@@ -258,8 +261,8 @@ class InitializerProposal extends CorrectionProposal {
                     String content = 
                             document.get(region.getOffset(), 
                                     currentOffset-region.getOffset());
-                    String filter = content.trim();
-                    if (value.startsWith(filter)) {
+                    String filter = content.trim().toLowerCase();
+                    if (value.toLowerCase().startsWith(filter)) {
                         return true;
                     }
                 }

@@ -59,6 +59,7 @@ import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Interface;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -244,12 +245,14 @@ class ParametersCompletionProposal extends CompletionProposal {
             if (eq>0) {
                 content = content.substring(eq+1);
             }
-            String filter = content.trim();
-            String decName = 
-                    getProposedName(qualifier, dec, 
-                            getUnit());
-            return (op+decName).startsWith(filter) ||
-                    decName.startsWith(filter);
+            String filter = content.trim().toLowerCase();
+            if (filter.startsWith(op)) {
+                filter = filter.substring(op.length());
+            }
+            return ModelUtil.isNameMatching(content, dec) ||
+                    getProposedName(qualifier, dec, getUnit())
+                        .toLowerCase()
+                        .startsWith(filter);
         }
 
     }
@@ -360,8 +363,8 @@ class ParametersCompletionProposal extends CompletionProposal {
                     if (eq>0) {
                         content = content.substring(eq+1);
                     }
-                    String filter = content.trim();
-                    if (value.startsWith(filter)) {
+                    String filter = content.trim().toLowerCase();
+                    if (value.toLowerCase().startsWith(filter)) {
                         return true;
                     }
                 }
