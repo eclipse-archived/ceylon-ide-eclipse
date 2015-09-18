@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.addModuleImports;
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.makeModuleImportShared;
+import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.removeModuleImports;
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.removeSharedAnnotation;
 import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
@@ -42,6 +44,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -53,10 +56,8 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
@@ -86,14 +87,23 @@ public class CeylonModulePropertiesPage extends PropertyPage
 //    }
   
     private NewPackageWizard openPackageWizard() {
-        IWizardDescriptor descriptor = PlatformUI.getWorkbench().getNewWizardRegistry()
-                .findWizard(PLUGIN_ID + ".newPackageWizard");
+        IWizardDescriptor descriptor = 
+                PlatformUI.getWorkbench()
+                    .getNewWizardRegistry()
+                    .findWizard(PLUGIN_ID 
+                            + ".newPackageWizard");
         if (descriptor!=null) {
             try {
-                NewPackageWizard wizard = (NewPackageWizard) descriptor.createWizard();
-                wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(getElement()));
-                WizardDialog wd = new WizardDialog(Display.getCurrent().getActiveShell(), 
-                        wizard);
+                NewPackageWizard wizard = 
+                        (NewPackageWizard) 
+                            descriptor.createWizard();
+                wizard.init(PlatformUI.getWorkbench(), 
+                        new StructuredSelection(getElement()));
+                Shell shell = 
+                        Display.getCurrent()
+                            .getActiveShell();
+                WizardDialog wd = 
+                        new WizardDialog(shell, wizard);
                 wd.setTitle(wizard.getWindowTitle());
                 wd.open();
                 return wizard;
@@ -120,13 +130,21 @@ public class CeylonModulePropertiesPage extends PropertyPage
         new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL)
                 .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
-        final IFile moduleDescriptor = ((IFolder) packageFragment.getResource())
-                .getFile("module.ceylon");
+        IFolder folder = 
+                (IFolder) 
+                    packageFragment.getResource();
+        final IFile moduleDescriptor = 
+                folder.getFile("module.ceylon");
         Link openDescriptorLink = new Link(parent, 0);
-        openDescriptorLink.setLayoutData(GridDataFactory.swtDefaults()
-                .align(SWT.FILL, SWT.CENTER).indent(0, 6).create());
+        GridData gd = 
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .indent(0, 6)
+                    .create();
+        openDescriptorLink.setLayoutData(gd);
         openDescriptorLink.setText("<a>Edit module descriptor...</a>");
-        openDescriptorLink.addSelectionListener(new SelectionAdapter() {
+        openDescriptorLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 getShell().close();
@@ -139,14 +157,23 @@ public class CeylonModulePropertiesPage extends PropertyPage
         IAdaptable element = getElement();
         IFile file = (IFile) element.getAdapter(IFile.class);
         if (file==null) {
-            SourceModuleNode node = (SourceModuleNode) element.getAdapter(SourceModuleNode.class);
+            SourceModuleNode node = 
+                    (SourceModuleNode) 
+                        element.getAdapter(
+                                SourceModuleNode.class);
             if (node==null) {
-                packageFragment = (IPackageFragment) element
-                        .getAdapter(IPackageFragment.class);
+                packageFragment = 
+                        (IPackageFragment) 
+                            element.getAdapter(
+                                    IPackageFragment.class);
             }
             else {
-                for (IPackageFragment pf: node.getPackageFragments()) {
-                    if (pf.getElementName().equals(node.getModule().getNameAsString())) {
+                for (IPackageFragment pf: 
+                        node.getPackageFragments()) {
+                    String mname = 
+                            node.getModule()
+                                .getNameAsString();
+                    if (pf.getElementName().equals(mname)) {
                         packageFragment = pf;
                         break;
                     }
@@ -154,13 +181,17 @@ public class CeylonModulePropertiesPage extends PropertyPage
             }
         }
         else {
-            IJavaElement javaElement = JavaCore.create(file.getParent());
+            IJavaElement javaElement = 
+                    JavaCore.create(file.getParent());
             if (javaElement instanceof IPackageFragment) {
-                packageFragment = (IPackageFragment) javaElement;
+                packageFragment = 
+                        (IPackageFragment) javaElement;
             }
         }
         if (packageFragment!=null) {
-            project = packageFragment.getJavaProject().getProject();
+            project = 
+                    packageFragment.getJavaProject()
+                        .getProject();
         }
     }
 
@@ -169,7 +200,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
         Modules projectModules = getProjectModules(project);
         if (projectModules==null) return null;
         for (Module m: projectModules.getListOfModules()) {
-            if (m.getNameAsString().equals(packageFragment.getElementName())) {
+            String pname = packageFragment.getElementName();
+            if (m.getNameAsString().equals(pname)) {
                 return m; 
             }
         }
@@ -373,7 +405,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
         Unit unit = pkg.getUnit();
         ProjectPhasedUnit phasedUnit;
         if (unit instanceof ProjectSourceFile) {
-            ProjectSourceFile ceylonUnit = (ProjectSourceFile) unit;
+            ProjectSourceFile ceylonUnit = 
+                    (ProjectSourceFile) unit;
             phasedUnit = ceylonUnit.getPhasedUnit();
             TextFileChange textFileChange = 
                     new TextFileChange(
@@ -485,15 +518,20 @@ public class CeylonModulePropertiesPage extends PropertyPage
     }
 
     private void selectAndAddModules() {
-        Map<String, String> added = selectModules(new ModuleImportSelectionDialog(getShell(), 
+        ModuleImportContentProvider contentProvider = 
                 new ModuleImportContentProvider(getModule(), project) {
             @Override
             public ModuleSearchResult getModules(String prefix) {
                 return getModuleSearchResults(prefix, 
                         getProjectTypeChecker(project), project);
             }
-        }), project);
-        ModuleImportUtil.addModuleImports(project, getModule(), added);
+        };
+        ModuleImportSelectionDialog dialog = 
+                new ModuleImportSelectionDialog(getShell(), 
+                        contentProvider);
+        Map<String, String> added = 
+                selectModules(dialog, project);
+        addModuleImports(project, getModule(), added);
         for (Map.Entry<String, String> entry: added.entrySet()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
             item.setImage(CeylonResources.MODULE);
@@ -503,7 +541,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
     }
 
     private void removeSelectedModules() {
-        int[] selection = moduleImportsTable.getSelectionIndices();
+        int[] selection = 
+                moduleImportsTable.getSelectionIndices();
         List<String> names = new ArrayList<String>();
         List<Integer> removed = new ArrayList<Integer>();
         for (int index: selection) {
@@ -514,7 +553,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
                 removed.add(index);
             }
         }
-        ModuleImportUtil.removeModuleImports(project, getModule(), names);
+        removeModuleImports(project, getModule(), names);
         int[] indices = new int[removed.size()];
         for (int i=0; i<removed.size(); i++) {
             indices[i] = removed.get(i);
