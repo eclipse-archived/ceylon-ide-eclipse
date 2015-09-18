@@ -776,9 +776,12 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addDestructureProposal(currentEditor, rootNode, proposals, node, start);
             addAssignToForProposal(currentEditor, rootNode, proposals, node, start);
             addAssignToIfExistsProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToAssertExistsProposal(currentEditor, rootNode, proposals, node, start);
             addAssignToIfNonemptyProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToAssertNonemptyProposal(currentEditor, rootNode, proposals, node, start);
             addAssignToTryProposal(currentEditor, rootNode, proposals, node, start);
             addAssignToIfIsProposal(currentEditor, rootNode, proposals, node, start);
+            addAssignToAssertIsProposal(currentEditor, rootNode, proposals, node, start);
             addPrintProposal(rootNode, proposals, node, start);
             break;
         case 3100:
