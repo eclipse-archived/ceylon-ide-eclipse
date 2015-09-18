@@ -104,7 +104,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             CeylonParseController controller, 
             List<ICompletionProposal> result, 
             Declaration dec, Scope scope, boolean isMember) {
-        Unit unit = controller.getRootNode().getUnit();
+        Unit unit = controller.getLastCompilationUnit().getUnit();
         result.add(new InvocationCompletionProposal(
                 offset, prefix,
                 dec.getName(unit), escapeName(dec, unit),
@@ -118,7 +118,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             List<ICompletionProposal> result, 
             Declaration dec, Scope scope, boolean isMember, 
             Reference pr, OccurrenceLocation ol) {
-        Unit unit = controller.getRootNode().getUnit();
+        Unit unit = controller.getLastCompilationUnit().getUnit();
         //proposal with type args
         if (dec instanceof Generic) {
             result.add(new InvocationCompletionProposal(
@@ -159,7 +159,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             Declaration dec, Scope scope, 
             boolean isMember, Reference pr,
             Type requiredType, OccurrenceLocation ol) {
-        Unit unit = controller.getRootNode().getUnit();
+        Unit unit = controller.getLastCompilationUnit().getUnit();
         Type type = pr.getType();
         if (type!=null) {
             if (!(dec instanceof Functional) && 
@@ -241,7 +241,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             Scope scope, OccurrenceLocation ol, 
             String typeArgs, boolean isMember) {
         if (dec instanceof Functional) {
-            Unit unit = controller.getRootNode().getUnit();
+            Unit unit = controller.getLastCompilationUnit().getUnit();
             boolean isAbstract = 
                     dec instanceof TypeDeclaration && 
                     ((TypeDeclaration) dec).isAbstract();
@@ -684,7 +684,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     }
 
     private Unit getUnit() {
-        return cpc.getRootNode().getUnit();
+        return cpc.getLastCompilationUnit().getUnit();
     }
 
     private DocumentChange createChange(IDocument document)
@@ -695,7 +695,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         change.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs = 
                 new HashSet<Declaration>();
-        Tree.CompilationUnit cu = cpc.getRootNode();
+        Tree.CompilationUnit cu = cpc.getLastCompilationUnit();
         if (qualifyingValue!=null) {
             importDeclaration(decs, qualifyingValue, cu);
         }
@@ -1263,7 +1263,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 }
                 super.visit(that);
             }
-        }.visit(cpc.getRootNode());
+        }.visit(cpc.getLastCompilationUnit());
     }
     
     static final class ParameterContextInformation 

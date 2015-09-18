@@ -339,10 +339,10 @@ abstract class FindSearchQuery implements ISearchQuery {
                 CeylonParseController cpc = 
                         ce.getParseController();
                 Unit editorUnit = 
-                        cpc.getRootNode().getUnit();
+                        cpc.getLastCompilationUnit().getUnit();
                 if (/*editor.isDirty() &&*/
                     pu.getUnit().equals(editorUnit)) {
-                    return cpc.getRootNode();
+                    return cpc.getLastCompilationUnit();
                 }
             }
         }

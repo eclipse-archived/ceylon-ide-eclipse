@@ -42,7 +42,7 @@ public class ShowInHierarchyAction extends Action implements IObjectActionDelega
                     CeylonParseController parseController = 
                             ((CeylonEditor) currentEditor).getParseController();
                     Tree.CompilationUnit rootNode = 
-                            parseController.getRootNode();
+                            parseController.getLastCompilationUnit();
                     if (rootNode!=null) {
                         Node node = 
                                 Nodes.findNode(rootNode, 

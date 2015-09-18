@@ -352,7 +352,7 @@ public class RenameRefactoring extends AbstractRefactoring {
             DocumentChange dc = newDocumentChange();
             CompilationUnit editorRootNode = 
                     editor.getParseController()
-                        .getRootNode();
+                        .getLastCompilationUnit();
             renameInFile(dc, composite, editorRootNode);
             pm.worked(i++);
         }

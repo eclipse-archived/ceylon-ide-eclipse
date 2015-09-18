@@ -209,7 +209,7 @@ public class DocumentationView extends ViewPart {
             CeylonParseController parseController = 
                     editor.getParseController();
             Tree.CompilationUnit rootNode = 
-                    parseController.getRootNode();
+                    parseController.getLastCompilationUnit();
             int offset = parseInt(location.substring(4));
             Node node = findNode(rootNode, offset);
             SpecifyTypeProposal

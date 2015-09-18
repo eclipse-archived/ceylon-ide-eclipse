@@ -58,7 +58,7 @@ public class CleanImportsHandler extends AbstractHandler {
     public static void cleanImports(CeylonParseController cpc, 
             IDocument doc) {
         if (!isEnabled(cpc)) return;
-        Tree.CompilationUnit rootNode = cpc.getRootNode();
+        Tree.CompilationUnit rootNode = cpc.getLastCompilationUnit();
         if (rootNode!=null) {
             String imports = imports(rootNode, doc);
             Tree.ImportList importList = 
@@ -475,7 +475,7 @@ public class CleanImportsHandler extends AbstractHandler {
         return cpc!=null && 
                 cpc.getStage().ordinal() >=
                         Stage.TYPE_ANALYSIS.ordinal() && 
-                cpc.getRootNode()!=null;
+                cpc.getLastCompilationUnit()!=null;
     }
     
     public static Declaration select(List<Declaration> proposals) {

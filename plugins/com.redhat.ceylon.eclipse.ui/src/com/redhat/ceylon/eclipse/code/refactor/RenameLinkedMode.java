@@ -235,7 +235,7 @@ public final class RenameLinkedMode
                     throws BadLocationException {
         Tree.CompilationUnit rootNode = 
                 editor.getParseController()
-                    .getRootNode();
+                    .getLastCompilationUnit();
         linkedPositionGroup = new LinkedPositionGroup();
         addLinkedPositions(document, rootNode, adjust, 
                 linkedPositionGroup);

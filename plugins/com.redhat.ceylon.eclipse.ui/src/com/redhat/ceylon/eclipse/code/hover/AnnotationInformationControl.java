@@ -130,7 +130,7 @@ class AnnotationInformationControl
         if (cpc == null || ! Stage.TYPE_ANALYSIS.equals(cpc.getStage())) {
             return null;
         }
-        return cpc.getRootNode();
+        return cpc.getLastCompilationUnit();
     }
     
     @Override

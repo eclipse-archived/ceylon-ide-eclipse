@@ -247,7 +247,7 @@ public class InlineRefactoring extends AbstractRefactoring {
         List<CommonToken> declarationTokens = null;
         Tree.CompilationUnit editorRootNode = 
         		editor.getParseController()
-        		    .getRootNode();
+        		    .getLastCompilationUnit();
         List<CommonToken> editorTokens = 
         		editor.getParseController()
         		    .getTokens();

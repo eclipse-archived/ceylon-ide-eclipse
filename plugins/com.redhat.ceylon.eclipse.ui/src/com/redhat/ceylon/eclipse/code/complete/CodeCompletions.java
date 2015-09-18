@@ -86,7 +86,7 @@ public class CodeCompletions {
         String qname = decl.getQualifiedNameString();
         
         // handle language package or same module and package
-        Unit unit = cpc.getRootNode().getUnit();
+        Unit unit = cpc.getLastCompilationUnit().getUnit();
         if (pkg!=null && 
                 (Module.LANGUAGE_MODULE_NAME
                         .equals(pkg.getNameAsString())

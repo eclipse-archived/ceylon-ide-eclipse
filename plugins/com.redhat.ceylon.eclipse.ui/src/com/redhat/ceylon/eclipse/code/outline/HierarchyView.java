@@ -988,7 +988,7 @@ public class HierarchyView extends ViewPart {
         CeylonParseController parseController = 
                 editor.getParseController();
         Node node = 
-                findNode(parseController.getRootNode(), 
+                findNode(parseController.getLastCompilationUnit(), 
                         parseController.getTokens(),
                         editor.getSelection());
         Referenceable dec = getReferencedDeclaration(node);

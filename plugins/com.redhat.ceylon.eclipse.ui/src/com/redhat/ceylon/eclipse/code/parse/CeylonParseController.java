@@ -183,7 +183,7 @@ public class CeylonParseController {
         return stage;
     }
     
-    public PhasedUnit getPhasedUnit() {
+    public PhasedUnit getLastPhasedUnit() {
         return phasedUnit;
     }
     
@@ -575,16 +575,16 @@ public class CeylonParseController {
     }
     
     /*
-     * returns the last fully-typechecked AST. 
+     * returns the last fully-typechecked AST.
      * It might be different from the most recently parsed AST,
      * and thus inconsistent with the source code.
      */
-    public Tree.CompilationUnit getRootNode() {
+    public Tree.CompilationUnit getLastCompilationUnit() {
         return phasedUnit != null ? phasedUnit.getCompilationUnit() : null;
     }
     
     /*
-     * returns the last parsed AST.
+     * returns the most recently parsed AST.
      * 
      * Be careful it can be returned *before* the typechecking or 
      * *during* the typechecking (in case of cancellation)
@@ -598,14 +598,17 @@ public class CeylonParseController {
     /*
      * returns the last parsed AST only if it is fully typechecked.
      * 
-     * The returned AST is 
-     * Be careful it can be return *before* the typechecking or 
-     * *during* the typechecking.
-     * So *never* use this from places that need a fully decorated AST
-     * (with model elements such as declarations or units).
+     * Returns null if the last parsed AST could not be fully 
+     * typechecked
+     * (cancellation, source model read lock not obtained, 
+     * running typechecking ...)
      */
     public Tree.CompilationUnit getTypecheckedRootNode() {
-        return rootNode;
+        Tree.CompilationUnit lastRootNode = getLastCompilationUnit();
+        if (lastRootNode == rootNode) {
+            return lastRootNode;
+        }
+        return null;
     }
 
     /*

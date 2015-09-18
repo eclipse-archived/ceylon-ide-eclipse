@@ -135,7 +135,7 @@ public class Navigation {
         Tree.CompilationUnit rootNode = 
                 editor==null ? null : 
                     editor.getParseController()
-                        .getRootNode();
+                        .getLastCompilationUnit();
         if (rootNode!=null && unit.equals(rootNode.getUnit())) {
             editor.selectAndReveal(startOffset, length);
             return editor;

@@ -502,7 +502,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
             }
         }
         if (searchInEditor()) {
-            String relpath = editor.getParseController().getPhasedUnit().getPathRelativeToSrcDir();
+            String relpath = editor.getParseController().getLastPhasedUnit().getPathRelativeToSrcDir();
             addReferences(rootNode, list, 
                     getProjectTypeChecker(project).getPhasedUnitFromRelativePath(relpath));
         }

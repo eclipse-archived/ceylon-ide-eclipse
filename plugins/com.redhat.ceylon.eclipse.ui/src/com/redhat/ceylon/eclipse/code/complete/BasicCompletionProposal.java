@@ -28,7 +28,7 @@ class BasicCompletionProposal extends CompletionProposal {
         //for doc links, propose both aliases and unaliased qualified form
         //we don't need to do this in code b/c there is no fully-qualified form
         String name = dec.getName();
-        String aliasedName = dec.getName(cpc.getRootNode().getUnit());
+        String aliasedName = dec.getName(cpc.getLastCompilationUnit().getUnit());
         if (!name.equals(aliasedName)) {
             result.add(new BasicCompletionProposal(offset, prefix,
                     aliasedName, aliasedName, dec, cpc));

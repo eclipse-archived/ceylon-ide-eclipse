@@ -182,7 +182,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
                         originalName));
         
         linkedPositionGroup.addPosition(namePosition);
-        editor.getParseController().getRootNode()
+        editor.getParseController().getLastCompilationUnit()
                 .visit(new LinkedPositionsVisitor(adjust, document, 
                         linkedPositionGroup));
         linkedModeModel.addGroup(linkedPositionGroup);

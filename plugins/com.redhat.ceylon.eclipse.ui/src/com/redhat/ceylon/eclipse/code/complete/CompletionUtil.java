@@ -83,28 +83,28 @@ public class CompletionUtil {
     }
 
     static boolean isPackageDescriptor(CeylonParseController cpc) {
-        return cpc.getRootNode() != null && 
-                cpc.getRootNode().getUnit() != null &&
-                cpc.getRootNode().getUnit().getFilename().equals("package.ceylon"); 
+        return cpc.getLastCompilationUnit() != null && 
+                cpc.getLastCompilationUnit().getUnit() != null &&
+                cpc.getLastCompilationUnit().getUnit().getFilename().equals("package.ceylon"); 
     }
 
     static boolean isModuleDescriptor(CeylonParseController cpc) {
-        return cpc.getRootNode() != null && 
-                cpc.getRootNode().getUnit() != null &&
-                cpc.getRootNode().getUnit().getFilename().equals("module.ceylon"); 
+        return cpc.getLastCompilationUnit() != null && 
+                cpc.getLastCompilationUnit().getUnit() != null &&
+                cpc.getLastCompilationUnit().getUnit().getFilename().equals("module.ceylon"); 
     }
 
     static boolean isEmptyModuleDescriptor(CeylonParseController cpc) {
         return isModuleDescriptor(cpc) && 
-                cpc.getRootNode() != null && 
-                cpc.getRootNode().getModuleDescriptors().isEmpty(); 
+                cpc.getLastCompilationUnit() != null && 
+                cpc.getLastCompilationUnit().getModuleDescriptors().isEmpty(); 
     }
 
     static boolean isEmptyPackageDescriptor(CeylonParseController cpc) {
-        return cpc.getRootNode() != null &&
-                cpc.getRootNode().getUnit() != null &&
-                cpc.getRootNode().getUnit().getFilename().equals("package.ceylon") && 
-                cpc.getRootNode().getPackageDescriptors().isEmpty();
+        return cpc.getLastCompilationUnit() != null &&
+                cpc.getLastCompilationUnit().getUnit() != null &&
+                cpc.getLastCompilationUnit().getUnit().getFilename().equals("package.ceylon") && 
+                cpc.getLastCompilationUnit().getPackageDescriptors().isEmpty();
     }
 
     static int nextTokenType(final CeylonParseController cpc,
@@ -247,7 +247,7 @@ public class CompletionUtil {
                     }
                 }
                 FindInitializerVisitor fiv = new FindInitializerVisitor();
-                fiv.visit(cpc.getRootNode());
+                fiv.visit(cpc.getLastCompilationUnit());
                 sie = fiv.result;
             }
             if (sie!=null) {
@@ -268,7 +268,7 @@ public class CompletionUtil {
                             return arrow + id.getText();
                         }
                     }
-                    else if (term.getUnit().equals(cpc.getRootNode().getUnit())) {
+                    else if (term.getUnit().equals(cpc.getLastCompilationUnit().getUnit())) {
                         String impl = Nodes.toString(term, cpc.getTokens());
                         if (impl.length()<10) {
                             return arrow + impl;

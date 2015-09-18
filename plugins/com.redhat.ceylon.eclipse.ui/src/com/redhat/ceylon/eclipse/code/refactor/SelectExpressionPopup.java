@@ -92,7 +92,7 @@ abstract class SelectExpressionPopup extends PopupDialog {
     private List<Tree.Term> containingExpressions() {
         Tree.CompilationUnit rootNode = 
                 editor.getParseController()
-                    .getRootNode();
+                    .getLastCompilationUnit();
         final IRegion selection = editor.getSelection();
         final List<Tree.Term> expressions = 
                 new ArrayList<Tree.Term>();

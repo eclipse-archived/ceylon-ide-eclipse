@@ -94,7 +94,7 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
                 };
                 
                 if (!emptyLine) {
-                    Tree.CompilationUnit rootNode = editor.getParseController().getRootNode();
+                    Tree.CompilationUnit rootNode = editor.getParseController().getLastCompilationUnit();
                     location = getFirstValidLocation(rootNode, document, textSel);
                 }
             } catch (Exception e) {

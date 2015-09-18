@@ -42,7 +42,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                 else {
                     elemName = name.substring(0, 1);
                 }
-                Unit unit = cpc.getRootNode().getUnit();
+                Unit unit = cpc.getLastCompilationUnit().getUnit();
                 result.add(new ControlStructureCompletionProposal(offset, prefix, 
                         "for (" + elemName + " in " + getDescriptionFor(d, unit) + ")", 
                         "for (" + elemName + " in " + getTextFor(d, unit) + ") {}",
@@ -60,7 +60,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                 if (v.getType()!=null &&
                         d.getUnit().isOptionalType(v.getType()) && 
                         !v.isVariable()) {
-                    Unit unit = cpc.getRootNode().getUnit();
+                    Unit unit = cpc.getLastCompilationUnit().getUnit();
                     result.add(new ControlStructureCompletionProposal(offset, prefix, 
                             "if (exists " + getDescriptionFor(d, unit) + ")", 
                             "if (exists " + getTextFor(d, unit) + ") {}", 
@@ -79,7 +79,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                 if (v.getType()!=null &&
                         d.getUnit().isPossiblyEmptyType(v.getType()) && 
                         !v.isVariable()) {
-                    Unit unit = cpc.getRootNode().getUnit();
+                    Unit unit = cpc.getLastCompilationUnit().getUnit();
                     result.add(new ControlStructureCompletionProposal(offset, prefix, 
                             "if (nonempty " + getDescriptionFor(d, unit) + ")", 
                             "if (nonempty " + getTextFor(d, unit) + ") {}", 
@@ -99,7 +99,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                         v.getType().getDeclaration()
                             .inherits(d.getUnit().getObtainableDeclaration()) && 
                         !v.isVariable()) {
-                    Unit unit = cpc.getRootNode().getUnit();
+                    Unit unit = cpc.getLastCompilationUnit().getUnit();
                     result.add(new ControlStructureCompletionProposal(offset, prefix, 
                             "try (" + getDescriptionFor(d, unit) + ")", 
                             "try (" + getTextFor(d, unit) + ") {}", 
@@ -135,7 +135,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                             .append(getDefaultLineDelimiter(doc));
                     }
                     body.append(indent);
-                    Unit u = cpc.getRootNode().getUnit();
+                    Unit u = cpc.getLastCompilationUnit().getUnit();
                     result.add(new ControlStructureCompletionProposal(offset, prefix, 
                             "switch (" + getDescriptionFor(d, u) + ")", 
                             "switch (" + getTextFor(d, u) + ")" + 

@@ -98,7 +98,7 @@ class CorrectionUtil {
             CeylonParseController cpc = 
                     editor.getParseController();
             if (cpc!=null) {
-                Tree.CompilationUnit rn = cpc.getRootNode();
+                Tree.CompilationUnit rn = cpc.getLastCompilationUnit();
                 if (rn!=null) {
                     Unit u = rn.getUnit();
                     if (u.equals(unit.getUnit())) {

@@ -64,7 +64,7 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             IProgressMonitor monitor) {
         final CeylonParseController cpc = parseController;
         if (cpc.getStage().ordinal() >= getStage().ordinal()) {
-            final Tree.CompilationUnit rootNode = cpc.getRootNode();
+            final Tree.CompilationUnit rootNode = cpc.getLastCompilationUnit();
             List<CommonToken> tokens = cpc.getTokens();
             if (rootNode == null) {
                 return;
@@ -224,8 +224,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
         public void selectionChanged(SelectionChangedEvent event) {
             CeylonParseController cpc = 
                     editor.getParseController();
-            if (cpc.getRootNode()==null) return;
-            Node node = findScope(cpc.getRootNode(), 
+            if (cpc.getLastCompilationUnit()==null) return;
+            Node node = findScope(cpc.getLastCompilationUnit(), 
                     (ITextSelection) event.getSelection());
             if (node!=null) {
                 editor.setHighlightRange(node.getStartIndex(), 

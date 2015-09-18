@@ -90,7 +90,7 @@ public class ModelProxy {
         if (editor instanceof CeylonEditor /*&& part.isDirty()*/) {
             CeylonParseController controller =
                     ((CeylonEditor) editor).getParseController();
-            Tree.CompilationUnit rootNode = controller.getRootNode();
+            Tree.CompilationUnit rootNode = controller.getLastCompilationUnit();
             if (rootNode!=null) {
                 Unit unit = rootNode.getUnit();
                 if (unit!=null) {

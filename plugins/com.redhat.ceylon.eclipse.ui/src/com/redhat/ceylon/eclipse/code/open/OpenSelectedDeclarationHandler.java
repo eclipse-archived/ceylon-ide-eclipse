@@ -29,7 +29,7 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
         }
         else {
             Tree.CompilationUnit rootNode = 
-                    controller.getRootNode();
+                    controller.getLastCompilationUnit();
             if (rootNode == null) {
                 return null;
             }

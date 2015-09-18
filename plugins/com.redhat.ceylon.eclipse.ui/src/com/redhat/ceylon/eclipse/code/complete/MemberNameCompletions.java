@@ -25,7 +25,7 @@ public class MemberNameCompletions {
             final Node node,
             final List<ICompletionProposal> result) {
         final Integer startIndex2 = node.getStartIndex();
-        final Tree.CompilationUnit rootNode = controller.getRootNode();
+        final Tree.CompilationUnit rootNode = controller.getLastCompilationUnit();
         new Visitor() {
             @Override
             public void visit(Tree.StaticMemberOrTypeExpression that) {

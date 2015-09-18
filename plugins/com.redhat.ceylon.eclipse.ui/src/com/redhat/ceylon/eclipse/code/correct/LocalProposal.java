@@ -178,7 +178,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
             performInitialChange(document);
             CeylonParseController cpc = 
                     editor.getParseController();
-            Unit unit = cpc.getRootNode().getUnit();
+            Unit unit = cpc.getLastCompilationUnit().getUnit();
             addLinkedPositions(document, unit);
             enterLinkedMode(document, 
                     getExitSequenceNumber(), 

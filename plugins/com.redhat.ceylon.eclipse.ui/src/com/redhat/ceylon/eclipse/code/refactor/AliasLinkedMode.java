@@ -49,7 +49,7 @@ public final class AliasLinkedMode
                             document);
             refactoring.renameInFile(change, null,
                     editor.getParseController()
-                        .getRootNode());
+                        .getLastCompilationUnit());
             change.perform(new NullProgressMonitor());
         }
         catch (Exception e) {
@@ -115,7 +115,7 @@ public final class AliasLinkedMode
 
     private String getPackageName() {
         return this.editor.getParseController()
-                .getRootNode()
+                .getLastCompilationUnit()
                 .getUnit()
                 .getPackage()
                 .getQualifiedNameString();
@@ -216,7 +216,7 @@ public final class AliasLinkedMode
                     throws BadLocationException {
         linkedPositionGroup = new LinkedPositionGroup();
         addLinkedPositions(document, 
-                editor.getParseController().getRootNode(), 
+                editor.getParseController().getLastCompilationUnit(), 
                 adjust, linkedPositionGroup);
         linkedModeModel.addGroup(linkedPositionGroup);
     }

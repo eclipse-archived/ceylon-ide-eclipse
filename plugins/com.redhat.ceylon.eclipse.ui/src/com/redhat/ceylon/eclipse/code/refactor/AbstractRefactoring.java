@@ -63,7 +63,7 @@ abstract class AbstractRefactoring extends Refactoring {
             project = EditorUtil.getProject(editor);
             CeylonParseController cpc = ce.getParseController();
             tokens = cpc.getTokens();
-            rootNode = cpc.getRootNode();
+            rootNode = cpc.getTypecheckedRootNode();
             IEditorInput input = editor.getEditorInput();
             if (rootNode!=null && input instanceof IFileEditorInput) {
                 sourceFile = EditorUtil.getFile(input);
@@ -142,8 +142,8 @@ abstract class AbstractRefactoring extends Refactoring {
     }
 
     boolean searchInFile(PhasedUnit pu) {
-        return editor==null || !editor.isDirty() || 
-                !pu.getUnit().equals(editor.getParseController().getRootNode().getUnit());
+        return editor==null || !editor.isDirty() || rootNode == null ||
+                !pu.getUnit().equals(rootNode.getUnit());
     }
     
     TextChange newLocalChange() {

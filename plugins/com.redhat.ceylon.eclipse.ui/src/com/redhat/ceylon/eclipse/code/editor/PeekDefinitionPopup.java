@@ -321,7 +321,7 @@ final class PeekDefinitionPopup extends PopupDialog
         int offset = region.getOffset();
         int length = region.getLength();
         Tree.CompilationUnit rootNode = 
-                controller.getRootNode();
+                controller.getLastCompilationUnit();
         referencedNode = 
                 getReferencedNode(findNode(rootNode, 
                         controller.getTokens(), 

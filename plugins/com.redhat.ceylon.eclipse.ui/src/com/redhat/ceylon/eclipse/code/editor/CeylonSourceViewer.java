@@ -821,10 +821,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
     		CeylonParseController controller = 
     		        editor.getParseController();
     		if (controller==null || 
-    		        controller.getRootNode()==null) {
+    		        controller.getLastCompilationUnit()==null) {
     		    return null;
     		}
-    		Tree.CompilationUnit cu = controller.getRootNode();
+    		Tree.CompilationUnit cu = controller.getLastCompilationUnit();
     		final IRegion selection = editor.getSelection();
     		class SelectedImportsVisitor extends Visitor {
     		    Set<Declaration> copied = 
@@ -902,10 +902,10 @@ public class CeylonSourceViewer extends ProjectionViewer {
             CeylonParseController controller = 
                     editor.getParseController();
             if (controller==null || 
-                    controller.getRootNode()==null) {
+                    controller.getLastCompilationUnit()==null) {
                 return;
             }
-            Tree.CompilationUnit cu = controller.getRootNode();
+            Tree.CompilationUnit cu = controller.getLastCompilationUnit();
             Unit unit = cu.getUnit();
             //copy them, so as to not affect the clipboard
             Map<Declaration,String> imports = 

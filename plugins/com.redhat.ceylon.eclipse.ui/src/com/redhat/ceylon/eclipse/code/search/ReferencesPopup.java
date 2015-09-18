@@ -830,7 +830,7 @@ public final class ReferencesPopup extends PopupDialog
         Referenceable declaration = 
                 getReferencedExplicitDeclaration(
                         editor.getSelectedNode(), 
-                        pc.getRootNode());
+                        pc.getLastCompilationUnit());
         if (declaration==null) {
             return;
         }
@@ -847,7 +847,7 @@ public final class ReferencesPopup extends PopupDialog
             message = "references to";
         }
         String name;
-        TypecheckerUnit unit = pc.getRootNode().getUnit();
+        TypecheckerUnit unit = pc.getLastCompilationUnit().getUnit();
         if (declaration instanceof Declaration) {
             Declaration dec = (Declaration) declaration;
             name = dec.getName(unit);
@@ -882,7 +882,7 @@ public final class ReferencesPopup extends PopupDialog
             if (pu.getUnit().equals(unit) && 
                     editor.isDirty()) {
                 //search in the current dirty editor
-                cu = pc.getRootNode();
+                cu = pc.getLastCompilationUnit();
             }
             Unit u = cu.getUnit();
             TreeNode unitNode = new TreeNode(u);

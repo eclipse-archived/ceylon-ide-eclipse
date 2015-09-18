@@ -92,7 +92,7 @@ class RemoveAliasProposal extends CorrectionProposal {
                 Tree.Identifier aid = imt.getAlias().getIdentifier();
                 change.addEdit(new DeleteEdit(aid.getStartIndex(), 
                         imt.getIdentifier().getStartIndex()-aid.getStartIndex()));
-                Tree.CompilationUnit rootNode = editor.getParseController().getRootNode();
+                Tree.CompilationUnit rootNode = editor.getParseController().getLastCompilationUnit();
                 rootNode.visit(new AliasRemovalVisitor(dec, change, aid));
                 proposals.add(new RemoveAliasProposal(file, dec, change));
             }

@@ -88,7 +88,7 @@ abstract class AbstractFindAction extends Action
                             (CeylonEditor) editor;
                     Tree.CompilationUnit rootNode = 
                             ce.getParseController()
-                                .getRootNode();
+                                .getLastCompilationUnit();
                     if (rootNode!=null) {
                         Node node = 
                                 findNode(rootNode, 
@@ -137,7 +137,7 @@ abstract class AbstractFindAction extends Action
                     getReferencedExplicitDeclaration(
                             ce.getSelectedNode(), 
                             ce.getParseController()
-                                .getRootNode());
+                                .getLastCompilationUnit());
             setEnabled(isValidSelection());
         }
         else {

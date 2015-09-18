@@ -62,7 +62,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
         CeylonEditor editor = (CeylonEditor) 
                 getCurrentEditor();
         Tree.CompilationUnit rootNode = 
-                editor.getParseController().getRootNode();
+                editor.getParseController().getLastCompilationUnit();
 
         Set<Declaration> imports = new HashSet<Declaration>();
         List<Tree.LocalModifier> localModifiers = 
@@ -140,7 +140,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
         if (editor!=null &&  
                 editor.getParseController()!=null) {
             final Tree.CompilationUnit rootNode = 
-                    editor.getParseController().getRootNode();
+                    editor.getParseController().getLastCompilationUnit();
             final ITextSelection selection = 
                     getSelection(editor);
             if (rootNode==null || selection==null) {

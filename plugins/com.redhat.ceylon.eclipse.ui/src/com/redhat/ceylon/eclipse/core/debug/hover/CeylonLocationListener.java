@@ -136,7 +136,7 @@ final class CeylonLocationListener implements LocationListener {
             if (location.startsWith("stp:")) {
                 close(control);
                 Tree.CompilationUnit rn = 
-                        controller.getRootNode();
+                        controller.getLastCompilationUnit();
                 int offset = 
                         parseInt(location.substring(4));
                 Node node = findNode(rn, offset);

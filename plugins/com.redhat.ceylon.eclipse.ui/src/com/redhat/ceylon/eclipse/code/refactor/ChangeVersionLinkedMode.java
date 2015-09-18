@@ -210,7 +210,7 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
             throws BadLocationException {
         linkedPositionGroup = new LinkedPositionGroup();        
         addLinkedPositions(document, 
-                editor.getParseController().getRootNode(), 
+                editor.getParseController().getLastCompilationUnit(), 
                 adjust, linkedPositionGroup);
         linkedModeModel.addGroup(linkedPositionGroup);
     }

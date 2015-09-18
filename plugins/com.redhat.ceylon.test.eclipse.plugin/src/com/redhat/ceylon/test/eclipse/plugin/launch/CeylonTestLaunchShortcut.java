@@ -227,7 +227,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
 
         IProject project = cpc.getProject();
         ISelection selection = ce.getSelectionProvider().getSelection();
-        Tree.CompilationUnit cu = cpc.getRootNode();
+        Tree.CompilationUnit cu = cpc.getLastCompilationUnit();
         if (project == null || selection == null || !(selection instanceof ITextSelection) || cu == null) {
             return;
         }

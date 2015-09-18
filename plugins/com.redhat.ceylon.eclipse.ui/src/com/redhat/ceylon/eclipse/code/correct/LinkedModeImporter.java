@@ -41,7 +41,7 @@ public class LinkedModeImporter implements ILinkedModeListener {
                     //note: we want the very latest tree here, so 
                     //get it direct from the editor!
                     Tree.CompilationUnit rootNode = 
-                            editor.getParseController().getRootNode();
+                            editor.getParseController().getLastCompilationUnit();
                     importType(imports, type, rootNode);
                     if (!imports.isEmpty()) {
                         DocumentChange change = 

@@ -285,7 +285,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     
     private Tree.CompilationUnit getRootNode() {
         if (editor!=null) {
-            return editor.getParseController().getRootNode();
+            return editor.getParseController().getLastCompilationUnit();
         }
         else if (model!=null) {
             return (Tree.CompilationUnit) model;
@@ -1057,7 +1057,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         CeylonParseController parseController = 
                 editor.getParseController();
         Tree.CompilationUnit rootNode = 
-                parseController.getRootNode();
+                parseController.getLastCompilationUnit();
         if (rootNode!=null) {
             int start = context.getOffset();
             int len = context.getLength();

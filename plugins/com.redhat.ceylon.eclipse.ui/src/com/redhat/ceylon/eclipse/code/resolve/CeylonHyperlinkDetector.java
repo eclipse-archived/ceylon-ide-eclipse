@@ -79,12 +79,12 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, 
             IRegion region, boolean canShowMultipleHyperlinks) {
         if (controller==null ||
-                controller.getRootNode()==null) {
+                controller.getLastCompilationUnit()==null) {
             return null;
         }
         else {
             Node node = 
-                    findNode(controller.getRootNode(), 
+                    findNode(controller.getLastCompilationUnit(), 
                             controller.getTokens(), 
                             region.getOffset(), 
                             region.getOffset() +

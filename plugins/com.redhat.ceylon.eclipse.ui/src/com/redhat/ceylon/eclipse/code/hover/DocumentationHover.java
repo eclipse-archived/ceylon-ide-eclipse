@@ -233,7 +233,7 @@ public class DocumentationHover extends SourceInfoHover {
             return null;
         }
         else if (location.matches("doc:ceylon.language/.*:ceylon.language:Nothing")) {
-            Unit unit = controller.getRootNode().getUnit();
+            Unit unit = controller.getLastCompilationUnit().getUnit();
             return unit.getNothingDeclaration();
         }
         return getLinkedModel(location, 
@@ -344,7 +344,7 @@ public class DocumentationHover extends SourceInfoHover {
             return null;
         }
         Tree.CompilationUnit rootNode = 
-                parseController.getRootNode();
+                parseController.getLastCompilationUnit();
         if (rootNode!=null) {
             int hoffset = hoverRegion.getOffset();
             int hlength = hoverRegion.getLength();
@@ -1315,7 +1315,7 @@ public class DocumentationHover extends SourceInfoHover {
             }
         }
         Unit unit = controller==null ? null : 
-            controller.getRootNode().getUnit();
+            controller.getLastCompilationUnit().getUnit();
         StringBuilder buffer = new StringBuilder();
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addMainDescription(buffer, dec, node, pr, controller, unit);

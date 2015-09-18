@@ -469,7 +469,7 @@ public class MarkOccurrencesAction
         // get the current AST (but in the future do something more
         // sophisticated to avoid needless recomputation but only
         // when it is truly needless).
-        return parseController.getRootNode();
+        return parseController.getLastCompilationUnit();
     }
 
     private IEditorInput getEditorInput() {
@@ -582,7 +582,7 @@ public class MarkOccurrencesAction
                 >= getStage().ordinal()) {
             // Check whether we even have an AST in which to find occurrences
             Tree.CompilationUnit root = 
-                    controller.getRootNode();
+                    controller.getLastCompilationUnit();
             if (root!=null) {
                 Referenceable declaration = 
                         getReferencedExplicitDeclaration(
@@ -615,7 +615,7 @@ public class MarkOccurrencesAction
                 >= getStage().ordinal()) {
             // Check whether we even have an AST in which to find occurrences
             Tree.CompilationUnit root = 
-                    controller.getRootNode();
+                    controller.getLastCompilationUnit();
             if (root!=null) {
                 Referenceable declaration = 
                         getReferencedExplicitDeclaration(
@@ -639,7 +639,7 @@ public class MarkOccurrencesAction
             CeylonParseController controller, Node node) {
         // Check whether we even have an AST in which to find occurrences
         Tree.CompilationUnit root = 
-                controller.getRootNode();
+                controller.getLastCompilationUnit();
         if (root!=null) {
             Referenceable declaration = 
                     getReferencedExplicitDeclaration(

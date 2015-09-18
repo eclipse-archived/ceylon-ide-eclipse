@@ -30,7 +30,7 @@ public class PrintHandler extends AbstractHandler {
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             Tree.CompilationUnit rootNode = 
-                    ce.getParseController().getRootNode();
+                    ce.getParseController().getLastCompilationUnit();
             if (rootNode!=null) {
                 IRegion selection = ce.getSelection();
                 int start = selection.getOffset();

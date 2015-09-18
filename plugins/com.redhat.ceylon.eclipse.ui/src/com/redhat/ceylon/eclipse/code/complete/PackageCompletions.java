@@ -76,7 +76,7 @@ public class PackageCompletions {
         public void apply(IDocument document) {
             super.apply(document);
             ModuleImportUtil.addModuleImport(controller.getProject(), 
-                    controller.getPhasedUnit().getPackage().getModule(), 
+                    controller.getLastPhasedUnit().getPackage().getModule(), 
                     version.getModule(), version.getVersion());
         }
 
@@ -84,7 +84,7 @@ public class PackageCompletions {
         public String getAdditionalProposalInfo() {
             return getDocumentationFor(md, version.getVersion(), 
                     fullPackageName,
-                    controller.getRootNode().getScope(), unit);
+                    controller.getLastCompilationUnit().getScope(), unit);
         }
     }
 

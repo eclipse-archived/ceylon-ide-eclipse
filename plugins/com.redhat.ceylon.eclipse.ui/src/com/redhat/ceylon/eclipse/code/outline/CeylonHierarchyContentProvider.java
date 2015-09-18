@@ -716,7 +716,7 @@ public final class CeylonHierarchyContentProvider
                 CeylonEditor editor = (CeylonEditor) part;
                 CompilationUnit rootNode = 
                         editor.getParseController()
-                                .getRootNode();
+                                .getLastCompilationUnit();
                 if (rootNode!=null) {
                     Unit unit = rootNode.getUnit();
                     if (unit!=null && 

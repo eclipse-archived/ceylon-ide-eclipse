@@ -2227,11 +2227,11 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
     
     public Node getSelectedNode() {
         CeylonParseController cpc = getParseController();
-        if (cpc==null || cpc.getRootNode()==null) {
+        if (cpc==null || cpc.getLastCompilationUnit()==null) {
             return null;
         }
         else {
-            return findNode(cpc.getRootNode(), 
+            return findNode(cpc.getLastCompilationUnit(), 
                     cpc.getTokens(), 
                     EditorUtil.getSelection(this));
         }

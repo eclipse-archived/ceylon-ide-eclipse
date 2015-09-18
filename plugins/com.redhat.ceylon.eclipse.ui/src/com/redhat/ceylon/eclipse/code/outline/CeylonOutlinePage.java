@@ -540,7 +540,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         if (suspend) return;
         if (offset==0) return; //right at the start of file, don't expand the import list
         CompilationUnit rootNode = 
-                parseController.getRootNode();
+                parseController.getLastCompilationUnit();
         if (rootNode==null) {
             return;
         }

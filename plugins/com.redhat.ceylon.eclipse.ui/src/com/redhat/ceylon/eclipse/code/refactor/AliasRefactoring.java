@@ -182,7 +182,7 @@ public class AliasRefactoring extends AbstractRefactoring {
         for (PhasedUnit pu: units) {
             Package editorPackage = 
                     editor.getParseController()
-                        .getRootNode()
+                        .getLastCompilationUnit()
                         .getUnit()
                         .getPackage();
             boolean inSamePackage = 
@@ -199,7 +199,7 @@ public class AliasRefactoring extends AbstractRefactoring {
             DocumentChange dc = newDocumentChange();
             renameInFile(dc, cc, 
                     editor.getParseController()
-                        .getRootNode());
+                        .getLastCompilationUnit());
             pm.worked(i++);
         }
         pm.done();
@@ -228,7 +228,7 @@ public class AliasRefactoring extends AbstractRefactoring {
         if (type!=null) {
             Unit editorUnit = 
                     editor.getParseController()
-                        .getRootNode()
+                        .getLastCompilationUnit()
                         .getUnit();
             Unit unit = root.getUnit();
             if (editorUnit.getPackage()

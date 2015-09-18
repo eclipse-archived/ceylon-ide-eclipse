@@ -88,7 +88,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
             Type type, int offset, int length) {
         Tree.CompilationUnit rootNode = 
                 editor.getParseController()
-                    .getRootNode();
+                    .getLastCompilationUnit();
         Unit unit = rootNode.getUnit();
         
         LinkedModeImporter importer = 
@@ -134,7 +134,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
                     throws BadLocationException {
         Tree.CompilationUnit rootNode = 
                 editor.getParseController()
-                    .getRootNode();
+                    .getLastCompilationUnit();
         addLinkedPositions(document, rootNode, adjust);
     }
 

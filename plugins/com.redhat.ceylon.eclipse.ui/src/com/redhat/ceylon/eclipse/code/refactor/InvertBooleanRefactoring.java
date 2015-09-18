@@ -90,7 +90,7 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
         }
         if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
-            invertBoolean(editor.getParseController().getRootNode(), dc, cc);
+            invertBoolean(editor.getParseController().getLastCompilationUnit(), dc, cc);
         }
 
         return cc;

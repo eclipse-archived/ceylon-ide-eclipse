@@ -83,12 +83,12 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer tv, IRegion region,
             boolean csmh) {
-        if (pc==null||pc.getRootNode()==null) {
+        if (pc==null||pc.getLastCompilationUnit()==null) {
             return null;
         }
         else {
             Node node = 
-                    findNode(pc.getRootNode(), 
+                    findNode(pc.getLastCompilationUnit(), 
                             pc.getTokens(), 
                             region.getOffset(), 
                             region.getOffset()+region.getLength());

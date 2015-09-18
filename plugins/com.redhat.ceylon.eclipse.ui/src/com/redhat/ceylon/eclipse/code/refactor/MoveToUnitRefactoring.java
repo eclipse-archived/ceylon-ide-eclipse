@@ -61,7 +61,7 @@ public class MoveToUnitRefactoring extends Refactoring {
     
     public MoveToUnitRefactoring(CeylonEditor ceylonEditor) {
         editor = ceylonEditor;
-        rootNode = editor.getParseController().getRootNode();
+        rootNode = editor.getParseController().getLastCompilationUnit();
         document = editor.getDocumentProvider()
                 .getDocument(editor.getEditorInput());
         originalFile = getFile(editor.getEditorInput());

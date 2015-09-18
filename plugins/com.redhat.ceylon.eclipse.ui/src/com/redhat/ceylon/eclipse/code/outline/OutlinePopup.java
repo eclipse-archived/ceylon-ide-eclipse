@@ -124,7 +124,7 @@ public class OutlinePopup extends TreeViewPopup {
                             (CeylonOutlineNode) element;
                     CompilationUnit rootNode = 
                             getEditor().getParseController()
-                                .getRootNode();
+                                .getLastCompilationUnit();
                     Node treeNode = 
                             Nodes.findNode(rootNode, 
                                     node.getStartOffset(),
@@ -279,7 +279,7 @@ public class OutlinePopup extends TreeViewPopup {
                      e2 instanceof Declaration) {
                 Unit unit = 
                         getEditor().getParseController()
-                            .getRootNode().getUnit();
+                            .getLastCompilationUnit().getUnit();
                 String e1n = ((Declaration) e1).getName(unit);
                 String e2n = ((Declaration) e2).getName(unit);
                 if (e1n==e2n) return 0;

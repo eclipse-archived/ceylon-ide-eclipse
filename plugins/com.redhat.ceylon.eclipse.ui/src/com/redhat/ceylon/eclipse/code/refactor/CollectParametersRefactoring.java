@@ -207,7 +207,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
             refactorInFile(dc, cc, 
-                    editor.getParseController().getRootNode());
+                    editor.getParseController().getLastCompilationUnit());
             pm.worked(i++);
         }
         pm.done();

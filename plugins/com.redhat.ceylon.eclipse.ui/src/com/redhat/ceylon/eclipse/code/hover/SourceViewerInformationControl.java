@@ -548,7 +548,7 @@ public class SourceViewerInformationControl
         int offset = hoverRegion.getOffset();
         int length = hoverRegion.getLength();
         Tree.CompilationUnit rootNode = 
-                controller.getRootNode();
+                controller.getLastCompilationUnit();
         referencedNode = 
                 getReferencedNode(findNode(rootNode, 
                         controller.getTokens(), 

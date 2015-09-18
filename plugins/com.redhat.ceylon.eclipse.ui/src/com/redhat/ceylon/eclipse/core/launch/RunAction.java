@@ -60,7 +60,7 @@ public abstract class RunAction extends Action implements IObjectActionDelegate 
                     project = parseController.getProject();
                     resource = project.findMember(parseController.getPath());
                     Tree.CompilationUnit rootNode = 
-                            parseController.getRootNode();
+                            parseController.getLastCompilationUnit();
                     if (rootNode!=null) {
                         Node node = 
                                 Nodes.findNode(rootNode, 

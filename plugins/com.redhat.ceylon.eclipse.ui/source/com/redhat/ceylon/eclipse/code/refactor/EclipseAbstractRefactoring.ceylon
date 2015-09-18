@@ -71,7 +71,7 @@ abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends Refact
         shared IDocument? document = editor.documentProvider.getDocument(editorPart.editorInput);
         shared IProject? project = EditorUtil.getProject(editorPart);
         shared actual List<CommonToken>? tokens = editor.parseController.tokens;
-        shared actual Tree.CompilationUnit? rootNode = editor.parseController.rootNode;
+        shared actual Tree.CompilationUnit? rootNode = editor.parseController.typecheckedRootNode;
         shared actual Node? node;
         shared actual IFileVirtualFile? sourceVirtualFile;
         if (exists existingRootNode=rootNode,
@@ -136,9 +136,10 @@ abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends Refact
             else false;
 
     shared actual Boolean searchInFile(PhasedUnit pu)
-            => if (exists ceylonEditor=editorData?.editor)
+            => if (exists ceylonEditor=editorData?.editor,
+                    exists typecheckedRootNode=rootNode)
             then !ceylonEditor.dirty
-            || pu.unit != ceylonEditor.parseController.rootNode.unit
+            || pu.unit != typecheckedRootNode.unit
             else true;
 
     shared TextChange newLocalChange() {

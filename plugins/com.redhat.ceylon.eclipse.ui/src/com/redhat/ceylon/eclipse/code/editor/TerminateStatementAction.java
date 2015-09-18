@@ -148,7 +148,7 @@ final class TerminateStatementAction extends Action {
         final TextChange change = new DocumentChange("Terminate Statement", doc);
         change.setEdit(new MultiTextEdit());
         CeylonParseController parser = parse();
-        Tree.CompilationUnit rootNode = parser.getRootNode();
+        Tree.CompilationUnit rootNode = parser.getLastCompilationUnit();
         IRegion li = getLineInfo(doc);
         final String lineText = doc.get(li.getOffset(), li.getLength());
         final List<CommonToken> tokens = parser.getTokens();
@@ -401,7 +401,7 @@ final class TerminateStatementAction extends Action {
         final TextChange change = new DocumentChange("Terminate Statement", doc);
         change.setEdit(new MultiTextEdit());
         CeylonParseController parser = parse();
-        Tree.CompilationUnit rootNode = parser.getRootNode();
+        Tree.CompilationUnit rootNode = parser.getLastCompilationUnit();
         IRegion li = getLineInfo(doc);
         String lineText = doc.get(li.getOffset(), li.getLength());
         final List<CommonToken> tokens = parser.getTokens();

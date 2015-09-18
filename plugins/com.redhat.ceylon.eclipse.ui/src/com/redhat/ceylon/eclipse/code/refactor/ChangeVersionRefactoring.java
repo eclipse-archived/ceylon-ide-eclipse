@@ -142,7 +142,7 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
         if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
             Tree.CompilationUnit rn = 
-                    editor.getParseController().getRootNode();
+                    editor.getParseController().getLastCompilationUnit();
             renameInFile(dc, cc, rn);
             pm.worked(i++);
         }

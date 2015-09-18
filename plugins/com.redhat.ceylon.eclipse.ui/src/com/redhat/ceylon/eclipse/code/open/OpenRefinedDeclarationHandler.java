@@ -28,7 +28,7 @@ public class OpenRefinedDeclarationHandler extends AbstractHandler {
             return null;
         }
         else {
-            Tree.CompilationUnit ast = pc.getRootNode();
+            Tree.CompilationUnit ast = pc.getLastCompilationUnit();
             if (ast == null) {
                 return null;
             }

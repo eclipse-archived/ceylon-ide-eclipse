@@ -112,7 +112,7 @@ public class CeylonOutlineBuilder extends Visitor {
     
     public final CeylonOutlineNode buildTree(CeylonParseController cpc) {
         if (cpc==null) return null;
-        Tree.CompilationUnit rootNode = cpc.getRootNode();
+        Tree.CompilationUnit rootNode = cpc.getLastCompilationUnit();
         if (rootNode==null) return null;
         TypecheckerUnit u = rootNode.getUnit();
         if (u==null) return null;

@@ -326,7 +326,7 @@ public class HierarchyPopup extends TreeViewPopup {
         if (declaration==null) {
             FindContainerVisitor fcv = 
                     new FindContainerVisitor(selectedNode);
-            fcv.visit(getEditor().getParseController().getRootNode());
+            fcv.visit(getEditor().getParseController().getLastCompilationUnit());
             Node node = fcv.getStatementOrArgument();
             if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
                 declaration = ((com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node).getDeclarationModel();

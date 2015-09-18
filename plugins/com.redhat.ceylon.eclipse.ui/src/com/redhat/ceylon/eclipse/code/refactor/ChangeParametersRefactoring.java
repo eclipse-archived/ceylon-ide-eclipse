@@ -358,7 +358,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             CeylonParseController pc = 
                     editor.getParseController();
             refactorInFile(dc, cc, 
-                    pc.getRootNode(), 
+                    pc.getLastCompilationUnit(), 
                     pc.getTokens());
             pm.worked(i++);
         }

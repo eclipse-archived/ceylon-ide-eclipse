@@ -144,7 +144,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             Declaration dec, Scope scope) {
         //TODO: type argument substitution using the 
         //     Reference of the primary node
-        Unit unit = cpc.getRootNode().getUnit();
+        Unit unit = cpc.getLastCompilationUnit().getUnit();
         result.add(new RefinementCompletionProposal(offset, 
                 prefix, 
                 dec.getReference(), //TODO: this needs to do type arg substitution
@@ -239,7 +239,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     }
 
     private Unit getUnit() {
-        return cpc.getRootNode().getUnit();
+        return cpc.getLastCompilationUnit().getUnit();
     }
     
     @Override
@@ -314,7 +314,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         change.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs = 
                 new HashSet<Declaration>();
-        Tree.CompilationUnit cu = cpc.getRootNode();
+        Tree.CompilationUnit cu = cpc.getLastCompilationUnit();
         if (explicitReturnType) {
             importSignatureTypes(declaration, cu, decs);
         }

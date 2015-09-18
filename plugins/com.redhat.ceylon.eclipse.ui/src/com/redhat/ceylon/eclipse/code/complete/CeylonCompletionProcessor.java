@@ -446,7 +446,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 new NullProgressMonitor(), 
                 null)) {
             return computeParameterContextInformation(offset, 
-                    controller.getRootNode(), viewer)
+                    controller.getLastCompilationUnit(), viewer)
                     .toArray(NO_CONTEXTS);
         } else {
             return NO_CONTEXTS;
@@ -481,7 +481,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             IProgressMonitor monitor) {
         
         if (controller==null || viewer==null || 
-                controller.getRootNode()==null || 
+                controller.getLastCompilationUnit()==null || 
                 controller.getTokens()==null) {
             return null;
         }
@@ -493,7 +493,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         controller.getHandler().updateAnnotations();
         List<CommonToken> tokens = controller.getTokens(); 
         Tree.CompilationUnit rawRootNode = controller.getParsedRootNode();
-        Tree.CompilationUnit typecheckedRootNode = controller.getRootNode();
+        Tree.CompilationUnit typecheckedRootNode = controller.getLastCompilationUnit();
         
         //adjust the token to account for unclosed blocks
         //we search for the first non-whitespace/non-comment
@@ -912,7 +912,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         else if (node instanceof Tree.ImportPath) {
             new ImportVisitor(prefix, token, offset, 
                     node, cpc, result, monitor)
-                        .visit(cpc.getRootNode());
+                        .visit(cpc.getLastCompilationUnit());
         }
         else if (isEmptyModuleDescriptor(cpc)) {
             addModuleDescriptorCompletion(cpc, offset, 
@@ -1001,7 +1001,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         
         List<ICompletionProposal> result = 
                 new ArrayList<ICompletionProposal>();
-        CompilationUnit rootNode = controller.getRootNode();
+        CompilationUnit rootNode = controller.getLastCompilationUnit();
         OccurrenceLocation ol = 
                 getOccurrenceLocation(rootNode, node, offset);
         Unit unit = node.getUnit();

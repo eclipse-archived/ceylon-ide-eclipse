@@ -81,7 +81,7 @@ public class TypeArgumentListCompletions {
                 }
                 super.visit(that);
             }
-        }.visit(cpc.getRootNode());
+        }.visit(cpc.getLastCompilationUnit());
     }
 
 }

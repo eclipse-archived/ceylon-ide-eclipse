@@ -236,7 +236,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
             CeylonEditor ce = (CeylonEditor) editor;
             CeylonParseController cpc = ce.getParseController();
             if (cpc!=null) {
-                Tree.CompilationUnit cu = cpc.getRootNode();
+                Tree.CompilationUnit cu = cpc.getLastCompilationUnit();
                 if (cu!=null) {
                     ISelection selection = ce.getSelectionProvider().getSelection();
                     if (selection instanceof ITextSelection) {
@@ -344,7 +344,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
             CeylonEditor ce = (CeylonEditor) editor;
             CeylonParseController cpc = ce.getParseController();
             if (cpc!=null) {
-                Tree.CompilationUnit cu = cpc.getRootNode();
+                Tree.CompilationUnit cu = cpc.getLastCompilationUnit();
                 if (cu!=null) {
                     ITextSelection selection = ce.getSelectionFromThread();
                     Node node = Nodes.findToplevelStatement(cu, 

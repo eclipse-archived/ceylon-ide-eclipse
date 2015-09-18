@@ -317,8 +317,8 @@ class CeylonSearchQuery implements ISearchQuery {
                 CeylonParseController cpc = 
                         ce.getParseController();
                 if ( /*editor.isDirty() &&*/
-                        pu.getUnit().equals(cpc.getRootNode().getUnit()) ) {
-                    return cpc.getRootNode();
+                        pu.getUnit().equals(cpc.getLastCompilationUnit().getUnit()) ) {
+                    return cpc.getLastCompilationUnit();
                 }
             }
         }

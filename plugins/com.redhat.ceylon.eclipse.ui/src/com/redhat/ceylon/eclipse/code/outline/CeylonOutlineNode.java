@@ -274,7 +274,7 @@ public class CeylonOutlineNode implements IAdaptable {
                         (CeylonEditor) currentEditor;
                 Tree.CompilationUnit rootNode = 
                         ce.getParseController()
-                            .getRootNode();
+                            .getLastCompilationUnit();
                 if (rootNode!=null) {
                     Node node = 
                             findNode(rootNode, 
@@ -301,7 +301,7 @@ public class CeylonOutlineNode implements IAdaptable {
                         (CeylonEditor) currentEditor;
                 Tree.CompilationUnit rootNode = 
                         ce.getParseController()
-                            .getRootNode();
+                            .getLastCompilationUnit();
                 if (rootNode!=null) {
                     Node node = 
                             findNode(rootNode, 
