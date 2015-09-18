@@ -526,8 +526,6 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     }
     
     protected ILaunchConfiguration createConfiguration(Declaration declarationToRun, IFile file) {
-        ILaunchConfiguration config = null;
-        ILaunchConfigurationWorkingCopy wc = null;
         try {
             ILaunchConfigurationType configType = getConfigurationType();
             String configurationName = "";
@@ -548,19 +546,21 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             configurationName += declarationToRun.getName() + "() \u2014 ";
             String packageName = declarationToRun.getContainer().getQualifiedNameString();
             configurationName += packageName.isEmpty() ? "default package" : packageName;
-            configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
+//            configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");
             
-            wc = configType.newInstance(null, 
-                    getLaunchManager().generateLaunchConfigurationName(configurationName));
+            String lcn = 
+                    getLaunchManager()
+                        .generateLaunchConfigurationName(configurationName);
+            ILaunchConfigurationWorkingCopy wc = configType.newInstance(null, lcn);
             wc.setAttribute(ATTR_MAIN_TYPE_NAME, getJavaClassName(declarationToRun));
             wc.setAttribute(ATTR_PROJECT_NAME, file.getProject().getName());
             wc.setMappedResources(new IResource[] {file});
-            config = wc.doSave();
+            return wc.doSave();
         } catch (CoreException exception) {
             MessageDialog.openError(EditorUtil.getShell(), "Ceylon Launcher Error", 
                     exception.getStatus().getMessage());
+            return null;
         } 
-        return config;
     }
 
     private String getJavaClassName(Declaration declaration) {

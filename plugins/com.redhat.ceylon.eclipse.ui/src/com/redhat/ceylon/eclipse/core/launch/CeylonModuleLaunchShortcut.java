@@ -33,16 +33,16 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.Module;
 
 public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
 
@@ -59,11 +59,12 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
         
         String configurationName = 
                 projectName.trim() + " \u2014 " 
-                + moduleName.trim() + " ("  
-                + topLevelDisplayName.trim() + ")";
+                + moduleName.trim() + " \u2014 "  
+                + topLevelDisplayName.trim() + 
+                " \u2192 " + launchType();
         
-        configurationName = configurationName
-                .replaceAll("[\u00c0-\ufffe]", "_");
+//        configurationName = configurationName
+//                .replaceAll("[\u00c0-\ufffe]", "_");
         
         return getLaunchManager()
                 .generateLaunchConfigurationName(configurationName);
@@ -76,35 +77,35 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
      */
     protected ILaunchConfiguration createConfiguration(Declaration declarationToRun, 
             IResource resource) {
-        ILaunchConfiguration config = null;
-        ILaunchConfigurationWorkingCopy wc = null;
         try {
             Module mod = LaunchHelper.getModule(declarationToRun);      
-            String moduleName = LaunchHelper.getFullModuleName(mod);
+            String moduleName = mod.getNameAsString();
+            String projectName = resource.getProject().getName();
             
-            if (mod.isDefault()) {
-                moduleName = mod.getNameAsString();
-            }
-
-            wc = getConfigurationType().newInstance(null, 
-                    getLaunchConfigurationName(resource.getProject().getName(), 
-                            moduleName, declarationToRun));
+            String lcn = 
+                    getLaunchConfigurationName(projectName, 
+                            moduleName, declarationToRun);
+            ILaunchConfigurationWorkingCopy wc = 
+                    getConfigurationType()
+                        .newInstance(null, lcn);
             
-            wc.setAttribute(ATTR_PROJECT_NAME, resource.getProject().getName());
-            wc.setAttribute(ATTR_MODULE_NAME, moduleName);
+            wc.setAttribute(ATTR_PROJECT_NAME, projectName);
+            wc.setAttribute(ATTR_MODULE_NAME, LaunchHelper.getFullModuleName(mod));
             
             // save the runnable display name, which may be exact name or 'run - default'
             wc.setAttribute(ATTR_TOPLEVEL_NAME, 
                     LaunchHelper.getTopLevelDisplayName(declarationToRun));
             
             wc.setMappedResources(new IResource[] {resource});
-            config = wc.doSave();
+            return wc.doSave();
         } catch (CoreException exception) {
             MessageDialog.openError(EditorUtil.getShell(), "Ceylon Module Launcher Error", 
-                    exception.getStatus().getMessage()); 
+                    exception.getStatus().getMessage());
+            return null;
         }
-        return config;
     }
+    
+    abstract String launchType();
     
     /**
      * Finds and returns an <b>existing</b> configuration to re-launch for the given type,

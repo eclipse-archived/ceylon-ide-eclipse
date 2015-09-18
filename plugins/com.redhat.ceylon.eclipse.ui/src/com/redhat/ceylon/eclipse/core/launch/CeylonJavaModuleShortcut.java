@@ -11,4 +11,9 @@ public class CeylonJavaModuleShortcut extends CeylonModuleLaunchShortcut {
         return getLaunchManager()
                 .getLaunchConfigurationType(ID_CEYLON_JAVA_MODULE);
     }
+    
+    @Override
+    String launchType() {
+        return "Java";
+    }
 }
