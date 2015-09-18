@@ -316,12 +316,15 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
 
     private String getLaunchName(List<String> names) {
         StringBuilder nameBuilder = new StringBuilder();
+        boolean first = true;
         for (String name : names) {
+            if (first) {
+                first = false;
+            }
+            else {
+                nameBuilder.append(", ");
+            }
             nameBuilder.append(name);
-            nameBuilder.append(",");
-        }
-        if (nameBuilder.length() != 0) {
-            nameBuilder.setLength(nameBuilder.length() - 1);
         }
         
         return nameBuilder.toString()+ 
