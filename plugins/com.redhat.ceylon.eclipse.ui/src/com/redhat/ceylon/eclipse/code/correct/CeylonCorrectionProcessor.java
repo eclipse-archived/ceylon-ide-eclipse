@@ -285,14 +285,17 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     
     private Tree.CompilationUnit getRootNode() {
         if (editor!=null) {
-            return editor.getParseController().getLastCompilationUnit();
+            Tree.CompilationUnit upToDateRootNode = editor.getParseController().getTypecheckedRootNode();
+            if (upToDateRootNode != null) {
+                return upToDateRootNode;
+            }
         }
-        else if (model!=null) {
+        
+        if (model!=null) {
             return (Tree.CompilationUnit) model;
         }
-        else {
-            return null;
-        }
+
+        return null;
     }
     
     @Override
@@ -478,6 +481,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Collection<ICompletionProposal> proposals) {
         ISourceViewer viewer = context.getSourceViewer();
         Tree.CompilationUnit rootNode = getRootNode();
+        if (rootNode == null) {
+            return;
+        }
         for (int i=locations.length-1; i>=0; i--) {
             ProblemLocation loc = locations[i];
             if (loc.getOffset()<=viewer.getSelectedRange().x) {
@@ -1057,7 +1063,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         CeylonParseController parseController = 
                 editor.getParseController();
         Tree.CompilationUnit rootNode = 
-                parseController.getLastCompilationUnit();
+                parseController.getTypecheckedRootNode();
         if (rootNode!=null) {
             int start = context.getOffset();
             int len = context.getLength();
@@ -1446,6 +1452,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Collection<ICompletionProposal> proposals) {
         if (annotation.getSeverity()==IMarker.SEVERITY_WARNING) {
             Tree.CompilationUnit rootNode = getRootNode();
+            if (rootNode == null) {
+                return;
+            }
             Tree.Statement st = 
                     findStatement(rootNode,
                         findNode(rootNode, null, 
