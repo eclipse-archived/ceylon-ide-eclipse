@@ -371,7 +371,7 @@ final class PeekDefinitionPopup extends PopupDialog
         parseController.initialize(path, project, null);
         if (parseController.parseAndTypecheck(doc, 10, 
                                 new NullProgressMonitor(), 
-                                null)) {
+                                null) != null) {
             if (referencedNode instanceof Tree.Declaration) {
                 Tree.Declaration declaration = 
                         (Tree.Declaration) referencedNode;

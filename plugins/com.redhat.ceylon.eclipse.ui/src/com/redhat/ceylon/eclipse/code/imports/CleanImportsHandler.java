@@ -471,7 +471,7 @@ public class CleanImportsHandler extends AbstractHandler {
         return cpc!=null && 
                 cpc.getStage().ordinal() >=
                         Stage.TYPE_ANALYSIS.ordinal() && 
-                cpc.getLastCompilationUnit()!=null;
+                cpc.getTypecheckedRootNode()!=null;
     }
     
     public static Declaration select(List<Declaration> proposals) {

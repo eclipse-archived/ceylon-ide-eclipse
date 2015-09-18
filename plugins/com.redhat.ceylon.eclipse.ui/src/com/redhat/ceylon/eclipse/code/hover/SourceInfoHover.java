@@ -27,7 +27,7 @@ public abstract class SourceInfoHover
             return null;
         }
         Tree.CompilationUnit rootNode = 
-                parseController.getLastCompilationUnit();
+                parseController.getTypecheckedRootNode();
         if (rootNode!=null) {
             return findNode(rootNode, 
                     hoverRegion.getOffset());

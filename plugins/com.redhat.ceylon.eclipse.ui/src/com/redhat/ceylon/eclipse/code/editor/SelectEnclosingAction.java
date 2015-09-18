@@ -178,7 +178,7 @@ class SelectEnclosingAction extends Action {
         IRegion selection = editor.getSelection();
         int startOffset = selection.getOffset();
         int endOffset = startOffset + selection.getLength();
-        CompilationUnit rootNode = editor.getParseController().getLastCompilationUnit();
+        CompilationUnit rootNode = editor.getParseController().getParsedRootNode();
         if (rootNode!=null) {
             EnclosingVisitor ev = new EnclosingVisitor(startOffset, endOffset);
             ev.visit(rootNode);

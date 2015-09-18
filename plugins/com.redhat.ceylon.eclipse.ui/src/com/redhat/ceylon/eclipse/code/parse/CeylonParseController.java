@@ -615,7 +615,7 @@ public class CeylonParseController {
      * returns true is the the last AST was parsed *and* typechecked
      * until the end (=> stage == TYPE_ANALYSIS)
      */
-    public boolean parseAndTypecheck(
+    public PhasedUnit parseAndTypecheck(
                     IDocument doc, 
                     long waitForModelInSeconds, 
                     final IProgressMonitor monitor, 
@@ -631,7 +631,7 @@ public class CeylonParseController {
       if (path!=null) {
           String ext = path.getFileExtension();
           if (ext==null || !ext.equals("ceylon")) {
-              return false;
+              return null;
           }
           if (!path.isAbsolute() && project!=null) {
               resolvedPath = project.getFullPath().append(filePath);
@@ -690,13 +690,13 @@ public class CeylonParseController {
                       stager.afterStage(FOR_OUTLINE, monitor);
                       stager.afterStage(TYPE_ANALYSIS, monitor);
                   }
-                  return true;
+                  return phasedUnit;
               }
           }
       }
       
       if (isCanceling(monitor)) {
-          return false;
+          return null;
       }
       
       NewlineFixingStringStream stream = 
@@ -712,7 +712,7 @@ public class CeylonParseController {
       }
       
       if (isCanceling(monitor)) {
-          return false;
+          return null;
       }
       
       CeylonParser parser = new CeylonParser(tokenStream);
@@ -737,7 +737,7 @@ public class CeylonParseController {
       }
       
       if (isCanceling(monitor)) {
-          return false;
+          return null;
       }
       
       VirtualFile srcDir = null;
@@ -763,7 +763,7 @@ public class CeylonParseController {
           if (stager!=null) {
               stager.afterStage(FOR_OUTLINE, monitor);
           }
-          return false; 
+          return null; 
       }
       
       final IProject finalProject = project;
@@ -774,9 +774,9 @@ public class CeylonParseController {
                   project, 
                   true, 
                   waitForModelInSeconds, 
-                  new Callable<Boolean>() {
+                  new Callable<PhasedUnit>() {
                     @Override
-                    public Boolean call() throws Exception {
+                    public PhasedUnit call() throws Exception {
                         if (CeylonNature.isEnabled(finalProject)) {
                             typeChecker = getProjectTypeChecker(finalProject);
                         }
@@ -784,7 +784,7 @@ public class CeylonParseController {
                         boolean showWarnings = showWarnings(finalProject);
                         
                         if (isCanceling(monitor)) {
-                            return false;
+                            return null;
                         }
 
                         if (typeChecker==null) {
@@ -792,12 +792,12 @@ public class CeylonParseController {
                                 typeChecker = createTypeChecker(finalProject, showWarnings);
                             } 
                             catch (CoreException e) {
-                                return false; 
+                                return null; 
                             }
                         }
                         
                         if (isCanceling(monitor)) {
-                            return false;
+                            return null;
                         }
 
                         VirtualFile file = createSourceCodeVirtualFile(contents, finalPath);
@@ -832,7 +832,7 @@ public class CeylonParseController {
                             stager.afterStage(TYPE_ANALYSIS, monitor);
                         }
                         
-                        return true;
+                        return phasedUnit;
                     }
                       
                   });
@@ -849,7 +849,7 @@ public class CeylonParseController {
               if (stager!=null) {
                   stager.afterStage(FOR_OUTLINE, monitor);
               }
-              return false; 
+              return null; 
           }
     }
 

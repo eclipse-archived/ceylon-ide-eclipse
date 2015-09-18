@@ -127,10 +127,10 @@ class AnnotationInformationControl
         }
         
         CeylonParseController cpc = editor.getParseController();
-        if (cpc == null || ! Stage.TYPE_ANALYSIS.equals(cpc.getStage())) {
+        if (cpc == null) {
             return null;
         }
-        return cpc.getLastCompilationUnit();
+        return cpc.getTypecheckedRootNode();
     }
     
     @Override

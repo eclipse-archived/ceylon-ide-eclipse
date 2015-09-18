@@ -33,6 +33,10 @@ public class TypeArgumentListCompletions {
             e.printStackTrace();
             return;
         }
+        Tree.CompilationUnit upToDateAndTypechecked = cpc.getTypecheckedRootNode();
+        if (upToDateAndTypechecked == null) {
+            return;
+        }
         new Visitor() {
             @Override
             public void visit(Tree.StaticMemberOrTypeExpression that) {
@@ -81,7 +85,7 @@ public class TypeArgumentListCompletions {
                 }
                 super.visit(that);
             }
-        }.visit(cpc.getLastCompilationUnit());
+        }.visit(upToDateAndTypechecked);
     }
 
 }

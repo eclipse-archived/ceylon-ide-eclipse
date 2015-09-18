@@ -820,11 +820,13 @@ public class CeylonSourceViewer extends ProjectionViewer {
     	try {
     		CeylonParseController controller = 
     		        editor.getParseController();
-    		if (controller==null || 
-    		        controller.getLastCompilationUnit()==null) {
+    		if (controller==null) {
     		    return null;
     		}
-    		Tree.CompilationUnit cu = controller.getLastCompilationUnit();
+    		Tree.CompilationUnit cu = controller.getTypecheckedRootNode();
+    		if (cu == null) {
+    		    return null;
+    		}
     		final IRegion selection = editor.getSelection();
     		class SelectedImportsVisitor extends Visitor {
     		    Set<Declaration> copied = 

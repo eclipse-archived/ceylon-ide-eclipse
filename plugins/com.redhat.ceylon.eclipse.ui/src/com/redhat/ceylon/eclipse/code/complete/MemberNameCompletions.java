@@ -25,28 +25,30 @@ public class MemberNameCompletions {
             final Node node,
             final List<ICompletionProposal> result) {
         final Integer startIndex2 = node.getStartIndex();
-        final Tree.CompilationUnit rootNode = controller.getLastCompilationUnit();
-        new Visitor() {
-            @Override
-            public void visit(Tree.StaticMemberOrTypeExpression that) {
-                Tree.TypeArguments tal = that.getTypeArguments();
-                Integer startIndex = tal==null ? null : tal.getStartIndex();
-                if (startIndex!=null && startIndex2!=null &&
-                    startIndex.intValue()==startIndex2.intValue()) {
-                    addMemberNameProposal(offset, "", that, result, rootNode);
+        final Tree.CompilationUnit upToDateAndTypechecked = controller.getTypecheckedRootNode();
+        if (upToDateAndTypechecked != null) {
+            new Visitor() {
+                @Override
+                public void visit(Tree.StaticMemberOrTypeExpression that) {
+                    Tree.TypeArguments tal = that.getTypeArguments();
+                    Integer startIndex = tal==null ? null : tal.getStartIndex();
+                    if (startIndex!=null && startIndex2!=null &&
+                        startIndex.intValue()==startIndex2.intValue()) {
+                        addMemberNameProposal(offset, "", that, result, upToDateAndTypechecked);
+                    }
+                    super.visit(that);
                 }
-                super.visit(that);
-            }
-            public void visit(Tree.SimpleType that) {
-                Tree.TypeArgumentList tal = that.getTypeArgumentList();
-                Integer startIndex = tal==null ? null : tal.getStartIndex();
-                if (startIndex!=null && startIndex2!=null &&
-                    startIndex.intValue()==startIndex2.intValue()) {
-                    addMemberNameProposal(offset, "", that, result, rootNode);
+                public void visit(Tree.SimpleType that) {
+                    Tree.TypeArgumentList tal = that.getTypeArgumentList();
+                    Integer startIndex = tal==null ? null : tal.getStartIndex();
+                    if (startIndex!=null && startIndex2!=null &&
+                        startIndex.intValue()==startIndex2.intValue()) {
+                        addMemberNameProposal(offset, "", that, result, upToDateAndTypechecked);
+                    }
+                    super.visit(that);
                 }
-                super.visit(that);
-            }
-        }.visit(rootNode);
+            }.visit(upToDateAndTypechecked);
+        }
     }
     
     static void addMemberNameProposal(int offset, String prefix,

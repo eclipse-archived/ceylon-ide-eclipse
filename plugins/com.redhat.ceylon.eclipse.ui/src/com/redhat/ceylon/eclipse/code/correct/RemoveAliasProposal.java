@@ -86,14 +86,15 @@ class RemoveAliasProposal extends CorrectionProposal {
             IFile file, CeylonEditor editor) {
         if (imt!=null) {
             Declaration dec = imt.getDeclarationModel();
-            if (dec!=null && imt.getAlias()!=null) {
+            Tree.CompilationUnit upToDateAndTypechecked = editor.getParseController().getTypecheckedRootNode();
+            if (dec!=null && imt.getAlias()!=null
+                    && upToDateAndTypechecked != null) {
                 TextFileChange change =  new TextFileChange("Remove Alias", file);
                 change.setEdit(new MultiTextEdit());
                 Tree.Identifier aid = imt.getAlias().getIdentifier();
                 change.addEdit(new DeleteEdit(aid.getStartIndex(), 
                         imt.getIdentifier().getStartIndex()-aid.getStartIndex()));
-                Tree.CompilationUnit rootNode = editor.getParseController().getLastCompilationUnit();
-                rootNode.visit(new AliasRemovalVisitor(dec, change, aid));
+                upToDateAndTypechecked.visit(new AliasRemovalVisitor(dec, change, aid));
                 proposals.add(new RemoveAliasProposal(file, dec, change));
             }
         }

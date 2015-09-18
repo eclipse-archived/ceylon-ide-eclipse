@@ -33,7 +33,7 @@ final class FormatBlockAction extends Action {
         IDocument document = editor.getCeylonSourceViewer().getDocument();
         final ITextSelection ts = getSelection(editor);
         CeylonParseController pc = editor.getParseController();
-        Tree.CompilationUnit rootNode = pc.getLastCompilationUnit();
+        Tree.CompilationUnit rootNode = pc.getParsedRootNode();
         if (rootNode==null) return;
         
         class FindBodyVisitor extends Visitor {

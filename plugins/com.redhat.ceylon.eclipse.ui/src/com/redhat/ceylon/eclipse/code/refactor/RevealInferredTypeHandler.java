@@ -140,7 +140,7 @@ public class RevealInferredTypeHandler extends AbstractHandler {
         if (editor!=null &&  
                 editor.getParseController()!=null) {
             final Tree.CompilationUnit rootNode = 
-                    editor.getParseController().getLastCompilationUnit();
+                    editor.getParseController().getTypecheckedRootNode();
             final ITextSelection selection = 
                     getSelection(editor);
             if (rootNode==null || selection==null) {

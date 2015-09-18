@@ -344,7 +344,7 @@ public class DocumentationHover extends SourceInfoHover {
             return null;
         }
         Tree.CompilationUnit rootNode = 
-                parseController.getLastCompilationUnit();
+                parseController.getTypecheckedRootNode();
         if (rootNode!=null) {
             int hoffset = hoverRegion.getOffset();
             int hlength = hoverRegion.getLength();

@@ -290,7 +290,7 @@ public class ModuleCompletions {
         if (mod.equals(Module.LANGUAGE_MODULE_NAME)) {
             return true;
         }
-        List<Tree.ModuleDescriptor> md = cpc.getLastCompilationUnit().getModuleDescriptors();
+        List<Tree.ModuleDescriptor> md = cpc.getParsedRootNode().getModuleDescriptors();
         if (!md.isEmpty()) {
             Tree.ImportModuleList iml = md.get(0).getImportModuleList();
             if (iml!=null) {

@@ -87,7 +87,7 @@ public class CeylonStructureCreator extends StructureCreator {
             pc.initialize(null, null, null);
         }
         
-        if (pc.parseAndTypecheck(document, 10, monitor, null)) {
+        if (pc.parseAndTypecheck(document, 10, monitor, null) != null) {
             // now visit the model, creating TreeCompareNodes for each ModelTreeNode
             CeylonOutlineNode tree = 
                     new CeylonOutlineBuilder() {

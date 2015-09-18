@@ -1251,6 +1251,11 @@ class InvocationCompletionProposal extends CompletionProposal {
     static void addFakeShowParametersCompletion(final Node node, 
             final CeylonParseController cpc, 
             final List<ICompletionProposal> result) {
+        Tree.CompilationUnit upToDateAndTypeChecked = 
+                cpc.getTypecheckedRootNode();
+        if (upToDateAndTypeChecked == null) {
+            return;
+        }
         new Visitor() {
             @Override
             public void visit(Tree.InvocationExpression that) {
@@ -1283,7 +1288,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 }
                 super.visit(that);
             }
-        }.visit(cpc.getLastCompilationUnit());
+        }.visit(upToDateAndTypeChecked);
     }
     
     static final class ParameterContextInformation 

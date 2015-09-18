@@ -28,7 +28,7 @@ public class AssignToForHandler extends AbstractHandler {
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             Tree.CompilationUnit rootNode = 
-                    ce.getParseController().getLastCompilationUnit();
+                    ce.getParseController().getTypecheckedRootNode();
             if (rootNode!=null) {
                 IRegion selection = ce.getSelection();
                 int start = selection.getOffset();

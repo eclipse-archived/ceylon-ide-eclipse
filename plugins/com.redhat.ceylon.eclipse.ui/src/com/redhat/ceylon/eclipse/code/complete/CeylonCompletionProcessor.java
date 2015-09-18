@@ -136,6 +136,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -442,13 +443,15 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             final ITextViewer viewer, final int offset) {
         CeylonParseController controller = 
                 editor.getParseController();
-        if (controller.parseAndTypecheck(
+        PhasedUnit phasedUnit = 
+                controller.parseAndTypecheck(
                 viewer.getDocument(), 
                 10,
                 new NullProgressMonitor(), 
-                null)) {
+                null);
+        if (phasedUnit != null) {
             return computeParameterContextInformation(offset, 
-                    controller.getLastCompilationUnit(), viewer)
+                    phasedUnit.getCompilationUnit(), viewer)
                     .toArray(NO_CONTEXTS);
         } else {
             return NO_CONTEXTS;
@@ -482,20 +485,20 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             boolean secondLevel, boolean returnedParamInfo, 
             IProgressMonitor monitor) {
         
-        if (controller==null || viewer==null || 
-                controller.getLastCompilationUnit()==null || 
-                controller.getTokens()==null) {
+        if (controller==null || viewer==null) {
             return null;
         }
         
-        controller.parseAndTypecheck(viewer.getDocument(), 
+        PhasedUnit typecheckedPhasedUnit = 
+                controller.parseAndTypecheck(viewer.getDocument(), 
                 10,
                 monitor, null);
-        
+        if (typecheckedPhasedUnit == null) {
+            return null;
+        }
         controller.getHandler().updateAnnotations();
         List<CommonToken> tokens = controller.getTokens(); 
-        Tree.CompilationUnit rawRootNode = controller.getParsedRootNode();
-        Tree.CompilationUnit typecheckedRootNode = controller.getLastCompilationUnit();
+        Tree.CompilationUnit typecheckedRootNode = typecheckedPhasedUnit.getCompilationUnit();
         
         //adjust the token to account for unclosed blocks
         //we search for the first non-whitespace/non-comment
@@ -523,7 +526,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         Node node = getTokenNode(
                 adjustedToken.getStartIndex(), 
                 adjustedToken.getStopIndex()+1, 
-                tt, rawRootNode, offset);
+                tt, typecheckedRootNode, offset);
         
         //it's useful to know the type of the preceding 
         //token, if any
@@ -912,9 +915,13 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     monitor);
         }
         else if (node instanceof Tree.ImportPath) {
-            new ImportVisitor(prefix, token, offset, 
-                    node, cpc, result, monitor)
-                        .visit(cpc.getLastCompilationUnit());
+            Tree.CompilationUnit upToDateAndTypechecked = 
+                    cpc.getTypecheckedRootNode();
+            if (upToDateAndTypechecked != null) {
+                new ImportVisitor(prefix, token, offset, 
+                        node, cpc, result, monitor)
+                            .visit(upToDateAndTypechecked);
+            }
         }
         else if (isEmptyModuleDescriptor(cpc)) {
             addModuleDescriptorCompletion(cpc, offset, 
@@ -1003,7 +1010,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         
         List<ICompletionProposal> result = 
                 new ArrayList<ICompletionProposal>();
-        CompilationUnit rootNode = controller.getLastCompilationUnit();
+        CompilationUnit rootNode = controller.getTypecheckedRootNode();
+        if (rootNode == null) {
+            return result.toArray(NO_COMPLETIONS);
+        }
         OccurrenceLocation ol = 
                 getOccurrenceLocation(rootNode, node, offset);
         Unit unit = node.getUnit();
