@@ -58,7 +58,7 @@ public class CleanImportsHandler extends AbstractHandler {
             CeylonParseController controller, IDocument doc) {
         if (!isEnabled(controller)) return;
         Tree.CompilationUnit rootNode = 
-                controller.getLastCompilationUnit();
+                controller.getTypecheckedRootNode();
         if (rootNode!=null) {
             String imports = imports(rootNode, doc);
             Tree.ImportList importList = 
