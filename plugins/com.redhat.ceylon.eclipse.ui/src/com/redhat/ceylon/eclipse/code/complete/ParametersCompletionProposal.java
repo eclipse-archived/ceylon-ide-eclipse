@@ -245,10 +245,10 @@ class ParametersCompletionProposal extends CompletionProposal {
             if (eq>0) {
                 content = content.substring(eq+1);
             }
-            String filter = content.trim().toLowerCase();
-            if (filter.startsWith(op)) {
-                filter = filter.substring(op.length());
+            if (content.startsWith(op)) {
+                content = content.substring(op.length());
             }
+            String filter = content.trim().toLowerCase();
             return ModelUtil.isNameMatching(content, dec) ||
                     getProposedName(qualifier, dec, getUnit())
                         .toLowerCase()
