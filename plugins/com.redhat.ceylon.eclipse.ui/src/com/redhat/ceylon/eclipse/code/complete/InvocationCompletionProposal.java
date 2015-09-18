@@ -117,14 +117,15 @@ class InvocationCompletionProposal extends CompletionProposal {
             int offset, String prefix, 
             final CeylonParseController controller, 
             List<ICompletionProposal> result, 
-            Declaration dec, Scope scope, boolean isMember, 
+            DeclarationWithProximity dwp, Scope scope, boolean isMember, 
             Reference pr, OccurrenceLocation ol) {
         Unit unit = controller.getLastCompilationUnit().getUnit();
+        Declaration dec = dwp.getDeclaration();
         //proposal with type args
         if (dec instanceof Generic) {
             result.add(new InvocationCompletionProposal(
                     offset, prefix,
-                    getDescriptionFor(dec, unit), 
+                    getDescriptionFor(dwp, unit, true),
                     getTextFor(dec, unit), 
                     dec, pr, scope, controller, 
                     true, false, false, 
@@ -145,7 +146,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 ol!=CLASS_ALIAS && ol!=TYPE_ALIAS)) {
             result.add(new InvocationCompletionProposal(
                     offset, prefix,
-                    dec.getName(unit), 
+                    getDescriptionFor(dwp, unit, false),
                     escapeName(dec, unit), 
                     dec, pr, scope, controller, 
                     true, false, false, 
@@ -180,7 +181,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                 offset, prefix, 
                                 controller, result, dec,
                                 scope, requiredType, ol, 
-                                unit, type, m);
+                                unit, type, ndwp, m);
                     }
                 }
             }
@@ -197,7 +198,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                                 offset, prefix, 
                                 controller, result, dec,
                                 scope, requiredType, ol, 
-                                unit, type, m);
+                                unit, type, null, m);
                     }
                 }
             }
@@ -210,7 +211,10 @@ class InvocationCompletionProposal extends CompletionProposal {
             List<ICompletionProposal> result,
             Declaration dec, Scope scope, 
             Type requiredType, OccurrenceLocation ol,
-            Unit unit, Type type, Declaration m) {
+            Unit unit, Type type, 
+            DeclarationWithProximity mwp,
+            // sometimes we have no mwp so we also need the m
+            Declaration m) {
         Reference ptr = type.getTypedReference(m, NO_TYPES);
         Type mt = ptr.getType();
         if (mt!=null && 
@@ -223,7 +227,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             String desc = 
                     qualifier + 
                     getPositionalInvocationDescriptionFor(
-                            m, ol, ptr, unit, false, null);
+                            mwp, m, ol, ptr, unit, false, null);
             String text = 
                     qualifier + 
                     getPositionalInvocationTextFor(
@@ -238,7 +242,10 @@ class InvocationCompletionProposal extends CompletionProposal {
             int offset, String prefix, 
             CeylonParseController controller, 
             List<ICompletionProposal> result, 
-            Declaration dec, Reference pr, 
+            DeclarationWithProximity dwp,
+            // sometimes we have no dwp, just a dec, so we have to handle that too
+            Declaration dec,
+            Reference pr, 
             Scope scope, OccurrenceLocation ol, 
             String typeArgs, boolean isMember) {
         if (dec instanceof Functional) {
@@ -275,7 +282,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     if (ps.size()!=parameters.size()) {
                         String desc = 
                                 getPositionalInvocationDescriptionFor(
-                                        dec, ol, pr, unit, false, 
+                                        dwp, dec, ol, pr, unit, false, 
                                         typeArgs);
                         String text = 
                                 getPositionalInvocationTextFor(
@@ -287,7 +294,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     }
                     String desc = 
                             getPositionalInvocationDescriptionFor(
-                                    dec, ol, pr, unit, true, 
+                                    dwp, dec, ol, pr, unit, true, 
                                     typeArgs);
                     String text = 
                             getPositionalInvocationTextFor(
@@ -686,6 +693,17 @@ class InvocationCompletionProposal extends CompletionProposal {
         this.qualifyingValue = qualifyingValue;
     }
 
+    protected boolean isProposalMatching(String currentPrefix, String text){
+        if(super.isProposalMatching(currentPrefix, text))
+            return true;
+        for(String alias : declaration.getAliases()){
+            if(ModelUtil.isNameMatching(currentPrefix, alias))
+                return true;
+        }
+        return false;
+    }
+
+    
     private Unit getUnit() {
         return cpc.getLastCompilationUnit().getUnit();
     }

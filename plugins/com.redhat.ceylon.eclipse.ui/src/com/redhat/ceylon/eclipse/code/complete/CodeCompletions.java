@@ -30,6 +30,7 @@ import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
@@ -171,14 +172,34 @@ public class CodeCompletions {
         appendTypeParameters(dec, result);
         return result.toString();
     }
-    
+
+    public static String getDescriptionFor(
+            DeclarationWithProximity dwp, Unit unit, boolean addTypeParameters) {
+        StringBuilder result = 
+                new StringBuilder();
+        Declaration dec = dwp.getDeclaration();
+        if(dwp.isAlias()){
+            result.append(dwp.getName());
+            result.append(" -> ");
+        }
+        result.append(dec.getName(unit));
+        if(addTypeParameters)
+            appendTypeParameters(dec, result);
+        return result.toString();
+    }
+
     public static String getPositionalInvocationDescriptionFor(
-            Declaration dec, OccurrenceLocation ol,
+            DeclarationWithProximity dwp, Declaration dec, OccurrenceLocation ol,
             Reference pr, Unit unit, 
             boolean includeDefaulted,
             String typeArgs) {
         StringBuilder result = 
-                new StringBuilder(dec.getName(unit));
+                new StringBuilder();
+        if(dwp != null && dwp.isAlias()){
+            result.append(dwp.getName());
+            result.append(" -> ");
+        }
+        result.append(dec.getName(unit));
         if (typeArgs!=null) {
             result.append(typeArgs);
         }

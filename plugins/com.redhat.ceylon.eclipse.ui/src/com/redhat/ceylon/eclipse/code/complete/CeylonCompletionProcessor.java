@@ -1036,7 +1036,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 Declaration dec = dwp.getDeclaration();
                 if (isTypeParameterOfCurrentDeclaration(node, dec)) {
                     addReferenceProposal(offset, prefix, controller, 
-                            result, dec, scope, false, null, ol);
+                            result, dwp, scope, false, null, ol);
                 }
             }
         }
@@ -1169,7 +1169,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                 getRefinedProducedReference(scope, d);
                         addInvocationProposals(
                                 offset, prefix, controller, result, 
-                                d, pr, scope, ol, null, isMember);
+                                dwp, d, pr, scope, ol, null, isMember);
                     }
                 }
                 
@@ -1215,7 +1215,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                     !noParamsFollow) {
                                 addReferenceProposal(
                                         offset, prefix, 
-                                        controller, result, dec, scope, 
+                                        controller, result, dwp, scope, 
                                         isMember, pr, ol);
                             }
                         }

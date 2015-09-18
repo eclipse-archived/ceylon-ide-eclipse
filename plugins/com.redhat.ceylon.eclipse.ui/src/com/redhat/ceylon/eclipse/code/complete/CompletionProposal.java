@@ -169,7 +169,14 @@ public class CompletionProposal implements ICompletionProposal,
         }
         currentPrefix = getCurrentPrefix(document, offset);
         return currentPrefix==null ? false :
-        	isNameMatching(currentPrefix, text);
+        	isProposalMatching(currentPrefix, text);
+    }
+    
+    /**
+     * To be overridden by subclasses
+     */
+    protected boolean isProposalMatching(String currentPrefix, String text){
+        return isNameMatching(currentPrefix, text);
     }
 
 	String getCurrentPrefix(IDocument document, int offset) {
