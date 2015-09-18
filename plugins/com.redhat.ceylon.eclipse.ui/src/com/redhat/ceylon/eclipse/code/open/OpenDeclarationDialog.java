@@ -419,11 +419,11 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                         StringBuilder sb = 
                                 new StringBuilder(text);
                         if (showSelectionPackage) {
-                            sb.append(" - ")
+                            sb.append(" \u2014 ")
                               .append(getPackageLabel(dec));
                         }
                         if (showSelectionModule) {
-                            sb.append(" - ")
+                            sb.append(" \u2014 ")
                               .append(getModule(dec));
                         }
                         return sb.toString();
@@ -452,7 +452,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Declaration dec = toDeclaration(element);
             if (dec!=null) {
                 try {
-                    return getPackageLabel(dec) /*+ " - " + getLocation(dwp)*/;
+                    return getPackageLabel(dec) /*+ " \u2014 " + getLocation(dwp)*/;
                 }
                 catch (Exception e) {
                     System.err.println(dec.getName());
@@ -488,7 +488,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Declaration dec = toDeclaration(element);
             if (dec!=null) {
                 try {
-                    return getModuleLabel(dec)/* + " - " + getLocation(dwp)*/;
+                    return getModuleLabel(dec)/* + " \u2014 " + getLocation(dwp)*/;
                 }
                 catch (Exception e) {
                     System.err.println(dec.getName());
@@ -604,9 +604,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                                     getPatternControl().getText(),
                                     CeylonPlugin.getOpenDialogFont());
                     if (nameOccursMultipleTimes(dec)) {
-                        label.append(" - ", PACKAGE_STYLER)
+                        label.append(" \u2014 ", PACKAGE_STYLER)
                              .append(getPackageLabel(dec), PACKAGE_STYLER)
-                             .append(" - ", COUNTER_STYLER)
+                             .append(" \u2014 ", COUNTER_STYLER)
                              .append(getModule(dec), COUNTER_STYLER);
                     }
                     return label;

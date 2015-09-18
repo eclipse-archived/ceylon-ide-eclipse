@@ -147,7 +147,7 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
      * @see IClasspathContainer#getDescription()
      */
     public String getDescription() {
-        return "Ceylon Language Module - " + getRuntimeVersion();
+        return "Ceylon Language Module -\u2014 " + getRuntimeVersion();
     }
 
     /**

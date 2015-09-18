@@ -161,9 +161,9 @@ final class PeekDefinitionPopup extends PopupDialog
     protected StyledString styleTitle(final StyledText title) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(title.getText(), "-", false);
+                new StringTokenizer(title.getText(), "\u2014", false);
         styleDescription(title, result, tokens.nextToken());
-        result.append("-");
+        result.append("\u2014");
         Highlights.styleFragment(result, 
                 tokens.nextToken(), false, null, 
                 CeylonPlugin.getOutlineFont());
@@ -369,9 +369,7 @@ final class PeekDefinitionPopup extends PopupDialog
             e.printStackTrace();
         }
         parseController.initialize(path, project, null);
-        if (parseController.parseAndTypecheck(
-                                doc, 
-                                10, 
+        if (parseController.parseAndTypecheck(doc, 10, 
                                 new NullProgressMonitor(), 
                                 null)) {
             if (referencedNode instanceof Tree.Declaration) {
@@ -379,7 +377,7 @@ final class PeekDefinitionPopup extends PopupDialog
                         (Tree.Declaration) referencedNode;
                 Declaration model = 
                         declaration.getDeclarationModel();
-                setTitleText("Peek Definition - " + 
+                setTitleText("Peek Definition \u2014 " + 
                         getLabelDescriptionFor(model));
             }
         }

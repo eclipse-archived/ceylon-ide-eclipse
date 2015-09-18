@@ -144,7 +144,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     }
                 }
                 if (path!=null) {
-                    styledString.append(" - " + path, 
+                    styledString.append(" \u2014 " + path, 
                             COUNTER_STYLER);
                 }
             }
@@ -176,11 +176,11 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         styledString.append(ce.getLabel());
         if (appendMatchPackage()) {
             styledString.append(
-                    " - " + ce.getPackageLabel(), 
+                    " \u2014 " + ce.getPackageLabel(), 
                     PACKAGE_STYLER);
             if (appendSourceLocation()) {
                 styledString.append(
-                        " - " + ce.getPathString(), 
+                        " \u2014 " + ce.getPathString(), 
                         COUNTER_STYLER);
             }
         }
@@ -326,7 +326,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             IPackageFragment pkg = 
                     (IPackageFragment) 
                         je.getAncestor(PACKAGE_FRAGMENT);
-            styledString.append(" - ", PACKAGE_STYLER)
+            styledString.append(" \u2014 ", PACKAGE_STYLER)
                         .append(pkg.getElementName(), 
                                 PACKAGE_STYLER);
             if (appendSourceLocation()) {
@@ -338,7 +338,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     if (unit instanceof CeylonBinaryUnit) {
                         String path = ((CeylonBinaryUnit)unit).getSourceFullPath();
                         if (path != null) {
-                            styledString.append(" - " + path, 
+                            styledString.append(" \u2014 " + path, 
                                 COUNTER_STYLER);
                         }
                     }
@@ -351,7 +351,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                                 String sourceArchivePath = module.getSourceArchivePath();
                                 if (sourceArchivePath != null) {
                                     String path = sourceArchivePath + "!/" + sourceRelativePath;
-                                    return styledString.append(" - " + path, 
+                                    return styledString.append(" \u2014 " + path, 
                                             COUNTER_STYLER);
                                 }
                             }
@@ -383,7 +383,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                                 rootPath + '/' + 
                                 concatWith(pkgFrag.names, 
                                         simpleSourceFileName, '/');
-                        styledString.append(" - " + path, 
+                        styledString.append(" \u2014 " + path, 
                                 COUNTER_STYLER);
                     }
                     else if (type instanceof SourceType) {
@@ -392,7 +392,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                                     .getCorrespondingResource()
                                     .getFullPath()
                                     .toPortableString();
-                        styledString.append(" - " + path, 
+                        styledString.append(" \u2014 " + path, 
                                 COUNTER_STYLER);
                     }
                     //new SourceMapper(root.getSourceAttachmentPath(), root.getSourceAttachmentRootPath()==null ? null : root.getSourceAttachmentRootPath().toString(), null)

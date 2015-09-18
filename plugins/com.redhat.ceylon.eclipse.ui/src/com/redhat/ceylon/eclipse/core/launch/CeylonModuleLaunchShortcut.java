@@ -57,7 +57,8 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
         String topLevelDisplayName = 
                 LaunchHelper.getTopLevelDisplayName(declarationToRun);
         
-        String configurationName = projectName.trim() + " - " 
+        String configurationName = 
+                projectName.trim() + " \u2014 " 
                 + moduleName.trim() + " ("  
                 + topLevelDisplayName.trim() + ")";
         

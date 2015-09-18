@@ -297,7 +297,7 @@ public final class ReferencesPopup extends PopupDialog
                 }
             }
             if (builder.length()>0) {
-                builder.append(" - ");
+                builder.append(" \u2014 ");
             }
             builder.append(commandBinding.format())
                 .append(message);
@@ -426,9 +426,9 @@ public final class ReferencesPopup extends PopupDialog
         StyledString result = new StyledString();
         StringTokenizer tokens = 
                 new StringTokenizer(title.getText(), 
-                        "-", false);
+                        "\u2014", false);
         styleDescription(title, result, tokens.nextToken());
-        result.append("-");
+        result.append("\u2014");
         String rest = tokens.nextToken();
         int loc = rest.indexOf(" to ");
         if (loc<1) loc = rest.indexOf(" of ");
@@ -861,7 +861,7 @@ public final class ReferencesPopup extends PopupDialog
         else {
             name = declaration.getNameAsString();
         }
-        setTitleText("Quick Find References - " + message + " " + 
+        setTitleText("Quick Find References \u2014 " + message + " " + 
                         name + " in project source");
         TreeNode root = new TreeNode(new Object());
         Map<Package,TreeNode> packageNodes = 

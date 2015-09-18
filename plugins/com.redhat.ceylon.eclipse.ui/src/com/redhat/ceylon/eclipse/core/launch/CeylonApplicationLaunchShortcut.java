@@ -418,7 +418,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         
         @Override
         public String decorateText(String text, Object element) {
-            return text + " - " + getPackageLabel((Declaration) element);
+            return text + " \u2014 " + getPackageLabel((Declaration) element);
         }
         
         @Override
@@ -545,7 +545,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
                     }
                 }
             }
-            configurationName += declarationToRun.getName() + "() - ";
+            configurationName += declarationToRun.getName() + "() \u2014 ";
             String packageName = declarationToRun.getContainer().getQualifiedNameString();
             configurationName += packageName.isEmpty() ? "default package" : packageName;
             configurationName = configurationName.replaceAll("[\u00c0-\ufffe]", "_");

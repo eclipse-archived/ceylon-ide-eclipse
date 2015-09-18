@@ -340,7 +340,7 @@ public class CodeCompletions {
         appendDeclarationHeaderDescription(d, pr, unit, result);
         appendTypeParameters(d, result);
         appendParametersDescription(d, pr, unit, result);
-        /*result.append(" - refine declaration in ") 
+        /*result.append(" \u2014 refine declaration in ") 
             .append(((Declaration) d.getContainer()).getName());*/
         return result.toString();
     }
@@ -453,7 +453,7 @@ public class CodeCompletions {
                     }
                 }
             }
-            /*result.append(" - refines declaration in ") 
+            /*result.append(" \u2014 refines declaration in ") 
                 .append(((Declaration) d.getContainer()).getName());*/
         }
         return result;
@@ -504,7 +504,7 @@ public class CodeCompletions {
                     }
                 }
             }
-            /*result.append(" - refines declaration in ") 
+            /*result.append(" \u2014 refines declaration in ") 
                 .append(((Declaration) d.getContainer()).getName());*/
         }
         return result;
@@ -1093,10 +1093,10 @@ public class CodeCompletions {
     }
     /*private static void appendPackage(Declaration d, StringBuilder result) {
     if (d.isToplevel()) {
-        result.append(" - ").append(getPackageLabel(d));
+        result.append(" \u2014 ").append(getPackageLabel(d));
     }
     if (d.isClassOrInterfaceMember()) {
-        result.append(" - ");
+        result.append(" \u2014 ");
         ClassOrInterface td = (ClassOrInterface) d.getContainer();
         result.append( td.getName() );
         appendPackage(td, result);

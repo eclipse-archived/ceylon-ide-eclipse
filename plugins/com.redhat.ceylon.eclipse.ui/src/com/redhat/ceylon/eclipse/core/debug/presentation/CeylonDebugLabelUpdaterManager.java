@@ -38,9 +38,9 @@ class StackFrameLabelUpdater implements CeylonDebugLabelUpdater {
         if (declaration instanceof Functional) {
             result.append("()");
         }
-        result.append(" - ")
+        result.append(" \u2014 ")
         .append(declaration.getUnit().getFilename())
-        .append(" - ")
+        .append(" \u2014 ")
         .append(matcher.group(2))
         .append(matcher.group(3));
         return result.toString();

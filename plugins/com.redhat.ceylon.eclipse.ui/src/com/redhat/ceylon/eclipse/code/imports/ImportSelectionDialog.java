@@ -179,7 +179,7 @@ class LabelProvider extends StyledCellLabelProvider
         else {
             Declaration d = (Declaration) element;
             StyledString label = getStyledDescriptionFor(d);
-            label.append(" - ", Highlights.PACKAGE_STYLER)
+            label.append(" \u2014 ", Highlights.PACKAGE_STYLER)
                 .append(getPackageLabel(d), Highlights.PACKAGE_STYLER);
             return label;
         }

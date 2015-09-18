@@ -86,7 +86,7 @@ public class CeylonNavigatorLabelProvider extends
         if (element instanceof CeylonArchiveFileStore) {
             CeylonArchiveFileStore archiveFileStore = (CeylonArchiveFileStore)element;
             if (archiveFileStore.getParent() == null) {
-                return new StyledString("Ceylon Sources").append(" - " + archiveFileStore.getArchivePath().toOSString(), QUALIFIER_STYLER);
+                return new StyledString("Ceylon Sources").append(" \u2014 ", QUALIFIER_STYLER).append(archiveFileStore.getArchivePath().toOSString(), QUALIFIER_STYLER);
             }
             return new StyledString(archiveFileStore.getName());
         }
@@ -94,7 +94,7 @@ public class CeylonNavigatorLabelProvider extends
         if (element instanceof JarPackageFragmentRoot) {
             JarPackageFragmentRoot jpfr = (JarPackageFragmentRoot) element;
             if (ArtifactContext.CAR.substring(1).equalsIgnoreCase(jpfr.getPath().getFileExtension())) {
-                return new StyledString("Java Binaries").append(" - " + jpfr.getPath().toOSString(), QUALIFIER_STYLER);
+                return new StyledString("Java Binaries").append(" \u2014 ", QUALIFIER_STYLER).append(jpfr.getPath().toOSString(), QUALIFIER_STYLER);
             } else {
                 return getJavaNavigatorLabelProvider().getStyledText(element);
             }
@@ -143,14 +143,14 @@ public class CeylonNavigatorLabelProvider extends
             stringToDisplay = "Imported Modules";
         }
         if (stringToDisplay == null && displayString.startsWith("[Maven]")) {
-            stringToDisplay = "Maven Modules - " + displayString.substring(7).trim();
+            stringToDisplay = "Maven Modules \u2014 " + displayString.substring(7).trim();
         }
         if (stringToDisplay == null) {
             try {
                 for (IProject referencedProject: repoNode.project.getReferencedProjects()) {
                     if (referencedProject.isOpen() && CeylonNature.isEnabled(referencedProject)) {
                         if (CeylonBuilder.getCeylonModulesOutputDirectory(referencedProject).getAbsolutePath().equals(displayString)) {
-                            stringToDisplay = "Modules of Referenced Project - " + referencedProject.getName() + "";
+                            stringToDisplay = "Modules of Referenced Project \u2014 " + referencedProject.getName() + "";
                             break;
                         }
                     }
@@ -165,7 +165,7 @@ public class CeylonNavigatorLabelProvider extends
                     IPath relativePath = Path.fromPortableString(repo.getUrl().substring(2));
                     IFolder folder = repoNode.project.getFolder(relativePath);
                     if (folder.exists() && folder.getLocation().toFile().getAbsolutePath().equals(displayString)) {
-                        stringToDisplay = "Local Repository - " + relativePath.toString() + "";
+                        stringToDisplay = "Local Repository \u2014 " + relativePath.toString() + "";
                         break;
                     }
                 }

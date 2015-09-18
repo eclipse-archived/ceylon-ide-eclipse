@@ -180,7 +180,7 @@ public class HierarchyPopup extends TreeViewPopup {
         String viewHint = 
                 hierarchyBinding==null ? "" :
                     hierarchyBinding.format() + 
-                    " to show in hierarchy view - ";
+                    " to show in hierarchy view \u2014 ";
         switch (contentProvider.getMode()) {
         case SUBTYPES:
             return viewHint + binding.format() + 
@@ -204,9 +204,9 @@ public class HierarchyPopup extends TreeViewPopup {
     protected StyledString styleTitle(final StyledText title) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(title.getText(), "-", false);
+                new StringTokenizer(title.getText(), "\u2014", false);
         styleDescription(title, result, tokens.nextToken());
-        result.append("-");
+        result.append("\u2014");
         String rest = tokens.nextToken();
         int loc = rest.indexOf(" of ") + 4;
         result.append(rest.substring(0, loc));

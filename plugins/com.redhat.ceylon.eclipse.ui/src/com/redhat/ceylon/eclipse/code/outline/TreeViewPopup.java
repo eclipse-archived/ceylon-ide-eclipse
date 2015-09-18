@@ -629,9 +629,9 @@ public abstract class TreeViewPopup extends PopupDialog
     protected StyledString styleTitle(final StyledText title) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(title.getText(), "-", false);
+                new StringTokenizer(title.getText(), "\u2014", false);
         styleDescription(title, result, tokens.nextToken());
-        result.append("-").append(tokens.nextToken());
+        result.append("\u2014").append(tokens.nextToken());
         return result;
     }
 

@@ -742,15 +742,15 @@ public final class CeylonHierarchyContentProvider
             switch (getMode()) {
             case HIERARCHY:
                 return label + 
-                        " - refinement hierarchy of " + 
+                        " \u2014 refinement hierarchy of " + 
                         description;
             case SUPERTYPES:
                 return label + 
-                        " - generalizations of " + 
+                        " \u2014 generalizations of " + 
                         description;
             case SUBTYPES:
                 return label + 
-                        " - refinements of " + 
+                        " \u2014 refinements of " + 
                         description;
             default:
                 throw new RuntimeException();
@@ -760,15 +760,15 @@ public final class CeylonHierarchyContentProvider
             switch (getMode()) {
             case HIERARCHY:
                 return label + 
-                        " - type hierarchy of " + 
+                        " \u2014 type hierarchy of " + 
                         description;
             case SUPERTYPES:
                 return label + 
-                        " - supertypes of " + 
+                        " \u2014 supertypes of " + 
                         description;
             case SUBTYPES:
                 return label + 
-                        " - subtypes of " + 
+                        " \u2014 subtypes of " + 
                         description;
             default:
                 throw new RuntimeException();

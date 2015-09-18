@@ -292,7 +292,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
  
         }
 
-        config.rename(projectName + " - " + moduleName + " - " + topLevelName);
+        config.rename(projectName + " \u2014 " + moduleName + " \u2014 " + topLevelName);
     }
 
     protected void createModuleEditor(Composite parent, String text) {

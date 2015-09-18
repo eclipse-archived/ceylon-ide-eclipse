@@ -125,7 +125,7 @@ abstract class AbstractRefactoring extends Refactoring {
     
     DocumentChange newDocumentChange() {
         DocumentChange dc = new DocumentChange(editor.getEditorInput().getName() + 
-                " - current editor", document);
+                " \u2014 current editor", document);
         dc.setTextType("ceylon");
         return dc;
     }

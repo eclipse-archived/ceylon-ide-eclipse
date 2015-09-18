@@ -65,10 +65,10 @@ abstract class CeylonHierarchyLabelProvider
             result.append(" in ")
                   .append(container.getName(), Highlights.TYPE_ID_STYLER);
         }*/
-        result.append(" - ", PACKAGE_STYLER)
+        result.append(" \u2014 ", PACKAGE_STYLER)
               .append(getPackageLabel(dec), PACKAGE_STYLER);
         if (n.isNonUnique()) {
-            result.append(" - and other supertypes")
+            result.append(" \u2014 and other supertypes")
                   .append(getViewInterfacesShortcut());
         }
         return result;

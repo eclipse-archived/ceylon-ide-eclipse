@@ -230,7 +230,7 @@ public class CeylonTopLevelSelectionDialog extends FilteredItemsSelectionDialog 
         
         @Override
         public String decorateText(String text, Object element) {
-            return text + " - " + getPackageLabel((Declaration) element);
+            return text + " \u2014 " + getPackageLabel((Declaration) element);
         }
         
         @Override

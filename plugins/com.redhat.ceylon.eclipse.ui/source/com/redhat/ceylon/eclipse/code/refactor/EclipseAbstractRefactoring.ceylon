@@ -118,7 +118,7 @@ abstract class EclipseAbstractRefactoring(IEditorPart editorPart) extends Refact
 
     shared DocumentChange? newDocumentChange() {
         assert(editorData exists);
-        value dc = DocumentChange(editorPart.editorInput.name + " - current editor", editorData?.document);
+        value dc = DocumentChange(editorPart.editorInput.name + " \{#2014} current editor", editorData?.document);
         dc.textType = "ceylon";
         return dc;
     }

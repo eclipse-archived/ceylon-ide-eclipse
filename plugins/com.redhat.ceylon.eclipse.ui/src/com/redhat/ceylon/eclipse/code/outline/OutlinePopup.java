@@ -404,7 +404,7 @@ public class OutlinePopup extends TreeViewPopup {
             int shellStyle) {
         super(shell, shellStyle, 
                 PLUGIN_ID + ".editor.showOutline", editor);
-        setTitleText("Quick Outline - " + 
+        setTitleText("Quick Outline \u2014 " + 
                 editor.getEditorInput().getName());
     }
 

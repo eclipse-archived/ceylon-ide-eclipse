@@ -462,7 +462,7 @@ public class HierarchyView extends ViewPart {
                 if (showInherited && 
                         container instanceof Declaration) {
                     Declaration dc = (Declaration) container;
-                    desc += " - " + dc.getName();
+                    desc += " \u2014 " + dc.getName();
                 }
                 return desc;
             }
@@ -484,7 +484,7 @@ public class HierarchyView extends ViewPart {
                 Scope container = dec.getContainer();
                 if (showInherited && 
                         container instanceof Declaration) {
-                    desc.append(" - ", Highlights.PACKAGE_STYLER)
+                    desc.append(" \u2014 ", Highlights.PACKAGE_STYLER)
                         .append(((Declaration) container).getName(), 
                                 Highlights.TYPE_STYLER);
                 }

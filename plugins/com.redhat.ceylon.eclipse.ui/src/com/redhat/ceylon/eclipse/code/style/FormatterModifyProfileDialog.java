@@ -64,7 +64,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
         this.projectSpecific = projectSpecific;
 
         this.profile = profile;
-        setTitle("Modify Formatter Profile - " + profile.getName());
+        setTitle("Modify Formatter Profile \u2014 " + profile.getName());
         this.workingValues = profile.getSettings();
         setStatusLineAboveButtons(false);
         this.tabPages = new ArrayList<FormatterTabPage>();
@@ -180,7 +180,7 @@ public class FormatterModifyProfileDialog extends StatusDialog implements
     protected void buttonPressed(int buttonId) {
         if (buttonId == APPLY_BUTTON_ID) {
             applyPressed();
-            setTitle("Modify Formatter Profile - " + profile.getName());
+            setTitle("Modify Formatter Profile \u2014 " + profile.getName());
         } else {
             super.buttonPressed(buttonId);
         }

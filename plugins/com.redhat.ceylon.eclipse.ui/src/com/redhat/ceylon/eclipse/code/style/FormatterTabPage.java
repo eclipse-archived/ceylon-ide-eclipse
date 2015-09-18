@@ -391,7 +391,7 @@ public abstract class FormatterTabPage {
                         + Integer.toString(max);
             }
             return new Status(IStatus.ERROR, CeylonPlugin.PLUGIN_ID, 0,
-                    "Inavlid number value. Should be between - " + rangeText,
+                    "Invalid number value. Should be between \u2014 " + rangeText,
                     null);
         }
 
@@ -447,7 +447,7 @@ public abstract class FormatterTabPage {
                 try {
                     fSelected = Integer.parseInt(s);
                 } catch (NumberFormatException e) {
-                    final String message = "Invalid key - " + getKey();
+                    final String message = "Invalid key \u2014 " + getKey();
                     CeylonPlugin
                             .getInstance()
                             .getLog()
