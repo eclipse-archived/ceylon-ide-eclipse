@@ -202,7 +202,11 @@ class ControlStructureCompletionProposal extends CompletionProposal {
 
     @Override
     public Point getSelection(IDocument document) {
-        return new Point(offset + text.indexOf('}') - prefix.length(), 0);
+        int loc = text.indexOf('}');
+        if (loc<0) {
+            loc = text.indexOf(';')+1;
+        }
+        return new Point(offset + loc - prefix.length(), 0);
     }
     
 }
