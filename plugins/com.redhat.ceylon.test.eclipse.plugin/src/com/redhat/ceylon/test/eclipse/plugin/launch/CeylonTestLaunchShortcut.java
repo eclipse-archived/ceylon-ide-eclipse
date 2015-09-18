@@ -323,7 +323,13 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         if (nameBuilder.length() != 0) {
             nameBuilder.setLength(nameBuilder.length() - 1);
         }
-        return nameBuilder.toString();
+        
+        return nameBuilder.toString()+ 
+                " \u2192 " + launchType();
+    }
+
+    String launchType() {
+        return "Java";
     }
 
 }
