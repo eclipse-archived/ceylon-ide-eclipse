@@ -8,8 +8,8 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
+import static java.util.Arrays.asList;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +36,7 @@ import org.eclipse.ui.IWorkbenchPage;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -109,7 +110,8 @@ abstract class FindSearchQuery implements ISearchQuery {
         Set<String> searchedArchives = new HashSet<String>();
         Package pack = getPackage();
         if (pack==null) return;
-        List<IProject> projectsToSearch = Arrays.asList(getProjectsToSearch(this.project));
+        List<IProject> projectsToSearch = 
+                asList(getProjectsToSearch(this.project));
         for (IProject project: 
                 projectsToSearch) {
             if (CeylonNature.isEnabled(project)) {
@@ -133,9 +135,11 @@ abstract class FindSearchQuery implements ISearchQuery {
                         if (module.isCeylonArchive() && 
                                 !module.isProjectModule() && 
                                 module.getArtifact()!=null) {
-                            IProject originalProject = module.getOriginalProject();
+                            IProject originalProject = 
+                                    module.getOriginalProject();
                             if (originalProject != null 
-                                    && projectsToSearch.contains(originalProject)) {
+                                    && projectsToSearch.contains(
+                                            originalProject)) {
                                 continue;
                             }
                            
@@ -223,8 +227,7 @@ abstract class FindSearchQuery implements ISearchQuery {
         Declaration declaration = 
                 (Declaration) referencedDeclaration;
         SearchPattern searchPattern = 
-                createSearchPattern(declaration, 
-                        limitTo());
+                createSearchPattern(declaration, limitTo());
         if (searchPattern==null) {
             return;
         }
@@ -287,8 +290,9 @@ abstract class FindSearchQuery implements ISearchQuery {
             if (filters.isFiltered(pu.getPackage())) {
                 continue;
             }
+            VirtualFile unitFile = pu.getUnitFile();
             monitor.subTask("Searching source file " + 
-                    pu.getUnitFile().getPath());
+                    unitFile.getPath());
             Tree.CompilationUnit rootNode = getRootNode(pu);
             Set<Node> nodes = 
                     getNodes(rootNode, 
@@ -301,8 +305,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                 else {
                     CeylonSearchMatch match = 
                             CeylonSearchMatch.create(node, 
-                                    rootNode, 
-                                    pu.getUnitFile());
+                                    rootNode, unitFile);
                     if (node instanceof Tree.DocLink) {
                         Tree.DocLink link = 
                                 (Tree.DocLink) node;
@@ -339,7 +342,8 @@ abstract class FindSearchQuery implements ISearchQuery {
                 CeylonParseController cpc = 
                         ce.getParseController();
                 Unit editorUnit = 
-                        cpc.getLastCompilationUnit().getUnit();
+                        cpc.getLastCompilationUnit()
+                            .getUnit();
                 if (/*editor.isDirty() &&*/
                     pu.getUnit().equals(editorUnit)) {
                     return cpc.getLastCompilationUnit();
