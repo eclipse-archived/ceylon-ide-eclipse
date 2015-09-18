@@ -31,11 +31,11 @@ class AssignToAssertExistsProposal extends LocalProposal {
         String terminal = expanse.getEndToken().getText();
         if (!terminal.equals(";")) {
             change.addEdit(new InsertEdit(endIndex, ");"));
-            exitPos = endIndex+12;
+            exitPos = endIndex+11;
         }
         else {
             change.addEdit(new InsertEdit(endIndex-1, ")"));
-            exitPos = endIndex+11;
+            exitPos = endIndex+10;
         }
         return change;
     }

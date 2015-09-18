@@ -32,11 +32,11 @@ class AssignToAssertIsProposal extends LocalProposal {
         String terminal = expanse.getEndToken().getText();
         if (!terminal.equals(";")) {
             change.addEdit(new InsertEdit(endIndex, ");"));
-            exitPos = endIndex+16;
+            exitPos = endIndex+15;
         }
         else {
             change.addEdit(new InsertEdit(endIndex-1, ")"));
-            exitPos = endIndex+15;
+            exitPos = endIndex+14;
         }
         return change;
     }
