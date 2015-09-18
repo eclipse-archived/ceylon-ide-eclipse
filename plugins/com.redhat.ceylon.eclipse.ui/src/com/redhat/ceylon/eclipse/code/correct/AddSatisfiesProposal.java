@@ -25,8 +25,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
