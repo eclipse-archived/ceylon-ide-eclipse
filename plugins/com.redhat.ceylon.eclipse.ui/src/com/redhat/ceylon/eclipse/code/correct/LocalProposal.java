@@ -18,10 +18,12 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.InvocationExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedDeclaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.RefactorInformationPopup;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -46,15 +48,17 @@ public abstract class LocalProposal extends AbstractLinkedMode
 
     @Override
     protected final void updatePopupLocation() {
-        LinkedPosition currentLinkedPosition = getCurrentLinkedPosition();
+        LinkedPosition currentLinkedPosition = 
+                getCurrentLinkedPosition();
+        RefactorInformationPopup popup = getInfoPopup();
         if (currentLinkedPosition==null) {
-            getInfoPopup().setHintTemplate(getHintTemplate());
+            popup.setHintTemplate(getHintTemplate());
         }
         else if (currentLinkedPosition.getSequenceNumber()==1) {
-            getInfoPopup().setHintTemplate("Enter type for new local {0}");
+            popup.setHintTemplate("Enter type for new local {0}");
         }
         else {
-            getInfoPopup().setHintTemplate("Enter name for new local {0}");
+            popup.setHintTemplate("Enter name for new local {0}");
         }
     }
 
@@ -64,18 +68,23 @@ public abstract class LocalProposal extends AbstractLinkedMode
         Node expression;
         Node expanse;
         Type resultType;
+        Unit unit = node.getUnit();
         if (st instanceof Tree.ExpressionStatement) {
-            Tree.Expression e = 
-                    ((Tree.ExpressionStatement) st).getExpression();
+            Tree.ExpressionStatement es = 
+                    (Tree.ExpressionStatement) st;
+            Tree.Expression e = es.getExpression();
             expression = e;
             expanse = st;
             resultType = e.getTypeModel();
-            if (e.getTerm() instanceof Tree.InvocationExpression) {
-                Tree.Primary primary = 
-                        ((Tree.InvocationExpression) e.getTerm()).getPrimary();
+            Tree.Term term = e.getTerm();
+            if (term instanceof Tree.InvocationExpression) {
+                Tree.InvocationExpression ie = 
+                        (Tree.InvocationExpression) term;
+                Tree.Primary primary = ie.getPrimary();
                 if (primary instanceof Tree.QualifiedMemberExpression) {
                     Tree.QualifiedMemberExpression prim = 
-                            (Tree.QualifiedMemberExpression) primary;
+                            (Tree.QualifiedMemberExpression) 
+                                primary;
                     if (prim.getMemberOperator().getToken()==null) {
                         //an expression followed by two annotations 
                         //can look like a named operator expression
@@ -97,13 +106,15 @@ public abstract class LocalProposal extends AbstractLinkedMode
             }
             //some expressions get interpreted as annotations
             List<Tree.Annotation> annotations = 
-                    dec.getAnnotationList().getAnnotations();
+                    dec.getAnnotationList()
+                        .getAnnotations();
             Tree.AnonymousAnnotation aa = 
-                    dec.getAnnotationList().getAnonymousAnnotation();
+                    dec.getAnnotationList()
+                        .getAnonymousAnnotation();
             if (aa!=null && currentOffset<=aa.getEndIndex()) {
                 expression = aa;
                 expanse = expression;
-                resultType = aa.getUnit().getStringDeclaration().getType();
+                resultType = unit.getStringType();
             }
             else if (!annotations.isEmpty() && 
                     currentOffset<=dec.getAnnotationList().getEndIndex()) {
@@ -116,17 +127,19 @@ public abstract class LocalProposal extends AbstractLinkedMode
                 //some expressions look like a type declaration
                 //when they appear right in front of an annotation
                 //or function invocations
-                Tree.Type type = ((Tree.TypedDeclaration) st).getType();
+                TypedDeclaration td = 
+                        (Tree.TypedDeclaration) st;
+                Tree.Type type = td.getType();
+                Type t = type.getTypeModel();
                 if (type instanceof Tree.SimpleType) {
                     expression = type;
                     expanse = expression;
-                    resultType = type.getTypeModel();
+                    resultType = t;
                 }
                 else if (type instanceof Tree.FunctionType) {
                     expression = type;
                     expanse = expression;
-                    resultType = node.getUnit()
-                            .getCallableReturnType(type.getTypeModel());
+                    resultType = unit.getCallableReturnType(t);
                 }
                 else {
                     return;
@@ -150,7 +163,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
         initialName = nameProposals[0];
         offset = startIndex;
         type = resultType==null ? null : 
-            node.getUnit().denotableType(resultType);
+            unit.denotableType(resultType);
     
         DocumentChange change = 
                 createChange(document, expanse, endIndex);
@@ -161,8 +174,8 @@ public abstract class LocalProposal extends AbstractLinkedMode
         return Nodes.nameProposals(expression);
     }
     
-    protected abstract DocumentChange createChange(IDocument document, 
-            Node expanse, int endIndex);
+    protected abstract DocumentChange createChange(
+            IDocument document, Node expanse, int endIndex);
 
     protected final Node node;
     protected final Tree.CompilationUnit rootNode;
@@ -193,12 +206,14 @@ public abstract class LocalProposal extends AbstractLinkedMode
         return exitPos + initialName.length() + 9;
     }
     
-    protected abstract void addLinkedPositions(IDocument document, Unit unit)
-            throws BadLocationException;
+    protected abstract void addLinkedPositions(
+            IDocument document, Unit unit)
+                    throws BadLocationException;
 
     @Override
     public StyledString getStyledDisplayString() {
-        return Highlights.styleProposal(getDisplayString(), false, true);
+        return Highlights.styleProposal(getDisplayString(), 
+                false, true);
     }
 
     @Override
@@ -221,7 +236,8 @@ public abstract class LocalProposal extends AbstractLinkedMode
         return null;
     }
 
-    public LocalProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, Node node, 
+    public LocalProposal(CeylonEditor ceylonEditor, 
+            Tree.CompilationUnit cu, Node node, 
             int currentOffset) {
         super(ceylonEditor);
         this.rootNode = cu;
@@ -236,15 +252,19 @@ public abstract class LocalProposal extends AbstractLinkedMode
     boolean isEnabled() {
         Tree.Statement st = findStatement(rootNode, node);
         if (st instanceof Tree.ExpressionStatement) {
-            Tree.Expression e = 
-                    ((Tree.ExpressionStatement) st).getExpression();
+            Tree.ExpressionStatement es = 
+                    (Tree.ExpressionStatement) st;
+            Tree.Expression e = es.getExpression();
             Type resultType = e.getTypeModel();
-            if (e.getTerm() instanceof Tree.InvocationExpression) {
-                Tree.Primary primary = 
-                        ((Tree.InvocationExpression) e.getTerm()).getPrimary();
+            Tree.Term term = e.getTerm();
+            if (term instanceof Tree.InvocationExpression) {
+                InvocationExpression ie = 
+                        (Tree.InvocationExpression) term;
+                Tree.Primary primary = ie.getPrimary();
                 if (primary instanceof Tree.QualifiedMemberExpression) {
                     Tree.QualifiedMemberExpression prim = 
-                            (Tree.QualifiedMemberExpression) primary;
+                            (Tree.QualifiedMemberExpression) 
+                                primary;
                     if (prim.getMemberOperator().getToken()==null) {
                         //an expression followed by two annotations 
                         //can look like a named operator expression
@@ -258,6 +278,7 @@ public abstract class LocalProposal extends AbstractLinkedMode
             return isEnabled(resultType);
         }
         else if (st instanceof Tree.Declaration) {
+            Unit unit = node.getUnit();
             Tree.Declaration dec = (Tree.Declaration) st;
             Tree.Identifier id = dec.getIdentifier();
             if (id==null) {
@@ -270,15 +291,17 @@ public abstract class LocalProposal extends AbstractLinkedMode
             }
             //some expressions get interpreted as annotations
             List<Tree.Annotation> annotations = 
-                    dec.getAnnotationList().getAnnotations();
+                    dec.getAnnotationList()
+                        .getAnnotations();
             Tree.AnonymousAnnotation aa = 
-                    dec.getAnnotationList().getAnonymousAnnotation();
+                    dec.getAnnotationList()
+                        .getAnonymousAnnotation();
             Type resultType;
             if (aa!=null && currentOffset<=aa.getEndIndex()) {
                 if (aa.getEndToken().getLine()==line) {
                     return false;
                 }
-                resultType = aa.getUnit().getStringDeclaration().getType();
+                resultType = unit.getStringType();
             }
             else if (!annotations.isEmpty() && 
                     currentOffset<=dec.getAnnotationList().getEndIndex()) {
@@ -293,7 +316,8 @@ public abstract class LocalProposal extends AbstractLinkedMode
                 //some expressions look like a type declaration
                 //when they appear right in front of an annotation
                 //or function invocations
-                TypedDeclaration td = (Tree.TypedDeclaration) st;
+                TypedDeclaration td = 
+                        (Tree.TypedDeclaration) st;
                 Tree.Type type = td.getType();
                 if (currentOffset<=type.getEndIndex() &&
                     currentOffset>=type.getStartIndex() &&
@@ -305,8 +329,9 @@ public abstract class LocalProposal extends AbstractLinkedMode
                     else if (type instanceof Tree.FunctionType) {
                         //instantiation expressions look like a
                         //function type declaration
-                        resultType = node.getUnit()
-                                .getCallableReturnType(resultType);
+                        resultType = 
+                                unit.getCallableReturnType(
+                                        resultType);
                     }
                     else {
                         return false;
