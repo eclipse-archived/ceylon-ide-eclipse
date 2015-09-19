@@ -297,7 +297,7 @@ public final class ReferencesPopup extends PopupDialog
                 }
             }
             if (builder.length()>0) {
-                builder.append(" \u2014 ");
+                builder.append(" · ");
             }
             builder.append(commandBinding.format())
                 .append(message);

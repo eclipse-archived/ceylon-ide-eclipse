@@ -72,13 +72,16 @@ public class HierarchyPopup extends TreeViewPopup {
         @Override
         public void keyPressed(KeyEvent e) {
             if (triggersBinding(e, getCommandBinding())) {
-                contentProvider.setMode(contentProvider.getMode().next());
+                HierarchyMode nextMode = 
+                        contentProvider.getMode().next();
+                contentProvider.setMode(nextMode);
                 switchMode();
                 e.doit=false;
             }
             if (triggersBinding(e, hierarchyBinding)) {
                 try {
-                    showHierarchyView().focusOn(contentProvider.getDeclaration());
+                    showHierarchyView()
+                        .focusOn(contentProvider.getDeclaration());
                     close();
                 }
                 catch (PartInitException e1) {
@@ -149,7 +152,7 @@ public class HierarchyPopup extends TreeViewPopup {
             String getViewInterfacesShortcut() {
                 TriggerSequence binding = getCommandBinding();
                 return binding==null ? "" : 
-                    " (" + binding.format() + " to view)";
+                    " \u22ef " + binding.format() + " to see them";
             }
             @Override
             boolean isShowingRefinements() {
@@ -180,7 +183,7 @@ public class HierarchyPopup extends TreeViewPopup {
         String viewHint = 
                 hierarchyBinding==null ? "" :
                     hierarchyBinding.format() + 
-                    " to show in hierarchy view \u2014 ";
+                    " to show in hierarchy view · ";
         switch (contentProvider.getMode()) {
         case SUBTYPES:
             return viewHint + binding.format() + 

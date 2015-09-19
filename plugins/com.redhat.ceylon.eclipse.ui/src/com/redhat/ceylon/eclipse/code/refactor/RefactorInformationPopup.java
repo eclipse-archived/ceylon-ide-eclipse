@@ -692,10 +692,10 @@ public class RefactorInformationPopup
     }
 
     public void setHintTemplate(String hintTemplate) {
-        String enterKeyName= getEnterBinding();
+        String enterKeyName = " \u22ef " + getEnterBinding();
         hint.setText(hintTemplate.replace("{0}", enterKeyName));
         hint.setStyleRange(new StyleRange(hintTemplate.indexOf("{0}"), 
-                enterKeyName.length(), null, null, SWT.BOLD)); //$NON-NLS-1$
+                enterKeyName.length(), null, null, SWT.BOLD));
     }
 
     private ToolBar addViewMenu(final Composite parent) {
