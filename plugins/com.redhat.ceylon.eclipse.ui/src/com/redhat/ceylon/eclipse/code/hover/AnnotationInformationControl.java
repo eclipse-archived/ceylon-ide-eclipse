@@ -63,7 +63,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
@@ -253,7 +252,9 @@ class AnnotationInformationControl
                 if (getTypecheckedRootNode(info) == null) {
                     proposals = NO_PROPOSAL;
                 } else {
-                    proposals = getAnnotationInfo().getCompletionProposals();
+                    proposals = 
+                            getAnnotationInfo()
+                                .getCompletionProposals();
                     fInput.setProposals(proposals);
                 }
 

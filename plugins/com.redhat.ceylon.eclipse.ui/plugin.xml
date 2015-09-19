@@ -157,18 +157,18 @@
    
    <extension 
          point="org.eclipse.ui.ide.markerResolution">
-      <markerResolutionGenerator 
+      <markerResolutionGenerator
             class="com.redhat.ceylon.eclipse.code.correct.MarkerResolutionGenerator"
-            markerType="com.redhat.ceylon.eclipse.ui.ceylonProblem">
-      </markerResolutionGenerator>
-      <markerResolutionGenerator 
+            markerType="com.redhat.ceylon.eclipse.ui.ceylonProblem"/>
+      <markerResolutionGenerator
             class="com.redhat.ceylon.eclipse.code.correct.MarkerResolutionGenerator"
-            markerType="com.redhat.ceylon.eclipse.ui.ceylonCharsetProblem">
-      </markerResolutionGenerator>
-      <markerResolutionGenerator 
+            markerType="com.redhat.ceylon.eclipse.ui.ceylonCharsetProblem"/>
+      <markerResolutionGenerator
             class="com.redhat.ceylon.eclipse.code.correct.MarkerResolutionGenerator"
-            markerType="com.redhat.ceylon.eclipse.ui.ceylonConfigProblem">
-      </markerResolutionGenerator>
+            markerType="com.redhat.ceylon.eclipse.ui.ceylonConfigProblem"/>
+      <markerResolutionGenerator
+            class="com.redhat.ceylon.eclipse.code.correct.MarkerResolutionGenerator"
+            markerType="com.redhat.ceylon.eclipse.ui.ceylonModuleDependencyProblem"/>
     </extension>
 
    <extension

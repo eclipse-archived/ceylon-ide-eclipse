@@ -30,6 +30,7 @@ import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -87,8 +88,10 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 !(node instanceof Tree.MissingDeclaration)) {
             Unit u = dec.getUnit();
             if (u instanceof ModifiableSourceFile) {
+                ModifiableSourceFile msf = 
+                        (ModifiableSourceFile) u;
                 ModifiablePhasedUnit phasedUnit = 
-                        ((ModifiableSourceFile) u).getPhasedUnit();
+                        msf.getPhasedUnit();
                 FindDeclarationNodeVisitor fdv = 
                         new FindDeclarationNodeVisitor(dec);
                 phasedUnit.getCompilationUnit().visit(fdv);
@@ -487,6 +490,61 @@ public class AddAnnotionProposal extends CorrectionProposal {
         }
     }
 
+    public static void addMakeNativeProposal(
+            final Collection<ICompletionProposal> proposals, 
+            final IProject project, final Node node, 
+            final Tree.CompilationUnit rootNode, 
+            final IFile file) {
+        if (node instanceof Tree.ImportPath) {
+            new Visitor() {
+                @Override
+                public void visit(Tree.ModuleDescriptor that) {
+                    if (node instanceof Tree.ImportPath) {
+                        Tree.ImportPath ip = 
+                                (Tree.ImportPath) node;
+                        Module module = 
+                                (Module) ip.getModel();
+                        String backend = 
+                                module.getNativeBackend();
+                        TextFileChange change = 
+                                new TextFileChange(
+                                        "Declare Module Native", 
+                                        file);
+                        change.setEdit(new InsertEdit(
+                                that.getStartIndex(), 
+                                "native(\"" + backend + "\") "));
+                        proposals.add(new CorrectionProposal(
+                                "Declare module 'native(\"" + backend + "\")'", 
+                                change, null));
+                    }
+                    super.visit(that);
+                }
+                @Override
+                public void visit(Tree.ImportModule that) {
+                    if (that.getImportPath()==node) {
+                        Module module = 
+                                (Module)
+                                    that.getImportPath()
+                                        .getModel();
+                        String backend = 
+                                module.getNativeBackend();
+                        TextFileChange change = 
+                                new TextFileChange(
+                                        "Declare Import Native", 
+                                        file);
+                        change.setEdit(new InsertEdit(
+                                that.getStartIndex(), 
+                                "native(\"" + backend + "\") "));
+                        proposals.add(new CorrectionProposal(
+                                "Declare import 'native(\"" + backend + "\")'", 
+                                change, null));
+                    }
+                    super.visit(that);
+                }
+            }.visit(rootNode);
+        }
+    }
+    
     static void addMakeContainerAbstractProposal(
             Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
@@ -787,5 +845,5 @@ public class AddAnnotionProposal extends CorrectionProposal {
                     proposals, project);
         }
     }
-    
+
 }

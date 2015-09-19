@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 
 public class ProblemLocation implements Comparable<ProblemLocation> {
@@ -18,8 +17,8 @@ public class ProblemLocation implements Comparable<ProblemLocation> {
     //IMarker marker;
     //CeylonAnnotation annotation;
 
-    public ProblemLocation(int offset, int length, CeylonAnnotation annotation) {
-        fId = annotation.getId();
+    public ProblemLocation(int offset, int length, int id) {
+        fId = id;
         // fArguments= annotation.getArguments();
         fOffset = offset;
         fLength = length;

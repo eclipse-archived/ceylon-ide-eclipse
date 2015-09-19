@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeDefaultDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeDefaultProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeFormalDecProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeNativeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeRefinedSharedProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedProposal;
@@ -95,6 +96,7 @@ import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.ad
 import static com.redhat.ceylon.eclipse.code.correct.SplitIfStatementProposal.addSplitIfStatementProposal;
 import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.VerboseRefinementProposal.addVerboseRefinementProposal;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.MarkerCreator.ERROR_CODE_KEY;
@@ -164,6 +166,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
@@ -177,6 +180,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
@@ -288,7 +292,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     
     private Tree.CompilationUnit getRootNode() {
         if (editor!=null) {
-            Tree.CompilationUnit upToDateRootNode = editor.getParseController().getTypecheckedRootNode();
+            Tree.CompilationUnit upToDateRootNode = 
+                    editor.getParseController()
+                        .getTypecheckedRootNode();
             if (upToDateRootNode != null) {
                 return upToDateRootNode;
             }
@@ -324,6 +330,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     problems.add(problemLocation);
                 }
             }
+            else if (curr instanceof MarkerAnnotation) {
+                MarkerAnnotation ma = (MarkerAnnotation) curr;
+                ProblemLocation problemLocation = 
+                        getProblemLocation(ma, model);
+                if (problemLocation != null) {
+                    problems.add(problemLocation);
+                }
+            }
         }
         
         ProblemLocation[] problemLocations =
@@ -352,7 +366,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     ProblemLocation problemLocation = 
                             getProblemLocation(ca, model);
                     if (problemLocation != null) {
-                        collectAnnotationCorrections(ca, context, 
+                        collectWarningSuppressions(ca, context, 
                                 problemLocation, proposals);
                         break;
                     }
@@ -366,12 +380,34 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             IAnnotationModel model) {
         int problemId = annotation.getId();
         if (problemId != -1) {
-            Annotation ann = (Annotation) annotation;
-            Position pos = model.getPosition(ann);
+            Position pos = model.getPosition(annotation);
             if (pos != null) {
                 return new ProblemLocation(
                         pos.getOffset(), pos.getLength(),
-                        annotation); // java problems all handled by the quick assist processors
+                        problemId); // java problems all handled by the quick assist processors
+            }
+        }
+        return null;
+    }
+
+    private static ProblemLocation getProblemLocation(
+            MarkerAnnotation annotation, 
+            IAnnotationModel model) {
+        int problemId = -1;
+        try {
+            problemId = (Integer)
+                annotation.getMarker()
+                    .getAttribute(MarkerCreator.ERROR_CODE_KEY);
+        }
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
+        if (problemId != -1) {
+            Position pos = model.getPosition(annotation);
+            if (pos != null) {
+                return new ProblemLocation(
+                        pos.getOffset(), pos.getLength(),
+                        problemId); // java problems all handled by the quick assist processors
             }
         }
         return null;
@@ -525,7 +561,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 
     public static boolean canFix(IMarker marker)  {
         try {
-            if (marker.getType().equals(PROBLEM_MARKER_ID)) {
+            String mt = marker.getType();
+            if (mt.equals(PROBLEM_MARKER_ID) ||
+                mt.equals(MODULE_DEPENDENCY_PROBLEM_MARKER_ID)) {
                 int code = marker.getAttribute(ERROR_CODE_KEY, 0);
                 return code>0;
             }
@@ -544,6 +582,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             CeylonAnnotation ceylonAnnotation = 
                     (CeylonAnnotation) annotation;
             return ceylonAnnotation.isFixable();
+        }
+        else if (annotation instanceof MarkerAnnotation) {
+            MarkerAnnotation markerAnnotation = 
+                    (MarkerAnnotation) annotation;
+            return canFix(markerAnnotation.getMarker());
         }
         else {
             return false;
@@ -821,6 +864,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             break;
         case 11000:
             addNamedArgumentsProposal(file, rootNode, proposals, node);
+            break;
+        case 20000:
+            addMakeNativeProposal(proposals, project, node, rootNode, file);
             break;
         }
     }
@@ -1454,7 +1500,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    public void collectAnnotationCorrections(
+    public void collectWarningSuppressions(
             CeylonAnnotation annotation,
             IQuickAssistInvocationContext context,
             ProblemLocation location, 
