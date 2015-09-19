@@ -264,7 +264,7 @@ public class Nodes {
                         && ! unit.getFilename().toLowerCase().endsWith(".ceylon")) {
                     boolean foundTheCeylonDeclaration = false;
                     if (unit instanceof CeylonBinaryUnit) {
-                        JDTModule module = ((JDTModule)unit.getPackage().getModule());
+                        JDTModule module = (JDTModule) unit.getPackage().getModule();
                         String sourceRelativePath = module.toSourceUnitRelativePath(unit.getRelativePath());
                         if (sourceRelativePath != null) {
                             String ceylonSourceRelativePath = module.getCeylonDeclarationFile(sourceRelativePath);
