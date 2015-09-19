@@ -177,11 +177,23 @@ class InvocationCompletionProposal extends CompletionProposal {
                     if ((m instanceof FunctionOrValue ||
                             m instanceof Class) &&
                             !isConstructor(m)) {
-                        addSecondLevelProposal(
-                                offset, prefix, 
-                                controller, result, dec,
-                                scope, requiredType, ol, 
-                                unit, type, ndwp, m);
+                        if (m.isAbstraction()) {
+                            for (Declaration o: 
+                                    m.getOverloads()) {
+                                addSecondLevelProposal(
+                                        offset, prefix, 
+                                        controller, result, dec,
+                                        scope, requiredType, ol, 
+                                        unit, type, ndwp, o);
+                            }
+                        }
+                        else {
+                            addSecondLevelProposal(
+                                    offset, prefix, 
+                                    controller, result, dec,
+                                    scope, requiredType, ol, 
+                                    unit, type, ndwp, m);
+                        }
                     }
                 }
             }
