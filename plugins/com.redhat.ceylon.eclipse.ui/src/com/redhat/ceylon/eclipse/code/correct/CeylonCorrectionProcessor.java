@@ -41,9 +41,9 @@ import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.
 import static com.redhat.ceylon.eclipse.code.correct.ChangeToIfProposal.addChangeToIfProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeArgProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeProposals;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToMethodProposal.addConvertGetterToMethodProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProposal.addConvertGetterToFunctionProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertIfElseToThenElse.addConvertToThenElseProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertMethodToGetterProposal.addConvertMethodToGetterProposal;
+import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProposal.addConvertFunctionToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertFromVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertToVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertIfToSwitchProposal;
@@ -1202,8 +1202,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addSplitIfStatementProposal(proposals, doc, file, statement);
             addJoinIfStatementsProposal(proposals, doc, file, statement);
             
-            addConvertGetterToMethodProposal(proposals, editor, file, statement);
-            addConvertMethodToGetterProposal(proposals, editor, file, statement);
+            addConvertGetterToFunctionProposal(proposals, editor, file, statement);
+            addConvertFunctionToGetterProposal(proposals, editor, file, statement);
             
             addThrowsAnnotationProposal(proposals, statement, rootNode, file, doc);            
             

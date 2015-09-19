@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CHANGE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.COMPOSITE_CHANGE;
 import static java.util.Collections.emptyList;
 
 import java.util.Collection;
@@ -8,12 +8,14 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
+import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
@@ -29,7 +31,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
 import com.redhat.ceylon.model.typechecker.model.Function;
 
-public class ConvertMethodToGetterProposal extends CorrectionProposal {
+class ConvertFunctionToGetterProposal extends CorrectionProposal {
 
     private static final class ConvertToGetterRefactoring extends RenameRefactoring {
         private ConvertToGetterRefactoring(IEditorPart editor) {
@@ -38,7 +40,13 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
 
         @Override
         public String getName() {
-            return "Convert To Getter";
+            return "Convert to Getter";
+        }
+
+        @Override
+        public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
+                throws CoreException, OperationCanceledException {
+            return new RefactoringStatus();
         }
 
         @Override
@@ -88,7 +96,7 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
         }
     }
 
-    public static void addConvertMethodToGetterProposal(
+    static void addConvertFunctionToGetterProposal(
             Collection<ICompletionProposal> proposals, 
             CeylonEditor editor, IFile file, Node node) {
         Function method = null;
@@ -112,11 +120,11 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
                 && !method.isDeclaredVoid()
                 && method.getParameterLists().size() == 1 
                 && method.getParameterLists().get(0).getParameters().size() == 0 ) {
-            addConvertMethodToGetterProposal(proposals, editor, file, method, type);
+            addConvertFunctionToGetterProposal(proposals, editor, file, method, type);
         }
     }
 
-    private static void addConvertMethodToGetterProposal(
+    private static void addConvertFunctionToGetterProposal(
             Collection<ICompletionProposal> proposals, 
             CeylonEditor editor, IFile file, Function method, 
             Tree.Type type) {
@@ -141,7 +149,7 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
             if (type instanceof Tree.FunctionModifier) {
                 TextFileChange tfc = 
                         new TextFileChange(
-                                "Convert To Getter", file);
+                                "Convert to Getter", file);
                 tfc.setEdit(new ReplaceEdit(
                         type.getStartIndex(), 
                         type.getDistance(), 
@@ -153,8 +161,8 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
                     "Convert " +
                     (method.isToplevel() ? "function" : "method") +
                     " '" + method.getName() + "()' to getter";
-            ConvertMethodToGetterProposal proposal = 
-                    new ConvertMethodToGetterProposal(
+            ConvertFunctionToGetterProposal proposal = 
+                    new ConvertFunctionToGetterProposal(
                             desc, change, method);
             if (!proposals.contains(proposal)) {
                 proposals.add(proposal);
@@ -168,9 +176,9 @@ public class ConvertMethodToGetterProposal extends CorrectionProposal {
         }
     }
 
-    private ConvertMethodToGetterProposal(
+    private ConvertFunctionToGetterProposal(
             String desc, Change change, Function method) {
-        super(desc, change, null, CHANGE);
+        super(desc, change, null, COMPOSITE_CHANGE);
     }
 
 }
