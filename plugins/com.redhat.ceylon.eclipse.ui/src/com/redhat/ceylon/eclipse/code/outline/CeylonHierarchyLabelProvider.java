@@ -19,6 +19,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Font;
 
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 
@@ -53,13 +54,23 @@ abstract class CeylonHierarchyLabelProvider
         	return new StyledString();
         }
         IPreferenceStore prefs = getPreferences();
-        StyledString result = 
-                getQualifiedDescriptionFor(dec, 
+        StyledString result;
+        if (dec.isNamed()) {
+            result = 
+                    getQualifiedDescriptionFor(dec, 
                         prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
                         prefs.getBoolean(PARAMS_IN_OUTLINES),
                         prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
                         prefs.getBoolean(RETURN_TYPES_IN_OUTLINES),
                         getPrefix(), getFont());
+        }
+        else {
+            result =
+                    new StyledString()
+                        .append("anonymous ")
+                        .append("object", Highlights.KW_STYLER)
+                        .append(" expession");
+        }
         /*if (d.isClassOrInterfaceMember()) {
             Declaration container = (Declaration) d.getContainer();
             result.append(" in ")
