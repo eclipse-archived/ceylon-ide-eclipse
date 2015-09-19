@@ -554,7 +554,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         return fdlv.getLinks();
     }
 
-    void renameIdentifier(TextChange tfc, 
+    protected void renameIdentifier(TextChange tfc, 
             Tree.Identifier id, Tree.CompilationUnit root) {
         String name = declaration.getName();
         int loc = id.getText().indexOf(name);
@@ -572,7 +572,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         }
     }
 
-    void renameRegion(TextChange tfc, Region region, 
+    protected void renameRegion(TextChange tfc, Region region, 
             Tree.CompilationUnit root) {
         tfc.addEdit(new ReplaceEdit(
                 region.getOffset(), 
