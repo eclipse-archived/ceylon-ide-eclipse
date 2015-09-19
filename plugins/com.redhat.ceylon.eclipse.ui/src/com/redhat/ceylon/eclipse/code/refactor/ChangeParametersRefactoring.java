@@ -310,12 +310,20 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         RefactoringStatus result = new RefactoringStatus();
         
         boolean foundDefaulted = false;
+        boolean foundVariadic = false;
         for (int index=0; index<defaulted.size(); index++) {
+            if (foundVariadic) {
+                result.addWarning("parameters occur after variadic parameter");
+            }
+            Parameter p = parameters.get(order.get(index));
+            if (p.isSequenced()) {
+                foundVariadic = true;
+            }
             if (defaulted.get(index)) {
                 foundDefaulted = true;
             }
             else {
-                if (foundDefaulted) {
+                if (foundDefaulted && !p.isSequenced()) {
                     result.addWarning("defaulted parameters occur before required parameters");
                     break;
                 }
