@@ -49,7 +49,7 @@ public class ConvertToDefaultConstructorProposal {
                 for (Tree.Parameter p: pl.getParameters()) {
                     if (p instanceof Tree.InitializerParameter) {
                         Node pdn = 
-                                Nodes.findDeclaration(rootNode, 
+                                Nodes.findReferencedNode(rootNode, 
                                         p.getParameterModel().getModel());
                         if (pdn!=null) {
                             //the constructor has to come 

@@ -306,11 +306,11 @@ public class Nodes {
                     }
                 }
             }
-            return findDeclaration(rootNode, model);
+            return findReferencedNode(rootNode, model);
         }
     }
 
-    public static Node findDeclaration(
+    public static Node findReferencedNode(
             Tree.CompilationUnit rootNode, Referenceable model) {
         FindReferencedNodeVisitor visitor = 
                 new FindReferencedNodeVisitor(model);

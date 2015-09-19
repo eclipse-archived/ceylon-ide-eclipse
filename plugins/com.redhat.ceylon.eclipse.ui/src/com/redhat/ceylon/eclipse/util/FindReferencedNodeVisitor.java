@@ -24,9 +24,12 @@ class FindReferencedNodeVisitor extends Visitor {
     
     private boolean isDeclaration(Declaration dec) {
         if (dec!=null && dec.equals(declaration)) {
-            if (dec.isNative() &&
-                    ! dec.getNativeBackend().equals(((Declaration)declaration).getNativeBackend())) {
-                return false;
+            if (dec.isNative()) {
+                Declaration d = (Declaration) declaration;
+                String backend = d.getNativeBackend();
+                if (!dec.getNativeBackend().equals(backend)) {
+                    return false;
+                }
             }
             if (declaration instanceof Function) {
                 Function method = (Function) declaration;
@@ -86,7 +89,10 @@ class FindReferencedNodeVisitor extends Visitor {
     @Override
     public void visit(Tree.AttributeSetterDefinition that) {
         Setter setter = that.getDeclarationModel();
-        if (isDeclaration(setter.getDirectMember(setter.getName(), null, false))) {
+        Declaration param = 
+                setter.getDirectMember(setter.getName(), 
+                        null, false);
+        if (isDeclaration(param)) {
             declarationNode = that;
         }
         super.visit(that);
@@ -94,8 +100,15 @@ class FindReferencedNodeVisitor extends Visitor {
     
     @Override
     public void visit(Tree.ObjectDefinition that) {
-        if (isDeclaration(that.getDeclarationModel()
-                .getTypeDeclaration())) {
+        if (isDeclaration(that.getAnonymousClass())) {
+            declarationNode = that;
+        }
+        super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.ObjectExpression that) {
+        if (isDeclaration(that.getAnonymousClass())) {
             declarationNode = that;
         }
         super.visit(that);
@@ -129,7 +142,8 @@ class FindReferencedNodeVisitor extends Visitor {
     
     public void visitAny(Node node) {
         if (declarationNode==null ||
-                declarationNode instanceof Tree.InitializerParameter) {
+                declarationNode 
+                    instanceof Tree.InitializerParameter) {
             super.visitAny(node);
         }
     }
