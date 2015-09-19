@@ -1202,8 +1202,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addSplitIfStatementProposal(proposals, doc, file, statement);
             addJoinIfStatementsProposal(proposals, doc, file, statement);
             
-            addConvertGetterToFunctionProposal(proposals, editor, file, statement);
-            addConvertFunctionToGetterProposal(proposals, editor, file, statement);
+            addConvertGetterToFunctionProposal(proposals, editor, statement);
+            addConvertFunctionToGetterProposal(proposals, editor, statement);
             
             addThrowsAnnotationProposal(proposals, statement, rootNode, file, doc);            
             

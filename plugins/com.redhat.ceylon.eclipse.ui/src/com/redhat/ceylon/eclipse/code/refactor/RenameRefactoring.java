@@ -589,7 +589,7 @@ public class RenameRefactoring extends AbstractRefactoring {
                 newName));
     }
 
-    static Node getIdentifier(Node node) {
+    protected static Node getIdentifier(Node node) {
         if (node instanceof Tree.SpecifierStatement) {
             Tree.SpecifierStatement st = 
                     (Tree.SpecifierStatement) node;

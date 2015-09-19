@@ -6,7 +6,6 @@ import static java.util.Collections.emptyList;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -17,7 +16,7 @@ import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
@@ -30,6 +29,9 @@ import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
 class ConvertGetterToFunctionProposal extends CorrectionProposal {
+
+    private Value getter;
+    private ConvertToFunctionRefactoring refactoring;
 
     private static final class ConvertToFunctionRefactoring extends RenameRefactoring {
         private ConvertToFunctionRefactoring(IEditorPart editor) {
@@ -52,7 +54,25 @@ class ConvertGetterToFunctionProposal extends CorrectionProposal {
 
         @Override
         protected void renameRegion(TextChange tfc, Region region, CompilationUnit root) {}
-
+        
+        @Override
+        protected void renameNode(TextChange tfc, Node node, CompilationUnit root) {
+            if (node instanceof Tree.AnyMethod) {
+                Tree.AnyMethod am = (Tree.AnyMethod) node;
+                Tree.Type type = am.getType();
+                if (type instanceof Tree.FunctionModifier) {
+                    tfc.setEdit(new ReplaceEdit(
+                            type.getStartIndex(), 
+                            type.getDistance(), 
+                            "function"));
+                }
+            }
+            Node identifyingNode = getIdentifier(node);
+            tfc.addEdit(new InsertEdit(
+                    identifyingNode.getEndIndex(), 
+                    "()"));
+        }
+        
         @Override
         public List<Identifier> getIdentifiersToRename(CompilationUnit root) {
             return emptyList();
@@ -67,15 +87,13 @@ class ConvertGetterToFunctionProposal extends CorrectionProposal {
 
     static void addConvertGetterToFunctionProposal(
             Collection<ICompletionProposal> proposals, 
-            CeylonEditor editor, IFile file, Node node) {
-        Value getter = null;
-        Tree.Type type = null;
-
+            CeylonEditor editor, Node node) {
+        
+        Value getter;
         if (node instanceof Tree.AttributeGetterDefinition) {
             Tree.AttributeGetterDefinition agd = 
                     (Tree.AttributeGetterDefinition) node;
             getter = agd.getDeclarationModel();
-            type = agd.getType();
         }
         else if (node instanceof Tree.AttributeDeclaration) {
             Tree.AttributeDeclaration ad = 
@@ -83,71 +101,72 @@ class ConvertGetterToFunctionProposal extends CorrectionProposal {
             if (ad.getSpecifierOrInitializerExpression() 
                     instanceof Tree.LazySpecifierExpression) {
                 getter = ad.getDeclarationModel();
-                type = ad.getType();
+            }
+            else {
+                return;
             }
         }
+        else {
+            return;
+        }
 
-        if (getter != null) {
+        if (getter!=null) {
             addConvertGetterToFunctionProposal(proposals, 
-                    editor, file, getter, type);
+                    editor, getter);
         }
     }
 
     private static void addConvertGetterToFunctionProposal(
             Collection<ICompletionProposal> proposals, 
-            CeylonEditor editor, IFile file, Value getter, 
-            Tree.Type type) {
+            CeylonEditor editor, Value getter) {
+        ConvertToFunctionRefactoring refactoring = 
+                new ConvertToFunctionRefactoring(editor);
         try {
-            RenameRefactoring refactoring = 
-                    new ConvertToFunctionRefactoring(editor);
-            refactoring.setNewName(getter.getName() + "()");
-            
             if (refactoring.getDeclaration() == null 
                     || !refactoring.getDeclaration().equals(getter) 
                     || !refactoring.getEnabled()
                     || !refactoring.checkAllConditions(new NullProgressMonitor()).isOK()) {
                 return;
             }
-
-            CompositeChange change = 
-                    refactoring.createChange(
-                            new NullProgressMonitor());
-            if (change.getChildren().length == 0) {
-                return;
-            }
-            
-            if (type instanceof Tree.ValueModifier) {
-                TextFileChange tfc = 
-                        new TextFileChange(
-                                "Convert to Function", file);
-                tfc.setEdit(new ReplaceEdit(
-                        type.getStartIndex(), 
-                        type.getDistance(), 
-                        "function"));
-                change.add(tfc);
-            }
-            
-            String desc = 
-                    "Convert getter '" + 
-                    getter.getName() + "' to " + 
-                    (getter.isToplevel() ? "function" : "method");
-            ConvertGetterToFunctionProposal proposal = 
-                    new ConvertGetterToFunctionProposal(
-                            desc, change, getter);
-            if (!proposals.contains(proposal)) {
-                proposals.add(proposal);
-            }
-        } catch (OperationCanceledException e) {
-            // noop
+        }
+        catch (OperationCanceledException e) {
+            return;
         }
         catch (CoreException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return;
+        }
+
+        String desc = 
+                "Convert getter '" + 
+                getter.getName() + "' to " + 
+                (getter.isToplevel() ? "function" : "method");
+        ConvertGetterToFunctionProposal proposal = 
+                new ConvertGetterToFunctionProposal(
+                        desc, getter, refactoring);
+        if (!proposals.contains(proposal)) {
+            proposals.add(proposal);
         }
     }
 
+    @Override
+    public Change createChange() throws CoreException {
+        refactoring.setNewName(getter.getName() + "()");
+        CompositeChange change = 
+                refactoring.createChange(
+                        new NullProgressMonitor());
+//        if (change.getChildren().length == 0) {
+//            return;
+//        }        
+        return change;
+    }
+
     private ConvertGetterToFunctionProposal(
-            String desc, Change change, Value getter) {
-        super(desc, change, null, COMPOSITE_CHANGE);
+            String desc, Value getter, 
+            ConvertToFunctionRefactoring refactoring) {
+        super(desc, null, null, COMPOSITE_CHANGE);
+        this.getter = getter;
+        this.refactoring = refactoring;
     }
 
 }
