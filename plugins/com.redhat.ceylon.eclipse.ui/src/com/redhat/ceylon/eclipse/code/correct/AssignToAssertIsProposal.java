@@ -73,7 +73,8 @@ class AssignToAssertIsProposal extends LocalProposal {
 
     @Override
     boolean isEnabled(Type resultType) {
-        return true;
+        return resultType!=null &&
+                !resultType.getDeclaration().isFinal();
     }
 
     static void addAssignToAssertIsProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 

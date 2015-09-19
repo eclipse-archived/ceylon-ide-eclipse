@@ -74,7 +74,8 @@ class AssignToIfIsProposal extends LocalProposal {
 
     @Override
     boolean isEnabled(Type resultType) {
-        return true;
+        return resultType!=null &&
+                !resultType.getDeclaration().isFinal();
     }
 
     static void addAssignToIfIsProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 
