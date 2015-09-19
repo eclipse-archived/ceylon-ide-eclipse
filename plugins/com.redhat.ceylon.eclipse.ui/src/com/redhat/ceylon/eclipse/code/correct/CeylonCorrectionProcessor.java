@@ -393,7 +393,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     private static ProblemLocation getProblemLocation(
             MarkerAnnotation annotation, 
             IAnnotationModel model) {
-        int problemId = -1;
+        Integer problemId = null;
         try {
             problemId = (Integer)
                 annotation.getMarker()
@@ -402,7 +402,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         catch (CoreException e) {
             e.printStackTrace();
         }
-        if (problemId != -1) {
+        if (problemId != null) {
             Position pos = model.getPosition(annotation);
             if (pos != null) {
                 return new ProblemLocation(
