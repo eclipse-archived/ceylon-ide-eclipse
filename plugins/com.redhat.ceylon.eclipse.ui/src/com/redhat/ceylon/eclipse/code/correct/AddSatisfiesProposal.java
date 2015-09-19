@@ -13,6 +13,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
@@ -236,15 +238,19 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             changeIndex = typeContainerBodyStartIndex;
         }
         if (changeText != null) {
-            TextFileChange change = 
+            TextFileChange tfc = 
                     new TextFileChange(
                             "Add Type Constraint", file);
-            change.setEdit(new InsertEdit(changeIndex, changeText));
+            tfc.setEdit(new InsertEdit(changeIndex, changeText));
             String desc = 
                     "Add generic type constraint '" + typeParam.getName() + 
                     " satisfies " + missingSatisfiedType + "'";
-            Region region =
-                    sameFile ? new Region(changeIndex, changeText.length()) : null;
+            Region region = sameFile ? 
+                    new Region(changeIndex, changeText.length()) : null;
+            CompositeChange change = 
+                    new CompositeChange(
+                            "Add Type Constraint");
+            change.add(tfc);
             AddSatisfiesProposal proposal = 
                     new AddSatisfiesProposal(
                             typeParam, desc, 
@@ -275,15 +281,19 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             changeIndex = typeContainerBodyStartIndex;
         }
         if (changeText != null) {
-            TextFileChange change = 
+            TextFileChange tfc = 
                     new TextFileChange(
                             "Add Inherited Interface", file);
-            change.setEdit(new InsertEdit(changeIndex, changeText));
+            tfc.setEdit(new InsertEdit(changeIndex, changeText));
             String desc = 
                     "Add inherited interface '" + typeParam.getName() + 
                     " satisfies " + missingSatisfiedType + "'";
-            Region region =
-                    sameFile ? new Region(changeIndex, changeText.length()) : null;
+            Region region = sameFile ? 
+                    new Region(changeIndex, changeText.length()) : null;
+            CompositeChange change = 
+                    new CompositeChange(
+                            "Add Inherited Interface");
+            change.add(tfc);
             AddSatisfiesProposal proposal = 
                     new AddSatisfiesProposal(
                             typeParam, desc, 
@@ -556,7 +566,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
     private AddSatisfiesProposal(TypeDeclaration typeParam, 
             String description, 
             String missingSatisfiedTypeText, 
-            TextFileChange change, Region selection) {
+            Change change, Region selection) {
         super(description, change, selection);
         this.typeParam = typeParam;
         this.missingSatisfiedTypeText = missingSatisfiedTypeText;
