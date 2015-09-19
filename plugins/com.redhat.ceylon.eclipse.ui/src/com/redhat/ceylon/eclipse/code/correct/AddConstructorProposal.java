@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.collectUninitializedMembers;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
@@ -13,7 +12,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -22,13 +20,13 @@ import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class AddConstructorProposal extends CorrectionProposal {
 
@@ -196,9 +194,9 @@ public class AddConstructorProposal extends CorrectionProposal {
     
     @Override
     public StyledString getStyledDisplayString() {
-        TriggerSequence binding = 
-                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.addConstructor");
-        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        String hint = 
+                CorrectionUtil.shortcut(
+                        "com.redhat.ceylon.eclipse.ui.action.addConstructor");
         return Highlights.styleProposal(getDisplayString(), false)
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

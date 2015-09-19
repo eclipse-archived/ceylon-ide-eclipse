@@ -1,10 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
-
 import java.util.Collection;
 
-import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -65,9 +62,9 @@ class InvertBooleanProposal implements ICompletionProposal, ICompletionProposalE
 
     @Override
     public StyledString getStyledDisplayString() {
-        TriggerSequence binding = 
-                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.invertBoolean");
-        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        String hint = 
+                CorrectionUtil.shortcut(
+                        "com.redhat.ceylon.eclipse.ui.action.invertBoolean");
         return Highlights.styleProposal(getDisplayString(), false)
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

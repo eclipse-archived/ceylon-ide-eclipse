@@ -1,10 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
-
 import java.util.Collection;
 
-import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -70,9 +67,9 @@ class InlineDeclarationProposal implements ICompletionProposal,
 
     @Override
     public StyledString getStyledDisplayString() {
-        TriggerSequence binding = 
-                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.inline");
-        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        String hint = 
+                CorrectionUtil.shortcut(
+                        "com.redhat.ceylon.eclipse.ui.action.inline");
         return Highlights.styleProposal(getDisplayString(), false)
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

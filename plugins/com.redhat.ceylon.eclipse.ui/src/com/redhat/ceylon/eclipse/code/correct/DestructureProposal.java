@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getNameProposals;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 import static com.redhat.ceylon.eclipse.util.Nodes.addNameProposals;
 
 import java.util.ArrayList;
@@ -11,7 +10,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -151,9 +149,9 @@ class DestructureProposal extends LocalProposal {
     
     @Override
     public StyledString getStyledDisplayString() {
-        TriggerSequence binding = 
-                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.destructure");
-        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        String hint = 
+                CorrectionUtil.shortcut(
+                        "com.redhat.ceylon.eclipse.ui.action.destructure");
         return new StyledString(getDisplayString())
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

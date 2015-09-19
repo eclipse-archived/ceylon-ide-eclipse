@@ -3,11 +3,9 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.getItemProposals;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.getKeyProposals;
 import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getNameProposals;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 
 import java.util.Collection;
 
-import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -18,14 +16,14 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class AssignToForProposal extends LocalProposal {
 
@@ -104,9 +102,9 @@ class AssignToForProposal extends LocalProposal {
     
     @Override
     public StyledString getStyledDisplayString() {
-        TriggerSequence binding = 
-                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.assignToFor");
-        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        String hint = 
+                CorrectionUtil.shortcut(
+                        "com.redhat.ceylon.eclipse.ui.action.assignToFor");
         return new StyledString(getDisplayString())
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

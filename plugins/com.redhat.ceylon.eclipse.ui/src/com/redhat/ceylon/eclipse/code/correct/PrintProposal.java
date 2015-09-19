@@ -1,13 +1,11 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
@@ -155,9 +153,9 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
 
     @Override
     public StyledString getStyledDisplayString() {
-        TriggerSequence binding = 
-                getCommandBinding("com.redhat.ceylon.eclipse.ui.action.print");
-        String hint = binding==null ? "" : " (" + binding.format() + ")";
+        String hint = 
+                CorrectionUtil.shortcut(
+                        "com.redhat.ceylon.eclipse.ui.action.print");
         return new StyledString(getDisplayString())
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

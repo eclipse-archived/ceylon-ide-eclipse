@@ -1,11 +1,13 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ui.IEditorPart;
 
@@ -298,6 +300,13 @@ class CorrectionUtil {
             }
         }
         return uninitialized;
+    }
+    
+    public static String shortcut(String key) {
+        TriggerSequence binding = 
+                getCommandBinding(key);
+        return binding==null ? "" : 
+            " \u22ef " + binding.format();
     }
     
 }
