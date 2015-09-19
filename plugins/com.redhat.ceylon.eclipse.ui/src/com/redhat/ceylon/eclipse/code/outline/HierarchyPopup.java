@@ -152,7 +152,7 @@ public class HierarchyPopup extends TreeViewPopup {
             String getViewInterfacesShortcut() {
                 TriggerSequence binding = getCommandBinding();
                 return binding==null ? "" : 
-                    " \u22ef " + binding.format() + " to see them";
+                    " (" + binding.format() + " to view)";
             }
             @Override
             boolean isShowingRefinements() {
