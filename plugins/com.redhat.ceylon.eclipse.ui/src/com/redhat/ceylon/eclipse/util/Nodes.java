@@ -312,10 +312,7 @@ public class Nodes {
 
     public static Node findReferencedNode(
             Tree.CompilationUnit rootNode, Referenceable model) {
-        FindReferencedNodeVisitor visitor = 
-                new FindReferencedNodeVisitor(model);
-        rootNode.visit(visitor);
-        return visitor.getDeclarationNode();
+        return delegate.findReferencedNode(rootNode, model);
     }
     
     public static String toString(Node term, List<CommonToken> tokens) {
