@@ -48,7 +48,12 @@ class ConvertGetterToFunctionProposal extends CorrectionProposal {
                 throws CoreException, OperationCanceledException {
             return new RefactoringStatus();
         }
-
+        
+        @Override
+        protected void refactorJavaReferences(IProgressMonitor pm, CompositeChange cc) {
+            // TODO!
+        }
+        
         @Override
         protected void renameIdentifier(TextChange tfc, Identifier id, CompilationUnit root) {}
 

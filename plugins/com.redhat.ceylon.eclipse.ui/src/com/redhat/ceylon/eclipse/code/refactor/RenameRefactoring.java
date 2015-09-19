@@ -381,7 +381,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         return composite;
     }
 
-    private void refactorJavaReferences(IProgressMonitor pm,
+    protected void refactorJavaReferences(IProgressMonitor pm,
             final CompositeChange cc) {
         final Map<IResource,TextChange> changes = 
                 new HashMap<IResource, TextChange>();

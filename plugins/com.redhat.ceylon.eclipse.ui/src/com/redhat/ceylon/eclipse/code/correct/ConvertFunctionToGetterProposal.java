@@ -50,6 +50,11 @@ class ConvertFunctionToGetterProposal extends CorrectionProposal {
         }
 
         @Override
+        protected void refactorJavaReferences(IProgressMonitor pm, CompositeChange cc) {
+            // TODO!
+        }
+        
+        @Override
         protected void renameIdentifier(TextChange tfc, Identifier id, CompilationUnit root) {}
 
         @Override
