@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.asIntersectionTypeString;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,18 +16,17 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
+import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -71,7 +69,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         if (typeDec == null) {
             return;
         }
-        boolean isTypeParam = typeDec instanceof TypeParameter;
+        boolean isTypeParam = 
+                typeDec instanceof TypeParameter;
 
         List<Type> missingSatisfiedTypes = 
                 determineMissingSatisfiedTypes(rootNode, 
@@ -80,11 +79,11 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             for (Iterator<Type> it = 
                     missingSatisfiedTypes.iterator();
                     it.hasNext();) {
-                Type pt = it.next();
-                if (!(pt.getDeclaration() instanceof Interface)) {
+                if (!it.next().isInterface()) {
                     it.remove();
                 }
-                //TODO: add extends clause for if the type is a Class
+                //TODO: add extends clause if the type is a 
+                //      Class which extends Basic or Object
             }
         }
         if (missingSatisfiedTypes.isEmpty()) {
@@ -94,32 +93,33 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         String changeText = 
                 asIntersectionTypeString(missingSatisfiedTypes);
 
-        for (PhasedUnit unit: getUnits(project)) { //TODO: fix this!
-            Unit u = typeDec.getUnit();
-            if (!isTypeParam || 
-                    u.equals(unit.getUnit())) {
-                Node declaration = 
-                        determineContainer(unit.getCompilationUnit(), 
-                                typeDec);
-                if (declaration==null) {
-                    continue;
-                }
-                ModifiablePhasedUnit mpu = 
-                        (ModifiablePhasedUnit) unit;
-                IFile file = mpu.getResourceFile();
+        Unit unit = typeDec.getUnit();
+        if (unit instanceof ModifiableSourceFile) {
+            ModifiableSourceFile msf = 
+                    (ModifiableSourceFile) unit;
+            ModifiablePhasedUnit phasedUnit = 
+                    msf.getPhasedUnit();
+            Tree.CompilationUnit decRootNode = 
+                    phasedUnit.getCompilationUnit();
+            Node declaration = 
+                    determineContainer(decRootNode, typeDec);
+            if (declaration!=null) {
+                IFile file = phasedUnit.getResourceFile();
                 if (file != null) {
-                    createProposals(proposals, typeDec, isTypeParam, 
-                            changeText, file, declaration);
+                    createProposals(proposals, typeDec, 
+                            isTypeParam, changeText, file, 
+                            declaration,
+                            node.getUnit().equals(unit));
                 }
-                break;
             }
-        }        
+        }
     }
 
     private static void createProposals(
             Collection<ICompletionProposal> proposals, 
             TypeDeclaration typeDec, boolean isTypeParam, 
-            String changeText, IFile file, Node declaration) {
+            String changeText, IFile file, Node declaration, 
+            boolean sameFile) {
         if (isTypeParam) {
             if (declaration instanceof Tree.ClassDefinition) {
                 Tree.ClassDefinition classDefinition = 
@@ -127,7 +127,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 addConstraintSatisfiesProposals(typeDec, changeText, 
                         file, proposals, 
                         classDefinition.getTypeConstraintList(), 
-                        classDefinition.getClassBody().getStartIndex());
+                        classDefinition.getClassBody().getStartIndex(), 
+                        sameFile);
             }
             else if (declaration instanceof Tree.InterfaceDefinition) {
                 Tree.InterfaceDefinition interfaceDefinition = 
@@ -135,7 +136,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 addConstraintSatisfiesProposals(typeDec, changeText, 
                         file, proposals, 
                         interfaceDefinition.getTypeConstraintList(), 
-                        interfaceDefinition.getInterfaceBody().getStartIndex());
+                        interfaceDefinition.getInterfaceBody().getStartIndex(), 
+                        sameFile);
             }
             else if (declaration instanceof Tree.MethodDefinition) {
                 Tree.MethodDefinition methodDefinition = 
@@ -143,7 +145,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 addConstraintSatisfiesProposals(typeDec, changeText, 
                         file, proposals, 
                         methodDefinition.getTypeConstraintList(), 
-                        methodDefinition.getBlock().getStartIndex());
+                        methodDefinition.getBlock().getStartIndex(), 
+                        sameFile);
             }
             else if (declaration instanceof Tree.ClassDeclaration) {
                 Tree.ClassDeclaration classDefinition = 
@@ -151,7 +154,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 addConstraintSatisfiesProposals(typeDec, changeText, 
                         file, proposals, 
                         classDefinition.getTypeConstraintList(), 
-                        classDefinition.getClassSpecifier().getStartIndex());
+                        classDefinition.getClassSpecifier().getStartIndex(), 
+                        sameFile);
             }
             else if (declaration instanceof Tree.InterfaceDefinition) {
                 Tree.InterfaceDeclaration interfaceDefinition = 
@@ -159,7 +163,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 addConstraintSatisfiesProposals(typeDec, changeText, 
                         file, proposals, 
                         interfaceDefinition.getTypeConstraintList(), 
-                        interfaceDefinition.getTypeSpecifier().getStartIndex());
+                        interfaceDefinition.getTypeSpecifier().getStartIndex(), 
+                        sameFile);
             }
             else if (declaration instanceof Tree.MethodDeclaration) {
                 Tree.MethodDeclaration methodDefinition = 
@@ -167,7 +172,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                 addConstraintSatisfiesProposals(typeDec, changeText,
                         file, proposals, 
                         methodDefinition.getTypeConstraintList(), 
-                        methodDefinition.getSpecifierExpression().getStartIndex());
+                        methodDefinition.getSpecifierExpression().getStartIndex(), 
+                        sameFile);
             }
         }
         else {
@@ -178,14 +184,16 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                         classDefinition.getSatisfiedTypes(), 
                         classDefinition.getTypeConstraintList()==null ?
                                 classDefinition.getClassBody().getStartIndex() :
-                                classDefinition.getTypeConstraintList().getStartIndex());
+                                classDefinition.getTypeConstraintList().getStartIndex(), 
+                                sameFile);
             }
             else if (declaration instanceof Tree.ObjectDefinition) {
                 Tree.ObjectDefinition objectDefinition = 
                         (Tree.ObjectDefinition) declaration;
                 addSatisfiesProposals(typeDec, changeText, file, proposals, 
                         objectDefinition.getSatisfiedTypes(), 
-                        objectDefinition.getClassBody().getStartIndex());
+                        objectDefinition.getClassBody().getStartIndex(), 
+                        sameFile);
             }
             else if (declaration instanceof Tree.InterfaceDefinition) {
                 Tree.InterfaceDefinition interfaceDefinition = 
@@ -194,7 +202,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                         interfaceDefinition.getSatisfiedTypes(), 
                         interfaceDefinition.getTypeConstraintList()==null ?
                                 interfaceDefinition.getInterfaceBody().getStartIndex() :
-                                interfaceDefinition.getTypeConstraintList().getStartIndex());
+                                interfaceDefinition.getTypeConstraintList().getStartIndex(), 
+                                sameFile);
             }
         }
     }
@@ -204,7 +213,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             String missingSatisfiedType, IFile file, 
             Collection<ICompletionProposal> proposals, 
             TypeConstraintList typeConstraints, 
-            Integer typeContainerBodyStartIndex) {
+            Integer typeContainerBodyStartIndex,
+            boolean sameFile) {
         String changeText = null;
         Integer changeIndex = null;
     
@@ -233,21 +243,26 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             String desc = 
                     "Add generic type constraint '" + typeParam.getName() + 
                     " satisfies " + missingSatisfiedType + "'";
-            AddSatisfiesProposal p = 
-                    new AddSatisfiesProposal(typeParam, desc, 
-                            missingSatisfiedType, change);
-            if ( !proposals.contains(p)) {
-                proposals.add(p);
+            Region region =
+                    sameFile ? new Region(changeIndex, changeText.length()) : null;
+            AddSatisfiesProposal proposal = 
+                    new AddSatisfiesProposal(
+                            typeParam, desc, 
+                            missingSatisfiedType, 
+                            change, region);
+            if ( !proposals.contains(proposal)) {
+                proposals.add(proposal);
             }                               
         }
     }
-
+    
     private static void addSatisfiesProposals(
             TypeDeclaration typeParam, 
             String missingSatisfiedType, IFile file, 
             Collection<ICompletionProposal> proposals, 
             Tree.SatisfiedTypes typeConstraints, 
-            Integer typeContainerBodyStartIndex) {
+            Integer typeContainerBodyStartIndex,
+            boolean sameFile) {
         String changeText = null;
         Integer changeIndex = null;
     
@@ -267,11 +282,15 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             String desc = 
                     "Add inherited interface '" + typeParam.getName() + 
                     " satisfies " + missingSatisfiedType + "'";
-            AddSatisfiesProposal p = 
-                    new AddSatisfiesProposal(typeParam, desc, 
-                            missingSatisfiedType, change);
-            if (!proposals.contains(p)) {
-                proposals.add(p);
+            Region region =
+                    sameFile ? new Region(changeIndex, changeText.length()) : null;
+            AddSatisfiesProposal proposal = 
+                    new AddSatisfiesProposal(
+                            typeParam, desc, 
+                            missingSatisfiedType, 
+                            change, region);
+            if (!proposals.contains(proposal)) {
+                proposals.add(proposal);
             }                               
         }
     }
@@ -537,9 +556,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
     private AddSatisfiesProposal(TypeDeclaration typeParam, 
             String description, 
             String missingSatisfiedTypeText, 
-            TextFileChange change) {
-        super(description, change, 
-                new Region(change.getEdit().getOffset(), 0));
+            TextFileChange change, Region selection) {
+        super(description, change, selection);
         this.typeParam = typeParam;
         this.missingSatisfiedTypeText = missingSatisfiedTypeText;
     }
