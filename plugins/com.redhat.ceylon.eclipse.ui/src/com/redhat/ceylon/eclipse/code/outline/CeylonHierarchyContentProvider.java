@@ -589,7 +589,7 @@ public final class CeylonHierarchyContentProvider
                 if (extended!=null) {
                     TypeDeclaration superDec = 
                             extended.getDeclaration();
-                    if (!extended.getSatisfiedTypes()
+                    if (!dec.getSatisfiedTypes()
                             .isEmpty()) {
                         getSubtypePathNode(superDec)
                             .setNonUnique(true);
