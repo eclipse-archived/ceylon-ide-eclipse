@@ -159,13 +159,18 @@ class CreateProposal extends InitializerProposal {
     private static void addCreateProposal(
             Collection<ICompletionProposal> proposals, 
             boolean local, DefinitionGenerator dg, 
-            ModifiablePhasedUnit unit, Tree.Statement statement) {
+            ModifiablePhasedUnit unit, 
+            Tree.Statement statement) {
         IFile file = unit.getResourceFile();
         if (file == null) {
             return;
         }
-        TextFileChange change = new TextFileChange(local ? 
-                "Create Local" : "Create Toplevel", file);
+        TextFileChange change = 
+                new TextFileChange(
+                        local ? 
+                                "Create Local" : 
+                                "Create Toplevel", 
+                        file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
         String indent = getIndent(statement, doc);
@@ -181,7 +186,9 @@ class CreateProposal extends InitializerProposal {
         if (!local) def += delim;
         change.addEdit(new InsertEdit(offset, def));
         String desc = 
-                (local ? "Create local " : "Create toplevel ") 
+                (local ? 
+                        "Create local " : 
+                        "Create toplevel ") 
                     + dg.getDescription();
         final Scope scope = 
                 local ? 
@@ -219,8 +226,10 @@ class CreateProposal extends InitializerProposal {
                         && dg.isFormalSupported()))) {
             Unit u = typeDec.getUnit();
             if (u instanceof ModifiableSourceFile) {
+                ModifiableSourceFile msf = 
+                        (ModifiableSourceFile) u;
                 ModifiablePhasedUnit phasedUnit = 
-                        ((ModifiableSourceFile) u).getPhasedUnit();
+                        msf.getPhasedUnit();
                 //TODO: "object" declarations?
                 FindDeclarationNodeVisitor fdv = 
                         new FindDeclarationNodeVisitor(typeDec);
@@ -250,7 +259,8 @@ class CreateProposal extends InitializerProposal {
         if (statement!=null) {
             Unit u = dg.getRootNode().getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiableSourceFile cu = (ModifiableSourceFile) u;
+                ModifiableSourceFile cu = 
+                        (ModifiableSourceFile) u;
                 addCreateProposal(proposals, true, dg, 
                         cu.getPhasedUnit(), statement);
             }
@@ -266,7 +276,8 @@ class CreateProposal extends InitializerProposal {
         if (statement!=null) {
             Unit u = dg.getRootNode().getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiableSourceFile cu = (ModifiableSourceFile) u;
+                ModifiableSourceFile cu = 
+                        (ModifiableSourceFile) u;
                 addCreateProposal(proposals, false, dg, 
                         cu.getPhasedUnit(), statement);
             }
