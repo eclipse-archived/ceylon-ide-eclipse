@@ -20,7 +20,6 @@ import org.eclipse.text.edits.InsertEdit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -58,22 +57,25 @@ import com.redhat.ceylon.model.typechecker.model.Value;
  */
 public class AddSatisfiesProposal extends CorrectionProposal {
 
-    public static void addSatisfiesProposals(Tree.CompilationUnit cu, 
-            Node node, Collection<ICompletionProposal> proposals, 
+    public static void addSatisfiesProposals(
+            Tree.CompilationUnit rootNode, Node node, 
+            Collection<ICompletionProposal> proposals, 
             IProject project) {
         node = determineNode(node);
         if (node == null) {
             return;
         }
 
-        TypeDeclaration typeDec = determineTypeDeclaration(node);
+        TypeDeclaration typeDec = 
+                determineTypeDeclaration(node);
         if (typeDec == null) {
             return;
         }
         boolean isTypeParam = typeDec instanceof TypeParameter;
 
         List<Type> missingSatisfiedTypes = 
-                determineMissingSatisfiedTypes(cu, node, typeDec);
+                determineMissingSatisfiedTypes(rootNode, 
+                        node, typeDec);
         if (!isTypeParam) {
             for (Iterator<Type> it = 
                     missingSatisfiedTypes.iterator();
@@ -97,11 +99,14 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             if (!isTypeParam || 
                     u.equals(unit.getUnit())) {
                 Node declaration = 
-                        determineContainer(unit.getCompilationUnit(), typeDec);
+                        determineContainer(unit.getCompilationUnit(), 
+                                typeDec);
                 if (declaration==null) {
                     continue;
                 }
-                IFile file = ((ModifiablePhasedUnit)unit).getResourceFile();
+                ModifiablePhasedUnit mpu = 
+                        (ModifiablePhasedUnit) unit;
+                IFile file = mpu.getResourceFile();
                 if (file != null) {
                     createProposals(proposals, typeDec, isTypeParam, 
                             changeText, file, declaration);
@@ -111,9 +116,10 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }        
     }
 
-    private static void createProposals(Collection<ICompletionProposal> proposals, 
-            TypeDeclaration typeDec, boolean isTypeParam, String changeText, 
-            IFile file, Node declaration) {
+    private static void createProposals(
+            Collection<ICompletionProposal> proposals, 
+            TypeDeclaration typeDec, boolean isTypeParam, 
+            String changeText, IFile file, Node declaration) {
         if (isTypeParam) {
             if (declaration instanceof Tree.ClassDefinition) {
                 Tree.ClassDefinition classDefinition = 
@@ -133,7 +139,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             }
             else if (declaration instanceof Tree.MethodDefinition) {
                 Tree.MethodDefinition methodDefinition = 
-                        (Tree.MethodDefinition)declaration;
+                        (Tree.MethodDefinition) declaration;
                 addConstraintSatisfiesProposals(typeDec, changeText, 
                         file, proposals, 
                         methodDefinition.getTypeConstraintList(), 
@@ -157,7 +163,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             }
             else if (declaration instanceof Tree.MethodDeclaration) {
                 Tree.MethodDeclaration methodDefinition = 
-                        (Tree.MethodDeclaration)declaration;
+                        (Tree.MethodDeclaration) declaration;
                 addConstraintSatisfiesProposals(typeDec, changeText,
                         file, proposals, 
                         methodDefinition.getTypeConstraintList(), 
@@ -193,7 +199,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
     }
 
-    private static void addConstraintSatisfiesProposals(TypeDeclaration typeParam, 
+    private static void addConstraintSatisfiesProposals(
+            TypeDeclaration typeParam, 
             String missingSatisfiedType, IFile file, 
             Collection<ICompletionProposal> proposals, 
             TypeConstraintList typeConstraints, 
@@ -204,7 +211,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         if (typeConstraints != null) {
             for (TypeConstraint typeConstraint: 
                     typeConstraints.getTypeConstraints()) {
-                if (typeConstraint.getDeclarationModel().equals(typeParam)) {
+                if (typeConstraint.getDeclarationModel()
+                        .equals(typeParam)) {
                     changeText = " & " + missingSatisfiedType;
                     changeIndex = typeConstraint.getEndIndex();
                     break;
@@ -212,15 +220,18 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             }
         }
         if (changeText == null) {
-            changeText = "given "+ typeParam.getName() + 
+            changeText = 
+                    "given "+ typeParam.getName() + 
                     " satisfies " + missingSatisfiedType + " ";
             changeIndex = typeContainerBodyStartIndex;
         }
         if (changeText != null) {
             TextFileChange change = 
-                    new TextFileChange("Add generic type constraint", file);
+                    new TextFileChange(
+                            "Add Type Constraint", file);
             change.setEdit(new InsertEdit(changeIndex, changeText));
-            String desc = "Add generic type constraint '" + typeParam.getName() + 
+            String desc = 
+                    "Add generic type constraint '" + typeParam.getName() + 
                     " satisfies " + missingSatisfiedType + "'";
             AddSatisfiesProposal p = 
                     new AddSatisfiesProposal(typeParam, desc, 
@@ -231,7 +242,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
     }
 
-    private static void addSatisfiesProposals(TypeDeclaration typeParam, 
+    private static void addSatisfiesProposals(
+            TypeDeclaration typeParam, 
             String missingSatisfiedType, IFile file, 
             Collection<ICompletionProposal> proposals, 
             Tree.SatisfiedTypes typeConstraints, 
@@ -249,9 +261,11 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
         if (changeText != null) {
             TextFileChange change = 
-                    new TextFileChange("Add satisfies type", file);
+                    new TextFileChange(
+                            "Add Inherited Interface", file);
             change.setEdit(new InsertEdit(changeIndex, changeText));
-            String desc = "Add inherited interface '" + typeParam.getName() + 
+            String desc = 
+                    "Add inherited interface '" + typeParam.getName() + 
                     " satisfies " + missingSatisfiedType + "'";
             AddSatisfiesProposal p = 
                     new AddSatisfiesProposal(typeParam, desc, 
@@ -264,10 +278,14 @@ public class AddSatisfiesProposal extends CorrectionProposal {
 
     private static Node determineNode(Node node) {
         if (node instanceof Tree.SpecifierExpression) {
-            node = ((Tree.SpecifierExpression) node).getExpression();
+            Tree.SpecifierExpression specifierExpression = 
+                    (Tree.SpecifierExpression) node;
+            node = specifierExpression.getExpression();
         }
         if (node instanceof Tree.Expression) {
-            node = ((Tree.Expression) node).getTerm();
+            Tree.Expression expression = 
+                    (Tree.Expression) node;
+            node = expression.getTerm();
         }
         return node;
     }
@@ -276,28 +294,30 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         TypeDeclaration typeDec = null;
         if (node instanceof Tree.ClassOrInterface || 
             node instanceof Tree.TypeParameterDeclaration) {
+            Tree.Declaration d = (Tree.Declaration) node;
             Declaration declaration = 
-                    ((Tree.Declaration) node).getDeclarationModel();
+                    d.getDeclarationModel();
             if (declaration instanceof ClassOrInterface) {
                 typeDec = (TypeDeclaration) declaration;
             }
         }
         else if (node instanceof Tree.ObjectDefinition) {
-            Value val = 
-                    ((Tree.ObjectDefinition) node).getDeclarationModel();
+            Tree.ObjectDefinition od = 
+                    (Tree.ObjectDefinition) node;
+            Value val = od.getDeclarationModel();
             return val.getType().getDeclaration();
         }
         else if (node instanceof Tree.BaseType) {
+            Tree.BaseType bt = (Tree.BaseType) node;
             TypeDeclaration baseTypeDecl = 
-                    ((Tree.BaseType) node).getDeclarationModel();
+                    bt.getDeclarationModel();
             if (baseTypeDecl instanceof TypeDeclaration) {
                 typeDec = baseTypeDecl;
             }
         }
         else if (node instanceof Tree.Term) {
-//            Type type = node.getUnit()
-//                    .denotableType(((Tree.Term)node).getTypeModel());
-            Type type = ((Tree.Term) node).getTypeModel();
+            Tree.Term t = (Tree.Term) node;
+            Type type = t.getTypeModel();
             if (type != null) {
                 typeDec = type.getDeclaration();
             }
@@ -305,35 +325,41 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         return typeDec;
     }
 
-    private static Node determineContainer(CompilationUnit cu, final TypeDeclaration typeDec) {
-        FindDeclarationNodeVisitor fdv = new FindDeclarationNodeVisitor(typeDec) {
+    private static Node determineContainer(
+            Tree.CompilationUnit rootNode, 
+            final TypeDeclaration typeDec) {
+        FindDeclarationNodeVisitor fdv = 
+                new FindDeclarationNodeVisitor(typeDec) {
             @Override
             public void visit(Tree.ObjectDefinition that) {
-                if (that.getDeclarationModel().getType().getDeclaration().equals(typeDec)) {
+                if (that.getDeclarationModel().getType()
+                        .getDeclaration().equals(typeDec)) {
                     declarationNode = that;
                 }
                 super.visit(that);
             }
         };
-        fdv.visit(cu);
+        fdv.visit(rootNode);
         Tree.Declaration dec = 
                 (Tree.Declaration) fdv.getDeclarationNode();
         if (dec != null) {
             FindContainerVisitor fcv = 
                     new FindContainerVisitor(dec);
-            fcv.visit(cu);
+            fcv.visit(rootNode);
             return fcv.getStatementOrArgument();
         }
         return null;
     }
 
-    private static List<Type> determineMissingSatisfiedTypes(CompilationUnit cu, 
-            Node node, TypeDeclaration typeDec) {
+    private static List<Type> determineMissingSatisfiedTypes(
+            Tree.CompilationUnit rootNode, Node node, 
+            TypeDeclaration typeDec) {
         List<Type> missingSatisfiedTypes = 
                 new ArrayList<Type>();
         if (node instanceof Tree.Term) {
-            FindInvocationVisitor fav = new FindInvocationVisitor(node);
-            fav.visit(cu);
+            FindInvocationVisitor fav = 
+                    new FindInvocationVisitor(node);
+            fav.visit(rootNode);
             if (fav.parameter != null) {
                 Type type = fav.parameter.getType();
                 if (type!=null && type.getDeclaration()!=null) {
@@ -352,7 +378,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
         else {
             List<TypeParameter> stTypeParams = 
-                    determineSatisfiedTypesTypeParams(cu, node, typeDec);
+                    determineSatisfiedTypesTypeParams(
+                            rootNode, node, typeDec);
             if (!stTypeParams.isEmpty()) {
                 Type typeParamType = typeDec.getType();
                 Map<TypeParameter, Type> substitutions = 
@@ -365,13 +392,15 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                     for (Type stTypeParamSatisfiedType: 
                             stTypeParam.getSatisfiedTypes()) {
                         stTypeParamSatisfiedType = 
-                                stTypeParamSatisfiedType.substitute(substitutions, null);
+                                stTypeParamSatisfiedType.substitute(
+                                        substitutions, null);
     
                         boolean isMissing = true;
     
                         for (Type typeParamSatisfiedType: 
                                 typeDec.getSatisfiedTypes()) {
-                            if (stTypeParamSatisfiedType.isSupertypeOf(typeParamSatisfiedType)) {
+                            if (stTypeParamSatisfiedType.isSupertypeOf(
+                                    typeParamSatisfiedType)) {
                                 isMissing = false;
                                 break;
                             }
@@ -380,7 +409,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                         if (isMissing) {
                             for(Type missingSatisfiedType: 
                                     missingSatisfiedTypes) {
-                                if( missingSatisfiedType.isExactly(stTypeParamSatisfiedType) ) {
+                                if( missingSatisfiedType.isExactly(
+                                        stTypeParamSatisfiedType) ) {
                                     isMissing = false;
                                     break;
                                 }
@@ -388,7 +418,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
                         }
     
                         if (isMissing) {
-                            missingSatisfiedTypes.add(stTypeParamSatisfiedType);
+                            missingSatisfiedTypes.add(
+                                    stTypeParamSatisfiedType);
                         }
                     }
                 }
@@ -400,23 +431,28 @@ public class AddSatisfiesProposal extends CorrectionProposal {
     }
 
     private static List<TypeParameter> determineSatisfiedTypesTypeParams(
-            Tree.CompilationUnit cu, Node typeParamNode, 
+            Tree.CompilationUnit rootNode, Node typeParamNode, 
             final TypeDeclaration typeDec) {
-        final List<TypeParameter> stTypeParams = new ArrayList<TypeParameter>();
+        final List<TypeParameter> stTypeParams = 
+                new ArrayList<TypeParameter>();
         
-        FindContainerVisitor fcv = new FindContainerVisitor(typeParamNode);
-        fcv.visit(cu);
-        Tree.StatementOrArgument soa = fcv.getStatementOrArgument();
+        FindContainerVisitor fcv = 
+                new FindContainerVisitor(typeParamNode);
+        fcv.visit(rootNode);
+        Tree.StatementOrArgument soa = 
+                fcv.getStatementOrArgument();
         soa.visit(new Visitor() {
             @Override
             public void visit(Tree.SimpleType that) {
                 super.visit(that);
-                determineSatisfiedTypesTypeParams(typeDec, that, stTypeParams);
+                determineSatisfiedTypesTypeParams(typeDec, 
+                        that, stTypeParams);
             }
             @Override
             public void visit(Tree.StaticMemberOrTypeExpression that) {
                 super.visit(that);
-                determineSatisfiedTypesTypeParams(typeDec, that, stTypeParams);
+                determineSatisfiedTypesTypeParams(typeDec, 
+                        that, stTypeParams);
             }
         });
 //        if (soa instanceof Tree.ClassOrInterface) {
@@ -441,15 +477,17 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         return stTypeParams;
     }
     
-    private static void determineSatisfiedTypesTypeParams(TypeDeclaration typeParam, 
-            Tree.SimpleType st, List<TypeParameter> stTypeParams) {
+    private static void determineSatisfiedTypesTypeParams(
+            TypeDeclaration typeParam, Tree.SimpleType st, 
+            List<TypeParameter> stTypeParams) {
         Tree.TypeArgumentList args = st.getTypeArgumentList();
         if (args != null) {
             List<Tree.Type> stTypeArguments = 
                     args.getTypes();
             for (int i=0; i<stTypeArguments.size(); i++) {
                 Type stTypeArgument = 
-                        stTypeArguments.get(i).getTypeModel();
+                        stTypeArguments.get(i)
+                            .getTypeModel();
                 if (stTypeArgument!=null && 
                         typeParam.equals(stTypeArgument.getDeclaration())) {
                     TypeDeclaration stDecl = st.getDeclarationModel();
@@ -464,19 +502,25 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
     }
 
-    private static void determineSatisfiedTypesTypeParams(TypeDeclaration typeParam, 
-            Tree.StaticMemberOrTypeExpression st, List<TypeParameter> stTypeParams) {
+    private static void determineSatisfiedTypesTypeParams(
+            TypeDeclaration typeParam, 
+            Tree.StaticMemberOrTypeExpression st, 
+            List<TypeParameter> stTypeParams) {
         Tree.TypeArguments args = st.getTypeArguments();
         if (args instanceof Tree.TypeArgumentList) {
-            List<Tree.Type> stTypeArguments = ((Tree.TypeArgumentList) args).getTypes();
+            Tree.TypeArgumentList tal = 
+                    (Tree.TypeArgumentList) args;
+            List<Tree.Type> stTypeArguments = tal.getTypes();
             for (int i=0; i<stTypeArguments.size(); i++) {
                 Type stTypeArgument = 
-                        stTypeArguments.get(i).getTypeModel();
+                        stTypeArguments.get(i)
+                            .getTypeModel();
                 if (stTypeArgument!=null && 
                         typeParam.equals(stTypeArgument.getDeclaration())) {
                     Declaration stDecl = st.getDeclaration();
                     if (stDecl instanceof TypeDeclaration) {
-                        TypeDeclaration td = (TypeDeclaration)stDecl;
+                        TypeDeclaration td = 
+                                (TypeDeclaration) stDecl;
                         if (td.getTypeParameters()!=null && 
                                 td.getTypeParameters().size()>i) {
                             stTypeParams.add(td.getTypeParameters().get(i));
@@ -491,7 +535,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
     private final String missingSatisfiedTypeText;
 
     private AddSatisfiesProposal(TypeDeclaration typeParam, 
-            String description, String missingSatisfiedTypeText, 
+            String description, 
+            String missingSatisfiedTypeText, 
             TextFileChange change) {
         super(description, change, 
                 new Region(change.getEdit().getOffset(), 0));
@@ -502,7 +547,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof AddSatisfiesProposal) {
-            AddSatisfiesProposal that = (AddSatisfiesProposal) obj;
+            AddSatisfiesProposal that = 
+                    (AddSatisfiesProposal) obj;
             return that.typeParam.equals(typeParam) && 
                     that.missingSatisfiedTypeText
                             .equals(missingSatisfiedTypeText);
