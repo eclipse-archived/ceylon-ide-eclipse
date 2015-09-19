@@ -365,6 +365,9 @@ class InitializerProposal extends CorrectionProposal {
                     }
                 }
             }
+            else {
+                editor.selectAndReveal(point.x, point.y);
+            }
         }
     }
     
