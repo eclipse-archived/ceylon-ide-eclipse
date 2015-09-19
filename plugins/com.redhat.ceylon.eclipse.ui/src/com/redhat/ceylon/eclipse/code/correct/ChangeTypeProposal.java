@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.intersectionType;
@@ -18,11 +19,13 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
@@ -39,15 +42,54 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class ChangeTypeProposal extends CorrectionProposal {
 
+    private Unit unit;
+
     ChangeTypeProposal(ProblemLocation problem, 
             String name, String type, 
-            int offset, int len,
+            int offset, int len, Unit unit,
             TextFileChange change) {
         super("Change type of "+ name + " to '" + type + "'", 
                 change, new Region(offset, len));
+        this.unit = unit;
+    }
+    
+    @Override
+    public void apply(IDocument document) {
+        CeylonEditor editor = null;
+        if (unit instanceof ModifiableSourceFile) {
+            ModifiableSourceFile cu = 
+                    (ModifiableSourceFile) unit;
+            IFile file = cu.getResourceFile();
+            if (file!=null) {
+                editor = (CeylonEditor) gotoFile(file, 0, 0);
+                //NOTE: the document we're given is the one
+                //for the editor from which the quick fix was
+                //invoked, not the one to which the fix applies
+                IDocument ed = 
+                        editor.getParseController()
+                            .getDocument();
+                if (ed!=document) {
+                    document = ed;
+                }
+            }
+        }
+        super.apply(document);
+        if (editor!=null) {
+            Point point = super.getSelection(document);
+            editor.selectAndReveal(point.x, point.y);
+        }
+    }
+    
+    @Override
+    public Point getSelection(IDocument document) {
+        //we don't apply a selection because
+        //the change might have been applied to
+        //a different editor to the one from
+        //which the quick fix was invoked.
+        return null;
     }
         
-    static void addChangeTypeProposal(Node node, 
+    private static void addChangeTypeProposal(Node node, 
             ProblemLocation problem, 
             Collection<ICompletionProposal> proposals,
             Declaration dec, 
@@ -74,29 +116,36 @@ class ChangeTypeProposal extends CorrectionProposal {
                 new HashSet<Declaration>();
         importType(decs, newType, cu);
         int il=applyImports(change, decs, cu, doc);
+        Unit unit = cu.getUnit();
         String newTypeName = 
-                newType.asSourceCodeString(cu.getUnit());
+                newType.asSourceCodeString(unit);
         change.addEdit(new ReplaceEdit(offset, length, 
                 newTypeName));
         String name;
         if (dec.isParameter()) {
             Declaration container = 
-                    (Declaration) dec.getContainer();
-            name = "parameter '" + dec.getName() + "' of '" + 
+                    (Declaration) 
+                        dec.getContainer();
+            name = "parameter '" + 
+                    dec.getName() + "' of '" + 
                     container.getName() + "'";
         }
         else if (dec.isClassOrInterfaceMember()) {
             ClassOrInterface container = 
-                    (ClassOrInterface) dec.getContainer();
-            name = "member '" +  dec.getName() + "' of '" + 
+                    (ClassOrInterface) 
+                        dec.getContainer();
+            name = "member '" +  
+                    dec.getName() + "' of '" + 
                     container.getName() + "'";
         }
         else {
             name = "'" + dec.getName() + "'";
         }
-        proposals.add(new ChangeTypeProposal(problem, name, 
-                newType.asString(cu.getUnit()), 
-                offset+il, newTypeName.length(), change));
+        proposals.add(new ChangeTypeProposal(
+                problem, name, 
+                newType.asString(unit), 
+                offset+il, newTypeName.length(), 
+                unit, change));
     }
     
     static void addChangeTypeArgProposals(
@@ -131,7 +180,8 @@ class ChangeTypeProposal extends CorrectionProposal {
                                         (Tree.SimpleType) sta;
                                 TypeDeclaration d = 
                                         ssta.getDeclarationModel();
-                                if (decl.getName().equals(d.getName())) {
+                                if (decl.getName()
+                                        .equals(d.getName())) {
                                     TypeDeclaration std = 
                                             st.getDeclarationModel();
                                     if (std!=null) {
@@ -167,7 +217,7 @@ class ChangeTypeProposal extends CorrectionProposal {
     }
     
     static void addChangeTypeProposals(
-            Tree.CompilationUnit cu, Node node, 
+            Tree.CompilationUnit rootNode, Node node, 
             ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, 
             IProject project) {
@@ -180,7 +230,8 @@ class ChangeTypeProposal extends CorrectionProposal {
             }
         }
         if (node instanceof Tree.Expression) {
-            node = ((Tree.Expression) node).getTerm();
+            Tree.Expression e = (Tree.Expression) node;
+            node = e.getTerm();
         }
         if (node instanceof Tree.Term) {
             Tree.Term term = (Tree.Term) node;
@@ -189,7 +240,7 @@ class ChangeTypeProposal extends CorrectionProposal {
             Type type = node.getUnit().denotableType(t);
             FindInvocationVisitor fav = 
                     new FindInvocationVisitor(node);
-            fav.visit(cu);
+            fav.visit(rootNode);
             TypedDeclaration td = fav.parameter;
             if (td!=null) {
                 if (node instanceof Tree.InvocationExpression) {
@@ -230,8 +281,10 @@ class ChangeTypeProposal extends CorrectionProposal {
         if (dec!=null) {
             Unit u = dec.getUnit();
             if (u instanceof ModifiableSourceFile) {
+                ModifiableSourceFile msf = 
+                        (ModifiableSourceFile) u;
                 ModifiablePhasedUnit phasedUnit = 
-                        ((ModifiableSourceFile)u).getPhasedUnit();
+                        msf.getPhasedUnit();
                 Type t = null;
                 Node typeNode = null;
                 

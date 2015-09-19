@@ -20,7 +20,8 @@ class FindInvocationVisitor extends Visitor {
     @Override
     public void visit(Tree.ListedArgument that) {
         Expression e = that.getExpression();
-        if (e!=null && node==e.getTerm()) {
+        if (node==that || node==e || 
+                e!=null && node==e.getTerm()) {
             result=current;
             Parameter p = that.getParameter();
             if (p!=null) {
@@ -32,7 +33,8 @@ class FindInvocationVisitor extends Visitor {
     @Override
     public void visit(Tree.SpreadArgument that) {
         Expression e = that.getExpression();
-        if (e!=null && node==e.getTerm()) {
+        if (node==that || node==e || 
+                e!=null && node==e.getTerm()) {
             result=current;
             Parameter p = that.getParameter();
             if (p!=null) {
@@ -42,8 +44,24 @@ class FindInvocationVisitor extends Visitor {
         super.visit(that);
     }
     @Override
-    public void visit(Tree.NamedArgument that) {
+    public void visit(Tree.TypedArgument that) {
         if (node==that) {
+            result=current;
+            Parameter p = that.getParameter();
+            if (p!=null) {
+                parameter = p.getModel();
+            }
+        }
+        super.visit(that);
+    }
+    @Override
+    public void visit(Tree.SpecifiedArgument that) {
+        Tree.SpecifierExpression se = 
+                that.getSpecifierExpression();
+        Tree.Expression e = se==null ? 
+                null : se.getExpression();
+        if (node==that || node==e || 
+                e!=null && node==e.getTerm()) {
             result=current;
             Parameter p = that.getParameter();
             if (p!=null) {
@@ -55,7 +73,8 @@ class FindInvocationVisitor extends Visitor {
     @Override
     public void visit(Tree.Return that) {
         Expression e = that.getExpression();
-        if (e!=null && node==e.getTerm()) {
+        if (node==that || node==e || 
+                e!=null && node==e.getTerm()) {
             //result=current;
             parameter = (TypedDeclaration) that.getDeclaration();
         }

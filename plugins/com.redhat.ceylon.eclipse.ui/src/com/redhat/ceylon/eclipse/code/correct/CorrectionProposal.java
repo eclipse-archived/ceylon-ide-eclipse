@@ -153,7 +153,9 @@ class CorrectionProposal
             return null;
         }
         else {
-            return new Point(selection.getOffset(), selection.getLength());
+            return new Point(
+                    selection.getOffset(), 
+                    selection.getLength());
         }
     }
 
