@@ -165,16 +165,27 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
 
     @Override
     public long getLineNumber() {
-        return err.getLine();
+        int line = err.getLine();
+        Node node = err.getTreeNode();
+        Node errorNode = getIdentifyingNode(node);
+        if (errorNode == null) {
+            errorNode = node;
+        }
+        Token token = errorNode.getToken();
+        if (token!=null) {
+            line = token.getLine();
+        }
+        return line;
     }
 
     @Override
     public long getColumnNumber() {
         int startCol = 0;
+        Node node = err.getTreeNode();
         Node errorNode = 
-                getIdentifyingNode(err.getTreeNode());
+                getIdentifyingNode(node);
         if (errorNode == null) {
-            errorNode = err.getTreeNode();
+            errorNode = node;
         }
         Token token = errorNode.getToken();
         if (token!=null) {
