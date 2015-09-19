@@ -18,7 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 
 public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
     
-    public static void addEllipsisToSequenceParameterProposal(CompilationUnit cu, 
+    public static void addSpreadToSequenceParameterProposal(CompilationUnit cu, 
             Node node, Collection<ICompletionProposal> proposals, IFile file) {
         if( !(node instanceof Tree.Term) ) {
             return;

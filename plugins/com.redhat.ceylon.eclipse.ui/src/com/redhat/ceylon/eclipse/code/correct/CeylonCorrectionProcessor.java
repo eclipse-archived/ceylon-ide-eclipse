@@ -20,7 +20,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.add
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterListProposal.addParameterListProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
-import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addEllipsisToSequenceParameterProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addSpreadToSequenceParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssertExistsDeclarationProposal.addAssertExistsDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertExistsProposal.addAssignToAssertExistsProposal;
@@ -808,7 +808,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addSatisfiesProposals(rootNode, node, proposals, project);
             break;
         case 2101:
-            addEllipsisToSequenceParameterProposal(rootNode, node, proposals, file);            
+            addSpreadToSequenceParameterProposal(rootNode, node, proposals, file);            
             break;
         case 2500:
             addTypeParameterProposal(file, rootNode, proposals, node);
