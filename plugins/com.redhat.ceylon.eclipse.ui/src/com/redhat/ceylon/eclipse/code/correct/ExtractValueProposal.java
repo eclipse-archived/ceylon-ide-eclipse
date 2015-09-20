@@ -23,7 +23,9 @@ import com.redhat.ceylon.eclipse.code.refactor.refactorJ2C;
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 
 
-public class ExtractValueProposal implements ICompletionProposal, ICompletionProposalExtension6 {
+public class ExtractValueProposal 
+        implements ICompletionProposal, 
+                   ICompletionProposalExtension6 {
 
     private CeylonEditor editor;
 
@@ -59,7 +61,7 @@ public class ExtractValueProposal implements ICompletionProposal, ICompletionPro
     @Override
     public void apply(IDocument doc) {
         if (useLinkedMode()) {
-            new ExtractValueLinkedMode(editor).start();
+            ExtractValueLinkedMode.selectExpressionAndStart(editor);
         }
         else {
             new ExtractValueRefactoringAction(editor).run();

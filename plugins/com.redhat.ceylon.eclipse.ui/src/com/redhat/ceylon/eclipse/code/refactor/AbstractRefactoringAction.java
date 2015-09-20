@@ -1,11 +1,12 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public abstract class AbstractRefactoringAction {
     
@@ -18,25 +19,29 @@ public abstract class AbstractRefactoringAction {
     }
 
     public boolean run() {
-        for (IEditorPart ed: EditorUtil.getActivePage().getDirtyEditors()) {
+        for (IEditorPart ed: getActivePage().getDirtyEditors()) {
             if (ed instanceof CeylonEditor && ed!=editor) {
                 String msg = "Please save other open Ceylon editors before refactoring";
                 if (editor!=null && editor.isDirty()) {
-                    msg+="\nYou don't need to save the current editor";
+                    msg += "\nYou don't need to save the current editor";
                 }
-                MessageDialog.openWarning(editor.getEditorSite().getShell(), 
+                MessageDialog.openWarning(
+                        editor.getEditorSite().getShell(), 
                         "Ceylon Refactoring Error", msg);
                 return false;
             }
         }
         if (refactoring.getEnabled()) {
-            return new RefactoringStarter().activate(createWizard(refactoring),
-                    editor.getSite().getShell(),
+            return new RefactoringStarter()
+                    .activate(createWizard(refactoring),
+                            editor.getSite().getShell(),
                             refactoring.getName(), 4);
         }
         else {
-            MessageDialog.openWarning(editor.getEditorSite().getShell(), 
-                    "Ceylon Refactoring Error", message());
+            MessageDialog.openWarning(
+                    editor.getEditorSite().getShell(), 
+                    "Ceylon Refactoring Error", 
+                    message());
             return false;
         }
     }

@@ -21,7 +21,9 @@ import com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionLinkedMode;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionRefactoringAction;
 
-public class ExtractFunctionProposal implements ICompletionProposal, ICompletionProposalExtension6 {
+public class ExtractFunctionProposal 
+        implements ICompletionProposal, 
+                   ICompletionProposalExtension6 {
 
     private CeylonEditor editor;
 
@@ -57,7 +59,7 @@ public class ExtractFunctionProposal implements ICompletionProposal, ICompletion
     @Override
     public void apply(IDocument doc) {
         if (useLinkedMode()) {
-            new ExtractFunctionLinkedMode(editor).start();
+            ExtractFunctionLinkedMode.selectExpressionAndStart(editor);
         }
         else {
             new ExtractFunctionRefactoringAction(editor).run();
@@ -67,12 +69,15 @@ public class ExtractFunctionProposal implements ICompletionProposal, ICompletion
     public static void add(Collection<ICompletionProposal> proposals, 
             CeylonEditor editor, Node node) {
         if (node instanceof Tree.BaseMemberExpression) {
-            Tree.Identifier id = ((Tree.BaseMemberExpression) node).getIdentifier();
+            Tree.BaseMemberExpression bme = 
+                    (Tree.BaseMemberExpression) node;
+            Tree.Identifier id = bme.getIdentifier();
             if (id==null || id.getToken().getType()==CeylonLexer.AIDENTIFIER) {
                 return;
             }
         }
-        ExtractFunctionRefactoring efr = new ExtractFunctionRefactoring(editor);
+        ExtractFunctionRefactoring efr = 
+                new ExtractFunctionRefactoring(editor);
         if (efr.getEnabled()) {
             proposals.add(new ExtractFunctionProposal(editor));
         }

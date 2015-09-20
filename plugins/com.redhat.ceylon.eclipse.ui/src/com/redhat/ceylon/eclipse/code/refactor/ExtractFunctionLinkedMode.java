@@ -6,6 +6,7 @@ import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
+import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -128,6 +129,23 @@ public final class ExtractFunctionLinkedMode
     @Override
     protected String getKind() {
         return "function";
+    }
+
+    public static void selectExpressionAndStart(
+            final CeylonEditor editor) {
+        if (editor.getSelection().getLength()>0) {
+            new ExtractFunctionLinkedMode(editor).start();
+        }
+        else {
+            Shell shell = editor.getSite().getShell();
+            new SelectExpressionPopup(shell, 0, editor,
+                    "Extract Function") {
+                ExtractLinkedMode linkedMode() {
+                    return new ExtractFunctionLinkedMode(editor);
+                }
+            }
+            .open();
+        }
     }
 
 }

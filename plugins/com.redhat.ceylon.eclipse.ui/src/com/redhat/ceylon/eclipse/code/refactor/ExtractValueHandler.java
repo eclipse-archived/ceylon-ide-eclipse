@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -14,10 +13,11 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 public class ExtractValueHandler extends AbstractHandler {
         
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(ExecutionEvent event) 
+            throws ExecutionException {
         ITextEditor editor = (ITextEditor) getCurrentEditor();
         if (useLinkedMode() && editor instanceof CeylonEditor) {
-            final CeylonEditor ce = (CeylonEditor) editor;
+            CeylonEditor ce = (CeylonEditor) editor;
             if (ce.isInLinkedMode()) {
                 Object owner = ce.getLinkedModeOwner();
                 if (owner instanceof ExtractValueLinkedMode) {
@@ -32,19 +32,7 @@ public class ExtractValueHandler extends AbstractHandler {
                 }
             }
             else {
-                Shell shell = editor.getSite().getShell();
-                if (ce.getSelection().getLength()>0) {
-                    new ExtractValueLinkedMode(ce).start();
-                }
-                else {
-                    new SelectExpressionPopup(shell, 0, ce,
-                            "Extract Value") {
-                        ExtractLinkedMode linkedMode() {
-                            return new ExtractValueLinkedMode(ce);
-                        }
-                    }
-                    .open();
-                }
+                ExtractValueLinkedMode.selectExpressionAndStart(ce);
             }
         }
         else {
