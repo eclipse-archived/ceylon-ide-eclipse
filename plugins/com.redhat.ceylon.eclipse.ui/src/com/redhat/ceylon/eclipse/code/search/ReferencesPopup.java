@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog.isMatchingGlob;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FULL_LOC_SEARCH_RESULTS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DECS;
@@ -10,9 +11,12 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.imageRegistry;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
+import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static java.util.Collections.emptySet;
 import static org.eclipse.jface.action.IAction.AS_CHECK_BOX;
+import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +35,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.jface.text.IInformationControlExtension3;
@@ -146,7 +151,18 @@ public final class ReferencesPopup extends PopupDialog
             Object unwrapped = unwrap(element);
             if (unwrapped instanceof CeylonElement) {
                 CeylonElement ce = (CeylonElement) unwrapped;
-                return ce.getLabel(getPrefix(), getFont());
+                StyledString label = 
+                        ce.getLabel(getPrefix(), getFont());
+                if (!ReferencesPopup.this.treeLayout) {
+                    label.append(" \u2014 ", PACKAGE_STYLER)
+                        .append(ce.getPackageLabel(), PACKAGE_STYLER);
+                    if (getPreferences()
+                            .getBoolean(FULL_LOC_SEARCH_RESULTS)) {
+                        label.append(" \u2014 ", COUNTER_STYLER)
+                            .append(ce.getPathString(), COUNTER_STYLER);
+                    }
+                }
+                return label;
             }
             else {
                 return super.getStyledText(element);
@@ -157,7 +173,9 @@ public final class ReferencesPopup extends PopupDialog
         public Object unwrap(Object element) {
             Object unwrapped = super.unwrap(element);
             if (unwrapped instanceof CeylonSearchMatch) {
-                return ((CeylonSearchMatch) unwrapped).getElement();
+                CeylonSearchMatch match = 
+                        (CeylonSearchMatch) unwrapped;
+                return match.getElement();
             }
             else {
                 return unwrapped;
@@ -866,8 +884,8 @@ public final class ReferencesPopup extends PopupDialog
         else {
             name = declaration.getNameAsString();
         }
-        setTitleText("Quick Find References \u2014 " + message + " " + 
-                        name + " in project source");
+        setTitleText("Quick Find References \u2014 " + 
+                message + " " + name + " in project source");
         TreeNode root = new TreeNode(new Object());
         Map<Package,TreeNode> packageNodes = 
                 new HashMap<Package,TreeNode>();
@@ -1120,6 +1138,20 @@ public final class ReferencesPopup extends PopupDialog
         };
         importsAction.setChecked(includeImports);
         dialogMenu.add(importsAction);
+        dialogMenu.add(new Separator());
+        final IPreferenceStore prefs = getPreferences();
+        Action showLocAction = 
+                new Action("Show Full Paths", AS_CHECK_BOX) {
+            @Override
+            public void run() {
+                prefs.setValue(FULL_LOC_SEARCH_RESULTS, 
+                        isChecked());
+                tableViewer.refresh();
+            }
+        };
+        showLocAction.setChecked(prefs.getBoolean(
+                FULL_LOC_SEARCH_RESULTS));
+        dialogMenu.add(showLocAction);
         dialogMenu.add(new Separator());
         super.fillDialogMenu(dialogMenu);
     }

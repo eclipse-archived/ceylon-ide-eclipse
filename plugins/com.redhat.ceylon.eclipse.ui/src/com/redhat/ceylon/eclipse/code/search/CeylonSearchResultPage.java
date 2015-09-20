@@ -334,7 +334,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             IToolBarManager toolBarManager, 
             IStatusLineManager statusLineManager) {
         final IPreferenceStore prefs = getPreferences();
-        Action showLocAction = 
+        final Action showLocAction = 
                 new Action("Show Full Paths", AS_CHECK_BOX) {
             @Override
             public void run() {
@@ -345,6 +345,16 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         };
         showLocAction.setChecked(prefs.getBoolean(
                 FULL_LOC_SEARCH_RESULTS));
+        //pref can be changed from ReferencesPopup!
+        prefs.addPropertyChangeListener(new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                if (FULL_LOC_SEARCH_RESULTS.equals(event.getProperty())) {
+                    showLocAction.setChecked(prefs.getBoolean(
+                            FULL_LOC_SEARCH_RESULTS));
+                }
+            }
+        });
         menuManager.add(showLocAction);
         super.makeContributions(menuManager, 
                 toolBarManager, 
