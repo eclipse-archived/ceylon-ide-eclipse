@@ -297,7 +297,7 @@ public final class ReferencesPopup extends PopupDialog
                 }
             }
             if (builder.length()>0) {
-                builder.append(" · ");
+                builder.append(" \u00b7 ");
             }
             builder.append(commandBinding.format())
                 .append(message);

@@ -183,7 +183,7 @@ public class HierarchyPopup extends TreeViewPopup {
         String viewHint = 
                 hierarchyBinding==null ? "" :
                     hierarchyBinding.format() + 
-                    " to show in hierarchy view · ";
+                    " to show in hierarchy view \u00b7 ";
         switch (contentProvider.getMode()) {
         case SUBTYPES:
             return viewHint + binding.format() + 
