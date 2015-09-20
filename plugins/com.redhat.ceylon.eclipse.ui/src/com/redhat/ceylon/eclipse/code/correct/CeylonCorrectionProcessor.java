@@ -1129,18 +1129,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                             start, end);
             int currentOffset = selection.getOffset();
             
-            RenameProposal.add(proposals, editor);
-            InlineDeclarationProposal.add(proposals, editor);
-            ChangeParametersProposal.add(proposals, editor);
-            ExtractValueProposal.add(proposals, editor, node);
-            ExtractFunctionProposal.add(proposals, editor, node);
-            ExtractParameterProposal.add(proposals, editor, node);
-            CollectParametersProposal.add(proposals, editor);
-            MoveOutProposal.add(proposals, editor, node);
-            MakeReceiverProposal.add(proposals, editor, node);
-            InvertBooleanProposal.add(proposals, editor);
-            
             CeylonEditor currentEditor = getCurrentCeylonEditor();
+            
             addAssignToLocalProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addDestructureProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addAssignToForProposal(currentEditor, rootNode, proposals, node, currentOffset);
@@ -1219,6 +1209,17 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addExpandTypeProposal(editor, statement, file, doc, proposals);
 
+            RenameProposal.add(proposals, editor);
+            InlineDeclarationProposal.add(proposals, editor);
+            ChangeParametersProposal.add(proposals, editor);
+            ExtractValueProposal.add(proposals, editor, node);
+            ExtractFunctionProposal.add(proposals, editor, node);
+            ExtractParameterProposal.add(proposals, editor, node);
+            CollectParametersProposal.add(proposals, editor);
+            MoveOutProposal.add(proposals, editor, node);
+            MakeReceiverProposal.add(proposals, editor, node);
+            InvertBooleanProposal.add(proposals, editor);
+            
             MoveToNewUnitProposal.add(proposals, editor);
             MoveToUnitProposal.add(proposals, editor);
             
