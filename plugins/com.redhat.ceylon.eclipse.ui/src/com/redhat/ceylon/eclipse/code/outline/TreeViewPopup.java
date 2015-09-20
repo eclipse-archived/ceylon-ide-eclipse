@@ -684,12 +684,12 @@ public abstract class TreeViewPopup extends PopupDialog
     
     @Override
     public boolean restoresLocation() {
-        return false;
+        return getPersistLocation();
     }
     
     @Override
     public boolean restoresSize() {
-        return true;
+        return getPersistSize();
     }
     
     @Override
