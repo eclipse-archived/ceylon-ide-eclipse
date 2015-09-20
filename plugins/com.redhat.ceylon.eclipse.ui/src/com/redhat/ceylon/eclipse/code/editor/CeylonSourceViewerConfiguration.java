@@ -328,7 +328,7 @@ public class CeylonSourceViewerConfiguration
                 new OutlinePresenterControlCreator(editor);
         InformationPresenter presenter = 
                 createPresenter(sourceViewer, creator);
-        presenter.setSizeConstraints(50, 10, true, false);
+        presenter.setSizeConstraints(60, 20, true, false);
         presenter.setRestoreInformationControlBounds(
                 getOrCreateSection(getSettings(),
                         "outline_presenter_bounds"), 
@@ -345,7 +345,7 @@ public class CeylonSourceViewerConfiguration
                 new HierarchyPresenterControlCreator(editor);
         InformationPresenter presenter = 
                 createPresenter(sourceViewer, creator);
-        presenter.setSizeConstraints(80, 15, true, false);
+        presenter.setSizeConstraints(80, 20, true, false);
         presenter.setRestoreInformationControlBounds(
                 getOrCreateSection(getSettings(),
                         "hierarchy_presenter_bounds"), 
@@ -379,7 +379,7 @@ public class CeylonSourceViewerConfiguration
                 new ReferencesPresenterControlCreator(editor);
         InformationPresenter presenter = 
                 createPresenter(sourceViewer, creator);
-        presenter.setSizeConstraints(80, 10, true, false);
+        presenter.setSizeConstraints(80, 20, true, false);
         presenter.setRestoreInformationControlBounds(
                 getOrCreateSection(getSettings(),
                         "refs_presenter_bounds"), 
