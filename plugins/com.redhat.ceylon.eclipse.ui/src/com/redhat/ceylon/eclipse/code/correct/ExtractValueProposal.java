@@ -68,15 +68,19 @@ public class ExtractValueProposal
         }
     }
     
-    public static void add(Collection<ICompletionProposal> proposals, 
+    public static void add(
+            Collection<ICompletionProposal> proposals, 
             CeylonEditor editor, Node node) {
         if (node instanceof Tree.BaseMemberExpression) {
-            Tree.Identifier id = ((Tree.BaseMemberExpression) node).getIdentifier();
+            Tree.BaseMemberExpression bme = 
+                    (Tree.BaseMemberExpression) node;
+            Tree.Identifier id = bme.getIdentifier();
             if (id==null || id.getToken().getType()==CeylonLexer.AIDENTIFIER) {
                 return;
             }
         }
-        ExtractValueRefactoring evr = refactorJ2C.newExtractValueRefactoring(editor);
+        ExtractValueRefactoring evr = 
+                refactorJ2C.newExtractValueRefactoring(editor);
         if (evr.getEnabled()) {
             proposals.add(new ExtractValueProposal(editor));
         }

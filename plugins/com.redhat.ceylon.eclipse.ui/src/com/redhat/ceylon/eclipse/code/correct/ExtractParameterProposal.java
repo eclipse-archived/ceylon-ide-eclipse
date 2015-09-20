@@ -21,7 +21,9 @@ import com.redhat.ceylon.eclipse.code.refactor.ExtractParameterLinkedMode;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractParameterRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractParameterRefactoringAction;
 
-public class ExtractParameterProposal implements ICompletionProposal, ICompletionProposalExtension6 {
+public class ExtractParameterProposal 
+        implements ICompletionProposal, 
+                   ICompletionProposalExtension6 {
 
     private CeylonEditor editor;
 
@@ -57,22 +59,26 @@ public class ExtractParameterProposal implements ICompletionProposal, ICompletio
     @Override
     public void apply(IDocument doc) {
         if (useLinkedMode()) {
-            new ExtractParameterLinkedMode(editor).start();
+            ExtractParameterLinkedMode.selectExpressionAndStart(editor);
         }
         else {
             new ExtractParameterRefactoringAction(editor).run();
         }
     }
     
-    public static void add(Collection<ICompletionProposal> proposals, 
+    public static void add(
+            Collection<ICompletionProposal> proposals, 
             CeylonEditor editor, Node node) {
         if (node instanceof Tree.BaseMemberExpression) {
-            Tree.Identifier id = ((Tree.BaseMemberExpression) node).getIdentifier();
+            Tree.BaseMemberExpression bme = 
+                    (Tree.BaseMemberExpression) node;
+            Tree.Identifier id = bme.getIdentifier();
             if (id==null || id.getToken().getType()==CeylonLexer.AIDENTIFIER) {
                 return;
             }
         }
-        ExtractParameterRefactoring epr = new ExtractParameterRefactoring(editor);
+        ExtractParameterRefactoring epr = 
+                new ExtractParameterRefactoring(editor);
         if (epr.getEnabled()) {
             proposals.add(new ExtractParameterProposal(editor));
         }
