@@ -97,7 +97,7 @@ class AssignToForProposal extends LocalProposal {
     
     @Override
     public String getDisplayString() {
-        return "Assign expression to 'for' loop";
+        return "Iterate expression in 'for' loop";
     }
     
     @Override
@@ -105,7 +105,8 @@ class AssignToForProposal extends LocalProposal {
         String hint = 
                 CorrectionUtil.shortcut(
                         "com.redhat.ceylon.eclipse.ui.action.assignToFor");
-        return new StyledString(getDisplayString())
+        return new StyledString()
+                .append(super.getStyledDisplayString())
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }
 
