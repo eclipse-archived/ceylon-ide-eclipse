@@ -303,6 +303,11 @@ public final class ReferencesPopup extends PopupDialog
                 .append(message);
         }
         if (builder.length()>0) {
+            builder.append(" \u00b7 ");
+        }
+        builder.append(EditorUtil.getEnterBinding())
+            .append(" to open");
+        if (builder.length()>0) {
             setInfoText(builder.toString());
         }
     }

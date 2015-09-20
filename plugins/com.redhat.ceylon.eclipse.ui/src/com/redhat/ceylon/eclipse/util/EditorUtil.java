@@ -34,6 +34,8 @@ import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.jdt.internal.ui.javaeditor.JarEntryEditorInput;
 import org.eclipse.jface.bindings.TriggerSequence;
+import org.eclipse.jface.bindings.keys.IKeyLookup;
+import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -305,6 +307,10 @@ public class EditorUtil {
         KeyStroke ks = KeyStroke.getInstance(e.stateMask,
                 character != 0 ? Character.toUpperCase(character) : e.keyCode);
         return commandBinding.startsWith(KeySequence.getInstance(ks), true);
+    }
+    
+    public static String getEnterBinding() {
+        return KeyStroke.getInstance(KeyLookupFactory.getDefault().formalKeyLookup(IKeyLookup.CR_NAME)).format();
     }
 
     //  private static boolean isEditorInput(Object element, IEditorPart editor) {

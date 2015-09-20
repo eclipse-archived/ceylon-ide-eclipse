@@ -178,8 +178,13 @@ public class HierarchyPopup extends TreeViewPopup {
     
     @Override
     protected String getStatusFieldText() {
+        String selectHint = 
+                EditorUtil.getEnterBinding() + 
+                " to open";
         TriggerSequence binding = getCommandBinding();
-        if (binding==null) return "";
+        if (binding==null) {
+            return selectHint;
+        }
         String viewHint = 
                 hierarchyBinding==null ? "" :
                     hierarchyBinding.format() + 
@@ -187,13 +192,16 @@ public class HierarchyPopup extends TreeViewPopup {
         switch (contentProvider.getMode()) {
         case SUBTYPES:
             return viewHint + binding.format() + 
-                    " to show hierarchy";
+                    " to show hierarchy" +
+                    " \u00b7 " + selectHint;
         case SUPERTYPES:
             return viewHint + binding.format() + 
-                    " to show subtypes";
+                    " to show subtypes" +
+                    " \u00b7 " + selectHint;
         case HIERARCHY:
             return viewHint + binding.format() + 
-                    " to show supertypes";
+                    " to show supertypes" +
+                    " \u00b7 " + selectHint;
         default:
             throw new RuntimeException();
         }

@@ -71,6 +71,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
@@ -445,11 +446,17 @@ public class OutlinePopup extends TreeViewPopup {
     
     @Override
     protected String getStatusFieldText() {
+        String selectHint = 
+                EditorUtil.getEnterBinding() + 
+                " to open";
         TriggerSequence binding = getCommandBinding();
-        if (binding==null) return "";
+        if (binding==null) {
+            return selectHint;
+        }
         String action = mode ? " to hide " : " to show ";
         return binding.format() + action + 
-                "inherited members of classes and interfaces";
+                "inherited members of classes and interfaces" +
+                " \u00b7 " + selectHint;
     }
     
     @Override

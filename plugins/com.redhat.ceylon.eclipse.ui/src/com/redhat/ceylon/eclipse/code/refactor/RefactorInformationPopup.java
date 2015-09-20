@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getEnterBinding;
+
 /*******************************************************************************
  * Copyright (c) 2007, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
@@ -26,9 +28,6 @@ import org.eclipse.jface.action.IMenuListener2;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.bindings.keys.IKeyLookup;
-import org.eclipse.jface.bindings.keys.KeyLookupFactory;
-import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.ITextListener;
 import org.eclipse.jface.text.ITextViewerExtension5;
@@ -804,10 +803,6 @@ public class RefactorInformationPopup
         };
         action.setChecked(fSnapPosition == snapPosition);
         manager.add(action);
-    }
-
-    private static String getEnterBinding() {
-        return KeyStroke.getInstance(KeyLookupFactory.getDefault().formalKeyLookup(IKeyLookup.CR_NAME)).format();
     }
 
     private static void recursiveSetBackgroundColor(Control control, Color color) {
