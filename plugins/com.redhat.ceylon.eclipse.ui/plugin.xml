@@ -2908,19 +2908,40 @@
            objectClass="org.eclipse.core.resources.IProject"
            adaptable="true"
            nameFilter="*"
-           id="com.redhat.ceylon.eclipse.ui.projectContextMenu">
+           id="com.redhat.ceylon.eclipse.ui.nonCeylonProjectContextMenu">
          <action
                class="com.redhat.ceylon.eclipse.core.builder.EnableCeylonNature"
                id="com.redhat.ceylon.eclipse.ui.actions.enableNatureAction"
                label="Enable Ceylon Builder"
                menubarPath="org.eclipse.ui.projectConfigure/additions"
-               tooltip="Enable the Ceylon builder for this project"/>
+               tooltip="Enable the Ceylon builder for this project">
+         </action>
         <visibility>
           <and>
             <objectState name="open" value="true"/>
             <not>
               <objectState name="nature" value="com.redhat.ceylon.eclipse.ui.ceylonNature"/>
             </not>
+          </and>
+        </visibility>
+     </objectContribution>
+
+     <objectContribution
+           objectClass="org.eclipse.core.resources.IProject"
+           adaptable="true"
+           nameFilter="*"
+           id="com.redhat.ceylon.eclipse.ui.ceylonProjectContextMenu">
+         <action
+               class="com.redhat.ceylon.eclipse.core.classpath.ResetSourceAttachmentsHandler"
+               id="com.redhat.ceylon.eclipse.ui.actions.resetSourceAttachments"
+               label="Reset Source Attachments"
+               menubarPath="group.build"
+               tooltip="Reset the source attachments for Ceylon module binary archives">
+         </action>
+        <visibility>
+          <and>
+            <objectState name="open" value="true"/>
+            <objectState name="nature" value="com.redhat.ceylon.eclipse.ui.ceylonNature"/>
           </and>
         </visibility>
      </objectContribution>

@@ -73,6 +73,9 @@ import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.core.model.modelJ2C;
+import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -408,6 +411,27 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                         !modulesWithSourcesAlreadySearched.contains(module.toString())) {
                     //otherwise, use the src archive
                     srcPath = getSourceArchive(provider, jdtModule);
+                    if ((srcPath == null || srcPath.equals(modulePath))
+                            && jdtModule.isJavaBinaryArchive()) {
+                        CeylonIdeConfig<IProject> ideConfig = modelJ2C.ideConfig(project);
+                        if (ideConfig != null) {
+                            ceylon.language.String attachment = 
+                                    ideConfig.getSourceAttachment(
+                                            jdtModule.getNameAsString(), jdtModule.getVersion());
+                            if (attachment != null) {
+                                String a = attachment.toString();
+                                srcPath=new Path(a);
+                                if (! srcPath.isAbsolute()) {
+                                    if (a.startsWith("../") || 
+                                            a.startsWith("./")) {
+                                        srcPath = project.getLocation().append(srcPath);
+                                    } else {
+                                        srcPath = project.getFullPath().append(srcPath);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 modulesWithSourcesAlreadySearched.add(module.toString());
                 IClasspathEntry newEntry = newLibraryEntry(modulePath, srcPath, null);
