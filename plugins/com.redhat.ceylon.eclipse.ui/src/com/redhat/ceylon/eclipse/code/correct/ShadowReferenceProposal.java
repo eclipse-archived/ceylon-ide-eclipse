@@ -1,8 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.nameProposals;
@@ -10,7 +7,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.nameProposals;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
@@ -45,16 +41,20 @@ class ShadowReferenceProposal extends CorrectionProposal {
                 TextFileChange change = 
                         new TextFileChange("Shadow Reference", file);
                 change.setEdit(new MultiTextEdit());
-                Integer offset = statement.getStartIndex();
-                change.addEdit(new ReplaceEdit(offset, 
-                        node.getStartIndex()-offset,
-                        "value " + name + " = "));
-                IDocument doc = getDocument(change);
-                change.addEdit(new InsertEdit(node.getEndIndex(), 
-                        ";" + 
-                        getDefaultLineDelimiter(doc) + 
-                        getIndent(statement, doc) +
-                        "switch (" + name));
+//                Integer offset = statement.getStartIndex();
+//                change.addEdit(new ReplaceEdit(offset, 
+//                        node.getStartIndex()-offset,
+//                        "value " + name + " = "));
+//                IDocument doc = getDocument(change);
+//                change.addEdit(new InsertEdit(node.getEndIndex(), 
+//                        ";" + 
+//                        getDefaultLineDelimiter(doc) + 
+//                        getIndent(statement, doc) +
+//                        "switch (" + name));
+                Tree.SwitchStatement ss = 
+                        (Tree.SwitchStatement) statement;
+                int loc = node.getStartIndex();
+                change.addEdit(new InsertEdit(loc, name + " = "));
                 if (node instanceof BaseMemberExpression) {
                     Tree.BaseMemberExpression bme = 
                             (BaseMemberExpression) node;
@@ -62,15 +62,13 @@ class ShadowReferenceProposal extends CorrectionProposal {
                     if (d!=null) {
                         FindReferencesVisitor frv = 
                                 new FindReferencesVisitor(d);
-                        Tree.SwitchStatement ss = 
-                                (Tree.SwitchStatement) statement;
                         frv.visit(ss.getSwitchCaseList());
                         for (Node n: frv.getNodes()) {
                             Node identifyingNode = 
                                     getIdentifyingNode(n);
                             Integer start = 
                                     identifyingNode.getStartIndex();
-                            if (start!=node.getStartIndex()) {
+                            if (start!=loc) {
                                 int len = identifyingNode.getText().length();
                                 change.addEdit(new ReplaceEdit(start, len, name));
                             }
@@ -78,7 +76,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
                     }
                 }
                 proposals.add(new ShadowReferenceProposal(
-                        offset+6, name.length(), change));
+                        loc, name.length(), change));
             }
         }
     }
@@ -116,7 +114,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
                 }
             }
             proposals.add(new ShadowReferenceProposal(
-                    offset, 1, change));
+                    offset, name.length(), change));
         }
         else if (node instanceof Tree.Term) {
             String name = nameProposals(node)[0];
@@ -126,7 +124,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
             Integer offset = node.getStartIndex();
             change.setEdit(new InsertEdit(offset, name + " = "));
             proposals.add(new ShadowReferenceProposal(
-                    offset, 1, change));
+                    offset, name.length(), change));
         }
     }
 }
