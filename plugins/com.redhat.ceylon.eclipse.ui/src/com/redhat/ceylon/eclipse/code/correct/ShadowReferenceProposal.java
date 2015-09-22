@@ -1,6 +1,11 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
+import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.nameProposals;
 
 import java.util.Collection;
 
@@ -14,14 +19,13 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
-import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Value;
 
 class ShadowReferenceProposal extends CorrectionProposal {
     
@@ -30,75 +34,99 @@ class ShadowReferenceProposal extends CorrectionProposal {
                 new Region(offset, length));
     }
     
-    static void addShadowSwitchReferenceProposal(IFile file, Tree.CompilationUnit cu, 
-            Collection<ICompletionProposal> proposals, Node node) {
+    static void addShadowSwitchReferenceProposal(IFile file, 
+            Node node, Tree.CompilationUnit rootNode, 
+            Collection<ICompletionProposal> proposals) {
         if (node instanceof Tree.Term) {
-            Tree.Statement statement = Nodes.findStatement(cu, node);
+            Tree.Statement statement = 
+                    findStatement(rootNode, node);
             if (statement instanceof Tree.SwitchStatement) {
-                String name = Nodes.nameProposals(node)[0];
-                TextFileChange change = new TextFileChange("Shadow Reference", file);
+                String name = nameProposals(node)[0];
+                TextFileChange change = 
+                        new TextFileChange("Shadow Reference", file);
                 change.setEdit(new MultiTextEdit());
                 Integer offset = statement.getStartIndex();
                 change.addEdit(new ReplaceEdit(offset, 
                         node.getStartIndex()-offset,
                         "value " + name + " = "));
-                IDocument doc = EditorUtil.getDocument(change);
+                IDocument doc = getDocument(change);
                 change.addEdit(new InsertEdit(node.getEndIndex(), 
                         ";" + 
-                        Indents.getDefaultLineDelimiter(doc) + 
+                        getDefaultLineDelimiter(doc) + 
                         getIndent(statement, doc) +
                         "switch (" + name));
                 if (node instanceof BaseMemberExpression) {
-                    Declaration d = ((BaseMemberExpression) node).getDeclaration();
+                    Tree.BaseMemberExpression bme = 
+                            (BaseMemberExpression) node;
+                    Declaration d = bme.getDeclaration();
                     if (d!=null) {
-                        FindReferencesVisitor frv = new FindReferencesVisitor(d);
-                        frv.visit(((Tree.SwitchStatement) statement).getSwitchCaseList());
+                        FindReferencesVisitor frv = 
+                                new FindReferencesVisitor(d);
+                        Tree.SwitchStatement ss = 
+                                (Tree.SwitchStatement) statement;
+                        frv.visit(ss.getSwitchCaseList());
                         for (Node n: frv.getNodes()) {
-                            Node identifyingNode = Nodes.getIdentifyingNode(n);
-                            Integer start = identifyingNode.getStartIndex();
+                            Node identifyingNode = 
+                                    getIdentifyingNode(n);
+                            Integer start = 
+                                    identifyingNode.getStartIndex();
                             if (start!=node.getStartIndex()) {
-                                change.addEdit(new ReplaceEdit(start, 
-                                        identifyingNode.getText().length(), name));
+                                int len = identifyingNode.getText().length();
+                                change.addEdit(new ReplaceEdit(start, len, name));
                             }
                         }
                     }
                 }
-                proposals.add(new ShadowReferenceProposal(offset+6, name.length(), change));
+                proposals.add(new ShadowReferenceProposal(
+                        offset+6, name.length(), change));
             }
         }
     }
     
-    static void addShadowReferenceProposal(IFile file, Tree.CompilationUnit cu, 
-            Collection<ICompletionProposal> proposals, Node node) {
+    static void addShadowReferenceProposal(IFile file, 
+            Node node, Tree.CompilationUnit rootNode, 
+            Collection<ICompletionProposal> proposals) {
         if (node instanceof Tree.Variable) {
             Tree.Variable var = (Tree.Variable) node;
-            int offset = var.getIdentifier().getStartIndex();
-            Tree.Term term = var.getSpecifierExpression().getExpression().getTerm();
-			String name = Nodes.nameProposals(term)[0];
-            TextChange change = new TextFileChange("Shadow Reference", file);
+            int offset = 
+                    var.getIdentifier()
+                        .getStartIndex();
+            Tree.Term term = 
+                    var.getSpecifierExpression()
+                        .getExpression()
+                        .getTerm();
+			String name = nameProposals(term)[0];
+            TextChange change = 
+                    new TextFileChange("Shadow Reference", file);
             change.setEdit(new MultiTextEdit());
             change.addEdit(new InsertEdit(offset, name + " = "));
-            Tree.Statement statement = Nodes.findStatement(cu, node);
+            Tree.Statement statement = 
+                    Nodes.findStatement(rootNode, node);
+            Value dec = var.getDeclarationModel();
             FindReferencesVisitor frv = 
-            		new FindReferencesVisitor(var.getDeclarationModel());
+            		new FindReferencesVisitor(dec);
             frv.visit(statement);
             for (Node n: frv.getNodes()) {
-                Node identifyingNode = Nodes.getIdentifyingNode(n);
-                Integer start = identifyingNode.getStartIndex();
+                Node identifyingNode = getIdentifyingNode(n);
+                Integer start = 
+                        identifyingNode.getStartIndex();
                 if (start!=offset) {
-                    change.addEdit(new ReplaceEdit(start, 
-                            identifyingNode.getText().length(), name));
+                    int len = identifyingNode.getText().length();
+                    change.addEdit(new ReplaceEdit(start, len, name));
                 }
             }
-            proposals.add(new ShadowReferenceProposal(offset, 1, change));
+            proposals.add(new ShadowReferenceProposal(
+                    offset, 1, change));
         }
         else if (node instanceof Tree.Term) {
-            String name = Nodes.nameProposals(node)[0];
-            TextChange change = new TextFileChange("Shadow Reference", file);
+            String name = nameProposals(node)[0];
+            TextChange change = 
+                    new TextFileChange("Shadow Reference", file);
 //            change.setEdit(new MultiTextEdit());
             Integer offset = node.getStartIndex();
             change.setEdit(new InsertEdit(offset, name + " = "));
-            proposals.add(new ShadowReferenceProposal(offset, 1, change));
+            proposals.add(new ShadowReferenceProposal(
+                    offset, 1, change));
         }
     }
 }

@@ -831,11 +831,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addPrintProposal(rootNode, proposals, node, start);
             break;
         case 3100:
-            addShadowReferenceProposal(file, rootNode, proposals, node);
+            addShadowReferenceProposal(file, node, rootNode, proposals);
             break;
         case 3101:
         case 3102:
-            addShadowSwitchReferenceProposal(file, rootNode, proposals, node);
+            addShadowSwitchReferenceProposal(file, node, rootNode, proposals);
             break;
         case 5001:
         case 5002:
