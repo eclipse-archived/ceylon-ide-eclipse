@@ -36,6 +36,11 @@
     <remove module="org.eclipse.jface.databinding"/>
     <remove module="org.eclipse.team.ui"/>
     <remove module="org.eclipse.ui.forms"/>
+    <remove module="org.eclipse.jdt.junit.runtime"/>
+    <remove module="org.eclipse.equinox.frameworkadmin"/>
+    <remove module="org.eclipse.equinox.simpleconfigurator.manipulator"/>
+    <remove module="org.eclipse.pde.core"/>
+    <remove module="org.eclipse.pde.build"/>
 
     <module module="org.eclipse.ui">
         <add module="org.eclipse.ui.ide" version="${org.eclipse.ui.ide.version.override}" shared="true"/>

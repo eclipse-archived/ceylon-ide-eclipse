@@ -3247,6 +3247,51 @@
    			name="Ceylon Source Lookup Director">
    		</sourceLocator>
    </extension>
+   <extension
+         point="org.eclipse.debug.core.launchDelegates">
+      <launchDelegate
+            delegate="com.redhat.ceylon.eclipse.core.launch.CeylonAwareJavaLaunchDelegate"
+            id="com.redhat.ceylon.eclipse.ui.launching.javaApplicationLauncher"
+            modes="debug"
+            delegateDescription="The Eclipse JDT Java Application Launcher supports running and debugging local Java applications that contain or use Ceylon code."
+            name="Ceylon-aware Eclipse JDT"
+            type="org.eclipse.jdt.launching.localJavaApplication"/>
+      <launchDelegate
+            delegate="com.redhat.ceylon.eclipse.core.launch.CeylonAwareJavaRemoteApplicationLaunchConfigurationDelegate"
+            id="com.redhat.ceylon.eclipse.ui.launching.javaRemoteApplicationLauncher"
+            modes="debug"
+            delegateDescription="The Eclipse JDT Java Remote Launcher supports attaching to and debugging remote Java applications that contain or use Ceylon code."
+            name="Ceylon-aware Eclipse JDT"
+            type="org.eclipse.jdt.launching.remoteJavaApplication"/>
+      <launchDelegate
+            delegate="com.redhat.ceylon.eclipse.core.launch.CeylonAwareJUnitLaunchConfigurationDelegate"
+            id="com.redhat.ceylon.eclipse.ui.launching.junitLauncher"
+            modes="debug"
+            delegateDescription="The Eclipse JUnit Launcher supports running and debugging JUnit tests and test suites that contain or use Ceylon code."
+            name="Ceylon-aware Eclipse JUnit"
+            type="org.eclipse.jdt.junit.launchconfig"/>
+      <launchDelegate
+            delegate="com.redhat.ceylon.eclipse.core.launch.CeylonAwareEclipseApplicationLaunchConfiguration"
+            id="com.redhat.ceylon.eclipse.ui.launching.workbenchLauncher"
+            modes="debug"
+            delegateDescription="The Eclipse Application launcher is used to run or debug a separate instance of an Eclipse application that contains or use Ceylon code."
+            name="Ceylon-aware Eclipse Application"
+            type="org.eclipse.pde.ui.RuntimeWorkbench"/>
+      <launchDelegate
+            delegate="com.redhat.ceylon.eclipse.core.launch.CeylonAwarePDEJUnitLaunchConfigurationDelegate"
+            id="com.redhat.ceylon.eclipse.ui.launching.PDEJunitLaunchConfig"
+            modes="debug"
+            delegateDescription="The JUnit Plugin Test launcher is used to run and debug test suites for plug-in projects that contain or use Ceylon code."
+            name="Ceylon-aware JUnit Plugin Test"
+            type="org.eclipse.pde.ui.JunitLaunchConfig"/>
+      <launchDelegate
+            delegate="com.redhat.ceylon.eclipse.core.launch.CeylonAwareSWTBotJUnitLaunchConfigurationDelegate"
+            id="com.redhat.ceylon.eclipse.ui.launching.SWTBotJunitLaunchConfig"
+            modes="debug"
+            delegateDescription="This test launcher is used to run and debug SWTBot tests that contain or use Ceylon code."
+            name="Ceylon-aware SWTBot Test"
+            type="org.eclipse.swtbot.eclipse.ui.launcher.JunitLaunchConfig"/>
+   </extension>
 
     <!-- don't use this approach because Eclipse's 
          label decorators are really slow due to

@@ -136,7 +136,16 @@
                     		</not>
                             <then>
                                 <echo append="true" file="${generatedImportsFile}"
-                                    message='    shared import ${Bundle-SymbolicName} "${Bundle-Version}";'/>
+                                    message='    shared'/>
+                                <if>
+                                    <isset property="optional.${Bundle-SymbolicName}"/>
+                                    <then>
+                                        <echo append="true" file="${generatedImportsFile}"
+                                            message=' optional'/>
+                                    </then>
+                                </if>
+                                <echo append="true" file="${generatedImportsFile}"
+                                    message=' import ${Bundle-SymbolicName} "${Bundle-Version}";'/>
                                 <echo append="true" file="${generatedImportsFile}"><![CDATA[
 ]]></echo>
                             </then>
@@ -199,7 +208,7 @@
         </if>
     </target>
 
-	<property name="eclipseBundleRegexp" value=".*(org\.eclipse\.[^=,]+)"/>
+	<property name="eclipseBundleRegexp" value=".*(org\.eclipse\.[^=,;]+)"/>
 	<loadproperties prefix="no-import" srcfile="${basedir}/AdditionalBundles.properties">
 		<filterchain>
 			<linecontainsregexp>
@@ -211,6 +220,18 @@
             <uniqfilter/>
 		</filterchain>
 	</loadproperties>
+
+    <loadproperties prefix="optional" srcfile="${basedir}/AdditionalBundles.properties">
+        <filterchain>
+            <linecontainsregexp>
+                <regexp pattern="${eclipseBundleRegexp}=.*optional"/>
+            </linecontainsregexp>
+            <tokenfilter>
+                <replaceregex byline="true" pattern="${eclipseBundleRegexp}.*" replace="\1="/>
+            </tokenfilter>
+            <uniqfilter/>
+        </filterchain>
+    </loadproperties>
 
     <loadproperties prefix="no-source" srcfile="${basedir}/AdditionalBundles.properties">
         <filterchain>
@@ -238,6 +259,9 @@
             <linecontainsregexp>
                 <regexp pattern="${eclipseBundleRegexp}.*"/>
             </linecontainsregexp>
+            <linecontains negate="true">
+                <contains value=";resolution:=optional"/>
+            </linecontains>
             <tokenfilter>
                 <replaceregex byline="true" pattern="${eclipseBundleRegexp}.*" replace="\1"/>
             </tokenfilter>

@@ -54,7 +54,10 @@ Require-Bundle: ceylon.bootstrap;bundle-version="1.1.1",
  ceylon.tool.converter.java2ceylon;bundle-version="1.0.0",
  ceylon.collection;bundle-version="1.1.1",
  ceylon.interop.java;bundle-version="1.1.1",
- com.redhat.ceylon.ide.common;bundle-version="1.1.1";visibility:=reexport
+ com.redhat.ceylon.ide.common;bundle-version="1.1.1";visibility:=reexport,
+ org.eclipse.pde.launching;resolution:=optional,
+ org.eclipse.jdt.junit.core;resolution:=optional,
+ org.eclipse.swtbot.eclipse.ui;resolution:=optional
 Bundle-Activator: com.redhat.ceylon.eclipse.ui.CeylonPlugin
 Bundle-ActivationPolicy: lazy; exclude:="com.redhat.ceylon.eclipse.ui.CeylonPlugin"
 Bundle-ClassPath: ./,
