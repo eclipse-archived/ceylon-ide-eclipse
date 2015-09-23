@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
@@ -8,11 +7,16 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumen
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getCompletionFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
+import static com.redhat.ceylon.eclipse.util.Highlights.MEMBER_STYLER;
+import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +24,17 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
@@ -34,19 +43,21 @@ import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ImportList;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ImportList;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class PackageCompletions {
 
@@ -90,6 +101,119 @@ public class PackageCompletions {
 
     private static final class ImportedModulePackageProposal extends
             PackageProposal {
+        
+        private final class PackageMemberCompletionProposal 
+            implements ICompletionProposal,
+                       ICompletionProposalExtension2,
+                       ICompletionProposalExtension6  {
+            
+            private final Point selection;
+            private final LinkedModeModel linkedModeModel;
+            private final Declaration d;
+
+            private PackageMemberCompletionProposal(
+                    Point selection, 
+                    LinkedModeModel linkedModeModel, 
+                    Declaration d) {
+                this.selection = selection;
+                this.linkedModeModel = linkedModeModel;
+                this.d = d;
+            }
+
+            @Override
+            public Point getSelection(IDocument document) {
+                return null;
+            }
+
+            @Override
+            public Image getImage() {
+                return getImageForDeclaration(d);
+            }
+
+            @Override
+            public String getDisplayString() {
+                return d.getName();
+            }
+
+            @Override
+            public IContextInformation getContextInformation() {
+                return null;
+            }
+
+            @Override
+            public String getAdditionalProposalInfo() {
+                return null;
+            }
+
+            int length(IDocument document) {
+                int length = 0;
+                try {
+                    for (int i=selection.x; 
+                            i<document.getLength() && 
+                            (Character.isJavaIdentifierPart(document.getChar(i)) ||
+                            document.getChar(i)=='.'); 
+                            i++) {
+                        length++;
+                    }
+                }
+                catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
+                return length;
+            }
+            
+            @Override
+            public void apply(IDocument document) {
+                try {
+                    document.replace(selection.x, 
+                            length(document), 
+                            d.getName());
+                }
+                catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
+                linkedModeModel.exit(ILinkedModeListener.UPDATE_CARET);
+            }
+
+            @Override
+            public StyledString getStyledDisplayString() {
+                StyledString result = new StyledString();
+                Highlights.styleIdentifier(result, prefix, 
+                        getDisplayString(),
+                        d instanceof TypeDeclaration ? 
+                                TYPE_STYLER : MEMBER_STYLER, 
+                        getCompletionFont());
+                return result;
+            }
+
+            @Override
+            public void apply(ITextViewer viewer, char trigger, int stateMask, int offset) {
+                apply(viewer.getDocument());
+            }
+
+            @Override
+            public void selected(ITextViewer viewer, boolean smartToggle) {}
+
+            @Override
+            public void unselected(ITextViewer viewer) {}
+
+            @Override
+            public boolean validate(IDocument document, int offset, DocumentEvent event) {
+                int start = selection.x;
+                if (offset<start) {
+                    return false;
+                }
+                String prefix;
+                try {
+                    prefix = document.get(start, offset-start);
+                }
+                catch (BadLocationException e) {
+                    return false;
+                }
+                return isNameMatching(prefix, d);
+            }
+        }
+
         private final Package candidate;
 
         private ImportedModulePackageProposal(int offset, String prefix,
@@ -113,43 +237,9 @@ public class PackageCompletions {
                 for (final Declaration d: candidate.getMembers()) {
                     if (ModelUtil.isResolvable(d) && d.isShared() && 
                             !isOverloadedVersion(d)) {
-                        proposals.add(new ICompletionProposal() {
-                            @Override
-                            public Point getSelection(IDocument document) {
-                                return null;
-                            }
-                            @Override
-                            public Image getImage() {
-                                return getImageForDeclaration(d);
-                            }
-                            
-                            @Override
-                            public String getDisplayString() {
-                                return d.getName();
-                            }
-                            
-                            @Override
-                            public IContextInformation getContextInformation() {
-                                return null;
-                            }
-                            
-                            @Override
-                            public String getAdditionalProposalInfo() {
-                                return null;
-                            }
-                            
-                            @Override
-                            public void apply(IDocument document) {
-                                try {
-                                    document.replace(selection.x, selection.y, 
-                                            d.getName());
-                                }
-                                catch (BadLocationException e) {
-                                    e.printStackTrace();
-                                }
-                                linkedModeModel.exit(ILinkedModeListener.UPDATE_CARET);
-                            }
-                        });
+                        proposals.add(
+                                new PackageMemberCompletionProposal(
+                                        selection, linkedModeModel, d));
                     }
                 }
                 
@@ -224,6 +314,22 @@ public class PackageCompletions {
         @Override
         protected boolean qualifiedNameIsPath() {
             return true;
+        }
+        
+        @Override
+        public StyledString getStyledDisplayString() {
+            String text = getDisplayString();
+            if (withBody) {
+                int loc = text.indexOf(" {");
+                return new StyledString(
+                        text.substring(0, loc), 
+                        Highlights.PACKAGE_STYLER)
+                            .append(text.substring(loc));
+            }
+            else {
+                return new StyledString(text, 
+                        Highlights.PACKAGE_STYLER);
+            }
         }
     }
 
