@@ -26,61 +26,65 @@ public class ChangeInitialCaseOfIdentifierInDeclaration
             Collection<ICompletionProposal> proposals, IFile file) {
         Tree.Identifier identifier = null;
         
-        if (node instanceof Tree.TypeDeclaration) {
-            Tree.TypeDeclaration td = 
-                    (Tree.TypeDeclaration) node;
-            identifier = td.getIdentifier();
-        }
-        else if (node instanceof Tree.TypeParameterDeclaration) {
-            Tree.TypeParameterDeclaration tpd = 
-                    (Tree.TypeParameterDeclaration) node;
-            identifier = tpd.getIdentifier();
-        }
-        else if (node instanceof Tree.TypedDeclaration) {
-            Tree.TypedDeclaration td = 
-                    (Tree.TypedDeclaration) node;
-            identifier = td.getIdentifier();
+        if (node instanceof Tree.Declaration) {
+            Tree.Declaration td = 
+                    (Tree.Declaration) node;
+            Identifier id = td.getIdentifier();
+            if (!id.getText().isEmpty()) {
+                identifier = id;
+            }
         }
         else if (node instanceof Tree.ImportPath) {
             Tree.ImportPath ip = (Tree.ImportPath) node;
-            List<Identifier> importIdentifiers = ip.getIdentifiers();
-            for (Identifier importIdentifier : importIdentifiers) {
-                if (importIdentifier.getText() != null && 
-                        !importIdentifier.getText().isEmpty() && 
-                        Character.isUpperCase(importIdentifier.getText().charAt(0))) {
+            List<Identifier> id = ip.getIdentifiers();
+            for (Identifier importIdentifier : id) {
+                String text = importIdentifier.getText();
+                if (text != null && !text.isEmpty() && 
+                        Character.isUpperCase(text.charAt(0))) {
                     identifier = importIdentifier;
                     break;
                 }
             }
         }
         
-        if (identifier != null && !identifier.getText().isEmpty()) {
+        if (identifier != null) {
             addProposal(identifier, proposals, file);
         }
     }
     
     private static void addProposal(Identifier identifier, 
-            Collection<ICompletionProposal> proposals, IFile file) {
+            Collection<ICompletionProposal> proposals, 
+            IFile file) {
         String oldIdentifier = identifier.getText();
         int first = oldIdentifier.codePointAt(0);
-        int newFirst = isUpperCase(first) ? 
-                toLowerCase(first) : toUpperCase(first);
+        int newFirst = 
+                isUpperCase(first) ? 
+                        toLowerCase(first) : 
+                        toUpperCase(first);
         String newFirstLetter = new String(toChars(newFirst));
         String newIdentifier = newFirstLetter + 
                 oldIdentifier.substring(charCount(first));
         
-        TextFileChange change = new TextFileChange("Change initial case of identifier", file);
-        change.setEdit(new ReplaceEdit(identifier.getStartIndex(), 1, newFirstLetter));
+        TextFileChange change = 
+                new TextFileChange(
+                        "Change initial case of identifier", 
+                        file);
+        change.setEdit(new ReplaceEdit(
+                identifier.getStartIndex(), 1, 
+                newFirstLetter));
 
         ChangeInitialCaseOfIdentifierInDeclaration proposal = 
-                new ChangeInitialCaseOfIdentifierInDeclaration(newIdentifier, change);
+                new ChangeInitialCaseOfIdentifierInDeclaration(
+                        newIdentifier, change);
         if (!proposals.contains(proposal)) {
             proposals.add(proposal);
         }
     }
 
-    public ChangeInitialCaseOfIdentifierInDeclaration(String newIdentifier, Change change) {
-        super("Change initial case of identifier to '" + newIdentifier + "'", change, null);
+    public ChangeInitialCaseOfIdentifierInDeclaration(
+            String newIdentifier, Change change) {
+        super("Change initial case of identifier to '" + 
+            newIdentifier + "'", change, null);
     }
 
 }
