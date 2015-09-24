@@ -65,6 +65,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -171,6 +173,7 @@ import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
@@ -2036,9 +2039,13 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             if (input instanceof SourceArchiveEditorInput) {
                 IPath fileFullPath = 
                         ExternalSourceArchiveManager.toFullPath(file);
-                IPath relativePath = 
-                        file.getProjectRelativePath()
-                            .removeFirstSegments(1);
+                IPath relativePath = null;
+                IFileStore store = ((Resource) file).getStore();
+                if (store instanceof CeylonArchiveFileStore) {
+                    CeylonArchiveFileStore cafs = (CeylonArchiveFileStore) store;
+                    relativePath = cafs.getEntryPath();
+                }
+
                 if (fileFullPath!=null && relativePath!=null) {
                     for (IProject project: root.getProjects()) {
                         if (project.isAccessible() && 
