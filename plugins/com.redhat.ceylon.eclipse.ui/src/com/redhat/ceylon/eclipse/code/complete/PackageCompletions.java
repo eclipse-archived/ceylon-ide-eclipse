@@ -285,6 +285,11 @@ public class PackageCompletions {
 
     static final class PackageDescriptorProposal extends CompletionProposal {
         
+        PackageDescriptorProposal(int offset, String prefix, String desc, String text) {
+            super(offset, prefix, PACKAGE, desc, text);
+        }
+
+        @Deprecated
         PackageDescriptorProposal(int offset, String prefix, String packageName) {
             super(offset, prefix, PACKAGE, 
                     "package " + packageName, 

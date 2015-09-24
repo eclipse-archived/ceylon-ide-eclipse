@@ -92,6 +92,11 @@ public class KeywordCompletionProposal extends CompletionProposal {
         }
     }
     
+    KeywordCompletionProposal(int offset, String prefix, String keyword, String text) {
+        super(offset, prefix, null, keyword, text);
+    }
+
+    @Deprecated
     KeywordCompletionProposal(int offset, String prefix, String keyword) {
         super(offset, prefix, null, keyword, 
                 conditionKeywords.contains(keyword) ? keyword+" ()" : keyword);
