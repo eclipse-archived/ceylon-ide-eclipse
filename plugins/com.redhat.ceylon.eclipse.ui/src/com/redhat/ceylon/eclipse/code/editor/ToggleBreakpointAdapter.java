@@ -254,7 +254,7 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
         String classnamePattern = null;
         IPath projectRelativePath = file.getProjectRelativePath();
         if (ExternalSourceArchiveManager.isInSourceArchive(file)) {
-            relativePath = projectRelativePath.removeFirstSegments(1);
+            relativePath = ExternalSourceArchiveManager.getSourceArchiveEntryPath(file);
         } else {
             IResourceAware unit = CeylonBuilder.getUnit(file);
             if (unit != null) {

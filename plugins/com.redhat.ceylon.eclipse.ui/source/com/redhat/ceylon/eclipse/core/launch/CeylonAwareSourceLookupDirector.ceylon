@@ -1,5 +1,8 @@
 import com.redhat.ceylon.eclipse.util {
-    EditorUtil
+    EditorUtil {
+        getEditorInput,
+        adjustEditorInput
+    }
 }
 
 import org.eclipse.core.resources {
@@ -58,14 +61,14 @@ shared interface CeylonAwareSourceLookupDirector satisfies ISourcePresentation {
             }
         }
         if (is LocalFileStorage fileStorage=item) {
-            return LocalFileStorageEditorInput(fileStorage);
+            return adjustEditorInput(LocalFileStorageEditorInput(fileStorage));
         }
         if (is ZipEntryStorage entryStorage=item) {
             if (entryStorage.name.endsWith(".ceylon")) {
                 assert(is ZipEntryStorage zes = item);
                 value archivePath = Path.fromOSString("``zes.archive.name``!");
                 variable IEditorInput input = EditorUtil.getEditorInput(archivePath.append(zes.zipEntry.name));
-                return input;
+                return adjustEditorInput(input);
             }
             else {
                 return ZipEntryStorageEditorInput(entryStorage);
@@ -76,7 +79,7 @@ shared interface CeylonAwareSourceLookupDirector satisfies ISourcePresentation {
                 return null;
             }
         }
-        return EditorUtil.getEditorInput(item);
+        return adjustEditorInput(EditorUtil.getEditorInput(item));
     }
 
     shared actual String? getEditorId(variable IEditorInput input, variable Object element) {

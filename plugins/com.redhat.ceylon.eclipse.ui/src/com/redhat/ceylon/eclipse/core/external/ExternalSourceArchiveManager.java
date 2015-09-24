@@ -16,7 +16,10 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -628,5 +631,15 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         } else {
             System.out.print("");
         }
+    }
+
+    public static IPath getSourceArchiveEntryPath(IFile file) {
+        IPath relativePath = null;
+        IFileStore store = ((Resource) file).getStore();
+        if (store instanceof CeylonArchiveFileStore) {
+            CeylonArchiveFileStore cafs = (CeylonArchiveFileStore) store;
+            relativePath = cafs.getEntryPath();
+        }
+        return relativePath;
     }
 }

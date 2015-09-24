@@ -30,10 +30,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.STRIP_TRAILING_WS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolderType;
-import static com.redhat.ceylon.eclipse.core.vfs.vfsJ2C.instanceOfIFileVirtualFile;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
@@ -57,7 +53,6 @@ import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_NEXT
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_PREVIOUS;
 
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
 import java.util.Iterator;
@@ -65,19 +60,15 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.ui.actions.IRunToLineTarget;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
@@ -151,9 +142,6 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
@@ -171,13 +159,7 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonSaveActionsPreferencePag
 import com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems;
 import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
-import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
-import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -1979,26 +1961,8 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
     @Override
     protected void doSetInput(IEditorInput input) 
             throws CoreException {
-        if (input instanceof FileStoreEditorInput) {
-            FileStoreEditorInput fsei = 
-                    (FileStoreEditorInput) input;
-            IEditorInput fixedInput = 
-                    fixSourceArchiveInput(fsei);
-            if (fixedInput != null) {
-                input = fixedInput;
-            }
-        }
         
-        if (input instanceof IFileEditorInput) {
-            boolean replacedByTheSourceFile = false;
-            IFileEditorInput fei = (IFileEditorInput) input;
-            IFile file = fei.getFile();
-            if (file != null) {
-                input = setInputFile(input, 
-                        replacedByTheSourceFile, 
-                        file);
-            }
-        }
+        input = EditorUtil.adjustEditorInput(input);
 
         if (input != null) {
             //the following crazy stuff seems to be needed in
@@ -2025,112 +1989,6 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             //have to do this or we get a funny-looking caret
             setInsertMode(SMART_INSERT);
         }
-    }
-
-    private IEditorInput setInputFile(IEditorInput input, 
-            boolean replacedByTheSourceFile, IFile file) {
-        if (!CeylonNature.isEnabled(file.getProject()) ||
-                getRootFolderType(file) 
-                        != RootFolderType.SOURCE) {
-            // search if those files are also in the source directory of
-            // a Ceylon project existing in this project
-            IWorkspaceRoot root = 
-                    file.getWorkspace().getRoot();
-            if (input instanceof SourceArchiveEditorInput) {
-                IPath fileFullPath = 
-                        ExternalSourceArchiveManager.toFullPath(file);
-                IPath relativePath = null;
-                IFileStore store = ((Resource) file).getStore();
-                if (store instanceof CeylonArchiveFileStore) {
-                    CeylonArchiveFileStore cafs = (CeylonArchiveFileStore) store;
-                    relativePath = cafs.getEntryPath();
-                }
-
-                if (fileFullPath!=null && relativePath!=null) {
-                    for (IProject project: root.getProjects()) {
-                        if (project.isAccessible() && 
-                                CeylonNature.isEnabled(project)) {
-                            IPath projectModuleDirFullPath = 
-                                    getCeylonModulesOutputFolder(project)
-                                        .getLocation();
-                            if (projectModuleDirFullPath!=null &&
-                                    projectModuleDirFullPath.isPrefixOf(fileFullPath)) {
-                                TypeChecker typeChecker = 
-                                        getProjectTypeChecker(project);
-                                if (typeChecker != null) {
-                                    PhasedUnits sourcePhasedUnits = 
-                                            typeChecker.getPhasedUnits();
-                                    PhasedUnit unit = 
-                                            sourcePhasedUnits.getPhasedUnitFromRelativePath(
-                                                    relativePath.toString());
-                                    if (unit instanceof ProjectPhasedUnit) {
-                                        if (instanceOfIFileVirtualFile(unit.getUnitFile())) {
-                                            IFile newFile = 
-                                                    ((ProjectPhasedUnit)unit).getResourceFile();
-                                            if (newFile.exists() &&
-                                                    getRootFolderType(newFile) 
-                                                            == RootFolderType.SOURCE) {
-                                                file = newFile;
-                                                input = EditorUtil.getEditorInput(newFile);
-                                                replacedByTheSourceFile = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            else {
-                IPath location = file.getLocation();
-                if (location != null) {
-                    for (IProject project: root.getProjects()) {
-                        IPath projectLocation = 
-                                project.getLocation();
-                        if (project.isAccessible() && 
-                                projectLocation != null && 
-                                CeylonNature.isEnabled(project) && 
-                                projectLocation.isPrefixOf(location)) {
-                            IPath relative = 
-                                    location.makeRelativeTo(
-                                            projectLocation);
-                            IFile newFile = 
-                                    project.getFile(relative);
-                            if (newFile.exists() && 
-                                    getRootFolderType(newFile) 
-                                        == RootFolderType.SOURCE) {
-                                file = newFile;
-                                input = EditorUtil.getEditorInput(newFile);
-                                replacedByTheSourceFile = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (!replacedByTheSourceFile &&
-                !(input instanceof SourceArchiveEditorInput)) {
-            if (ExternalSourceArchiveManager.isInSourceArchive(file)) {
-                IPath fullPath = 
-                        ExternalSourceArchiveManager.toFullPath(file);
-                if (fullPath != null) {
-                    input = EditorUtil.getEditorInput(fullPath);
-                }
-                else {
-                    fullPath = file.getFullPath();
-                    if (fullPath.segmentCount() > 1) {
-                        fullPath = fullPath.removeFirstSegments(1);
-                        fullPath = fullPath.makeAbsolute();
-                    }
-                    input = EditorUtil.getEditorInput(fullPath);
-                }
-            }
-        }
-        return input;
     }
 
     /**
@@ -2244,28 +2102,6 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         }
     }
     
-    private SourceArchiveEditorInput fixSourceArchiveInput(
-            FileStoreEditorInput input) {
-        URI uri = input.getURI();
-        System.out.println("FileStoreEditorInput URI : " + uri);
-        if (uri != null) {
-            String path = uri.getPath();
-            if (path.contains(CeylonArchiveFileSystem.JAR_SUFFIX)) {
-                IPath fullPath = new Path(path);
-                System.out.println("FileStoreEditorInput full path : " + 
-                        fullPath);
-                IEditorInput newInput = 
-                        EditorUtil.getEditorInput(fullPath);
-                System.out.println("Changed EditorInput : " + 
-                        newInput + " / " + newInput.getToolTipText());
-                if (newInput instanceof SourceArchiveEditorInput) {
-                    return (SourceArchiveEditorInput) newInput;
-                }
-            }
-        }
-        return null;
-    }
-    
     @Override
     public void modelParsed(IProject project) {
         IEditorInput input = getEditorInput();
@@ -2273,7 +2109,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             FileStoreEditorInput fsei = 
                     (FileStoreEditorInput) input;
             final IEditorInput newInput = 
-                    fixSourceArchiveInput(fsei);
+                    EditorUtil.fixSourceArchiveInput(fsei);
             if (newInput != null) {
                 IWorkbenchPartSite site = getSite();
                 if (site != null) {
