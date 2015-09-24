@@ -222,9 +222,11 @@ public class LaunchHelper {
     }
     
     static Module getModule(Declaration decl) {
-        if (decl.getUnit().getPackage() != null) {
-            if (decl.getUnit().getPackage().getModule() != null) {
-                return decl.getUnit().getPackage().getModule();
+        Package pack = decl.getUnit().getPackage();
+        if (pack != null) {
+            Module mod = pack.getModule();
+            if (mod != null) {
+                return mod;
             }
         }
         return getEmptyDefaultModule();
