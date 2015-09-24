@@ -3470,6 +3470,9 @@
 			<override
 					policy="InvokeAlwaysRegardlessOfSuppressedExt"
 					suppressedExtensionId="org.eclipse.jdt.java.ui.javaContent"/>
+            <commonSorter
+                    class="org.eclipse.jdt.ui.JavaElementSorter"
+                    id="org.eclipse.jdt.ui.javaElementSorter"/>
 
 		    <commonWizard
 		          menuGroupId="com.redhat.ceylon.eclipse.ui"
