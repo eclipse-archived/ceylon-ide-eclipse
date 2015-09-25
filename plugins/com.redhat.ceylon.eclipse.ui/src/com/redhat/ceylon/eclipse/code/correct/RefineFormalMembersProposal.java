@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.getProposals;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.FORMAL_REFINEMENT;
@@ -50,8 +49,9 @@ import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
-class RefineFormalMembersProposal implements ICompletionProposal,
-        ICompletionProposalExtension6 {
+class RefineFormalMembersProposal 
+        implements ICompletionProposal,
+                   ICompletionProposalExtension6 {
 
     private final Tree.CompilationUnit rootNode;
     private final String description;
@@ -194,7 +194,8 @@ class RefineFormalMembersProposal implements ICompletionProposal,
         //      versions of a method with one overlaad
         //      already refined
         Collection<DeclarationWithProximity> proposals = 
-                getProposals(node, ci, rootNode).values();
+                ci.getMatchingMemberDeclarations(unit, ci, "", 0)
+                    .values();
         for (DeclarationWithProximity dwp: proposals) {
             Declaration dec = dwp.getDeclaration();
             for (Declaration d: overloads(dec)) {
