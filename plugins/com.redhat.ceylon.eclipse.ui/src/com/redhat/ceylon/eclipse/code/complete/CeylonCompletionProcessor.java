@@ -140,7 +140,6 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -272,7 +271,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         }
 
                         @Override
-                        public CompilationUnit getCompilationUnit(
+                        public Tree.CompilationUnit getCompilationUnit(
                                 CeylonParseController cmp) {
                             // TODO Auto-generated method stub
                             return null;
@@ -322,7 +321,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         public ICompletionProposal newNamedArgumentProposal(
                                 long arg0, String arg1,
                                 CeylonParseController arg2,
-                                CompilationUnit arg3, Declaration arg4,
+                                Tree.CompilationUnit arg3, Declaration arg4,
                                 Scope arg5) {
                             // TODO Auto-generated method stub
                             return null;
