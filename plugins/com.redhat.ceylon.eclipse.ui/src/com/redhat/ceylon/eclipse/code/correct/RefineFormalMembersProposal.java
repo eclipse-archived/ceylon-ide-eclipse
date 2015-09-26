@@ -157,8 +157,10 @@ class RefineFormalMembersProposal
             }
         }
         else {
-            //TODO run a visitor to find the containing body!
-            return; //TODO popup error dialog
+            return;
+        }
+        if (body==null) {
+            return;
         }
         boolean isInterface = 
                 body instanceof Tree.InterfaceBody;
@@ -303,7 +305,10 @@ class RefineFormalMembersProposal
                 ClassOrInterface ci = 
                         (ClassOrInterface) scope;
                 String name = ci.getName();
-                if (name.startsWith("anonymous#")) {
+                if (name==null) {
+                    return;
+                }
+                else if (name.startsWith("anonymous#")) {
                     name = "anonymous class";
                 }
                 else {
