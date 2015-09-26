@@ -137,6 +137,7 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -1010,14 +1011,14 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         
         List<ICompletionProposal> result = 
                 new ArrayList<ICompletionProposal>();
-        CompilationUnit rootNode = controller.getTypecheckedRootNode();
+        Tree.CompilationUnit rootNode = 
+                controller.getTypecheckedRootNode();
         if (rootNode == null) {
             return result.toArray(NO_COMPLETIONS);
         }
         OccurrenceLocation ol = 
                 getOccurrenceLocation(rootNode, node, offset);
         Unit unit = node.getUnit();
-        
         if (node instanceof Tree.Term) {
             addParametersProposal(offset, node, result);
         }
@@ -1281,6 +1282,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                             result, dwp.getDeclaration(), doc);
                 }
             }
+        }
+        if (previousTokenType==CeylonLexer.OBJECT_DEFINITION) {
+            addKeywordProposals(controller, offset, prefix, 
+                        result, node, ol, false, tokenType);
         }
         return result.toArray(NO_COMPLETIONS);
     }
