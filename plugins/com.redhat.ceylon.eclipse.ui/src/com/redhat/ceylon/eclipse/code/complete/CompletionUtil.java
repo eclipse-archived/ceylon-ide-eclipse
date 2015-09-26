@@ -144,6 +144,11 @@ public class CompletionUtil {
 
     public static List<DeclarationWithProximity> 
     getSortedProposedValues(Scope scope, Unit unit) {
+        return getSortedProposedValues(scope, unit, null);
+    }
+    public static List<DeclarationWithProximity> 
+    getSortedProposedValues(Scope scope, Unit unit, 
+            final String exactName) {
         Collection<DeclarationWithProximity> suggestions = 
                 scope.getMatchingDeclarations(unit, "", 0)
                     .values();
@@ -155,16 +160,32 @@ public class CompletionUtil {
             public int compare(
                     DeclarationWithProximity x, 
                     DeclarationWithProximity y) {
-                int p = x.getProximity()-y.getProximity();
+                String xname = x.getName();
+                String yname = y.getName();
+                if (exactName!=null) {
+                    boolean xhit = 
+                            xname.equals(exactName);
+                    boolean yhit = 
+                            yname.equals(exactName);
+                    if (xhit && !yhit) {
+                        return -1;
+                    }
+                    if (yhit && !xhit) {
+                        return 1;
+                    }
+                }
+                int xp = x.getProximity();
+                int yp = y.getProximity();
+                int p = xp-yp;
                 if (p!=0) {
                     return p;
                 }
-                Declaration xd = x.getDeclaration();
-                Declaration yd = y.getDeclaration();
-                int c = xd.getName().compareTo(yd.getName());
+                int c = xname.compareTo(yname);
                 if (c!=0) {
                     return c;  
                 }
+                Declaration xd = x.getDeclaration();
+                Declaration yd = y.getDeclaration();
                 return xd.getQualifiedNameString()
                         .compareTo(yd.getQualifiedNameString());
             }

@@ -953,22 +953,24 @@ class InvocationCompletionProposal extends CompletionProposal {
     }
 
     private void addValueArgumentProposals(
-            Parameter p, int loc, int first, 
+            Parameter param, int loc, int first, 
             List<ICompletionProposal> props, 
             int index, boolean last) {
-        if (p.getModel().isDynamicallyTyped()) {
+        if (param.getModel().isDynamicallyTyped()) {
             return;
         }
         Type type = 
-                producedReference.getTypedParameter(p)
+                producedReference.getTypedParameter(param)
                     .getType();
         if (type==null) return;
         Unit unit = getUnit();
+        String exactName = param.getName();
         List<DeclarationWithProximity> proposals = 
-                getSortedProposedValues(scope, unit);
+                getSortedProposedValues(scope, unit, exactName);
         for (DeclarationWithProximity dwp: proposals) {
-            if (dwp.getProximity()<=1) {
-                addValueArgumentProposal(p, loc, props, index, last,
+            if (dwp.getProximity()<=1 || 
+                    dwp.getName().equals(exactName)) {
+                addValueArgumentProposal(param, loc, props, index, last,
                         type, unit, dwp, null);
             }
         }
@@ -979,7 +981,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
         for (DeclarationWithProximity dwp: proposals) {
             if (dwp.getProximity()>1) {
-                addValueArgumentProposal(p, loc, props, index, last,
+                addValueArgumentProposal(param, loc, props, index, last,
                         type, unit, dwp, null);
             }
         }

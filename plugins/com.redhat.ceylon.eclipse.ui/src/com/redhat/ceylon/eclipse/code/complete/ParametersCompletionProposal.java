@@ -682,7 +682,8 @@ class ParametersCompletionProposal extends CompletionProposal {
             final List<ICompletionProposal> result) {
         if (!(node instanceof Tree.StaticMemberOrTypeExpression) || 
                 !(((Tree.StaticMemberOrTypeExpression) node).getDeclaration() instanceof Functional)) {
-            Type type = ((Tree.Term) node).getTypeModel();
+            Tree.Term term = (Tree.Term) node;
+            Type type = term.getTypeModel();
             Unit unit = node.getUnit();
             if (type!=null) {
                 TypeDeclaration td = type.getDeclaration();
