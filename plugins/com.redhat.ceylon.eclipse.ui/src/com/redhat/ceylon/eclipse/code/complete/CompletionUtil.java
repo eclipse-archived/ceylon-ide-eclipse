@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -163,10 +164,16 @@ public class CompletionUtil {
                 String xname = x.getName();
                 String yname = y.getName();
                 if (exactName!=null) {
-                    boolean xhit = 
-                            xname.equals(exactName);
-                    boolean yhit = 
-                            yname.equals(exactName);
+                    boolean xhit = xname.equals(exactName);
+                    boolean yhit = yname.equals(exactName);
+                    if (xhit && !yhit) {
+                        return -1;
+                    }
+                    if (yhit && !xhit) {
+                        return 1;
+                    }
+                    xhit = isNameMatching(xname, exactName);
+                    yhit = isNameMatching(xname, exactName);
                     if (xhit && !yhit) {
                         return -1;
                     }
