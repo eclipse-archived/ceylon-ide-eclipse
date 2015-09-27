@@ -3,12 +3,12 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
@@ -28,6 +28,7 @@ import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -41,12 +42,9 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 public class CompletionUtil {
 
     public static List<Declaration> overloads(Declaration dec) {
-        if (dec.isAbstraction()) {
-            return dec.getOverloads();
-        }
-        else {
-            return Collections.singletonList(dec);
-        }
+        return dec.isAbstraction() ? 
+                dec.getOverloads() : 
+                singletonList(dec);
     }
 
     static List<Parameter> getParameters(ParameterList pl,
@@ -56,7 +54,8 @@ public class CompletionUtil {
             return ps;
         }
         else {
-            List<Parameter> list = new ArrayList<Parameter>();
+            List<Parameter> list = 
+                    new ArrayList<Parameter>();
             for (Parameter p: ps) {
                 if (!p.isDefaulted() || 
                         (namedInvocation && 
@@ -64,7 +63,8 @@ public class CompletionUtil {
                                 p.getModel() instanceof Value &&
                                 p.getType()!=null &&
                                 p.getDeclaration().getUnit()
-                                        .isIterableParameterType(p.getType()))) {
+                                        .isIterableParameterType(
+                                                p.getType()))) {
                     list.add(p);
                 }
             }
@@ -76,41 +76,65 @@ public class CompletionUtil {
             Tree.ImportPath path) {
         StringBuilder fullPath = new StringBuilder();
         if (path!=null) {
-            fullPath.append(formatPath(path.getIdentifiers()));
-            fullPath.append('.');
-            fullPath.setLength(offset-path.getStartIndex()-prefix.length());
+            String pathString = 
+                    formatPath(path.getIdentifiers());
+            fullPath.append(pathString)
+                    .append('.');
+            int len = 
+                    offset
+                        -path.getStartIndex()
+                        -prefix.length();
+            fullPath.setLength(len);
         }
         return fullPath.toString();
     }
 
     static boolean isPackageDescriptor(CeylonParseController cpc) {
-        return cpc.getLastCompilationUnit() != null && 
-                cpc.getLastCompilationUnit().getUnit() != null &&
-                cpc.getLastCompilationUnit().getUnit().getFilename().equals("package.ceylon"); 
+        Tree.CompilationUnit lcu = 
+                cpc.getLastCompilationUnit();
+        return lcu != null && 
+                lcu.getUnit() != null &&
+                lcu.getUnit()
+                    .getFilename()
+                    .equals("package.ceylon"); 
     }
 
     static boolean isModuleDescriptor(CeylonParseController cpc) {
-        return cpc.getLastCompilationUnit() != null && 
-                cpc.getLastCompilationUnit().getUnit() != null &&
-                cpc.getLastCompilationUnit().getUnit().getFilename().equals("module.ceylon"); 
+        Tree.CompilationUnit lcu = 
+                cpc.getLastCompilationUnit();
+        return lcu != null && 
+                lcu.getUnit() != null &&
+                lcu.getUnit()
+                    .getFilename()
+                    .equals("module.ceylon"); 
     }
 
     static boolean isEmptyModuleDescriptor(CeylonParseController cpc) {
+        Tree.CompilationUnit lcu = 
+                cpc.getLastCompilationUnit();
         return isModuleDescriptor(cpc) && 
-                cpc.getLastCompilationUnit() != null && 
-                cpc.getLastCompilationUnit().getModuleDescriptors().isEmpty(); 
+                lcu != null && 
+                lcu.getModuleDescriptors()
+                    .isEmpty(); 
     }
 
     static boolean isEmptyPackageDescriptor(CeylonParseController cpc) {
-        return cpc.getLastCompilationUnit() != null &&
-                cpc.getLastCompilationUnit().getUnit() != null &&
-                cpc.getLastCompilationUnit().getUnit().getFilename().equals("package.ceylon") && 
-                cpc.getLastCompilationUnit().getPackageDescriptors().isEmpty();
+        Tree.CompilationUnit lcu = 
+                cpc.getLastCompilationUnit();
+        return lcu != null &&
+                lcu.getUnit() != null &&
+                lcu.getUnit()
+                    .getFilename()
+                    .equals("package.ceylon") && 
+                lcu.getPackageDescriptors()
+                    .isEmpty();
     }
 
     static int nextTokenType(final CeylonParseController cpc,
             final CommonToken token) {
-        for (int i=token.getTokenIndex()+1; i<cpc.getTokens().size(); i++) {
+        for (int i=token.getTokenIndex()+1; 
+                i<cpc.getTokens().size(); 
+                i++) {
             CommonToken tok = cpc.getTokens().get(i);
             if (tok.getChannel()!=CommonToken.HIDDEN_CHANNEL) {
                 return tok.getType();
@@ -135,7 +159,8 @@ public class CompletionUtil {
         for (Type ub: upperBounds) {
             if (!t.isSubtypeOf(ub) &&
                     !(ub.involvesTypeParameters() &&
-                            t.getDeclaration().inherits(ub.getDeclaration()))) {
+                            t.getDeclaration()
+                                .inherits(ub.getDeclaration()))) {
                 ok = false;
                 break;
             }
@@ -157,55 +182,15 @@ public class CompletionUtil {
                 new ArrayList<DeclarationWithProximity>(
                         suggestions);
         Collections.sort(results, 
-                new Comparator<DeclarationWithProximity>() {
-            public int compare(
-                    DeclarationWithProximity x, 
-                    DeclarationWithProximity y) {
-                String xname = x.getName();
-                String yname = y.getName();
-                if (exactName!=null) {
-                    boolean xhit = xname.equals(exactName);
-                    boolean yhit = yname.equals(exactName);
-                    if (xhit && !yhit) {
-                        return -1;
-                    }
-                    if (yhit && !xhit) {
-                        return 1;
-                    }
-                    xhit = isNameMatching(xname, exactName);
-                    yhit = isNameMatching(xname, exactName);
-                    if (xhit && !yhit) {
-                        return -1;
-                    }
-                    if (yhit && !xhit) {
-                        return 1;
-                    }
-                }
-                int xp = x.getProximity();
-                int yp = y.getProximity();
-                int p = xp-yp;
-                if (p!=0) {
-                    return p;
-                }
-                int c = xname.compareTo(yname);
-                if (c!=0) {
-                    return c;  
-                }
-                Declaration xd = x.getDeclaration();
-                Declaration yd = y.getDeclaration();
-                return xd.getQualifiedNameString()
-                        .compareTo(yd.getQualifiedNameString());
-            }
-        });
+                new ArgumentProposalComparator(exactName));
         return results;
     }
 
     public static boolean isIgnoredLanguageModuleClass(Class clazz) {
-        String name = clazz.getName();
-        return name.equals("String") ||
-                name.equals("Integer") ||
-                name.equals("Float") ||
-                name.equals("Character") ||
+        return clazz.isString() ||
+                clazz.isInteger() ||
+                clazz.isFloat() ||
+                clazz.isCharacter() ||
                 clazz.isAnnotation();
     }
 
@@ -234,48 +219,56 @@ public class CompletionUtil {
     }
 
     static boolean isIgnoredLanguageModuleType(TypeDeclaration td) {
-        String name = td.getName();
-        return !name.equals("Object") && 
-                !name.equals("Anything") &&
-                !name.equals("String") &&
-                !name.equals("Integer") &&
-                !name.equals("Character") &&
-                !name.equals("Float") &&
-                !name.equals("Boolean");
+        return !td.isObject() && 
+                !td.isAnything() &&
+                !td.isString() &&
+                !td.isInteger() &&
+                !td.isCharacter() &&
+                !td.isFloat() &&
+                !td.isBoolean();
     }
 
-    public static String getInitialValueDescription(final Declaration dec, 
+    public static String getInitialValueDescription(
+            final Declaration dec, 
             CeylonParseController cpc) {
         if (cpc!=null) {
-            Node refnode = Nodes.getReferencedNode(dec);
+            Node refnode = getReferencedNode(dec);
             Tree.SpecifierOrInitializerExpression sie = null;
             String arrow = null;
             if (refnode instanceof Tree.AttributeDeclaration) {
                 Tree.AttributeDeclaration ad = 
-                        (Tree.AttributeDeclaration) refnode;
+                        (Tree.AttributeDeclaration) 
+                            refnode;
                 sie = ad.getSpecifierOrInitializerExpression();
                 arrow = " = ";
             }
             else if (refnode instanceof Tree.MethodDeclaration) {
                 Tree.MethodDeclaration md =
-                        (Tree.MethodDeclaration) refnode;
+                        (Tree.MethodDeclaration) 
+                            refnode;
                 sie = md.getSpecifierExpression();
                 arrow = " => ";
             }
+            Tree.CompilationUnit lcu = 
+                    cpc.getLastCompilationUnit();
             if (sie==null) {
                 class FindInitializerVisitor extends Visitor {
                     Tree.SpecifierOrInitializerExpression result;
                     @Override
-                    public void visit(Tree.InitializerParameter that) {
+                    public void visit(
+                            Tree.InitializerParameter that) {
                         super.visit(that);
-                        Declaration d = that.getParameterModel().getModel();
+                        Declaration d = 
+                                that.getParameterModel()
+                                    .getModel();
                         if (d!=null && d.equals(dec)) {
                             result = that.getSpecifierExpression();
                         }
                     }
                 }
-                FindInitializerVisitor fiv = new FindInitializerVisitor();
-                fiv.visit(cpc.getLastCompilationUnit());
+                FindInitializerVisitor fiv = 
+                        new FindInitializerVisitor();
+                fiv.visit(lcu);
                 sie = fiv.result;
             }
             if (sie!=null) {
@@ -283,21 +276,28 @@ public class CompletionUtil {
                 if (e!=null) {
                     Tree.Term term = e.getTerm();
                     if (term instanceof Tree.Literal) {
-                        String text = term.getToken().getText();
+                        String text = 
+                                term.getToken()
+                                    .getText();
                         if (text.length()<20) {
                             return arrow + text;
                         }
                     }
                     else if (term instanceof Tree.BaseMemberOrTypeExpression) {
                         Tree.BaseMemberOrTypeExpression bme = 
-                                (Tree.BaseMemberOrTypeExpression) term;
+                                (Tree.BaseMemberOrTypeExpression) 
+                                    term;
                         Tree.Identifier id = bme.getIdentifier();
-                        if (id!=null && bme.getTypeArguments()==null) {
+                        if (id!=null && 
+                                bme.getTypeArguments()==null) {
                             return arrow + id.getText();
                         }
                     }
-                    else if (term.getUnit().equals(cpc.getLastCompilationUnit().getUnit())) {
-                        String impl = Nodes.toString(term, cpc.getTokens());
+                    else if (term.getUnit()
+                                .equals(lcu.getUnit())) {
+                        String impl = 
+                                Nodes.toString(term, 
+                                        cpc.getTokens());
                         if (impl.length()<10) {
                             return arrow + impl;
                         }
@@ -311,14 +311,15 @@ public class CompletionUtil {
         return "";
     }
 
-    public static String getDefaultValueDescription(Parameter p, 
-            CeylonParseController cpc) {
-        if (p.isDefaulted()) {
-            if (p.getModel() instanceof Functional) {
+    public static String getDefaultValueDescription(
+            Parameter param, CeylonParseController cpc) {
+        if (param.isDefaulted()) {
+            FunctionOrValue model = param.getModel();
+            if (model instanceof Functional) {
                 return " => ...";
             }
             else {
-                return getInitialValueDescription(p.getModel(), cpc);
+                return getInitialValueDescription(model, cpc);
             }
         }
         else {
@@ -326,14 +327,15 @@ public class CompletionUtil {
         }
     }
 
-    static String anonFunctionHeader(Type requiredType,
-            Unit unit) {
+    static String anonFunctionHeader(
+            Type requiredType, Unit unit) {
         StringBuilder text = new StringBuilder();
         text.append("(");
         boolean first = true;
         char c = 'a';
-        for (Type paramType: 
-                unit.getCallableArgumentTypes(requiredType)) {
+        List<Type> argTypes = 
+                unit.getCallableArgumentTypes(requiredType);
+        for (Type paramType: argTypes) {
             if (first) {
                 first = false;
             }
@@ -427,24 +429,25 @@ public class CompletionUtil {
         return new Region(offset, nextOffset-offset);
     }
     
-    public static String[] getAssignableLiterals(Type type, Unit unit) {
+    public static String[] getAssignableLiterals(
+            Type type, Unit unit) {
         TypeDeclaration dtd = 
                 unit.getDefiniteType(type)
                     .getDeclaration();
         if (dtd instanceof Class) {
-            if (dtd.equals(unit.getIntegerDeclaration())) {
+            if (dtd.isInteger()) {
                 return new String[] { "0", "1", "2" };
             }
-            if (dtd.equals(unit.getByteDeclaration())) {
+            if (dtd.isByte()) {
                 return new String[] { "0.byte", "1.byte" };
             }
-            else if (dtd.equals(unit.getFloatDeclaration())) {
+            else if (dtd.isFloat()) {
                 return new String[] { "0.0", "1.0", "2.0" };
             }
-            else if (dtd.equals(unit.getStringDeclaration())) {
+            else if (dtd.isString()) {
                 return new String[] { "\"\"" };
             }
-            else if (dtd.equals(unit.getCharacterDeclaration())) {
+            else if (dtd.isCharacter()) {
                 return new String[] { "' '", "'\\n'", "'\\t'" };
             }
             else {
@@ -452,11 +455,10 @@ public class CompletionUtil {
             }
         }
         else if (dtd instanceof Interface) {
-            if (dtd.equals(unit.getIterableDeclaration())) {
+            if (dtd.isIterable()) {
                 return new String[] { "{}" };
             }
-            else if (dtd.equals(unit.getSequentialDeclaration()) ||
-                dtd.equals(unit.getEmptyDeclaration())) {
+            else if (dtd.isSequential() || dtd.isEmpty()) {
                 return new String[] { "[]" };
             }
             else {
