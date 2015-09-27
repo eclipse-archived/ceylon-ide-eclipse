@@ -533,7 +533,9 @@ class ParametersCompletionProposal extends CompletionProposal {
             Type type, final int loc, int first, 
             List<ICompletionProposal> props, 
             int index) {
-        if (type==null) return;
+        if (type==null) {
+            return;
+        }
         Unit unit = getUnit();
         List<DeclarationWithProximity> proposals = 
                 getSortedProposedValues(scope, unit);
@@ -681,7 +683,9 @@ class ParametersCompletionProposal extends CompletionProposal {
             final int offset, Node node,
             final List<ICompletionProposal> result) {
         if (!(node instanceof Tree.StaticMemberOrTypeExpression) || 
-                !(((Tree.StaticMemberOrTypeExpression) node).getDeclaration() instanceof Functional)) {
+                !(((Tree.StaticMemberOrTypeExpression) node)
+                        .getDeclaration() 
+                            instanceof Functional)) {
             Tree.Term term = (Tree.Term) node;
             Type type = term.getTypeModel();
             Unit unit = node.getUnit();

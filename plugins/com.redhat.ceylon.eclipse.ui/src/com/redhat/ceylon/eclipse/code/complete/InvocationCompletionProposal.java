@@ -261,7 +261,9 @@ class InvocationCompletionProposal extends CompletionProposal {
             Scope scope, OccurrenceLocation ol, 
             String typeArgs, boolean isMember) {
         if (dec instanceof Functional) {
-            Unit unit = controller.getLastCompilationUnit().getUnit();
+            Unit unit = 
+                    controller.getLastCompilationUnit()
+                        .getUnit();
             boolean isAbstract = 
                     dec instanceof TypeDeclaration && 
                     ((TypeDeclaration) dec).isAbstract();
@@ -962,27 +964,32 @@ class InvocationCompletionProposal extends CompletionProposal {
         Type type = 
                 producedReference.getTypedParameter(param)
                     .getType();
-        if (type==null) return;
+        if (type==null) {
+            return;
+        }
         Unit unit = getUnit();
         String exactName = param.getName();
         List<DeclarationWithProximity> proposals = 
-                getSortedProposedValues(scope, unit, exactName);
+                getSortedProposedValues(scope, unit, 
+                        exactName);
+        //stuff defined in the same block, along with
+        //stuff with fuzzily-matching name 
         for (DeclarationWithProximity dwp: proposals) {
-            if (dwp.getProximity()<=1 || 
-                    dwp.getName().equals(exactName)) {
-                addValueArgumentProposal(param, loc, props, index, last,
-                        type, unit, dwp, null);
+            if (dwp.getProximity()<=1) {
+                addValueArgumentProposal(param, loc, props, 
+                        index, last, type, unit, dwp, null);
             }
         }
-        for (String value: 
-                getAssignableLiterals(type, unit)) {
+        //literals
+        for (String value: getAssignableLiterals(type, unit)) {
             props.add(new NestedLiteralCompletionProposal(
                         value, loc, index));
         }
+        //stuff with lower proximity
         for (DeclarationWithProximity dwp: proposals) {
             if (dwp.getProximity()>1) {
-                addValueArgumentProposal(param, loc, props, index, last,
-                        type, unit, dwp, null);
+                addValueArgumentProposal(param, loc, props, 
+                        index, last, type, unit, dwp, null);
             }
         }
     }
@@ -1024,9 +1031,11 @@ class InvocationCompletionProposal extends CompletionProposal {
                     boolean isVarArg = 
                             p.isSequenced() && 
                             positionalInvocation;
+                    String op = 
+                            isIterArg || isVarArg ? 
+                                    "*" : "";
                     props.add(new NestedCompletionProposal(
-                            d, qdec, loc, index, false, 
-                            isIterArg || isVarArg ? "*" : ""));
+                            d, qdec, loc, index, false, op));
                 }
                 if (qualifier==null && 
                         getPreferences()
@@ -1060,9 +1069,11 @@ class InvocationCompletionProposal extends CompletionProposal {
                         boolean isVarArg = 
                                 p.isSequenced() && 
                                 positionalInvocation;
+                        String op = 
+                                isIterArg || isVarArg ? 
+                                        "*" : "";
                         props.add(new NestedCompletionProposal(
-                                d, qdec, loc, index, false, 
-                                isIterArg || isVarArg ? "*" : ""));
+                                d, qdec, loc, index, false, op));
                     }
                 }
             }
@@ -1085,18 +1096,19 @@ class InvocationCompletionProposal extends CompletionProposal {
                     boolean isVarArg = 
                             p.isSequenced() && 
                             positionalInvocation;
+                    String op = 
+                            isIterArg || isVarArg ? 
+                                    "*" : "";
                     if (clazz.getParameterList()!=null) {
                         props.add(new NestedCompletionProposal(
-                                d, qdec, loc, index, false, 
-                                isIterArg || isVarArg ? "*" : ""));
+                                d, qdec, loc, index, false, op));
                     }
                     for (Declaration m: clazz.getMembers()) {
                         if (m instanceof Constructor && 
                                 m.isShared() &&
                                 m.getName()!=null) {
                             props.add(new NestedCompletionProposal(
-                                    m, qdec, loc, index, false, 
-                                    isIterArg || isVarArg ? "*" : ""));
+                                    m, qdec, loc, index, false, op));
                         }
                     }
                 }

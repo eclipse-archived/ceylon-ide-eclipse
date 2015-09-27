@@ -4,12 +4,13 @@ import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.text.BadLocationException;
@@ -186,12 +187,23 @@ public class CompletionUtil {
     public static List<DeclarationWithProximity> 
     getSortedProposedValues(Scope scope, Unit unit, 
             final String exactName) {
-        Collection<DeclarationWithProximity> suggestions = 
-                scope.getMatchingDeclarations(unit, "", 0)
-                    .values();
+        Map<String, DeclarationWithProximity> map = 
+                scope.getMatchingDeclarations(unit, "", 0);
+        if (exactName!=null) {
+            for (DeclarationWithProximity dwp: map.values()) {
+                if (!dwp.isUnimported() && 
+                    !dwp.isAlias() &&
+                        isNameMatching(dwp.getName(), 
+                                exactName)) {
+                    map.put(dwp.getName(), 
+                            new DeclarationWithProximity(
+                                    dwp.getDeclaration(), -5));
+                }
+            }
+        }
         List<DeclarationWithProximity> results = 
                 new ArrayList<DeclarationWithProximity>(
-                        suggestions);
+                        map.values());
         Collections.sort(results, 
                 new ArgumentProposalComparator(exactName));
         return results;
