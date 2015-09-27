@@ -5,10 +5,9 @@ import static java.lang.Character.isUpperCase;
 
 import java.util.Comparator;
 
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
 final class ProposalComparator 
         implements Comparator<DeclarationWithProximity> {
@@ -20,9 +19,11 @@ final class ProposalComparator
         this.type = type;
     }
 
-    public int compare(DeclarationWithProximity x, DeclarationWithProximity y) {
+    public int compare(
+            DeclarationWithProximity x, 
+            DeclarationWithProximity y) {
         try {
-            boolean xbt = x.getDeclaration() instanceof NothingType;
+            /*boolean xbt = x.getDeclaration() instanceof NothingType;
             boolean ybt = y.getDeclaration() instanceof NothingType;
             if (xbt&&ybt) {
                 return 0;
@@ -32,23 +33,18 @@ final class ProposalComparator
             }
             if (ybt&&!xbt) {
                 return -1;
-            }
-            Type xtype = getResultType(x.getDeclaration());
-            Type ytype = getResultType(y.getDeclaration());
-            boolean xbottom = xtype!=null && xtype.isNothing();
-            boolean ybottom = ytype!=null && ytype.isNothing();
-            if (xbottom && !ybottom) {
-                return 1;
-            }
-            if (ybottom && !xbottom) {
-                return -1;
-            }
+            }*/
             String xName = x.getName();
             String yName = y.getName();
-            boolean yUpperCase = isUpperCase(yName.codePointAt(0));
-            boolean xUpperCase = isUpperCase(xName.codePointAt(0));
+            boolean yUpperCase = 
+                    isUpperCase(yName.codePointAt(0));
+            boolean xUpperCase = 
+                    isUpperCase(xName.codePointAt(0));
             if (!prefix.isEmpty()) {
-                boolean upperCasePrefix = isUpperCase(prefix.codePointAt(0));
+                //proposals which match the case of the
+                //typed prefix first
+                boolean upperCasePrefix = 
+                        isUpperCase(prefix.codePointAt(0));
                 if (!xUpperCase && yUpperCase) {
                     return upperCasePrefix ? 1 : -1;
                 }
@@ -56,9 +52,17 @@ final class ProposalComparator
                     return upperCasePrefix ? -1 : 1;
                 }
             }
+            Declaration xd = x.getDeclaration();
+            Declaration yd = y.getDeclaration();
             if (type!=null) {
-                boolean xassigns = xtype!=null && xtype.isSubtypeOf(type);
-                boolean yassigns = ytype!=null && ytype.isSubtypeOf(type);
+                Type xtype = getResultType(xd);
+                Type ytype = getResultType(yd);
+                boolean xassigns = 
+                        xtype!=null && 
+                        xtype.isSubtypeOf(type);
+                boolean yassigns = 
+                        ytype!=null && 
+                        ytype.isSubtypeOf(type);
                 if (xassigns && !yassigns) {
                     return -1;
                 }
@@ -66,20 +70,41 @@ final class ProposalComparator
                     return 1;
                 }
                 if (xassigns && yassigns) {
-                    boolean xtd = x.getDeclaration() instanceof TypedDeclaration;
-                    boolean ytd = y.getDeclaration() instanceof TypedDeclaration;
+                    //both are assignable - prefer the
+                    //one which isn't assignable to
+                    //*everything*
+                    boolean xbottom = 
+                            xtype!=null && 
+                            xtype.isNothing();
+                    boolean ybottom = 
+                            ytype!=null && 
+                            ytype.isNothing();
+                    if (xbottom && !ybottom) {
+                        return 1;
+                    }
+                    if (ybottom && !xbottom) {
+                        return -1;
+                    }
+                    /*boolean xtd = 
+                            x.getDeclaration() 
+                                instanceof TypedDeclaration;
+                    boolean ytd = 
+                            y.getDeclaration() 
+                                instanceof TypedDeclaration;
                     if (xtd && !ytd) {
                         return -1;
                     }
                     if (ytd && !xtd) {
                         return 1;
-                    }
+                    }*/
                 }
             }
-            if (x.getProximity()!=y.getProximity()) {
-                return new Integer(x.getProximity()).compareTo(y.getProximity());
+            int pc = Integer.compare(x.getProximity(), 
+                                     y.getProximity());
+            if (pc!=0) {
+                return pc;
             }
-            //if (!prefix.isEmpty() && isLowerCase(prefix.charAt(0))) {
+            //lowercase proposals first if no prefix
             if (!xUpperCase && yUpperCase) {
                 return -1;
             }
@@ -87,14 +112,12 @@ final class ProposalComparator
                 return 1;
             }
             int nc = xName.compareTo(yName);
-            if (nc==0) {
-                String xqn = x.getDeclaration().getQualifiedNameString();
-                String yqn = y.getDeclaration().getQualifiedNameString();
-                return xqn.compareTo(yqn);
-            }
-            else {
+            if (nc!=0) {
                 return nc;
             }
+            String xqn = xd.getQualifiedNameString();
+            String yqn = yd.getQualifiedNameString();
+            return xqn.compareTo(yqn);
         }
         catch (Exception e) {
             e.printStackTrace();
