@@ -7,13 +7,15 @@ import java.util.Comparator;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 
-final class ArgumentProposalComparator implements Comparator<DeclarationWithProximity> {
+final class ArgumentProposalComparator 
+        implements Comparator<DeclarationWithProximity> {
     private final String exactName;
 
     ArgumentProposalComparator(String exactName) {
         this.exactName = exactName;
     }
-
+    
+    @Override
     public int compare(
             DeclarationWithProximity x, 
             DeclarationWithProximity y) {
