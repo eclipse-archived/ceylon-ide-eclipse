@@ -15,6 +15,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddConstructorProposal.addConstructorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddPunctuationProposal.addEmptyParameterListProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddPunctuationProposal.addImportWildcardProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddInitializerProposal.addInitializerProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterListProposal.addParameterListProposal;
@@ -733,7 +734,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addChangeDeclarationProposal(problem, file, proposals, node);
             break;
         case 1020:
-            AddPunctuationProposal.addImportWildcardProposal(file, proposals, node);
+            addImportWildcardProposal(file, proposals, node);
             break;
         case 1050:
             addFixAliasProposal(proposals, file, problem);

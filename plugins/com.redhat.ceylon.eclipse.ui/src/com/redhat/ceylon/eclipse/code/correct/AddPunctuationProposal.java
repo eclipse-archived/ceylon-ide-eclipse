@@ -47,20 +47,22 @@ class AddPunctuationProposal extends CorrectionProposal {
     static void addImportWildcardProposal(IFile file,
             Collection<ICompletionProposal> proposals, 
             Node node) {
-        Tree.ImportMemberOrTypeList imtl = 
-                (Tree.ImportMemberOrTypeList) node;
-        TextFileChange change = 
-                new TextFileChange(
-                        "Add Import Wildcard", 
-                        file);
-        int offset = imtl.getStartIndex();
-        int length = imtl.getDistance();
-        change.setEdit(new ReplaceEdit(
-                offset, length, 
-                "{ ... }"));
-        proposals.add(new AddPunctuationProposal(
-                offset+2, 3, 
-                "Add '...' import wildcard", 
-                change));
+        if (node instanceof Tree.ImportMemberOrTypeList) {
+            Tree.ImportMemberOrTypeList imtl = 
+                    (Tree.ImportMemberOrTypeList) node;
+            TextFileChange change = 
+                    new TextFileChange(
+                            "Add Import Wildcard", 
+                            file);
+            int offset = imtl.getStartIndex();
+            int length = imtl.getDistance();
+            change.setEdit(new ReplaceEdit(
+                    offset, length, 
+                    "{ ... }"));
+            proposals.add(new AddPunctuationProposal(
+                    offset+2, 3, 
+                    "Add '...' import wildcard", 
+                    change));
+        }
     }
 }
