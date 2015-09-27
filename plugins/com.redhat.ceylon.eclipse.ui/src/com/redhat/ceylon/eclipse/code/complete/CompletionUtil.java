@@ -130,8 +130,8 @@ public class CompletionUtil {
                     .isEmpty();
     }
 
-    static int nextTokenType(final CeylonParseController cpc,
-            final CommonToken token) {
+    static int nextTokenType(CeylonParseController cpc,
+            CommonToken token) {
         for (int i=token.getTokenIndex()+1; 
                 i<cpc.getTokens().size(); 
                 i++) {
