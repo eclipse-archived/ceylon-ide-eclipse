@@ -59,16 +59,27 @@ public class CompletionUtil {
             for (Parameter p: ps) {
                 if (!p.isDefaulted() || 
                         (namedInvocation && 
-                                p==ps.get(ps.size()-1) && 
-                                p.getModel() instanceof Value &&
-                                p.getType()!=null &&
-                                p.getDeclaration().getUnit()
-                                        .isIterableParameterType(
-                                                p.getType()))) {
+                                spreadable(p, ps))) {
                     list.add(p);
                 }
             }
             return list;
+        }
+    }
+
+    private static boolean spreadable(Parameter param, 
+            List<Parameter> list) {
+        Parameter lastParam = 
+                list.get(list.size()-1);
+        if (param==lastParam &&
+                param.getModel() instanceof Value) {
+            Type type = param.getType();
+            Unit unit = param.getDeclaration().getUnit();
+            return type!=null &&
+                unit.isIterableParameterType(type);
+        }
+        else {
+            return false;
         }
     }
 
