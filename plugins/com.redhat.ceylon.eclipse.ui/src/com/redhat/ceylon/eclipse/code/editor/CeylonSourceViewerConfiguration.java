@@ -165,14 +165,16 @@ public class CeylonSourceViewerConfiguration
     static void configCompletionPopup(
             ContentAssistant contentAssistant) {
         IPreferenceStore preferenceStore = getPreferences();
-        contentAssistant.enableAutoInsert(
-                preferenceStore.getBoolean(AUTO_INSERT));
-        contentAssistant.enableAutoActivation(
-                preferenceStore.getBoolean(AUTO_ACTIVATION));
-        contentAssistant.setAutoActivationDelay(
-                preferenceStore.getInt(AUTO_ACTIVATION_DELAY));
-        contentAssistant.enablePrefixCompletion(
-                preferenceStore.getBoolean(AUTO_INSERT_PREFIX));
+        if (preferenceStore!=null) {
+            contentAssistant.enableAutoInsert(
+                    preferenceStore.getBoolean(AUTO_INSERT));
+            contentAssistant.enableAutoActivation(
+                    preferenceStore.getBoolean(AUTO_ACTIVATION));
+            contentAssistant.setAutoActivationDelay(
+                    preferenceStore.getInt(AUTO_ACTIVATION_DELAY));
+            contentAssistant.enablePrefixCompletion(
+                    preferenceStore.getBoolean(AUTO_INSERT_PREFIX));
+        }
     }
 
     @Override
