@@ -41,9 +41,11 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
  * the vertical ruler.
  *
  */
-public class AdditionalAnnotationCreator implements TreeLifecycleListener {
+public class AdditionalAnnotationCreator 
+        implements TreeLifecycleListener {
     
-    public static final String TODO_ANNOTATION_TYPE = PLUGIN_ID + ".todo";
+    public static final String TODO_ANNOTATION_TYPE = 
+            PLUGIN_ID + ".todo";
 
     private CeylonEditor editor;
     CeylonInitializerAnnotation initializerAnnotation;
@@ -63,7 +65,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     }
     
     @Override
-    public void update(CeylonParseController parseController, 
+    public void update(
+            CeylonParseController parseController, 
             IProgressMonitor monitor) {
         final CeylonParseController cpc = parseController;
         if (cpc.getStage().ordinal() >= getStage().ordinal()) {
@@ -98,11 +101,14 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                 @Override
                 public void visit(Tree.Declaration that) {
                     super.visit(that);
-                    Declaration dec = that.getDeclarationModel();
+                    Declaration dec = 
+                            that.getDeclarationModel();
                     if (dec!=null) {
                         if (dec.isActual()) {
-                            addRefinementAnnotation(model, that, 
-                                    that.getIdentifier(), dec);
+                            addRefinementAnnotation(
+                                    model, that, 
+                                    that.getIdentifier(), 
+                                    dec);
                         }
                     }
                 }
@@ -110,10 +116,12 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                 public void visit(Tree.SpecifierStatement that) {
                     super.visit(that);
                     if (that.getRefinement()) {
-                        Declaration dec = that.getDeclaration();
+                        Declaration dec = 
+                                that.getDeclaration();
                         if (dec!=null) {
                             if (dec.isActual()) {
-                                addRefinementAnnotation(model, that, 
+                                addRefinementAnnotation(
+                                        model, that, 
                                         that.getBaseMemberExpression(), 
                                         dec);
                             }
@@ -221,7 +229,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                             refined, line);
             Node identifyingNode = getIdentifyingNode(that);
             model.addAnnotation(ra, 
-                    new Position(identifyingNode.getStartIndex(), 
+                    new Position(
+                            identifyingNode.getStartIndex(), 
                             identifyingNode.getDistance()));
         }
     }
@@ -231,9 +240,11 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
      * (the blue bar indicating the current containing
      * declaration).
      */
-    class SelectionListener implements ISelectionChangedListener {
+    class SelectionListener 
+            implements ISelectionChangedListener {
         @Override
-        public void selectionChanged(SelectionChangedEvent event) {
+        public void selectionChanged(
+                SelectionChangedEvent event) {
             CeylonParseController cpc = 
                     editor.getParseController();
             Tree.CompilationUnit rootNode = 
@@ -242,11 +253,14 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                 return;
             }
             ITextSelection selection = 
-                    (ITextSelection) event.getSelection();
+                    (ITextSelection) 
+                        event.getSelection();
             Node node = findScope(rootNode, selection);
             if (node!=null) {
-                editor.setHighlightRange(node.getStartIndex(), 
-                        node.getDistance(), false);
+                editor.setHighlightRange(
+                        node.getStartIndex(), 
+                        node.getDistance(), 
+                        false);
             }
             else {
                 editor.resetHighlightRange();
