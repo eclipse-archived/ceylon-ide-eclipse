@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.findReferencedNode;
 
 import java.util.Collection;
 
@@ -19,8 +20,12 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.ParameterList;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class ConvertToDefaultConstructorProposal {
 
@@ -49,8 +54,9 @@ public class ConvertToDefaultConstructorProposal {
                 for (Tree.Parameter p: pl.getParameters()) {
                     if (p instanceof Tree.InitializerParameter) {
                         Node pdn = 
-                                Nodes.findReferencedNode(rootNode, 
-                                        p.getParameterModel().getModel());
+                                findReferencedNode(rootNode, 
+                                        p.getParameterModel()
+                                            .getModel());
                         if (pdn!=null) {
                             //the constructor has to come 
                             //after the declarations of the
@@ -60,8 +66,9 @@ public class ConvertToDefaultConstructorProposal {
                     }
                     Parameter model = p.getParameterModel();
                     String attDef = "";
-                    String paramDef = "";
+                    StringBuilder paramDef = new StringBuilder();
                     String pname = model.getName();
+                    Unit unit = cd.getUnit();
                     try {
                         attDef = 
                                 doc.get(p.getStartIndex(), 
@@ -72,16 +79,55 @@ public class ConvertToDefaultConstructorProposal {
                             Tree.TypedDeclaration td = 
                                     pd.getTypedDeclaration();
                             Tree.Type t = td.getType();
-                            paramDef = 
+                            String text = 
                                     doc.get(t.getStartIndex(), 
                                             p.getEndIndex()
                                             - t.getStartIndex());
+                            paramDef.append(text);
+;
+                        }
+                        else if (p instanceof Tree.InitializerParameter) {
+                            Tree.InitializerParameter ip =
+                                    (Tree.InitializerParameter) p;
+                            Type pt = model.getType();
+                            paramDef.append(pt.asString(unit))
+                                    .append(" ")
+                                    .append(pname);
+                            FunctionOrValue dec = model.getModel();
+                            if (dec instanceof Function) {
+                                Function run = (Function) dec;
+                                for (ParameterList npl: 
+                                        run.getParameterLists()) {
+                                    paramDef.append("(");
+                                    boolean first = true;
+                                    for (Parameter np: 
+                                            npl.getParameters()) {
+                                        if (first) {
+                                            first = false;
+                                        }
+                                        else {
+                                            paramDef.append(", ");
+                                        }
+                                        Type npt = np.getType();
+                                        paramDef.append(npt.asString(unit) )
+                                                .append(" ")
+                                                .append(np.getName());
+                                    }
+                                    paramDef.append(")");
+                                }
+                            }
+                            Tree.SpecifierExpression se = 
+                                    ip.getSpecifierExpression();
+                            if (se!=null) {
+                                String text = 
+                                        doc.get(se.getStartIndex(), 
+                                                se.getDistance());
+                                paramDef.append(text);
+                            }
                         }
                         else {
-                            paramDef = 
-                                    model.getType()
-                                        .asString(cd.getUnit()) 
-                                    + " " + pname;
+                            //impossible
+                            return;
                         }
                     }
                     catch (BadLocationException e) {
