@@ -12,7 +12,8 @@ public class RefinementAnnotation extends Annotation {
     private Declaration declaration;
     private int line;
     
-    public RefinementAnnotation(String text, Declaration dec, int line) {
+    public RefinementAnnotation(String text, 
+            Declaration dec, int line) {
         super(PLUGIN_ID + ".refinement", false, text);
         this.declaration = dec;
         this.line = line;
@@ -28,16 +29,6 @@ public class RefinementAnnotation extends Annotation {
     
     public void gotoRefinedDeclaration(CeylonEditor editor) {
         gotoDeclaration(declaration);
-//        Declaration declaration = getDeclaration();
-//        Tree.CompilationUnit rootNode = 
-//		        getCompilationUnit(declaration, 
-//		                editor.getParseController());
-//        if (rootNode!=null) {
-//            gotoNode(getReferencedNodeInUnit(declaration, rootNode));
-//        }
-//        else {
-//            gotoJavaNode(declaration);
-//        }
     }
     
 }

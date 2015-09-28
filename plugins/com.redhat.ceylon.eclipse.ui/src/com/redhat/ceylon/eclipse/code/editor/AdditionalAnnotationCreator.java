@@ -50,8 +50,11 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
     
     public AdditionalAnnotationCreator(CeylonEditor editor) {
         this.editor = editor;
-        ((IPostSelectionProvider) editor.getSelectionProvider())
-                .addPostSelectionChangedListener(new SelectionListener());
+        IPostSelectionProvider psp = 
+                (IPostSelectionProvider) 
+                    editor.getSelectionProvider();
+        psp.addPostSelectionChangedListener(
+                new SelectionListener());
     }
 
     @Override
@@ -64,7 +67,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
             IProgressMonitor monitor) {
         final CeylonParseController cpc = parseController;
         if (cpc.getStage().ordinal() >= getStage().ordinal()) {
-            final Tree.CompilationUnit rootNode = cpc.getLastCompilationUnit();
+            final Tree.CompilationUnit rootNode = 
+                    cpc.getLastCompilationUnit();
             List<CommonToken> tokens = cpc.getTokens();
             if (rootNode == null) {
                 return;
@@ -110,7 +114,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                         if (dec!=null) {
                             if (dec.isActual()) {
                                 addRefinementAnnotation(model, that, 
-                                        that.getBaseMemberExpression(), dec);
+                                        that.getBaseMemberExpression(), 
+                                        dec);
                             }
                         }
                     }
@@ -153,7 +158,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                     if (superMemberDec!=null) {
                         Declaration superRefined = 
                                 superMemberDec.getRefinedDeclaration();
-                        if (superRefined!=null && refined!=null && 
+                        if (superRefined!=null && 
+                            refined!=null && 
                                 !isAbstraction(superMemberDec) && 
                                 superRefined.equals(refined)) {
                             return superMemberDec;
@@ -178,7 +184,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                                     declaration.getContainer(), 
                                 (TypeDeclaration) 
                                     refinedDeclaration.getContainer());
-                directlyInheritedMembers.remove(refinedDeclaration);
+                directlyInheritedMembers.remove(
+                        refinedDeclaration);
                 //TODO: do something for the case of
                 //      multiple intervening interfaces?
                 if (directlyInheritedMembers.size()==1) {
@@ -194,19 +201,24 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
         return null;
     }
     
-    private void addRefinementAnnotation(IAnnotationModel model, 
-            Tree.StatementOrArgument that, Node line, Declaration dec) {
+    private void addRefinementAnnotation(
+            IAnnotationModel model, 
+            Tree.StatementOrArgument that, 
+            Node node, Declaration dec) {
         Declaration refined = getRefinedDeclaration(dec);
         if (refined!=null) {
             Declaration container = 
-                    (Declaration) refined.getContainer();
+                    (Declaration) 
+                        refined.getContainer();
             Unit unit = that.getUnit();
             String description = 
-                    "refines " + container.getName(unit) + 
+                    "refines " + 
+                    container.getName(unit) + 
                     "." + refined.getName(unit);
+            int line = node.getToken().getLine();
             RefinementAnnotation ra = 
                     new RefinementAnnotation(description,  
-                            refined, line.getToken().getLine());
+                            refined, line);
             Node identifyingNode = getIdentifyingNode(that);
             model.addAnnotation(ra, 
                     new Position(identifyingNode.getStartIndex(), 
@@ -224,9 +236,14 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
         public void selectionChanged(SelectionChangedEvent event) {
             CeylonParseController cpc = 
                     editor.getParseController();
-            if (cpc.getLastCompilationUnit()==null) return;
-            Node node = findScope(cpc.getLastCompilationUnit(), 
-                    (ITextSelection) event.getSelection());
+            Tree.CompilationUnit rootNode = 
+                    cpc.getLastCompilationUnit();
+            if (rootNode==null) {
+                return;
+            }
+            ITextSelection selection = 
+                    (ITextSelection) event.getSelection();
+            Node node = findScope(rootNode, selection);
             if (node!=null) {
                 editor.setHighlightRange(node.getStartIndex(), 
                         node.getDistance(), false);
@@ -274,7 +291,8 @@ public class AdditionalAnnotationCreator implements TreeLifecycleListener {
                     that.getClassBody(), 
                     that.getIdentifier().getText());
         }
-        private void createAnnotation(Node that, Tree.ClassBody body, String name) {
+        private void createAnnotation(Node that, 
+                Tree.ClassBody body, String name) {
 //          int offset = editor.getSelection().getOffset();
 //          if (offset>that.getStartIndex()&&offset<that.getStopIndex()) {
             Tree.Statement les = 
