@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 
 import java.util.Collection;
 
@@ -17,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
@@ -29,11 +31,8 @@ class RemoveAnnotionProposal extends CorrectionProposal {
     private final String annotation;
     
     RemoveAnnotionProposal(Declaration dec, String annotation,
-            int offset, TextFileChange change) {
-        super("Make '" + dec.getName() + "' non-" + annotation + " " +
-            (dec.getContainer() instanceof TypeDeclaration ?
-                    "in '" + ((TypeDeclaration) dec.getContainer()).getName() + "'" : ""), 
-                    change, new Region(offset, 0));
+            int offset, String desc, TextFileChange change) {
+        super(desc, change, new Region(offset, 0));
         this.dec = dec;
         this.annotation = annotation;
     }
@@ -153,11 +152,35 @@ class RemoveAnnotionProposal extends CorrectionProposal {
             }
         }
         RemoveAnnotionProposal p = 
-                new RemoveAnnotionProposal(dec,
-                        annotation, offset, change);
+                new RemoveAnnotionProposal(dec, annotation, 
+                        offset, description(annotation, dec), 
+                        change);
         if (!proposals.contains(p)) {
             proposals.add(p);
         }
+    }
+
+    private static String description(
+            String annotation, Declaration dec) {
+        String name = dec.getName();
+        if (name==null) {
+            if (isConstructor(dec)) {
+                name = "default constructor ";
+            }
+            else {
+                name = "";
+            }
+        }
+        else {
+            name = "'" + name + "' ";
+        }
+        String descr = "Make " + name + "non-" + annotation;
+        Scope container = dec.getContainer();
+        if (container instanceof ClassOrInterface) {
+            TypeDeclaration td = (ClassOrInterface) container;
+            descr += " in '" + td.getName() + "'";
+        }
+        return descr;
     }
     
     static void addRemoveAnnotationDecProposal(
