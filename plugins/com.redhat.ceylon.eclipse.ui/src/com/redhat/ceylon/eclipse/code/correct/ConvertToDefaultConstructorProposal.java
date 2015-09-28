@@ -44,6 +44,7 @@ public class ConvertToDefaultConstructorProposal {
                         new TextFileChange(
                                 "Convert to Class with Default Constructor", 
                                 file);
+                change.setEdit(new MultiTextEdit());
                 String indent = getIndent(statement, doc);
                 String delim = getDefaultLineDelimiter(doc);
                 String defIndent = getDefaultIndent();
@@ -51,6 +52,35 @@ public class ConvertToDefaultConstructorProposal {
                 StringBuilder declarations = new StringBuilder();
                 StringBuilder assignments = new StringBuilder();
                 StringBuilder params = new StringBuilder();
+                String extend = "";
+                Tree.ExtendedType et = cd.getExtendedType();
+                if (et!=null) {
+                    try {
+                        String text = 
+                                doc.get(et.getStartIndex(), 
+                                        et.getDistance());
+                        extend = 
+                                new StringBuilder()
+                                    .append(delim)
+                                    .append(indent)
+                                    .append(defIndent)
+                                    .append(defIndent)
+                                    .append(defIndent)
+                                    .append(text)
+                                    .toString();
+                    }
+                    catch (BadLocationException e) {
+                        e.printStackTrace();
+                    }
+                    Tree.PositionalArgumentList pal =
+                            et.getInvocationExpression()
+                                .getPositionalArgumentList();
+                    if (pal!=null) {
+                        change.addEdit(new DeleteEdit(
+                                pal.getStartIndex(), 
+                                pal.getDistance()));
+                    }
+                }
                 for (Tree.Parameter p: pl.getParameters()) {
                     if (p instanceof Tree.InitializerParameter) {
                         Node pdn = 
@@ -61,7 +91,10 @@ public class ConvertToDefaultConstructorProposal {
                             //the constructor has to come 
                             //after the declarations of the
                             //parameters
-                            insertLoc = pdn.getEndIndex();
+                            int index = pdn.getEndIndex();
+                            if (index>insertLoc) {
+                                insertLoc = index;
+                            }
                         }
                     }
                     Parameter model = p.getParameterModel();
@@ -69,66 +102,95 @@ public class ConvertToDefaultConstructorProposal {
                     StringBuilder paramDef = new StringBuilder();
                     String pname = model.getName();
                     Unit unit = cd.getUnit();
-                    try {
-                        attDef = 
-                                doc.get(p.getStartIndex(), 
-                                        p.getDistance());
-                        if (p instanceof Tree.ParameterDeclaration) {
-                            Tree.ParameterDeclaration pd = 
-                                    (Tree.ParameterDeclaration) p;
-                            Tree.TypedDeclaration td = 
-                                    pd.getTypedDeclaration();
-                            Tree.Type t = td.getType();
+                    int end = p.getEndIndex();
+                    int start = p.getStartIndex();
+                    if (p instanceof Tree.ParameterDeclaration) {
+                        Tree.ParameterDeclaration pd = 
+                                (Tree.ParameterDeclaration) p;
+                        Tree.TypedDeclaration td = 
+                                pd.getTypedDeclaration();
+                        Tree.Type t = td.getType();
+                        try {
                             String text = 
                                     doc.get(t.getStartIndex(), 
                                             p.getEndIndex()
                                             - t.getStartIndex());
                             paramDef.append(text);
-;
                         }
-                        else if (p instanceof Tree.InitializerParameter) {
-                            Tree.InitializerParameter ip =
-                                    (Tree.InitializerParameter) p;
-                            Type pt = model.getType();
-                            paramDef.append(pt.asString(unit))
-                                    .append(" ")
-                                    .append(pname);
-                            FunctionOrValue dec = model.getModel();
-                            if (dec instanceof Function) {
-                                Function run = (Function) dec;
-                                for (ParameterList npl: 
-                                        run.getParameterLists()) {
-                                    paramDef.append("(");
-                                    boolean first = true;
-                                    for (Parameter np: 
-                                            npl.getParameters()) {
-                                        if (first) {
-                                            first = false;
-                                        }
-                                        else {
-                                            paramDef.append(", ");
-                                        }
-                                        Type npt = np.getType();
-                                        paramDef.append(npt.asString(unit) )
-                                                .append(" ")
-                                                .append(np.getName());
-                                    }
-                                    paramDef.append(")");
-                                }
-                            }
-                            Tree.SpecifierExpression se = 
-                                    ip.getSpecifierExpression();
-                            if (se!=null) {
-                                String text = 
-                                        doc.get(se.getStartIndex(), 
-                                                se.getDistance());
-                                paramDef.append(text);
-                            }
+                        catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
+                        Tree.TypedDeclaration tdn = 
+                                pd.getTypedDeclaration();
+                        Tree.SpecifierOrInitializerExpression se;
+                        if (tdn instanceof Tree.AttributeDeclaration) {
+                            Tree.AttributeDeclaration ad = 
+                                    (Tree.AttributeDeclaration) tdn;
+                            se = ad.getSpecifierOrInitializerExpression();
+                        }
+                        else if (tdn instanceof Tree.MethodDeclaration) {
+                            Tree.MethodDeclaration md = 
+                                    (Tree.MethodDeclaration) tdn;
+                            se = md.getSpecifierExpression();
                         }
                         else {
-                            //impossible
-                            return;
+                            se = null;
                         }
+                        if (se!=null) {
+                            end = se.getStartIndex();
+                        }
+                    }
+                    else if (p instanceof Tree.InitializerParameter) {
+                        Tree.InitializerParameter ip =
+                                (Tree.InitializerParameter) p;
+                        Type pt = model.getType();
+                        paramDef.append(pt.asString(unit))
+                                .append(" ")
+                                .append(pname);
+                        FunctionOrValue dec = model.getModel();
+                        if (dec instanceof Function) {
+                            Function run = (Function) dec;
+                            for (ParameterList npl: 
+                                    run.getParameterLists()) {
+                                paramDef.append("(");
+                                boolean first = true;
+                                for (Parameter np: 
+                                        npl.getParameters()) {
+                                    if (first) {
+                                        first = false;
+                                    }
+                                    else {
+                                        paramDef.append(", ");
+                                    }
+                                    Type npt = np.getType();
+                                    paramDef.append(npt.asString(unit) )
+                                            .append(" ")
+                                            .append(np.getName());
+                                }
+                                paramDef.append(")");
+                            }
+                        }
+                        Tree.SpecifierExpression se = 
+                                ip.getSpecifierExpression();
+                        if (se!=null) {
+                            try {
+                            String text = 
+                                    doc.get(se.getStartIndex(), 
+                                            se.getDistance());
+                                paramDef.append(text);
+                            }
+                            catch (BadLocationException e) {
+                                e.printStackTrace();
+                            }
+                            end = se.getStartIndex();
+                        }
+                    }
+                    else {
+                        //impossible
+                        return;
+                    }
+                    try {
+                        attDef = doc.get(start, end-start).trim();
                     }
                     catch (BadLocationException e) {
                         e.printStackTrace();
@@ -157,13 +219,23 @@ public class ConvertToDefaultConstructorProposal {
                     params.append(paramDef);
                 }
                 String text = 
-                        delim + 
-                        declarations + 
-                        indent + defIndent + 
-                        "shared new (" + params + ") {" + delim + 
-                        assignments + 
-                        indent + defIndent + "}" + delim;
-                change.setEdit(new MultiTextEdit());
+                        new StringBuilder()
+                            .append(delim)
+                            .append(declarations)
+                            .append(indent)
+                            .append(defIndent)
+                            .append("shared new (")
+                            .append(params)
+                            .append(")")
+                            .append(extend)
+                            .append(" {")
+                            .append(delim)
+                            .append(assignments)
+                            .append(indent)
+                            .append(defIndent)
+                            .append("}")
+                            .append(delim)
+                            .toString();
                 change.addEdit(new DeleteEdit(
                         pl.getStartIndex(),
                         pl.getDistance()));
