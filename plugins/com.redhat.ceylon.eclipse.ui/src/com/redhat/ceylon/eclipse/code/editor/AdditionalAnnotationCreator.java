@@ -154,8 +154,7 @@ public class AdditionalAnnotationCreator
             Declaration refined = 
                     declaration.getRefinedDeclaration();
             while (dec!=null) {
-                Type extended = 
-                        dec.getExtendedType();
+                Type extended = dec.getExtendedType();
                 if (extended!=null) {
                     TypeDeclaration superDec = 
                             extended.getDeclaration();
