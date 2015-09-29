@@ -115,7 +115,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         HashSet<Declaration> decs = 
                 new HashSet<Declaration>();
         importType(decs, newType, cu);
-        int il=applyImports(change, decs, cu, doc);
+        int il = applyImports(change, decs, cu, doc);
         Unit unit = cu.getUnit();
         String newTypeName = 
                 newType.asSourceCodeString(unit);
@@ -167,7 +167,6 @@ class ChangeTypeProposal extends CorrectionProposal {
                     if (adt instanceof Tree.SimpleType) {
                         Tree.SimpleType st = 
                                 (Tree.SimpleType) adt;
-                        
                         TypeParameter stTypeParam = null;
                         Tree.TypeArgumentList tal = 
                                 st.getTypeArgumentList();
@@ -301,7 +300,8 @@ class ChangeTypeProposal extends CorrectionProposal {
                     FindDeclarationNodeVisitor fdv = 
                             new FindDeclarationNodeVisitor(
                                     typedDec);
-                    phasedUnit.getCompilationUnit().visit(fdv);
+                    phasedUnit.getCompilationUnit()
+                            .visit(fdv);
                     Tree.StatementOrArgument dn = 
                             fdv.getDeclarationNode();
                     if (dn instanceof Tree.TypedDeclaration) {

@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
+import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -21,19 +22,18 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Reference;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Nodes;
 
 public class ChangeRefiningTypeProposal {
 
@@ -43,42 +43,55 @@ public class ChangeRefiningTypeProposal {
             Node node) {
         Tree.Declaration decNode = findDeclaration(cu, node);
         if (decNode instanceof Tree.TypedDeclaration) {
-            TypedDeclaration dec =
-                    ((Tree.TypedDeclaration) decNode).getDeclarationModel();
+            Tree.TypedDeclaration td = 
+                    (Tree.TypedDeclaration) decNode;
+            TypedDeclaration dec = td.getDeclarationModel();
             Declaration rd = dec.getRefinedDeclaration();
             if (rd instanceof TypedDeclaration) {
                 TypeDeclaration decContainer =
-                        (TypeDeclaration) dec.getContainer();
+                        (TypeDeclaration) 
+                            dec.getContainer();
                 TypeDeclaration rdContainer =
-                        (TypeDeclaration) rd.getContainer();
+                        (TypeDeclaration) 
+                            rd.getContainer();
                 Type supertype =
-                        decContainer.getType().getSupertype(rdContainer);
+                        decContainer.getType()
+                            .getSupertype(rdContainer);
                 Reference pr =
                         rd.appliedReference(supertype, 
                                 Collections.<Type>emptyList());
                 Type t = pr.getType();
-                String type = t.asSourceCodeString(decNode.getUnit());
-                Set<Declaration> declarations = new HashSet<Declaration>();
+                String type = 
+                        t.asSourceCodeString(
+                                decNode.getUnit());
+                Set<Declaration> declarations = 
+                        new HashSet<Declaration>();
                 importType(declarations, t, cu);
                 TextFileChange change = 
-                        new TextFileChange("Change Type", file);
+                        new TextFileChange("Change Type", 
+                                file);
                 int offset = node.getStartIndex();
                 int length = node.getDistance();
                 change.setEdit(new MultiTextEdit());
-                applyImports(change, declarations, cu, getDocument(change));
-                change.addEdit(new ReplaceEdit(offset, length, type));
-                proposals.add(new CorrectionProposal("Change type to '" + type + "'", 
-                        change, new Region(offset, length)));
+                applyImports(change, declarations, cu, 
+                        getDocument(change));
+                change.addEdit(new ReplaceEdit(
+                        offset, length, type));
+                proposals.add(new CorrectionProposal(
+                        "Change type to '" + type + "'", 
+                        change, 
+                        new Region(offset, length)));
             }
         }
     }
 
-    static void addChangeRefiningParametersProposal(IFile file,
-            Tree.CompilationUnit cu, 
+    static void addChangeRefiningParametersProposal(
+            IFile file, Tree.CompilationUnit cu, 
             Collection<ICompletionProposal> proposals,
             Node node) {
-        Tree.Declaration decNode = (Tree.Declaration) 
-                Nodes.findStatement(cu, node);
+        Tree.Declaration decNode = 
+                (Tree.Declaration) 
+                    findStatement(cu, node);
         Tree.ParameterList list;
         if (decNode instanceof Tree.AnyMethod) {
             Tree.AnyMethod am = (Tree.AnyMethod) decNode;
@@ -98,28 +111,37 @@ public class ChangeRefiningTypeProposal {
                     .getDirectMember(dec.getName(), 
                             null, false);
         }
-        if (rd instanceof Functional && dec instanceof Functional) {
+        if (rd instanceof Functional && 
+            dec instanceof Functional) {
+            Functional rf = (Functional) rd;
+            Functional f = (Functional) dec;
             List<ParameterList> rdPls = 
-                    ((Functional) rd).getParameterLists();
+                    rf.getParameterLists();
             List<ParameterList> decPls = 
-                    ((Functional) dec).getParameterLists();
+                    f.getParameterLists();
             if (rdPls.isEmpty() || decPls.isEmpty()) {
                 return;
             }
             List<Parameter> rdpl =
-                    rdPls.get(0).getParameters();
+                    rdPls.get(0)
+                        .getParameters();
             List<Parameter> dpl =
-                    decPls.get(0).getParameters();
+                    decPls.get(0)
+                        .getParameters();
             Scope decContainer = dec.getContainer();
             Scope rdContainer = rd.getContainer();
             Type supertype;
             if (decContainer instanceof TypeDeclaration &&
-                    rdContainer instanceof TypeDeclaration) {
+                rdContainer instanceof TypeDeclaration) {
                 TypeDeclaration dctd = 
-                        (TypeDeclaration) decContainer;
+                        (TypeDeclaration) 
+                            decContainer;
                 TypeDeclaration rdctd = 
-                        (TypeDeclaration) rdContainer;
-                supertype = dctd.getType().getSupertype(rdctd);
+                        (TypeDeclaration) 
+                            rdContainer;
+                supertype = 
+                        dctd.getType()
+                            .getSupertype(rdctd);
             }
             else {
                 supertype = null;
@@ -127,9 +149,12 @@ public class ChangeRefiningTypeProposal {
             Reference pr =
                     rd.appliedReference(supertype, 
                             Collections.<Type>emptyList());
-            List<Tree.Parameter> params = list.getParameters();
+            List<Tree.Parameter> params = 
+                    list.getParameters();
             TextFileChange change =
-                    new TextFileChange("Fix Refining Parameter List", file);
+                    new TextFileChange(
+                            "Fix Refining Parameter List", 
+                            file);
             change.setEdit(new MultiTextEdit());
             Unit unit = decNode.getUnit();
             Set<Declaration> declarations = 
@@ -139,48 +164,66 @@ public class ChangeRefiningTypeProposal {
                 if (rdpl.size()<=i) {
                     int start = i==0 ? 
                             list.getStartIndex()+1 : 
-                            params.get(i-1).getEndIndex();
-                    int stop = params.get(params.size()-1).getEndIndex();
+                            params.get(i-1)
+                                .getEndIndex();
+                    int stop = 
+                            params.get(params.size()-1)
+                                .getEndIndex();
                     change.addEdit(new DeleteEdit(start, stop-start));
                     break;
                 }
                 else {
                     Parameter rdp = rdpl.get(i);
                     Type pt = 
-                            pr.getTypedParameter(rdp).getFullType();
+                            pr.getTypedParameter(rdp)
+                                .getFullType();
                     Type dt = 
                             dpl.get(i).getModel()
-                                .getTypedReference().getFullType();
+                                .getTypedReference()
+                                    .getFullType();
                     if (!dt.isExactly(pt)) {
                         change.addEdit(new ReplaceEdit(
-                                p.getStartIndex(), p.getDistance(), 
+                                p.getStartIndex(), 
+                                p.getDistance(), 
                                 //TODO: better handling for callable parameters
-                                pt.asSourceCodeString(unit) + " " + rdp.getName()));
+                                pt.asSourceCodeString(unit) 
+                                    + " " + rdp.getName()));
                         importType(declarations, pt, cu);
                     }
                 }
             }
             if (rdpl.size()>params.size()) {
                 StringBuilder buf = new StringBuilder();
-                for (int i=params.size(); i<rdpl.size(); i++) {
+                for (int i=params.size(); 
+                        i<rdpl.size(); 
+                        i++) {
                     Parameter rdp = rdpl.get(i);
                     if (i>0) {
                         buf.append(", ");
                     }
                     appendParameterText(buf, pr, rdp, unit);
                     Type pt = 
-                            pr.getTypedParameter(rdp).getFullType();
+                            pr.getTypedParameter(rdp)
+                                .getFullType();
                     importType(declarations, pt, cu);
                 }
-                Integer offset = params.isEmpty() ? 
-                        list.getStartIndex()+1 : 
-                        params.get(params.size()-1).getEndIndex();
-                change.addEdit(new InsertEdit(offset, buf.toString()));
+                Integer offset = 
+                        params.isEmpty() ? 
+                            list.getStartIndex()+1 : 
+                            params.get(params.size()-1)
+                                .getEndIndex();
+                change.addEdit(new InsertEdit(offset, 
+                        buf.toString()));
             }
-            applyImports(change, declarations, cu, getDocument(change));
+            applyImports(change, declarations, cu, 
+                    getDocument(change));
             if (change.getEdit().hasChildren()) {
-                proposals.add(new CorrectionProposal("Fix refining parameter list", 
-                        change, new Region(list.getStartIndex()+1, 0)));
+                Region selection = 
+                        new Region(list.getStartIndex()+1, 
+                                0);
+                proposals.add(new CorrectionProposal(
+                        "Fix refining parameter list", 
+                        change, selection));
             }
         }
     }
