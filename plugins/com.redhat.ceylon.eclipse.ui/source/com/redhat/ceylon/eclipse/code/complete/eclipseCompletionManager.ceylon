@@ -382,6 +382,10 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         Integer index, Boolean basic, String op)
             => nothing; // TODO
 
+    shared actual ICompletionProposal newTypeProposal(Integer offset, Type? type, String text, String desc, Tree.CompilationUnit rootNode) {
+        return nothing; // TODO
+    }
+
     Boolean isIdentifierCharacter(ITextViewer viewer, Integer offset) {
         IDocument doc = viewer.document;
         Character ch = doc.get(offset - 1, 1).first else ' ';
@@ -455,5 +459,5 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         }
         
         return [];
-    }    
+    }
 }

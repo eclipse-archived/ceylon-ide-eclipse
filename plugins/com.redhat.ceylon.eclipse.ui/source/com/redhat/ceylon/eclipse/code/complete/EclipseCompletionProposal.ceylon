@@ -71,7 +71,7 @@ interface EclipseCompletionProposal
     shared default actual void apply(IDocument doc) {
     }
     
-    shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
+    shared default actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
         toggleOverwriteInternal = stateMask.and(SWT.\iCTRL) != 0;
         length = prefix.size + offset - this.offset;
         apply(viewer.document);
