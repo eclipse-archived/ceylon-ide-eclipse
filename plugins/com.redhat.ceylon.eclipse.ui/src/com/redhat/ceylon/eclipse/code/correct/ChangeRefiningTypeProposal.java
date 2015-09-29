@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
+import static com.redhat.ceylon.eclipse.util.Types.getRefinedDeclaration;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +47,10 @@ public class ChangeRefiningTypeProposal {
             Tree.TypedDeclaration td = 
                     (Tree.TypedDeclaration) decNode;
             TypedDeclaration dec = td.getDeclarationModel();
-            Declaration rd = dec.getRefinedDeclaration();
+            //TODO: this can return the wrong member when
+            //      there are multiple ... better to look
+            //      at what RefinementVisitor does
+            Declaration rd = getRefinedDeclaration(dec);
             if (rd instanceof TypedDeclaration) {
                 TypeDeclaration decContainer =
                         (TypeDeclaration) 
@@ -57,10 +61,10 @@ public class ChangeRefiningTypeProposal {
                 Type supertype =
                         decContainer.getType()
                             .getSupertype(rdContainer);
-                Reference pr =
+                Reference ref =
                         rd.appliedReference(supertype, 
                                 Collections.<Type>emptyList());
-                Type t = pr.getType();
+                Type t = ref.getType();
                 String type = 
                         t.asSourceCodeString(
                                 decNode.getUnit());
@@ -77,10 +81,11 @@ public class ChangeRefiningTypeProposal {
                         getDocument(change));
                 change.addEdit(new ReplaceEdit(
                         offset, length, type));
+                Region selection = 
+                        new Region(offset, type.length());
                 proposals.add(new CorrectionProposal(
                         "Change type to '" + type + "'", 
-                        change, 
-                        new Region(offset, length)));
+                        change, selection));
             }
         }
     }
