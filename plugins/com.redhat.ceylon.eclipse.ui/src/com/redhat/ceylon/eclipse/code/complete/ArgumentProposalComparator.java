@@ -39,6 +39,16 @@ final class ArgumentProposalComparator
                 return 1;
             }
         }
+        Declaration xd = x.getDeclaration();
+        Declaration yd = y.getDeclaration();
+        boolean xdepr = xd.isDeprecated();
+        boolean ydepr = yd.isDeprecated();
+        if (xdepr && !ydepr) {
+            return 1;
+        }
+        if (!xdepr && ydepr) {
+            return -1;
+        }        
         int xp = x.getProximity();
         int yp = y.getProximity();
         int p = xp-yp;
@@ -49,8 +59,6 @@ final class ArgumentProposalComparator
         if (c!=0) {
             return c;  
         }
-        Declaration xd = x.getDeclaration();
-        Declaration yd = y.getDeclaration();
         return xd.getQualifiedNameString()
                 .compareTo(yd.getQualifiedNameString());
     }

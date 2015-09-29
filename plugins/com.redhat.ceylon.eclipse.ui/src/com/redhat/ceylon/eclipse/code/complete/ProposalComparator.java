@@ -52,6 +52,7 @@ final class ProposalComparator
                     return upperCasePrefix ? -1 : 1;
                 }
             }
+            
             Declaration xd = x.getDeclaration();
             Declaration yd = y.getDeclaration();
             if (type!=null) {
@@ -86,11 +87,9 @@ final class ProposalComparator
                         return -1;
                     }
                     /*boolean xtd = 
-                            x.getDeclaration() 
-                                instanceof TypedDeclaration;
+                            xd instanceof TypedDeclaration;
                     boolean ytd = 
-                            y.getDeclaration() 
-                                instanceof TypedDeclaration;
+                            yd instanceof TypedDeclaration;
                     if (xtd && !ytd) {
                         return -1;
                     }
@@ -99,11 +98,22 @@ final class ProposalComparator
                     }*/
                 }
             }
+            
+            boolean xdepr = xd.isDeprecated();
+            boolean ydepr = yd.isDeprecated();
+            if (xdepr && !ydepr) {
+                return 1;
+            }
+            if (!xdepr && ydepr) {
+                return -1;
+            }
+            
             int pc = Integer.compare(x.getProximity(), 
                                      y.getProximity());
             if (pc!=0) {
                 return pc;
             }
+            
             //lowercase proposals first if no prefix
             if (!xUpperCase && yUpperCase) {
                 return -1;
