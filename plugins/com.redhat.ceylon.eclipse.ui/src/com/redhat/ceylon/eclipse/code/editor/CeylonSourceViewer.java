@@ -13,9 +13,11 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
+import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
@@ -62,6 +64,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -265,21 +268,39 @@ public class CeylonSourceViewer extends ProjectionViewer {
         showHierarchyView().focusOnSelection(editor);
     }
     
-    private void afterCopyCut(String selection, 
+    private void afterCopyCut(String selectedText, 
             Map<Declaration,String> imports) {
         if (imports!=null && 
                 !editor.isBlockSelectionModeEnabled()) {
-            char c = 
-                    editor.getSelectedNode() 
-                        instanceof Tree.Literal ? 
-                            '"' : '{';
-            Clipboard clipboard = 
-                    new Clipboard(getTextWidget().getDisplay());
+            IRegion selection = editor.getSelection();
+            int offset = selection.getOffset();
+            IDocument doc = this.getDocument();
+            CommonToken token = 
+                    getContainingToken(offset, doc);
+            boolean quoted;
+            if (token == null) {
+                quoted = false;
+            }
+            else {
+                int tt = token.getType();
+                //don't include verbatim strings!
+                quoted = 
+                        tt==ASTRING_LITERAL ||
+                        tt==STRING_LITERAL || 
+                        tt==STRING_END || 
+                        tt==STRING_END || 
+                        tt==STRING_MID;
+            }
+            char c = quoted ? '"' : '{';
+            Display display = getTextWidget().getDisplay();
+            Clipboard clipboard = new Clipboard(display);
             try {
                 Object text = 
-                        clipboard.getContents(TextTransfer.getInstance());
+                        clipboard.getContents(
+                                TextTransfer.getInstance());
                 Object rtf = 
-                        clipboard.getContents(RTFTransfer.getInstance());
+                        clipboard.getContents(
+                                RTFTransfer.getInstance());
                 
                 try {
                     Object[] data;
@@ -287,7 +308,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     if (rtf==null) {
                         data = new Object[] { text, 
                                               imports, 
-                                              c + selection };
+                                              c + selectedText };
                         dataTypes = new Transfer[] {
                                 TextTransfer.getInstance(),
                                 ImportsTransfer.INSTANCE, 
@@ -298,7 +319,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                         data = new Object[] { text, 
                                               rtf, 
                                               imports, 
-                                              c + selection };
+                                              c + selectedText };
                         dataTypes = new Transfer[] {
                                 TextTransfer.getInstance(),
                                 RTFTransfer.getInstance(),
@@ -327,12 +348,14 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     new Clipboard(getTextWidget().getDisplay());
             try {
                 String text = (String) 
-                        clipboard.getContents(SourceTransfer.INSTANCE);
+                        clipboard.getContents(
+                                SourceTransfer.INSTANCE);
                 boolean fromStringLiteral;
                 if (text==null) {
                     fromStringLiteral = false;
                     text = (String) 
-                            clipboard.getContents(TextTransfer.getInstance());
+                            clipboard.getContents(
+                                    TextTransfer.getInstance());
                 }
                 else {
                     fromStringLiteral = text.charAt(0)=='"';
@@ -344,7 +367,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 else {
                     @SuppressWarnings({"unchecked", "rawtypes"})
                     Map<Declaration,String> imports = (Map) 
-                            clipboard.getContents(ImportsTransfer.INSTANCE);
+                            clipboard.getContents(
+                                    ImportsTransfer.INSTANCE);
                     IRegion selection = editor.getSelection();
                     int offset = selection.getOffset();
                     int length = selection.getLength();
@@ -358,15 +382,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                                     .startRewriteSession(SEQUENTIAL);
                     }
                     
-                    ANTLRStringStream stream = 
-                            new NewlineFixingStringStream(doc.get());
-                    CeylonLexer lexer = new CeylonLexer(stream);
-                    CommonTokenStream tokens = 
-                            new CommonTokenStream(lexer);
-                    tokens.fill();
                     CommonToken token = 
-                            getTokenStrictlyContainingOffset(offset, 
-                                    tokens.getTokens());
+                            getContainingToken(offset, doc);
                     boolean quoted;
                     boolean verbatim;
 //                    int startOfTokenInLine;
@@ -382,31 +399,19 @@ public class CeylonSourceViewer extends ProjectionViewer {
                                 tt==STRING_LITERAL || 
                                 tt==STRING_END || 
                                 tt==STRING_END || 
-                                tt==STRING_MID;
+                                tt==STRING_MID ||
+                                tt==VERBATIM_STRING ||
+                                tt==AVERBATIM_STRING;
                         verbatim = 
-                                token.getText()
-                                     .startsWith("\"\"\"");
+                                tt==VERBATIM_STRING ||
+                                tt==AVERBATIM_STRING;
 //                        startOfTokenInLine = 
 //                                token.getCharPositionInLine() + 
 //                                (verbatim ? 3 : 1);
                     }
                     
                     try {
-                        boolean startOfLineOrQuotedToken;
-                        try {
-                            int lineStart = 
-                                    doc.getLineInformationOfOffset(offset)
-                                       .getOffset();
-                            int positionInLine = offset-lineStart;
-                            startOfLineOrQuotedToken = 
-//                                    startOfTokenInLine == positionInLine ||
-                                    doc.get(lineStart, positionInLine)
-                                       .trim().isEmpty();
-                        }
-                        catch (BadLocationException e) {
-                            e.printStackTrace();
-                            startOfLineOrQuotedToken = false;
-                        }
+                        boolean startOfLine = isStartOfLine(offset, doc);
                         IPreferenceStore prefs = getPreferences();
                         try {
                             MultiTextEdit edit = new MultiTextEdit();
@@ -414,7 +419,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                                     prefs.getBoolean(PASTE_IMPORTS)) {
                                 pasteImports(imports, edit, text, doc);
                             }
-                            if (quoted && !verbatim && !fromStringLiteral &&
+                            if (quoted && !verbatim && 
+                                    !fromStringLiteral &&
                                     prefs.getBoolean(PASTE_ESCAPE_QUOTED)) {
                                 text = text
                                         .replace("\\", "\\\\")
@@ -422,21 +428,34 @@ public class CeylonSourceViewer extends ProjectionViewer {
                                         .replace("\"", "\\\"")
                                         .replace("`", "\\`");
                             }
+                            if ((!quoted || verbatim) && 
+                                    fromStringLiteral &&
+                                    prefs.getBoolean(PASTE_ESCAPE_QUOTED)) {
+                                text = text
+                                        .replace("\\\"", "\"")
+                                        .replace("\\`", "`")
+                                        .replace("\\t", "\t")
+                                        .replace("\\\\", "\\");
+                            }
                             edit.addChild(new ReplaceEdit(offset, length, text));
                             edit.apply(doc);
                             IRegion region = edit.getRegion();
-                            endOffset = region.getOffset() + region.getLength();
+                            endOffset = 
+                                    region.getOffset() + 
+                                    region.getLength();
                         } 
                         catch (Exception e) {
                             e.printStackTrace();
                             return false;
                         }
                         try {
-                            if (startOfLineOrQuotedToken && 
+                            if (startOfLine && 
                                     prefs.getBoolean(PASTE_CORRECT_INDENTATION)) {
                                 endOffset = 
-                                        correctSourceIndentation(endOffset-text.length(), 
-                                                text.length(), doc)+1;
+                                        correctSourceIndentation(
+                                                endOffset-text.length(), 
+                                                text.length(), doc) 
+                                                    + 1;
                             }
                             return true;
                         } 
@@ -459,6 +478,33 @@ public class CeylonSourceViewer extends ProjectionViewer {
             }
         }
         else {
+            return false;
+        }
+    }
+
+    public CommonToken getContainingToken(int offset, IDocument doc) {
+        ANTLRStringStream stream = 
+                new NewlineFixingStringStream(doc.get());
+        CeylonLexer lexer = new CeylonLexer(stream);
+        CommonTokenStream tokens = 
+                new CommonTokenStream(lexer);
+        tokens.fill();
+        return getTokenStrictlyContainingOffset(offset, 
+                        tokens.getTokens());
+    }
+
+    private static boolean isStartOfLine(
+            int offset, IDocument doc) {
+        try {
+            int lineStart = 
+                    doc.getLineInformationOfOffset(offset)
+                       .getOffset();
+            int positionInLine = offset-lineStart;
+            return doc.get(lineStart, positionInLine)
+                       .trim().isEmpty();
+        }
+        catch (BadLocationException e) {
+            e.printStackTrace();
             return false;
         }
     }
