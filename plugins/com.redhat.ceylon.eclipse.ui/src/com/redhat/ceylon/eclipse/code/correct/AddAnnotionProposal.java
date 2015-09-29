@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Types.getRefinedDeclaration;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static java.util.Arrays.asList;
 
@@ -414,23 +415,30 @@ public class AddAnnotionProposal extends CorrectionProposal {
         if (node instanceof Tree.Declaration) {
             Tree.Declaration decNode = 
                     (Tree.Declaration) node;
-            d = decNode.getDeclarationModel();
+            //get the supertype declaration we're refining
+            d = getRefinedDeclaration(
+                    decNode.getDeclarationModel());
         }
-        if (node instanceof Tree.SpecifierStatement) {
+        else if (node instanceof Tree.SpecifierStatement) {
             Tree.SpecifierStatement specNode = 
                     (Tree.SpecifierStatement) node;
+          //get the supertype declaration we're referencing
             d = specNode.getRefined();
         }
-        else if (node instanceof Tree.BaseMemberExpression) {
+        /*else if (node instanceof Tree.BaseMemberExpression) {
             Tree.BaseMemberExpression bme = 
                     (Tree.BaseMemberExpression) node;
             d = bme.getDeclaration();
-        }
+        }*/
         else {
             return;
         }
         
-        if (d.isClassOrInterfaceMember()) {
+        addAddAnnotationProposal(node,
+                "default", "Make Default", 
+                d, proposals, project);
+        
+        /*if (d.isClassOrInterfaceMember()) {
             ClassOrInterface container = 
                     (ClassOrInterface) 
                         d.getContainer();
@@ -456,7 +464,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 		"default", "Make Default", 
                         rd, proposals, project);
             }
-        }
+        }*/
     }
 
     static void addMakeDefaultDecProposal(
@@ -597,7 +605,8 @@ public class AddAnnotionProposal extends CorrectionProposal {
                     (Tree.MemberOrTypeExpression) term;
             Declaration dec = mte.getDeclaration();
             if (dec instanceof Value) {
-                if (((Value) dec).getOriginalDeclaration()==null) {
+                Value value = (Value) dec;
+                if (value.getOriginalDeclaration()==null) {
                     addAddAnnotationProposal(node, 
                     		"variable", "Make Variable", 
                             dec, proposals, project);
