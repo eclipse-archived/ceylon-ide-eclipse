@@ -179,18 +179,21 @@ public class CompletionUtil {
         }
         return ok;
     }
-
+    
     public static List<DeclarationWithProximity> 
     getSortedProposedValues(Scope scope, Unit unit) {
         return getSortedProposedValues(scope, unit, null);
     }
+    
     public static List<DeclarationWithProximity> 
     getSortedProposedValues(Scope scope, Unit unit, 
             final String exactName) {
         Map<String, DeclarationWithProximity> map = 
                 scope.getMatchingDeclarations(unit, "", 0);
         if (exactName!=null) {
-            for (DeclarationWithProximity dwp: map.values()) {
+            for (DeclarationWithProximity dwp: 
+                new ArrayList<DeclarationWithProximity>
+                        (map.values())) {
                 if (!dwp.isUnimported() && 
                     !dwp.isAlias() &&
                         isNameMatching(dwp.getName(), 
