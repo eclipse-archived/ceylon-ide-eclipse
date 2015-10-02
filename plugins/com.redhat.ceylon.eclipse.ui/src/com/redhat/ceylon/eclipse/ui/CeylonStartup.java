@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.ui;
 
 import static com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory.installCeylonDebugElementAdapters;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -27,7 +29,6 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 
 import com.redhat.ceylon.eclipse.code.editor.RecentFilesPopup;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonStartup implements IStartup {
 
@@ -36,13 +37,22 @@ public class CeylonStartup implements IStartup {
         IContextActivation contextActivation2 = null;
 
         public void updateContext(IPerspectiveDescriptor perspective) {
-            IContextService service = (IContextService) getWorkbench().getActiveWorkbenchWindow()
-                    .getService(IContextService.class);
+            IContextService service = 
+                    (IContextService) 
+                        getWorkbench()
+                            .getActiveWorkbenchWindow()
+                            .getService(IContextService.class);
             // in case of previous crash, perspective may be null
-            if (perspective != null && perspective.getId() != null && 
-                    perspective.getId().equals(PLUGIN_ID + ".perspective")) {
-                contextActivation1 = service.activateContext(PLUGIN_ID + ".perspectiveContext");
-                contextActivation2 = service.activateContext(PLUGIN_ID + ".wizardContext");
+            if (perspective != null && 
+                    perspective.getId() != null && 
+                    perspective.getId()
+                        .equals(PLUGIN_ID + ".perspective")) {
+                contextActivation1 = 
+                        service.activateContext(PLUGIN_ID + 
+                                ".perspectiveContext");
+                contextActivation2 = 
+                        service.activateContext(PLUGIN_ID + 
+                                ".wizardContext");
             }
             else {
                 if (contextActivation1!=null) {
@@ -85,16 +95,20 @@ public class CeylonStartup implements IStartup {
             display.asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    ErrorDialog.openError(display.getActiveShell(),
+                    ErrorDialog.openError(
+                            display.getActiveShell(),
                             "Ceylon IDE does not support this JVM",  
                             "Ceylon IDE requires Java 1.7 or 1.8.", 
                             new Status(IStatus.ERROR, PLUGIN_ID, 
-                                    "Eclipse is running on a Java " + version + " VM.", 
+                                    "Eclipse is running on a Java " 
+                                            + version + " VM.", 
                                     null));
                 }});
         }
         
-        DebugPlugin.getDefault().getLaunchManager().addLaunchListener(new ILaunchListener() {
+        DebugPlugin.getDefault()
+                .getLaunchManager()
+                .addLaunchListener(new ILaunchListener() {
             Boolean activated = false;
             
             @Override
@@ -109,7 +123,9 @@ public class CeylonStartup implements IStartup {
                     }
                     activated = true;
                     installCeylonDebugElementAdapters();
-                    DebugPlugin.getDefault().getLaunchManager().removeLaunchListener(this);
+                    DebugPlugin.getDefault()
+                        .getLaunchManager()
+                        .removeLaunchListener(this);
                 }
             }
             
@@ -119,35 +135,47 @@ public class CeylonStartup implements IStartup {
             }
         });
         
-        getWorkbench().getDisplay().asyncExec(new Runnable() {
+        getWorkbench()
+                .getDisplay()
+                .asyncExec(new Runnable() {
             @Override
             public void run() {
                 WindowListener listener = new WindowListener();
                 getWorkbench().addWindowListener(listener);
-                for (IWorkbenchWindow window: getWorkbench().getWorkbenchWindows()) {
+                for (IWorkbenchWindow window: 
+                        getWorkbench().getWorkbenchWindows()) {
                     listener.windowOpened(window);
                 }
             }
         });
 
-        getWorkbench().getDisplay().asyncExec(new Runnable() {
+        getWorkbench()
+                .getDisplay()
+                .asyncExec(new Runnable() {
             @Override
             public void run() {
-                ICommandService commandService = (ICommandService) getWorkbench().getService( ICommandService.class );
+                ICommandService commandService = 
+                        (ICommandService) 
+                            getWorkbench()
+                                .getService(ICommandService.class);
                 commandService.addExecutionListener(new IExecutionListener() {
-                    public void notHandled(final String commandId, final NotHandledException exception) {}
-                    public void postExecuteFailure(final String commandId, final ExecutionException exception) {}
-                    public void postExecuteSuccess(final String commandId, final Object returnValue) {
+                    public void postExecuteSuccess(final String commandId, 
+                            final Object returnValue) {
                         if (commandId.equals("org.eclipse.ui.file.save")) {
-                            IEditorPart ed = EditorUtil.getCurrentEditor();
+                            IEditorPart ed = getCurrentEditor();
                             if (ed!=null) {
-                                RecentFilesPopup.addToHistory(EditorUtil.getFile(ed.getEditorInput()));
+                                RecentFilesPopup.addToHistory(
+                                        getFile(ed.getEditorInput()));
                             }
                         }
                     }
-                    public void preExecute(final String commandId, final ExecutionEvent event) {}
-
-                } );
+                    public void postExecuteFailure(final String commandId, 
+                            final ExecutionException exception) {}
+                    public void preExecute(final String commandId, 
+                            final ExecutionEvent event) {}
+                    public void notHandled(final String commandId, 
+                            final NotHandledException exception) {}
+                });
             }
         });
         
