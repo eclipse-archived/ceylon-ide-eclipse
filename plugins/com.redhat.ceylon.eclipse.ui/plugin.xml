@@ -2673,13 +2673,13 @@
             value="153,153,153"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.semis"
-            value="BLACK"/>
+            value="0,0,0"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.braces"
-            value="BLACK"/>
+            value="0,0,0"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals"
-            value="BLACK"/>
+            value="0,0,0"/>
     </theme>
     
     <theme id="com.redhat.ceylon.eclipse.ui.theme.darkAlt" 
@@ -2698,16 +2698,16 @@
             value="102,255,255"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.keywords"
-            value="WHITE"/>
+            value="255,255,255"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.semis"
             value="102,102,102"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.braces"
-            value="WHITE"/>
+            value="255,255,255"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals"
-            value="WHITE"/>
+            value="255,255,255"/>
         <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.interpolation"
             value="0,255,0"/>
