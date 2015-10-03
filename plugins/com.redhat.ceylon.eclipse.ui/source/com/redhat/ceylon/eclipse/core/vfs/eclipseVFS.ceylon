@@ -32,12 +32,9 @@ shared object eclipseVFS {
          if (is IFolder resource) {
              return IFolderVirtualFile(resource);
          }
-         if (is IFile resource )
-         {
+         else {
              return IFileVirtualFile(resource);
          }
-
-         throw RuntimeException("Bad resource for constructing the VirtualFile : ``resource``");
      }
 
     shared FileVirtualFile<IResource, IFolder, IFile> createVirtualFile(IFile file)
