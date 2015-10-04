@@ -21,15 +21,16 @@ import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
+import org.eclipse.ui.IWorkbenchPartSite;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -51,7 +52,8 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         private final LinkedPositionGroup linkedPositionGroup;
         int i=2;
 
-        private LinkedPositionsVisitor(int adjust, IDocument document,
+        private LinkedPositionsVisitor(int adjust, 
+                IDocument document,
                 LinkedPositionGroup linkedPositionGroup) {
             this.adjust = adjust;
             this.document = document;
@@ -59,24 +61,25 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         }
 
         @Override
-        public void visit(Tree.StaticMemberOrTypeExpression that) {
+        public void visit(
+                Tree.StaticMemberOrTypeExpression that) {
             super.visit(that);
-            addLinkedPosition(that.getIdentifier(), 
-                    that.getDeclaration());
+            addLinkedPosition(that.getDeclaration(), 
+                    that.getIdentifier());
         }
         
         @Override
         public void visit(Tree.SimpleType that) {
             super.visit(that);
-            addLinkedPosition(that.getIdentifier(), 
-                    that.getDeclarationModel());
+            addLinkedPosition(that.getDeclarationModel(), 
+                    that.getIdentifier());
         }
 
         @Override
         public void visit(Tree.MemberLiteral that) {
             super.visit(that);
-            addLinkedPosition(that.getIdentifier(), 
-                    that.getDeclaration());
+            addLinkedPosition(that.getDeclaration(), 
+                    that.getIdentifier());
         }
         
         @Override
@@ -85,19 +88,25 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
             Declaration base = that.getBase();
             if (base!=null && !hasPackage(that)) {
                 Region region = nameRegion(that, 0);
-                addLinkedPosition(region.getOffset(), 
-                        region.getLength(), base);
+                addLinkedPosition(
+                        base, 
+                        region.getOffset(), 
+                        region.getLength());
             }
         }
 
-        private void addLinkedPosition(Identifier id, Declaration d) {
+        private void addLinkedPosition(Declaration dec, 
+                Tree.Identifier id) {
             if (id!=null) {
-                addLinkedPosition(id.getStartIndex(), 
-                        id.getText().length(), d);
+                addLinkedPosition(
+                        dec, 
+                        id.getStartIndex(), 
+                        id.getDistance());
             }
         }
-        private void addLinkedPosition(int pos, int len, Declaration d) {
-            if (d!=null && refactoring.isReference(d)) {
+        private void addLinkedPosition(Declaration dec, 
+                int pos, int len) {
+            if (dec!=null && refactoring.isReference(dec)) {
                 try {
                     int offset = getOriginalSelection().x;
                     int seq;
@@ -107,8 +116,9 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
                     else {
                         seq = 1; //the selected node
                     }
-                    linkedPositionGroup.addPosition(new LinkedPosition(document, 
-                            pos+adjust, len, seq));
+                    linkedPositionGroup.addPosition(
+                            new LinkedPosition(document, 
+                                    pos+adjust, len, seq));
                 }
                 catch (BadLocationException e) {
                     e.printStackTrace();
@@ -129,10 +139,15 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
 
     @Override
     public String getHintTemplate() {
-        return "Enter alias for " + 
-                linkedPositionGroup.getPositions().length + 
-                " occurrences of '" + 
-                refactoring.getElement().getDeclarationModel().getName() + 
+        String name = 
+                refactoring.getElement()
+                    .getDeclarationModel()
+                    .getName();
+        int count = 
+                linkedPositionGroup.getPositions()
+                    .length;
+        return "Enter alias for " + count + 
+                " occurrences of '" + name + 
                 "' {0}";
     }
     
@@ -156,30 +171,45 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
     }
     
     @Override
-    protected void setupLinkedPositions(IDocument document, int adjust)
-            throws BadLocationException {
+    protected void setupLinkedPositions(
+            IDocument document, int adjust)
+                    throws BadLocationException {
         linkedPositionGroup = new LinkedPositionGroup();
         
-        Tree.ImportMemberOrType element = refactoring.getElement();
+        Tree.ImportMemberOrType element = 
+                refactoring.getElement();
         int offset;
+        int length;
         Tree.Alias alias = element.getAlias();
         if (alias == null) {
-            offset = element.getIdentifier().getStartIndex();
+            Tree.Identifier id = element.getIdentifier();
+            offset = id.getStartIndex();
+            length = id.getDistance();
         }
         else {
-            offset = alias.getStartIndex();
+            Tree.Identifier id = alias.getIdentifier();
+            offset = id.getStartIndex();
+            length = id.getDistance();
         }
         String originalName = getInitialName();
-        namePosition = new ProposalPosition(document, offset, 
-                originalName.length(), 0,
-                getNameProposals(offset, 0, 
-                        new String[]{element.getDeclarationModel().getName()},
-                        originalName));
+        String name = 
+                element.getDeclarationModel()
+                    .getName();
+        ICompletionProposal[] proposals = 
+                getNameProposals(
+                        offset, 0, 
+                        new String[] { name },
+                        originalName);
+        namePosition = 
+                new ProposalPosition(document, 
+                        offset, length, 0, proposals);
         
         linkedPositionGroup.addPosition(namePosition);
-        editor.getParseController().getLastCompilationUnit()
-                .visit(new LinkedPositionsVisitor(adjust, document, 
-                        linkedPositionGroup));
+        editor.getParseController()
+            .getLastCompilationUnit()
+            .visit(new LinkedPositionsVisitor(
+                    adjust, document, 
+                    linkedPositionGroup));
         linkedModeModel.addGroup(linkedPositionGroup);
     }
 
@@ -201,11 +231,14 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
                     openPreview();
                 }
                 else {
-                    new RefactoringExecutionHelper(refactoring,
+                    IWorkbenchPartSite site = 
+                            editor.getSite();
+                    new RefactoringExecutionHelper(
+                            refactoring,
                             RefactoringStatus.WARNING,
                             RefactoringSaveHelper.SAVE_ALL,
-                            editor.getSite().getShell(),
-                            editor.getSite().getWorkbenchWindow())
+                            site.getShell(),
+                            site.getWorkbenchWindow())
                         .perform(false, true);
                 }
             } 
@@ -245,8 +278,11 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
                 return EnterAliasLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(Refactoring refactoring) {
-                return new EnterAliasWizard((EnterAliasRefactoring) refactoring) {
+            public RefactoringWizard createWizard(
+                    Refactoring refactoring) {
+                return new EnterAliasWizard(
+                        (EnterAliasRefactoring) 
+                            refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };

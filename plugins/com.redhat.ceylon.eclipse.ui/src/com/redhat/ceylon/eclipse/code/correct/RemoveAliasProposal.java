@@ -26,15 +26,16 @@ class RemoveAliasProposal extends CorrectionProposal {
         private final TextFileChange change;
         private final Tree.Identifier aid;
 
-        private AliasRemovalVisitor(Declaration dec, TextFileChange change,
-                Tree.Identifier aid) {
+        private AliasRemovalVisitor(Declaration dec, 
+                TextFileChange change, Tree.Identifier aid) {
             this.dec = dec;
             this.change = change;
             this.aid = aid;
         }
 
         @Override
-        public void visit(Tree.StaticMemberOrTypeExpression that) {
+        public void visit(
+                Tree.StaticMemberOrTypeExpression that) {
             super.visit(that);
             addRemoval(that.getIdentifier(), 
                     that.getDeclaration());
@@ -55,10 +56,13 @@ class RemoveAliasProposal extends CorrectionProposal {
         }
 
         private void addRemoval(Tree.Identifier id, Declaration d) {
-            if (id!=null && d!=null && dec.equals(getAbstraction(d)) && 
+            if (id!=null && d!=null && 
+                    dec.equals(getAbstraction(d)) && 
                     id.getText().equals(aid.getText())) {
-                change.addEdit(new ReplaceEdit(id.getStartIndex(), 
-                        id.getText().length(), dec.getName()));
+                change.addEdit(new ReplaceEdit(
+                        id.getStartIndex(), 
+                        id.getDistance(), 
+                        dec.getName()));
             }
         }
         
@@ -69,8 +73,10 @@ class RemoveAliasProposal extends CorrectionProposal {
             Declaration base = that.getBase();
             if (base!=null && dec.equals(base)) {
                 Region region = DocLinks.nameRegion(that, 0);
-                change.addEdit(new ReplaceEdit(region.getOffset(), 
-                        region.getLength(), dec.getName()));
+                change.addEdit(new ReplaceEdit(
+                        region.getOffset(), 
+                        region.getLength(), 
+                        dec.getName()));
             }
         }
     }
@@ -81,20 +87,29 @@ class RemoveAliasProposal extends CorrectionProposal {
                 change, null, REMOVE_CORR);
     }
     
-    static void addRemoveAliasProposal(Tree.ImportMemberOrType imt,  
+    static void addRemoveAliasProposal(
+            Tree.ImportMemberOrType imt,  
             Collection<ICompletionProposal> proposals, 
             IFile file, CeylonEditor editor) {
         if (imt!=null) {
             Declaration dec = imt.getDeclarationModel();
-            Tree.CompilationUnit upToDateAndTypechecked = editor.getParseController().getTypecheckedRootNode();
+            Tree.CompilationUnit upToDateAndTypechecked = 
+                    editor.getParseController()
+                        .getTypecheckedRootNode();
             if (dec!=null && imt.getAlias()!=null
                     && upToDateAndTypechecked != null) {
-                TextFileChange change =  new TextFileChange("Remove Alias", file);
+                TextFileChange change = 
+                        new TextFileChange("Remove Alias", 
+                                file);
                 change.setEdit(new MultiTextEdit());
-                Tree.Identifier aid = imt.getAlias().getIdentifier();
-                change.addEdit(new DeleteEdit(aid.getStartIndex(), 
-                        imt.getIdentifier().getStartIndex()-aid.getStartIndex()));
-                upToDateAndTypechecked.visit(new AliasRemovalVisitor(dec, change, aid));
+                Tree.Identifier aid = 
+                        imt.getAlias().getIdentifier();
+                change.addEdit(new DeleteEdit(
+                        aid.getStartIndex(), 
+                        imt.getIdentifier().getStartIndex()
+                            -aid.getStartIndex()));
+                upToDateAndTypechecked.visit(
+                        new AliasRemovalVisitor(dec, change, aid));
                 proposals.add(new RemoveAliasProposal(file, dec, change));
             }
         }

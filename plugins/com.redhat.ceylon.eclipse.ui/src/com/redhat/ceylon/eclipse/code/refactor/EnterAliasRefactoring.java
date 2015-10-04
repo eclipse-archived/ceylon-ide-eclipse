@@ -19,10 +19,11 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Alias;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 public class EnterAliasRefactoring extends AbstractRefactoring {
     
@@ -34,7 +35,8 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         }
 
         @Override
-        public void visit(Tree.StaticMemberOrTypeExpression that) {
+        public void visit(
+                Tree.StaticMemberOrTypeExpression that) {
             super.visit(that);
             addEdit(document, that.getIdentifier(), 
                     that.getDeclaration());
@@ -60,17 +62,20 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
             Declaration base = that.getBase();
             if (!hasPackage(that) && isReference(base)) {
                 Region region = nameRegion(that, 0);
-                change.addEdit(new ReplaceEdit(region.getOffset(), 
-                        region.getLength(), newName));
+                change.addEdit(new ReplaceEdit(
+                        region.getOffset(), 
+                        region.getLength(), 
+                        newName));
             }
         }
 
-        private void addEdit(IDocument document, Tree.Identifier id, 
-                Declaration d) {
+        private void addEdit(IDocument document, 
+                Tree.Identifier id, Declaration d) {
             if (id!=null && isReference(d)) {
                 int pos = id.getStartIndex();
-                int len = id.getText().length();
-                change.addEdit(new ReplaceEdit(pos, len, newName));
+                int len = id.getDistance();
+                change.addEdit(new ReplaceEdit(pos, len, 
+                        newName));
             }
         }
     }
@@ -93,11 +98,23 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         element = findImport(rootNode, node);
         if (element!=null) {
             final Alias alias = element.getAlias();
+            Tree.Identifier id;
             if (alias==null) {
-                newName = element.getIdentifier().getText();
+                id = element.getIdentifier();
             }
             else {
-                newName = alias.getIdentifier().getText();
+                id = alias.getIdentifier();
+            }
+            newName = id.getText();
+            if (id.getDistance() > newName.length()) {
+                switch (id.getToken().getType()) {
+                case CeylonLexer.UIDENTIFIER:
+                    newName = "\\I" + newName;
+                    break;
+                case CeylonLexer.LIDENTIFIER:
+                    newName = "\\i" + newName;
+                    break;
+                }
             }
         }
     }
@@ -114,7 +131,8 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
 
     public boolean forceWizardMode() {
         Declaration existing = element.getScope()
-                .getMemberOrParameter(element.getUnit(), newName, null, false);
+                .getMemberOrParameter(element.getUnit(), 
+                        newName, null, false);
         return existing!=null;
     }
     
@@ -127,16 +145,19 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
         Declaration existing = element.getScope()
-                .getMemberOrParameter(element.getUnit(), newName, null, false);
+                .getMemberOrParameter(element.getUnit(), 
+                        newName, null, false);
         if (null!=existing) {
-            return createWarningStatus("An existing declaration named '" +
-                    newName + "' already exists in the same scope");
+            return createWarningStatus(
+                    "An existing declaration named '" +
+                    newName + 
+                    "' already exists in the same scope");
         }
         return new RefactoringStatus();
     }
 
-    public TextChange createChange(IProgressMonitor pm) throws CoreException,
-            OperationCanceledException {
+    public TextChange createChange(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
         TextChange tfc = newLocalChange();
         renameInFile(tfc);
         return tfc;
@@ -145,13 +166,14 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
     int renameInFile(final TextChange change) {
         change.setEdit(new MultiTextEdit());
         Tree.Alias alias = element.getAlias();
-        final Declaration dec = element.getDeclarationModel();
+        Declaration dec = element.getDeclarationModel();
         
         final int adjust;
         boolean same = newName.equals(dec.getName());
         if (alias==null) {
 //            if (!same) {
-                change.addEdit(new InsertEdit(element.getStartIndex(), 
+                change.addEdit(new InsertEdit(
+                        element.getStartIndex(), 
                         newName + "="));
                 adjust = newName.length()+1;
 //            }
@@ -160,15 +182,19 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
 //            }
         }
         else {
-            int start = alias.getStartIndex();
-            int length = alias.getIdentifier().getText().length();
+            Tree.Identifier id = alias.getIdentifier();
+            int start = id.getStartIndex();
+            int length = id.getDistance();
             if (same) {
-                int stop = element.getIdentifier().getStartIndex();
+                int stop = 
+                        element.getIdentifier()
+                            .getStartIndex();
                 change.addEdit(new DeleteEdit(start, stop-start));
                 adjust = start - stop; 
             }
             else {
-                change.addEdit(new ReplaceEdit(start, length, newName));
+                change.addEdit(new ReplaceEdit(start, length, 
+                        newName));
                 adjust = newName.length()-length;
             }
         }

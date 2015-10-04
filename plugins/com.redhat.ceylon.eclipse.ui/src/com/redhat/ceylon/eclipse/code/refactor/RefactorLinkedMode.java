@@ -41,8 +41,9 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
         return 0;
     }
     
-    protected abstract void setupLinkedPositions(IDocument document, int adjust) 
-            throws BadLocationException;
+    protected abstract void setupLinkedPositions(
+            IDocument document, int adjust) 
+                    throws BadLocationException;
 
     public final void start() {
         if (canStart()) {
