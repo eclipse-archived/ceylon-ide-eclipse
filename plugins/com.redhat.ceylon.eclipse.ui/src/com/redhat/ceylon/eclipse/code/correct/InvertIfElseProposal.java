@@ -24,7 +24,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ComparisonOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.EqualOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.EqualityOp;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.IfClause;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.IfExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.IfStatement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.LargeAsOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.LargerOp;
@@ -37,12 +39,135 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 class InvertIfElseProposal extends CorrectionProposal {
     
-    InvertIfElseProposal(int offset, TextChange change) {
-        super("Invert 'if' 'else' statement", change, 
-                new Region(offset, 0));
+    private InvertIfElseProposal(int offset, String desc, 
+            TextChange change) {
+        super(desc, change, new Region(offset, 0));
     }
     
-    static void addReverseIfElseProposal(IDocument doc,
+    static void addInvertIfElseProposal(IDocument doc,
+            Collection<ICompletionProposal> proposals, 
+            IFile file, Statement statement, Node node ,
+            Tree.CompilationUnit cu) {
+        addInvertIfElseExpressionProposal(doc, proposals, 
+                file, node, cu);
+        addInvertIfElseStatementProposal(doc, proposals, 
+                file, statement, cu);
+    }
+    
+    static void addInvertIfElseExpressionProposal(IDocument doc,
+            Collection<ICompletionProposal> proposals, 
+            IFile file, final Node node, 
+            Tree.CompilationUnit cu) {
+    try {
+        IfExpression ifExpr;
+        class FindIf extends Visitor {
+            IfExpression result;
+            @Override
+            public void visit(IfExpression that) {
+                super.visit(that);
+                if (that.getIfClause()!=null && 
+                    that.getElseClause()!=null &&
+                        that.getStartIndex()<=node.getStartIndex() &&
+                        that.getEndIndex()>=node.getEndIndex()) {
+                    result = that;
+                }
+            }
+        }
+        FindIf fi = new FindIf();
+        fi.visit(cu);
+        if (fi.result==null) {
+            return;
+        }
+        else {
+            ifExpr = fi.result;
+        }
+        
+        IfClause ifClause = ifExpr.getIfClause();
+        Expression ifBlock = ifClause.getExpression();
+        Expression elseBlock = 
+                ifExpr.getElseClause()
+                    .getExpression();
+        List<Condition> conditions = 
+                ifClause.getConditionList()
+                    .getConditions();
+        if (conditions.size()!=1) {
+            return;
+        }
+        Condition ifCondition = conditions.get(0);
+        
+        String test = null;
+        String term = getTerm(doc, ifCondition);
+        if (term.equals("(true)")) {
+            test = "false";
+        } else if (term.equals("(false)")) {
+            test = "true";
+        } else if (ifCondition instanceof BooleanCondition) {
+            BooleanCondition boolCond = 
+                    (BooleanCondition) ifCondition;
+            Term bt = boolCond.getExpression().getTerm();
+            if (bt instanceof NotOp) {
+                NotOp no = (NotOp) bt;
+                String t = getTerm(doc, no.getTerm());
+                test = removeEnclosingParenthesis(t);
+            } else if (bt instanceof EqualityOp) {
+                EqualityOp eo = (EqualityOp) bt;
+                test = getInvertedEqualityTest(doc, eo);
+            } else if (bt instanceof ComparisonOp) {
+                ComparisonOp co = (ComparisonOp)bt;
+                test = getInvertedComparisonTest(doc, co);
+            } else if (! (bt instanceof Tree.OperatorExpression) 
+                    || bt instanceof Tree.UnaryOperatorExpression) {
+                term = removeEnclosingParenthesis(term);
+            }
+        } else {
+               term = removeEnclosingParenthesis(term);
+        }
+        if (test == null) {
+            if (term.startsWith("!")) {
+                test = term.substring(1);
+            }
+            else {
+                test = "!" + term;
+            }
+        }
+        String baseIndent = getIndent(ifExpr, doc);
+//        String indent = getDefaultIndent();
+        String delim = getDefaultLineDelimiter(doc);
+
+        String elseStr = getTerm(doc, elseBlock);
+//        elseStr = addEnclosingBraces(elseStr, 
+//                baseIndent, indent, delim);
+        test = removeEnclosingParenthesis(test);
+
+        StringBuilder replace = new StringBuilder();
+        replace.append("if (").append(test).append(") then ")
+                .append(elseStr);
+        if (isElseOnOwnLine(doc, ifBlock, elseBlock)) {
+            replace.append(delim)
+                .append(baseIndent);
+        } else {
+            replace.append(" ");
+        }
+        replace.append("else ")
+            .append(getTerm(doc, ifBlock));
+
+        TextChange change = 
+                new TextFileChange("Invert If Then Else", 
+                        file);
+        change.setEdit(new ReplaceEdit(
+                ifExpr.getStartIndex(), 
+                ifExpr.getDistance(), 
+                replace.toString()));
+        proposals.add(new InvertIfElseProposal(
+                ifExpr.getStartIndex(), 
+                "Invert 'if' 'then' 'else' expression",
+                change));
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+    static void addInvertIfElseStatementProposal(IDocument doc,
                 Collection<ICompletionProposal> proposals, 
                 IFile file, final Statement statement, 
                 Tree.CompilationUnit cu) {
@@ -58,17 +183,9 @@ class InvertIfElseProposal extends CorrectionProposal {
                     public void visit(IfStatement that) {
                         super.visit(that);
                         if (that.getIfClause()!=null &&
-                                that.getIfClause()
-                                    .getBlock()
-                                    .getStatements()
-                                    .contains(statement)) {
-                            result = that;
-                        }
-                        if (that.getElseClause()!=null &&
-                                that.getElseClause()
-                                    .getBlock()
-                                    .getStatements()
-                                    .contains(statement)) {
+                            that.getElseClause()!=null &&
+                            that.getStartIndex()<=statement.getStartIndex() &&
+                            that.getEndIndex()>=statement.getEndIndex()) {
                             result = that;
                         }
                     }
@@ -83,9 +200,6 @@ class InvertIfElseProposal extends CorrectionProposal {
                 }
             }
             
-            if (ifStmt.getElseClause() == null) {
-                return;
-            }
             IfClause ifClause = ifStmt.getIfClause();
             Block ifBlock = ifClause.getBlock();
             Block elseBlock = 
@@ -164,6 +278,7 @@ class InvertIfElseProposal extends CorrectionProposal {
                     replace.toString()));
             proposals.add(new InvertIfElseProposal(
                     ifStmt.getStartIndex(), 
+                    "Invert 'if' 'else' statement",
                     change));
         } catch (Exception e) {
             e.printStackTrace();
@@ -204,7 +319,7 @@ class InvertIfElseProposal extends CorrectionProposal {
 
 
     private static boolean isElseOnOwnLine(IDocument doc, 
-            Block ifBlock, Block elseBlock) 
+            Node ifBlock, Node elseBlock) 
                     throws BadLocationException {
         return doc.getLineOfOffset(ifBlock.getStopIndex()) != 
                 doc.getLineOfOffset(elseBlock.getStartIndex());

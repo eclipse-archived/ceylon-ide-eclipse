@@ -72,7 +72,7 @@ import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.
 import static com.redhat.ceylon.eclipse.code.correct.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.addImportProposals;
-import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addReverseIfElseProposal;
+import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addInvertIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.addJoinDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
@@ -1188,7 +1188,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addConvertToIfElseProposal(doc, proposals, file, statement);
             addConvertToThenElseProposal(rootNode, doc, proposals, file, statement);
-            addReverseIfElseProposal(doc, proposals, file, statement, rootNode);
+            addInvertIfElseProposal(doc, proposals, file, statement, node, rootNode);
             
             addConvertSwitchToIfProposal(proposals, doc, file, statement);
             addConvertIfToSwitchProposal(proposals, doc, file, statement);
