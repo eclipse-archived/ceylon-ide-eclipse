@@ -130,7 +130,8 @@ class InvertIfElseProposal extends CorrectionProposal {
                 test = "!" + term;
             }
         }
-        String baseIndent = getIndent(ifExpr, doc);
+        String elseIndent = getIndent(elseBlock, doc);
+        String thenIndent = getIndent(ifBlock, doc);
 //        String indent = getDefaultIndent();
         String delim = getDefaultLineDelimiter(doc);
 
@@ -140,11 +141,15 @@ class InvertIfElseProposal extends CorrectionProposal {
         test = removeEnclosingParenthesis(test);
 
         StringBuilder replace = new StringBuilder();
-        replace.append("if (").append(test).append(") then ")
-                .append(elseStr);
+        replace.append("if (").append(test).append(")");
+        if (isElseOnOwnLine(doc, ifCondition, ifBlock)) {
+            replace.append(delim).append(thenIndent);
+        } else {
+            replace.append(" ");
+        }
+        replace.append("then ").append(elseStr);
         if (isElseOnOwnLine(doc, ifBlock, elseBlock)) {
-            replace.append(delim)
-                .append(baseIndent);
+            replace.append(delim).append(elseIndent);
         } else {
             replace.append(" ");
         }
@@ -253,16 +258,16 @@ class InvertIfElseProposal extends CorrectionProposal {
             String delim = getDefaultLineDelimiter(doc);
 
             String elseStr = getTerm(doc, elseBlock);
-            elseStr = addEnclosingBraces(elseStr, 
-                    baseIndent, indent, delim);
+            elseStr = 
+                    addEnclosingBraces(elseStr, 
+                            baseIndent, indent, delim);
             test = removeEnclosingParenthesis(test);
 
             StringBuilder replace = new StringBuilder();
             replace.append("if (").append(test).append(") ")
                     .append(elseStr);
             if (isElseOnOwnLine(doc, ifBlock, elseBlock)) {
-                replace.append(delim)
-                    .append(baseIndent);
+                replace.append(delim).append(baseIndent);
             } else {
                 replace.append(" ");
             }
