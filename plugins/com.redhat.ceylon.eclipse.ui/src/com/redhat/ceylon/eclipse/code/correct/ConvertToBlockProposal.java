@@ -43,6 +43,9 @@ class ConvertToBlockProposal extends CorrectionProposal {
             List<Tree.ParameterList> pls = md.getParameterLists();
             if (pls.isEmpty()) return;
             offset = pls.get(pls.size()-1).getEndIndex();
+            if (md.getTypeConstraintList()!=null) {
+                offset = md.getTypeConstraintList().getEndIndex();
+            }
             len = md.getSpecifierExpression().getExpression().getStartIndex() - offset;
             semi = "";
         }
@@ -94,6 +97,9 @@ class ConvertToBlockProposal extends CorrectionProposal {
             List<Tree.ParameterList> pls = fun.getParameterLists();
             if (pls.isEmpty()) return;
             offset = pls.get(pls.size()-1).getEndIndex();
+            if (fun.getTypeConstraintList()!=null) {
+                offset = fun.getTypeConstraintList().getEndIndex();
+            }
             len = fun.getExpression().getStartIndex() - offset;
             semi = ";";
             desc = "Convert anonymous function => to block";
