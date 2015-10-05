@@ -26,6 +26,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -169,8 +170,11 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
             if (ex!=null) {
                 List<Tree.ParameterList> pls = 
                         anon.getParameterLists();
-                Tree.ParameterList pl = 
+                Node pl = 
                         pls.get(pls.size()-1);
+                if (anon.getTypeConstraintList()!=null) {
+                    pl = anon.getTypeConstraintList();
+                }
                 start = ex.getStartIndex();
                 int loc = pl.getEndIndex();
                 int len = ex.getStartIndex() - loc;
@@ -203,8 +207,10 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
                     if (ex!=null) {
                         List<Tree.ParameterList> pls = 
                                 md.getParameterLists();
-                        Tree.ParameterList pl = 
-                                pls.get(pls.size()-1);
+                        Node pl = pls.get(pls.size()-1);
+                        if (md.getTypeConstraintList()!=null) {
+                            pl = md.getTypeConstraintList();
+                        }
                         start = ex.getStartIndex();
                         int loc = pl.getEndIndex();
                         int len = ex.getStartIndex() - loc;
