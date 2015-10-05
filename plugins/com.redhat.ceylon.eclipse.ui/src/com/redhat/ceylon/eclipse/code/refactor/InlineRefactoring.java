@@ -32,8 +32,6 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.NamedArgument;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
@@ -475,31 +473,32 @@ public class InlineRefactoring extends AbstractRefactoring {
             Tree.CompilationUnit cu, 
             List<CommonToken> tokens, 
             TextChange tfc) {
-        if (delete && 
-                cu.getUnit()
-                    .equals(declarationUnit.getUnit())) {
-            CommonToken from = 
-                    (CommonToken) 
+        if (delete) {
+            Unit unit = declarationUnit.getUnit();
+            if (cu.getUnit().equals(unit)) {
+                CommonToken from = 
+                        (CommonToken) 
                         declarationNode.getToken();
-            Tree.AnnotationList anns = 
-                    declarationNode.getAnnotationList();
-            if (!anns.getAnnotations().isEmpty()) {
-                from = (CommonToken) 
+                Tree.AnnotationList anns = 
+                        declarationNode.getAnnotationList();
+                if (!anns.getAnnotations().isEmpty()) {
+                    from = (CommonToken) 
                             anns.getAnnotations()
-                                .get(0)
-                                .getToken();
-            }
-            int prevIndex = from.getTokenIndex()-1;
-            if (prevIndex>=0) {
-                CommonToken tok = tokens.get(prevIndex);
-                if (tok.getChannel()==Token.HIDDEN_CHANNEL) {
-                    from=tok;
+                            .get(0)
+                            .getToken();
                 }
+                int prevIndex = from.getTokenIndex()-1;
+                if (prevIndex>=0) {
+                    CommonToken tok = tokens.get(prevIndex);
+                    if (tok.getChannel()==Token.HIDDEN_CHANNEL) {
+                        from=tok;
+                    }
+                }
+                tfc.addEdit(new DeleteEdit(
+                        from.getStartIndex(), 
+                        declarationNode.getEndIndex()
+                            - from.getStartIndex()));
             }
-            tfc.addEdit(new DeleteEdit(
-                    from.getStartIndex(), 
-                    declarationNode.getEndIndex()
-                        - from.getStartIndex()));
         }
     }
 
@@ -1174,7 +1173,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             boolean sequenced, 
             List<CommonToken> tokens) {
         boolean found = false;
-        List<NamedArgument> args = 
+        List<Tree.NamedArgument> args = 
                 that.getNamedArgumentList()
                     .getNamedArguments();
         for (Tree.NamedArgument arg: args) {
@@ -1206,7 +1205,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                     .append("{");
                 //start = it.getStopIndex()-templateStart+1;;
                 boolean first = true;
-                List<PositionalArgument> pargs = 
+                List<Tree.PositionalArgument> pargs = 
                         seqArg.getPositionalArguments();
                 for (Tree.PositionalArgument pa: pargs) {
                     if (first) result.append(" ");
