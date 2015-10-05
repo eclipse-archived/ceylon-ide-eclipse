@@ -46,8 +46,10 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
     public boolean getEnabled() {
         return sourceFile!=null &&
                 getEditable() &&
-                !sourceFile.getName().equals("module.ceylon") &&
-                !sourceFile.getName().equals("package.ceylon") &&
+                !sourceFile.getName()
+                    .equals("module.ceylon") &&
+                !sourceFile.getName()
+                    .equals("package.ceylon") &&
                 node instanceof Tree.Term;
     }
 
@@ -56,24 +58,34 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
     }
 
     public boolean forceWizardMode() {
-        Declaration existing = node.getScope()
-                .getMemberOrParameter(node.getUnit(), newName, null, false);
+        Declaration existing = 
+                node.getScope()
+                    .getMemberOrParameter(node.getUnit(), 
+                            newName, null, false);
         return existing!=null;
     }
     
-    public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
-            throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkInitialConditions
+            (IProgressMonitor pm)
+                    throws CoreException, 
+                           OperationCanceledException {
         // Check parameters retrieved from editor context
         return new RefactoringStatus();
     }
 
-    public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
-            throws CoreException, OperationCanceledException {
-        Declaration existing = node.getScope()
-                .getMemberOrParameter(node.getUnit(), newName, null, false);
+    public RefactoringStatus checkFinalConditions
+            (IProgressMonitor pm)
+                    throws CoreException, 
+                           OperationCanceledException {
+        Declaration existing = 
+                node.getScope()
+                    .getMemberOrParameter(node.getUnit(), 
+                            newName, null, false);
         if (null!=existing) {
-            return createWarningStatus("An existing declaration named '" +
-                    newName + "' already exists in the same scope");
+            return createWarningStatus(
+                    "An existing declaration named '" +
+                    newName + 
+                    "' already exists in the same scope");
         }
         return new RefactoringStatus();
     }
@@ -115,10 +127,12 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         IDocument doc = EditorUtil.getDocument(tfc);
         Unit unit = node.getUnit();
         Tree.Term term = (Tree.Term) node;
-        Tree.Statement statement = findStatement(rootNode, node);
+        Tree.Statement statement = 
+                findStatement(rootNode, node);
         boolean toplevel;
         if (statement instanceof Tree.Declaration) {
-            Tree.Declaration d = (Tree.Declaration) statement;
+            Tree.Declaration d = 
+                    (Tree.Declaration) statement;
             toplevel = d.getDeclarationModel().isToplevel();
         }
         else {
@@ -168,7 +182,8 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         }
         else if (explicitType||toplevel) {
             typeDec = type.asSourceCodeString(unit);
-            HashSet<Declaration> decs = new HashSet<Declaration>();
+            HashSet<Declaration> decs = 
+                    new HashSet<Declaration>();
             importType(decs, type, rootNode);
             il = applyImports(tfc, decs, rootNode, doc);
         }
@@ -182,15 +197,20 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         		(anonFunction ? "" : (getter ? " => "  : " = ")) + 
         		exp;
         
-        String text = dec + getDefaultLineDelimiter(doc) + 
-        		getIndent(statement, doc);
-        Integer start = statement.getStartIndex();
+        String text = 
+                dec + 
+                getDefaultLineDelimiter(doc) + 
+                getIndent(statement, doc);
+        int start = statement.getStartIndex();
+        int tlength = typeDec.length();
+        int nstart = node.getStartIndex();
+        int nlength = node.getDistance();
         tfc.addEdit(new InsertEdit(start, text));
-        tfc.addEdit(new ReplaceEdit(node.getStartIndex(), node.getDistance(), newName));
-        typeRegion = new Region(start+il, typeDec.length());
-        decRegion = new Region(start+il+typeDec.length()+1, newName.length());
-        refRegion = new Region(node.getStartIndex()+il+text.length(), 
-        		newName.length());
+        tfc.addEdit(new ReplaceEdit(nstart, nlength, newName));
+        typeRegion = new Region(start+il, tlength);
+        int len = newName.length();
+        decRegion = new Region(start+il+tlength+1, len);
+        refRegion = new Region(nstart+il+text.length(), len);
     }
     
     public boolean canBeInferred() {
