@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
@@ -23,7 +24,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -124,7 +124,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
 
     public void extractInFile(TextChange tfc) {
         tfc.setEdit(new MultiTextEdit());
-        IDocument doc = EditorUtil.getDocument(tfc);
+        IDocument doc = getDocument(tfc);
         Unit unit = node.getUnit();
         Tree.Term term = (Tree.Term) node;
         Tree.Statement statement = 
@@ -232,7 +232,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
     public void setGetter() {
         this.getter = !getter;
     }
-
+    
     Type getType() {
         return type;
     }

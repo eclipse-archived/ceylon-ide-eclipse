@@ -24,8 +24,10 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
     
     public RefactorLinkedMode(CeylonEditor editor) {
         super(editor);
-        TriggerSequence binding = getCommandBinding(getActionName());
-        openDialogKeyBinding = binding==null ? "" : binding.format();
+        TriggerSequence binding = 
+                getCommandBinding(getActionName());
+        openDialogKeyBinding = 
+                binding==null ? "" : binding.format();
     }
     
     protected abstract String getActionName();

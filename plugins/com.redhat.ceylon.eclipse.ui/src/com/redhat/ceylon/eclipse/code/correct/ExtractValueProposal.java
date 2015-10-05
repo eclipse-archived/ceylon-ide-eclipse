@@ -18,9 +18,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractValueLinkedMode;
+import com.redhat.ceylon.eclipse.code.refactor.ExtractValueRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractValueRefactoringAction;
-import com.redhat.ceylon.eclipse.code.refactor.refactorJ2C;
-import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 
 
 public class ExtractValueProposal 
@@ -80,7 +79,7 @@ public class ExtractValueProposal
             }
         }
         ExtractValueRefactoring evr = 
-                refactorJ2C.newExtractValueRefactoring(editor);
+                new ExtractValueRefactoring(editor);
         if (evr.getEnabled()) {
             proposals.add(new ExtractValueProposal(editor));
         }

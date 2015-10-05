@@ -102,8 +102,11 @@ public final class ExtractFunctionLinkedMode
                 return ExtractFunctionLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(Refactoring refactoring) {
-                return new ExtractFunctionWizard((ExtractFunctionRefactoring) refactoring) {
+            public RefactoringWizard createWizard(
+                    Refactoring refactoring) {
+                return new ExtractFunctionWizard(
+                        (ExtractFunctionRefactoring) 
+                            refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };
@@ -115,7 +118,7 @@ public final class ExtractFunctionLinkedMode
     protected void openDialog() {
         new ExtractFunctionRefactoringAction(editor) {
             @Override
-            public AbstractRefactoring createRefactoring() {
+            public Refactoring createRefactoring() {
                 return ExtractFunctionLinkedMode.this.refactoring;
             }
         }.run();

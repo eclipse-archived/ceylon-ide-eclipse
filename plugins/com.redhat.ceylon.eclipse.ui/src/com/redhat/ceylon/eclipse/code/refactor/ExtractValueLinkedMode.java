@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.refactor.refactorJ2C.newExtractValueRefactoring;
-import static com.redhat.ceylon.eclipse.code.refactor.refactorJ2C.toExtractLinkedModeEnabled;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
@@ -13,7 +11,6 @@ import org.eclipse.swt.widgets.Shell;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
 public final class ExtractValueLinkedMode 
@@ -23,7 +20,7 @@ public final class ExtractValueLinkedMode
     
     public ExtractValueLinkedMode(CeylonEditor editor) {
         super(editor);
-        this.refactoring = newExtractValueRefactoring(editor);
+        this.refactoring = new ExtractValueRefactoring(editor);
     }
     
     @Override
@@ -31,8 +28,7 @@ public final class ExtractValueLinkedMode
         DocumentChange change = 
                 new DocumentChange("Extract Value", 
                         document);
-        toExtractLinkedModeEnabled(refactoring)
-            .extractInFile(change);
+        refactoring.extractInFile(change);
         EditorUtil.performChange(change);
         return 0;
     }
@@ -44,22 +40,22 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected int getNameOffset() {
-        return toExtractLinkedModeEnabled(refactoring).getDecRegion().getOffset();
+        return refactoring.getDecRegion().getOffset();
     }
     
     @Override
     protected int getTypeOffset() {
-        return toExtractLinkedModeEnabled(refactoring).getTypeRegion().getOffset();
+        return refactoring.getTypeRegion().getOffset();
     }
     
     @Override
     protected int getExitPosition(int selectionOffset, int adjust) {
-        return toExtractLinkedModeEnabled(refactoring).getRefRegion().getOffset();
+        return refactoring.getRefRegion().getOffset();
     }
     
     @Override
     protected String[] getNameProposals() {
-    	return toExtractLinkedModeEnabled(refactoring).getNameProposals();
+    	return refactoring.getNameProposals();
     }
     
     @Override
@@ -67,14 +63,14 @@ public final class ExtractValueLinkedMode
             CompilationUnit rootNode, int adjust) {
         
         addNamePosition(document, 
-                toExtractLinkedModeEnabled(refactoring).getRefRegion().getOffset(),
-                toExtractLinkedModeEnabled(refactoring).getRefRegion().getLength());
+                refactoring.getRefRegion().getOffset(),
+                refactoring.getRefRegion().getLength());
         
         Type type = refactoring.getType();
         if (!isTypeUnknown(type)) {
             addTypePosition(document, type, 
-                    toExtractLinkedModeEnabled(refactoring).getTypeRegion().getOffset(), 
-                    toExtractLinkedModeEnabled(refactoring).getTypeRegion().getLength());
+                    refactoring.getTypeRegion().getOffset(), 
+                    refactoring.getTypeRegion().getLength());
         }
         
     }
@@ -101,14 +97,17 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected void openPreview() {
-        new RenameRefactoringAction(editor) {
+        new ExtractValueRefactoringAction(editor) {
             @Override
             public Refactoring createRefactoring() {
-                return (Refactoring) ExtractValueLinkedMode.this.refactoring;
+                return ExtractValueLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(Refactoring refactoring) {
-                return new ExtractValueWizard(refactoring) {
+            public RefactoringWizard createWizard(
+                    Refactoring refactoring) {
+                return new ExtractValueWizard(
+                        (ExtractValueRefactoring) 
+                            refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };
@@ -121,19 +120,19 @@ public final class ExtractValueLinkedMode
         new ExtractValueRefactoringAction(editor) {
             @Override
             public Refactoring createRefactoring() {
-                return (Refactoring) ExtractValueLinkedMode.this.refactoring;
+                return ExtractValueLinkedMode.this.refactoring;
             }
         }.run();
     }
     
     @Override
     public boolean canBeInferred() {
-        return refactoring.getCanBeInferred();
+        return refactoring.canBeInferred();
     }
     
     @Override
     protected String getKind() {
-        return refactoring.getIsFunction() ? "function" : "value";
+        return refactoring.isFunction() ? "function" : "value";
     }
 
     public static void selectExpressionAndStart(
