@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
@@ -19,6 +20,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -161,28 +163,71 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
                 new FindAnonFunctionVisitor(statement);
         visitor.visit(statement);
         Tree.FunctionArgument anon = visitor.result;
+        boolean toplevel;
         if (anon!=null && anon.getBlock()==null) {
             Tree.Expression ex = anon.getExpression();
             if (ex!=null) {
                 List<Tree.ParameterList> pls = 
                         anon.getParameterLists();
-                Tree.ParameterList pl = pls.get(pls.size()-1);
+                Tree.ParameterList pl = 
+                        pls.get(pls.size()-1);
                 start = ex.getStartIndex();
                 int loc = pl.getEndIndex();
                 int len = ex.getStartIndex() - loc;
                 int end = ex.getEndIndex();
                 tfc.addEdit(new ReplaceEdit(loc, len, " { "));
                 tfc.addEdit(new InsertEdit(end, "; }"));
-                il--;
-                newLineOrReturn = " return ";
+                il-=len-3;
+                if (anon.getDeclarationModel().isDeclaredVoid()) {
+                    newLineOrReturn = " ";
+                }
+                else {
+                    newLineOrReturn = " return ";
+                }
+                toplevel = false;
+            }
+            else {
+                return;
             }
         }
-        boolean toplevel;
-        if (anon==null &&
-                statement instanceof Tree.Declaration) {
-            Tree.Declaration d = 
+        else if (statement instanceof Tree.Declaration) {
+            Tree.Declaration dec = 
                     (Tree.Declaration) statement;
-            toplevel = d.getDeclarationModel().isToplevel();
+            if (dec instanceof Tree.MethodDeclaration) {
+                Tree.MethodDeclaration md = 
+                        (Tree.MethodDeclaration) dec;
+                Tree.SpecifierExpression se = 
+                        md.getSpecifierExpression();
+                if (se!=null) {
+                    Tree.Expression ex = se.getExpression();
+                    if (ex!=null) {
+                        List<Tree.ParameterList> pls = 
+                                md.getParameterLists();
+                        Tree.ParameterList pl = 
+                                pls.get(pls.size()-1);
+                        start = ex.getStartIndex();
+                        int loc = pl.getEndIndex();
+                        int len = ex.getStartIndex() - loc;
+                        int end = ex.getEndIndex();
+                        int semi = dec.getEndIndex()-1;
+                        String indent = getDefaultIndent();
+                        String starting = " {" + newLineOrReturn + indent;
+                        String ending = ";" + newLineOrReturn + "}";
+                        tfc.addEdit(new ReplaceEdit(loc, len, starting));
+                        tfc.addEdit(new InsertEdit(end, ending));
+                        tfc.addEdit(new DeleteEdit(semi, 1));
+                        il-=len-starting.length();
+                        newLineOrReturn = newLineOrReturn + indent;
+                        if (!md.getDeclarationModel().isDeclaredVoid()) {
+                            newLineOrReturn += "return ";
+                        }
+                    }
+                }
+                toplevel = false;
+            }
+            else {
+                toplevel = dec.getDeclarationModel().isToplevel();
+            }
         }
         else {
             toplevel = false;
