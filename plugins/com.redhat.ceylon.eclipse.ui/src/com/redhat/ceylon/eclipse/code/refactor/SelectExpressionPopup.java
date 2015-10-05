@@ -97,9 +97,7 @@ abstract class SelectExpressionPopup extends PopupDialog {
         final List<Tree.Term> expressions = 
                 new ArrayList<Tree.Term>();
         new Visitor() {
-            @Override
-            public void visit(Tree.Term that) {
-                super.visit(that);
+            private void option(Tree.Term that) {
                 if (!(that instanceof Tree.Expression)) {
                     if (that.getStartIndex() 
                             <= selection.getOffset() &&
@@ -109,6 +107,19 @@ abstract class SelectExpressionPopup extends PopupDialog {
                         expressions.add(that);
                     }
                 }
+            }
+            @Override
+            public void visit(Tree.Term that) {
+                super.visit(that);
+                option(that);
+            }
+            @Override
+            public void visit(Tree.StringTemplate that) {
+                //don't visit the string fragments
+                for (Tree.Expression e: that.getExpressions()) {
+                    e.visit(this);
+                }
+                option(that);
             }
         }.visit(rootNode);
         return expressions;
