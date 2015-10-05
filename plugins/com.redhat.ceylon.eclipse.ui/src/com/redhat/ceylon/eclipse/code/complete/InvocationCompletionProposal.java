@@ -85,6 +85,7 @@ import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Reference;
@@ -1006,6 +1007,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
         TypeDeclaration td = type.getDeclaration();
         Declaration d = dwp.getDeclaration();
+        if (d instanceof NothingType) {
+            return;
+        }
         String pname = 
                 d.getUnit().getPackage()
                     .getNameAsString();

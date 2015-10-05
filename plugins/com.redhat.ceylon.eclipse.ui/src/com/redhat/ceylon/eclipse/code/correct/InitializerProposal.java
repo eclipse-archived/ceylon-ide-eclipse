@@ -50,6 +50,7 @@ import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
@@ -406,6 +407,9 @@ class InitializerProposal extends CorrectionProposal {
                 continue;
             }
             Declaration d = dwp.getDeclaration();
+            if (d instanceof NothingType) {
+                return;
+            }
             String pname = 
                     d.getUnit()
                         .getPackage()
