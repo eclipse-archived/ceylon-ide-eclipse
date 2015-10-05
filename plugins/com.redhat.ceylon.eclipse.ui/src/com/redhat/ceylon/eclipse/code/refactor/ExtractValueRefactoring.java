@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.HashSet;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -24,6 +25,8 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -31,6 +34,26 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class ExtractValueRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled {
     
+    private final class FindAnonFunctionVisitor extends Visitor {
+        private final Statement statement;
+        Tree.FunctionArgument result;
+
+        private FindAnonFunctionVisitor(Statement statement) {
+            this.statement = statement;
+        }
+
+        @Override
+        public void visit(Tree.FunctionArgument that) {
+            if (that!=node &&
+                    that.getStartIndex()<=node.getStartIndex() &&
+                    that.getEndIndex()>=node.getEndIndex() &&
+                    that.getStartIndex()>statement.getStartIndex()) {
+                result = that;
+            }
+            super.visit(that);
+        }
+    }
+
     private String newName;
     private boolean explicitType;
     private boolean getter;
@@ -127,10 +150,36 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         IDocument doc = getDocument(tfc);
         Unit unit = node.getUnit();
         Tree.Term term = (Tree.Term) node;
-        Tree.Statement statement = 
+        final Tree.Statement statement = 
                 findStatement(rootNode, node);
+        int start = statement.getStartIndex();
+        int il = 0;
+        String newLineOrReturn = 
+                getDefaultLineDelimiter(doc) + 
+                getIndent(statement, doc);
+        FindAnonFunctionVisitor visitor = 
+                new FindAnonFunctionVisitor(statement);
+        visitor.visit(statement);
+        Tree.FunctionArgument anon = visitor.result;
+        if (anon!=null && anon.getBlock()==null) {
+            Tree.Expression ex = anon.getExpression();
+            if (ex!=null) {
+                List<Tree.ParameterList> pls = 
+                        anon.getParameterLists();
+                Tree.ParameterList pl = pls.get(pls.size()-1);
+                start = ex.getStartIndex();
+                int loc = pl.getEndIndex();
+                int len = ex.getStartIndex() - loc;
+                int end = ex.getEndIndex();
+                tfc.addEdit(new ReplaceEdit(loc, len, " { "));
+                tfc.addEdit(new InsertEdit(end, "; }"));
+                il--;
+                newLineOrReturn = " return ";
+            }
+        }
         boolean toplevel;
-        if (statement instanceof Tree.Declaration) {
+        if (anon==null &&
+                statement instanceof Tree.Declaration) {
             Tree.Declaration d = 
                     (Tree.Declaration) statement;
             toplevel = d.getDeclarationModel().isToplevel();
@@ -147,7 +196,8 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         if (anonFunction) {
             type = unit.getCallableReturnType(type);
             Tree.FunctionArgument fa = 
-                    (Tree.FunctionArgument) unparened;
+                    (Tree.FunctionArgument) 
+                        unparened;
             StringBuilder sb = new StringBuilder();
             if (fa.getType() instanceof Tree.VoidModifier) {
                 mod = "void ";
@@ -174,34 +224,27 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
             mod = "value";
         	exp = toString(unparened) + ";";
         }
-        int il;
         String typeDec;
         if (type==null || type.isUnknown()) {
             typeDec = "dynamic";
-            il = 0;
         }
-        else if (explicitType||toplevel) {
+        else if (explicitType || toplevel) {
             typeDec = type.asSourceCodeString(unit);
             HashSet<Declaration> decs = 
                     new HashSet<Declaration>();
             importType(decs, type, rootNode);
-            il = applyImports(tfc, decs, rootNode, doc);
+            il += applyImports(tfc, decs, rootNode, doc);
         }
         else {
             canBeInferred = true;
             typeDec = mod;
-            il = 0;
         }
         String dec = 
         		typeDec + " " +  newName + 
         		(anonFunction ? "" : (getter ? " => "  : " = ")) + 
         		exp;
         
-        String text = 
-                dec + 
-                getDefaultLineDelimiter(doc) + 
-                getIndent(statement, doc);
-        int start = statement.getStartIndex();
+        String text = dec + newLineOrReturn;
         int tlength = typeDec.length();
         int nstart = node.getStartIndex();
         int nlength = node.getDistance();
