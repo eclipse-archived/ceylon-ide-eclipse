@@ -1131,21 +1131,22 @@ class InvocationCompletionProposal extends CompletionProposal {
             final int loc, int first, 
             List<ICompletionProposal> props, 
             final int index) {
+        Unit unit = getUnit();
+        Class ed = unit.getExceptionDeclaration();
         for (DeclarationWithProximity dwp:
-                getSortedProposedValues(scope, getUnit())) {
+                getSortedProposedValues(scope, unit)) {
             Declaration dec = dwp.getDeclaration();
             if (dec instanceof TypeDeclaration && 
                     !dwp.isUnimported()) {
                 TypeDeclaration td = (TypeDeclaration) dec;
                 Type t = td.getType();
-                Unit u = td.getUnit();
-                Class ed = u.getExceptionDeclaration();
                 if (!t.isNothing() &&
                         td.getTypeParameters().isEmpty() && 
                         !td.isAnnotation() &&
                         !td.inherits(ed)) {
                     String pname = 
-                            u.getPackage()
+                            td.getUnit()
+                                .getPackage()
                                 .getNameAsString();
                     if (pname.equals(Module.LANGUAGE_MODULE_NAME)) {
                         if (isIgnoredLanguageModuleType(td)) {
@@ -1153,8 +1154,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                         }
                     }
                     if (isInBounds(tp.getSatisfiedTypes(), t)) {
-                        props.add(new NestedCompletionProposal(dec, null,
-                                loc, index, true, ""));
+                        props.add(new NestedCompletionProposal(
+                                dec, null, loc, index, true, ""));
                     }
                 }
             }
