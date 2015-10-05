@@ -14,12 +14,12 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddConstructorProposal.addConstructorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddPunctuationProposal.addEmptyParameterListProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddPunctuationProposal.addImportWildcardProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddInitializerProposal.addInitializerProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterListProposal.addParameterListProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposals;
+import static com.redhat.ceylon.eclipse.code.correct.AddPunctuationProposal.addEmptyParameterListProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AddPunctuationProposal.addImportWildcardProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addSpreadToSequenceParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
@@ -27,6 +27,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AssertExistsDeclarationProp
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertExistsProposal.addAssignToAssertExistsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertIsProposal.addAssignToAssertIsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertNonemptyProposal.addAssignToAssertNonemptyProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AssignToFieldProposal.addAssignToFieldProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToForProposal.addAssignToForProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfExistsProposal.addAssignToIfExistsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAssignToIfIsProposal;
@@ -42,9 +43,9 @@ import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.
 import static com.redhat.ceylon.eclipse.code.correct.ChangeToIfProposal.addChangeToIfProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeArgProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeProposals;
+import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProposal.addConvertFunctionToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProposal.addConvertGetterToFunctionProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertIfElseToThenElse.addConvertToThenElseProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProposal.addConvertFunctionToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertFromVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertToVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertIfToSwitchProposal;
@@ -1169,6 +1170,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addDeclarationProposals(editor, proposals, doc, file, rootNode, 
                     declaration, currentOffset);
+            
+            addAssignToFieldProposal(file, statement, declaration, proposals);
             
             addChangeToIfProposal(proposals, doc, file, rootNode, statement);
             
