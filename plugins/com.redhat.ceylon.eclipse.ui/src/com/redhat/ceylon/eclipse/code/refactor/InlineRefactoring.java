@@ -914,22 +914,59 @@ public class InlineRefactoring extends AbstractRefactoring {
             Tree.Type it) {
         Type t = it.getTypeModel();
         TypeDeclaration td = t.getDeclaration();
-        if (reference instanceof Tree.SimpleType &&
-            td instanceof TypeParameter) {
+        if (td instanceof TypeParameter) {
             Generic ta = (Generic) declaration;
             int index = ta.getTypeParameters().indexOf(td);
             if (index>=0) {
-                Tree.SimpleType st = 
-                        (Tree.SimpleType) 
-                            reference;
-                Tree.TypeArgumentList tal = 
-                        st.getTypeArgumentList();
-                List<Tree.Type> types = tal.getTypes();
-                if (types.size()>index) {
-                    Tree.Type type = types.get(index);
-                    result.append(Nodes.toString(type, 
-                            tokens));
-                    return;
+                if (reference 
+                            instanceof Tree.SimpleType) {
+                    Tree.SimpleType st = 
+                            (Tree.SimpleType) 
+                                reference;
+                    Tree.TypeArgumentList tal = 
+                            st.getTypeArgumentList();
+                    List<Tree.Type> types = tal.getTypes();
+                    if (types.size()>index) {
+                        Tree.Type type = types.get(index);
+                        result.append(
+                                Nodes.toString(type, 
+                                        tokens));
+                        return;
+                    }
+                }
+                else if (reference 
+                            instanceof Tree.MemberOrTypeExpression) {
+                    Tree.StaticMemberOrTypeExpression st = 
+                            (Tree.StaticMemberOrTypeExpression) 
+                                reference;
+                    Tree.TypeArguments tas = 
+                            st.getTypeArguments();
+                    if (tas instanceof Tree.TypeArgumentList) {
+                        Tree.TypeArgumentList tal = 
+                                (Tree.TypeArgumentList) tas;
+                        List<Tree.Type> types = tal.getTypes();
+                        if (types.size()>index) {
+                            Tree.Type type = types.get(index);
+                            if (type!=null) {
+                                result.append(
+                                        Nodes.toString(type, 
+                                                tokens));
+                            }
+                            return;
+                        }
+                    }
+                    else {
+                        List<Type> types = tas.getTypeModels();
+                        if (types.size()>index) {
+                            Type type = types.get(index);
+                            if (type!=null) {
+                                result.append(
+                                        type.asSourceCodeString(
+                                                it.getUnit()));
+                            }
+                            return;
+                        }
+                    }
                 }
             }
         }
@@ -948,8 +985,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 it instanceof Tree.BaseMemberOrTypeExpression) {
             FunctionOrValue fov = (FunctionOrValue) dec;
             Parameter param = fov.getInitializerParameter();
-            if (param.getDeclaration()
-                    .equals(declaration)) {
+            if (param.getDeclaration().equals(declaration)) {
                 boolean sequenced = param.isSequenced();
                 if (ie.getPositionalArgumentList()!=null) {
                     interpolatePositionalArguments(result, 
