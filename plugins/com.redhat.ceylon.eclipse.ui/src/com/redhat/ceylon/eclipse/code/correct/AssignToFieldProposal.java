@@ -16,6 +16,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 class AssignToFieldProposal {
@@ -26,15 +27,16 @@ class AssignToFieldProposal {
                 Collection<ICompletionProposal> proposals) {
             if (declaration instanceof Tree.TypedDeclaration && 
                     statement instanceof Tree.Constructor) {
-    //            Tree.TypedDeclaration td = 
-    //                    (Tree.TypedDeclaration) declaration;
                 Tree.Constructor constructor = 
                         (Tree.Constructor) statement;
                 Declaration model = 
                         declaration.getDeclarationModel();
                 String name = model.getName();
-                if (constructor.getConstructor()
-                        .getExtendedType()
+                Constructor cmodel = constructor.getConstructor();
+                if (!model.getContainer().equals(cmodel)) {
+                    return;
+                }
+                if (cmodel.getExtendedType()
                         .getDeclaration()
                         .getMember(name, null, false)
                             == null) {
@@ -46,11 +48,31 @@ class AssignToFieldProposal {
                     String indent = 
                             getDefaultLineDelimiter(document) +
                             getIndent(constructor, document);
+                    int start = declaration.getStartIndex();
+                    int end;
+                    Tree.SpecifierOrInitializerExpression sie;
+                    if (declaration instanceof Tree.AttributeDeclaration) {
+                        Tree.AttributeDeclaration ad = 
+                                (Tree.AttributeDeclaration) 
+                                    declaration;
+                        sie = ad.getSpecifierOrInitializerExpression();
+                    }
+                    else if (declaration instanceof Tree.MethodDeclaration) {
+                        Tree.MethodDeclaration ad = 
+                                (Tree.MethodDeclaration) 
+                                    declaration;
+                        sie = ad.getSpecifierExpression();
+                    }
+                    else {
+                        sie = null;
+                    }
+                    end = sie==null ? 
+                            declaration.getEndIndex() : 
+                            sie.getStartIndex();
                     String def;
                     try {
-                        def = document.get(
-                                declaration.getStartIndex(), 
-                                declaration.getDistance());
+                        def = document.get(start, end-start)
+                                .trim();
                     }
                     catch (BadLocationException e) {
                         return;
