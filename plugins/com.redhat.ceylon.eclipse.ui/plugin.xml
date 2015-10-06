@@ -3344,9 +3344,9 @@
             class="com.redhat.ceylon.eclipse.core.adapters.JavaElementAdapterFactory" 
             adaptableType="org.eclipse.jdt.core.IJavaElement">
             
-            <adapter type="com.redhat.ceylon.eclipse.core.model.IUnit"/>
+            <adapter type="com.redhat.ceylon.ide.common.model.IUnit"/>
             <adapter type="com.redhat.ceylon.eclipse.core.model.IJavaModelAware"/>
-            <adapter type="com.redhat.ceylon.eclipse.core.model.JDTModule"/>
+            <adapter type="com.redhat.ceylon.ide.common.model.BaseIdeModule"/>
             <adapter type="com.redhat.ceylon.model.typechecker.model.Package"/>
 		</factory>
 
@@ -3361,9 +3361,9 @@
 		<factory 
             class="com.redhat.ceylon.eclipse.core.adapters.ResourceAdapterFactory" 
             adaptableType="org.eclipse.core.resources.IResource">
-            <adapter type="com.redhat.ceylon.eclipse.core.model.IUnit"/>
-            <adapter type="com.redhat.ceylon.eclipse.core.model.IResourceAware"/>
-            <adapter type="com.redhat.ceylon.eclipse.core.model.JDTModule"/>
+            <adapter type="com.redhat.ceylon.ide.common.model.IUnit"/>
+            <adapter type="com.redhat.ceylon.ide.common.model.IResourceAware"/>
+            <adapter type="com.redhat.ceylon.ide.common.model.BaseIdeModule"/>
             <adapter type="com.redhat.ceylon.model.typechecker.model.Package"/>
 		</factory>
    </extension>     	

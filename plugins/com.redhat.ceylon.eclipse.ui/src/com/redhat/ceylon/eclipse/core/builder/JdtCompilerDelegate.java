@@ -14,7 +14,9 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.util.Util;
 
@@ -38,9 +40,9 @@ import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.ModelState;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
@@ -121,8 +123,8 @@ final class JdtCompilerDelegate implements CompilerDelegate {
         }
     }
     
-    private void buildListOfCompiledModules(Module module, Set<ProjectSourceFile> listOfModules) {
-        if (module instanceof JDTModule && ((JDTModule) module).isProjectModule()) {
+    private void buildListOfCompiledModules(Module module, Set<ProjectSourceFile<IProject,IResource,IFolder,IFile>> listOfModules) {
+        if (module instanceof BaseIdeModule && ((BaseIdeModule) module).getIsProjectModule()) {
             Unit moduleUnit = module.getUnit();
             if (moduleUnit instanceof ProjectSourceFile && !listOfModules.contains(moduleUnit)) {
                 listOfModules.add((ProjectSourceFile) moduleUnit);
@@ -139,12 +141,12 @@ final class JdtCompilerDelegate implements CompilerDelegate {
         Context context = contextRef.get();
         CeylonEnter ceylonEnter = CeylonEnter.instance(context);
         assert(context != null);
-        Set<ProjectSourceFile> compiledModules = new HashSet<>();  
+        Set<ProjectSourceFile<IProject,IResource,IFolder,IFile>> compiledModules = new HashSet<>();  
         for (PhasedUnit pu : phasedUnits.getPhasedUnits()) {
             buildListOfCompiledModules(pu.getPackage().getModule(), compiledModules);
         }
         
-        for (ProjectSourceFile compiledModule : compiledModules) {
+        for (ProjectSourceFile<IProject,IResource,IFolder,IFile> compiledModule : compiledModules) {
             PhasedUnit pu = compiledModule.getPhasedUnit();
             boolean hasErrors = false;
             for (Message e : pu.getCompilationUnit().getErrors()) {

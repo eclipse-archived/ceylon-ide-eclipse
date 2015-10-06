@@ -5,12 +5,13 @@ import java.lang.ref.WeakReference;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IClassFile;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.typechecker.CrossProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Package;
 
 public class CrossProjectBinaryUnit extends CeylonBinaryUnit implements ICrossProjectReference {
@@ -22,33 +23,33 @@ public class CrossProjectBinaryUnit extends CeylonBinaryUnit implements ICrossPr
     
     @Override
     public IProject getResourceProject() {
-        CrossProjectPhasedUnit pu = getPhasedUnit();
-        ProjectPhasedUnit ppu = pu!=null ? pu.getOriginalProjectPhasedUnit() : null;
+        CrossProjectPhasedUnit<IProject,IResource,IFolder,IFile> pu = getPhasedUnit();
+        ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = pu!=null ? pu.getOriginalProjectPhasedUnit() : null;
         return ppu != null ? ppu.getResourceProject() : null;
     }
 
     @Override
     public IFolder getResourceRootFolder() {
-        CrossProjectPhasedUnit pu = getPhasedUnit();
-        ProjectPhasedUnit ppu = pu!=null ? pu.getOriginalProjectPhasedUnit() : null;
+        CrossProjectPhasedUnit<IProject,IResource,IFolder,IFile> pu = getPhasedUnit();
+        ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = pu!=null ? pu.getOriginalProjectPhasedUnit() : null;
         return ppu != null ? ppu.getResourceRootFolder() : null;
     }
 
     @Override
     public IFile getResourceFile() {
-        ProjectPhasedUnit ppu = 
+        ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
                 getPhasedUnit()
                     .getOriginalProjectPhasedUnit();
         return ppu != null ? ppu.getResourceFile() : null;
     }
 
     @Override
-    public CrossProjectPhasedUnit getPhasedUnit() {
-        return (CrossProjectPhasedUnit) super.getPhasedUnit();
+    public CrossProjectPhasedUnit<IProject,IResource,IFolder,IFile> getPhasedUnit() {
+        return (CrossProjectPhasedUnit<IProject,IResource,IFolder,IFile>) super.getPhasedUnit();
     }
     
     public ProjectSourceFile getOriginalSourceFile() {
-        ProjectPhasedUnit ppu = getOriginalPhasedUnit();
+        ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = getOriginalPhasedUnit();
         return ppu != null ? (ProjectSourceFile) ppu.getUnit() : null;
     }
 

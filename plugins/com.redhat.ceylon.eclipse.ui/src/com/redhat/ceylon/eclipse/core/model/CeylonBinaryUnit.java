@@ -8,6 +8,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.ide.common.model.CeylonUnit;
 
 /*
  * Created inside the JDTModelLoader.getCompiledUnit() function if the unit is a ceylon one

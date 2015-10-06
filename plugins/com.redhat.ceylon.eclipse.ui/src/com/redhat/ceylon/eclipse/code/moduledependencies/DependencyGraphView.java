@@ -84,10 +84,10 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.Dependency;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.ModuleReference;
@@ -324,9 +324,9 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                         node.setTooltip(new Label(
                                 "Java archive module"));
                     }
-                    else if (module instanceof JDTModule) {
-                        JDTModule jdtModule = (JDTModule) module;
-                        if (jdtModule.isCeylonArchive()) {
+                    else if (module instanceof BaseIdeModule) {
+                        BaseIdeModule jdtModule = (BaseIdeModule) module;
+                        if (jdtModule.getIsCeylonArchive()) {
                             node.setBackgroundColor(node.getDisplay()
                                     .getSystemColor(SWT.COLOR_GREEN));
                             node.setHighlightColor(node.getDisplay()
@@ -334,7 +334,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                             node.setTooltip(new Label(
                                     "Ceylon archive module"));
                         }
-                        else if (jdtModule.isProjectModule()) {
+                        else if (jdtModule.getIsProjectModule()) {
                             node.setBackgroundColor(node.getDisplay()
                                     .getSystemColor(SWT.COLOR_YELLOW));
                             node.setHighlightColor(node.getDisplay()

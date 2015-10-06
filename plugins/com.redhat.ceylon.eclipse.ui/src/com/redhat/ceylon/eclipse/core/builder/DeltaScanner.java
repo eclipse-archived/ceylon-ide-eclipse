@@ -27,9 +27,9 @@ import org.eclipse.core.runtime.IPath;
 
 import com.redhat.ceylon.common.FileUtil;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
@@ -67,7 +67,7 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         } catch (CoreException e) {
         }
         astAwareIncrementalBuild = CeylonBuilder.areAstAwareIncrementalBuildsEnabled(project);
-        CeylonProjectConfig<IProject> projectConfig = ceylonModel().getProject(project).getConfiguration();
+        CeylonProjectConfig projectConfig = ceylonModel().getProject(project).getConfiguration();
         if (projectConfig != null) {
             String overridesFilePath = toJavaString(projectConfig.getOverrides());
             if (overridesFilePath != null) {

@@ -1,5 +1,7 @@
 import com.redhat.ceylon.ide.common.model {
-    CeylonProject
+    CeylonProject,
+	CeylonProjects,
+    ModuleDependencies
 }
 import org.eclipse.core.resources {
     IProject, IResource,
@@ -35,6 +37,12 @@ import ceylon.interop.java {
 }
 import com.redhat.ceylon.common {
     Constants
+}
+import org.eclipse.jdt.internal.compiler.ast {
+    Javadoc
+}
+import org.eclipse.jdt.core {
+    JavaCore
 }
 
 shared class EclipseCeylonProject(ideArtifact) extends CeylonProject<IProject>() {
@@ -162,4 +170,33 @@ shared class EclipseCeylonProject(ideArtifact) extends CeylonProject<IProject>()
             }
         };
     }
+    shared actual CeylonProjects<IProject> model => ceylonModel;
+    
+    shared actual Boolean nativeProjectIsAccessible => ideArtifact.accessible;
+
+    shared actual {IProject*} referencedNativeProjects(IProject nativeProject) { 
+        try {
+            return nativeProject.referencedProjects.array.coalesced; 
+        } catch(CoreException e) {
+            e.printStackTrace();
+            return [];
+        }
+    }
+
+    shared actual Boolean isJavaLikeFileName(String fileName) =>
+            JavaCore.isJavaLikeFileName(fileName);
+    
+    shared actual {IProject*} referencingNativeProjects(IProject nativeProject) { 
+        try {
+            return nativeProject.referencingProjects.array.coalesced; 
+        } catch(CoreException e) {
+            e.printStackTrace();
+            return [];
+        }
+    }
+
+    shared actual Boolean compileToJs => CeylonBuilder.compileToJs(ideArtifact);
+    shared actual Boolean compileToJava => CeylonBuilder.compileToJava(ideArtifact);
+    
+    shared actual ModuleDependencies moduleDependencies => CeylonBuilder.getModuleDependenciesForProject(ideArtifact);
  }

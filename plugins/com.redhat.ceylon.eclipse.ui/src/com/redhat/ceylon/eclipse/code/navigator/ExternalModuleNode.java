@@ -13,6 +13,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 
 public class ExternalModuleNode implements ModuleNode {
     private RepositoryNode repositoryNode;
@@ -91,8 +92,8 @@ public class ExternalModuleNode implements ModuleNode {
      * 
      */
     @Override
-    public JDTModule getModule() {
-        for (JDTModule module : CeylonBuilder.getProjectExternalModules(repositoryNode.project)) {
+    public BaseIdeModule getModule() {
+        for (BaseIdeModule module : CeylonBuilder.getProjectExternalModules(repositoryNode.project)) {
             if (module.getSignature().equals(moduleSignature)) {
                 return module;
             }

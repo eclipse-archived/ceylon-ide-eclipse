@@ -11,13 +11,8 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 
 public abstract class IdePhasedUnit extends PhasedUnit {
 
@@ -55,17 +50,5 @@ public abstract class IdePhasedUnit extends PhasedUnit {
         return newUnit;
     }
     
-
     protected abstract TypecheckerUnit newUnit();
-
-    public static boolean isCentralModelUnit(Unit unit) {
-        return ! (unit instanceof CeylonUnit) ||
-                    unit instanceof ProjectSourceFile ||
-                    !(unit.getPackage() instanceof SingleSourceUnitPackage);
-    }
-
-    public static boolean isCentralModelDeclaration(Declaration declaration) {
-        return declaration == null ||
-                isCentralModelUnit(declaration.getUnit());
-    }
 }

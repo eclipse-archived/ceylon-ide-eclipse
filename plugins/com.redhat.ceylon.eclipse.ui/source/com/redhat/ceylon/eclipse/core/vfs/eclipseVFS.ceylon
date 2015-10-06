@@ -1,7 +1,8 @@
 import com.redhat.ceylon.ide.common.vfs {
     FolderVirtualFile,
     ResourceVirtualFile,
-    FileVirtualFile
+    FileVirtualFile,
+    BaseFolderVirtualFile
 }
 import org.eclipse.core.resources {
     IResource, IFolder, IFile,
@@ -96,7 +97,7 @@ shared class IFolderVirtualFile
     shared actual Integer hash
             => (super of FolderVirtualFile<IResource, IFolder, IFile>).hash;
 
-    shared actual [String*] toPackageName(FolderVirtualFile<IResource, IFolder, IFile> srcDir) {
+    shared actual [String*] toPackageName(BaseFolderVirtualFile srcDir) {
         assert(is IFolderVirtualFile srcDir);
         return toStringArray(nativeResource.projectRelativePath
             .makeRelativeTo(srcDir.nativeResource.projectRelativePath)

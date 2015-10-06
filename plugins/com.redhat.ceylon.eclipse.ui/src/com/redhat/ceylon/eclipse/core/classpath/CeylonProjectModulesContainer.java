@@ -72,8 +72,8 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.modelJ2C;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
 import com.redhat.ceylon.model.cmr.JDKUtils;
@@ -373,7 +373,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         Set<Module> modulesToAdd = context.getModules().getListOfModules();
         //modulesToAdd.add(projectModules.getLanguageModule());        
         for (Module module: modulesToAdd) {
-            JDTModule jdtModule = (JDTModule) module;
+            BaseIdeModule jdtModule = (BaseIdeModule) module;
             String name = module.getNameAsString(); 
             if (name.equals(Module.DEFAULT_MODULE_NAME) ||
                     JDKUtils.isJDKModule(name) ||
@@ -411,8 +411,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                     //otherwise, use the src archive
                     srcPath = getSourceArchive(provider, jdtModule);
                     if ((srcPath == null || srcPath.equals(modulePath))
-                            && jdtModule.isJavaBinaryArchive()) {
-                        CeylonIdeConfig<IProject> ideConfig = modelJ2C.ideConfig(project);
+                            && jdtModule.getIsJavaBinaryArchive()) {
+                        CeylonIdeConfig ideConfig = modelJ2C.ideConfig(project);
                         if (ideConfig != null) {
                             ceylon.language.String attachment = 
                                     ideConfig.getSourceAttachment(
@@ -459,7 +459,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
     }
 
     public static File getSourceArtifact(RepositoryManager provider,
-            JDTModule module) {
+            BaseIdeModule module) {
         String sourceArchivePath = module.getSourceArchivePath(); 
         if (sourceArchivePath != null) {
             File sourceArchive = new File(sourceArchivePath);
@@ -486,10 +486,10 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
     }
 
     public static IPath getSourceArchive(RepositoryManager provider,
-            JDTModule module) {
+            BaseIdeModule module) {
         File srcArtifact = getSourceArtifact(provider, module);
         if (srcArtifact!=null) {
-            if (module.isCeylonBinaryArchive()) {
+            if (module.getIsCeylonBinaryArchive()) {
                 if (module.containsJavaImplementations()) {
                     srcArtifact = ceylonSourceArchiveToJavaSourceArchive(
                             module.getNameAsString(),
@@ -509,8 +509,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
     }
 
     public static File getModuleArtifact(RepositoryManager provider,
-            JDTModule module) {
-        if (! module.isSourceArchive()) {
+            BaseIdeModule module) {
+        if (! module.getIsSourceArchive()) {
             File moduleFile = module.getArtifact();
             if (moduleFile == null) {
                 return null;
@@ -536,7 +536,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
     }
 
     public static IPath getModuleArchive(RepositoryManager provider,
-            JDTModule module) {
+            BaseIdeModule module) {
         File moduleArtifact = getModuleArtifact(provider, module);
         if (moduleArtifact!=null) {
             return new Path(moduleArtifact.getPath());

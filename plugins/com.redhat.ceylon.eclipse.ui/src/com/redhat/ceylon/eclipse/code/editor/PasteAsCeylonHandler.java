@@ -69,7 +69,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
         public void run(IProgressMonitor monitor) {
             monitor.beginTask("Converting Java to Ceylon", -1);
             try {
-                CeylonIdeConfig<IProject> ideConfig = 
+                CeylonIdeConfig ideConfig = 
                         modelJ2C.ceylonModel()
                             .getProject(project)
                             .getIdeConfiguration();
@@ -121,7 +121,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 
 	private static String transformJavaToCeylon(
 	        String javaCode, 
-	        CeylonIdeConfig<IProject> ideConfig) 
+	        CeylonIdeConfig ideConfig) 
 	                throws IOException {
 		ANTLRInputStream input = new ANTLRInputStream(javaCode);
 		Java8Lexer lexer = new Java8Lexer(input);

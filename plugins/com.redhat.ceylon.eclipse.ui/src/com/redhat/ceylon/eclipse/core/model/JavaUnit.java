@@ -7,6 +7,10 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.model.IdeUnit;
+import com.redhat.ceylon.ide.common.util.toJavaIterable_;
 import com.redhat.ceylon.model.typechecker.model.Package;
 
 public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IResourceAware {
@@ -71,10 +75,12 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
     public void remove() {
         Package p = getPackage();
         p.removeUnit(this);
-        assert (p.getModule() instanceof JDTModule);
-        JDTModule module = (JDTModule) p.getModule();
-        for (JDTModule moduleInReferencingProject: 
-                module.getModuleInReferencingProjects()) {
+        assert (p.getModule() instanceof BaseIdeModule);
+        BaseIdeModule module = (BaseIdeModule) p.getModule();
+        for (BaseIdeModule moduleInReferencingProject :
+                toJavaIterable_.toJavaIterable(
+                        BaseIdeModule.$TypeDescriptor$, 
+                        module.getModuleInReferencingProjects())) {
         	moduleInReferencingProject.removedOriginalUnit(getRelativePath());
         }
     }

@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 
 public interface ModuleNode {
-    JDTModule getModule();
+    BaseIdeModule getModule();
     String getSignature();
 }

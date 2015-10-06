@@ -150,7 +150,7 @@ public class NewProjectWizard extends NewElementWizard
             
             CeylonProject<IProject> ceylonProject = 
                     ceylonModel().getProject(project);
-            CeylonProjectConfig<IProject> projectConfig = 
+            CeylonProjectConfig projectConfig = 
                     ceylonProject.getConfiguration();
             
             if (!firstPage.isShowCompilerWarnings()) {

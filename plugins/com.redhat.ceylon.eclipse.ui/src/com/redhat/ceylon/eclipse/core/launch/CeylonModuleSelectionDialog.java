@@ -6,7 +6,10 @@ import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import java.util.Comparator;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -24,10 +27,12 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.open.FilteredItemsSelectionDialog;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.IdeModule;
 
 public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     
@@ -80,9 +85,9 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     class ModuleRepoDetailsLabelProvider extends ModuleLabelProvider {
         @Override
         public Image getImage(Object element) {
-            if (element instanceof JDTModule) {
-                JDTModule module = (JDTModule) element;
-                if (module.isProjectModule()) {
+            if (element instanceof BaseIdeModule) {
+                BaseIdeModule module = (BaseIdeModule) element;
+                if (module.getIsProjectModule()) {
                     return CeylonResources.PROJECT;
                 }
                 else {
@@ -96,12 +101,12 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public String getText(Object element) {
-            if (element instanceof JDTModule) {
-                final JDTModule module = (JDTModule) element;
-                if (module.isProjectModule()) {
+            if (element instanceof IdeModule) {
+                final IdeModule<IProject,IResource,IFolder,IFile> module = (IdeModule<IProject,IResource,IFolder,IFile>) element;
+                if (module.getIsProjectModule()) {
 //                    ProjectSourceFile unit = (ProjectSourceFile) module.getUnit();
 //                    return unit.getProjectResource().getName();
-                    return module.getModuleManager().getJavaProject().getProject().getName();
+                    return module.getCeylonProject().getIdeArtifact().getName();
                 }
                 else {
                     return module.getRepositoryDisplayString();
@@ -115,10 +120,10 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     class ModuleSourceFolderLabelProvider extends ModuleLabelProvider {
         @Override
         public Image getImage(Object element) {
-            if (element instanceof JDTModule) {
-                JDTModule module = (JDTModule) element;
-                if (module.isProjectModule()) {
-                    if (!module.isDefaultModule()) {
+            if (element instanceof BaseIdeModule) {
+                BaseIdeModule module = (BaseIdeModule) element;
+                if (module.getIsProjectModule()) {
+                    if (!module.getIsDefaultModule()) {
                         return CeylonResources.SOURCE_FOLDER;
                     }
                 }
@@ -128,13 +133,13 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public String getText(Object element) {
-            if (element instanceof JDTModule) {
-                final JDTModule module = (JDTModule) element;
-                if (module.isProjectModule()) {
-                    if (!module.isDefaultModule()) {
-                        IJavaProject project = module.getModuleManager().getJavaProject();
+            if (element instanceof IdeModule) {
+                final IdeModule<IProject,IResource,IFolder,IFile> module = (IdeModule<IProject,IResource,IFolder,IFile>) element;
+                if (module.getIsProjectModule()) {
+                    if (!module.getIsDefaultModule()) {
+                        IProject project = module.getCeylonProject().getIdeArtifact();
                         ProjectSourceFile unit = (ProjectSourceFile) module.getUnit();
-                        for (IFolder folder: getSourceFolders(project.getProject())) {
+                        for (IFolder folder: getSourceFolders(project)) {
                             if (folder.findMember(unit.getRelativePath())!=null) {
                                 return folder.getFullPath().toPortableString();
                             }

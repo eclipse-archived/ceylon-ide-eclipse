@@ -6,9 +6,8 @@ import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
-import static com.redhat.ceylon.eclipse.core.vfs.vfsJ2C.createVirtualResource;
-import static com.redhat.ceylon.eclipse.core.vfs.vfsJ2C.getIFileVirtualFile;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.*;
+import static com.redhat.ceylon.eclipse.core.vfs.vfsJ2C.*;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
@@ -153,33 +152,34 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
-import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JavaUnit;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
-import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
+import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import com.redhat.ceylon.ide.common.model.CeylonUnit;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.model.IdeModuleManager;
+import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
+import com.redhat.ceylon.ide.common.model.SourceFile;
 import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
+import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.util.CarUtils;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
@@ -607,7 +607,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static JDTModelLoader getModelLoader(TypeChecker typeChecker) {
-        JDTModuleManager moduleManager = (JDTModuleManager) 
+        BaseIdeModuleManager moduleManager = (BaseIdeModuleManager) 
                 typeChecker.getPhasedUnits().getModuleManager();
         return (JDTModelLoader) moduleManager.getModelLoader();
     }
@@ -621,7 +621,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return getModelLoader(typeChecker);
     }
 
-    public static JDTModuleManager getProjectModuleManager(IProject project) {
+    public static BaseIdeModuleManager getProjectModuleManager(IProject project) {
         JDTModelLoader modelLoader = 
                 getProjectModelLoader(project);
         if (modelLoader == null) {
@@ -1412,7 +1412,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         Unit duplicateUnit = duplicateDeclaration.getUnit();
                         if ((duplicateUnit instanceof SourceFile) && 
                             (duplicateUnit instanceof IResourceAware)) {
-                            IResourceAware ra = (IResourceAware) duplicateUnit;
+                            IResourceAware<IProject,IFolder,IFile> ra = (IResourceAware<IProject,IFolder,IFile>) duplicateUnit;
                             IFile duplicateDeclFile = ra.getResourceFile();
                             if (duplicateDeclFile != null && duplicateDeclFile.exists()) {
                                 filesToAddInTypecheck.add(duplicateDeclFile);
@@ -1709,7 +1709,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return Collections.emptySet();
     }
 
-    static ProjectPhasedUnit parseFileToPhasedUnit(final ModuleManager moduleManager, final ModuleSourceMapper moduleSourceMapper,
+    static ProjectPhasedUnit<IProject, IResource, IFolder, IFile> parseFileToPhasedUnit(final ModuleManager moduleManager, final ModuleSourceMapper moduleSourceMapper,
             final TypeChecker typeChecker,
             final ResourceVirtualFile<IResource, IFolder, IFile> file, 
             final ResourceVirtualFile<IResource, IFolder, IFile> srcDir,
@@ -1743,8 +1743,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         final TypeChecker typeChecker = typeCheckers.get(project);
         final PhasedUnits pus = typeChecker.getPhasedUnits();
-        final JDTModuleManager moduleManager = (JDTModuleManager) pus.getModuleManager(); 
-        final JDTModuleSourceMapper moduleSourceMapper = (JDTModuleSourceMapper) pus.getModuleSourceMapper(); 
+        final BaseIdeModuleManager moduleManager = (BaseIdeModuleManager) pus.getModuleManager(); 
+        final BaseIdeModuleSourceMapper moduleSourceMapper = (BaseIdeModuleSourceMapper) pus.getModuleSourceMapper(); 
         final JDTModelLoader modelLoader = getModelLoader(typeChecker);
 
         return doWithSourceModel(project, false, 20, new Callable<List<PhasedUnit>>() {
@@ -1757,9 +1757,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 // - remove old PhasedUnits and parse new or updated PhasedUnits from the source archive for source-based modules
                 
                 for (Module m : typeChecker.getContext().getModules().getListOfModules()) {
-                    if (m instanceof JDTModule) {
-                        JDTModule module = (JDTModule) m;
-                        if (module.isCeylonArchive()) {
+                    if (m instanceof BaseIdeModule) {
+                        BaseIdeModule module = (BaseIdeModule) m;
+                        if (module.getIsCeylonArchive()) {
                             module.refresh();
                         }
                     }
@@ -2164,8 +2164,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             TypeChecker typeChecker = buildTypeChecker(project, javaProject);
                             PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 
-                            JDTModuleManager moduleManager = (JDTModuleManager) phasedUnits.getModuleManager();
-                            JDTModuleSourceMapper moduleSourceMapper = (JDTModuleSourceMapper) phasedUnits.getModuleSourceMapper();
+                            IdeModuleManager<IProject> moduleManager = 
+                                    (IdeModuleManager<IProject>) phasedUnits.getModuleManager();
+                            IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper = 
+                                    (IdeModuleSourceMapper<IProject,IResource,IFolder,IFile>) phasedUnits.getModuleSourceMapper();
                             moduleManager.setTypeChecker(typeChecker);
                             moduleSourceMapper.setTypeChecker(typeChecker);
                             Context context = typeChecker.getContext();
@@ -2330,9 +2332,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             
                             if (compileToJs(project)) {
                                 for (Module module : typeChecker.getContext().getModules().getListOfModules()) {
-                                    if (module instanceof JDTModule) {
-                                        JDTModule jdtModule = (JDTModule) module;
-                                        if (jdtModule.isCeylonArchive()
+                                    if (module instanceof BaseIdeModule) {
+                                        BaseIdeModule jdtModule = (BaseIdeModule) module;
+                                        if (jdtModule.getIsCeylonArchive()
                                                 && ModelUtil.isForBackend(jdtModule.getNativeBackends(), Backend.JavaScript.asSet())) {
                                             List<ModuleImport> importedModuleImports = new ArrayList<>();
                                             for(ModuleImport moduleImport : moduleSourceMapper.retrieveModuleImports(jdtModule)) {
@@ -2391,19 +2393,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private static TypeChecker buildTypeChecker(IProject project,
+    private static TypeChecker buildTypeChecker(final IProject project,
             final IJavaProject javaProject) {
         TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
             .verbose(false)
             .moduleManagerFactory(new ModuleManagerFactory(){
                 @Override
                 public ModuleManager createModuleManager(Context context) {
-                    return new JDTModuleManager(context, javaProject);
+                    return newModuleManager(context, ceylonModel().getProject(project));
                 }
 
                 @Override
                 public ModuleSourceMapper createModuleManagerUtil(Context context, ModuleManager moduleManager) {
-                    return new JDTModuleSourceMapper(context, javaProject, (JDTModuleManager) moduleManager);
+                    return newModuleSourceMapper(context, (IdeModuleManager<IProject>) moduleManager);
                 }
             });
         
@@ -2416,7 +2418,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private static List<IFile> scanFiles(IProject project, IJavaProject javaProject, 
             final TypeChecker typeChecker, final PhasedUnits phasedUnits, 
-            final JDTModuleManager moduleManager, final JDTModuleSourceMapper moduleSourceMapper, 
+            final IdeModuleManager<IProject> moduleManager, 
+            final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
             final JDTModelLoader modelLoader, 
             final Module defaultModule, IProgressMonitor mon) throws CoreException {
         SubMonitor monitor = SubMonitor.convert(mon, 10000);
@@ -2476,7 +2479,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private static void addProblemAndTaskMarkers(final List<PhasedUnit> units, 
             final IProject project) {
         for (PhasedUnit phasedUnit: units) {
-            ProjectPhasedUnit projectPhasedUnit = (ProjectPhasedUnit) phasedUnit;
+            ProjectPhasedUnit<IProject,IResource,IFolder,IFile> projectPhasedUnit = (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)phasedUnit;
             IFile file = projectPhasedUnit.getResourceFile();
             CompilationUnit compilationUnit = phasedUnit.getCompilationUnit();
             compilationUnit.visit(new WarningSuppressionVisitor<Warning>(Warning.class,
@@ -2561,7 +2564,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             options.add(systemRepo);
         }
         
-        CeylonProjectConfig<IProject> config = ceylonProject.getConfiguration();
+        CeylonProjectConfig config = ceylonProject.getConfiguration();
         
         String overrides = toJavaString(config.getOverrides());
         if (overrides != null) {
@@ -2684,7 +2687,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             .buildOutputManager();
         	
             for (Module m : getProjectDeclaredSourceModules(project)) {
-            	if (m instanceof JDTModule) {
+            	if (m instanceof BaseIdeModule) {
                 	ArtifactCreator sac;
 					try {
 						sac = CeylonUtils.makeSourceArtifactCreator(outRepo, js_srcdir,
@@ -2718,7 +2721,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             boolean generateSourceArchive, List<File> sources, List<File> resources) 
                     throws CoreException {
         IProject project = ceylonProject.getIdeArtifact();
-        CeylonProjectConfig<IProject> config = ceylonProject.getConfiguration();
+        CeylonProjectConfig config = ceylonProject.getConfiguration();
         Options jsopts = new Options()
                 .cwd(ceylonProject.getRootDirectory())
                 .outWriter(printWriter)
@@ -3396,16 +3399,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return typeChecker.getContext().getModules();
     }
     
-    public static Collection<JDTModule> getProjectExternalModules(IProject project) {
+    public static Collection<BaseIdeModule> getProjectExternalModules(IProject project) {
         TypeChecker typeChecker = getProjectTypeChecker(project);
         if (typeChecker == null) {
             return Collections.emptyList();
         }
-        List<JDTModule> modules = new ArrayList<>();
+        List<BaseIdeModule> modules = new ArrayList<>();
         for (Module m : typeChecker.getContext().getModules().getListOfModules()) {
-            if (m instanceof JDTModule) {
-                JDTModule module = (JDTModule) m;
-                if (! module.isProjectModule()) {
+            if (m instanceof BaseIdeModule) {
+                BaseIdeModule module = (BaseIdeModule) m;
+                if (! module.getIsProjectModule()) {
                     modules.add(module);
                 }
             }
@@ -3430,9 +3433,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         List<Module> modules = new ArrayList<>();
         for (Module m : typeChecker.getPhasedUnits().getModuleSourceMapper().getCompiledModules()) {
-            if (m instanceof JDTModule) {
-                JDTModule module = (JDTModule) m;
-                if (module.isProjectModule()) {
+            if (m instanceof BaseIdeModule) {
+                BaseIdeModule module = (BaseIdeModule) m;
+                if (module.getIsProjectModule()) {
                     modules.add(module);
                 }
             }
@@ -3963,9 +3966,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         String virtualPath = virtualFile.getPath();
         if (virtualPath.contains("!/")) { // TODO : this test could be replaced by an instanceof if the ZipEntryVirtualFile was public
             for (IProject p : getProjects()) {
-                JDTModuleManager moduleManager = getProjectModuleManager(p);
+                BaseIdeModuleManager moduleManager = getProjectModuleManager(p);
                 if (moduleManager != null) {
-                    JDTModule archiveModule = moduleManager.getArchiveModuleFromSourcePath(virtualPath);
+                    BaseIdeModule archiveModule = moduleManager.getArchiveModuleFromSourcePath(virtualPath);
                     if (archiveModule != null) {
                         ExternalPhasedUnit pu = archiveModule.getPhasedUnit(virtualFile);
                         if (pu != null) {
@@ -3978,13 +3981,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }    
 
-    public static IResourceAware getUnit(IFile file) {
+    public static IResourceAware<IProject,IFolder,IFile> getUnit(IFile file) {
         Package p = getPackage(file);
         if (p != null) {
             for (Unit u: p.getUnits()) {
                 if (u instanceof IResourceAware) {
                     if (u.getFilename().equals(file.getName())) {
-                        return (IResourceAware) u;
+                        return (IResourceAware<IProject,IFolder,IFile>) u;
                     }
                 }
             }
@@ -4009,9 +4012,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         
         for (Module m : projectModules.getListOfModules()) {
-            if (m instanceof JDTModule && ! m.getNameAsString().equals(Module.DEFAULT_MODULE_NAME)) {
-                JDTModule module = (JDTModule) m;
-                for (IPackageFragmentRoot moduleRoot : module.getPackageFragmentRoots()) {
+            if (m instanceof BaseIdeModule && ! m.getNameAsString().equals(Module.DEFAULT_MODULE_NAME)) {
+                BaseIdeModule module = (BaseIdeModule) m;
+                for (IPackageFragmentRoot moduleRoot : getModulePackageFragmentRoots(module)) {
                     if (root.getPath().equals(moduleRoot.getPath())) {
                         Package result = module.getDirectPackage(packageFragment.getElementName());
                         if (result != null) {
@@ -4021,8 +4024,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
             }
         }
-        JDTModule defaultModule = (JDTModule) projectModules.getDefaultModule();
-        for (IPackageFragmentRoot moduleRoot : defaultModule.getPackageFragmentRoots()) {
+        BaseIdeModule defaultModule = (BaseIdeModule) projectModules.getDefaultModule();
+        for (IPackageFragmentRoot moduleRoot : getModulePackageFragmentRoots(defaultModule)) {
             if (root.getPath().equals(moduleRoot.getPath())) {
                 Package result = defaultModule.getDirectPackage(packageFragment.getElementName());
                 if (result != null) {
@@ -4033,18 +4036,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    public static JDTModule asSourceModule(IFolder moduleFolder) {
+    public static BaseIdeModule asSourceModule(IFolder moduleFolder) {
         Package p = getPackage(moduleFolder);
         if (p != null) {
             Module m = p.getModule();
-            if (m instanceof JDTModule && m.getNameAsString().equals(p.getNameAsString())) {
-                return (JDTModule) m;
+            if (m instanceof BaseIdeModule && m.getNameAsString().equals(p.getNameAsString())) {
+                return (BaseIdeModule) m;
             }
         }
         return null;
     }
 
-    public static JDTModule asSourceModule(IPackageFragment sourceModuleFragment) {
+    public static BaseIdeModule asSourceModule(IPackageFragment sourceModuleFragment) {
         IFolder moduleFolder;
         try {
             moduleFolder = (IFolder) sourceModuleFragment.getCorrespondingResource();
@@ -4056,34 +4059,34 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    public static JDTModule getModule(IFile file) {
+    public static BaseIdeModule getModule(IFile file) {
         Package p = getPackage(file);
         if (p != null) {
             Module m = p.getModule();
-            if (m instanceof JDTModule) {
-                return (JDTModule) m;
+            if (m instanceof BaseIdeModule) {
+                return (BaseIdeModule) m;
             }
         }
         return null;
     }
 
-    public static JDTModule getModule(IFolder moduleFolder) {
+    public static BaseIdeModule getModule(IFolder moduleFolder) {
         Package p = getPackage(moduleFolder);
         if (p != null) {
             Module m = p.getModule();
-            if (m instanceof JDTModule) {
-                return (JDTModule) m;
+            if (m instanceof BaseIdeModule) {
+                return (BaseIdeModule) m;
             }
         }
         return null;
     }
 
-    public static JDTModule getModule(IPackageFragment packageFragment) {
+    public static BaseIdeModule getModule(IPackageFragment packageFragment) {
         Package p = getPackage(packageFragment);
         if (p != null) {
             Module m = p.getModule();
-            if (m instanceof JDTModule) {
-                return (JDTModule) m;
+            if (m instanceof BaseIdeModule) {
+                return (BaseIdeModule) m;
             }
         }
         return null;
@@ -4334,7 +4337,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
         String outputRepoRelativePath;
         if (ceylonProject != null) {
-            CeylonProjectConfig<IProject> config = ceylonModel().getProject(project).getConfiguration();
+            CeylonProjectConfig config = ceylonModel().getProject(project).getConfiguration();
             outputRepoRelativePath = config.getOutputRepoProjectRelativePath();
         } else {
             outputRepoRelativePath = "modules";

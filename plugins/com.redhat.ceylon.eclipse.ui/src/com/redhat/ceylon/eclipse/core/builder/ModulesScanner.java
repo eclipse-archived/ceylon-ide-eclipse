@@ -8,12 +8,16 @@ import java.util.List;
 import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.IdeModuleManager;
+import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -22,9 +26,6 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
-import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
@@ -32,15 +33,17 @@ import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 final class ModulesScanner implements IResourceVisitor {
     private final Module defaultModule;
     private final JDTModelLoader modelLoader;
-    private final JDTModuleManager moduleManager;
-    private final JDTModuleSourceMapper moduleSourceMapper;
+    private final IdeModuleManager<IProject> moduleManager;
+    private final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper;
     private final ResourceVirtualFile<IResource, IFolder, IFile> srcDir;
     private final TypeChecker typeChecker;
     private Module module;
     private SubMonitor monitor;
 
     ModulesScanner(Module defaultModule, JDTModelLoader modelLoader,
-            JDTModuleManager moduleManager, JDTModuleSourceMapper moduleSourceMapper, ResourceVirtualFile<IResource, IFolder, IFile> srcDir, 
+            IdeModuleManager<IProject> moduleManager, 
+            IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
+            ResourceVirtualFile<IResource, IFolder, IFile> srcDir, 
             TypeChecker typeChecker, SubMonitor monitor) {
         this.defaultModule = defaultModule;
         this.modelLoader = modelLoader;
@@ -122,8 +125,8 @@ final class ModulesScanner implements IResourceVisitor {
                     Module m = tempPhasedUnit.visitSrcModulePhase();
                     if (m!= null) {
                         module = m;
-                        assert(module instanceof JDTModule);
-                        ((JDTModule) module).setProjectModule();
+                        assert(module instanceof BaseIdeModule);
+                        ((BaseIdeModule) module).setIsProjectModule(true);
                     }
                 } 
                 catch (Exception e) {

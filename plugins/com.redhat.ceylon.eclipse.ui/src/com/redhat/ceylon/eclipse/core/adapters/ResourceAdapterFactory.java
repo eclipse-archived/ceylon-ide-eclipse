@@ -7,9 +7,9 @@ import org.eclipse.core.runtime.IAdapterFactory;
 
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
-import com.redhat.ceylon.eclipse.core.model.IUnit;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.model.IUnit;
 
 
 public class ResourceAdapterFactory implements IAdapterFactory {
@@ -17,7 +17,7 @@ public class ResourceAdapterFactory implements IAdapterFactory {
     private static Class<?>[] ADAPTER_LIST= new Class[] {
         IUnit.class,
         IResourceAware.class,
-        JDTModule.class,
+        BaseIdeModule.class,
         Package.class,
     };
 
@@ -37,7 +37,7 @@ public class ResourceAdapterFactory implements IAdapterFactory {
         if (Package.class.equals(key) && element instanceof IFolder) {
             return CeylonBuilder.getPackage((IFolder) element);
         }
-        if (JDTModule.class.equals(key) && element instanceof IFolder) {
+        if (BaseIdeModule.class.equals(key) && element instanceof IFolder) {
             return CeylonBuilder.asSourceModule((IFolder) element);
         }
         return null;

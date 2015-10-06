@@ -349,7 +349,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
     private static TypeChecker createTypeChecker(IProject project, 
             boolean showWarnings) 
             throws CoreException {
-        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        final CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
         
         final IJavaProject javaProject = 
                 project != null ? JavaCore.create(project) : null;
@@ -359,12 +359,12 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
                 .moduleManagerFactory(new ModuleManagerFactory(){
                     @Override
                     public ModuleManager createModuleManager(Context context) {
-                        return new JDTModuleManager(context, javaProject);
+                        return new JDTModuleManager(context, ceylonProject);
                     }
 
                     @Override
                     public ModuleSourceMapper createModuleManagerUtil(Context context, ModuleManager moduleManager) {
-                        return new JDTModuleSourceMapper(context, javaProject, (JDTModuleManager) moduleManager);
+                        return new JDTModuleSourceMapper(context, ceylonProject, (JDTModuleManager) moduleManager);
                     }
                 })
                 .usageWarnings(showWarnings);

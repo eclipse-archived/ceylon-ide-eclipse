@@ -19,6 +19,7 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.IFileSystem;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IStorage;
@@ -101,8 +102,8 @@ import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class EditorUtil {
@@ -453,7 +454,7 @@ public class EditorUtil {
             return null;
         }
         if (unit instanceof IResourceAware) {
-            IResourceAware ra = (IResourceAware) unit;
+            IResourceAware<IProject,IFolder,IFile> ra = (IResourceAware<IProject,IFolder,IFile>) unit;
             IFile file = ra.getResourceFile();
             if (file != null) {
                 return getEditorInput(file);
@@ -723,8 +724,8 @@ public class EditorUtil {
                                                             relativePath.toString());
                                             if (unit instanceof ProjectPhasedUnit) {
                                                 if (instanceOfIFileVirtualFile(unit.getUnitFile())) {
-                                                    ProjectPhasedUnit ppu = 
-                                                            (ProjectPhasedUnit) unit;
+                                                    ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
+                                                            (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>) unit;
                                                     IFile newFile = ppu.getResourceFile();
                                                     if (newFile.exists() &&
                                                             getRootFolderType(newFile) 

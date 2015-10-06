@@ -59,18 +59,21 @@ import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.IUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnResolvedGeneratedType;
 import com.redhat.ceylon.ide.common.util.escaping_;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonUnit;
+import com.redhat.ceylon.ide.common.model.IUnit;
+import com.redhat.ceylon.ide.common.util.toJavaIterable_;
+import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase;
 import com.redhat.ceylon.model.loader.NamingBase.Prefix;
@@ -1099,7 +1102,7 @@ public class JavaSearch {
     }
 
     private static boolean belongsToModule(
-            IJavaElement javaElement, JDTModule module) {
+            IJavaElement javaElement, BaseIdeModule module) {
         return javaElement.getAncestor(PACKAGE_FRAGMENT)
                 .getElementName()
                 .startsWith(module.getNameAsString());
@@ -1125,10 +1128,10 @@ public class JavaSearch {
                             typeChecker.getContext()
                                 .getModules();
                     for (Module m: modules.getListOfModules()) {
-                        if (m instanceof JDTModule) {
-                            JDTModule module = (JDTModule) m;
-                            if (module.isCeylonArchive() && 
-                                    !module.isProjectModule() && 
+                        if (m instanceof BaseIdeModule) {
+                            BaseIdeModule module = (BaseIdeModule) m;
+                            if (module.getIsCeylonArchive() && 
+                                    !module.getIsProjectModule() && 
                                     module.getArtifact()!=null) {
                                 String archivePath = 
                                         module.getArtifact()
@@ -1138,7 +1141,7 @@ public class JavaSearch {
                                     result = 
                                             toCeylonDeclaration(
                                                 javaElement, 
-                                                module.getPhasedUnits());
+                                                toJavaList_.toJavaList(TypeDescriptor.klass(PhasedUnit.class),module.getPhasedUnits()));
                                     if (result!=null) {
                                         return result;
                                     }
@@ -1206,8 +1209,8 @@ public class JavaSearch {
                                 CeylonBuilder.getUnit(
                                         javaType);
                         if (javaUnit != null) {
-                            JDTModule module = 
-                                    ((IUnit)javaUnit).getModule();
+                            BaseIdeModule module = 
+                                    ((IUnit)javaUnit).getCeylonModule();
                             if (module != null) {
                                 return modelLoader.convertToDeclaration(
                                         module, 

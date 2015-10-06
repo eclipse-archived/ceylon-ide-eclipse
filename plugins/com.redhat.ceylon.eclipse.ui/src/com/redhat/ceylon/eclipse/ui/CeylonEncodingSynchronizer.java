@@ -261,7 +261,7 @@ public class CeylonEncodingSynchronizer {
             
             CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
             if (ceylonProject != null) {
-                CeylonProjectConfig<IProject> config = ceylonProject.getConfiguration();
+                CeylonProjectConfig config = ceylonProject.getConfiguration();
                 config.refresh();
                 
                 try {

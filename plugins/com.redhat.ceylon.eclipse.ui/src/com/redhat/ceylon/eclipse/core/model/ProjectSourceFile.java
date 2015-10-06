@@ -16,9 +16,10 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
+import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnitUtils;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
 import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
 import com.redhat.ceylon.ide.common.model.delta.DeltaBuilderFactory;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
@@ -111,7 +112,7 @@ public class ProjectSourceFile extends ModifiableSourceFile {
                                 tokenStream.getTokens()) {
                             @Override
                             protected boolean isAllowedToChangeModel(Declaration declaration) {
-                                return ! IdePhasedUnit.isCentralModelDeclaration(declaration);
+                                return ! IdePhasedUnitUtils.isCentralModelDeclaration(declaration);
                             }
                         };
                     }

@@ -8,6 +8,8 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import java.lang.ref.SoftReference;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -19,10 +21,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IProjectAware;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
 
 public class ModelProxy {
     
@@ -40,7 +42,7 @@ public class ModelProxy {
         Unit unit = declaration.getUnit();
         if (unit instanceof ExternalSourceFile) {
             ExternalSourceFile externalSourceFile = (ExternalSourceFile) unit;
-            if (externalSourceFile.isBinaryDeclarationSource()) {
+            if (externalSourceFile.getBinaryDeclarationSource()) {
                 Declaration binaryDeclaration = externalSourceFile.retrieveBinaryDeclaration(declaration);
                 if (binaryDeclaration != null) {
                     return binaryDeclaration;
@@ -63,7 +65,7 @@ public class ModelProxy {
         this.moduleVersion = pack.getModule().getVersion();
         this.declaration = new SoftReference<Declaration>(declaration);
         if (unit instanceof IResourceAware) {
-            project = ((IResourceAware) unit).getResourceProject(); 
+            project = ((IResourceAware<IProject, IFolder, IFile>) unit).getResourceProject(); 
             // TODO In case of a cross project dependency (ICrossProjectReference-derived classes),
             // it will return the original project containing the source declaration.
             // Is is intentional ? In this case I wonder whether we should'nt also add a reference to 

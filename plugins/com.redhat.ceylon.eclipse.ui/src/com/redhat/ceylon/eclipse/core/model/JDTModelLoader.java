@@ -119,7 +119,10 @@ import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTMethod;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceDeclarationHolder;
+import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
+import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.IdeModelLoader;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.JvmBackendUtil;
@@ -155,7 +158,7 @@ import com.redhat.ceylon.model.typechecker.model.UnknownType.ErrorReporter;
  *
  * @author David Festal <david.festal@serli.com>
  */
-public class JDTModelLoader extends AbstractModelLoader {
+public class JDTModelLoader extends IdeModelLoader {
 
     private IJavaProject javaProject;
     private CompilerOptions compilerOptions;
@@ -167,9 +170,9 @@ public class JDTModelLoader extends AbstractModelLoader {
     private boolean mustResetLookupEnvironment = false;
     private Set<Module> modulesInClassPath = new HashSet<Module>();
     private AnnotationLoader annotationLoader;
-    private JDTModuleSourceMapper moduleSourceMapper;
+    private BaseIdeModuleSourceMapper moduleSourceMapper;
     
-    public JDTModelLoader(final JDTModuleManager moduleManager, JDTModuleSourceMapper moduleSourceMapper, final Modules modules){
+    public JDTModelLoader(final BaseIdeModuleManager moduleManager, BaseIdeModuleSourceMapper moduleSourceMapper, final Modules modules){
         this.moduleSourceMapper = moduleSourceMapper;
         this.moduleManager = moduleManager;
         moduleManager.setModelLoader(this);
@@ -192,8 +195,8 @@ public class JDTModelLoader extends AbstractModelLoader {
         annotationLoader = new AnnotationLoader(this, typeFactory);
     }
 
-    public JDTModuleManager getModuleManager() {
-        return (JDTModuleManager) moduleManager;
+    public BaseIdeModuleManager getModuleManager() {
+        return (BaseIdeModuleManager) moduleManager;
     }
     
     private void internalCreate() {

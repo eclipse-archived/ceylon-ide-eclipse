@@ -59,6 +59,7 @@ import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
 import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugOptionsManager;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 
 
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
@@ -146,6 +147,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                 getCeylonPluginRepository(
                         ceylonRepositoryProperty);
         addResourceFilterPreference();
+        
+        modelJ2C.platformUtils().register();
         
         final IWorkspace workspace = getWorkspace();
         IWorkspaceRoot root = workspace.getRoot();

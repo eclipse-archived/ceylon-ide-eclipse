@@ -7,8 +7,8 @@ import org.eclipse.jdt.core.IPackageFragment;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.IUnit;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.IUnit;
 
 
 public class JavaElementAdapterFactory implements IAdapterFactory {
@@ -16,7 +16,7 @@ public class JavaElementAdapterFactory implements IAdapterFactory {
     private static Class<?>[] ADAPTER_LIST= new Class[] {
         IUnit.class,
         IJavaModelAware.class,
-        JDTModule.class,
+        BaseIdeModule.class,
         Package.class,
     };
 
@@ -36,7 +36,7 @@ public class JavaElementAdapterFactory implements IAdapterFactory {
         if (Package.class.equals(key) && element instanceof IPackageFragment) {
             return CeylonBuilder.getPackage((IPackageFragment) element);
         }
-        if (JDTModule.class.equals(key) && element instanceof IPackageFragment) {
+        if (BaseIdeModule.class.equals(key) && element instanceof IPackageFragment) {
             return CeylonBuilder.asSourceModule((IPackageFragment) element);
         }
         return null;

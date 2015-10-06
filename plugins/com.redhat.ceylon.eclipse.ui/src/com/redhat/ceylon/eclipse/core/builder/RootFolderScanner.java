@@ -10,6 +10,7 @@ import java.util.List;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
@@ -18,21 +19,21 @@ import org.eclipse.core.runtime.SubMonitor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.ide.common.model.IdeModuleManager;
+import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
-import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 
 final class RootFolderScanner implements IResourceVisitor {
     private final Module defaultModule;
     private final JDTModelLoader modelLoader;
-    private final JDTModuleManager moduleManager;
-    private final JDTModuleSourceMapper moduleSourceMapper;
+    private final IdeModuleManager<IProject> moduleManager;
+    private final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper;
     private final FolderVirtualFile<IResource, IFolder, IFile> rootDir;
     private final TypeChecker typeChecker;
     private final List<IFile> scannedFiles;
@@ -45,7 +46,8 @@ final class RootFolderScanner implements IResourceVisitor {
     
 
     RootFolderScanner(RootFolderType rootFolderType, Module defaultModule, JDTModelLoader modelLoader,
-            JDTModuleManager moduleManager, JDTModuleSourceMapper moduleSourceMapper, 
+            IdeModuleManager<IProject> moduleManager, 
+            IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
             FolderVirtualFile<IResource, IFolder, IFile> rootDir, TypeChecker typeChecker,
             List<IFile> scannedFiles, PhasedUnits phasedUnits, SubMonitor monitor) {
         this.rootFolderType = rootFolderType;
