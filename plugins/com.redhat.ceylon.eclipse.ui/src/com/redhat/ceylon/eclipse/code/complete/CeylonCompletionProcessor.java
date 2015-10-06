@@ -29,9 +29,9 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_S
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
+import static com.redhat.ceylon.eclipse.code.complete.AnonFunctionProposal.addAnonFunctionProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addDocLinkProposal;
 import static com.redhat.ceylon.eclipse.code.complete.BasicCompletionProposal.addImportProposal;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.anonFunctionHeader;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getLine;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isEmptyModuleDescriptor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isEmptyPackageDescriptor;
@@ -133,7 +133,6 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -1352,31 +1351,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         else {
             return false;
-        }
-    }
-
-    private static void addAnonFunctionProposal(int offset, 
-            Type requiredType, 
-            List<ICompletionProposal> result, 
-            Unit unit) {
-        String text = anonFunctionHeader(requiredType, unit);
-        String funtext = text + " => nothing";
-        result.add(new CompletionProposal(offset, "", 
-                LARGE_CORRECTION_IMAGE, funtext, funtext) {
-            @Override
-            public Point getSelection(IDocument document) {
-                return new Point(offset + text.indexOf("nothing"), 7);
-            }
-        });
-        if (unit.getCallableReturnType(requiredType).isAnything()) {
-            String voidtext = "void " + text + " {}";
-            result.add(new CompletionProposal(offset, "", 
-                    LARGE_CORRECTION_IMAGE, voidtext, voidtext) {
-                @Override
-                public Point getSelection(IDocument document) {
-                    return new Point(offset + text.length()-1, 0);
-                }
-            });
         }
     }
 
