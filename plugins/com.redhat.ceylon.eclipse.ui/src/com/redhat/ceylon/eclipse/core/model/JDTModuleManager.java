@@ -37,6 +37,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.java.util.Util;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
@@ -327,5 +328,23 @@ public class JDTModuleManager extends LazyModuleManager {
         if(forCompiledModule && AbstractModelLoader.isJDKModule(module.getNameAsString()))
             modelLoader.addJDKModuleToClassPath(module);
     }
-    
+
+    @Override
+    public Set<String> getSupportedBackends() {
+        // We detect which backends are enabled in the project settings and
+        // we return those instead of relying on our super class which will
+        // only (and correctly!) return "JVM".
+        // This is just a hack of course because we're using this JVM module
+        // manager even for the JS backend.
+        // TODO At some point we'll need an actual module manager for the
+        // JS backend and an IDE that can somehow merge the two when needed
+        Set<String> backends = new HashSet<String>();
+        if (CeylonBuilder.compileToJava(javaProject.getProject())) {
+            backends.add(Backend.Java.nativeAnnotation);
+        }
+        if (CeylonBuilder.compileToJs(javaProject.getProject())) {
+            backends.add(Backend.JavaScript.nativeAnnotation);
+        }
+        return backends;
+    }
 }
