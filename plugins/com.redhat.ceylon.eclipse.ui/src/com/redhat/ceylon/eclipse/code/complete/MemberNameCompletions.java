@@ -25,25 +25,37 @@ public class MemberNameCompletions {
             final Node node,
             final List<ICompletionProposal> result) {
         final Integer startIndex2 = node.getStartIndex();
-        final Tree.CompilationUnit upToDateAndTypechecked = controller.getTypecheckedRootNode();
+        final Tree.CompilationUnit upToDateAndTypechecked = 
+                controller.getTypecheckedRootNode();
         if (upToDateAndTypechecked != null) {
             new Visitor() {
                 @Override
-                public void visit(Tree.StaticMemberOrTypeExpression that) {
-                    Tree.TypeArguments tal = that.getTypeArguments();
-                    Integer startIndex = tal==null ? null : tal.getStartIndex();
+                public void visit(
+                        Tree.StaticMemberOrTypeExpression that) {
+                    Tree.TypeArguments tal = 
+                            that.getTypeArguments();
+                    Integer startIndex = 
+                            tal==null ? null : 
+                                tal.getStartIndex();
                     if (startIndex!=null && startIndex2!=null &&
                         startIndex.intValue()==startIndex2.intValue()) {
-                        addMemberNameProposal(offset, "", that, result, upToDateAndTypechecked);
+                        addMemberNameProposal(offset, "", that, 
+                                result, upToDateAndTypechecked);
                     }
                     super.visit(that);
                 }
-                public void visit(Tree.SimpleType that) {
-                    Tree.TypeArgumentList tal = that.getTypeArgumentList();
-                    Integer startIndex = tal==null ? null : tal.getStartIndex();
+                @Override
+                public void visit(
+                        Tree.SimpleType that) {
+                    Tree.TypeArgumentList tal = 
+                            that.getTypeArgumentList();
+                    Integer startIndex = 
+                            tal==null ? null : 
+                                tal.getStartIndex();
                     if (startIndex!=null && startIndex2!=null &&
                         startIndex.intValue()==startIndex2.intValue()) {
-                        addMemberNameProposal(offset, "", that, result, upToDateAndTypechecked);
+                        addMemberNameProposal(offset, "", that, 
+                                result, upToDateAndTypechecked);
                     }
                     super.visit(that);
                 }
@@ -65,7 +77,8 @@ public class MemberNameCompletions {
                 }
             }
         }
-        FindCompoundTypeVisitor fcv = new FindCompoundTypeVisitor();
+        FindCompoundTypeVisitor fcv = 
+                new FindCompoundTypeVisitor();
         fcv.visit(rootNode);
         Node node = fcv.result;
         Set<String> proposals = new LinkedHashSet<String>();
@@ -114,7 +127,8 @@ public class MemberNameCompletions {
         }
     }
 
-    public static void addProposalsForType(Node node, Set<String> proposals) {
+    public static void addProposalsForType(Node node, 
+            Set<String> proposals) {
         if (node instanceof Tree.SimpleType) {
             Tree.SimpleType simpleType = 
                     (Tree.SimpleType) node;
@@ -219,11 +233,13 @@ public class MemberNameCompletions {
         }
         else if (node instanceof Tree.UnionType) {
             Tree.UnionType ut = (Tree.UnionType) node;
-            addCompoundTypeProposal(ut.getStaticTypes(), proposals, "Or");
+            addCompoundTypeProposal(ut.getStaticTypes(), 
+                    proposals, "Or");
         }
         else if (node instanceof Tree.IntersectionType) {
             Tree.IntersectionType it = (Tree.IntersectionType) node;
-            addCompoundTypeProposal(it.getStaticTypes(), proposals, "And");
+            addCompoundTypeProposal(it.getStaticTypes(), 
+                    proposals, "And");
         }
     }
 
