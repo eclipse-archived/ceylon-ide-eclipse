@@ -33,12 +33,12 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 
 class AddParameterProposal extends InitializerProposal {
     
-	private AddParameterProposal(Declaration d, Declaration dec, 
-	        Type type, int offset, int len, TextChange change, 
+	private AddParameterProposal(String desc, 
+	        Declaration d, Declaration dec, 
+	        Type type, int offset, int len, 
+	        TextChange change, 
 	        int exitPos) {
-        super("Add '" + d.getName() + 
-              "' to parameter list of '" + dec.getName() + "'", 
-                change, dec, type, 
+        super(desc, change, dec, type, 
                 new Region(offset, len), 
                 ADD_CORR, exitPos);
     }
@@ -57,7 +57,8 @@ class AddParameterProposal extends InitializerProposal {
                 !dec.isFormal() &&
                 dec.getContainer() instanceof Functional) {
             TextChange change = 
-                    new TextFileChange("Add Parameter", file);
+                    new TextFileChange("Add Parameter", 
+                            file);
             change.setEdit(new MultiTextEdit());
             IDocument doc = EditorUtil.getDocument(change);
             //TODO: copy/pasted from SplitDeclarationProposal 
@@ -71,8 +72,8 @@ class AddParameterProposal extends InitializerProposal {
                     return;
                 } 
                 else {
-                    Integer start = pls.get(0).getStartIndex();
-                    Integer end = pls.get(pls.size()-1).getEndIndex();
+                    int start = pls.get(0).getStartIndex();
+                    int end = pls.get(pls.size()-1).getEndIndex();
                     try {
                         params = doc.get(start, end - start);
                     } 
@@ -83,7 +84,8 @@ class AddParameterProposal extends InitializerProposal {
                 }
             }
             Tree.Declaration container = 
-                    findDeclarationWithBody(rootNode, decNode);
+                    findDeclarationWithBody(rootNode, 
+                            decNode);
             Tree.ParameterList pl;
             if (container instanceof Tree.ClassDefinition) {
                 Tree.ClassDefinition cd = 
@@ -181,9 +183,16 @@ class AddParameterProposal extends InitializerProposal {
                 paramType = type.getTypeModel();
             }
             int exitPos = node.getEndIndex();
-            proposals.add(new AddParameterProposal(dec, 
-                    container.getDeclarationModel(), 
-                    paramType, 
+            String desc = 
+                    "Add '" + dec.getName() + 
+                    "' to parameter list";
+            Declaration cont = 
+                    container.getDeclarationModel();
+            if (cont.getName()!=null) {
+                desc += " of '" + cont.getName() + "'";
+            }
+            proposals.add(new AddParameterProposal(desc,
+                    dec, cont, paramType, 
                     offset+param.length()+shift-len, len, 
                     change, exitPos));
         }
