@@ -71,7 +71,7 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
      */
     public static Set<IPath> getExternalSourceArchives(Collection<JDTModule> modules) {
         if (modules == null)
-            return null;
+            return Collections.emptySet();
         Set<IPath> folders = null;
         for (JDTModule  module : modules) {
             if (module.isCeylonArchive()) {
@@ -83,7 +83,8 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
                 }
             }
         }
-        return folders;
+        return folders != null ? 
+                folders : Collections.<IPath>emptySet();
     }
 
 
@@ -450,7 +451,7 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
 
             Set<IPath> sourceArchivesInProject = getExternalSourceArchives(CeylonBuilder.getProjectExternalModules(project));
             
-            if (sourceArchivesInProject == null || sourceArchivesInProject.size() == 0)
+            if (sourceArchivesInProject.isEmpty())
                 continue;
             if (externalSourceArchives == null)
                 externalSourceArchives = new HashSet<>();
@@ -470,7 +471,7 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         if (!CeylonNature.isEnabled(source))
             return;
         Set<IPath> externalSourceArchives = getExternalSourceArchives(CeylonBuilder.getProjectExternalModules(source));
-        if (externalSourceArchives == null)
+        if (externalSourceArchives.isEmpty())
             return;
         
         runRefreshJob(externalSourceArchives);
@@ -620,13 +621,10 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
             if (CeylonBuilder.allClasspathContainersInitialized()) {
                 cleanUp(monitor);
             }
-            Set<IPath> sourceArchives = getExternalSourceArchives(CeylonBuilder.getProjectExternalModules(project));
-            if (sourceArchives!=null) {
-                for (IPath sourceArchivePath : sourceArchives) {
-                    IFolder sourceArchive = getSourceArchive(sourceArchivePath);
-                    if (sourceArchive == null || !sourceArchive.exists()) {
-                        addSourceArchive(sourceArchivePath, true);
-                    }
+            for (IPath sourceArchivePath : getExternalSourceArchives(CeylonBuilder.getProjectExternalModules(project))) {
+                IFolder sourceArchive = getSourceArchive(sourceArchivePath);
+                if (sourceArchive == null || !sourceArchive.exists()) {
+                    addSourceArchive(sourceArchivePath, true);
                 }
             }
             createPendingSourceArchives(monitor);
