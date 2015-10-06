@@ -67,12 +67,12 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 9.  The directory `site/target/repository` now contains an update site you can
     install from.
 
-## Building with (pure) Eclipse
+## Building inside Eclipse
 
 _This method implies some **additional complexity**, and is only useful if you want to debug the Ceylon IDE plugin._
 
 **_Prelimiary remark_** : Now, parts of the Ceylon IDE project itself are written in Ceylon. Thus, in order to develop the Ceylon IDE plugin, you must have a previous version of the plugin installed in your
-main Eclipse (either downloaded from the update site, or built with Maven).
+main Eclipse (preferably build with Maven, or downloaded from the update site).
 
 Then :
 
@@ -82,60 +82,69 @@ Then :
 
 2.  Install the following feature : _Graphical Editing Framework Zest Visualization Toolkit SDK_ available at the main Eclipse release update site (http://download.eclipse.org/releases/kepler for the Kepler version)
 
-3.  Install a previous version of the Ceylon IDE (either downloaded from the update site, or built with Maven)
+3.  Install a previous version of the Ceylon IDE (preferably build with Maven, or downloaded from the update site).
 
 4.  Make sure you have the following feature : _Eclipse Plug-in Development Environment_.
     This is normally included inside the Eclipse Standard Package.
 
 5.  Use `File > Import... > Existing Projects into Workspace`
-    to import the Java projects that are in these directories :
+    to import the Java and Ceylon Eclipse projects that are in these directories :
 
     ```
+    ../ceylon-ide-common
+    ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui.jdt.debug.fragment
     ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui
     ceylon-ide-eclipse/plugins/com.redhat.ceylon.test.eclipse.plugin
     ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.android.plugin
-    ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui.jdt.debug.fragment
     ```
 
 6.  The `com.redhat.ceylon.eclipse.ui` plugin depends on several OSGI bundles, which must be available inside Eclipse to be able to build it.
     Quite recent versions of these dependencies should be available on the [IDE development update site](http://ceylon-lang.org/eclipse/development/)
 	in the _Ceylon IDE Runtime Bundles_ category. Though installing all the bundles of this category will provide the dependencies required to build and run the Ceylon IDE, _*this is not recommended*_.  Indeed this method is only useful if you don't have the Ceylon distribution projects installed locally, or if you don't want to take in account changes made locally to the required bundles.
 
-	So, if you need to build the IDE with the very last versions of the dependencies (ceylon compiler, typechecker, etc), you will
-	need to :
-	- build a full Ceylon distribution locally first (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
+	So, if you need to build the IDE with the very last versions of the dependencies (ceylon compiler, typechecker, etc), here are the required steps :
+
+	- Make sure that the following `ceylon`-owned GitHub repositories have all been cloned locally into the same parent directory :
+	```
+	ceylon-dist
+	ceylon-sdk
+	ceylon.formatter
+	ceylon.tool.converter.java2ceylon
+	ceylon-ide-common
+	ceylon-ide-eclipse
+	```
+
+	- Build a full Ceylon distribution locally first (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details) :
 		- First make sure that your Eclipse can be run by simply typing the `eclipse` command (either by adding the `eclipse` command full path to the PATH environment variable, or by creating a symbolic link to the `eclipse` executable file in a directory already visible in the PATH).
 		- In the `ceylon-dist` directory run : `ant clean publish-all ide-quick`
 		- This should have produced an eclipse update site available at the following path :
         	`.../ceylon-dist/osgi/build/dist`
 
-	- build the Ceylon SDK :
+	- Build the Ceylon SDK :
 		- In the `ceylon-sdk` directory run : `ant clean publish ide-quick`
+		- This should have produced an eclipse update site available at the following path :
+		`.../ceylon-sdk/osgi/dist`
 
-	- build the _ceylon.formatter_ module that is also required now (see [here](https://github.com/ceylon/ceylon.formatter) for more details):
+	- Build the required _ceylon.formatter_ module (see [here](https://github.com/ceylon/ceylon.formatter) for more details):
 		- In the `ceylon.formatter` directory run : `ant clean publish ide-quick`
+		- This should have produced an eclipse update site available at the following path :
+		`.../ceylon.formatter/osgi/dist`
 
-	- build the _ceylon-ide-common_ module that is also required now (see [here](https://github.com/ceylon/ceylon-ide-common) for more details):
+	- Build the required _ceylon-ide-common_ module (see [here](https://github.com/ceylon/ceylon-ide-common) for more details):
 		- In the `ceylon-ide-common` directory run : `ant clean publish ide-quick`
+		- This should have produced an eclipse update site available at the following path :
+		`.../ceylon-ide-common/osgi/dist`
 
-    - build the Java To Ceylon Converter components locally (see [here](https://github.com/ceylon/ceylon.tool.converter.java2ceylon) for more details) :
-        - In the `ceylon.tool.converter.java2ceylon` directory run : `ant clean publish ide-quick`
-        - This should have produced an eclipse update site available at the following path :
-            `.../ceylon.tool.converter.java2ceylon/osgi/dist`
+	- Build the required _ceylon.tool.converter.java2ceylon_ module (see [here](https://github.com/ceylon/ceylon.tool.converter.java2ceylon) for more details) :
+		- In the `ceylon.tool.converter.java2ceylon` directory run : `ant clean publish ide-quick`
+		- This should have produced an eclipse update site available at the following path :
+		`.../ceylon.tool.converter.java2ceylon/osgi/dist`
 
-	- add the following folder as a local update site in your Eclipse _Available Software Sites_ list :
-        	`.../ceylon-ide-eclipse/UpdateSiteForBinaryDependencies/`
-	    - From this new update site, install _*only*_ the elements that are under the categories whose name contain ` - Only Binary Dependencies`.
+	- Add the following folder as a local update site in your Eclipse _Available Software Sites_ list :
+		`.../ceylon-ide-eclipse/UpdateSiteForBinaryDependencies/`
+		
+		From this new update site, install _*only*_ the elements that are under the categories whose name contain ` - Only Binary Dependencies`.
 		This provides (as OSGI bundles) only the external archives required by the various siblings projects required by the IDE Plugin (jboss modules, antlr-runtime v4, etc ...).
-
-	- make sure that the following GitHub repositories have all been cloned locally into the same parent directory :
-	```
-	ceylon-dist
-	ceylon-sdk
-	ceylon.formatter
-	ceylon-ide-common
-	ceylon-ide-eclipse
-	```
 
 	- Import inside your Eclipse workspace the `ceylon-dist-osgi` project found at the following location :
 	    ```
