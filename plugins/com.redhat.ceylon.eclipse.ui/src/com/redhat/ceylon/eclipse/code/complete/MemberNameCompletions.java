@@ -284,9 +284,19 @@ public class MemberNameCompletions {
     private static void addProposals(Set<String> proposals,
             Tree.Identifier identifier, Type type) {
         addNameProposals(proposals, false, identifier.getText());
-        if (!isTypeUnknown(type) &&
-                identifier.getUnit().isIterableType(type)) {
-            addPluralProposals(proposals, identifier, type);
+        if (!isTypeUnknown(type)) {
+            if (identifier.getUnit().isIterableType(type)) {
+                addPluralProposals(proposals, identifier, type);
+            }
+            if (type.isString()) {
+                proposals.add("text");
+                proposals.add("name");
+            }
+            else if (type.isInteger()) {
+                proposals.add("count");
+                proposals.add("size");
+                proposals.add("index");
+            }
         }
     }
 
