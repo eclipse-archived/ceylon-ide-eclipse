@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.redhat.ceylon.compiler.typechecker.tree.CustomTree.GuardedVariable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -20,6 +21,7 @@ import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Setter;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Value;
 
 public class FindReferencesVisitor extends Visitor {
     
@@ -146,12 +148,12 @@ public class FindReferencesVisitor extends Visitor {
             Tree.IsCase ic = (Tree.IsCase) ci;
             Tree.Variable var = ic.getVariable();
             if (var!=null) {
+                Value vd = var.getDeclarationModel();
                 TypedDeclaration od = 
-                        var.getDeclarationModel()
-                            .getOriginalDeclaration();
+                        vd.getOriginalDeclaration();
                 if (od!=null && od.equals(declaration)) {
                     Referenceable d = declaration;
-                    declaration = var.getDeclarationModel();
+                    declaration = vd;
                     if (that.getBlock()!=null) {
                         that.getBlock().visit(this);
                     }
@@ -176,16 +178,16 @@ public class FindReferencesVisitor extends Visitor {
             if (var!=null && 
                     var.getType() 
                         instanceof Tree.SyntheticVariable) {
+                Value vd = var.getDeclarationModel();
                 TypedDeclaration od = 
-                        var.getDeclarationModel()
-                            .getOriginalDeclaration();
+                        vd.getOriginalDeclaration();
                 if (od!=null && od.equals(declaration)) {
                     for (int j=0; j<=i; j++) {
                         Tree.Condition oc = conditions.get(j);
                         oc.visit(this);
                     }
                     Referenceable d = declaration;
-                    declaration = var.getDeclarationModel();
+                    declaration = vd;
                     that.getBlock().visit(this);
                     for (int j=i; j<conditions.size(); j++) {
                         Tree.Condition oc = conditions.get(j);
@@ -209,16 +211,16 @@ public class FindReferencesVisitor extends Visitor {
             if (var!=null && 
                     var.getType() 
                         instanceof Tree.SyntheticVariable) {
+                Value vd = var.getDeclarationModel();
                 TypedDeclaration od = 
-                        var.getDeclarationModel()
-                            .getOriginalDeclaration();
+                        vd.getOriginalDeclaration();
                 if (od!=null && od.equals(declaration)) {
                     for (int j=0; j<=i; j++) {
                         Tree.Condition oc = conditions.get(j);
                         oc.visit(this);
                     }
                     Referenceable d = declaration;
-                    declaration = var.getDeclarationModel();
+                    declaration = vd;
                     if (that.getBlock()!=null) {
                         that.getBlock().visit(this);
                     }
@@ -241,12 +243,12 @@ public class FindReferencesVisitor extends Visitor {
     public void visit(Tree.ElseClause that) {
         Tree.Variable var = that.getVariable();
         if (var!=null) {
+            Value vd = var.getDeclarationModel();
             TypedDeclaration od = 
-                    var.getDeclarationModel()
-                        .getOriginalDeclaration();
+                    vd.getOriginalDeclaration();
             if (od!=null && od.equals(declaration)) {
                 Referenceable d = declaration;
-                declaration = var.getDeclarationModel();
+                declaration = vd;
                 if (that.getBlock()!=null) {
                     that.getBlock().visit(this);
                 }
@@ -258,6 +260,21 @@ public class FindReferencesVisitor extends Visitor {
             }
         }
         super.visit(that);
+    }
+    
+    @Override
+    public void visit(Tree.Variable that) {
+        if (that instanceof GuardedVariable) {
+            Value d = that.getDeclarationModel();
+            TypedDeclaration od = 
+                    d.getOriginalDeclaration();
+            if (od!=null && od.equals(declaration)) {
+                declaration = d;
+            }
+        }
+        else {
+            super.visit(that);
+        }
     }
 
     @Override
@@ -272,12 +289,12 @@ public class FindReferencesVisitor extends Visitor {
                     if (var!=null && 
                             var.getType() 
                                 instanceof Tree.SyntheticVariable) {
+                        Value vd = var.getDeclarationModel();
                         TypedDeclaration od = 
-                                var.getDeclarationModel()
-                                    .getOriginalDeclaration();
+                                vd.getOriginalDeclaration();
                         if (od!=null && od.equals(declaration)) {
                             c.visit(this);
-                            declaration = var.getDeclarationModel();
+                            declaration = vd;
                             break;
                         }
                     }
