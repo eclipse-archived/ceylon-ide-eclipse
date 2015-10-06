@@ -38,9 +38,12 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 change, new Region(offset, 0));
     }
     
-	private static void addSplitDeclarationProposal(IDocument doc, 
-	        Tree.TypedDeclaration decNode, Tree.CompilationUnit rootNode, 
-	        IFile file, Collection<ICompletionProposal> proposals) {
+	private static void addSplitDeclarationProposal(
+	        IDocument doc, 
+	        Tree.TypedDeclaration decNode, 
+	        Tree.CompilationUnit rootNode, 
+	        IFile file, 
+	        Collection<ICompletionProposal> proposals) {
         TypedDeclaration dec = 
                 decNode.getDeclarationModel();
         if (dec==null) return;
@@ -63,7 +66,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
                             typeEndOffset-typeStartOffset);
             if (decNode instanceof Tree.MethodDeclaration) {
                 Tree.MethodDeclaration md = 
-                        (Tree.MethodDeclaration) decNode;
+                        (Tree.MethodDeclaration) 
+                            decNode;
                 List<ParameterList> pls = 
                         md.getParameterLists();
                 if (pls.isEmpty()) {
@@ -78,7 +82,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
                                 .getEndIndex();
                     paramsString = 
                             doc.get(paramsOffset, 
-                                    paramsEndOffset-paramsOffset);
+                                    paramsEndOffset
+                                     - paramsOffset);
                 }
             }
         } 
@@ -105,20 +110,33 @@ class SplitDeclarationProposal extends CorrectionProposal {
                     getReferencedNodeInUnit(container, 
                             rootNode);
             Tree.Body body;
-            if (containerNode instanceof Tree.ClassDefinition) {
+            if (containerNode 
+                        instanceof Tree.ClassDefinition) {
                 Tree.ClassDefinition cd = 
-                        (Tree.ClassDefinition) containerNode;
+                        (Tree.ClassDefinition) 
+                            containerNode;
                 body = cd.getClassBody();
             }
-            else if (containerNode instanceof Tree.MethodDefinition) {
+            else if (containerNode 
+                        instanceof Tree.MethodDefinition) {
                 Tree.MethodDefinition md = 
-                        (Tree.MethodDefinition) containerNode;
+                        (Tree.MethodDefinition) 
+                            containerNode;
                 body = md.getBlock();
             }
-            else if (containerNode instanceof Tree.FunctionArgument) {
+            else if (containerNode 
+                        instanceof Tree.FunctionArgument) {
                 Tree.FunctionArgument fa = 
-                        (Tree.FunctionArgument) containerNode;
+                        (Tree.FunctionArgument) 
+                            containerNode;
                 body = fa.getBlock();
+            }
+            else if (containerNode 
+                        instanceof Tree.Constructor) {
+                Tree.Constructor cd = 
+                        (Tree.Constructor) 
+                            containerNode;
+                body = cd.getBlock();
             }
             else {
                 return;
@@ -143,7 +161,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
                     }
                     else {
                         annotations = 
-                                doc.get(alstart, allen) + " ";
+                                doc.get(alstart, allen) 
+                                    + " ";
                     }
                 }
                 catch (BadLocationException e) {
