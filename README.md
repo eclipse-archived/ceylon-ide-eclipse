@@ -33,26 +33,31 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 5.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details):
     - In the `ceylon-dist` directory run: `ant clean publish-all ide-quick`
     - This should have produced an eclipse update site available at the following path:
+    
       `.../ceylon-dist/osgi/build/dist`
 
 6.  Build the Ceylon SDK locally:
     - In the `ceylon-sdk` directory run: `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path:
+    
       `.../ceylon-sdk/osgi/dist`
 
 7.  Build the Ceylon Formatter locally (see [here](https://github.com/ceylon/ceylon.formatter) for more details):
     - In the `ceylon.formatter` directory run: `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path:
+    
       `.../ceylon.formatter/osgi/dist`
 
 8.  Build the Ceylon IDE Common components locally (see [here](https://github.com/ceylon/ceylon-ide-common) for more details):
     - In the `ceylon-ide-common` directory run: `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path:
+    
       `.../ceylon-ide-common/osgi/dist`
 
 9.  Build the Java To Ceylon Converter components locally (see [here](https://github.com/ceylon/ceylon.tool.converter.java2ceylon) for more details):
     - In the `ceylon.tool.converter.java2ceylon` directory run: `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path:
+    
       `.../ceylon.tool.converter.java2ceylon/osgi/dist`
 
 10.  From this directory (`ceylon-ide-eclipse`), type:
@@ -107,7 +112,8 @@ main Eclipse (preferably build with Maven, or downloaded from the update site).
 10. Build a full Ceylon distribution locally first (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details):
     - In the `ceylon-dist` directory run: `ant clean publish ide-quick`
     - This should have produced an eclipse update site available at the following path:
-        - `.../ceylon-dist/osgi/build/dist`
+
+        `.../ceylon-dist/osgi/build/dist`
 
 11. Build the Ceylon SDK:
     - In the `ceylon-sdk` directory run: `ant clean publish ide-quick`
@@ -138,6 +144,7 @@ main Eclipse (preferably build with Maven, or downloaded from the update site).
 
 
 15. Add the following folder as a local update site in your Eclipse _Available Software Sites_ list:
+
         `.../ceylon-ide-eclipse/UpdateSiteForBinaryDependencies/`
         
     From this new update site, install _*only*_ the elements that are under the categories whose name contains : '` - Only Binary Dependencies`'.
@@ -145,9 +152,17 @@ main Eclipse (preferably build with Maven, or downloaded from the update site).
 
 
 16. Import inside your Eclipse workspace: 
-    - the `ceylon-dist-osgi` project found at the following location: `.../ceyon-dist/osgi`
-    - the `ceylon-dist-osgi-embedded-repository` project found at the following location: `.../ceyon-dist/osgi/embeddedRepository`
-    - all the required _bundle-proxys_ projects found under the following location: `.../ceyon-ide-eclipse/required-bundle-proxies`
+    - the `ceylon-dist-osgi` project found at the following location:
+    
+        `.../ceyon-dist/osgi`
+        
+    - the `ceylon-dist-osgi-embedded-repository` project found at the following location:
+        
+        `.../ceyon-dist/osgi/embeddedRepository`
+        
+    - all the required _bundle-proxys_ projects found under the following location:
+    
+        `.../ceyon-ide-eclipse/required-bundle-proxies`
     
     #### _Important Note:_
 
