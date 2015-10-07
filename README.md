@@ -176,8 +176,10 @@ main Eclipse (preferably build with Maven, or downloaded from the update site).
     - If you _change some of the fixed jars included in the Ceylon distribution_ (such as `org.antlr`, `org.apache.commons.logging`, etc...), then you should :
         - **rebuild/publish** the distribution by running the `ant clean publish ide-quick` command in the `ceylon-dist` directory,
         - **update, inside Eclipse,** the `Ceylon Distribution Binary Dependencies Feature` feature from the `.../ceylon-dist/osgi/build/dist` update site.
-    - If you _have modified code inside one of the projects required by the Ceylon IDE plugin_ (distribution project, SDK, formatter, java2ceylon converter, ceylon-ide-common, ...), you should **rebuild/publish** the modified project by running the `ant clean publish ide-quick` command in the project directory,
-    - Each time you _rebuild/publish one of the projects required by the Ceylon IDE plugin_ (distribution project, SDK, formatter, java2ceylon converter, ceylon-ide-common, ...), you should **refresh inside Eclipse** the `ceylon-dist-osgi` project, as well as the _bundle proxy projects_ related to the rebuilt project. This is necessary so that Eclipse will see the changes, especially when running/debugging the CeylonIDE.
+    - If you _have modified code inside one of the projects required by the Ceylon IDE plugin_ (distribution project, SDK, formatter, java2ceylon converter, ceylon-ide-common, ...), you should:
+        - **rebuild/publish** the modified project by running the `ant clean publish ide-quick` command in the project directory,
+    - Each time you _rebuild/publish one of the projects required by the Ceylon IDE plugin_ (distribution project, SDK, formatter, java2ceylon converter, ceylon-ide-common, ...), you should:
+        - **refresh inside Eclipse** the `ceylon-dist-osgi` project, as well as the _bundle proxy projects_ related to the rebuilt project. This is necessary so that Eclipse will see the changes, especially when running/debugging the CeylonIDE.
 
 17. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
     - Add the SWTBot Eclipse features, which are required to compile and run the Ceylon IDE
