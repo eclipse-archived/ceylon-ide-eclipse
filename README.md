@@ -62,11 +62,11 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 
 10.  From this directory (`ceylon-ide-eclipse`), type:
     
-        `mvn clean install -fae`
+        mvn clean install -fae
 
     Faster alternative: To skip tests completely you can run:
 
-        `mvn clean install -DskipTests` 
+        mvn clean install -DskipTests
    
 11.  The directory `site/target/repository` now contains an update site you can install from. The update process is decribed at http://ceylon-lang.org/documentation/1.1/ide/install/ but use the path to this directory instead of the stable web repository. 
 
