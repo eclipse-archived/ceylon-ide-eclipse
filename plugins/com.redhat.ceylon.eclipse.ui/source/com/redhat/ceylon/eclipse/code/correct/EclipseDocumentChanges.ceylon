@@ -28,8 +28,8 @@ shared interface EclipseDocumentChanges
     shared actual IDocument getDocumentForChange(TextChange change)
             => EditorUtil.getDocument(change);
 
-    shared actual TextEdit newDeleteEdit(Integer start, Integer stop)
-            => DeleteEdit(start, stop);
+    shared actual TextEdit newDeleteEdit(Integer start, Integer length)
+            => DeleteEdit(start, length);
 
     shared actual TextEdit newReplaceEdit(Integer start, Integer length, String text)
             => ReplaceEdit(start, length, text);

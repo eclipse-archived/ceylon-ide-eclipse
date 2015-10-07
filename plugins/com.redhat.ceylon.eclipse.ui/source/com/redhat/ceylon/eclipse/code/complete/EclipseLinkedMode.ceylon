@@ -24,7 +24,7 @@ import org.eclipse.jface.text.link {
     ProposalPosition
 }
 
-interface EclipseLinkedModeSupport satisfies LinkedModeSupport<LinkedModeModel, IDocument, ICompletionProposal> {
+shared interface EclipseLinkedModeSupport satisfies LinkedModeSupport<LinkedModeModel, IDocument, ICompletionProposal> {
     shared actual void addEditableRegion(LinkedModeModel lm, IDocument doc, Integer start, Integer len, Integer exitSeqNumber,
         ICompletionProposal[] proposals) {
         

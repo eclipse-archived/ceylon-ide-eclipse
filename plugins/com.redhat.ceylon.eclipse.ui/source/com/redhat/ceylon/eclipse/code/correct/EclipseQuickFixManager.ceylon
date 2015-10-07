@@ -1,0 +1,87 @@
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Node,
+    Tree
+}
+import com.redhat.ceylon.ide.common.correct {
+    IdeQuickFixManager,
+    ImportProposals,
+    AddAnnotationQuickFix,
+    RemoveAnnotationQuickFix,
+    QuickFixData,
+    CreateQuickFix,
+    ChangeReferenceQuickFix,
+    DeclareLocalQuickFix,
+    CreateEnumQuickFix,
+    RefineFormalMembersQuickFix
+}
+
+import java.util {
+    Collection,
+    List
+}
+
+import org.eclipse.core.resources {
+    IProject,
+    IFile
+}
+import org.eclipse.jface.text {
+    IDocument,
+    Region
+}
+import org.eclipse.jface.text.contentassist {
+    ICompletionProposal
+}
+import org.eclipse.ltk.core.refactoring {
+    TextChange,
+    TextFileChange
+}
+import org.eclipse.text.edits {
+    InsertEdit,
+    TextEdit
+}
+import com.redhat.ceylon.eclipse.util {
+    EditorUtil
+}
+import com.redhat.ceylon.eclipse.code.editor {
+    CeylonEditor
+}
+import org.eclipse.jface.text.link {
+    LinkedModeModel
+}
+
+
+class EclipseQuickFixData(ProblemLocation location,
+    shared actual Tree.CompilationUnit rootNode,
+    shared actual Node node,
+    shared actual IProject project,
+    shared List<ICompletionProposal> proposals)
+        satisfies QuickFixData<IProject> {
+    
+    shared actual Integer errorCode => location.problemId;
+    shared actual Integer problemOffset => location.offset;
+}
+
+object eclipseQuickFixManager
+        extends IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,EclipseQuickFixData,LinkedModeModel>() {
+
+
+    shared actual AddAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> addAnnotations
+            => eclipseAnnotationsQuickFix;
+    shared actual RemoveAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> removeAnnotations
+            => eclipseAnnotationsQuickFix;
+    shared actual CreateQuickFix<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal> createQuickFix
+            => nothing; // TODO
+    
+    shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {
+        data.proposals.addAll(proposals);
+    }
+    
+    shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange> importProposals => eclipseImportProposals;
+    
+    shared actual ChangeReferenceQuickFix<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange,EclipseQuickFixData,Region,ICompletionProposal> changeReferenceQuickFix => nothing;
+    
+    shared actual DeclareLocalQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,LinkedModeModel,ICompletionProposal,IProject,EclipseQuickFixData,Region> declareLocalQuickFix => nothing;
+    shared actual CreateEnumQuickFix<IProject,IDocument,InsertEdit,TextEdit,TextChange,EclipseQuickFixData> createEnumQuickFix => nothing;
+    shared actual RefineFormalMembersQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> refineFormalMembersQuickFix => nothing;
+    
+}

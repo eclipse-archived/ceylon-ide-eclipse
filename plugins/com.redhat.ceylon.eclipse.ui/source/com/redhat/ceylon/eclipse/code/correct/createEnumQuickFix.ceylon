@@ -24,18 +24,11 @@ import com.redhat.ceylon.ide.common.util {
     Indents
 }
 
-import java.util {
-    Collection
-}
-
 import org.eclipse.core.resources {
     IProject
 }
 import org.eclipse.jface.text {
     IDocument
-}
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
 }
 import org.eclipse.ltk.core.refactoring {
     TextChange,
@@ -46,18 +39,18 @@ import org.eclipse.text.edits {
     TextEdit
 }
 
-shared class EclipseCreateEnumQuickFix(Collection<ICompletionProposal> proposals)
-        extends CreateEnumQuickFix<IProject, IDocument, InsertEdit, TextEdit, TextChange>() 
-        satisfies EclipseDocumentChanges {
+object createEnumQuickFix
+        satisfies CreateEnumQuickFix<IProject, IDocument, InsertEdit, TextEdit, TextChange,EclipseQuickFixData> 
+                & EclipseDocumentChanges {
     
-    shared actual void consumeNewQuickFix(String def, String desc, Icons image, Integer offset, TextChange change) {
+    shared actual void consumeNewQuickFix(String desc, Icons image, Integer offset, TextChange change, EclipseQuickFixData data) {
         assert(is TextFileChange change);
         value img = switch(image)
         case (Icons.classes) CeylonResources.\iCLASS
         case (Icons.interfaces) CeylonResources.\iINTERFACE
         else CeylonResources.\iATTRIBUTE;
         
-        proposals.add(CreateEnumProposal(def, desc, img, offset, change));
+        data.proposals.add(CreateEnumProposal(null, desc, img, offset, change));
     }
     
     shared actual Integer getDocLength(IDocument doc) => doc.length;
