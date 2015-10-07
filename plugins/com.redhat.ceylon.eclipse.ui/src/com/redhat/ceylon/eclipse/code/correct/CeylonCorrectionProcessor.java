@@ -185,7 +185,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.NamedArgumentList;
@@ -1518,45 +1517,47 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             if (rootNode == null) {
                 return;
             }
-            Tree.Statement st = 
-                    findStatement(rootNode,
-                        findNode(rootNode, null, 
-                                location.getOffset(), 
-                                location.getOffset() +
-                                location.getLength()));
-            if (st==null) return;
-            if (!(st instanceof Tree.Declaration)) {
-                st = findDeclaration(rootNode, st);
+            Tree.StatementOrArgument target = 
+                    findAnnotatable(rootNode, 
+                            findNode(rootNode, null, 
+                                    location.getOffset(), 
+                                    location.getOffset() +
+                                    location.getLength()));
+            if (target==null) {
+                return;
             }
-            IFile file = 
-                    EditorUtil.getFile(editor.getEditorInput());
+            
+            IEditorInput ei = editor.getEditorInput();
+            IFile file = EditorUtil.getFile(ei);
             IDocument doc = 
                     context.getSourceViewer()
                         .getDocument();
             TextFileChange change = 
-                    new TextFileChange("Suppress Warnings", file);
+                    new TextFileChange("Suppress Warnings", 
+                            file);
             final StringBuilder sb = new StringBuilder();
             final StyledString ss = 
                     new StyledString("Suppress warnings of type ");
-            new CollectWarningsToSuppressVisitor(sb, ss).visit(st);
+            target.visit(new CollectWarningsToSuppressVisitor(sb, ss));
             String ws = 
-                    Indents.getDefaultLineDelimiter(doc) +
-                    Indents.getIndent(st, doc);
+                    getDefaultLineDelimiter(doc) +
+                    getIndent(target, doc);
             String text = "suppressWarnings(" + sb + ")";
-            Integer start = st.getStartIndex();
-            if (st instanceof Tree.Declaration) {
-                Tree.Declaration d = (Tree.Declaration) st;
-                Tree.AnnotationList al = d.getAnnotationList();
-                if (al!=null && al.getAnonymousAnnotation()!=null) {
-                    start = al.getAnonymousAnnotation().getEndIndex();
+            Integer start = target.getStartIndex();
+            Tree.AnnotationList al = annotationList(target);
+            if (al == null) {
+                text += ws;
+            }
+            else {
+                Tree.AnonymousAnnotation aa = 
+                        al.getAnonymousAnnotation();
+                if (aa!=null) {
+                    start = aa.getEndIndex();
                     text = ws + text;
                 }
                 else {
                     text += ws;
                 }
-            }
-            else {
-                text += ws;
             }
             change.setEdit(new InsertEdit(start, text));
             proposals.add(new CorrectionProposal(ss.toString(), 
@@ -1570,6 +1571,75 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             proposals.add(new ConfigureWarningsProposal(editor));
         }
         
+    }
+
+    private static Tree.StatementOrArgument findAnnotatable(
+            Tree.CompilationUnit rootNode, final Node node) {
+        class FindAnnotatableVisitor extends Visitor {
+            Tree.StatementOrArgument result;
+            private Tree.StatementOrArgument current;
+            @Override
+            public void visit(Tree.Declaration that) {
+                Tree.StatementOrArgument outer = current;
+                current = that;
+                super.visit(that);
+                current = outer;
+            }
+            @Override
+            public void visit(Tree.ModuleDescriptor that) {
+                Tree.StatementOrArgument outer = current;
+                current = that;
+                super.visit(that);
+                current = outer;
+            }
+            @Override
+            public void visit(Tree.PackageDescriptor that) {
+                Tree.StatementOrArgument outer = current;
+                current = that;
+                super.visit(that);
+                current = outer;
+            }
+            @Override
+            public void visitAny(Node that) {
+                if (that == node) {
+                    result = current;
+                }
+                if (result==null) {
+                    super.visitAny(that);
+                }
+            }
+        }
+        FindAnnotatableVisitor fav = 
+                new FindAnnotatableVisitor();
+        fav.visit(rootNode);
+        Tree.StatementOrArgument target = fav.result;
+        return target;
+    }
+
+    private static Tree.AnnotationList annotationList(Node node) {
+        if (node instanceof Tree.Declaration) {
+            Tree.Declaration dec = 
+                    (Tree.Declaration) node;
+            return dec.getAnnotationList();
+        }
+        else if (node instanceof Tree.ModuleDescriptor) {
+            Tree.ModuleDescriptor dec = 
+                    (Tree.ModuleDescriptor) node;
+            return dec.getAnnotationList();
+        }
+        else if (node instanceof Tree.PackageDescriptor) {
+            Tree.PackageDescriptor dec = 
+                    (Tree.PackageDescriptor) node;
+            return dec.getAnnotationList();
+        }
+        else if (node instanceof Tree.ImportModule) {
+            Tree.ImportModule dec = 
+                    (Tree.ImportModule) node;
+            return dec.getAnnotationList();
+        }
+        else {
+            return null;
+        }
     }
 
 }
