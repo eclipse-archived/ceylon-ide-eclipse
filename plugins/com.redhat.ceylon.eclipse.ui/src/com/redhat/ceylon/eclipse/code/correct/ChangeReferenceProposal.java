@@ -19,6 +19,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -39,7 +40,8 @@ import com.redhat.ceylon.model.typechecker.model.Scope;
 
 class ChangeReferenceProposal extends CorrectionProposal {
     
-    private ChangeReferenceProposal(ProblemLocation problem, 
+    @Deprecated
+    private ChangeReferenceProposal(ProblemLocation problem,
             String name, String pkg, TextFileChange change) {
         super("Change reference to '" + name + "'" + pkg, 
                 change, 
@@ -48,6 +50,11 @@ class ChangeReferenceProposal extends CorrectionProposal {
                 MINOR_CHANGE);
     }
     
+    ChangeReferenceProposal(String desc, TextChange change, Region selection) {
+        super(desc, change, selection, MINOR_CHANGE);
+    }
+
+    @Deprecated
     static void addChangeReferenceProposal(
             ProblemLocation problem,
             Collection<ICompletionProposal> proposals, 
@@ -92,6 +99,7 @@ class ChangeReferenceProposal extends CorrectionProposal {
                 dec.getName(), pkg, change));
     }
 
+    @Deprecated
     protected static boolean isInPackage(
             Tree.CompilationUnit cu, Declaration dec) {
         return !dec.getUnit().getPackage()
@@ -122,6 +130,7 @@ class ChangeReferenceProposal extends CorrectionProposal {
         }
     }
 
+    @Deprecated
     static void addChangeArgumentReferenceProposals(
             Tree.CompilationUnit rootNode,
             Node node, 
@@ -159,6 +168,7 @@ class ChangeReferenceProposal extends CorrectionProposal {
         }
     }
 
+    @Deprecated
     private static void processProposal(
             Tree.CompilationUnit rootNode,
             ProblemLocation problem, 

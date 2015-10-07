@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -58,7 +59,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
     private final String annotation;
     
     AddAnnotionProposal(Referenceable dec, String annotation, 
-            String desc, int offset, TextFileChange change, 
+            String desc, int offset, TextChange change, 
             Region selection) {
         super(desc, change, selection);
         this.dec = dec;

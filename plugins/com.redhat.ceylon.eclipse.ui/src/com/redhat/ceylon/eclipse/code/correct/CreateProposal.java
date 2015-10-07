@@ -22,6 +22,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
@@ -54,7 +55,15 @@ class CreateProposal extends InitializerProposal {
                         computeSelection(offset, def), 
                 image, exitPos);
     }
-    
+
+    CreateProposal(String desc,
+            Scope scope, Unit unit, Type returnType,
+            Image image, TextChange change,
+            int exitPos, Region selection) {
+        super(desc, change, scope, unit, returnType,
+                selection, image, exitPos, null);
+    }
+
     static void addCreateMemberProposal(
             Collection<ICompletionProposal> proposals,
             DefinitionGenerator dg, Declaration typeDec,

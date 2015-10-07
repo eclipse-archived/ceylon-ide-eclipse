@@ -39,7 +39,7 @@ import org.eclipse.text.edits {
     TextEdit
 }
 
-object createEnumQuickFix
+object eclipseCreateEnumQuickFix
         satisfies CreateEnumQuickFix<IProject, IDocument, InsertEdit, TextEdit, TextChange,EclipseQuickFixData> 
                 & EclipseDocumentChanges {
     

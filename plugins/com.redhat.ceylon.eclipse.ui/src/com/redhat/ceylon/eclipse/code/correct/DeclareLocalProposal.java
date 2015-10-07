@@ -32,6 +32,7 @@ final class DeclareLocalProposal extends CorrectionProposal {
     private final CeylonEditor editor;
     private final Tree.BaseMemberExpression bme;
     
+    @Deprecated
     DeclareLocalProposal(Change change,
             Tree.Term term,
             Tree.BaseMemberExpression bme, 
@@ -39,6 +40,19 @@ final class DeclareLocalProposal extends CorrectionProposal {
             CeylonEditor editor) {
         super("Declare local value '" + bme.getIdentifier().getText() + "'", 
                 change, null);
+        this.term = term;
+        this.rootNode = rootNode;
+        this.editor = editor;
+        this.bme = bme;
+    }
+
+    DeclareLocalProposal(Change change,
+            String desc,
+            Tree.Term term,
+            Tree.BaseMemberExpression bme, 
+            Tree.CompilationUnit rootNode, 
+            CeylonEditor editor) {
+        super(desc, change, null);
         this.term = term;
         this.rootNode = rootNode;
         this.editor = editor;

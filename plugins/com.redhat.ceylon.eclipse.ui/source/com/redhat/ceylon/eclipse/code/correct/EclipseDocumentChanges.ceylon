@@ -37,8 +37,13 @@ shared interface EclipseDocumentChanges
     shared actual InsertEdit newInsertEdit(Integer position, String text)
             => InsertEdit(position, text);
 
-    shared actual void addEditToChange(TextChange change, TextEdit edit)
-            => change.addEdit(edit);
+    shared actual void addEditToChange(TextChange change, TextEdit edit) {
+        if (is MultiTextEdit me = change.edit) {
+            change.addEdit(edit);
+        } else {
+            change.edit = edit;            
+        }
+    }
 
     shared actual String getInsertedText(InsertEdit edit)
             => edit.text;

@@ -18,7 +18,9 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
@@ -40,6 +42,7 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class CreateParameterProposal extends InitializerProposal {
     
+    @Deprecated
     CreateParameterProposal(String def, String desc, 
             Declaration dec, Type type,
             Image image, int offset, TextFileChange change,
@@ -49,6 +52,15 @@ class CreateParameterProposal extends InitializerProposal {
                 image, exitPos);
     }
     
+    CreateParameterProposal(String desc, 
+            Declaration dec, Type type, Region selection,
+            Image image, TextChange change,
+            int exitPos) {
+        super(desc, change, dec, type, selection, 
+                image, exitPos, null);
+    }
+    
+    @Deprecated
     private static void addCreateParameterProposal(
             Collection<ICompletionProposal> proposals, 
             String def, String desc, Image image, 
@@ -75,6 +87,7 @@ class CreateParameterProposal extends InitializerProposal {
                 dec, returnType, image, offset+il, change, exitPos));
     }
 
+    @Deprecated
     private static void addCreateParameterAndAttributeProposal(
             Collection<ICompletionProposal> proposals, 
             String pdef, String adef, String desc, 
@@ -121,6 +134,7 @@ class CreateParameterProposal extends InitializerProposal {
                 dec, returnType, image, offset+il, change, exitPos));
     }
 
+    @Deprecated
     static void addCreateParameterProposal(
             Collection<ICompletionProposal> proposals, 
             IProject project, 
@@ -161,6 +175,7 @@ class CreateParameterProposal extends InitializerProposal {
         }
     }
 
+    @Deprecated
     static void addCreateParameterProposals(
             Tree.CompilationUnit cu, Node node, 
             ProblemLocation problem, 
@@ -247,6 +262,7 @@ class CreateParameterProposal extends InitializerProposal {
         }
     }
 
+    @Deprecated
     private static Tree.ParameterList getParameters(
             Tree.Declaration decNode) {
         if (decNode instanceof Tree.AnyClass) {
@@ -266,6 +282,7 @@ class CreateParameterProposal extends InitializerProposal {
         return null;
     }
 
+    @Deprecated
     private static void addCreateParameterProposals(
             Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, 
@@ -301,6 +318,7 @@ class CreateParameterProposal extends InitializerProposal {
         }
     }
 
+    @Deprecated
     private static void addCreateParameterAndAttributeProposals(
             Collection<ICompletionProposal> proposals,
             IProject project, String pdef, String adef, 
