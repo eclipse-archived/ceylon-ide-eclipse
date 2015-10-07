@@ -112,6 +112,8 @@ import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.common.Constants;
+import com.redhat.ceylon.common.config.CeylonConfig;
+import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.common.log.Logger;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
 import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
@@ -2571,6 +2573,26 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             options.add("-out");
             options.add(modulesOutputDir.getAbsolutePath());
             js_outRepo = modulesOutputDir.getAbsolutePath();
+        }
+
+        CeylonConfig ceylonConfig = config.getCeylonConfig();
+
+        if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_NOOSGI)) {
+            options.add("-noosgi");
+        }
+        if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_OSGIPROVIDEDBUNDLES)) {
+            options.add("-osgi-provided-bundles");
+            options.add(ceylonConfig.getOption(DefaultToolOptions.COMPILER_OSGIPROVIDEDBUNDLES));
+        }
+        if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_NOPOM)) {
+            options.add("-nopom");
+        }
+        if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_PACK200)) {
+            options.add("-pack200");
+        }
+        if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_RESOURCE_ROOT)) {
+            options.add("-resroot");
+            options.add(ceylonConfig.getOption(DefaultToolOptions.COMPILER_RESOURCE_ROOT));
         }
 
         List<File> forJavaBackend = new ArrayList<File>();
