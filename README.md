@@ -145,7 +145,7 @@ main Eclipse (preferably build with Maven, or downloaded from the update site).
 
 15. Add the following folder as a local update site in your Eclipse _Available Software Sites_ list:
 
-        `.../ceylon-ide-eclipse/UpdateSiteForBinaryDependencies/`
+    `.../ceylon-ide-eclipse/UpdateSiteForBinaryDependencies/`
         
     From this new update site, install _*only*_ the elements that are under the categories whose name contains : '` - Only Binary Dependencies`'.
     This provides (as OSGI bundles) only the external archives required by the various siblings projects required by the IDE Plugin (jboss modules, antlr-runtime v4, etc ...).
@@ -170,7 +170,7 @@ main Eclipse (preferably build with Maven, or downloaded from the update site).
     
     In order to be able to build you projects, you will have to allow cycles in the Java build paths by setting the following Eclipse preference:
 
-        `Java -> Compiler -> Build -> Circular Dependencies`to `warning`
+    `Java -> Compiler -> Build -> Circular Dependencies`to `warning`
 
 17. During the development, you should be aware of these rules:
     - If you _change some of the fixed jars included in the Ceylon distribution_ (such as `org.antlr`, `org.apache.commons.logging`, etc...), then you should :
