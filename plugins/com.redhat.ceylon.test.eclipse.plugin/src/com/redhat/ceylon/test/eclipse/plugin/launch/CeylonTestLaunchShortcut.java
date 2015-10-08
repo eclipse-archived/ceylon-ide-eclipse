@@ -57,6 +57,7 @@ import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
@@ -239,7 +240,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
 
         if (node instanceof Tree.AnyMethod) {
             Function method = ((Tree.AnyMethod) node).getDeclarationModel();
-            if (method.getContainer() instanceof Class && isTestable(new MethodWithContainer((Class)method.getContainer(), method))) {
+            if ((method.getContainer() instanceof Class && isTestable(new MethodWithContainer((Class)method.getContainer(), method))) || (method.getContainer() instanceof Package && isTestable(method)) ) {
                 if (method.isMember()) {
                     names.add(((Declaration) method.getContainer()).getName() + "." + method.getName());
                 } else {
