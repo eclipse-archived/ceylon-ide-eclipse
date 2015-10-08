@@ -95,6 +95,9 @@ import org.eclipse.swt.graphics {
 import org.eclipse.ui {
     PlatformUI
 }
+import com.redhat.ceylon.compiler.typechecker.context {
+    PhasedUnit
+}
 
 EclipseCompletionManager dummyInstance = EclipseCompletionManager(CeylonEditor());
 
@@ -162,8 +165,14 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     
     shared actual ObjectArray<IContextInformation> computeContextInformation(ITextViewer viewer, Integer offset) {
         CeylonParseController controller = editor.parseController;
-        controller.parseAndTypecheck(viewer.document, 10, NullProgressMonitor(), null);
-        return createJavaObjectArray<IContextInformation>(computeParameterContextInformation(offset, controller.rootNode, viewer));
+        
+        PhasedUnit? phasedUnit = controller.parseAndTypecheck(viewer.document, 10, NullProgressMonitor(), null);
+        
+        if (exists phasedUnit) {
+            return createJavaObjectArray<IContextInformation>(computeParameterContextInformation(offset, controller.rootNode, viewer));
+        }
+        
+        return ObjectArray(0);
     }
     
     shared actual IContextInformationValidator contextInformationValidator {
@@ -449,13 +458,20 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     ICompletionProposal[] getEclipseContentProposals(CeylonParseController? controller, Integer offset,
         ITextViewer? viewer, Boolean secondLevel, Boolean returnedParamInfo, IProgressMonitor monitor) {
         
+        if (controller is Null || viewer is Null) {
+            return [];
+        }
         if (exists controller, exists viewer, exists rn = controller.rootNode, exists t = controller.tokens) {
-            controller.parseAndTypecheck(viewer.document, 10, NullProgressMonitor(), null);
+            PhasedUnit? pu = controller.parseAndTypecheck(viewer.document, 10, monitor, null);
+            if (!exists pu) {
+                return [];
+            }
             controller.handler.updateAnnotations();
             
             value line = CompletionUtil.getLine(offset, viewer);
             
-            return getContentProposals(controller, offset, line, secondLevel, EclipseProgressMonitor(monitor), returnedParamInfo);
+            return getContentProposals(pu.compilationUnit, controller, offset, line,
+                secondLevel, EclipseProgressMonitor(monitor), returnedParamInfo);
         }
         
         return [];
