@@ -72,14 +72,14 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getOccurrenceLocation;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 import static com.redhat.ceylon.eclipse.util.Nodes.getTokenIndexAtCharacter;
+import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
+import static com.redhat.ceylon.eclipse.util.Types.getResultType;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.ALIAS_REF;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.CASE;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.CATCH;
@@ -102,22 +102,24 @@ import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.TYPE_PARAMETE
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.TYPE_PARAMETER_REF;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.VALUE_REF;
-import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isLetter;
+import static java.util.Collections.emptyMap;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -136,7 +138,6 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -146,11 +147,10 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.ide.common.completion.FindScopeVisitor;
 import com.redhat.ceylon.eclipse.util.Types;
 import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
-import com.redhat.ceylon.ide.common.completion.FindScopeVisitor;
-import com.redhat.ceylon.ide.common.completion.IdeCompletionManager;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
@@ -159,8 +159,11 @@ import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.ImportList;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -456,10 +459,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         if (completions==null) {
             //finally, construct and sort proposals
             Map<String, DeclarationWithProximity> proposals =
-                    eclipseCompletionManager_.get_().getProposals(node, scope, prefix,
-                            isMemberOp, rn);
+                    getProposals(node, scope, prefix,
+                            isMemberOp, typecheckedRootNode);
             Map<String, DeclarationWithProximity> functionProposals =
-                    eclipseCompletionManager_.get_().getFunctionProposals(node, scope, prefix,
+                    getFunctionProposals(node, scope, prefix,
                             isMemberOp);
             filterProposals(proposals);
             filterProposals(functionProposals);
@@ -1004,7 +1007,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 
                 if (!secondLevel && !inDoc && noParamsFollow &&
                         isInvocationProposable(dwp, ol, previousTokenType) && 
-                        (!eclipseCompletionManager_.get_().isQualifiedType(node) ||
+                        (!isQualifiedType(node) ||
                                 isConstructor(dec) || 
                                 dec.isStaticallyImportable()) &&
                         (!(scope instanceof Constructor) || 
@@ -1014,9 +1017,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                         Reference pr = isMember ? 
                                 getQualifiedProducedReference(node, d) :
                                 getRefinedProducedReference(scope, d);
-                        InvocationCompletionProposal.addInvocationProposals(
-                                offset, prefix, cpc, result,
-                                d, pr, scope, ol, null, isMember);
+                        addInvocationProposals(
+                                offset, prefix, controller, result,
+                                dwp, d, pr, scope, ol, null, isMember);
                     }
                 }
                 
@@ -1192,31 +1195,6 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
     }
 
-    private static void addAnonFunctionProposal(int offset,
-            Type requiredType,
-            List<ICompletionProposal> result,
-            Unit unit) {
-        String text = ""; //eclipseCompletionManager_.get_().anonFunctionHeader(requiredType, unit);
-        String funtext = text + " => nothing";
-        result.add(new CompletionProposal(offset, "",
-                LARGE_CORRECTION_IMAGE, funtext, funtext) {
-            @Override
-            public Point getSelection(IDocument document) {
-                return new Point(offset + text.indexOf("nothing"), 7);
-            }
-        });
-        if (unit.getCallableReturnType(requiredType).isAnything()) {
-            String voidtext = "void " + text + " {}";
-            result.add(new CompletionProposal(offset, "",
-                    LARGE_CORRECTION_IMAGE, voidtext, voidtext) {
-                @Override
-                public Point getSelection(IDocument document) {
-                    return new Point(offset + text.length()-1, 0);
-                }
-            });
-        }
-    }
-
     private static boolean isReferenceProposable(OccurrenceLocation ol,
             Declaration dec) {
         return (ol==VALUE_REF || !(dec instanceof Value) || 
@@ -1262,7 +1240,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     private static final List<Type> NO_TYPES = Collections.<Type>emptyList();
-    
+
     private static boolean isReturnType(Type t, FunctionOrValue m, Node node) {
         if (t.isSubtypeOf(m.getType())) {
             return true;
@@ -1272,7 +1250,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             Scope container = td.getDeclarationModel().getContainer();
             if (container instanceof ClassOrInterface) {
                 ClassOrInterface ci = (ClassOrInterface) container;
-                Type type = 
+                Type type =
                         ci.getType()
                             .getTypedMember(m, NO_TYPES)
                             .getType();
@@ -1534,6 +1512,286 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     public static Map<String, DeclarationWithProximity> 
     getProposals(Node node, Scope scope, 
             Tree.CompilationUnit rootNode) {
-       return eclipseCompletionManager_.get_().getProposals(node, scope, "", false, rootNode);
+       return getProposals(node, scope, "", false, rootNode);
+    }
+
+    private static Map<String, DeclarationWithProximity>
+    getFunctionProposals(Node node, Scope scope,
+            String prefix, boolean memberOp) {
+        Unit unit = node.getUnit();
+        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+            Tree.QualifiedMemberOrTypeExpression qmte =
+                    (Tree.QualifiedMemberOrTypeExpression)
+                        node;
+            Type type = getPrimaryType(qmte);
+            if (!qmte.getStaticMethodReference() &&
+                    !isTypeUnknown(type)) {
+                return collectUnaryFunctions(type,
+                        scope.getMatchingDeclarations(
+                                unit, prefix, 0));
+            }
+        }
+        else if (memberOp && node instanceof Tree.Term) {
+            Type type = null;
+            if (node instanceof Tree.Term) {
+                Tree.Term term = (Tree.Term) node;
+                type = term.getTypeModel();
+            }
+            if (type!=null) {
+                return collectUnaryFunctions(type,
+                        scope.getMatchingDeclarations(
+                                unit, prefix, 0));
+            }
+            else {
+                return emptyMap();
+            }
+        }
+        return emptyMap();
+    }
+
+    public static Map<String, DeclarationWithProximity>
+    collectUnaryFunctions(Type type,
+            Map<String, DeclarationWithProximity> candidates) {
+        Map<String,DeclarationWithProximity> matches =
+                new HashMap<String, DeclarationWithProximity>();
+        for (Map.Entry<String,DeclarationWithProximity> e:
+                candidates.entrySet()) {
+            Declaration declaration =
+                    e.getValue().getDeclaration();
+            if (declaration instanceof Function &&
+                    !declaration.isAnnotation()) {
+                Function m = (Function) declaration;
+                List<ParameterList> pls =
+                        m.getParameterLists();
+                if (!pls.isEmpty()) {
+                    ParameterList pl = pls.get(0);
+                    List<Parameter> params =
+                            pl.getParameters();
+                    if (!params.isEmpty()) {
+                        boolean unary=true;
+                        for (int i=1; i<params.size(); i++) {
+                            if (!params.get(i).isDefaulted()) {
+                                unary = false;
+                            }
+                        }
+                        Type t = params.get(0).getType();
+                        if (unary && !isTypeUnknown(t) &&
+                                type.isSubtypeOf(t)) {
+                            matches.put(e.getKey(),
+                                    e.getValue());
+                        }
+                    }
+                }
+            }
+        }
+        return matches;
+    }
+
+    private static Map<String, DeclarationWithProximity>
+    getProposals(Node node, Scope scope, String prefix,
+            boolean memberOp, Tree.CompilationUnit rootNode) {
+        Unit unit = node.getUnit();
+        if (node instanceof Tree.MemberLiteral) {
+            Tree.MemberLiteral ml = (Tree.MemberLiteral) node;
+            Tree.StaticType mlt = ml.getType();
+            if (mlt!=null) {
+                Type type = mlt.getTypeModel();
+                if (type!=null) {
+                    return type.resolveAliases()
+                            .getDeclaration()
+                            .getMatchingMemberDeclarations(
+                                    unit, scope, prefix, 0);
+                }
+                else {
+                    return emptyMap();
+                }
+            }
+        }
+        else if (node instanceof Tree.TypeLiteral) {
+            Tree.TypeLiteral tl = (Tree.TypeLiteral) node;
+            Tree.StaticType tlt = tl.getType();
+            if (tlt instanceof Tree.BaseType) {
+                Tree.BaseType bt = (Tree.BaseType) tlt;
+                if (bt.getPackageQualified()) {
+                    return unit.getPackage()
+                            .getMatchingDirectDeclarations(
+                                    prefix, 0);
+                }
+            }
+            if (tlt!=null) {
+                Type type = tlt.getTypeModel();
+                if (type!=null) {
+                    return type.resolveAliases()
+                            .getDeclaration()
+                            .getMatchingMemberDeclarations(
+                                    unit, scope, prefix, 0);
+                }
+                else {
+                    return emptyMap();
+                }
+            }
+        }
+
+        if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+            Tree.QualifiedMemberOrTypeExpression qmte =
+                    (Tree.QualifiedMemberOrTypeExpression)
+                        node;
+            Type type = getPrimaryType(qmte);
+            if (qmte.getStaticMethodReference()) {
+                type = unit.getCallableReturnType(type);
+            }
+            if (type!=null && !type.isUnknown()) {
+                return type.resolveAliases()
+                        .getDeclaration()
+                        .getMatchingMemberDeclarations(
+                                unit, scope, prefix, 0);
+            }
+            else {
+                Tree.Primary primary = qmte.getPrimary();
+                if (primary instanceof Tree.MemberOrTypeExpression) {
+                    //it might be a qualified type or even a static method reference
+                    Tree.MemberOrTypeExpression pmte =
+                            (Tree.MemberOrTypeExpression)
+                                primary;
+                    Declaration d = pmte.getDeclaration();
+                    if (d instanceof TypeDeclaration) {
+                        TypeDeclaration td =
+                                (TypeDeclaration) d;
+                        type = td.getType();
+                        if (type!=null) {
+                            return type.resolveAliases()
+                                    .getDeclaration()
+                                    .getMatchingMemberDeclarations(
+                                            unit, scope, prefix, 0);
+                        }
+                    }
+                }
+                else if (primary instanceof Tree.Package) {
+                    return unit.getPackage()
+                            .getMatchingDirectDeclarations(
+                                    prefix, 0);
+                }
+            }
+            return emptyMap();
+        }
+        else if (node instanceof Tree.QualifiedType) {
+            Tree.QualifiedType type =
+                    (Tree.QualifiedType) node;
+            Type t = type.getOuterType().getTypeModel();
+            if (t!=null) {
+                return t.resolveAliases()
+                        .getDeclaration()
+                        .getMatchingMemberDeclarations(
+                                unit, scope, prefix, 0);
+            }
+            else {
+                return emptyMap();
+            }
+        }
+        else if (node instanceof Tree.BaseType) {
+            Tree.BaseType type = (Tree.BaseType) node;
+            if (type.getPackageQualified()) {
+                return unit.getPackage()
+                        .getMatchingDirectDeclarations(
+                                prefix, 0);
+            }
+            else if (scope!=null) {
+                return scope.getMatchingDeclarations(
+                        unit, prefix, 0);
+            }
+            else {
+                return emptyMap();
+            }
+        }
+        else if (memberOp &&
+                (node instanceof Tree.Term ||
+                 node instanceof Tree.DocLink)) {
+            Type type = null;
+            if (node instanceof Tree.DocLink) {
+                Tree.DocLink docLink = (Tree.DocLink) node;
+                Declaration d = docLink.getBase();
+                if (d != null) {
+                    type = getResultType(d);
+                    if (type == null) {
+                        type = d.getReference().getFullType();
+                    }
+                }
+            }
+//            else if (node instanceof Tree.StringLiteral) {
+//                type = null;
+//            }
+            else if (node instanceof Tree.Term) {
+                Tree.Term term = (Tree.Term) node;
+                type = term.getTypeModel();
+            }
+
+            if (type!=null) {
+                return type.resolveAliases()
+                        .getDeclaration()
+                        .getMatchingMemberDeclarations(
+                                unit, scope, prefix, 0);
+            }
+            else {
+                return scope.getMatchingDeclarations(
+                        unit, prefix, 0);
+            }
+        }
+        else {
+            if (scope instanceof ImportList) {
+                ImportList IL = (ImportList) scope;
+                return IL.getMatchingDeclarations(
+                        unit, prefix, 0);
+            }
+            else {
+                return scope==null ? //a null scope occurs when we have not finished parsing the file
+                        getUnparsedProposals(rootNode, prefix) :
+                        scope.getMatchingDeclarations(
+                                unit, prefix, 0);
+            }
+        }
+    }
+
+    private static Type getPrimaryType(
+            Tree.QualifiedMemberOrTypeExpression qme) {
+        Type type =
+                qme.getPrimary().getTypeModel();
+        if (type==null) {
+            return null;
+        }
+        else {
+            Tree.MemberOperator mo = qme.getMemberOperator();
+            Unit unit = qme.getUnit();
+            if (mo instanceof Tree.SafeMemberOp) {
+                return unit.getDefiniteType(type);
+            }
+            else if (mo instanceof Tree.SpreadOp) {
+                return unit.getIteratedType(type);
+            }
+            else {
+                return type;
+            }
+        }
+    }
+
+    private static Map<String, DeclarationWithProximity>
+    getUnparsedProposals(Node node, String prefix) {
+        if (node == null) {
+            return newEmptyProposals();
+        }
+        Unit unit = node.getUnit();
+        if (unit == null) {
+            return newEmptyProposals();
+        }
+        Package pkg = unit.getPackage();
+        if (pkg == null) {
+            return newEmptyProposals();
+        }
+        return pkg.getModule()
+                .getAvailableDeclarations(prefix, 0);
+    }
+
+    private static TreeMap<String, DeclarationWithProximity>
+    newEmptyProposals() {
+        return new TreeMap<String,DeclarationWithProximity>();
     }
 }
