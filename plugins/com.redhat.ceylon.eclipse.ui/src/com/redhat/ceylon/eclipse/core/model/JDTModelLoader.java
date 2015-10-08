@@ -23,6 +23,8 @@ package com.redhat.ceylon.eclipse.core.model;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,11 +36,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 
+import org.eclipse.core.internal.jobs.InternalJob;
 import org.eclipse.core.internal.utils.Cache;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -542,6 +547,48 @@ public class JDTModelLoader extends AbstractModelLoader {
                 CharOperation.toString(packageName));
         }
         
+        private Method getProgressMonitorMethod = null;
+        private IProgressMonitor getProgressMonitor(Job job) {
+            try {
+                if (getProgressMonitorMethod == null) {
+                    for (Method m : InternalJob.class.getDeclaredMethods()) {
+                        if ("getProgressMonitor".equals(m.getName())) {
+                            getProgressMonitorMethod = m;
+                            getProgressMonitorMethod.setAccessible(true);
+                            break;
+                        }
+                    }
+                }
+                
+                Object o = getProgressMonitorMethod.invoke(job);
+                if (o instanceof IProgressMonitor) {
+                    return (IProgressMonitor) o;
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        
+        
+        private boolean endsWith(char [] charArray, char[][] suffixes) {
+            int arrayLength = charArray.length;
+            for (char[] suffix : suffixes) {
+                int suffixLength = suffix.length;
+                if (arrayLength >= suffixLength) {
+                    if (CharOperation.fragmentEquals(suffix, charArray, arrayLength - suffixLength, false)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
         public IType findTypeInNameLookup(String typeName, String packageName) {
             JavaElementRequestor packageRequestor = new JavaElementRequestor();
             nameLookup.seekPackageFragments(packageName, false, packageRequestor);
@@ -564,66 +611,84 @@ public class JDTModelLoader extends AbstractModelLoader {
                 }
             }
             
-            IType type = null;
             for (IPackageFragment pf : packagesToSearchIn) {
 
                 // We use considerSecondTypes = false because we will do it explicitly afterwards, in order to use waitForIndexes=true
-            	// TODO : when migrating to Luna only (removing Kepler support), we will be able to simply call :
-            	//        nameLookup.findType(typeName, pf, false, NameLookup.ACCEPT_ALL, 
-            	//                            true /* waitForIndices */,
-            	//                            true /* considerSecondaryTypes */)
-            	// But unfortunately, Kepler doesn't provide the ability to set the 'waitForIndexes' parameter to true.
-                type = nameLookup.findType(typeName, pf, false, NameLookup.ACCEPT_ALL);
-                if (type == null) {
-                    JavaModelManager manager = JavaModelManager.getJavaModelManager();
-                    try {
-                        // This is a Copy / Paste from :
-                        // org.eclipse.jdt.internal.core.NameLookup.findSecondaryType(...), in order to be able to call it with waitForIndexes = true:
-                        // type = nameLookup.findSecondaryType(pf.getElementName(), typeName, pf.getJavaProject(), true, null);
-                        IJavaProject javaProject = pf.getJavaProject();
-                        @SuppressWarnings("rawtypes")
-                        Map secondaryTypePaths = manager.secondaryTypes(javaProject, true, null);
-                        if (secondaryTypePaths.size() > 0) {
-                            @SuppressWarnings("rawtypes")
-                            Map types = (Map) secondaryTypePaths.get(packageName==null?"":packageName); //$NON-NLS-1$
-                            if (types != null && types.size() > 0) {
-                                boolean startsWithDollar = false;
-                                if(typeName.startsWith("$")) {
-                                    startsWithDollar = true;
-                                    typeName = typeName.substring(1);
-                                }
-                                String[] parts = typeName.split("(\\.|\\$)");
-                                if (startsWithDollar) {
-                                    parts[0] = "$" + parts[0];
-                                }
-                                int index = 0;
-                                String topLevelClassName = parts[index++];
-                                IType currentClass = (IType) types.get(topLevelClassName);
-                                IType result = currentClass;
-                                while (index < parts.length) {
-                                    result = null;
-                                    String nestedClassName = parts[index++];
-                                    if (currentClass != null && currentClass.exists()) {
-                                        currentClass = currentClass.getType(nestedClassName);
-                                        result = currentClass;
-                                    } else {
-                                        break;
-                                    }
-                                }
-                                type = result;
-                            }
-                        }
-                    }
-                    catch (JavaModelException jme) {
-                        // give up
-                    }
-                    
-                }
+                IType type = nameLookup.findType(typeName, pf, false, NameLookup.ACCEPT_ALL);
                 if (type != null) {
-                    break;
+                    return type;
                 }
             }
-            return type;
+            
+            char[] typeNameCharArray = typeName.toCharArray();
+            if (CharOperation.equals(TypeConstants.PACKAGE_INFO_NAME, typeNameCharArray) ||
+                    CharOperation.equals(packageDescriptorName, typeNameCharArray) ||
+                    CharOperation.equals(moduleDescriptorName, typeNameCharArray) ||
+                    CharOperation.equals(oldPackageDescriptorName, typeNameCharArray) ||
+                    CharOperation.equals(oldModuleDescriptorName, typeNameCharArray) ||
+                    endsWith(typeNameCharArray, descriptorClassNames)) {
+                return null;
+            }
+            
+            for (IPackageFragment pf : packagesToSearchIn) {
+                Job currentJob = Job.getJobManager().currentJob();
+                IProgressMonitor currentMonitor = getProgressMonitor(currentJob);
+                IType type = findSecondaryType(typeName, packageName, pf,
+                        currentMonitor);
+                if (type != null) {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        // This is a Copy / Paste from :
+        // org.eclipse.jdt.internal.core.NameLookup.findSecondaryType(...), in order to be able to call it with waitForIndexes = true:
+        // type = nameLookup.findSecondaryType(pf.getElementName(), typeName, pf.getJavaProject(), true, null);
+        //
+        // However the copied method has been changed to adapt it to the model loader needs.
+        private IType findSecondaryType(String typeName, String packageName,
+                IPackageFragment pf, IProgressMonitor currentMonitor) {
+            JavaModelManager manager = JavaModelManager.getJavaModelManager();
+            try {
+                IJavaProject javaProject = pf.getJavaProject();
+                @SuppressWarnings("rawtypes")
+                Map secondaryTypePaths = manager.secondaryTypes(javaProject, true, currentMonitor);
+                if (secondaryTypePaths.size() > 0) {
+                    @SuppressWarnings("rawtypes")
+                    Map types = (Map) secondaryTypePaths.get(packageName==null?"":packageName); //$NON-NLS-1$
+                    if (types != null && types.size() > 0) {
+                        boolean startsWithDollar = false;
+                        if(typeName.startsWith("$")) {
+                            startsWithDollar = true;
+                            typeName = typeName.substring(1);
+                        }
+                        String[] parts = typeName.split("(\\.|\\$)");
+                        if (startsWithDollar) {
+                            parts[0] = "$" + parts[0];
+                        }
+                        int index = 0;
+                        String topLevelClassName = parts[index++];
+                        IType currentClass = (IType) types.get(topLevelClassName);
+                        IType result = currentClass;
+                        while (index < parts.length) {
+                            result = null;
+                            String nestedClassName = parts[index++];
+                            if (currentClass != null && currentClass.exists()) {
+                                currentClass = currentClass.getType(nestedClassName);
+                                result = currentClass;
+                            } else {
+                                break;
+                            }
+                        }
+                        return result;
+                    }
+                }
+            }
+            catch (JavaModelException jme) {
+                // give up
+            }
+            return null;
         }
         
         @Override
@@ -1058,6 +1123,12 @@ public class JDTModelLoader extends AbstractModelLoader {
         return typeModel;
     }
 
+    private static final char[] packageDescriptorName = "$package_".toCharArray();
+    private static final char[] moduleDescriptorName = "$module_".toCharArray();
+    private static final char[] oldPackageDescriptorName = "package_".toCharArray();
+    private static final char[] oldModuleDescriptorName = "module_".toCharArray();
+    private static final char[][] descriptorClassNames = new char[][] { packageDescriptorName, moduleDescriptorName };
+
     private JDTClass buildClassMirror(String name) {
         if (javaProject == null) {
             return null;
@@ -1070,22 +1141,32 @@ public class JDTModelLoader extends AbstractModelLoader {
             char[][] compoundName = null;
             IType type = null;
             
-            for (int i=numberOfParts-1; i>=0; i--) {
-                char[][] triedPackageName = new char[0][];
-                for (int j=0; j<i; j++) {
-                    triedPackageName = CharOperation.arrayConcat(triedPackageName, uncertainCompoundName[j]);
+            if (numberOfParts > 0) {
+                boolean noInnerClass = false;
+                char[] lastPart = uncertainCompoundName[numberOfParts-1];
+                if (CharOperation.equals(packageDescriptorName, lastPart) ||
+                        CharOperation.equals(moduleDescriptorName, lastPart)) {
+                    noInnerClass = true;
                 }
-                char[] triedClassName = new char[0];
-                for (int k=i; k<numberOfParts; k++) {
-                    triedClassName = CharOperation.concat(triedClassName, uncertainCompoundName[k], '$');
-                }
-                
-                ModelLoaderNameEnvironment nameEnvironment = getNameEnvironment();
-                type = nameEnvironment.findTypeInNameLookup(CharOperation.charToString(triedClassName), 
-                        CharOperation.toString(triedPackageName));
-                if (type != null) {
-                    compoundName = CharOperation.arrayConcat(triedPackageName, triedClassName);
-                    break;
+                for (int packagePartsEndIndex=numberOfParts-1; 
+                        packagePartsEndIndex >= (noInnerClass ? numberOfParts-1 : 0); 
+                        packagePartsEndIndex--) {
+                    char[][] triedPackageName = new char[0][];
+                    for (int j=0; j<packagePartsEndIndex; j++) {
+                        triedPackageName = CharOperation.arrayConcat(triedPackageName, uncertainCompoundName[j]);
+                    }
+                    char[] triedClassName = new char[0];
+                    for (int k=packagePartsEndIndex; k<numberOfParts; k++) {
+                        triedClassName = CharOperation.concat(triedClassName, uncertainCompoundName[k], '$');
+                    }
+                    
+                    ModelLoaderNameEnvironment nameEnvironment = getNameEnvironment();
+                    type = nameEnvironment.findTypeInNameLookup(CharOperation.charToString(triedClassName), 
+                            CharOperation.toString(triedPackageName));
+                    if (type != null) {
+                        compoundName = CharOperation.arrayConcat(triedPackageName, triedClassName);
+                        break;
+                    }
                 }
             }
 
