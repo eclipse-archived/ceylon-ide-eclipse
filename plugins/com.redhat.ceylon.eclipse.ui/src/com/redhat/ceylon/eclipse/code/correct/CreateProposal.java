@@ -4,11 +4,9 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.computeSelec
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
 import static com.redhat.ceylon.eclipse.code.correct.CreateInNewUnitProposal.addCreateInNewUnitProposal;
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
@@ -61,7 +59,7 @@ class CreateProposal extends InitializerProposal {
             Image image, TextChange change,
             int exitPos, Region selection) {
         super(desc, change, scope, unit, returnType,
-                selection, image, exitPos, null);
+                selection, image, exitPos);
     }
 
     static void addCreateMemberProposal(
@@ -83,7 +81,7 @@ class CreateProposal extends InitializerProposal {
         int offset;
         List<Tree.Statement> statements =
                 body.getStatements();
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = indents().getDefaultLineDelimiter(doc);
         if (statements.isEmpty()) {
             String bodyIndent = indents().getIndent(decNode, doc);
             indent = bodyIndent + indents().getDefaultIndent();
@@ -137,8 +135,8 @@ class CreateProposal extends InitializerProposal {
                     dg.generateShared(indent, delim);
         String def = indentBefore + generated + indentAfter;
         int il =
-                applyImports(change, dg.getImports(),
-                        unit.getCompilationUnit(), doc);
+                (int) importProposals().applyImports(change, dg.getImports(),
+                unit.getCompilationUnit(), doc);
         change.addEdit(new InsertEdit(offset, def));
         String desc =
                 "Create " + memberKind(dg) +
@@ -182,14 +180,14 @@ class CreateProposal extends InitializerProposal {
                         file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
-        String indent = getIndent(statement, doc);
+        String indent = indents().getIndent(statement, doc);
         int offset = statement.getStartIndex();
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = indents().getDefaultLineDelimiter(doc);
         Tree.CompilationUnit rootNode =
                 unit.getCompilationUnit();
         int il =
-                applyImports(change, dg.getImports(),
-                        rootNode, doc);
+                (int) importProposals().applyImports(change, dg.getImports(),
+                rootNode, doc);
         String def =
                 dg.generate(indent, delim) + delim + indent;
         if (!local) def += delim;

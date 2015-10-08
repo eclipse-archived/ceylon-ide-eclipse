@@ -2,8 +2,8 @@ package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static java.util.Collections.singletonList;
 

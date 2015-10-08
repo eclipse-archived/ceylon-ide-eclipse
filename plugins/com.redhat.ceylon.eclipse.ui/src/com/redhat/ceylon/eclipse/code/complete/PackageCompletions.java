@@ -11,7 +11,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageNam
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getCompletionFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
-import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Highlights.MEMBER_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
@@ -234,7 +234,7 @@ public class PackageCompletions {
         @Override
         public void apply(IDocument document) {
             super.apply(document);
-            if (withBody && 
+            if (withBody &&
                     CeylonPlugin.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
                 final LinkedModeModel linkedModeModel = new LinkedModeModel();
                 final Point selection = getSelection(document);

@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.TypeProposal.getTypeProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REVEAL;
@@ -76,8 +75,8 @@ public class SpecifyTypeProposal implements ICompletionProposal,
                         new DocumentChange("Specify Type", document);
                 change.setEdit(new MultiTextEdit());
                 HashSet<Declaration> decs = new HashSet<Declaration>();
-                importType(decs, infType, rootNode);
-                int il = applyImports(change, decs, rootNode, document);
+                importProposals().importType(decs, infType, rootNode);
+                int il = (int) importProposals().applyImports(change, decs, rootNode, document);
                 String typeName = 
                         infType.asSourceCodeString(rootNode.getUnit());
                 change.addEdit(new ReplaceEdit(offset, length, typeName));

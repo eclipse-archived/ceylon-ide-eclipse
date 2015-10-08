@@ -94,7 +94,7 @@ public class AddConstructorProposal extends CorrectionProposal {
                 if (les==null) {
                     start = body.getStartIndex()+1;
                     if (body.getEndIndex()-1==start) {
-                        text += delim + getIndent(cd, doc);
+                        text += delim + indents().getIndent(cd, doc);
                     }
                 }
                 else {

@@ -4,8 +4,7 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importPropo
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -123,7 +122,7 @@ public class MoveUtil {
                     if (!first) {
                         sb.append(",").append(delim);
                     }
-                    sb.append(getDefaultIndent());
+                    sb.append(indents().getDefaultIndent());
                     String name = d.getName();
                     String alias = e.getValue();
                     if (!name.equals(alias)) {
@@ -319,8 +318,8 @@ public class MoveUtil {
     private static void addImport(String targetPackage, Declaration dec, 
             Tree.CompilationUnit cu, TextChange tc) {
         String name = dec.getName();
-        String delim = getDefaultLineDelimiter(getDocument(tc));
-        String indent = getDefaultIndent();
+        String delim = indents().getDefaultLineDelimiter(getDocument(tc));
+        String indent = indents().getDefaultIndent();
         boolean foundMoved = false;
         Tree.ImportList il = cu.getImportList();
         for (Tree.Import i: il.getImports()) {

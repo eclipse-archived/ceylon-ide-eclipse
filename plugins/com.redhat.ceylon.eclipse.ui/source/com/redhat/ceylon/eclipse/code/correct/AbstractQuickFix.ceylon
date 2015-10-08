@@ -48,6 +48,9 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
+import com.redhat.ceylon.eclipse.core.typechecker {
+    ModifiablePhasedUnit
+}
 
 interface EclipseAbstractQuickFix
         satisfies AbstractQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,ICompletionProposal> {
@@ -69,10 +72,11 @@ interface EclipseAbstractQuickFix
     shared actual TextChange newTextChange(String desc, PhasedUnit|IFile|IDocument u) {
         if (is IDocument u) {
             return DocumentChange(desc, u);
+        } else if (is PhasedUnit u){
+            assert(is ModifiablePhasedUnit u);
+            return TextFileChange(desc, u.resourceFile);
         } else {
-            value file = if (is IFile u) then u
-                         else CeylonBuilder.getFile(u);
-            return TextFileChange(desc, file);
+            return TextFileChange(desc, u);
         }
     }
 }

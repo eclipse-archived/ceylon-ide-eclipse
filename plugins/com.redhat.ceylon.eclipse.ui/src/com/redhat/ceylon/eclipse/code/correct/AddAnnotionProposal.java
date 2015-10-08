@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendNative;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Types.getRefinedDeclaration;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static java.util.Arrays.asList;

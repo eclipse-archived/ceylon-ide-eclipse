@@ -171,8 +171,8 @@ class AddParameterProposal extends InitializerProposal {
                     explicitType = paramType.asString();
                     HashSet<Declaration> decs =
                             new HashSet<Declaration>();
-                    importType(decs, paramType, rootNode);
-                    shift = applyImports(change, decs, rootNode, doc);
+                    importProposals().importType(decs, paramType, rootNode);
+                    shift = (int) importProposals().applyImports(change, decs, rootNode, doc);
                 }
                 change.addEdit(new ReplaceEdit(typeOffset,
                         type.getText().length(),

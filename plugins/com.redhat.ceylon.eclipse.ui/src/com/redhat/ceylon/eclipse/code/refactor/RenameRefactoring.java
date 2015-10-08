@@ -2,8 +2,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.java.codegen.CodegenUtil.getJavaNameOfDeclaration;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
-import static com.redhat.ceylon.eclipse.util.Escaping.toInitialLowercase;
-import static com.redhat.ceylon.eclipse.util.Escaping.toInitialUppercase;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectAndReferencingProjects;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
@@ -52,7 +50,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -421,7 +419,7 @@ public class RenameRefactoring extends AbstractRefactoring {
                                 change.addEdit(new ReplaceEdit(
                                         match.getOffset() + 3, 
                                         oldName.length() - 3, 
-                                        toInitialUppercase(newName)));
+                                        Escaping.toInitialUppercase(newName)));
                             }
                             else {
                                 change.addEdit(new ReplaceEdit(
@@ -568,7 +566,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         else {
             tfc.addEdit(new ReplaceEdit(
                     start, len,
-                    toInitialLowercase(newName)));
+                    Escaping.toInitialLowercase(newName)));
         }
     }
 

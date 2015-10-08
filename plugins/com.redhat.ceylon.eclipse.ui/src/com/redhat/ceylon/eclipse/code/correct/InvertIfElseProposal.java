@@ -128,10 +128,10 @@ class InvertIfElseProposal extends CorrectionProposal {
                 test = "!" + term;
             }
         }
-        String elseIndent = getIndent(elseBlock, doc);
-        String thenIndent = getIndent(ifBlock, doc);
+        String elseIndent = indents().getIndent(elseBlock, doc);
+        String thenIndent = indents().getIndent(ifBlock, doc);
 //        String indent = getDefaultIndent();
-        String delim = getDefaultLineDelimiter(doc);
+        String delim = indents().getDefaultLineDelimiter(doc);
 
         String elseStr = getTerm(doc, elseBlock);
 //        elseStr = addEnclosingBraces(elseStr, 

@@ -56,8 +56,8 @@ class JoinIfStatementsProposal {
                                         icl.getStartIndex()-ocl.getEndIndex()+2,
                                         ", "));
                                 decrementIndent(doc, inner, icl, change,
-                                        getIndent(inner, doc),
-                                        getIndent(outer, doc));
+                                        indents().getIndent(inner, doc),
+                                        indents().getIndent(outer, doc));
                                 change.addEdit(new DeleteEdit(inner.getEndIndex(),
                                         outer.getEndIndex()-inner.getEndIndex()));
                                 proposals.add(new CorrectionProposal(
@@ -92,8 +92,8 @@ class JoinIfStatementsProposal {
                             int to = inner.getStartIndex();
                             change.addEdit(new DeleteEdit(from, to-from));
                             decrementIndent(doc, inner, icl, change,
-                                    getIndent(inner, doc),
-                                    getIndent(outer, doc));
+                                    indents().getIndent(inner, doc),
+                                    indents().getIndent(outer, doc));
                             change.addEdit(new DeleteEdit(inner.getEndIndex(),
                                     outer.getEndIndex()-inner.getEndIndex()));
                             proposals.add(new CorrectionProposal(

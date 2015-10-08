@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.TextEdit;
 
+import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 import com.redhat.ceylon.ide.common.util.Escaping;
 
 public class ExtractValueInputPage extends UserInputWizardPage {
@@ -51,7 +52,7 @@ public class ExtractValueInputPage extends UserInputWizardPage {
         et.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                getExtractValueRefactoring().setExplicitType();
+                getExtractValueRefactoring().setExplicitType(true);
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
@@ -61,7 +62,7 @@ public class ExtractValueInputPage extends UserInputWizardPage {
         gs.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                getExtractValueRefactoring().setGetter();
+                getExtractValueRefactoring().setGetter(true);
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}

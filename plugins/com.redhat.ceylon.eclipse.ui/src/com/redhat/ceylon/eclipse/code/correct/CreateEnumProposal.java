@@ -23,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
 class CreateEnumProposal extends CorrectionProposal {

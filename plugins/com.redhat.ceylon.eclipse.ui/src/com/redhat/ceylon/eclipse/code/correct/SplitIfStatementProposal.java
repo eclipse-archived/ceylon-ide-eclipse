@@ -91,9 +91,9 @@ class SplitIfStatementProposal {
                                             file);
                             change.setEdit(new MultiTextEdit());
                             String ws = 
-                                    getDefaultLineDelimiter(doc) + 
-                                    getIndent(is, doc);
-                            String indent = getDefaultIndent();
+                                    indents().getDefaultLineDelimiter(doc) + 
+                                    indents().getIndent(is, doc);
+                            String indent = indents().getDefaultIndent();
                             int start = block.getStartIndex();
                             change.addEdit(new InsertEdit(start,  
                                     "{" + ws + indent));

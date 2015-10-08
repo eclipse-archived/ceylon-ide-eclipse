@@ -763,7 +763,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             importProposals().importDeclaration(decs, declaration, cu);
         }
         if (positionalInvocation||namedInvocation) {
-            importCallableParameterParamTypes(declaration,
+            importProposals().importCallableParameterParamTypes(declaration,
                     decs, cu);
         }
         int il= (int) importProposals().applyImports(change, decs, cu, document);

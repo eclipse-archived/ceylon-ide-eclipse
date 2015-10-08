@@ -73,7 +73,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.
 import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.addImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addInvertIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.addJoinDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
@@ -1602,8 +1601,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     new StyledString("Suppress warnings of type ");
             target.visit(new CollectWarningsToSuppressVisitor(sb, ss));
             String ws = 
-                    getDefaultLineDelimiter(doc) +
-                    getIndent(target, doc);
+                    indents().getDefaultLineDelimiter(doc) +
+                    indents().getIndent(target, doc);
             String text = "suppressWarnings(" + sb + ")";
             Integer start = target.getStartIndex();
             Tree.AnnotationList al = annotationList(target);

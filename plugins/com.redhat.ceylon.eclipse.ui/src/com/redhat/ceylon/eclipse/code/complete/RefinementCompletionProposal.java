@@ -324,7 +324,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         else {
             importProposals().importParameterTypes(declaration, cu, decs);
         }
-        int il = applyImports(change, decs, cu, document);
+        int il = (int) importProposals().applyImports(change, decs, cu, document);
         change.addEdit(createEdit(document));
         offset+=il;
         return change;

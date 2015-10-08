@@ -18,7 +18,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_E
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_ESCAPE_QUOTED;
@@ -994,7 +994,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
             }
             if (!imports.isEmpty()) {
                 List<InsertEdit> edits = 
-                        importEdits(cu, 
+                        importProposals().importEdits(cu, 
                                 imports.keySet(), 
                                 imports.values(), 
                                 null, doc);

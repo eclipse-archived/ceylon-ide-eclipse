@@ -65,6 +65,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
@@ -89,6 +90,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -872,6 +874,18 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
     @Override
     public CeylonProject<IProject> getCeylonProject() {
         return ceylonModel().getProject(project);
+    }
+
+    @Override
+    @Deprecated
+    public PhasedUnit getPhasedUnit() {
+        return getLastPhasedUnit();
+    }
+
+    @Override
+    @Deprecated
+    public CompilationUnit getRootNode() {
+        return getLastCompilationUnit();
     }
     
 }

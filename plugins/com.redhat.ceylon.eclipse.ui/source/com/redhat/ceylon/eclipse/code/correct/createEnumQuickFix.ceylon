@@ -38,6 +38,9 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
+import com.redhat.ceylon.eclipse.core.typechecker {
+    ModifiablePhasedUnit
+}
 
 object eclipseCreateEnumQuickFix
         satisfies CreateEnumQuickFix<IProject, IDocument, InsertEdit, TextEdit, TextChange,EclipseQuickFixData> 
@@ -60,7 +63,7 @@ object eclipseCreateEnumQuickFix
     shared actual Indents<IDocument> indents => eclipseIndents;
     
     shared actual TextChange newTextChange(PhasedUnit unit) {
-        value file = CeylonBuilder.getFile(unit);
-        return TextFileChange("Create Enumerated", file);
+        assert(is ModifiablePhasedUnit unit);
+        return TextFileChange("Create Enumerated", unit.resourceFile);
     }
 }

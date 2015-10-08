@@ -69,14 +69,14 @@ public class ChangeRefiningTypeProposal {
                                 decNode.getUnit());
                 Set<Declaration> declarations =
                         new HashSet<Declaration>();
-                importType(declarations, t, cu);
+                importProposals().importType(declarations, t, cu);
                 TextFileChange change = 
                         new TextFileChange("Change Type",
                                 file);
                 int offset = node.getStartIndex();
                 int length = node.getDistance();
                 change.setEdit(new MultiTextEdit());
-                applyImports(change, declarations, cu,
+                importProposals().applyImports(change, declarations, cu,
                         getDocument(change));
                 change.addEdit(new ReplaceEdit(
                         offset, length, type));
@@ -191,7 +191,7 @@ public class ChangeRefiningTypeProposal {
                                 p.getDistance(),
                                 //TODO: better handling for callable parameters
                                 pt.asSourceCodeString(unit) + " " + rdp.getName()));
-                        importType(declarations, pt, cu);
+                        importProposals().importType(declarations, pt, cu);
                     }
                 }
             }
@@ -207,7 +207,7 @@ public class ChangeRefiningTypeProposal {
                     appendParameterText(buf, pr, rdp, unit);
                     Type pt = 
                             pr.getTypedParameter(rdp).getFullType();
-                    importType(declarations, pt, cu);
+                    importProposals().importType(declarations, pt, cu);
                 }
                 Integer offset =
                         params.isEmpty() ?
@@ -217,7 +217,7 @@ public class ChangeRefiningTypeProposal {
                 change.addEdit(new InsertEdit(offset,
                         buf.toString()));
             }
-            applyImports(change, declarations, cu, getDocument(change));
+            importProposals().applyImports(change, declarations, cu, getDocument(change));
             if (change.getEdit().hasChildren()) {
                 Region selection =
                         new Region(list.getStartIndex()+1,

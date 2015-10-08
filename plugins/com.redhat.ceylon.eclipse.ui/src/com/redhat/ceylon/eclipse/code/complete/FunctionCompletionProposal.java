@@ -51,8 +51,8 @@ final class FunctionCompletionProposal extends
         change.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs = new HashSet<Declaration>();
         Tree.CompilationUnit cu = cpc.getLastCompilationUnit();
-        importDeclaration(decs, dec, cu);
-        int il=applyImports(change, decs, cu, document);
+        importProposals().importDeclaration(decs, dec, cu);
+        int il=(int) importProposals().applyImports(change, decs, cu, document);
         change.addEdit(createEdit(document));
         offset+=il;
         return change;

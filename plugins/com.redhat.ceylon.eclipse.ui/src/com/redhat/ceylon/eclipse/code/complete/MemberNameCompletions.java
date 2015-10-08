@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_NAME;
-import static com.redhat.ceylon.eclipse.util.Escaping.toInitialUppercase;
 import static com.redhat.ceylon.eclipse.util.Nodes.addNameProposals;
+import static com.redhat.ceylon.ide.common.util.Escaping.toInitialUppercase;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.LinkedHashSet;

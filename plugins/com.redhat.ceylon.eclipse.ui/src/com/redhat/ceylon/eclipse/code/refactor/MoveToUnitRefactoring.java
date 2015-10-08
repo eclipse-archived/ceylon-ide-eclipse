@@ -9,7 +9,7 @@ import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectIm
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.removeImport;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -176,7 +176,7 @@ public class MoveToUnitRefactoring extends Refactoring {
                 originalPackageName, targetPackageName)) {
             contents = "shared " + contents;
         }
-        String delim = getDefaultLineDelimiter(targetUnitDocument);
+        String delim = indents().getDefaultLineDelimiter(targetUnitDocument);
         String text = delim + contents;
         Set<String> packages = new HashSet<String>();
         addImportEdits(node, targetUnitChange, targetUnitDocument, 

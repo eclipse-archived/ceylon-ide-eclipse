@@ -1,9 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 
 import java.util.Collection;
@@ -94,8 +92,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 new TextFileChange("Split Declaration", 
                         file);
         change.setEdit(new MultiTextEdit());
-        String delim = getDefaultLineDelimiter(doc);
-        String indent = getIndent(decNode, doc);
+        String delim = indents().getDefaultLineDelimiter(doc);
+        String indent = indents().getIndent(decNode, doc);
         if (dec.isParameter()) {
             //TODO: does not handle default args correctly 
             //      for callable parameters
@@ -169,7 +167,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 }
             }
             String text = 
-                    delim + indent + getDefaultIndent() + 
+                    delim + indent + indents().getDefaultIndent() + 
                     annotations + typeString + " " + 
                     dec.getName() + 
                     paramsString + ";";
@@ -279,8 +277,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
             try {
                 text = "value " +
                         doc.get(vstart, vlen) + 
-                        ";" + getDefaultLineDelimiter(doc) + 
-                        getIndent(statement, doc);
+                        ";" + indents().getDefaultLineDelimiter(doc) + 
+                        indents().getIndent(statement, doc);
             }
             catch (BadLocationException e) {
                 e.printStackTrace();

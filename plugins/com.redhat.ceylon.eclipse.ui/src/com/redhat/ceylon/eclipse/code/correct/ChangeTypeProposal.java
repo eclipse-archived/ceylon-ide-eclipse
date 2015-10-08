@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
@@ -114,8 +113,8 @@ class ChangeTypeProposal extends CorrectionProposal {
         int length = node.getDistance();
         HashSet<Declaration> decs = 
                 new HashSet<Declaration>();
-        importType(decs, newType, cu);
-        int il = applyImports(change, decs, cu, doc);
+        importProposals().importType(decs, newType, cu);
+        int il = (int) importProposals().applyImports(change, decs, cu, doc);
         Unit unit = cu.getUnit();
         String newTypeName = 
                 newType.asSourceCodeString(unit);

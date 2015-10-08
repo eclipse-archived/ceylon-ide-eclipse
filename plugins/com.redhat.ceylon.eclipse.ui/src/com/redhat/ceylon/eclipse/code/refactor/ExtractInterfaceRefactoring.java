@@ -3,8 +3,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.createEditorChange;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImports;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -265,7 +264,7 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void addImports(StringBuilder content) {
-        String delim = getDefaultLineDelimiter(document);
+        String delim = indents().getDefaultLineDelimiter(document);
         String importText = 
                 getImportText(extractedImportsPackages, 
                         extractedImports, delim);
@@ -331,8 +330,8 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void addInterfaceBody(StringBuilder content) {
-        String delim = getDefaultLineDelimiter(document);
-        String indent = getDefaultIndent();
+        String delim = indents().getDefaultLineDelimiter(document);
+        String indent = indents().getDefaultIndent();
 
         content.append(" {");
         content.append(delim);

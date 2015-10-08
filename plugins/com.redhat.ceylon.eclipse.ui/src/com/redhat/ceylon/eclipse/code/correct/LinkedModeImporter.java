@@ -40,12 +40,12 @@ public class LinkedModeImporter implements ILinkedModeListener {
                     //get it direct from the editor!
                     Tree.CompilationUnit rootNode = 
                             editor.getParseController().getLastCompilationUnit();
-                    importType(imports, type, rootNode);
+                    importProposals().importType(imports, type, rootNode);
                     if (!imports.isEmpty()) {
                         DocumentChange change = 
                                 new DocumentChange("Import Type", document);
                         change.setEdit(new MultiTextEdit());
-                        applyImports(change, imports, rootNode, document);
+                        importProposals().applyImports(change, imports, rootNode, document);
                         EditorUtil.performChange(change);
                     }
                 }

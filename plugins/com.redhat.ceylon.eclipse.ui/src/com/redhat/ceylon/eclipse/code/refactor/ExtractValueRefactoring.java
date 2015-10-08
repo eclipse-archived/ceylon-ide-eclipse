@@ -1,11 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -31,6 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -158,8 +156,8 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         int start = statement.getStartIndex();
         int il = 0;
         String newLineOrReturn =
-                getDefaultLineDelimiter(doc) +
-                getIndent(statement, doc);
+                indents().getDefaultLineDelimiter(doc) +
+                indents().getIndent(statement, doc);
         FindAnonFunctionVisitor visitor =
                 new FindAnonFunctionVisitor(statement);
         visitor.visit(statement);
@@ -216,7 +214,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
                         int len = ex.getStartIndex() - loc;
                         int end = ex.getEndIndex();
                         int semi = dec.getEndIndex()-1;
-                        String indent = getDefaultIndent();
+                        String indent = indents().getDefaultIndent();
                         String starting = " {" + newLineOrReturn + indent;
                         String ending = ";" + newLineOrReturn + "}";
                         tfc.addEdit(new ReplaceEdit(loc, len, starting));
@@ -283,8 +281,8 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
             typeDec = type.asSourceCodeString(unit);
             HashSet<Declaration> decs =
                     new HashSet<Declaration>();
-            importType(decs, type, rootNode);
-            il += applyImports(tfc, decs, rootNode, doc);
+            importProposals().importType(decs, type, rootNode);
+            il += importProposals().applyImports(tfc, decs, rootNode, doc);
         }
         else {
             canBeInferred = true;

@@ -1,9 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 
 import java.util.Collection;
 
@@ -75,8 +73,8 @@ class AssignToFieldProposal {
             change.setEdit(new MultiTextEdit());
             IDocument document = getDocument(change);
             String indent = 
-                    getDefaultLineDelimiter(document) +
-                    getIndent(constructor, document);
+                    indents().getDefaultLineDelimiter(document) +
+                    indents().getIndent(constructor, document);
             
             String desc;
             if (existing==null) {
@@ -130,7 +128,7 @@ class AssignToFieldProposal {
                         .getStartIndex() + 1;
             String text = 
                     indent +
-                    getDefaultIndent() +
+                    indents().getDefaultIndent() +
                     "this." + name + 
                     " = " + name + ";";
             change.addEdit(new InsertEdit(offset, text));

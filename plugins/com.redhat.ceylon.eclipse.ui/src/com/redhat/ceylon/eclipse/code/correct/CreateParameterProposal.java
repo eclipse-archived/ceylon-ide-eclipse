@@ -3,8 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.computeSelection;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue;
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
@@ -57,7 +56,7 @@ class CreateParameterProposal extends InitializerProposal {
             Image image, TextChange change,
             int exitPos) {
         super(desc, change, dec, type, selection, 
-                image, exitPos, null);
+                image, exitPos);
     }
     
     @Deprecated
@@ -78,7 +77,7 @@ class CreateParameterProposal extends InitializerProposal {
         change.setEdit(new MultiTextEdit());
         IDocument doc = EditorUtil.getDocument(change);
         int offset = paramList.getEndIndex()-1;
-        int il = applyImports(change, imports,
+        int il = (int) importProposals().applyImports(change, imports,
                 unit.getCompilationUnit(), doc);
         change.addEdit(new InsertEdit(offset, def));
         int exitPos = node.getEndIndex();
@@ -117,8 +116,8 @@ class CreateParameterProposal extends InitializerProposal {
         else {
             Tree.Statement statement = 
                     statements.get(statements.size()-1);
-            indent = getDefaultLineDelimiter(doc) +
-                    getIndent(statement, doc);
+            indent = indents().getDefaultLineDelimiter(doc) +
+                    indents().getIndent(statement, doc);
             offset2 = statement.getEndIndex();
             indentAfter = "";
         }
@@ -307,7 +306,7 @@ class CreateParameterProposal extends InitializerProposal {
                     }
                     Set<Declaration> imports =
                             new HashSet<Declaration>();
-                    importType(imports, t,
+                    importProposals().importType(imports, t,
                             unit.getCompilationUnit());
                     addCreateParameterProposal(
                             proposals, def, desc,

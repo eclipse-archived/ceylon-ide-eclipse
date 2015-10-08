@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.asIntersectionTypeString;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;

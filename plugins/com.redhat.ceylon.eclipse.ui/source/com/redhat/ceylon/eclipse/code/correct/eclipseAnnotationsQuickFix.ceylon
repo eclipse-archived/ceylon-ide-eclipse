@@ -42,6 +42,6 @@ object eclipseAnnotationsQuickFix
         String desc, Integer offset, TextChange change, Region selection, EclipseQuickFixData data) {
         
         assert(is TextFileChange change);
-        data.proposals.add(RemoveAnnotionProposal(dec, annotation, offset, change));
+        data.proposals.add(RemoveAnnotionProposal(dec, annotation, offset, desc, change));
     }
 }

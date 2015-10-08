@@ -67,9 +67,9 @@ class TypeProposal
         HashSet<Declaration> decs =
                 new HashSet<Declaration>();
         if (type!=null) {
-            importType(decs, type, rootNode);
+            importProposals().importType(decs, type, rootNode);
         }
-        int il = applyImports(change, decs, rootNode, document);
+        int il = (int) importProposals().applyImports(change, decs, rootNode, document);
         change.addEdit(new ReplaceEdit(offset,
                 getCurrentLength(document), text));
         EditorUtil.performChange(change);

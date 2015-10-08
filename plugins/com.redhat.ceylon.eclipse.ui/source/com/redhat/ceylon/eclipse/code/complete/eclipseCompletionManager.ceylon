@@ -162,7 +162,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     
     shared actual ObjectArray<IContextInformation> computeContextInformation(ITextViewer viewer, Integer offset) {
         CeylonParseController controller = editor.parseController;
-        controller.parse(viewer.document, NullProgressMonitor(), null);
+        controller.parseAndTypecheck(viewer.document, 10, NullProgressMonitor(), null);
         return createJavaObjectArray<IContextInformation>(computeParameterContextInformation(offset, controller.rootNode, viewer));
     }
     
@@ -218,7 +218,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         
         return ParametersCompletionProposal(offset,
             desc.string, text.string,
-            argTypes, node.scope, cpc);
+            argTypes, node.scope, unit);
     }
     
     shared actual Boolean showParameterTypes
@@ -450,7 +450,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         ITextViewer? viewer, Boolean secondLevel, Boolean returnedParamInfo, IProgressMonitor monitor) {
         
         if (exists controller, exists viewer, exists rn = controller.rootNode, exists t = controller.tokens) {
-            controller.parse(viewer.document, NullProgressMonitor(), null);
+            controller.parseAndTypecheck(viewer.document, 10, NullProgressMonitor(), null);
             controller.handler.updateAnnotations();
             
             value line = CompletionUtil.getLine(offset, viewer);

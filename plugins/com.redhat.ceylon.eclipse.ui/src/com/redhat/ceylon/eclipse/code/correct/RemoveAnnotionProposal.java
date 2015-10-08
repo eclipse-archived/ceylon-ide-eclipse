@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -31,7 +32,7 @@ class RemoveAnnotionProposal extends CorrectionProposal {
     private final String annotation;
     
     RemoveAnnotionProposal(Declaration dec, String annotation,
-            int offset, String desc, TextFileChange change) {
+            int offset, String desc, TextChange change) {
         super(desc, change, new Region(offset, 0));
         this.dec = dec;
         this.annotation = annotation;

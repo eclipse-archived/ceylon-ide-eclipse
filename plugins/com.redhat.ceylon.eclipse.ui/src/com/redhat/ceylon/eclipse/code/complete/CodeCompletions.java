@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendT
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
@@ -12,7 +13,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.MEMBER_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleIdentifier;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
@@ -548,7 +549,7 @@ public class CodeCompletions {
                 result.append("()");
             }
             else {
-                boolean paramTypes = 
+                boolean paramTypes =
                         descriptionOnly &&
                         CeylonPlugin.getPreferences()
                             .getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
@@ -648,8 +649,8 @@ public class CodeCompletions {
                 result.append(" {}");
             }
             else {
-                boolean paramTypes = 
-                        descriptionOnly && 
+                boolean paramTypes =
+                        descriptionOnly &&
                         CeylonPlugin.getPreferences()
                             .getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                 result.append(" { ");
@@ -1197,8 +1198,8 @@ public class CodeCompletions {
         result.append(" {")
             .append(indent).append(indents().getDefaultIndent())
             .append("variable value hash = 1;")
-            .append(indent).append(getDefaultIndent());
-        String ind = indent + getDefaultIndent();
+            .append(indent).append(indents().getDefaultIndent());
+        String ind = indent + indents().getDefaultIndent();
         appendMembersToHash(unit, ind, result, ci);
         result.append("return hash;")
             .append(indent)
