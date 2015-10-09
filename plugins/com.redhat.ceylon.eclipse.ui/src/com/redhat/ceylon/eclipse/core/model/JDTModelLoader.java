@@ -138,6 +138,7 @@ import com.redhat.ceylon.model.loader.model.LazyModule;
 import com.redhat.ceylon.model.loader.model.LazyPackage;
 import com.redhat.ceylon.model.loader.model.LazyValue;
 import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
@@ -627,6 +628,13 @@ public class JDTModelLoader extends AbstractModelLoader {
                     CharOperation.equals(oldPackageDescriptorName, typeNameCharArray) ||
                     CharOperation.equals(oldModuleDescriptorName, typeNameCharArray) ||
                     endsWith(typeNameCharArray, descriptorClassNames)) {
+                // Don't search for secondary types whose name ends with is a quoted of unquoted descriptors
+                // or ends with a quoted descriptor (in case it would be searching for an inner class)
+                return null;
+            }
+            
+            if (isSettingInterfaceCompanionClass() && typeName.endsWith("$impl")) {
+                // Don't search for Ceylon interface companion classes in Java Secondary types.
                 return null;
             }
             
@@ -749,6 +757,20 @@ public class JDTModelLoader extends AbstractModelLoader {
             }
             return null;
         }
+    }
+    
+    private static final ThreadLocal<Object> isSettingInterfaceCompanionClassTL = new ThreadLocal<>();
+    private static final Object isSettingInterfaceCompanionClassObj = new Object();
+    
+    private static boolean isSettingInterfaceCompanionClass() {
+        return isSettingInterfaceCompanionClassTL.get() != null;
+    }
+    
+    @Override
+    protected void setInterfaceCompanionClass(Declaration d, ClassOrInterface container, LazyPackage pkg) {
+        isSettingInterfaceCompanionClassTL.set(isSettingInterfaceCompanionClassObj);
+        super.setInterfaceCompanionClass(d, container, pkg);
+        isSettingInterfaceCompanionClassTL.set(null);
     }
     
     private INameEnvironment createSearchableEnvironment() throws JavaModelException {
@@ -1123,10 +1145,11 @@ public class JDTModelLoader extends AbstractModelLoader {
         return typeModel;
     }
 
-    private static final char[] packageDescriptorName = "$package_".toCharArray();
-    private static final char[] moduleDescriptorName = "$module_".toCharArray();
-    private static final char[] oldPackageDescriptorName = "package_".toCharArray();
-    private static final char[] oldModuleDescriptorName = "module_".toCharArray();
+    private static final String OLD_PACKAGE_DESCRIPTOR_CLASS_NAME = Naming.PACKAGE_DESCRIPTOR_CLASS_NAME.substring(1);
+    private static final char[] packageDescriptorName = Naming.PACKAGE_DESCRIPTOR_CLASS_NAME.toCharArray();
+    private static final char[] moduleDescriptorName = Naming.MODULE_DESCRIPTOR_CLASS_NAME.toCharArray();
+    private static final char[] oldPackageDescriptorName = OLD_PACKAGE_DESCRIPTOR_CLASS_NAME.toCharArray();
+    private static final char[] oldModuleDescriptorName = Naming.OLD_MODULE_DESCRIPTOR_CLASS_NAME.toCharArray();
     private static final char[][] descriptorClassNames = new char[][] { packageDescriptorName, moduleDescriptorName };
 
     private JDTClass buildClassMirror(String name) {
@@ -1136,37 +1159,56 @@ public class JDTModelLoader extends AbstractModelLoader {
         
         try {
             LookupEnvironment theLookupEnvironment = getLookupEnvironment();
+            ModelLoaderNameEnvironment nameEnvironment = (ModelLoaderNameEnvironment)theLookupEnvironment.nameEnvironment;
             char[][] uncertainCompoundName = CharOperation.splitOn('.', name.toCharArray());
             int numberOfParts = uncertainCompoundName.length;
             char[][] compoundName = null;
             IType type = null;
             
             if (numberOfParts > 0) {
-                boolean noInnerClass = false;
-                char[] lastPart = uncertainCompoundName[numberOfParts-1];
-                if (CharOperation.equals(packageDescriptorName, lastPart) ||
-                        CharOperation.equals(moduleDescriptorName, lastPart)) {
-                    noInnerClass = true;
-                }
+                boolean searchingInPreviousParts = false;
                 for (int packagePartsEndIndex=numberOfParts-1; 
-                        packagePartsEndIndex >= (noInnerClass ? numberOfParts-1 : 0); 
+                        packagePartsEndIndex >= 0; 
                         packagePartsEndIndex--) {
-                    char[][] triedPackageName = new char[0][];
+                    char[][] triedPackageName = new char[packagePartsEndIndex][0];
                     for (int j=0; j<packagePartsEndIndex; j++) {
-                        triedPackageName = CharOperation.arrayConcat(triedPackageName, uncertainCompoundName[j]);
-                    }
-                    char[] triedClassName = new char[0];
-                    for (int k=packagePartsEndIndex; k<numberOfParts; k++) {
-                        triedClassName = CharOperation.concat(triedClassName, uncertainCompoundName[k], '$');
+                        triedPackageName[j] = uncertainCompoundName[j];
                     }
                     
-                    ModelLoaderNameEnvironment nameEnvironment = getNameEnvironment();
+                    if (searchingInPreviousParts 
+                             && nameEnvironment.isPackage(triedPackageName, uncertainCompoundName[packagePartsEndIndex])) {
+                        // Don't search for an inner class whose top-level class has the same name as an existing package;
+                        break;
+                    }
+                    
+                    int triedClassNameSize = 0;
+                    for (int k=packagePartsEndIndex; k<numberOfParts; k++) {
+                        triedClassNameSize += uncertainCompoundName[k].length + 1;
+                    }
+                    triedClassNameSize --;
+                    
+                    char[] triedClassName = new char[triedClassNameSize];
+                    int currentDestinationIndex = 0;
+                    int currentPartIndex=packagePartsEndIndex;
+                    char[] currentPart = uncertainCompoundName[currentPartIndex];
+                    int currentPartLength = currentPart.length;
+                    System.arraycopy(currentPart, 0, triedClassName, currentDestinationIndex, currentPartLength);
+                    currentDestinationIndex += currentPartLength;
+                    for (currentPartIndex=packagePartsEndIndex+1; currentPartIndex<numberOfParts; currentPartIndex++) {
+                        triedClassName[currentDestinationIndex++] = '$';
+                        currentPart = uncertainCompoundName[currentPartIndex];
+                        currentPartLength = currentPart.length;
+                        System.arraycopy(currentPart, 0, triedClassName, currentDestinationIndex, currentPartLength);
+                        currentDestinationIndex += currentPartLength;
+                    }
+                    
                     type = nameEnvironment.findTypeInNameLookup(CharOperation.charToString(triedClassName), 
                             CharOperation.toString(triedPackageName));
                     if (type != null) {
                         compoundName = CharOperation.arrayConcat(triedPackageName, triedClassName);
                         break;
                     }
+                    searchingInPreviousParts = true;
                 }
             }
 
@@ -1246,10 +1288,8 @@ public class JDTModelLoader extends AbstractModelLoader {
 
     
     private ModelLoaderNameEnvironment getNameEnvironment() {
-        ModelLoaderNameEnvironment searchableEnvironment = (ModelLoaderNameEnvironment)getLookupEnvironment().nameEnvironment;
-        return searchableEnvironment;
+        return (ModelLoaderNameEnvironment)getLookupEnvironment().nameEnvironment;
     }
-
     
     @Override
     public Declaration convertToDeclaration(Module module, String typeName,
