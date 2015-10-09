@@ -339,11 +339,13 @@ public class JDTModuleManager extends LazyModuleManager {
         // TODO At some point we'll need an actual module manager for the
         // JS backend and an IDE that can somehow merge the two when needed
         Set<String> backends = new HashSet<String>();
-        if (CeylonBuilder.compileToJava(javaProject.getProject())) {
-            backends.add(Backend.Java.nativeAnnotation);
-        }
-        if (CeylonBuilder.compileToJs(javaProject.getProject())) {
-            backends.add(Backend.JavaScript.nativeAnnotation);
+        if (javaProject != null) {
+            if (CeylonBuilder.compileToJava(javaProject.getProject())) {
+                backends.add(Backend.Java.nativeAnnotation);
+            }
+            if (CeylonBuilder.compileToJs(javaProject.getProject())) {
+                backends.add(Backend.JavaScript.nativeAnnotation);
+            }
         }
         return backends;
     }
