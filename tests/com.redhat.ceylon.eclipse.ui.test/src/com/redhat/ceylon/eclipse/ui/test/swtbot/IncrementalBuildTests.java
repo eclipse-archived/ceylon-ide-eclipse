@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 
 import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
 import com.redhat.ceylon.eclipse.ui.test.Utils;
+import com.redhat.ceylon.eclipse.ui.test.Utils.PostBuildListener;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class IncrementalBuildTests extends AbstractMultiProjectTest {
@@ -56,6 +57,7 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
         javaFileEditor.save();
         try {
             buildSummary.waitForBuildEnd(30);
+            PostBuildListener.instance().waitForEndOfCurrentBuild(5);
             
             SWTBotEclipseEditor ceylonFileEditor = Utils.showEditorByTitle(bot, "run.ceylon");
             Position javaClassUsePosition = Utils.positionInTextEditor(ceylonFileEditor, "value v5 = JavaClassInCeylonModule_Main_Ceylon_Project();", 0);
@@ -75,6 +77,8 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
             ceylonFileEditor.save();
             try {
                 buildSummary.waitForBuildEnd(30);
+                PostBuildListener.instance().waitForEndOfCurrentBuild(5);
+
                 assertThat("The build should not have any error",
                         Utils.getProjectErrorMarkers(mainProject),
                         Matchers.empty());
@@ -98,6 +102,8 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
         IFile useFile = copyFileFromResources("bug821", "mainModule/Use.ceylon", mainProject, "src");        
         try {
             buildSummary.waitForBuildEnd(30);
+            PostBuildListener.instance().waitForEndOfCurrentBuild(5);
+            
             assertThat("The build should have an error",
                     Utils.getProjectErrorMarkers(mainProject),
                     Matchers.hasItem(stringContainsInOrder(Arrays.asList("src/mainModule/Use.ceylon", "l.2","type declaration does not exist"))));
@@ -107,6 +113,8 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
             IFile declarationFile = copyFileFromResources("bug821", "mainModule/UsedDeclaration.java", mainProject, "javaSrc");
             try {
                 buildSummary.waitForBuildEnd(30);
+                PostBuildListener.instance().waitForEndOfCurrentBuild(5);
+
                 assertThat("The build should not have any error",
                         Utils.getProjectErrorMarkers(mainProject),
                         Matchers.empty());
@@ -133,6 +141,8 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
        editor.save();
        try {
            buildSummary.waitForBuildEnd(30);
+           PostBuildListener.instance().waitForEndOfCurrentBuild(5);
+
            assertThat("The build should have an error",
                    Utils.getProjectErrorMarkers(mainProject),
                    Matchers.hasItem(expectedErrorMatcher));
@@ -143,6 +153,8 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
            editor.save();
            editor = null;
            buildSummary.waitForBuildEnd(30);
+           PostBuildListener.instance().waitForEndOfCurrentBuild(5);
+
            assertThat("The build should not have any error",
                    Utils.getProjectErrorMarkers(mainProject),
                    Matchers.empty());

@@ -23,8 +23,11 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -245,6 +248,48 @@ public class Utils {
         return errors;
     }
     
+    public static class PostBuildListener implements IResourceChangeListener {
+        static private PostBuildListener _instance = null;
+        
+        public synchronized static PostBuildListener instance() {
+            if (_instance == null) {
+                _instance = new PostBuildListener();
+                ResourcesPlugin.getWorkspace().addResourceChangeListener(
+                        _instance, 
+                        IResourceChangeEvent.POST_BUILD | 
+                        IResourceChangeEvent.PRE_BUILD);
+            }
+            return _instance;
+        }
+        
+        private CountDownLatch buildLatch = null;
+
+        @Override
+        public void resourceChanged(IResourceChangeEvent event) {
+            if (event.getType() == IResourceChangeEvent.PRE_BUILD) {
+                buildLatch = new CountDownLatch(1);
+            }
+
+            if (event.getType() == IResourceChangeEvent.POST_BUILD) {
+                if (buildLatch != null) {
+                    buildLatch.countDown();
+                    buildLatch = null;
+                }
+            }
+        }
+        
+        public void waitForEndOfCurrentBuild(long timeoutInSeconds) {
+            CountDownLatch latch = buildLatch;
+            if (latch != null) {
+                try {
+                    latch.await(timeoutInSeconds, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
     public static class CeylonBuildSummary extends CeylonBuildHook {
         private CeylonBuildHook ceylonBuildHookToRestore;
         
@@ -272,9 +317,9 @@ public class Utils {
         private CeylonBuildSummary summaryToFill = this;
 
         private IBuildConfiguration configuration;
-        private IBuildConfiguration[] requestConfigurations;
-        private IBuildConfiguration[] referencedconfigurations;
-        private IBuildConfiguration[] referencingconfigurations; 
+        private IBuildConfiguration[] requestConfigurations = new IBuildConfiguration[0];
+        private IBuildConfiguration[] referencedconfigurations = new IBuildConfiguration[0];
+        private IBuildConfiguration[] referencingconfigurations = new IBuildConfiguration[0]; 
 
         public CeylonBuildSummary(IProject project) {
             this.project = project;
@@ -487,6 +532,18 @@ public class Utils {
             this.previousBuilds = previousBuilds;
         }
         
+        public IMarker[] getMarkers() {
+            IProject p = getProject();
+            if (p != null) {
+                try {
+                    return p.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+        
         @Override
         public String toString() {
             String result = "";
@@ -516,6 +573,7 @@ public class Utils {
                                 "  Sources To Compile : " + getIncrementalBuildSourcesToCompile() + "\n" +
                                 "  Result Phased Units : " + getIncrementalBuildResultPhasedUnits() + "\n"
                         ) +
+                        "  Error Markers : " + getMarkers() + "\n" +
                         "  Triggered a reentrant Build : " + didTriggerReentrantBuild() + "\n"
                 );
             if (didTriggerReentrantBuild() && installed) {
@@ -538,6 +596,7 @@ public class Utils {
         summary.install();
         project.build(IncrementalProjectBuilder.FULL_BUILD, null);
         summary.waitForBuildEnd(60);
+        PostBuildListener.instance().waitForEndOfCurrentBuild(5);
         return summary;
     }
     
