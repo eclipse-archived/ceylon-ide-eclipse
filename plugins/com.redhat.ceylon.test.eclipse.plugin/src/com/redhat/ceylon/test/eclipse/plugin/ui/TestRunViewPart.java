@@ -121,6 +121,7 @@ public class TestRunViewPart extends ViewPart {
         createStackTracePanel();
         createToolBar();
         createViewPartListener();
+        initCurrentTestRun();
         createTestRunListener();
     }
 
@@ -194,6 +195,15 @@ public class TestRunViewPart extends ViewPart {
         toolBarManager.add(stopAction);
         toolBarManager.add(showHistoryAction);
         toolBarManager.update(true);        
+    }
+    
+    private void initCurrentTestRun() {
+        if( currentTestRun == null ) {
+            List<TestRun> testRuns = CeylonTestPlugin.getDefault().getModel().getTestRuns();
+            if( !testRuns.isEmpty() ) {
+                setCurrentTestRun(testRuns.get(0));                
+            }
+        }
     }
 
     private void createTestRunListener() {
