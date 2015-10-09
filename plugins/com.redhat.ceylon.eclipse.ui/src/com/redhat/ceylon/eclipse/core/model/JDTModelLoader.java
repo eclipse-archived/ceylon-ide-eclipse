@@ -630,9 +630,9 @@ public class JDTModelLoader extends AbstractModelLoader {
                 return null;
             }
             
+            Job currentJob = Job.getJobManager().currentJob();
+            IProgressMonitor currentMonitor = getProgressMonitor(currentJob);
             for (IPackageFragment pf : packagesToSearchIn) {
-                Job currentJob = Job.getJobManager().currentJob();
-                IProgressMonitor currentMonitor = getProgressMonitor(currentJob);
                 IType type = findSecondaryType(typeName, packageName, pf,
                         currentMonitor);
                 if (type != null) {
