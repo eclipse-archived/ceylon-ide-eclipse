@@ -2005,14 +2005,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             "Typechecking " + listOfUnits.size() + " source files of project " + 
                             project.getName(), dependencies.size()*5+listOfUnits.size()*6);
                     try {
-                        monitor.subTask("typechecking source archives for project " 
-                                + project.getName());
-        
                         final JDTModelLoader loader = getModelLoader(typeChecker);
 
                         return doWithSourceModel(project, false, 20, new Callable<List<PhasedUnit>>() {
                             @Override
                             public List<PhasedUnit> call() {
+
+                                monitor.subTask("typechecking source archives for project " 
+                                        + project.getName());
+                
                                 for (PhasedUnit pu: dependencies) {
                                     monitor.subTask("scanning declarations " + pu.getUnit().getFilename());
                                     pu.scanDeclarations();
@@ -2045,6 +2046,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                         throw new OperationCanceledException();
                                     }
                                 }
+                
+                                monitor.subTask("loading language module packages for project " 
+                                        + project.getName());
                 
                                 Module languageModule = loader.getLanguageModule();
                                 loader.loadPackage(languageModule, "com.redhat.ceylon.compiler.java.metadata", true);
