@@ -874,19 +874,5 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
     @Override
     public CeylonProject<IProject> getCeylonProject() {
         return ceylonModel().getProject(project);
-    }
-
-    @Override
-    @Deprecated
-    public PhasedUnit getPhasedUnit() {
-        return getLastPhasedUnit();
-    }
-
-    @Override
-    @Deprecated
-    public CompilationUnit getRootNode() {
-        return getLastCompilationUnit();
-    }
-    
+    }    
 }
-

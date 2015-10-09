@@ -169,7 +169,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         PhasedUnit? phasedUnit = controller.parseAndTypecheck(viewer.document, 10, NullProgressMonitor(), null);
         
         if (exists phasedUnit) {
-            return createJavaObjectArray<IContextInformation>(computeParameterContextInformation(offset, controller.rootNode, viewer));
+            return createJavaObjectArray<IContextInformation>(computeParameterContextInformation(offset, controller.lastCompilationUnit, viewer));
         }
         
         return ObjectArray(0);
@@ -331,7 +331,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         CeylonParseController controller) {
         
         return CompletionProposal(offset, prefix, 
-            if (isModuleDescriptor(controller.rootNode)) then CeylonResources.\iMODULE else CeylonResources.\iPACKAGE,
+            if (isModuleDescriptor(controller.lastCompilationUnit)) then CeylonResources.\iMODULE else CeylonResources.\iPACKAGE,
             packageName, packageName);
     }
 
@@ -377,7 +377,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     shared actual ICompletionProposal newFunctionCompletionProposal(Integer offset, String prefix,
            String desc, String text, Declaration dec, Unit unit, CeylonParseController controller) {
         
-        return EclipseFunctionCompletionProposal(offset, prefix, desc, text, dec, controller.rootNode);
+        return EclipseFunctionCompletionProposal(offset, prefix, desc, text, dec, controller.lastCompilationUnit);
     }
 
     shared actual ICompletionProposal newControlStructureCompletionProposal(Integer offset, String prefix,
@@ -461,7 +461,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         if (controller is Null || viewer is Null) {
             return [];
         }
-        if (exists controller, exists viewer, exists rn = controller.rootNode, exists t = controller.tokens) {
+        if (exists controller, exists viewer, exists rn = controller.lastCompilationUnit, exists t = controller.tokens) {
             PhasedUnit? pu = controller.parseAndTypecheck(viewer.document, 10, monitor, null);
             if (!exists pu) {
                 return [];

@@ -64,7 +64,7 @@ class EclipseInvocationCompletionProposal(Integer offset, String prefix,
             EclipseCompletionManager completionManager)
         extends InvocationCompletionProposal<CeylonParseController, IProject, ICompletionProposal, IFile,
                 IDocument, InsertEdit, TextEdit, TextChange, Point, LinkedModeModel>
-                (offset, prefix, description, text, dec, producedReference, scope, cpc.rootNode,
+                (offset, prefix, description, text, dec, producedReference, scope, cpc.lastCompilationUnit,
     includeDefaulted, positionalInvocation, namedInvocation, qualified, qualifyingValue, completionManager)
         satisfies EclipseDocumentChanges & EclipseCompletionProposal {
     
