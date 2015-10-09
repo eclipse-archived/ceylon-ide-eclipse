@@ -95,7 +95,7 @@ public class TestRunViewPart extends ViewPart {
             if (page != null) {
                 TestRunViewPart view = (TestRunViewPart) page.findView(NAME);
                 if (view == null) {
-                    page.showView(NAME);
+                    page.showView(NAME, null, IWorkbenchPage.VIEW_VISIBLE);
                 } else {
                 	page.bringToTop(view);
                 }
