@@ -10,6 +10,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.UNDE
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -51,12 +52,13 @@ public class TestEventListener {
                 socket = serverSocket.accept();
                 
                 InputStream is = socket.getInputStream();
+                InputStreamReader isr = new InputStreamReader(is, "UTF-8");
                 StringBuffer buf = new StringBuffer(128);
 
                 int ch;
                 boolean esc = false;
                 while (true) {
-                    ch = is.read();
+                    ch = isr.read();
                     if (ch == -1) {
                         break;
                     }
