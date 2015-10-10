@@ -16,7 +16,6 @@ import com.redhat.ceylon.eclipse.code.editor.SourceArchiveEditorInput;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
-@SuppressWarnings("restriction")
 public class CeylonFileLinkHelper extends JavaFileLinkHelper {
 
     @Override
