@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.ui.navigator.JavaNavigatorContentProvider;
 import org.eclipse.jdt.internal.ui.navigator.JavaNavigatorLabelProvider;
+import org.eclipse.jdt.internal.ui.navigator.IExtensionStateConstants.Values;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMemento;
@@ -45,6 +46,12 @@ public class CeylonNavigatorLabelProvider extends
         CeylonLabelProvider implements ICommonLabelProvider {
 
     ICommonContentExtensionSite extensionSite;
+    
+    private org.eclipse.ui.navigator.IExtensionStateModel javaNavigatorStateModel;
+
+    private boolean isFlatLayout() {
+        return javaNavigatorStateModel.getBooleanProperty(Values.IS_LAYOUT_FLAT);
+    }
     
     public CeylonNavigatorLabelProvider() {
         super(true); // small images
@@ -78,9 +85,26 @@ public class CeylonNavigatorLabelProvider extends
             return new StyledString(stringToDisplay);
         }
         
-        if (element instanceof Package || element instanceof IPackageFragment) {
-//            return super.getStyledText(element);
-            return new StyledString(super.getStyledText(element).getString());
+        if (element instanceof Package) {
+            if (isFlatLayout()) {
+                return new StyledString(super.getStyledText(element).getString());
+            } else {
+                String name = ((Package) element).getName();
+                int loc = name.lastIndexOf('.');
+                if (loc>=0) name = name.substring(loc+1);
+                return new StyledString(name);
+            }
+        }
+        
+        if (element instanceof IPackageFragment) {
+            if (isFlatLayout()) {
+                return new StyledString(super.getStyledText(element).getString());
+            } else {
+                String name = ((IPackageFragment) element).getElementName();
+                int loc = name.lastIndexOf('.');
+                if (loc>=0) name = name.substring(loc+1);
+                return new StyledString(name);
+            }
         }
         
         if (element instanceof CeylonArchiveFileStore) {
@@ -317,6 +341,16 @@ public class CeylonNavigatorLabelProvider extends
     @Override
     public void init(ICommonContentExtensionSite aConfig) {
         extensionSite = aConfig;
+        INavigatorContentExtension javaNavigatorExtension = null;
+        @SuppressWarnings("unchecked")
+        Set<INavigatorContentExtension> set = aConfig.getService().findContentExtensionsByTriggerPoint(JavaCore.create(ResourcesPlugin.getWorkspace().getRoot()));
+        for (INavigatorContentExtension extension : set) {
+            if (extension.getDescriptor().equals(aConfig.getExtension().getDescriptor().getOverriddenDescriptor())) {
+                javaNavigatorExtension = extension;
+                break;
+            }
+        }
+        javaNavigatorStateModel = javaNavigatorExtension.getStateModel();
     }
     
     private INavigatorContentExtension getJavaNavigatorExtension() {
