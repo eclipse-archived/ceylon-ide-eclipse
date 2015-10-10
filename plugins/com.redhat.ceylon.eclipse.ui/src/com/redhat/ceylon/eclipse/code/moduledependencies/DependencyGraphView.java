@@ -1,15 +1,20 @@
 package com.redhat.ceylon.eclipse.code.moduledependencies;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModule;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModuleDependenciesForProject;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectSourceModules;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -21,6 +26,7 @@ import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.Polyline;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -61,10 +67,9 @@ import org.eclipse.zest.layouts.algorithms.RadialLayoutAlgorithm;
 import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.eclipse.zest.layouts.algorithms.TreeLayoutAlgorithm;
 
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
@@ -76,6 +81,8 @@ import com.redhat.ceylon.ide.common.model.ModuleDependencies;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.Dependency;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.ModuleReference;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.ModuleWeakReference;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 
 
 public class DependencyGraphView extends ViewPart implements IShowInTarget, ICeylonModelListener {
@@ -529,14 +536,16 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                     @Override
                     public boolean isEnabled() {
                         IStructuredSelection selection = 
-                                (IStructuredSelection) viewer.getSelection();
+                                (IStructuredSelection) 
+                                    viewer.getSelection();
                         return selection.size() == 1
                                 && selection.getFirstElement() != null;
                     }
                     @Override
                     public void run() {
                         IStructuredSelection selection = 
-                                (IStructuredSelection) viewer.getSelection();
+                                (IStructuredSelection) 
+                                    viewer.getSelection();
                         Object first = selection.getFirstElement();
                         if (first instanceof ModuleReference) {
                             final ModuleReference selectedModuleRef = 
@@ -668,30 +677,62 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
     public boolean show(ShowInContext context) {
         ISelection selection = context.getSelection();
         if (selection instanceof IStructuredSelection) {
-            IStructuredSelection ss = (IStructuredSelection) selection;
+            IStructuredSelection ss = 
+                    (IStructuredSelection) selection;
             Object first = ss.getFirstElement();
-            if (first instanceof IProject) {
+            if (first instanceof SourceModuleNode) {
+                SourceModuleNode module = (SourceModuleNode) first;
+                setProject(module.getProject());
+                viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module.getModule())), true);
+                return true;
+            }
+            else if (first instanceof IProject) {
                 setProject((IProject) first);
+                Collection<Module> modules = getProjectSourceModules(project);
+                if (!modules.isEmpty()) {
+                    List<ModuleReference> list = new ArrayList<ModuleReference>();
+                    for (Module module: modules) {
+                        list.add(ModuleDependencies.reference(module));
+                    }
+                    viewer.setSelection(new StructuredSelection(list), true);
+                }
                 return true;
             }
             else if (first instanceof IJavaElement) {
                 setProject(((IJavaElement) first).getJavaProject().getProject());
+                if (first instanceof IPackageFragment) {
+                    Module module = getModule((IPackageFragment) first);
+                    if (module!=null) {
+                        viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module)), true);
+                    }
+                }
                 return true;
             }
             else if (first instanceof IResource) {
                 setProject(((IResource) first).getProject());
-                return true;
-            }
-            else if (first instanceof SourceModuleNode) {
-                SourceModuleNode mod = (SourceModuleNode) first;
-                setProject(mod.getProject());
+                if (first instanceof IFile) {
+                    Module module = getModule((IFile) first);
+                    if (module!=null) {
+                        viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module)), true);
+                    }
+                }
+                else if (first instanceof IFolder) {
+                    Module module = getModule((IFolder) first);
+                    if (module!=null) {
+                        viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module)), true);
+                    }
+                }
                 return true;
             }
         }
         else {
             IEditorPart editor = EditorUtil.getCurrentEditor();
             if (editor instanceof CeylonEditor) {
-                setProject(((CeylonEditor) editor).getParseController().getProject());
+                CeylonParseController controller = 
+                        ((CeylonEditor) editor).getParseController();
+                setProject(controller.getProject());
+                Module module = controller.getLastPhasedUnit().getPackage().getModule();
+                viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module)), true);
                 return true;
             }
         }
