@@ -116,11 +116,13 @@ public class MemberNameCompletions {
             proposals.add("it");
         }*/
         for (String name: proposals) {
-            String unquotedPrefix = prefix.startsWith("\\i") ? 
-                    prefix.substring(2) : prefix;
+            String unquotedPrefix = 
+                    prefix.startsWith("\\i") ? 
+                            prefix.substring(2) : prefix;
             if (name.startsWith(unquotedPrefix)) {
-                String unquotedName = name.startsWith("\\i") ? 
-                        name.substring(2) : name;
+                String unquotedName = 
+                        name.startsWith("\\i") ? 
+                                name.substring(2) : name;
                 result.add(new CompletionProposal(offset, prefix, 
                         LOCAL_NAME, unquotedName, name));
             }
