@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModule;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModuleDependenciesForProject;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectSourceModules;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,7 +20,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolygonDecoration;
@@ -38,6 +38,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TreePath;
+import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
@@ -68,6 +70,7 @@ import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.eclipse.zest.layouts.algorithms.TreeLayoutAlgorithm;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.navigator.ExternalModuleNode;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -139,8 +142,9 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
     public void setProject(IProject project) {
         if (project!=null) {
             this.project = project;
-            int index = Arrays.asList(projectCombo.getItems())
-                    .indexOf(project.getName());
+            int index = 
+                    Arrays.asList(projectCombo.getItems())
+                        .indexOf(project.getName());
             projectCombo.select(index);
             init();
         }
@@ -435,7 +439,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
             }
         });
         
-        List<String> items = new ArrayList<>(Layout.values.length);
+        List<String> items = new ArrayList<String>(Layout.values.length);
         for (Layout layout : Layout.values) {
             items.add(layout.toString());
         }
@@ -469,7 +473,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                 }
             }
         };
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(updateProjectComboListener);
+        getWorkspace().addResourceChangeListener(updateProjectComboListener);
     }
     
     private void updateProjectComboAsync() {
@@ -485,7 +489,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
 
     private void updateProjectCombo() {
         projectMap.clear();
-        IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+        IProject[] projects = getWorkspace().getRoot().getProjects();
         if (projects != null) {
             for (IProject project : projects) {
                 if (project.isOpen() && CeylonNature.isEnabled(project)) {
@@ -666,7 +670,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
     
     @Override
     public void dispose() {
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(updateProjectComboListener);
+        getWorkspace().removeResourceChangeListener(updateProjectComboListener);
         CeylonBuilder.removeModelListener(this);
     }
     
@@ -683,19 +687,25 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
             if (first instanceof SourceModuleNode) {
                 SourceModuleNode module = (SourceModuleNode) first;
                 setProject(module.getProject());
-                viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module.getModule())), true);
+                select(module.getModule());;
+                return true;
+            }
+            else if (first instanceof ExternalModuleNode) {
+                if (selection instanceof TreeSelection) {
+                    TreePath path = ((TreeSelection) selection).getPaths()[0];
+                    Object top = path.getFirstSegment();
+                    if (top instanceof IProject) {
+                        setProject((IProject) top);
+                        select(((ExternalModuleNode) path.getLastSegment()).getModule());
+                        return true;
+                    }
+                }
+                select(((ExternalModuleNode) first).getModule());
                 return true;
             }
             else if (first instanceof IProject) {
                 setProject((IProject) first);
-                Collection<Module> modules = getProjectSourceModules(project);
-                if (!modules.isEmpty()) {
-                    List<ModuleReference> list = new ArrayList<ModuleReference>();
-                    for (Module module: modules) {
-                        list.add(ModuleDependencies.reference(module));
-                    }
-                    viewer.setSelection(new StructuredSelection(list), true);
-                }
+                select(getProjectSourceModules(project));
                 return true;
             }
             else if (first instanceof IJavaElement) {
@@ -703,7 +713,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                 if (first instanceof IPackageFragment) {
                     Module module = getModule((IPackageFragment) first);
                     if (module!=null) {
-                        viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module)), true);
+                        select(module);
                     }
                 }
                 return true;
@@ -713,13 +723,13 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                 if (first instanceof IFile) {
                     Module module = getModule((IFile) first);
                     if (module!=null) {
-                        viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module)), true);
+                        select(module);
                     }
                 }
                 else if (first instanceof IFolder) {
                     Module module = getModule((IFolder) first);
                     if (module!=null) {
-                        viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module)), true);
+                        select(module);
                     }
                 }
                 return true;
@@ -728,15 +738,28 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
         else {
             IEditorPart editor = EditorUtil.getCurrentEditor();
             if (editor instanceof CeylonEditor) {
-                CeylonParseController controller = 
-                        ((CeylonEditor) editor).getParseController();
+                CeylonParseController controller = ((CeylonEditor) editor).getParseController();
                 setProject(controller.getProject());
                 Module module = controller.getLastPhasedUnit().getPackage().getModule();
-                viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module)), true);
+                select(module);
                 return true;
             }
         }
         return false;
+    }
+
+    private void select(Collection<Module> modules) {
+        if (!modules.isEmpty()) {
+            List<ModuleReference> list = new ArrayList<ModuleReference>();
+            for (Module module: modules) {
+                list.add(ModuleDependencies.reference(module));
+            }
+            viewer.setSelection(new StructuredSelection(list), true);
+        }
+    }
+
+    private void select(Module module) {
+        viewer.setSelection(new StructuredSelection(ModuleDependencies.reference(module)), true);
     }
 
     @Override

@@ -3463,6 +3463,7 @@
 	  						<test forcePluginActivation="true"
 	  						property="com.redhat.ceylon.eclipse.ui.isInCeylonProject"/>
 						</and>
+						<instanceof value="com.redhat.ceylon.eclipse.code.navigator.ExternalModuleNode"/>
 					</or>
 				</enablement>
 			</actionProvider> 
