@@ -46,16 +46,21 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
         Node expression;
         Node expanse;
         if (st instanceof Tree.ExpressionStatement) {
-            Tree.Expression e = 
-                    ((Tree.ExpressionStatement) st).getExpression();
+            Tree.ExpressionStatement es = 
+                    (Tree.ExpressionStatement) st;
+            Tree.Expression e = es.getExpression();
             expression = e;
             expanse = st;
-            if (e.getTerm() instanceof Tree.InvocationExpression) {
+            Tree.Term term = e.getTerm();
+            if (term instanceof Tree.InvocationExpression) {
+                Tree.InvocationExpression ie = 
+                        (Tree.InvocationExpression) term;
                 Primary primary = 
-                        ((Tree.InvocationExpression) e.getTerm()).getPrimary();
+                        ie.getPrimary();
                 if (primary instanceof Tree.QualifiedMemberExpression) {
                     Tree.QualifiedMemberExpression prim = 
-                            (Tree.QualifiedMemberExpression) primary;
+                            (Tree.QualifiedMemberExpression) 
+                                primary;
                     if (prim.getMemberOperator().getToken()==null) {
                         //an expression followed by two annotations 
                         //can look like a named operator expression
@@ -75,16 +80,17 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
                 return;
             }
             //some expressions get interpreted as annotations
-            List<Annotation> annotations = 
-                    dec.getAnnotationList().getAnnotations();
+            Tree.AnnotationList al = dec.getAnnotationList();
+            List<Tree.Annotation> annotations = 
+                    al.getAnnotations();
             Tree.AnonymousAnnotation aa = 
-            		dec.getAnnotationList().getAnonymousAnnotation();
+            		al.getAnonymousAnnotation();
             if (aa!=null && currentOffset<=aa.getEndIndex()) {
             	expression = aa;
             	expanse = expression;
             }
             else if (!annotations.isEmpty() && 
-            		currentOffset<=dec.getAnnotationList().getEndIndex()) {
+            		currentOffset<=al.getEndIndex()) {
                 Tree.Annotation a = annotations.get(0);
                 expression = a;
                 expanse = expression;
@@ -93,7 +99,9 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
                 //some expressions look like a type declaration
                 //when they appear right in front of an annotation
                 //or function invocations
-                Tree.Type type = ((Tree.TypedDeclaration) st).getType();
+                Tree.TypedDeclaration td = 
+                        (Tree.TypedDeclaration) st;
+                Tree.Type type = td.getType();
                 if (type instanceof Tree.SimpleType || 
                     type instanceof Tree.FunctionType) {
                     expression = type;
@@ -111,7 +119,7 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
             return;
         }
 //        
-        Integer stopIndex = expanse.getEndIndex()-1;
+        int stopIndex = expanse.getEndIndex()-1;
 //        if (currentOffset<expanse.getStartIndex() || 
 //            currentOffset>stopIndex+1) {
 //            return;
@@ -119,7 +127,8 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
         int offset = expanse.getStartIndex();
         
         DocumentChange change = 
-        		new DocumentChange("Print Expression", document);
+        		new DocumentChange("Print Expression", 
+        		        document);
         change.setEdit(new MultiTextEdit());
         change.addEdit(new InsertEdit(offset, "print("));
         
@@ -159,7 +168,7 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
         return new StyledString(getDisplayString())
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }
-
+    
     @Override
     public Image getImage() {
         return MINOR_CHANGE;
@@ -207,7 +216,7 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
                 return aa.getEndToken().getLine()!=line;
             }
             else if (!annotations.isEmpty() &&
-                    currentOffset<=dec.getAnnotationList().getEndIndex()) {
+                    currentOffset<=al.getEndIndex()) {
                 return al.getEndToken().getLine()!=line;
             }
             else if (st instanceof Tree.TypedDeclaration &&
@@ -215,7 +224,8 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
                 //some expressions look like a type declaration
                 //when they appear right in front of an annotation
                 //or function invocations
-                TypedDeclaration td = (Tree.TypedDeclaration) st;
+                TypedDeclaration td = 
+                        (Tree.TypedDeclaration) st;
                 Tree.Type type = td.getType();
                 if (currentOffset<=type.getEndIndex()) {
                 	return (type instanceof Tree.SimpleType || 

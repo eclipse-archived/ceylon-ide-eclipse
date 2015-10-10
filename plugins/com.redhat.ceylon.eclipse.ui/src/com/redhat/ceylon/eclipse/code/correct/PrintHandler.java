@@ -20,6 +20,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 public class PrintHandler extends AbstractHandler {
 
@@ -29,22 +30,32 @@ public class PrintHandler extends AbstractHandler {
         IEditorPart editor = getCurrentEditor();
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
+            CeylonParseController controller = 
+                    ce.getParseController();
             Tree.CompilationUnit rootNode = 
-                    ce.getParseController().getTypecheckedRootNode();
+                    controller.getTypecheckedRootNode();
             if (rootNode!=null) {
                 IRegion selection = ce.getSelection();
                 int start = selection.getOffset();
                 int end = start + selection.getLength();
-                Node node = findNode(rootNode, ce.getParseController().getTokens(), start, end);
+                Node node = 
+                        findNode(rootNode, 
+                                controller.getTokens(), 
+                                start, end);
                 List<ICompletionProposal> list = 
                         new ArrayList<ICompletionProposal>();
                 addPrintProposal(rootNode, list, node, start);
                 if (!list.isEmpty()) {
-                    IDocument doc = ce.getCeylonSourceViewer().getDocument();
-                    ICompletionProposal proposal = list.get(0);
+                    IDocument doc = 
+                            ce.getCeylonSourceViewer()
+                                .getDocument();
+                    ICompletionProposal proposal = 
+                            list.get(0);
                     proposal.apply(doc);
                     Point point = proposal.getSelection(doc);
-                    ce.getSelectionProvider().setSelection(new TextSelection(point.x, point.y));
+                    ce.getSelectionProvider()
+                        .setSelection(new TextSelection(
+                                point.x, point.y));
                 }
             }
         }
