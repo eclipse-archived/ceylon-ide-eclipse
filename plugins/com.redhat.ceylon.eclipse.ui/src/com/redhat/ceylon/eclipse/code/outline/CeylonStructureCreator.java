@@ -36,7 +36,6 @@ import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 
 /**
  * @author rfuhrer

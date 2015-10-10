@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressed
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.ide.common.util.toCeylonBoolean_.toCeylonBoolean;
-import static com.redhat.ceylon.ide.common.util.toCeylonStringIterable_.toCeylonStringIterable;
 import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 
 import org.eclipse.core.resources.IProject;

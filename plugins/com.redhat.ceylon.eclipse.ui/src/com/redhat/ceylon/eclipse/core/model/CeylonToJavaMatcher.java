@@ -31,7 +31,6 @@ public class CeylonToJavaMatcher {
     private final ITypeRoot typeRoot;
     private final ASTParser parser;
     
-    @SuppressWarnings("deprecation")
     public CeylonToJavaMatcher(IJavaModelAware unit) {
         typeRoot = unit.getTypeRoot();
         parser = ASTParser.newParser(AST.JLS4);
