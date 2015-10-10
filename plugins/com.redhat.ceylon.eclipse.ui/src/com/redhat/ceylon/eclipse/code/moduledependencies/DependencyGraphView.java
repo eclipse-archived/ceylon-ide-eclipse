@@ -683,56 +683,59 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection ss = 
                     (IStructuredSelection) selection;
-            Object first = ss.getFirstElement();
-            if (first instanceof SourceModuleNode) {
-                SourceModuleNode module = (SourceModuleNode) first;
-                setProject(module.getProject());
-                select(module.getModule());;
-                return true;
-            }
-            else if (first instanceof ExternalModuleNode) {
-                if (selection instanceof TreeSelection) {
-                    TreePath path = ((TreeSelection) selection).getPaths()[0];
-                    Object top = path.getFirstSegment();
-                    if (top instanceof IProject) {
-                        setProject((IProject) top);
-                        select(((ExternalModuleNode) path.getLastSegment()).getModule());
-                        return true;
-                    }
+            Object[] elements = ss.toArray();
+            for (int i=0; i<elements.length; i++) {
+                Object element = elements[i];
+                if (element instanceof SourceModuleNode) {
+                    SourceModuleNode module = (SourceModuleNode) element;
+                    setProject(module.getProject());
+                    select(module.getModule());;
+                    return true;
                 }
-                select(((ExternalModuleNode) first).getModule());
-                return true;
-            }
-            else if (first instanceof IProject) {
-                setProject((IProject) first);
-                select(getProjectSourceModules(project));
-                return true;
-            }
-            else if (first instanceof IJavaElement) {
-                setProject(((IJavaElement) first).getJavaProject().getProject());
-                if (first instanceof IPackageFragment) {
-                    Module module = getModule((IPackageFragment) first);
-                    if (module!=null) {
-                        select(module);
+                else if (element instanceof ExternalModuleNode) {
+                    if (selection instanceof TreeSelection) {
+                        TreePath path = ((TreeSelection) selection).getPaths()[i];
+                        Object top = path.getFirstSegment();
+                        if (top instanceof IProject) {
+                            setProject((IProject) top);
+                            select(((ExternalModuleNode) path.getLastSegment()).getModule());
+                            return true;
+                        }
                     }
+                    select(((ExternalModuleNode) element).getModule());
+                    return true;
                 }
-                return true;
-            }
-            else if (first instanceof IResource) {
-                setProject(((IResource) first).getProject());
-                if (first instanceof IFile) {
-                    Module module = getModule((IFile) first);
-                    if (module!=null) {
-                        select(module);
+                else if (element instanceof IProject) {
+                    setProject((IProject) element);
+                    select(getProjectSourceModules(project));
+                    return true;
+                }
+                else if (element instanceof IJavaElement) {
+                    setProject(((IJavaElement) element).getJavaProject().getProject());
+                    if (element instanceof IPackageFragment) {
+                        Module module = getModule((IPackageFragment) element);
+                        if (module!=null) {
+                            select(module);
+                        }
                     }
+                    return true;
                 }
-                else if (first instanceof IFolder) {
-                    Module module = getModule((IFolder) first);
-                    if (module!=null) {
-                        select(module);
+                else if (element instanceof IResource) {
+                    setProject(((IResource) element).getProject());
+                    if (element instanceof IFile) {
+                        Module module = getModule((IFile) element);
+                        if (module!=null) {
+                            select(module);
+                        }
                     }
+                    else if (element instanceof IFolder) {
+                        Module module = getModule((IFolder) element);
+                        if (module!=null) {
+                            select(module);
+                        }
+                    }
+                    return true;
                 }
-                return true;
             }
         }
         else {
