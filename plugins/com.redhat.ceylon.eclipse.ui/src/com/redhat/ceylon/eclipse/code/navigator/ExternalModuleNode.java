@@ -14,7 +14,6 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 
-@SuppressWarnings("restriction")
 public class ExternalModuleNode implements ModuleNode {
     private RepositoryNode repositoryNode;
     private List<IPackageFragmentRoot> binaryArchives = new ArrayList<>();
