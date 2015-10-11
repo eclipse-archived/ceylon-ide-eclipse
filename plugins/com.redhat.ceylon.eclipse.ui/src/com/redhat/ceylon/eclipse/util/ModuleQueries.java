@@ -27,7 +27,7 @@ public class ModuleQueries {
                 return new ModuleQuery(prefix, ModuleQuery.Type.JS);
             }
             if (compileToJs&&compileToJava) {
-                return new ModuleQuery(prefix, ModuleQuery.Type.CEYLON_CODE, ModuleQuery.Retrieval.ALL);
+                return new ModuleQuery(prefix, ModuleQuery.Type.ALL, ModuleQuery.Retrieval.ANY);
             }
         }
         return new ModuleQuery(prefix, ModuleQuery.Type.CODE);
@@ -44,8 +44,8 @@ public class ModuleQueries {
                 return new ModuleVersionQuery(name, version, ModuleQuery.Type.JS);
             }
             if (compileToJs&&compileToJava) {
-                ModuleVersionQuery mvq = new ModuleVersionQuery(name, version, ModuleQuery.Type.CEYLON_CODE);
-                mvq.setRetrieval(ModuleQuery.Retrieval.ALL);
+                ModuleVersionQuery mvq = new ModuleVersionQuery(name, version, ModuleQuery.Type.ALL);
+                mvq.setRetrieval(ModuleQuery.Retrieval.ANY);
             }
         }
         return new ModuleVersionQuery(name, version, ModuleQuery.Type.CODE);
