@@ -34,6 +34,7 @@ import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.common.log.Logger;
 import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -86,7 +87,7 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
                             null : page.getProject().getProject();
                 }
                 @Override
-                Map<String, String> getModules() {
+                Map<String, ModuleVersionNode> getModules() {
                     return selectModules(new ModuleImportSelectionDialog(getShell(), 
                             new ModuleImportContentProvider(null, getProject()) {
                         @Override

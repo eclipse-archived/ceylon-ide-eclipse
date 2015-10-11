@@ -26,9 +26,6 @@ public class ModuleQueries {
             if (compileToJs&&!compileToJava) {
                 return new ModuleQuery(prefix, ModuleQuery.Type.JS);
             }
-            if (compileToJs&&compileToJava) {
-                return new ModuleQuery(prefix, ModuleQuery.Type.ALL, ModuleQuery.Retrieval.ANY);
-            }
         }
         return new ModuleQuery(prefix, ModuleQuery.Type.CODE);
     }
@@ -42,10 +39,6 @@ public class ModuleQueries {
             }
             if (compileToJs&&!compileToJava) {
                 return new ModuleVersionQuery(name, version, ModuleQuery.Type.JS);
-            }
-            if (compileToJs&&compileToJava) {
-                ModuleVersionQuery mvq = new ModuleVersionQuery(name, version, ModuleQuery.Type.ALL);
-                mvq.setRetrieval(ModuleQuery.Retrieval.ANY);
             }
         }
         return new ModuleVersionQuery(name, version, ModuleQuery.Type.CODE);

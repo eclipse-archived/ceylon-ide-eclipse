@@ -66,26 +66,22 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
         return ModuleSearchViewPart.getModuleDoc(versionNode);
     }
     
-    static Map<String, String> getAddedModulesWithVersions(
-            Object[] results) {
-        Map<String,String> added = 
-                new HashMap<String,String>();
+    static Map<String, ModuleVersionNode> 
+    getAddedModulesWithVersions(Object[] results) {
+        Map<String,ModuleVersionNode> added = 
+                new HashMap<String,ModuleVersionNode>();
         for (Object result: results) {
-            String name; String version;
+            String name; ModuleVersionNode version;
             if (result instanceof ModuleNode) {
                 ModuleNode moduleNode = (ModuleNode) result;
                 name = moduleNode.getName();
-                version = 
-                        moduleNode.getLastVersion()
-                            .getVersion();
+                version = moduleNode.getLastVersion();
             }
             else if (result instanceof ModuleVersionNode) {
                 ModuleVersionNode moduleVersionNode = 
                         (ModuleVersionNode) result;
-                name = 
-                        moduleVersionNode.getModule()
-                            .getName();
-                version = moduleVersionNode.getVersion();
+                name = moduleVersionNode.getModule().getName();
+                version = moduleVersionNode;
             }
             else {
                 continue;
@@ -95,8 +91,8 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
         return added;
     }
     
-    public static Map<String,String> selectModules(
-            ModuleImportSelectionDialog dialog, 
+    public static Map<String,ModuleVersionNode> 
+    selectModules(ModuleImportSelectionDialog dialog, 
             IProject project) {
         dialog.setInput(getCategoryNodes(project));
         dialog.open();

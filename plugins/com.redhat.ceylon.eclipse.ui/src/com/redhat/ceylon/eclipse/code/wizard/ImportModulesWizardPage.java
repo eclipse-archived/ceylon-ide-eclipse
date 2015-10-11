@@ -26,9 +26,10 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.model.typechecker.model.Module;
 
 public abstract class ImportModulesWizardPage extends WizardPage {
     
@@ -153,16 +154,17 @@ public abstract class ImportModulesWizardPage extends WizardPage {
     }
 
     private void selectAndAddModules() {
-        Map<String, String> added = getModules();
-        for (Map.Entry<String, String> entry: added.entrySet()) {
+        Map<String, ModuleVersionNode> added = getModules();
+        for (Map.Entry<String, ModuleVersionNode> entry: 
+                added.entrySet()) {
             TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
             item.setImage(CeylonResources.MODULE);
             item.setText(entry.getKey());
-            item.setText(1, entry.getValue());
+            item.setText(1, entry.getValue().getVersion());
         }
     }
 
-    abstract Map<String, String> getModules();
+    abstract Map<String, ModuleVersionNode> getModules();
 
     private void removeSelectedModules() {
         int[] selection = moduleImportsTable.getSelectionIndices();

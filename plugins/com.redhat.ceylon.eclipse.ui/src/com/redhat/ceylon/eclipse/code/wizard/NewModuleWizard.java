@@ -30,6 +30,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
+import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -122,7 +123,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                 String version = entry.getValue();
                 boolean shared = sharedImports.contains(name);
                 appendImportStatement(moduleDescriptor, 
-                        shared, name, version, newline);
+                        shared, null, name, version, newline);
             }
             if (!imports.isEmpty()) {
                 moduleDescriptor.append(newline);
@@ -218,7 +219,7 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                             sourceDir.getResource().getProject();
                 }
                 @Override
-                Map<String, String> getModules() {
+                Map<String, ModuleVersionNode> getModules() {
                     return selectModules(new ModuleImportSelectionDialog(getShell(), 
                             new ModuleImportContentProvider(null, getProject()) {
                         @Override

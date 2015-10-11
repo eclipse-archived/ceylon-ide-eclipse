@@ -59,6 +59,7 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
+import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
@@ -564,16 +565,17 @@ public class CeylonModulePropertiesPage extends PropertyPage
         ModuleImportSelectionDialog dialog = 
                 new ModuleImportSelectionDialog(getShell(), 
                         contentProvider);
-        Map<String, String> added = 
+        Map<String, ModuleVersionNode> added = 
                 selectModules(dialog, project);
         addModuleImports(project, getModule(), added);
-        for (Map.Entry<String, String> entry: added.entrySet()) {
+        for (Map.Entry<String, ModuleVersionNode> entry: 
+                added.entrySet()) {
             TableItem item = 
                     new TableItem(moduleImportsTable, 
                             SWT.NONE);
             item.setImage(CeylonResources.MODULE);
             item.setText(entry.getKey());
-            item.setText(1, entry.getValue());
+            item.setText(1, entry.getValue().getVersion());
         }
     }
 

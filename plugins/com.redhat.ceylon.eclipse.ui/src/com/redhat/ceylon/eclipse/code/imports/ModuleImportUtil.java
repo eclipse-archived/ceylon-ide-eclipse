@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 import static java.util.Collections.singletonMap;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
+import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
+import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -86,10 +90,15 @@ public class ModuleImportUtil {
     public static void addModuleImport(
             IProject project, Module target, 
             String moduleName, String moduleVersion) {
+        ModuleVersionNode versionNode = 
+                new ModuleVersionNode(
+                        new ModuleNode(moduleName, 
+                                Collections.<ModuleVersionNode>emptyList()), 
+                            moduleVersion);
         int offset = 
                 addModuleImports(project, target, 
                         singletonMap(moduleName, 
-                                moduleVersion));
+                                versionNode));
         TypecheckerUnit unit = 
                 getDescriptorPhasedUnit(project, target)
                     .getUnit();
@@ -162,29 +171,38 @@ public class ModuleImportUtil {
     
     public static int addModuleImports(
             IProject project, Module target, 
-            Map<String,String> moduleNamesAndVersions) {
+            Map<String,ModuleVersionNode> moduleNamesAndVersions) {
         if (moduleNamesAndVersions.isEmpty()) return 0;
         ProjectPhasedUnit unit = 
                 getDescriptorPhasedUnit(project, target);
         return addModuleImports(unit.getResourceFile(),
-                unit.getCompilationUnit(),
+                unit.getCompilationUnit(), project,
                 moduleNamesAndVersions);
     }
 
     public static int addModuleImports(
-            IFile file, CompilationUnit cu, 
-            Map<String, String> moduleNamesAndVersions) {
+            IFile file, CompilationUnit cu, IProject project, 
+            Map<String, ModuleVersionNode> moduleNamesAndVersions) {
         TextFileChange textFileChange = 
                 new TextFileChange("Add Module Imports", 
                         file);
         textFileChange.setEdit(new MultiTextEdit());
-        for (Map.Entry<String, String> entry: 
-            moduleNamesAndVersions.entrySet()) {
+        for (Map.Entry<String, ModuleVersionNode> entry: 
+                moduleNamesAndVersions.entrySet()) {
+            String nativeBackend;
+            String name = entry.getKey();
+            String version = entry.getValue().getVersion();
+            if (CeylonBuilder.compileToJava(project) &&
+                CeylonBuilder.compileToJs(project)) {
+                nativeBackend = 
+                        entry.getValue().getNativeBackend();
+            }
+            else {
+                nativeBackend = null;
+            }
             InsertEdit edit = 
                     createAddEdit(cu, 
-                            null, //TODO: the native backend!
-                            entry.getKey(), 
-                            entry.getValue(), 
+                            nativeBackend, name, version, 
                             getDocument(textFileChange));
             if (edit!=null) {
                 textFileChange.addEdit(edit);

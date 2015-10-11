@@ -10,6 +10,7 @@ public class ModuleVersionNode {
     private String license;
     private String doc;
     private SortedSet<String> authors;
+    private String nativeBackend;
 
     public ModuleVersionNode(ModuleNode module, String version) {
         this.module = module;
@@ -54,6 +55,14 @@ public class ModuleVersionNode {
 
     public void setAuthors(SortedSet<String> authors) {
         this.authors = authors;
+    }
+    
+    public String getNativeBackend() {
+        return nativeBackend;
+    }
+    
+    public void setNativeBackend(String nativeBackend) {
+        this.nativeBackend = nativeBackend;
     }
     
     public String getAuthorsCommaSeparated() {
