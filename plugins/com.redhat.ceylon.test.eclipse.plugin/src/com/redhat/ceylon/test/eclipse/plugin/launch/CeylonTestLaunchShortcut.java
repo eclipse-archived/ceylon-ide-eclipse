@@ -160,7 +160,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
                     if (child instanceof IPackageFragment) {
                         IPackageFragment packageFragment = (IPackageFragment) child;
                         Module module = getModule(project, packageFragment.getElementName());
-                        if (CeylonTestUtil.containsCeylonTestImport(module)) {
+                        if (CeylonTestUtil.containsCeylonTestImport(module) && CeylonTestUtil.checkNativeBackend(module, configTypeId)) {
                             entries.add(CeylonTestLaunchConfigEntry.build(project, MODULE, packageFragment.getElementName()));
                         }
                     }
