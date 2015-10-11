@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.ICompletionProposalExtension;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
@@ -39,8 +38,7 @@ import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 
-class ChangeReferenceProposal extends CorrectionProposal 
-        implements ICompletionProposalExtension {
+class ChangeReferenceProposal extends CorrectionProposal {
     
     private ChangeReferenceProposal(ProblemLocation problem, 
             String name, String pkg, TextFileChange change) {
@@ -57,16 +55,17 @@ class ChangeReferenceProposal extends CorrectionProposal
             IFile file, 
             String brokenName, 
             Declaration dec, int dist,
-            Tree.CompilationUnit cu) {
+            Tree.CompilationUnit rootNode) {
         TextFileChange change = 
-                new TextFileChange("Change Reference", file);
+                new TextFileChange("Change Reference", 
+                        file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
         String pkg = "";
         int problemOffset = problem.getOffset();
         if (dec.isToplevel() && 
-                !isImported(dec, cu) && 
-                isInPackage(cu, dec)) {
+                !isImported(dec, rootNode) && 
+                isInPackage(rootNode, dec)) {
             String pn = 
                     dec.getContainer()
                         .getQualifiedNameString();
@@ -74,12 +73,12 @@ class ChangeReferenceProposal extends CorrectionProposal
             if (!pn.isEmpty() && 
                     !pn.equals(Module.LANGUAGE_MODULE_NAME)) {
                 OccurrenceLocation ol = 
-                        getOccurrenceLocation(cu, 
-                                findNode(cu, problemOffset),
+                        getOccurrenceLocation(rootNode, 
+                                findNode(rootNode, problemOffset),
                                 problemOffset);
                 if (ol!=IMPORT) {
                     List<InsertEdit> ies = 
-                            importEdits(cu, 
+                            importEdits(rootNode, 
                                     singleton(dec), 
                                     null, null, doc);
                     for (InsertEdit ie: ies) {
@@ -99,29 +98,9 @@ class ChangeReferenceProposal extends CorrectionProposal
         return !dec.getUnit().getPackage()
                 .equals(cu.getUnit().getPackage());
     }
-
-    @Override
-    public void apply(IDocument document, char trigger, int offset) {
-        apply(document);
-    }
-
-    @Override
-    public boolean isValidFor(IDocument document, int offset) {
-        return true;
-    }
-
-    @Override
-    public char[] getTriggerCharacters() {
-        return "r".toCharArray();
-    }
-
-    @Override
-    public int getContextInformationPosition() {
-        return -1;
-    }
-
+    
     static void addChangeReferenceProposals(
-            Tree.CompilationUnit cu, 
+            Tree.CompilationUnit rootNode, 
             Node node, ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, 
             IFile file) {
@@ -132,10 +111,10 @@ class ChangeReferenceProposal extends CorrectionProposal
                     !brokenName.isEmpty()) {
                 Scope scope = node.getScope();
                 Collection<DeclarationWithProximity> dwps = 
-                        getProposals(node, scope, cu)
+                        getProposals(node, scope, rootNode)
                             .values();
                 for (DeclarationWithProximity dwp: dwps) {
-                    processProposal(cu, problem, 
+                    processProposal(rootNode, problem, 
                             proposals, file,
                             brokenName, 
                             dwp.getDeclaration());
@@ -145,7 +124,7 @@ class ChangeReferenceProposal extends CorrectionProposal
     }
 
     static void addChangeArgumentReferenceProposals(
-            Tree.CompilationUnit cu, 
+            Tree.CompilationUnit rootNode, 
             Node node, 
             ProblemLocation problem, 
             Collection<ICompletionProposal> proposals, 
@@ -170,7 +149,7 @@ class ChangeReferenceProposal extends CorrectionProposal
                         Declaration declaration = 
                                 parameter.getModel();
                         if (declaration!=null) {
-                            processProposal(cu, problem, 
+                            processProposal(rootNode, problem, 
                                     proposals, file,
                                     brokenName, 
                                     declaration);
@@ -182,7 +161,7 @@ class ChangeReferenceProposal extends CorrectionProposal
     }
 
     private static void processProposal(
-            Tree.CompilationUnit cu,
+            Tree.CompilationUnit rootNode,
             ProblemLocation problem, 
             Collection<ICompletionProposal> proposals,
             IFile file, 
@@ -203,7 +182,7 @@ class ChangeReferenceProposal extends CorrectionProposal
                     addChangeReferenceProposal(problem, 
                             proposals, file, 
                             brokenName, declaration, distance, 
-                            cu);
+                            rootNode);
                 }
             }
         }

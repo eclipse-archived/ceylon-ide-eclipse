@@ -547,7 +547,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         //      doesn't know how to search up the tree for
         //      the containing InvocationExpression
         Type requiredType = 
-                getRequiredType(typecheckedRootNode, node, adjustedToken);
+                getRequiredType(typecheckedRootNode, node, 
+                        adjustedToken);
         
         String prefix = "";
         String fullPrefix = "";
