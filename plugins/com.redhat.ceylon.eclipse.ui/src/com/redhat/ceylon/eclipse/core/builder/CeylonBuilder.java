@@ -2715,6 +2715,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         IProject project = ceylonProject.getIdeArtifact();
         CeylonProjectConfig<IProject> config = ceylonProject.getConfiguration();
         Options jsopts = new Options()
+                .cwd(ceylonProject.getRootDirectory())
                 .outWriter(printWriter)
                 .repos(js_repos)
                 .sourceDirs(js_srcdir)
