@@ -51,12 +51,18 @@ class RequiredTypeVisitor
             if (that instanceof Tree.PositionalArgument) {
                 Tree.PositionalArgument pa = 
                         (Tree.PositionalArgument) that;
-                parameterName = pa.getParameter().getName();
+                Parameter parameter = pa.getParameter();
+                if (parameter!=null) {
+                    parameterName = parameter.getName();
+                }
             }
             else if (that instanceof Tree.NamedArgument) {
                 Tree.NamedArgument na = 
                         (Tree.NamedArgument) that;
-                parameterName = na.getParameter().getName();
+                Parameter parameter = na.getParameter();
+                if (parameter!=null) {
+                    parameterName = parameter.getName();
+                }
             }
         }
         super.visitAny(that);
