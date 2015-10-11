@@ -23,6 +23,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddPunctuationProposal.addI
 import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addSpreadToSequenceParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
+import static com.redhat.ceylon.eclipse.code.correct.AppendMemberReferenceProposal.addAppendMemberReferenceProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AssertExistsDeclarationProposal.addAssertExistsDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertExistsProposal.addAssignToAssertExistsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertIsProposal.addAssignToAssertIsProposal;
@@ -804,6 +805,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addCreateParameterProposals(rootNode, node, problem, proposals, project);
             break;
         case 2100:
+            addAppendMemberReferenceProposals(rootNode, node, problem, proposals, file);
             addChangeTypeProposals(rootNode, node, problem, proposals, project);
             addSatisfiesProposals(rootNode, node, proposals, project);
             break;
