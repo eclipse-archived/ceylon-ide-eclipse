@@ -277,6 +277,12 @@ public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialo
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
+            if (element instanceof Declaration) {
+                Declaration d = (Declaration) element;
+                if (d.isNative() && d.isNativeImplementation()) {
+                    return false;
+                }
+            }
             return isTestable(element);
         }
 

@@ -2,6 +2,7 @@ package com.redhat.ceylon.test.eclipse.plugin.launch;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.CLASS;
 import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.CLASS_LOCAL;
 import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.METHOD;
@@ -18,6 +19,7 @@ import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_P
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -200,6 +202,14 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         if (phasedUnit != null) {
             List<Declaration> declarations = phasedUnit.getDeclarations();
             for (Declaration d : declarations) {
+                if (d.isNative()) {
+                    if (Objects.equals(configTypeId, LAUNCH_CONFIG_TYPE) && !Objects.equals(d.getNativeBackend(), "jvm")) {
+                        continue;
+                    }
+                    if (Objects.equals(configTypeId, LAUNCH_CONFIG_TYPE_JS) && !Objects.equals(d.getNativeBackend(), "js")) {
+                        continue;
+                    }
+                }
                 if (d.isToplevel()) {
                     if (d instanceof Class) {
                         Class clazz = (Class) d;
