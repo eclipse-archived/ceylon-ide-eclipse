@@ -28,7 +28,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
@@ -182,14 +181,16 @@ public class ModuleImportUtil {
         for (Map.Entry<String, String> entry: 
             moduleNamesAndVersions.entrySet()) {
             InsertEdit edit = 
-                    createAddEdit(cu, entry.getKey(), 
+                    createAddEdit(cu, 
+                            null, //TODO: the native backend!
+                            entry.getKey(), 
                             entry.getValue(), 
                             getDocument(textFileChange));
             if (edit!=null) {
                 textFileChange.addEdit(edit);
             }
         }
-        EditorUtil.performChange(textFileChange);
+        performChange(textFileChange);
         return textFileChange.getEdit().getOffset();
     }
 
@@ -205,7 +206,7 @@ public class ModuleImportUtil {
     }
     
     private static InsertEdit createAddEdit(
-            CompilationUnit unit, 
+            CompilationUnit unit, String backend,
             String moduleName, String moduleVersion, 
             IDocument doc) {
         ImportModuleList iml = getImportList(unit);    
@@ -221,7 +222,7 @@ public class ModuleImportUtil {
         }
         String newline = getDefaultLineDelimiter(doc);
         StringBuilder importModule = new StringBuilder();
-        appendImportStatement(importModule, false,
+        appendImportStatement(importModule, false, backend,
                 moduleName, moduleVersion, newline);
         if (iml.getEndToken().getLine()==iml.getToken().getLine()) {
             importModule.append(newline);
@@ -232,13 +233,18 @@ public class ModuleImportUtil {
 
     public static void appendImportStatement(
             StringBuilder importModule,
-            boolean shared, 
+            boolean shared, String backend,
             String moduleName, String moduleVersion, 
             String newline) {
         importModule.append(newline)
             .append(getDefaultIndent());
         if (shared) {
             importModule.append("shared ");
+        }
+        if (backend!=null) {
+            importModule.append("native(")
+                .append(backend)
+                .append(") ");
         }
         importModule.append("import ");
         if (!moduleName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$")) {
