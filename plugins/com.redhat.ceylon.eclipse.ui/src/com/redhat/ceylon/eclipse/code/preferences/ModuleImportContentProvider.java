@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,16 +13,16 @@ import java.util.TreeSet;
 
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchManager;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewContentProvider;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.model.cmr.JDKUtils;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 
 public abstract class ModuleImportContentProvider extends ModuleSearchViewContentProvider {
     
@@ -60,9 +61,9 @@ public abstract class ModuleImportContentProvider extends ModuleSearchViewConten
             for (IProject p: CeylonBuilder.getProjects()) {
                 if (project==null ||
                         compileToJava(p) && compileToJs(p) ||
-                        compileToJava(p) && compileToJava(project) && !compileToJs(project) || 
-                        compileToJs(p) && compileToJs(project) && !compileToJava(project)) {
-                    for (Module m: CeylonBuilder.getProjectDeclaredSourceModules(p)) {
+                        compileToJava(p) && compileToJava(project) || 
+                        compileToJs(p) && compileToJs(project)) {
+                    for (Module m: getProjectDeclaredSourceModules(p)) {
                         if (!excluded(module, m.getNameAsString())) {
                             map.put(m.getNameAsString(), m.getVersion());
                         }
@@ -76,7 +77,7 @@ public abstract class ModuleImportContentProvider extends ModuleSearchViewConten
             }
             return list;
         }
-        else if (prefix.startsWith("java.")||prefix.equals("java.|javax.")) {
+        else if (prefix.startsWith("java.") || prefix.equals("java.|javax.")) {
             List<ModuleNode> list = new ArrayList<ModuleNode>();
             for (String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
                 if ((prefix.equals("java.|javax.")||name.startsWith(prefix)) && !excluded(module, name)) {
