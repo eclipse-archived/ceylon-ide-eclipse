@@ -11,6 +11,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
+import static org.eclipse.swt.layout.GridData.FILL_BOTH;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
@@ -128,7 +129,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
 
     public void createModuleDescriptorLink(Composite parent) {
         new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL)
-                .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                .setLayoutData(new GridData(FILL_HORIZONTAL));
         
         IFolder folder = 
                 (IFolder) 
@@ -212,8 +213,9 @@ public class CeylonModulePropertiesPage extends PropertyPage
         Label label = new Label(parent, SWT.NONE);
         label.setText("Imported modules:");
         
-        Composite composite = new Composite(parent, SWT.NONE);
-        GridData cgd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
+        Composite composite = 
+                new Composite(parent, SWT.NONE);
+        GridData cgd = new GridData(FILL_BOTH);
         cgd.grabExcessHorizontalSpace = true;
         cgd.grabExcessVerticalSpace = true;
         composite.setLayoutData(cgd);
@@ -225,7 +227,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
                 SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
         moduleImportsTable.setHeaderVisible(true);
         moduleImportsTable.setLinesVisible(true);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL|GridData.FILL_VERTICAL);
+        GridData gd = new GridData(FILL_BOTH);
         gd.horizontalSpan=2;
         gd.verticalSpan=4;
         gd.grabExcessHorizontalSpace = true;
@@ -234,28 +236,40 @@ public class CeylonModulePropertiesPage extends PropertyPage
         gd.widthHint = 300;
         moduleImportsTable.setLayoutData(gd);
         
-        TableColumn column = new TableColumn(moduleImportsTable, SWT.NONE, 0);
+        TableColumn column = 
+                new TableColumn(moduleImportsTable, 
+                        SWT.NONE, 0);
         column.setText("Module/Version");
         column.setWidth(180);
-        TableColumn versionColumn = new TableColumn(moduleImportsTable, SWT.NONE, 1);
+        TableColumn versionColumn = 
+                new TableColumn(moduleImportsTable, 
+                        SWT.NONE, 1);
         versionColumn.setText("Version");
         versionColumn.setWidth(70);
-        TableColumn sharedColumn = new TableColumn(moduleImportsTable, SWT.NONE, 2);
+        TableColumn sharedColumn = 
+                new TableColumn(moduleImportsTable, 
+                        SWT.NONE, 2);
         sharedColumn.setText("Transitivity");
         sharedColumn.setWidth(70);
         for (ModuleImport mi: getModule().getImports()) {
-            TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
+            TableItem item = 
+                    new TableItem(moduleImportsTable, 
+                            SWT.NONE);
             item.setImage(CeylonResources.MODULE);
             item.setText(mi.getModule().getNameAsString());
             item.setText(1, mi.getModule().getVersion());
             item.setText(2, mi.isExport() ? "shared" : "");
         }
         
-        GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
+        GridData bgd = 
+                new GridData(
+                        VERTICAL_ALIGN_BEGINNING |
+                        HORIZONTAL_ALIGN_FILL);
         bgd.grabExcessHorizontalSpace=false;
         bgd.widthHint = 50;
         
-        Button sharedButton = new Button(composite, SWT.PUSH);
+        Button sharedButton = 
+                new Button(composite, SWT.PUSH);
         sharedButton.setText("Toggle Shared");
         sharedButton.setLayoutData(bgd);
         sharedButton.addSelectionListener(new SelectionListener() {
@@ -268,7 +282,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        Button addButton = new Button(composite, SWT.PUSH);
+        Button addButton = 
+                new Button(composite, SWT.PUSH);
         addButton.setText("Add Imports...");
         addButton.setLayoutData(bgd);
         addButton.addSelectionListener(new SelectionListener() {
@@ -280,7 +295,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        Button removeButton = new Button(composite, SWT.PUSH);
+        Button removeButton = 
+                new Button(composite, SWT.PUSH);
         removeButton.setText("Remove Selected");
         removeButton.setLayoutData(bgd);
         removeButton.addSelectionListener(new SelectionListener() {
@@ -310,7 +326,9 @@ public class CeylonModulePropertiesPage extends PropertyPage
         for (TableItem item: items) {
             String name = item.getText();
             if (!name.equals(Module.LANGUAGE_MODULE_NAME)) {
-                item.setText(2, item.getText(2).isEmpty() ? "shared" : "");
+                item.setText(2, 
+                        item.getText(2).isEmpty() ? 
+                                "shared" : "");
             }
         }
     }
@@ -319,7 +337,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
         Label label = new Label(parent, SWT.NONE);
         label.setText("Packages:");
         
-        Composite composite = new Composite(parent, SWT.NONE);
+        Composite composite = 
+                new Composite(parent, SWT.NONE);
         GridData cgd = new GridData(FILL_HORIZONTAL);
         cgd.grabExcessHorizontalSpace = true;
         composite.setLayoutData(cgd);
@@ -339,24 +358,34 @@ public class CeylonModulePropertiesPage extends PropertyPage
         gd.heightHint = 100;
         gd.widthHint = 300;
         packagesTable.setLayoutData(gd);
-        TableColumn column = new TableColumn(packagesTable, SWT.NONE, 0);
+        TableColumn column = 
+                new TableColumn(packagesTable, 
+                        SWT.NONE, 0);
         column.setText("Package");
         column.setWidth(250);
-        TableColumn sharedColumn = new TableColumn(packagesTable, SWT.NONE, 1);
+        TableColumn sharedColumn = 
+                new TableColumn(packagesTable, 
+                        SWT.NONE, 1);
         sharedColumn.setText("Visibility");
         sharedColumn.setWidth(70);
         for (Package p: getModule().getPackages()) {
-            TableItem item = new TableItem(packagesTable, SWT.NONE, 0);
+            TableItem item = 
+                    new TableItem(packagesTable, 
+                            SWT.NONE, 0);
             item.setImage(CeylonResources.PACKAGE);
             item.setText(p.getNameAsString());
             item.setText(1, p.isShared() ? "shared" : "");
         }
         
-        GridData bgd = new GridData(VERTICAL_ALIGN_BEGINNING|HORIZONTAL_ALIGN_FILL);
+        GridData bgd = 
+                new GridData(
+                        VERTICAL_ALIGN_BEGINNING |
+                        HORIZONTAL_ALIGN_FILL);
         bgd.grabExcessHorizontalSpace=false;
         bgd.widthHint = 50;
         
-        Button sharedButton = new Button(composite, SWT.PUSH);
+        Button sharedButton = 
+                new Button(composite, SWT.PUSH);
         sharedButton.setText("Toggle Shared");
         sharedButton.setLayoutData(bgd);
         sharedButton.addSelectionListener(new SelectionListener() {
@@ -371,7 +400,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
         
-        Button createPackageButton = new Button(composite, SWT.PUSH);
+        Button createPackageButton = 
+                new Button(composite, SWT.PUSH);
         createPackageButton.setText("Create Package...");
         createPackageButton.setLayoutData(bgd);
         createPackageButton.addSelectionListener(new SelectionListener() {
@@ -379,8 +409,11 @@ public class CeylonModulePropertiesPage extends PropertyPage
             public void widgetSelected(SelectionEvent e) {
                 NewPackageWizard wiz = openPackageWizard();
                 if (wiz.isCreated()) {
-                    IPackageFragment pfr = wiz.getPackageFragment();
-                    TableItem item = new TableItem(packagesTable, SWT.NONE);
+                    IPackageFragment pfr = 
+                            wiz.getPackageFragment();
+                    TableItem item = 
+                            new TableItem(packagesTable, 
+                                    SWT.NONE);
                     item.setImage(CeylonResources.PACKAGE);
                     item.setText(pfr.getElementName());
                     item.setText(1, wiz.isShared() ? "shared" : "");
@@ -394,7 +427,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
 //        l.setText("(Checked packages are shared.)");
         
         new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL)
-                .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                .setLayoutData(new GridData(FILL_HORIZONTAL));
 
     }
 
@@ -435,7 +468,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
     }
     
     private void createModuleInfoBlock(Composite parent) {
-        Composite composite = new Composite(parent, SWT.NONE);
+        Composite composite = 
+                new Composite(parent, SWT.NONE);
         GridData cgd = new GridData(FILL_HORIZONTAL);
 //        cgd.grabExcessHorizontalSpace = true;
         composite.setLayoutData(cgd);
@@ -507,7 +541,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
         }*/
         
         new Label(parent, SWT.SEPARATOR|SWT.HORIZONTAL)
-                .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                .setLayoutData(new GridData(FILL_HORIZONTAL));
         
     }
     
@@ -519,7 +553,8 @@ public class CeylonModulePropertiesPage extends PropertyPage
 
     private void selectAndAddModules() {
         ModuleImportContentProvider contentProvider = 
-                new ModuleImportContentProvider(getModule(), project) {
+                new ModuleImportContentProvider(getModule(), 
+                        project) {
             @Override
             public ModuleSearchResult getModules(String prefix) {
                 return getModuleSearchResults(prefix, 
@@ -533,7 +568,9 @@ public class CeylonModulePropertiesPage extends PropertyPage
                 selectModules(dialog, project);
         addModuleImports(project, getModule(), added);
         for (Map.Entry<String, String> entry: added.entrySet()) {
-            TableItem item = new TableItem(moduleImportsTable, SWT.NONE);
+            TableItem item = 
+                    new TableItem(moduleImportsTable, 
+                            SWT.NONE);
             item.setImage(CeylonResources.MODULE);
             item.setText(entry.getKey());
             item.setText(1, entry.getValue());

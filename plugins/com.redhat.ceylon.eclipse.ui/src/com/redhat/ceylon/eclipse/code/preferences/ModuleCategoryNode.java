@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,15 +27,20 @@ public class ModuleCategoryNode {
         return description;
     }
     
-    public static List<ModuleCategoryNode> getCategoryNodes(IProject project) {
-        List<ModuleCategoryNode> list = new ArrayList<ModuleCategoryNode>();
-        list.add(new ModuleCategoryNode(".", "Workspace Modules"));
-        list.add(new ModuleCategoryNode("ceylon.", "Ceylon Platform Modules"));
-        if (project==null ||
-                compileToJava(project) && !compileToJs(project)) {
-            list.add(new ModuleCategoryNode("java.|javax.", "Java SE Modules"));
+    public static List<ModuleCategoryNode> getCategoryNodes(
+            IProject project) {
+        List<ModuleCategoryNode> list = 
+                new ArrayList<ModuleCategoryNode>();
+        list.add(new ModuleCategoryNode(".", 
+                "Workspace Modules"));
+        list.add(new ModuleCategoryNode("ceylon.", 
+                "Ceylon Platform Modules"));
+        if (project==null || compileToJava(project)) {
+            list.add(new ModuleCategoryNode("java.|javax.", 
+                    "Java SE Modules"));
         }
-        list.add(new ModuleCategoryNode("", "All Repository Modules"));
+        list.add(new ModuleCategoryNode("", 
+                "All Repository Modules"));
         return list;
     }
     
