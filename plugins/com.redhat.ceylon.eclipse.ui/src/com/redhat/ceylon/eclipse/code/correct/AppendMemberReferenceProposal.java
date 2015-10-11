@@ -20,6 +20,7 @@ import org.eclipse.text.edits.InsertEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.eclipse.util.Types;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -73,9 +74,10 @@ class AppendMemberReferenceProposal extends CorrectionProposal  {
                     CommonToken token = 
                             (CommonToken) 
                                 id.getToken();
-                    Type required = 
+                    Types.Required required = 
                             getRequiredType(rootNode, node, token);
-                    if (required!=null) {
+                    Type requiredType = required.getType();
+                    if (requiredType!=null) {
                         TypeDeclaration type = t.getDeclaration();
                         Collection<DeclarationWithProximity> dwps = 
                                 type.getMatchingMemberDeclarations(
@@ -91,7 +93,7 @@ class AppendMemberReferenceProposal extends CorrectionProposal  {
                                         value.appliedReference(t, NO_TYPES)
                                             .getType();
                                 if (!isTypeUnknown(vt) 
-                                        && vt.isSubtypeOf(required)) {
+                                        && vt.isSubtypeOf(requiredType)) {
                                     addAppendMemberReferenceProposal(
                                             id, proposals, file, 
                                             value, t, rootNode);

@@ -34,14 +34,19 @@ public class Types {
             return null;//impossible
         }
     }
+    
+    public interface Required {
+        public Type getType();
+        public String getParameterName();
+    }
 
-    public static Type getRequiredType(
+    public static Required getRequiredType(
             Tree.CompilationUnit rootNode,
             Node node, CommonToken token) {
         RequiredTypeVisitor rtv = 
                 new RequiredTypeVisitor(node, token);
         rtv.visit(rootNode);
-        return rtv.getType();
+        return rtv;
     }
 
     public static Declaration getRefinedDeclaration(

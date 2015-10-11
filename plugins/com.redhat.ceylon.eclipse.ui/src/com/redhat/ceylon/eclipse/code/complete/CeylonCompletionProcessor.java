@@ -145,6 +145,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
+import com.redhat.ceylon.eclipse.util.Types;
 import com.redhat.ceylon.ide.common.completion.FindScopeVisitor;
 import com.redhat.ceylon.ide.common.completion.IdeCompletionManager;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -546,7 +547,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         //      an expression, since RequiredTypeVisitor
         //      doesn't know how to search up the tree for
         //      the containing InvocationExpression
-        Type requiredType = 
+        Types.Required required = 
                 getRequiredType(typecheckedRootNode, node, 
                         adjustedToken);
         
@@ -628,10 +629,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             filterProposals(proposals);
             filterProposals(functionProposals);
             Set<DeclarationWithProximity> sortedProposals = 
-                    sortProposals(prefix, requiredType, 
+                    sortProposals(prefix, required, 
                             proposals);
             Set<DeclarationWithProximity> sortedFunctionProposals = 
-                    sortProposals(prefix, requiredType, 
+                    sortProposals(prefix, required, 
                             functionProposals);
             completions =
                     constructCompletions(offset, 
@@ -642,7 +643,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                             adjustedToken, isMemberOp, 
                             viewer.getDocument(), 
                             secondLevel, inDoc,
-                            requiredType, previousTokenType, 
+                            required.getType(), 
+                            previousTokenType, 
                             tokenType);
         }
         return completions;
@@ -1637,11 +1639,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     private static Set<DeclarationWithProximity> 
-    sortProposals(String prefix, Type type, 
+    sortProposals(String prefix, Types.Required required, 
             Map<String, DeclarationWithProximity> proposals) {
         Set<DeclarationWithProximity> set = 
                 new TreeSet<DeclarationWithProximity>
-                    (new ProposalComparator(prefix, type));
+                    (new ProposalComparator(prefix, required));
         set.addAll(proposals.values());
         return set;
     }

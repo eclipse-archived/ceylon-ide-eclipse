@@ -1,10 +1,12 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.util.Types.getResultType;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static java.lang.Character.isUpperCase;
 
 import java.util.Comparator;
 
+import com.redhat.ceylon.eclipse.util.Types;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -12,11 +14,11 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 final class ProposalComparator 
         implements Comparator<DeclarationWithProximity> {
     private final String prefix;
-    private final Type type;
+    private final Types.Required required;
 
-    ProposalComparator(String prefix, Type type) {
+    ProposalComparator(String prefix, Types.Required type) {
         this.prefix = prefix;
-        this.type = type;
+        this.required = type;
     }
 
     public int compare(
@@ -55,15 +57,16 @@ final class ProposalComparator
             
             Declaration xd = x.getDeclaration();
             Declaration yd = y.getDeclaration();
-            if (type!=null) {
+            Type requiredType = required.getType();
+            if (requiredType!=null) {
                 Type xtype = getResultType(xd);
                 Type ytype = getResultType(yd);
                 boolean xassigns = 
                         xtype!=null && 
-                        xtype.isSubtypeOf(type);
+                        xtype.isSubtypeOf(requiredType);
                 boolean yassigns = 
                         ytype!=null && 
-                        ytype.isSubtypeOf(type);
+                        ytype.isSubtypeOf(requiredType);
                 if (xassigns && !yassigns) {
                     return -1;
                 }
@@ -112,6 +115,21 @@ final class ProposalComparator
                                      y.getProximity());
             if (pc!=0) {
                 return pc;
+            }
+            
+            String requiredName = 
+                    required.getParameterName();
+            if (requiredName!=null) {
+                boolean xnr = 
+                        isNameMatching(xName, requiredName);
+                boolean ynr = 
+                        isNameMatching(yName, requiredName);
+                if (xnr && !ynr) {
+                    return -1;
+                }
+                if (!xnr && ynr) {
+                    return 1;
+                }
             }
             
             //lowercase proposals first if no prefix

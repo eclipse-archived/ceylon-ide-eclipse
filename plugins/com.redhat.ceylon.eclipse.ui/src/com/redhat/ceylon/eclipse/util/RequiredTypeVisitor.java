@@ -21,16 +21,22 @@ import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
-class RequiredTypeVisitor extends Visitor {
+class RequiredTypeVisitor 
+        extends Visitor implements Types.Required {
     
     private Node node;
     private Type requiredType = null;
     private Type finalResult = null;
     private Reference namedArgTarget = null;
     private Token token;
+    private String parameterName;
     
     public Type getType() {
         return finalResult;
+    }
+    
+    public String getParameterName() {
+        return parameterName;
     }
     
     public RequiredTypeVisitor(Node node, Token token) {
@@ -41,7 +47,17 @@ class RequiredTypeVisitor extends Visitor {
     @Override
     public void visitAny(Node that) {
         if (node==that) {
-            finalResult=requiredType;  
+            finalResult=requiredType;
+            if (that instanceof Tree.PositionalArgument) {
+                Tree.PositionalArgument pa = 
+                        (Tree.PositionalArgument) that;
+                parameterName = pa.getParameter().getName();
+            }
+            else if (that instanceof Tree.NamedArgument) {
+                Tree.NamedArgument na = 
+                        (Tree.NamedArgument) that;
+                parameterName = na.getParameter().getName();
+            }
         }
         super.visitAny(that);
     }
