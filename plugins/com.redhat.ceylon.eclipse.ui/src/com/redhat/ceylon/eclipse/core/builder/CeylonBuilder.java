@@ -3324,14 +3324,36 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         final File modulesOutputDirectory = getCeylonModulesOutputDirectory(project);
         if (modulesOutputDirectory != null) {
             monitor.subTask("Cleaning existing artifacts of project " + project.getName());
-            List<String> extensionsToDelete = Arrays.asList(".jar", ".js", ".car", ".src", ".sha1");
+            final List<String> extensionsToDelete = Arrays.asList(".jar", ".js", ".car", ".src", ".sha1");
+            final List<String> deleteEverything = Arrays.asList(".*");
             new RepositoryLister(extensionsToDelete).list(modulesOutputDirectory, 
                     new RepositoryLister.Actions() {
+
                 @Override
                 public void doWithFile(File path) {
+                    if (path.getName().endsWith(ArtifactContext.CAR)) {
+                        File moduleResourcesDirectory = new File(path.getParentFile(), ArtifactContext.RESOURCES);
+                        if (moduleResourcesDirectory.exists()) {
+                            new RepositoryLister(deleteEverything).list(moduleResourcesDirectory, 
+                                new RepositoryLister.Actions() {
+                                    @Override
+                                    public void doWithFile(File path) {
+                                        path.delete();
+                                    }
+                                    
+                                    @Override
+                                    public void exitDirectory(File path) {
+                                        if (path.list().length == 0) {
+                                            path.delete();
+                                        }
+                                    }
+                            });
+                        }
+                    }
                     path.delete();
                 }
                 
+                @Override
                 public void exitDirectory(File path) {
                     if (path.list().length == 0 && 
                             !path.equals(modulesOutputDirectory)) {
@@ -4181,6 +4203,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         e.printStackTrace();
                     }
                 }
+            }
+            
+            if (fileIsResource) {
+                File resourceFile = new File(
+                        moduleDir, 
+                        "module-resources" + File.separator + relativeFilePath.replace('/', File.separatorChar));
+                resourceFile.delete();
             }
         }
         
