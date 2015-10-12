@@ -3592,6 +3592,26 @@
                 </possibleDropTargets>
             </dropAssistant>
 		</navigatorContent>
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="org.eclipse.ui.internal.navigator.workingsets.WorkingSetsContentProvider"
+            id="com.redhat.ceylon.eclipse.ui.workingSets"
+            labelProvider="org.eclipse.ui.internal.navigator.workingsets.WorkingSetsLabelProvider"
+            name="%workingsets.extension.name"
+            appearsBefore="org.eclipse.ui.navigator.resources.workingSets"
+            priority="higher"
+            sortOnly="true">
+         <triggerPoints>
+            <instanceof value="org.eclipse.ui.IWorkingSet"/>
+         </triggerPoints>
+         <possibleChildren>
+            <instanceof value="java.lang.Object"/>
+         </possibleChildren>
+         <commonSorter
+               class="com.redhat.ceylon.eclipse.code.navigator.CeylonWorkingSetSorter"
+               id="com.redhat.ceylon.eclipse.ui.navigator.workingSets.sorter"/>  
+      </navigatorContent>
+		
   		<commonFilter
 		        activeByDefault="true"
 		        class="com.redhat.ceylon.eclipse.code.navigator.EmptyLibraryContainerFilter"
